@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -17,6 +18,8 @@ public static class VectorStoreBuilderExtensions
     /// </remarks>
     public static VectorStoreBuilder AsBuilder(this IVectorStore innerStore)
     {
+        Verify.NotNull(innerStore);
+
         return new VectorStoreBuilder(innerStore);
     }
 }

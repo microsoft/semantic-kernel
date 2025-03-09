@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,6 +22,9 @@ public static class VectorizableTextSearchBuilderServiceCollectionExtensions
         IVectorizableTextSearch<TRecord> innerSearch,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearch);
+
         return AddVectorizableTextSearch(serviceCollection, _ => innerSearch, lifetime);
     }
 
@@ -35,6 +39,9 @@ public static class VectorizableTextSearchBuilderServiceCollectionExtensions
         Func<IServiceProvider, IVectorizableTextSearch<TRecord>> innerSearchFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearchFactory);
+
         var builder = new VectorizableTextSearchBuilder<TRecord>(innerSearchFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IVectorizableTextSearch<TRecord>), builder.Build, lifetime));
         return builder;
@@ -53,6 +60,9 @@ public static class VectorizableTextSearchBuilderServiceCollectionExtensions
         IVectorizableTextSearch<TRecord> innerSearch,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearch);
+
         return AddKeyedVectorizableTextSearch(serviceCollection, serviceKey, _ => innerSearch, lifetime);
     }
 
@@ -69,6 +79,9 @@ public static class VectorizableTextSearchBuilderServiceCollectionExtensions
         Func<IServiceProvider, IVectorizableTextSearch<TRecord>> innerSearchFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearchFactory);
+
         var builder = new VectorizableTextSearchBuilder<TRecord>(innerSearchFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IVectorizableTextSearch<TRecord>), serviceKey, factory: (services, serviceKey) => builder.Build(services), lifetime));
         return builder;

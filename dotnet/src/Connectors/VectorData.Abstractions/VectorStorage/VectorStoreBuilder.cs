@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -20,6 +21,8 @@ public sealed class VectorStoreBuilder
     /// <param name="innerStore">The inner <see cref="IVectorStore"/> that represents the underlying backend.</param>
     public VectorStoreBuilder(IVectorStore innerStore)
     {
+        Verify.NotNull(innerStore);
+
         this._innerStoreFactory = _ => innerStore;
     }
 
@@ -27,6 +30,8 @@ public sealed class VectorStoreBuilder
     /// <param name="innerStoreFactory">A callback that produces the inner <see cref="IVectorStore"/> that represents the underlying backend.</param>
     public VectorStoreBuilder(Func<IServiceProvider, IVectorStore> innerStoreFactory)
     {
+        Verify.NotNull(innerStoreFactory);
+
         this._innerStoreFactory = innerStoreFactory;
     }
 
@@ -64,6 +69,8 @@ public sealed class VectorStoreBuilder
     /// <returns>The updated <see cref="VectorStoreBuilder"/> instance.</returns>
     public VectorStoreBuilder Use(Func<IVectorStore, IVectorStore> storeFactory)
     {
+        Verify.NotNull(storeFactory);
+
         return this.Use((innerStore, _) => storeFactory(innerStore));
     }
 
@@ -72,6 +79,8 @@ public sealed class VectorStoreBuilder
     /// <returns>The updated <see cref="VectorStoreBuilder"/> instance.</returns>
     public VectorStoreBuilder Use(Func<IVectorStore, IServiceProvider, IVectorStore> storeFactory)
     {
+        Verify.NotNull(storeFactory);
+
         (this._storeFactories ??= []).Add(storeFactory);
         return this;
     }

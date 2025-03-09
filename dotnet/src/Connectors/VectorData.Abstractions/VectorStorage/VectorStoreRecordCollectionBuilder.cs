@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -20,6 +21,8 @@ public sealed class VectorStoreRecordCollectionBuilder<TKey, TRecord> where TKey
     /// <param name="innerCollection">The inner <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> that represents the underlying backend.</param>
     public VectorStoreRecordCollectionBuilder(IVectorStoreRecordCollection<TKey, TRecord> innerCollection)
     {
+        Verify.NotNull(innerCollection);
+
         this._innerCollectionFactory = _ => innerCollection;
     }
 
@@ -27,6 +30,8 @@ public sealed class VectorStoreRecordCollectionBuilder<TKey, TRecord> where TKey
     /// <param name="innerCollectionFactory">A callback that produces the inner <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> that represents the underlying backend.</param>
     public VectorStoreRecordCollectionBuilder(Func<IServiceProvider, IVectorStoreRecordCollection<TKey, TRecord>> innerCollectionFactory)
     {
+        Verify.NotNull(innerCollectionFactory);
+
         this._innerCollectionFactory = innerCollectionFactory;
     }
 
@@ -64,6 +69,8 @@ public sealed class VectorStoreRecordCollectionBuilder<TKey, TRecord> where TKey
     /// <returns>The updated <see cref="VectorStoreRecordCollectionBuilder{TKey, TRecord}"/> instance.</returns>
     public VectorStoreRecordCollectionBuilder<TKey, TRecord> Use(Func<IVectorStoreRecordCollection<TKey, TRecord>, IVectorStoreRecordCollection<TKey, TRecord>> collectionFactory)
     {
+        Verify.NotNull(collectionFactory);
+
         return this.Use((innerCollection, _) => collectionFactory(innerCollection));
     }
 
@@ -72,6 +79,8 @@ public sealed class VectorStoreRecordCollectionBuilder<TKey, TRecord> where TKey
     /// <returns>The updated <see cref="VectorStoreRecordCollectionBuilder{TKey, TRecord}"/> instance.</returns>
     public VectorStoreRecordCollectionBuilder<TKey, TRecord> Use(Func<IVectorStoreRecordCollection<TKey, TRecord>, IServiceProvider, IVectorStoreRecordCollection<TKey, TRecord>> collectionFactory)
     {
+        Verify.NotNull(collectionFactory);
+
         (this._collectionFactories ??= []).Add(collectionFactory);
         return this;
     }

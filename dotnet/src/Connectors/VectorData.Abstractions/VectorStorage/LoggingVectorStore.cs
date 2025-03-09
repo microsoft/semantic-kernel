@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData;
@@ -27,6 +28,9 @@ public class LoggingVectorStore : IVectorStore
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
     public LoggingVectorStore(IVectorStore innerStore, ILogger logger)
     {
+        Verify.NotNull(innerStore);
+        Verify.NotNull(logger);
+
         this._innerStore = innerStore;
         this._logger = logger;
     }

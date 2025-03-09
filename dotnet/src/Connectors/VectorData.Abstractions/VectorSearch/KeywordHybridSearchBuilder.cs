@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -20,6 +21,8 @@ public sealed class KeywordHybridSearchBuilder<TRecord>
     /// <param name="innerSearch">The inner <see cref="IKeywordHybridSearch{TRecord}"/> that represents the underlying backend.</param>
     public KeywordHybridSearchBuilder(IKeywordHybridSearch<TRecord> innerSearch)
     {
+        Verify.NotNull(innerSearch);
+
         this._innerSearchFactory = _ => innerSearch;
     }
 
@@ -27,6 +30,8 @@ public sealed class KeywordHybridSearchBuilder<TRecord>
     /// <param name="innerSearchFactory">A callback that produces the inner <see cref="IKeywordHybridSearch{TRecord}"/> that represents the underlying backend.</param>
     public KeywordHybridSearchBuilder(Func<IServiceProvider, IKeywordHybridSearch<TRecord>> innerSearchFactory)
     {
+        Verify.NotNull(innerSearchFactory);
+
         this._innerSearchFactory = innerSearchFactory;
     }
 
@@ -64,6 +69,8 @@ public sealed class KeywordHybridSearchBuilder<TRecord>
     /// <returns>The updated <see cref="KeywordHybridSearchBuilder{TRecord}"/> instance.</returns>
     public KeywordHybridSearchBuilder<TRecord> Use(Func<IKeywordHybridSearch<TRecord>, IKeywordHybridSearch<TRecord>> searchFactory)
     {
+        Verify.NotNull(searchFactory);
+
         return this.Use((innerSearch, _) => searchFactory(innerSearch));
     }
 
@@ -72,6 +79,8 @@ public sealed class KeywordHybridSearchBuilder<TRecord>
     /// <returns>The updated <see cref="KeywordHybridSearchBuilder{TRecord}"/> instance.</returns>
     public KeywordHybridSearchBuilder<TRecord> Use(Func<IKeywordHybridSearch<TRecord>, IServiceProvider, IKeywordHybridSearch<TRecord>> searchFactory)
     {
+        Verify.NotNull(searchFactory);
+
         (this._searchFactories ??= []).Add(searchFactory);
         return this;
     }

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData;
@@ -29,6 +29,9 @@ public class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<TRecord>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
     public LoggingKeywordHybridSearch(IKeywordHybridSearch<TRecord> innerSearch, ILogger logger)
     {
+        Verify.NotNull(innerSearch);
+        Verify.NotNull(logger);
+
         this._innerSearch = innerSearch;
         this._logger = logger;
     }

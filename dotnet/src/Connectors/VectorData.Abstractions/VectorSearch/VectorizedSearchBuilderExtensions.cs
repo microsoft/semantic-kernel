@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -17,6 +18,8 @@ public static class VectorizedSearchBuilderExtensions
     /// </remarks>
     public static VectorizedSearchBuilder<TRecord> AsBuilder<TRecord>(this IVectorizedSearch<TRecord> innerSearch)
     {
+        Verify.NotNull(innerSearch);
+
         return new VectorizedSearchBuilder<TRecord>(innerSearch);
     }
 }

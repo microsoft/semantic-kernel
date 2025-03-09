@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,6 +22,9 @@ public static class KeywordHybridSearchBuilderServiceCollectionExtensions
         IKeywordHybridSearch<TRecord> innerSearch,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearch);
+
         return AddKeywordHybridSearch(serviceCollection, _ => innerSearch, lifetime);
     }
 
@@ -35,6 +39,9 @@ public static class KeywordHybridSearchBuilderServiceCollectionExtensions
         Func<IServiceProvider, IKeywordHybridSearch<TRecord>> innerSearchFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearchFactory);
+
         var builder = new KeywordHybridSearchBuilder<TRecord>(innerSearchFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IKeywordHybridSearch<TRecord>), builder.Build, lifetime));
         return builder;
@@ -53,6 +60,9 @@ public static class KeywordHybridSearchBuilderServiceCollectionExtensions
         IKeywordHybridSearch<TRecord> innerSearch,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearch);
+
         return AddKeyedKeywordHybridSearch(serviceCollection, serviceKey, _ => innerSearch, lifetime);
     }
 
@@ -69,6 +79,9 @@ public static class KeywordHybridSearchBuilderServiceCollectionExtensions
         Func<IServiceProvider, IKeywordHybridSearch<TRecord>> innerSearchFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerSearchFactory);
+
         var builder = new KeywordHybridSearchBuilder<TRecord>(innerSearchFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IKeywordHybridSearch<TRecord>), serviceKey, factory: (services, serviceKey) => builder.Build(services), lifetime));
         return builder;

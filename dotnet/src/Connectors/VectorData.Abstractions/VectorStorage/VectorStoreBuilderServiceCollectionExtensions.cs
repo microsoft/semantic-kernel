@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,6 +22,9 @@ public static class VectorStoreBuilderServiceCollectionExtensions
         IVectorStore innerStore,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerStore);
+
         return AddVectorStore(serviceCollection, _ => innerStore, lifetime);
     }
 
@@ -35,6 +39,9 @@ public static class VectorStoreBuilderServiceCollectionExtensions
         Func<IServiceProvider, IVectorStore> innerStoreFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerStoreFactory);
+
         var builder = new VectorStoreBuilder(innerStoreFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IVectorStore), builder.Build, lifetime));
         return builder;
@@ -53,6 +60,9 @@ public static class VectorStoreBuilderServiceCollectionExtensions
         IVectorStore innerStore,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerStore);
+
         return AddKeyedVectorStore(serviceCollection, serviceKey, _ => innerStore, lifetime);
     }
 
@@ -69,6 +79,9 @@ public static class VectorStoreBuilderServiceCollectionExtensions
         Func<IServiceProvider, IVectorStore> innerStoreFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerStoreFactory);
+
         var builder = new VectorStoreBuilder(innerStoreFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IVectorStore), serviceKey, factory: (services, serviceKey) => builder.Build(services), lifetime));
         return builder;

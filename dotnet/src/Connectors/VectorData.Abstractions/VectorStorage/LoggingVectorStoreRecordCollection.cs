@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData;
@@ -30,6 +31,9 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
     public LoggingVectorStoreRecordCollection(IVectorStoreRecordCollection<TKey, TRecord> innerCollection, ILogger logger)
     {
+        Verify.NotNull(innerCollection);
+        Verify.NotNull(logger);
+
         this._innerCollection = innerCollection;
         this._logger = logger;
     }

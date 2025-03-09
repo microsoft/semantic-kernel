@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -17,6 +18,8 @@ public static class VectorStoreRecordCollectionBuilderExtensions
     /// </remarks>
     public static VectorStoreRecordCollectionBuilder<TKey, TRecord> AsBuilder<TKey, TRecord>(this IVectorStoreRecordCollection<TKey, TRecord> innerCollection) where TKey : notnull
     {
+        Verify.NotNull(innerCollection);
+
         return new VectorStoreRecordCollectionBuilder<TKey, TRecord>(innerCollection);
     }
 }

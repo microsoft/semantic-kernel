@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,6 +22,9 @@ public static class VectorStoreRecordCollectionBuilderServiceCollectionExtension
         IVectorStoreRecordCollection<TKey, TRecord> innerCollection,
         ServiceLifetime lifetime = ServiceLifetime.Singleton) where TKey : notnull
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerCollection);
+
         return AddVectorStoreRecordCollection(serviceCollection, _ => innerCollection, lifetime);
     }
 
@@ -35,6 +39,9 @@ public static class VectorStoreRecordCollectionBuilderServiceCollectionExtension
         Func<IServiceProvider, IVectorStoreRecordCollection<TKey, TRecord>> innerCollectionFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton) where TKey : notnull
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerCollectionFactory);
+
         var builder = new VectorStoreRecordCollectionBuilder<TKey, TRecord>(innerCollectionFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IVectorStoreRecordCollection<TKey, TRecord>), builder.Build, lifetime));
         return builder;
@@ -53,6 +60,9 @@ public static class VectorStoreRecordCollectionBuilderServiceCollectionExtension
         IVectorStoreRecordCollection<TKey, TRecord> innerCollection,
         ServiceLifetime lifetime = ServiceLifetime.Singleton) where TKey : notnull
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerCollection);
+
         return AddKeyedVectorStoreRecordCollection(serviceCollection, serviceKey, _ => innerCollection, lifetime);
     }
 
@@ -69,6 +79,9 @@ public static class VectorStoreRecordCollectionBuilderServiceCollectionExtension
         Func<IServiceProvider, IVectorStoreRecordCollection<TKey, TRecord>> innerCollectionFactory,
         ServiceLifetime lifetime = ServiceLifetime.Singleton) where TKey : notnull
     {
+        Verify.NotNull(serviceCollection);
+        Verify.NotNull(innerCollectionFactory);
+
         var builder = new VectorStoreRecordCollectionBuilder<TKey, TRecord>(innerCollectionFactory);
         serviceCollection.Add(new ServiceDescriptor(typeof(IVectorStoreRecordCollection<TKey, TRecord>), serviceKey, factory: (services, serviceKey) => builder.Build(services), lifetime));
         return builder;

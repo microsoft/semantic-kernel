@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -22,6 +23,8 @@ public static class LoggingVectorStoreRecordCollectionBuilderExtensions
         this VectorStoreRecordCollectionBuilder<TKey, TRecord> builder,
         ILoggerFactory? loggerFactory = null) where TKey : notnull
     {
+        Verify.NotNull(builder);
+
         return builder.Use((innerCollection, services) =>
         {
             loggerFactory ??= services.GetRequiredService<ILoggerFactory>();

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -17,6 +18,8 @@ public static class KeywordHybridSearchBuilderExtensions
     /// </remarks>
     public static KeywordHybridSearchBuilder<TRecord> AsBuilder<TRecord>(this IKeywordHybridSearch<TRecord> innerSearch)
     {
+        Verify.NotNull(innerSearch);
+
         return new KeywordHybridSearchBuilder<TRecord>(innerSearch);
     }
 }
