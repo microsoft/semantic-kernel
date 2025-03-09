@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <RootNamespace>PostgresIntegrationTests</RootNamespace>
+    <NoWarn>$(NoWarn);SKEXP0020</NoWarn> <!-- Postgres connector is experimental for now -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk"/>
     <PackageReference Include="Testcontainers.PostgreSql"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json"/>
   </ItemGroup>
 
   <ItemGroup>

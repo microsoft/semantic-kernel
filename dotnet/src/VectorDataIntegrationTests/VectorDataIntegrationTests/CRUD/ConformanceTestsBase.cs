@@ -6,9 +6,9 @@ using VectorDataSpecificationTests.Support;
 namespace VectorDataSpecificationTests.CRUD;
 
 // TKey is a generic parameter because different connectors support different key types.
-public abstract class ConformanceTestsBase<TKey, TRecord>(VectorStoreFixture fixture) where TKey : notnull
+public abstract class ConformanceTestsBase<TKey, TRecord>(VectorDataFixture fixture) where TKey : notnull
 {
-    protected VectorStoreFixture Fixture { get; } = fixture;
+    protected VectorDataFixture Fixture { get; } = fixture;
 
     protected virtual string GetUniqueCollectionName() => Guid.NewGuid().ToString();
 

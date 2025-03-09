@@ -7,7 +7,7 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.CRUD;
 
-public abstract class BatchConformanceTests<TKey>(VectorStoreFixture fixture)
+public abstract class BatchConformanceTests<TKey>(VectorDataFixture fixture)
     : ConformanceTestsBase<TKey, SimpleModel<TKey>>(fixture) where TKey : notnull
 {
     [ConditionalFact]

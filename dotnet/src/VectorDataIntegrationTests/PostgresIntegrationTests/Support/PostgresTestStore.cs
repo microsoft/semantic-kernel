@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Npgsql;
@@ -10,7 +11,7 @@ namespace PostgresIntegrationTests.Support;
 
 #pragma warning disable SKEXP0020
 
-internal sealed class PostgresTestStore : TestStore
+public sealed class PostgresTestStore : TestStore
 {
     public static PostgresTestStore Instance { get; } = new();
 
@@ -18,6 +19,7 @@ internal sealed class PostgresTestStore : TestStore
         .WithImage("pgvector/pgvector:pg16")
         .Build();
 
+    private readonly string? _externalConnectionString;
     private NpgsqlDataSource? _dataSource;
     private PostgresVectorStore? _defaultVectorStore;
 
@@ -30,23 +32,40 @@ internal sealed class PostgresTestStore : TestStore
 
     private PostgresTestStore()
     {
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile(path: "testsettings.json", optional: true)
+            .AddJsonFile(path: "testsettings.development.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var pgSection = configuration.GetSection("PostgreSQL");
+        this._externalConnectionString = pgSection?["ConnectionString"];
     }
 
     protected override async Task StartAsync()
     {
-        await s_container.StartAsync();
+        NpgsqlDataSourceBuilder dataSourceBuilder;
 
-        var dataSourceBuilder = new NpgsqlDataSourceBuilder
+        if (this._externalConnectionString is null)
         {
-            ConnectionStringBuilder =
+            await s_container.StartAsync();
+
+            dataSourceBuilder = new NpgsqlDataSourceBuilder
             {
-                Host = s_container.Hostname,
-                Port = s_container.GetMappedPublicPort(5432),
-                Username = PostgreSqlBuilder.DefaultUsername,
-                Password = PostgreSqlBuilder.DefaultPassword,
-                Database = PostgreSqlBuilder.DefaultDatabase
-            }
-        };
+                ConnectionStringBuilder =
+                {
+                    Host = s_container.Hostname,
+                    Port = s_container.GetMappedPublicPort(5432),
+                    Username = PostgreSqlBuilder.DefaultUsername,
+                    Password = PostgreSqlBuilder.DefaultPassword,
+                    Database = PostgreSqlBuilder.DefaultDatabase
+                }
+            };
+        }
+        else
+        {
+            dataSourceBuilder = new NpgsqlDataSourceBuilder(this._externalConnectionString);
+        }
 
         dataSourceBuilder.UseVector();
 

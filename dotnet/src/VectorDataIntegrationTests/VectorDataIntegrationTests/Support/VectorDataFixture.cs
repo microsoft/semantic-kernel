@@ -4,7 +4,7 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.Support;
 
-public abstract class VectorStoreFixture : IAsyncLifetime
+public abstract class VectorDataFixture : IAsyncLifetime
 {
     private int _nextKeyValue = 1;
 

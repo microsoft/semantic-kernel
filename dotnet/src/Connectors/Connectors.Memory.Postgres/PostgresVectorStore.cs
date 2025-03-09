@@ -13,9 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// </summary>
 public class PostgresVectorStore : IVectorStore
 {
-    private readonly IPostgresVectorStoreDbClient _postgresClient;
     private readonly NpgsqlDataSource? _dataSource;
-    private readonly PostgresVectorStoreOptions _options;
+
+    internal PostgresVectorStoreOptions Options { get; }
+    internal IPostgresVectorStoreDbClient PostgresClient { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
@@ -25,8 +26,8 @@ public class PostgresVectorStore : IVectorStore
     public PostgresVectorStore(NpgsqlDataSource dataSource, PostgresVectorStoreOptions? options = default)
     {
         this._dataSource = dataSource;
-        this._options = options ?? new PostgresVectorStoreOptions();
-        this._postgresClient = new PostgresVectorStoreDbClient(this._dataSource, this._options.Schema);
+        this.Options = options ?? new PostgresVectorStoreOptions();
+        this.PostgresClient = new PostgresVectorStoreDbClient(this._dataSource, this.Options.Schema);
     }
 
     /// <summary>
@@ -36,8 +37,8 @@ public class PostgresVectorStore : IVectorStore
     /// <param name="options">Optional configuration options for this class</param>
     internal PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
     {
-        this._postgresClient = postgresDbClient;
-        this._options = options ?? new PostgresVectorStoreOptions();
+        this.PostgresClient = postgresDbClient;
+        this.Options = options ?? new PostgresVectorStoreOptions();
     }
 
     /// <inheritdoc />
@@ -45,7 +46,7 @@ public class PostgresVectorStore : IVectorStore
     {
         const string OperationName = "ListCollectionNames";
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
-            this._postgresClient.GetTablesAsync(cancellationToken),
+            this.PostgresClient.GetTablesAsync(cancellationToken),
             OperationName
         );
     }
@@ -60,16 +61,16 @@ public class PostgresVectorStore : IVectorStore
         }
 
 #pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
-        if (this._options.VectorStoreCollectionFactory is not null)
+        if (this.Options.VectorStoreCollectionFactory is not null)
         {
-            return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._postgresClient.DataSource, name, vectorStoreRecordDefinition);
+            return this.Options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this.PostgresClient.DataSource, name, vectorStoreRecordDefinition);
         }
 #pragma warning restore CS0618
 
         var recordCollection = new PostgresVectorStoreRecordCollection<TKey, TRecord>(
-            this._postgresClient,
+            this,
             name,
-            new PostgresVectorStoreRecordCollectionOptions<TRecord>() { Schema = this._options.Schema, VectorStoreRecordDefinition = vectorStoreRecordDefinition }
+            new PostgresVectorStoreRecordCollectionOptions<TRecord>() { Schema = this.Options.Schema, VectorStoreRecordDefinition = vectorStoreRecordDefinition }
         );
 
         return recordCollection as IVectorStoreRecordCollection<TKey, TRecord> ?? throw new InvalidOperationException("Failed to cast record collection.");
