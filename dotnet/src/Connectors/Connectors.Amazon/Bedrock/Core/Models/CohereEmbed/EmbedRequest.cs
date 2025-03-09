@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
-internal sealed class CohereEmbedRequest
+internal sealed class EmbedRequest
 {
     [JsonPropertyName("texts")]
     public IList<string> Texts { get; set; } = [];

@@ -18,6 +18,9 @@ using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
+/// <summary>
+/// Represents a client for interacting with the text embedding generation service through Bedrock.
+/// </summary>
 internal sealed class BedrockTextEmbeddingGenerationClient
 {
     private readonly string _modelId;

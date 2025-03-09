@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 internal class AmazonEmbedService : IBedrockCommonSplitTextEmbeddingService
 {
+    /// <inheritdoc />
     public object GetInvokeModelRequestBody(string modelId, string text)
     {
         return new TitanEmbedRequest()
@@ -17,6 +18,7 @@ internal class AmazonEmbedService : IBedrockCommonSplitTextEmbeddingService
         };
     }
 
+    /// <inheritdoc />
     public ReadOnlyMemory<float> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);

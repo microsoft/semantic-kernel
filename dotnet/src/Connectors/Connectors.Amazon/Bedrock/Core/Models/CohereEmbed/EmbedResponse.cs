@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 /// <summary>
 /// The Amazon Titan Text response object when deserialized from Invoke Model call.
 /// </summary>
-internal sealed class CohereEmbedResponse
+internal sealed class EmbedResponse
 {
     /// <summary>
     /// The number of tokens in the prompt.

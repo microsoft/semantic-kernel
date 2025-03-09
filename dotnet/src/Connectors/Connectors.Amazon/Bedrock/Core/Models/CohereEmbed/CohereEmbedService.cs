@@ -11,24 +11,21 @@ namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 
 internal class CohereEmbedService : IBedrockCommonBatchTextEmbeddingService
 {
-    public object GetInvokeModelRequestBody(string modelId, string text)
-    {
-        return this.GetInvokeModelRequestBody(modelId, [text]);
-    }
-
+    ///<inheritdoc />
     public object GetInvokeModelRequestBody(string modelId, IList<string> texts)
     {
-        return new CohereEmbedRequest
+        return new EmbedRequest
         {
             Texts = texts,
             InputType = "search_document"
         };
     }
 
+    ///<inheritdoc />
     public IList<ReadOnlyMemory<float>> GetInvokeResponseBody(InvokeModelResponse response)
     {
         using var reader = new StreamReader(response.Body);
-        var responseBody = JsonSerializer.Deserialize<CohereEmbedResponse>(reader.ReadToEnd());
+        var responseBody = JsonSerializer.Deserialize<EmbedResponse>(reader.ReadToEnd());
         if (responseBody?.Embeddings is not { Count: > 0 })
         {
             return [ReadOnlyMemory<float>.Empty];
