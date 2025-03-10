@@ -5,7 +5,6 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Moq;
 using Moq.Protected;
