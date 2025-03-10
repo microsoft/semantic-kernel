@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 from pydantic import Field, StringConstraints
 
+from semantic_kernel.connectors.mcp.mcp_server_settings import MCPServerSettings
 from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
@@ -375,6 +376,32 @@ class KernelPlugin(KernelBaseModel):
                 openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
             ),
+        )
+
+    # TODO(Nico): Think if Method really needs to be Async
+    @classmethod
+    async def from_mcp_server(
+        cls: type[_T],
+        plugin_name: str,
+        settings: "MCPServerSettings",
+        description: str | None = None,
+    ) -> _T:
+        """Creates a plugin from an MCP server.
+
+        Args:
+            plugin_name: The name of the plugin.
+            settings: The settings for the MCP server.
+            description: The description of the plugin.
+
+        Returns:
+            KernelPlugin: The created plugin.
+        """
+        from semantic_kernel.connectors.mcp.mcp_manager import create_function_from_mcp_server
+
+        return cls(
+            name=plugin_name,
+            description=description,
+            functions=await create_function_from_mcp_server(settings=settings),
         )
 
     @classmethod
