@@ -29,6 +29,7 @@ public sealed class VectorStoreRecordKeyProperty : VectorStoreRecordProperty
     public VectorStoreRecordKeyProperty(VectorStoreRecordKeyProperty source)
         : base(source)
     {
+        this.AutoGenerate = source.AutoGenerate;
     }
 
     /// <summary>
