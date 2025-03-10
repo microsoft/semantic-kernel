@@ -233,6 +233,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
             leftTablePropertyNames,
             rightTablePropertyNames,
             conditions,
+            extraWhereFilter: null,
+            extraParameters: null,
             orderByPropertyName);
 
         // Assert

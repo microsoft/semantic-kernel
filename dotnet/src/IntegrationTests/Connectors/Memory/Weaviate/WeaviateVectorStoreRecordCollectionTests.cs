@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("WeaviateVectorStoreCollection")]
 public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreFixture fixture)
 {
@@ -298,7 +300,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Filter = filter,
+            OldFilter = filter,
             Top = 4,
         });
 
@@ -343,7 +345,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), new()
         {
-            Filter = filter,
+            OldFilter = filter,
             Top = 4,
         });
 

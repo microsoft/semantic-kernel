@@ -41,7 +41,7 @@ public class PostgresVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "ListCollectionNames";
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
@@ -51,7 +51,7 @@ public class PostgresVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
         if (!PostgresConstants.SupportedKeyTypes.Contains(typeof(TKey)))
@@ -59,10 +59,12 @@ public class PostgresVectorStore : IVectorStore
             throw new NotSupportedException($"Unsupported key type: {typeof(TKey)}");
         }
 
+#pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._postgresClient.DataSource, name, vectorStoreRecordDefinition);
         }
+#pragma warning restore CS0618
 
         var recordCollection = new PostgresVectorStoreRecordCollection<TKey, TRecord>(
             this._postgresClient,

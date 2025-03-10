@@ -37,23 +37,14 @@ public static class AzureAISearchFactory
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateQdrantLangchainInteropVectorStore(SearchIndexClient searchIndexClient)
-    {
-        // Create a vector store that uses our custom factory for creating collections
-        // so that the collection can be configured to be compatible with Langchain.
-        return new AzureAISearchVectorStore(
-            searchIndexClient,
-            new()
-            {
-                VectorStoreCollectionFactory = new AzureAISearchVectorStoreRecordCollectionFactory()
-            });
-    }
+        => new AzureAISearchLangchainInteropVectorStore(searchIndexClient);
 
-    /// <summary>
-    /// Factory that is used to inject the appropriate <see cref="VectorStoreRecordDefinition"/> and mapper for Langchain interoperability.
-    /// </summary>
-    private sealed class AzureAISearchVectorStoreRecordCollectionFactory : IAzureAISearchVectorStoreRecordCollectionFactory
+    private sealed class AzureAISearchLangchainInteropVectorStore(SearchIndexClient searchIndexClient, AzureAISearchVectorStoreOptions? options = default)
+        : AzureAISearchVectorStore(searchIndexClient, options)
     {
-        public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(SearchIndexClient searchIndexClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TKey : notnull
+        private readonly SearchIndexClient _searchIndexClient = searchIndexClient;
+
+        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -67,7 +58,7 @@ public static class AzureAISearchFactory
             // a JSON string containing the source property. Parsing this
             // string and extracting the source is not supported by the default mapper.
             return (new AzureAISearchVectorStoreRecordCollection<TRecord>(
-                searchIndexClient,
+                _searchIndexClient,
                 name,
                 new()
                 {

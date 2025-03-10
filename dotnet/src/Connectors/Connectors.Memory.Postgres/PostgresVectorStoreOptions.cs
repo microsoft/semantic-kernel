@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
@@ -15,5 +17,6 @@ public sealed class PostgresVectorStoreOptions
     /// <summary>
     /// An optional factory to use for constructing <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
+    [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
     public IPostgresVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }
 }

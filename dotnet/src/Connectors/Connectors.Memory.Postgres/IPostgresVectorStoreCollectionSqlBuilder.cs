@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
 using Pgvector;
 
@@ -46,8 +48,9 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// <param name="vectorColumnName">The name of the vector column.</param>
     /// <param name="indexKind">The kind of index to create.</param>
     /// <param name="distanceFunction">The distance function to use for the index.</param>
+    /// <param name="ifNotExists">Specifies whether to include IF NOT EXISTS in the command.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction);
+    PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction, bool ifNotExists);
 
     /// <summary>
     /// Builds a SQL command to drop a table in the Postgres vector store.
@@ -124,13 +127,16 @@ internal interface IPostgresVectorStoreCollectionSqlBuilder
     /// </summary>
     /// <param name="schema">The schema of the table.</param>
     /// <param name="tableName">The name of the table.</param>
-    /// <param name="properties">The properties of the table.</param>
+    /// <param name="propertyReader">The property reader.</param>
     /// <param name="vectorProperty">The property which the vectors to compare are stored in.</param>
     /// <param name="vectorValue">The vector to match.</param>
-    /// <param name="filter">The filter conditions for the query.</param>
+    /// <param name="legacyFilter">The filter conditions for the query.</param>
+    /// <param name="newFilter">The filter conditions for the query.</param>
     /// <param name="skip">The number of records to skip.</param>
     /// <param name="includeVectors">Specifies whether to include vectors in the result.</param>
     /// <param name="limit">The maximum number of records to return.</param>
     /// <returns>The built SQL command info.</returns>
-    PostgresSqlCommandInfo BuildGetNearestMatchCommand(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, VectorSearchFilter? filter, int? skip, bool includeVectors, int limit);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+    PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(string schema, string tableName, VectorStoreRecordPropertyReader propertyReader, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit);
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 }

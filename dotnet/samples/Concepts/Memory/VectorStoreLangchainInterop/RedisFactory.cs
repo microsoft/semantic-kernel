@@ -34,23 +34,14 @@ public static class RedisFactory
     /// <param name="database">The redis database to read/write from.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
-    {
-        // Create a vector store that uses our custom factory for creating collections
-        // so that the collection can be configured to be compatible with Langchain.
-        return new RedisVectorStore(
-            database,
-            new()
-            {
-                VectorStoreCollectionFactory = new RedisVectorStoreRecordCollectionFactory()
-            });
-    }
+        => new RedisLangchainInteropVectorStore(database);
 
-    /// <summary>
-    /// Factory that is used to inject the appropriate <see cref="VectorStoreRecordDefinition"/> for Langchain interoperability.
-    /// </summary>
-    private sealed class RedisVectorStoreRecordCollectionFactory : IRedisVectorStoreRecordCollectionFactory
+    private sealed class RedisLangchainInteropVectorStore(IDatabase database)
+        : RedisVectorStore(database)
     {
-        public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(IDatabase database, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TKey : notnull
+        private readonly IDatabase _database = database;
+
+        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -62,7 +53,7 @@ public static class RedisFactory
             // so that the default mapper can use the storage names in it, to map to the storage
             // scheme.
             return (new RedisHashSetVectorStoreRecordCollection<TRecord>(
-                database,
+                _database,
                 name,
                 new()
                 {

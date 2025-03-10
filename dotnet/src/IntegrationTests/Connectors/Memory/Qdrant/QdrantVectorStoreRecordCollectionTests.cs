@@ -15,6 +15,8 @@ using static SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant.QdrantVect
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Qdrant;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
@@ -66,7 +68,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var actual = await sut.VectorizedSearchAsync(
             vector,
-            new VectorSearchOptions { Filter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") });
+            new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -394,7 +396,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             vector,
             new()
             {
-                Filter = filter
+                OldFilter = filter
             });
 
         // Assert.

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -13,6 +14,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Moq;
 using Xunit;
+using MEVD = Microsoft.Extensions.VectorData;
 
 namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 
@@ -568,8 +570,6 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     }
 
     [Theory]
-    [InlineData(null, "TestEmbedding1", 1, 1)]
-    [InlineData("", "TestEmbedding1", 2, 2)]
     [InlineData("TestEmbedding1", "TestEmbedding1", 3, 3)]
     [InlineData("TestEmbedding2", "test_embedding_2", 4, 4)]
     public async Task VectorizedSearchUsesValidQueryAsync(
@@ -612,10 +612,17 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
+        Expression<Func<VectorSearchModel, object?>>? vectorSelector = vectorPropertyName switch
+        {
+            "TestEmbedding1" => record => record.TestEmbedding1,
+            "TestEmbedding2" => record => record.TestEmbedding2,
+            _ => null
+        };
+
         // Act
         var actual = await sut.VectorizedSearchAsync(vector, new()
         {
-            VectorPropertyName = vectorPropertyName,
+            VectorProperty = vectorSelector,
             Top = actualTop,
         });
 
@@ -639,7 +646,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             this._mockMongoDatabase.Object,
             "collection");
 
-        var options = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
+        var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options)).Results.FirstOrDefaultAsync());

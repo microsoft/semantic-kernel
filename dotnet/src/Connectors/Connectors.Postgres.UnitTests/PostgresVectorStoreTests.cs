@@ -52,6 +52,7 @@ public class PostgresVectorStoreTests
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<ulong, SinglePropsModel<ulong>>(TestCollectionName));
     }
 
+#pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionCallsFactoryIfProvided()
     {
@@ -68,9 +69,10 @@ public class PostgresVectorStoreTests
         // Act.
         var actual = sut.GetCollection<int, SinglePropsModel<int>>(TestCollectionName);
 
-        // Assert.        
+        // Assert.
         Assert.Equal(collectionMock.Object, actual);
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task ListCollectionNamesCallsSDKAsync()
