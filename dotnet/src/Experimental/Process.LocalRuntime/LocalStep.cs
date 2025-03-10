@@ -19,7 +19,6 @@ internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
     private readonly Lazy<ValueTask> _initializeTask;
-    private readonly KernelProcessStepInfo _stepInfo;
     private readonly ILogger _logger;
 
     protected readonly Kernel _kernel;
@@ -30,6 +29,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected Dictionary<string, Dictionary<string, object?>?>? _initialInputs = [];
     protected Dictionary<string, List<KernelProcessEdge>> _outputEdges;
 
+    internal KernelProcessStep? _stepInstance = null;
+    internal readonly KernelProcessStepInfo _stepInfo;
     internal readonly string _eventNamespace;
 
     /// <summary>
@@ -246,8 +247,8 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected virtual async ValueTask InitializeStepAsync()
     {
         // Instantiate an instance of the inner step object
-        KernelProcessStep stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
-        var kernelPlugin = KernelPluginFactory.CreateFromObject(stepInstance, pluginName: this._stepInfo.State.Name);
+        this._stepInstance = (KernelProcessStep)ActivatorUtilities.CreateInstance(this._kernel.Services, this._stepInfo.InnerStepType);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
 
         // Load the kernel functions
         foreach (KernelFunction f in kernelPlugin)
@@ -276,11 +277,28 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._stepState = stateObject;
 
         ValueTask activateTask =
-            (ValueTask?)methodInfo.Invoke(stepInstance, [stateObject]) ??
+            (ValueTask?)methodInfo.Invoke(this._stepInstance, [stateObject]) ??
             throw new KernelException("The ActivateAsync method failed to complete.").Log(this._logger);
 
-        await stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
+        await this._stepInstance.ActivateAsync(stateObject).ConfigureAwait(false);
         await activateTask.ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Deinitializes the step
+    /// </summary>
+    public virtual async ValueTask DeinitializeStepAsync()
+    {
+        MethodInfo? derivedMethod = this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+        if (derivedMethod != null && this._stepInstance != null)
+        {
+            ValueTask deactivateTask =
+                (ValueTask?)derivedMethod.Invoke(this._stepInstance, []) ??
+                throw new KernelException($"The derived DeactivateAsync method failed to complete for step {this.Name}.").Log(this._logger);
+
+            await deactivateTask.ConfigureAwait(false);
+        }
     }
 
     /// <summary>

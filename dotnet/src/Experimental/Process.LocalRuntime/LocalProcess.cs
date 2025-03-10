@@ -403,11 +403,20 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     #endregion
 
+    /// <inheritdoc/>
+    public override async ValueTask DeinitializeStepAsync()
+    {
+        await Task.Run(() => this.Dispose()).ConfigureAwait(false);
+    }
+
     public void Dispose()
     {
         this._externalEventChannel.Writer.Complete();
         this._joinableTaskContext.Dispose();
-        this._joinableTaskContext.Dispose();
+        foreach (var step in this._steps)
+        {
+            this._joinableTaskFactory.Run(() => step.DeinitializeStepAsync().AsTask());
+        }
         this._processCancelSource?.Dispose();
     }
 }

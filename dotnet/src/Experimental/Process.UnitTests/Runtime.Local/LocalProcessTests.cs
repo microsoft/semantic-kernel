@@ -27,7 +27,6 @@ public class LocalProcessTests
 
         var mockKernel = new Kernel();
         using var localProcess = new LocalProcess(mockKernelProcess, mockKernel);
-
         // Act
         await localProcess.StartAsync();
 
