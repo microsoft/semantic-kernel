@@ -40,7 +40,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             throw new VectorStoreRecordMappingException($"Key property {this._propertyReader.KeyPropertyName} on provided record of type {typeof(TRecord).FullName} may not be null.");
         }
 
-        var metadata = new MetadataMap();
+        var metadata = new Metadata();
         foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
         {
             var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
@@ -61,7 +61,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         var result = new Vector
         {
             Id = (string)keyObject,
-            Values = values.ToArray(),
+            Values = values,
             Metadata = metadata,
             SparseValues = null
         };
@@ -83,7 +83,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         {
             this._propertyReader.FirstVectorPropertyInfo!.SetValue(
                 outputRecord,
-                new ReadOnlyMemory<float>(storageModel.Values));
+                storageModel.Values);
         }
 
         // Set Data.
@@ -94,7 +94,7 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord> : IVectorStoreRec
                 this._propertyReader.DataPropertiesInfo,
                 this._propertyReader.StoragePropertyNamesMap,
                 storageModel.Metadata,
-                PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType);
+                PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType!);
         }
 
         return outputRecord;

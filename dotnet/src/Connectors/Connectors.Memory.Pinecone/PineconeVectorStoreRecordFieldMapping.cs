@@ -48,7 +48,7 @@ internal static class PineconeVectorStoreRecordFieldMapping
     ];
 
     public static object? ConvertFromMetadataValueToNativeType(MetadataValue metadataValue, Type targetType)
-        => metadataValue.Inner switch
+        => metadataValue.Value switch
         {
             null => null,
             bool boolValue => boolValue,
@@ -59,26 +59,28 @@ internal static class PineconeVectorStoreRecordFieldMapping
             long longValue => ConvertToNumericValue(longValue, targetType),
             float floatValue => ConvertToNumericValue(floatValue, targetType),
             double doubleValue => ConvertToNumericValue(doubleValue, targetType),
-            decimal decimalValue => ConvertToNumericValue(decimalValue, targetType),
             MetadataValue[] array => VectorStoreRecordMapping.CreateEnumerable(array.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
             List<MetadataValue> list => VectorStoreRecordMapping.CreateEnumerable(list.Select(x => ConvertFromMetadataValueToNativeType(x, VectorStoreRecordPropertyVerification.GetCollectionElementType(targetType))), targetType),
-            _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Inner?.GetType().FullName}'."),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'."),
         };
 
-    // TODO: take advantage of MetadataValue.TryCreate once we upgrade the version of Pinecone.NET
     public static MetadataValue ConvertToMetadataValue(object? sourceValue)
         => sourceValue switch
         {
             bool boolValue => boolValue,
+            bool[] bools => bools,
+            List<bool> bools => bools,
             string stringValue => stringValue,
+            string[] stringArray => stringArray,
+            List<string> stringList => stringList,
+            double doubleValue => doubleValue,
+            double[] doubles => doubles,
+            List<double> doubles => doubles,
+            // Other numeric types are simply cast into double in implicit way.
+            // We could consider supporting arrays of these types.
             int intValue => intValue,
             long longValue => longValue,
             float floatValue => floatValue,
-            double doubleValue => doubleValue,
-            decimal decimalValue => decimalValue,
-            string[] stringArray => stringArray,
-            List<string> stringList => stringList,
-            IEnumerable<string> stringEnumerable => stringEnumerable.ToArray(),
             _ => throw new VectorStoreRecordMappingException($"Unsupported source value type '{sourceValue?.GetType().FullName}'.")
         };
 

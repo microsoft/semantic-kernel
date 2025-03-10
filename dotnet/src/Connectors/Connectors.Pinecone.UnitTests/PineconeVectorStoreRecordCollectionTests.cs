@@ -35,7 +35,7 @@ public class PineconeVectorStoreRecordCollectionTests
                 new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
             }
         };
-        using var pineconeClient = new Sdk.PineconeClient("fake api key");
+        var pineconeClient = new Sdk.PineconeClient("fake api key");
 
         // Act.
         var sut = new PineconeVectorStoreRecordCollection<SinglePropsModel>(
