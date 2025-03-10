@@ -239,7 +239,7 @@ public static partial class KernelPluginFactory
         Verify.NotNull(target);
 
         pluginName ??= CreatePluginName(target.GetType());
-        Verify.ValidPluginName(pluginName);
+        KernelVerify.ValidPluginName(pluginName);
 
         MethodInfo[] methods = target.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 

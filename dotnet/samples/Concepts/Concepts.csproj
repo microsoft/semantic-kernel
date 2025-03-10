@@ -77,6 +77,7 @@
     <ProjectReference Include="..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.Ollama\Connectors.Ollama.csproj" />
     <ProjectReference Include="..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Connectors\VectorData\VectorData.csproj" />
     <ProjectReference Include="..\..\src\Experimental\Orchestration.Flow\Experimental.Orchestration.Flow.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\..\src\Extensions\PromptTemplates.Liquid\PromptTemplates.Liquid.csproj" />

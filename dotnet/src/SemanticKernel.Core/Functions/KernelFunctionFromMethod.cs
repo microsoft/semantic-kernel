@@ -464,7 +464,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
         base(functionName, pluginName, description, parameters, returnParameter, additionalMetadata: additionalMetadata)
     {
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
     }
@@ -480,7 +480,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
         base(functionName, pluginName, description, parameters, jsonSerializerOptions, returnParameter, additionalMetadata: additionalMetadata)
     {
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
     }
@@ -519,7 +519,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             }
         }
 
-        Verify.ValidFunctionName(functionName);
+        KernelVerify.ValidFunctionName(functionName);
 
         // Build up a list of KernelParameterMetadata for the parameters we expect to be populated
         // from arguments. Some arguments are populated specially, not from arguments, and thus
@@ -540,7 +540,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         }
 
         // Check for param names conflict
-        Verify.ParametersUniqueness(argParameterViews);
+        KernelVerify.ParametersUniqueness(argParameterViews);
 
         // Get the return type and a marshaling func for the return value.
         (Type returnType, Func<Kernel, KernelFunction, object?, ValueTask<FunctionResult>> returnFunc) = GetReturnValueMarshalerDelegate(method);
