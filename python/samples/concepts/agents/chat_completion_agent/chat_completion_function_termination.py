@@ -46,7 +46,7 @@ class MenuPlugin:
         return "$9.99"
 
 
-def _create_kernel_with_chat_completionand_filter() -> Kernel:
+def _create_kernel_with_chat_completion_and_filter() -> Kernel:
     """A helper function to create a kernel with a chat completion service and a filter."""
     kernel = Kernel()
     kernel.add_service(AzureChatCompletion())
@@ -72,7 +72,7 @@ async def main():
     # 1. Create the agent with a kernel instance that contains
     # the auto function invocation filter and the AI service
     agent = ChatCompletionAgent(
-        kernel=_create_kernel_with_chat_completionand_filter(),
+        kernel=_create_kernel_with_chat_completion_and_filter(),
         name="Host",
         instructions="Answer questions about the menu.",
     )

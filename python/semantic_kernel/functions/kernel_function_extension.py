@@ -85,7 +85,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             self.plugins[plugin.name] = plugin
             return self.plugins[plugin.name]
         if not plugin_name:
-            raise ValueError("plugin_name must be provided if a plugin is not supplied.")
+            plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
         if not isinstance(plugin_name, str):
             raise TypeError("plugin_name must be a string.")
         if plugin:
@@ -103,7 +103,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
 
-    def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
+    def add_plugins(self, plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object]) -> None:
         """Adds a list of plugins to the kernel's collection of plugins.
 
         Args:
