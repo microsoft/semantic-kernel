@@ -119,6 +119,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 		src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs = src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs
 		src\InternalUtilities\src\Diagnostics\UnreachableException.cs = src\InternalUtilities\src\Diagnostics\UnreachableException.cs
 		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
+		src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs = src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs
+		src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs = src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
