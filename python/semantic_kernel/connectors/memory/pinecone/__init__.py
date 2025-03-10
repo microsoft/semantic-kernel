@@ -206,7 +206,10 @@ class PineconeCollection(VectorSearchBase[TKey, TModel], VectorizedSearchMixin[T
             raise VectorStoreInitializationException("Pinecone collection not found.")
         if "namespace" not in kwargs and self.namespace:
             kwargs["namespace"] = self.namespace
-        await self.index_client.upsert(records, **kwargs)
+        if isinstance(self.index_client, GRPCIndex):
+            self.index_client.upsert(records, **kwargs)
+        else:
+            await self.index_client.upsert(records, **kwargs)
 
     @override
     async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[Vector]:
@@ -215,7 +218,10 @@ class PineconeCollection(VectorSearchBase[TKey, TModel], VectorizedSearchMixin[T
             raise VectorStoreInitializationException("Pinecone collection not found.")
         if "namespace" not in kwargs and self.namespace:
             kwargs["namespace"] = self.namespace
-        response = await self.index_client.fetch(ids=keys, **kwargs)
+        if isinstance(self.index_client, GRPCIndex):
+            response = self.index_client.fetch(ids=keys, **kwargs)
+        else:
+            response = await self.index_client.fetch(ids=keys, **kwargs)
         return response.vectors.values()
 
     @override
@@ -225,7 +231,10 @@ class PineconeCollection(VectorSearchBase[TKey, TModel], VectorizedSearchMixin[T
             raise VectorStoreInitializationException("Pinecone collection not found.")
         if "namespace" not in kwargs and self.namespace:
             kwargs["namespace"] = self.namespace
-        await self.index_client.delete(ids=keys, **kwargs)
+        if isinstance(self.index_client, GRPCIndex):
+            self.index_client.delete(ids=keys, **kwargs)
+        else:
+            await self.index_client.delete(ids=keys, **kwargs)
 
     @override
     async def _inner_search(
@@ -280,11 +289,12 @@ class PineconeCollection(VectorSearchBase[TKey, TModel], VectorizedSearchMixin[T
     @override
     async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         """Exit the context manager."""
-        if isinstance(self.index_client, GRPCIndex):
-            self.index_client.close()
-        elif self.index_client is not None:
-            await self.index_client.close()
-        self.index_client = None
+        if self.index_client:
+            if isinstance(self.index_client, GRPCIndex):
+                self.index_client.close()
+            else:
+                await self.index_client.close()
+            self.index_client = None
 
 
 class PineconeStore(VectorStore):
