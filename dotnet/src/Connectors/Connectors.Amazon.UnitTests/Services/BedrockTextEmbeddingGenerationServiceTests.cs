@@ -2,12 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
-using Amazon.BedrockRuntime.Model;
-using Amazon.Runtime.Endpoints;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
@@ -81,7 +77,7 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v2:0";
-        List<string> prompts = new List<string> { "King", "Queen", "Prince" };
+        List<string> prompts = new() { "King", "Queen", "Prince" };
         IAmazonBedrockRuntime? nullBedrockRuntime = null;
 
         // Act & Assert

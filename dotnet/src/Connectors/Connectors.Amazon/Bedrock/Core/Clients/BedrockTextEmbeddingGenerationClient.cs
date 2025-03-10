@@ -2,10 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,8 +10,6 @@ using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Amazon.Core;
 

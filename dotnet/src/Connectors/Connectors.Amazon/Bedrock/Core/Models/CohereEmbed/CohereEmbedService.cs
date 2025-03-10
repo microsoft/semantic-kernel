@@ -31,6 +31,6 @@ internal class CohereEmbedGenerationService : IBedrockCommonBatchTextEmbeddingGe
             return [ReadOnlyMemory<float>.Empty];
         }
 
-        return responseBody.Embeddings.Select(item => new ReadOnlyMemory<float>([..item!])).ToList();
+        return responseBody.Embeddings.Select(item => new ReadOnlyMemory<float>([.. item!])).ToList();
     }
 }
