@@ -82,7 +82,7 @@ async def test_embedding_calls_with_parameters(mock_create, nvidia_unit_test_env
         model=ai_model_id,
         dimensions=embedding_dimensions,
         encoding_format="float",
-        extra_body={"input_type": "passage"},
+        extra_body={"input_type": "passage", "truncate": "NONE"},
     )
 
 
@@ -96,7 +96,10 @@ async def test_embedding_calls_with_settings(mock_create, nvidia_unit_test_env) 
     await nvidia_text_embedding.generate_embeddings(texts, settings=settings)
 
     mock_create.assert_awaited_once_with(
-        input=texts, model=ai_model_id, encoding_format="float", extra_body={"input_type": "passage"}
+        input=texts,
+        model=ai_model_id,
+        encoding_format="float",
+        extra_body={"input_type": "passage", "truncate": "NONE"}
     )
 
 
@@ -104,7 +107,6 @@ async def test_embedding_calls_with_settings(mock_create, nvidia_unit_test_env) 
 async def test_embedding_fail(mock_create, nvidia_unit_test_env) -> None:
     ai_model_id = "test_model_id"
     texts = ["hello world", "goodbye world"]
-    # embedding_dimensions = 1536
 
     nvidia_text_embedding = NvidiaTextEmbedding(
         ai_model_id=ai_model_id,
@@ -117,7 +119,7 @@ async def test_embedding_fail(mock_create, nvidia_unit_test_env) -> None:
 async def test_embedding_pes(mock_create, nvidia_unit_test_env) -> None:
     ai_model_id = "test_model_id"
     texts = ["hello world", "goodbye world"]
-    # embedding_dimensions = 1536
+
     pes = PromptExecutionSettings(service_id="x", ai_model_id=ai_model_id)
 
     nvidia_text_embedding = NvidiaTextEmbedding(ai_model_id=ai_model_id)
@@ -125,5 +127,8 @@ async def test_embedding_pes(mock_create, nvidia_unit_test_env) -> None:
     await nvidia_text_embedding.generate_raw_embeddings(texts, pes)
 
     mock_create.assert_awaited_once_with(
-        input=texts, model=ai_model_id, encoding_format="float", extra_body={"input_type": "passage"}
+        input=texts,
+        model=ai_model_id,
+        encoding_format="float",
+        extra_body={"input_type": "passage", "truncate": "NONE"}
     )
