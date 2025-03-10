@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
+using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
@@ -10,6 +11,9 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposable
 {
+    private readonly JoinableTaskFactory _joinableTaskFactory;
+    private readonly JoinableTaskContext _joinableTaskContext;
+
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
@@ -25,6 +29,9 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
             EventProxy = eventProxy,
             ExternalMessageChannel = externalMessageChannel,
         };
+
+        this._joinableTaskContext = new JoinableTaskContext();
+        this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
     }
 
     internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
@@ -53,7 +60,11 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     /// <summary>
     /// Disposes of the resources used by the process.
     /// </summary>
-    public void Dispose() => this._localProcess.Dispose();
+    public void Dispose()
+    {
+        this._joinableTaskFactory.Run(() => this._localProcess.DisposeAsync().AsTask());
+        this._joinableTaskContext.Dispose();
+    }
 
     /// <inheritdoc/>
     public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()

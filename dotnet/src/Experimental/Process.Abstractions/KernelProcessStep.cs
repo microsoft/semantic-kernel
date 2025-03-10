@@ -14,15 +14,6 @@ public class KernelProcessStep
     {
         return default;
     }
-
-    /// <summary>
-    /// Function triggered when deinitializing the KernelProcessStep
-    /// </summary>
-    /// <returns></returns>
-    public virtual ValueTask DeactivateAsync()
-    {
-        return default;
-    }
 }
 
 /// <summary>

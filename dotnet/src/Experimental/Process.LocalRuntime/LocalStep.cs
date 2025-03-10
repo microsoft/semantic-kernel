@@ -287,18 +287,10 @@ internal class LocalStep : IKernelProcessMessageChannel
     /// <summary>
     /// Deinitializes the step
     /// </summary>
-    public virtual async ValueTask DeinitializeStepAsync()
+    public virtual Task DeinitializeStepAsync()
     {
-        MethodInfo? derivedMethod = this._stepInfo.InnerStepType.GetMethod(nameof(KernelProcessStep.DeactivateAsync), BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-        if (derivedMethod != null && this._stepInstance != null)
-        {
-            ValueTask deactivateTask =
-                (ValueTask?)derivedMethod.Invoke(this._stepInstance, []) ??
-                throw new KernelException($"The derived DeactivateAsync method failed to complete for step {this.Name}.").Log(this._logger);
-
-            await deactivateTask.ConfigureAwait(false);
-        }
+        this._logger.LogInformation("Step {Name} has deinitialized", this.Name);
+        return Task.CompletedTask;
     }
 
     /// <summary>

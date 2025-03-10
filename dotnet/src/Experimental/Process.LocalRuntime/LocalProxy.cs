@@ -80,9 +80,12 @@ internal sealed class LocalProxy : LocalStep
         this._isInitialized = true;
     }
 
-    public override async ValueTask DeinitializeStepAsync()
+    /// <summary>
+    /// Deinitialization of the Proxy Step, calling <see cref="KernelProxyStep.DeactivateAsync(KernelProcessStepExternalContext)"/>
+    /// </summary>
+    /// <returns></returns>
+    public override async Task DeinitializeStepAsync()
     {
-        // Proxy Step is the only step it uses an overloaded DeactivateAsync with parameters
         MethodInfo? derivedMethod = this._stepInfo.InnerStepType.GetMethod(
             nameof(KernelProxyStep.DeactivateAsync),
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
