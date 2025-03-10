@@ -23,6 +23,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import (
     AzureCosmosDBNoSQLCollection,
 )
 from semantic_kernel.connectors.memory.chroma import ChromaCollection
+from semantic_kernel.connectors.memory.faiss import FaissCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
@@ -121,7 +122,7 @@ collection_name = "test"
 # since not all combinations are supported by all databases.
 # The values below might need to be changed for your collection to work.
 distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
-index_kind = IndexKind.HNSW
+index_kind = IndexKind.FLAT
 DataModel = get_data_model("array", index_kind, distance_function)
 
 # A list of VectorStoreRecordCollection that can be used.
@@ -190,6 +191,10 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         collection_name=collection_name,
     ),
     "chroma": lambda: ChromaCollection(data_model_type=DataModel, collection_name=collection_name),
+    "faiss": lambda: FaissCollection[str, DataModel](
+        collection_name=collection_name,
+        data_model_type=DataModel,
+    ),
 }
 
 
@@ -202,7 +207,6 @@ async def main(collection: str, use_azure_openai: bool):
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
         print_with_color(f"Creating {collection} collection!", Colors.CGREY)
-        await record_collection.delete_collection()
         await record_collection.create_collection_if_not_exists()
 
         record1 = DataModel(
