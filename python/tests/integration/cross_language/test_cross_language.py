@@ -5,6 +5,7 @@ import datetime
 import json
 import logging
 import os
+from collections.abc import AsyncGenerator
 
 import httpx
 import pytest
@@ -40,22 +41,39 @@ j2_prompt = '<message role="system">The current time is {{Time_Now()}}</message>
 
 
 class LoggingTransport(httpx.AsyncBaseTransport):
-    def __init__(self, inner: httpx.AsyncBaseTransport):
-        self.inner = inner
+    def __init__(self, inner=None):
+        self.inner = inner or httpx.AsyncHTTPTransport()
+        self.request_headers = {}
         self.request_content = None
+        self.response_headers = {}
+        self.response_content = None
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        logger.info(f"Request: {request.method} {request.url}")
-        if request.content:
-            self.request_content = request.content.decode("utf-8")
-            logger.info(f"Request Body: {self.request_content}")
-        elif request.stream:
-            stream_content = await request.stream.aread()
-            self.request_content = stream_content.decode("utf-8")
-            logger.info(f"Request Stream Content: {self.request_content}")
-            request.stream = httpx.AsyncByteStream(stream_content)
+        self.request_headers = dict(request.headers)
+        self.request_content = request.content.decode("utf-8") if request.content else None
 
-        return await self.inner.handle_async_request(request)
+        logger.info(f"Request URL: {request.url}")
+        logger.info(f"Request Headers: {self.request_headers}")
+        logger.info(f"Request Content: {self.request_content}")
+
+        response = await self.inner.handle_async_request(request)
+
+        raw_response_bytes = await response.aread()
+        self.response_headers = dict(response.headers)
+        self.response_content = raw_response_bytes.decode(response.encoding or "utf-8", errors="replace")
+
+        logger.info(f"Response Headers: {self.response_headers}")
+        logger.info(f"Response Content: {self.response_content}")
+
+        headers_without_encoding = {k: v for k, v in response.headers.items() if k.lower() != "content-encoding"}
+
+        return httpx.Response(
+            status_code=response.status_code,
+            headers=headers_without_encoding,
+            content=raw_response_bytes,
+            request=request,
+            extensions=response.extensions,
+        )
 
 
 class LoggingAsyncClient(httpx.AsyncClient):
@@ -64,8 +82,21 @@ class LoggingAsyncClient(httpx.AsyncClient):
         self.logging_transport = LoggingTransport(transport or httpx.AsyncHTTPTransport())
         super().__init__(*args, **kwargs, transport=self.logging_transport)
 
-    def get_request_content(self):
+    @property
+    def request_headers(self):
+        return self.logging_transport.request_headers
+
+    @property
+    def request_content(self):
         return self.logging_transport.request_content
+
+    @property
+    def response_headers(self):
+        return self.logging_transport.response_headers
+
+    @property
+    def response_content(self):
+        return self.logging_transport.response_content
 
 
 # endregion
@@ -74,13 +105,13 @@ class LoggingAsyncClient(httpx.AsyncClient):
 
 
 @pytest_asyncio.fixture
-async def async_client():
+async def async_clients() -> AsyncGenerator[tuple[AsyncOpenAI, LoggingAsyncClient], None]:
     openai_settings = OpenAISettings.create()
     logging_async_client = LoggingAsyncClient()
     async with AsyncOpenAI(
         api_key=openai_settings.api_key.get_secret_value(), http_client=logging_async_client
-    ) as async_client:
-        yield async_client
+    ) as client:
+        yield client, logging_async_client
 
 
 async def run_prompt(
@@ -206,11 +237,14 @@ class City:
         ),
     ],
 )
-async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, prompt, async_client):
+async def test_prompt_with_chat_roles(
+    is_inline, is_streaming, template_format, prompt, async_clients: tuple[AsyncOpenAI, LoggingAsyncClient]
+):
+    client, logging_async_client = async_clients
     ai_service = OpenAIChatCompletion(
         service_id="test",
         ai_model_id=OPENAI_MODEL_ID,
-        async_client=async_client,
+        async_client=client,
     )
 
     kernel = Kernel()
@@ -225,8 +259,11 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
         prompt=prompt,
     )
 
-    request_content = async_client._client.get_request_content()
+    request_content = logging_async_client.request_content
     assert request_content is not None
+
+    response_content = logging_async_client.response_content
+    assert response_content is not None
 
     obtained_object = json.loads(request_content)
     assert obtained_object is not None
@@ -307,11 +344,15 @@ async def test_prompt_with_chat_roles(is_inline, is_streaming, template_format, 
         ),
     ],
 )
-async def test_prompt_with_complex_objects(is_inline, is_streaming, template_format, prompt, async_client):
+async def test_prompt_with_complex_objects(
+    is_inline, is_streaming, template_format, prompt, async_clients: tuple[AsyncOpenAI, LoggingAsyncClient]
+):
+    client, logging_async_client = async_clients
+
     ai_service = OpenAIChatCompletion(
         service_id="default",
         ai_model_id=OPENAI_MODEL_ID,
-        async_client=async_client,
+        async_client=client,
     )
 
     kernel = Kernel()
@@ -327,8 +368,11 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
         arguments=KernelArguments(city=City("Seattle")),
     )
 
-    request_content = async_client._client.get_request_content()
+    request_content = logging_async_client.request_content
     assert request_content is not None
+
+    response_content = logging_async_client.response_content
+    assert response_content is not None
 
     obtained_object = json.loads(request_content)
     assert obtained_object is not None
@@ -372,11 +416,15 @@ async def test_prompt_with_complex_objects(is_inline, is_streaming, template_for
         pytest.param(False, True, "jinja2", j2_prompt, id="j2_non_inline_streaming"),
     ],
 )
-async def test_prompt_with_helper_functions(is_inline, is_streaming, template_format, prompt, async_client):
+async def test_prompt_with_helper_functions(
+    is_inline, is_streaming, template_format, prompt, async_clients: tuple[AsyncOpenAI, LoggingAsyncClient]
+):
+    client, logging_async_client = async_clients
+
     ai_service = OpenAIChatCompletion(
         service_id="default",
         ai_model_id=OPENAI_MODEL_ID,
-        async_client=async_client,
+        async_client=client,
     )
 
     kernel = Kernel()
@@ -403,8 +451,11 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
         arguments=KernelArguments(city="Seattle"),
     )
 
-    request_content = async_client._client.get_request_content()
+    request_content = logging_async_client.request_content
     assert request_content is not None
+
+    response_content = logging_async_client.response_content
+    assert response_content is not None
 
     obtained_object = json.loads(request_content)
     assert obtained_object is not None
@@ -441,11 +492,15 @@ async def test_prompt_with_helper_functions(is_inline, is_streaming, template_fo
         pytest.param(False, True, "jinja2", j2_simple_prompt, id="j2_non_inline_streaming"),
     ],
 )
-async def test_prompt_with_simple_variable(is_inline, is_streaming, template_format, prompt, async_client):
+async def test_prompt_with_simple_variable(
+    is_inline, is_streaming, template_format, prompt, async_clients: tuple[AsyncOpenAI, LoggingAsyncClient]
+):
+    client, logging_async_client = async_clients
+
     ai_service = OpenAIChatCompletion(
         service_id="default",
         ai_model_id=OPENAI_MODEL_ID,
-        async_client=async_client,
+        async_client=client,
     )
 
     kernel = Kernel()
@@ -461,8 +516,11 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
         arguments=KernelArguments(city="Seattle"),
     )
 
-    request_content = async_client._client.get_request_content()
+    request_content = logging_async_client.request_content
     assert request_content is not None
+
+    response_content = logging_async_client.response_content
+    assert response_content is not None
 
     obtained_object = json.loads(request_content)
     assert obtained_object is not None
@@ -499,11 +557,15 @@ async def test_prompt_with_simple_variable(is_inline, is_streaming, template_for
         pytest.param(False, True, "jinja2", simple_prompt, id="j2_non_inline_streaming"),
     ],
 )
-async def test_simple_prompt(is_inline, is_streaming, template_format, prompt, async_client):
+async def test_simple_prompt(
+    is_inline, is_streaming, template_format, prompt, async_clients: tuple[AsyncOpenAI, LoggingAsyncClient]
+):
+    client, logging_async_client = async_clients
+
     ai_service = OpenAIChatCompletion(
         service_id="default",
         ai_model_id=OPENAI_MODEL_ID,
-        async_client=async_client,
+        async_client=client,
     )
 
     kernel = Kernel()
@@ -518,8 +580,11 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt, a
         prompt=prompt,
     )
 
-    request_content = async_client._client.get_request_content()
+    request_content = logging_async_client.request_content
     assert request_content is not None
+
+    response_content = logging_async_client.response_content
+    assert response_content is not None
 
     obtained_object = json.loads(request_content)
     assert obtained_object is not None
@@ -588,11 +653,19 @@ async def test_simple_prompt(is_inline, is_streaming, template_format, prompt, a
         ),
     ],
 )
-async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kernel: Kernel, async_client):
+async def test_yaml_prompt(
+    is_streaming,
+    prompt_path,
+    expected_result_path,
+    kernel: Kernel,
+    async_clients: tuple[AsyncOpenAI, LoggingAsyncClient],
+):
+    client, logging_async_client = async_clients
+
     ai_service = OpenAIChatCompletion(
         service_id="default",
         ai_model_id=OPENAI_MODEL_ID,
-        async_client=async_client,
+        async_client=client,
     )
 
     kernel.add_service(ai_service)
@@ -604,8 +677,11 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 
     await run_function(kernel=kernel, is_streaming=is_streaming, function=function)
 
-    request_content = async_client._client.get_request_content()
+    request_content = logging_async_client.request_content
     assert request_content is not None
+
+    response_content = logging_async_client.response_content
+    assert response_content is not None
 
     obtained_object = json.loads(request_content)
     assert obtained_object is not None
@@ -629,7 +705,7 @@ async def test_yaml_prompt(is_streaming, prompt_path, expected_result_path, kern
 # region Test OpenAPI Plugin Load
 
 
-async def setup_openapi_function_call(kernel, function_name, arguments):
+async def setup_openapi_function_call(kernel: Kernel, function_name, arguments):
     from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
 
     openapi_spec_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data", "light_bulb_api.json")
@@ -733,7 +809,7 @@ async def test_openapi_put_light_by_id(kernel: Kernel):
 
     assert request_content.get("method") == "PUT"
     assert request_content.get("url") == "https://127.0.0.1/Lights/1"
-    assert request_content.get("body") == '{"hexColor": "11EE11"}'
+    assert request_content.get("body") == '{"hexColor":"11EE11"}'
 
 
 # endregion

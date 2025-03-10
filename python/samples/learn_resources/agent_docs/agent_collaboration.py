@@ -3,138 +3,143 @@
 import asyncio
 import os
 
+from semantic_kernel import Kernel
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.strategies.selection.kernel_function_selection_strategy import (
+from semantic_kernel.agents.strategies import (
     KernelFunctionSelectionStrategy,
-)
-from semantic_kernel.agents.strategies.termination.kernel_function_termination_strategy import (
     KernelFunctionTerminationStrategy,
 )
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatHistoryTruncationReducer
+from semantic_kernel.functions import KernelFunctionFromPrompt
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# agent group chat that utilizes a Reviewer Chat Completion       #
-# Agent along with a Writer Chat Completion Agent to              #
-# complete a user's task.                                         #
-###################################################################
+"""
+The following sample demonstrates how to create a simple,
+agent group chat that utilizes a Reviewer Chat Completion
+Agent along with a Writer Chat Completion Agent to
+complete a user's task.
 
+This is the full code sample for the Semantic Kernel Learn Site: How-To: Coordinate Agent Collaboration 
+    using Agent Group Chat
 
-class ApprovalTerminationStrategy(TerminationStrategy):
-    """A strategy for determining when an agent should terminate."""
+https://learn.microsoft.com/semantic-kernel/frameworks/agent/examples/example-agent-collaboration?pivots=programming-language-python
+"""
 
-    async def should_agent_terminate(self, agent, history):
-        """Check if the agent should terminate."""
-        return "approved" in history[-1].content.lower()
-
-
+# Define agent names
 REVIEWER_NAME = "Reviewer"
-COPYWRITER_NAME = "Writer"
+WRITER_NAME = "Writer"
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
+def create_kernel() -> Kernel:
+    """Creates a Kernel instance with an Azure OpenAI ChatCompletion service."""
     kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
+    kernel.add_service(service=AzureChatCompletion())
     return kernel
 
 
 async def main():
+    # Create a single kernel instance for all agents.
+    kernel = create_kernel()
+
+    # Create ChatCompletionAgents using the same kernel.
     agent_reviewer = ChatCompletionAgent(
-        service_id=REVIEWER_NAME,
-        kernel=_create_kernel_with_chat_completion(REVIEWER_NAME),
+        kernel=kernel,
         name=REVIEWER_NAME,
         instructions="""
-            Your responsibility is to review and identify how to improve user provided content.
-            If the user has providing input or direction for content already provided, specify how to 
-            address this input.
-            Never directly perform the correction or provide example.
-            Once the content has been updated in a subsequent response, you will review the content 
-            again until satisfactory.
-            Always copy satisfactory content to the clipboard using available tools and inform user.
+Your responsibility is to review and identify how to improve user provided content.
+If the user has provided input or direction for content already provided, specify how to address this input.
+Never directly perform the correction or provide an example.
+Once the content has been updated in a subsequent response, review it again until it is satisfactory.
 
-            RULES:
-            - Only identify suggestions that are specific and actionable.
-            - Verify previous suggestions have been addressed.
-            - Never repeat previous suggestions.
-            """,
+RULES:
+- Only identify suggestions that are specific and actionable.
+- Verify previous suggestions have been addressed.
+- Never repeat previous suggestions.
+""",
     )
 
     agent_writer = ChatCompletionAgent(
-        service_id=COPYWRITER_NAME,
-        kernel=_create_kernel_with_chat_completion(COPYWRITER_NAME),
-        name=COPYWRITER_NAME,
+        kernel=kernel,
+        name=WRITER_NAME,
         instructions="""
-            Your sole responsibility is to rewrite content according to review suggestions.
-
-            - Always apply all review direction.
-            - Always revise the content in its entirety without explanation.
-            - Never address the user.
-            """,
+Your sole responsibility is to rewrite content according to review suggestions.
+- Always apply all review directions.
+- Always revise the content in its entirety without explanation.
+- Never address the user.
+""",
     )
 
+    # Define a selection function to determine which agent should take the next turn.
     selection_function = KernelFunctionFromPrompt(
         function_name="selection",
         prompt=f"""
-        Determine which participant takes the next turn in a conversation based on the the most recent participant.
-        State only the name of the participant to take the next turn.
-        No participant should take more than one turn in a row.
-        
-        Choose only from these participants:
-        - {REVIEWER_NAME}
-        - {COPYWRITER_NAME}
-        
-        Always follow these rules when selecting the next participant:
-        - After user input, it is {COPYWRITER_NAME}'s turn.
-        - After {COPYWRITER_NAME} replies, it is {REVIEWER_NAME}'s turn.
-        - After {REVIEWER_NAME} provides feedback, it is {COPYWRITER_NAME}'s turn.
+Examine the provided RESPONSE and choose the next participant.
+State only the name of the chosen participant without explanation.
+Never choose the participant named in the RESPONSE.
 
-        History:
-        {{{{$history}}}}
-        """,
+Choose only from these participants:
+- {REVIEWER_NAME}
+- {WRITER_NAME}
+
+Rules:
+- If RESPONSE is user input, it is {REVIEWER_NAME}'s turn.
+- If RESPONSE is by {REVIEWER_NAME}, it is {WRITER_NAME}'s turn.
+- If RESPONSE is by {WRITER_NAME}, it is {REVIEWER_NAME}'s turn.
+
+RESPONSE:
+{{{{$lastmessage}}}}
+""",
     )
 
-    TERMINATION_KEYWORD = "yes"
+    # Define a termination function where the reviewer signals completion with "yes".
+    termination_keyword = "yes"
 
     termination_function = KernelFunctionFromPrompt(
         function_name="termination",
         prompt=f"""
-            Examine the RESPONSE and determine whether the content has been deemed satisfactory.
-            If content is satisfactory, respond with a single word without explanation: {TERMINATION_KEYWORD}.
-            If specific suggestions are being provided, it is not satisfactory.
-            If no correction is suggested, it is satisfactory.
+Examine the RESPONSE and determine whether the content has been deemed satisfactory.
+If the content is satisfactory, respond with a single word without explanation: {termination_keyword}.
+If specific suggestions are being provided, it is not satisfactory.
+If no correction is suggested, it is satisfactory.
 
-            RESPONSE:
-            {{{{$history}}}}
-            """,
+RESPONSE:
+{{{{$lastmessage}}}}
+""",
     )
 
+    history_reducer = ChatHistoryTruncationReducer(target_count=5)
+
+    # Create the AgentGroupChat with selection and termination strategies.
     chat = AgentGroupChat(
-        agents=[agent_writer, agent_reviewer],
+        agents=[agent_reviewer, agent_writer],
         selection_strategy=KernelFunctionSelectionStrategy(
+            initial_agent=agent_reviewer,
             function=selection_function,
-            kernel=_create_kernel_with_chat_completion("selection"),
-            result_parser=lambda result: str(result.value[0]) if result.value is not None else COPYWRITER_NAME,
-            agent_variable_name="agents",
-            history_variable_name="history",
+            kernel=kernel,
+            result_parser=lambda result: str(result.value[0]).strip() if result.value[0] is not None else WRITER_NAME,
+            history_variable_name="lastmessage",
+            history_reducer=history_reducer,
         ),
         termination_strategy=KernelFunctionTerminationStrategy(
             agents=[agent_reviewer],
             function=termination_function,
-            kernel=_create_kernel_with_chat_completion("termination"),
-            result_parser=lambda result: TERMINATION_KEYWORD in str(result.value[0]).lower(),
-            history_variable_name="history",
+            kernel=kernel,
+            result_parser=lambda result: termination_keyword in str(result.value[0]).lower(),
+            history_variable_name="lastmessage",
             maximum_iterations=10,
+            history_reducer=history_reducer,
         ),
     )
 
-    is_complete: bool = False
+    print(
+        "Ready! Type your input, or 'exit' to quit, 'reset' to restart the conversation. "
+        "You may pass in a file path using @<path_to_file>."
+    )
+
+    is_complete = False
     while not is_complete:
-        user_input = input("User:> ")
+        print()
+        user_input = input("User > ").strip()
         if not user_input:
             continue
 
@@ -147,26 +152,35 @@ async def main():
             print("[Conversation has been reset]")
             continue
 
-        if user_input.startswith("@") and len(input) > 1:
-            file_path = input[1:]
+        # Try to grab files from the script's current directory
+        if user_input.startswith("@") and len(user_input) > 1:
+            file_name = user_input[1:]
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(script_dir, file_name)
             try:
                 if not os.path.exists(file_path):
                     print(f"Unable to access file: {file_path}")
                     continue
-                with open(file_path) as file:
+                with open(file_path, encoding="utf-8") as file:
                     user_input = file.read()
             except Exception:
                 print(f"Unable to access file: {file_path}")
                 continue
 
-        await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=user_input))
+        # Add the current user_input to the chat
+        await chat.add_chat_message(message=user_input)
 
-        async for response in chat.invoke():
-            print(f"# {response.role} - {response.name or '*'}: '{response.content}'")
+        try:
+            async for response in chat.invoke():
+                if response is None or not response.name:
+                    continue
+                print()
+                print(f"# {response.name.upper()}:\n{response.content}")
+        except Exception as e:
+            print(f"Error during chat invocation: {e}")
 
-        if chat.is_complete:
-            is_complete = True
-            break
+        # Reset the chat's complete flag for the new conversation round.
+        chat.is_complete = False
 
 
 if __name__ == "__main__":

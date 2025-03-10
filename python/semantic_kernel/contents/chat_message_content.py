@@ -10,6 +10,7 @@ from defusedxml import ElementTree
 from pydantic import Field
 
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import (
     ANNOTATION_CONTENT_TAG,
@@ -48,7 +49,7 @@ TAG_CONTENT_MAP = {
     STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
 }
 
-ITEM_TYPES = (
+CMC_ITEM_TYPES = Annotated[
     AnnotationContent
     | BinaryContent
     | ImageContent
@@ -58,7 +59,10 @@ ITEM_TYPES = (
     | FileReferenceContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
-)
+    | AudioContent,
+    Field(discriminator=DISCRIMINATOR_FIELD),
+]
+
 
 logger = logging.getLogger(__name__)
 
@@ -83,11 +87,11 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
-    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
+    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(default=CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
-    items: list[Annotated[ITEM_TYPES, Field(discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
+    items: list[CMC_ITEM_TYPES] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
 
@@ -95,7 +99,7 @@ class ChatMessageContent(KernelContent):
     def __init__(
         self,
         role: AuthorRole,
-        items: list[ITEM_TYPES],
+        items: list[CMC_ITEM_TYPES],
         name: str | None = None,
         inner_content: Any | None = None,
         encoding: str | None = None,
@@ -122,7 +126,7 @@ class ChatMessageContent(KernelContent):
     def __init__(  # type: ignore
         self,
         role: AuthorRole,
-        items: list[ITEM_TYPES] | None = None,
+        items: list[CMC_ITEM_TYPES] | None = None,
         content: str | None = None,
         inner_content: Any | None = None,
         name: str | None = None,

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from html import escape
 from typing import TYPE_CHECKING
 
@@ -62,7 +63,7 @@ class PromptTemplateBase(KernelBaseModel, ABC):
             allow_dangerously_set_content = True
         return allow_dangerously_set_content
 
-    def _should_escape(self, name: str, input_variables: list["InputVariable"]) -> bool:
+    def _should_escape(self, name: str, input_variables: Sequence["InputVariable"]) -> bool:
         """Check if the variable should be escaped.
 
         If the PromptTemplate allows dangerously set content, then the variable will not be escaped,

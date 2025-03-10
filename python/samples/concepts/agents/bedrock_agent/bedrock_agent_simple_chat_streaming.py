@@ -4,17 +4,19 @@ import asyncio
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 
-# This sample shows how to interact with a Bedrock agent via streaming in the simplest way.
-# This sample uses the following main component(s):
-# - a Bedrock agent
-# You will learn how to create a new Bedrock agent and talk to it.
+"""
+This sample shows how to interact with a Bedrock agent via streaming in the simplest way.
+This sample uses the following main component(s):
+- a Bedrock agent
+You will learn how to create a new Bedrock agent and talk to it.
+"""
 
 AGENT_NAME = "semantic-kernel-bedrock-agent"
 INSTRUCTION = "You are a friendly assistant. You help people find information."
 
 
 async def main():
-    bedrock_agent = await BedrockAgent.create(AGENT_NAME, instructions=INSTRUCTION)
+    bedrock_agent = await BedrockAgent.create_and_prepare_agent(AGENT_NAME, instructions=INSTRUCTION)
     session_id = BedrockAgent.create_session_id()
 
     try:

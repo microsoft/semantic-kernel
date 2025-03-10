@@ -11,6 +11,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+
 #pragma warning restore IDE0005 // Using directive is unnecessary
 using Moq;
 using Xunit;
@@ -21,6 +22,7 @@ public class FunctionCallsProcessorTests
 {
     private readonly FunctionCallsProcessor _sut = new();
     private readonly FunctionChoiceBehaviorOptions _functionChoiceBehaviorOptions = new();
+    private readonly PromptExecutionSettings _promptExecutionSettings = new();
 
     [Fact]
     public void ItShouldReturnNoConfigurationIfNoBehaviorProvided()
@@ -94,6 +96,7 @@ public class FunctionCallsProcessorTests
 
             await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: [],
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -123,6 +126,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -151,6 +155,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -184,6 +189,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -212,6 +218,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => false, // Return false to simulate that the function is not advertised
@@ -240,6 +247,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -281,6 +289,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -347,6 +356,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -436,6 +446,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -484,6 +495,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -536,6 +548,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -588,6 +601,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -634,6 +648,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -678,6 +693,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -732,6 +748,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -767,6 +784,7 @@ public class FunctionCallsProcessorTests
         // Act
         await this._sut.ProcessFunctionCallsAsync(
                 chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
                 chatHistory: chatHistory,
                 requestIndex: 0,
                 checkIfFunctionAdvertised: (_) => true,
@@ -835,6 +853,40 @@ public class FunctionCallsProcessorTests
 
         // Assert
         Assert.Equal("{\"Text\":\"ﾃｽﾄ\"}", result);
+    }
+
+    [Fact]
+    public async Task ItShouldPassPromptExecutionSettingsToAutoFunctionInvocationFilterAsync()
+    {
+        // Arrange
+        var plugin = KernelPluginFactory.CreateFromFunctions("MyPlugin", [KernelFunctionFactory.CreateFromMethod(() => { }, "Function1")]);
+
+        AutoFunctionInvocationContext? actualContext = null;
+
+        Kernel kernel = CreateKernel(plugin, (context, next) =>
+        {
+            actualContext = context;
+            return Task.CompletedTask;
+        });
+
+        var chatMessageContent = new ChatMessageContent();
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", arguments: new KernelArguments() { ["parameter"] = "function1-result" }));
+
+        // Act
+        await this._sut.ProcessFunctionCallsAsync(
+                chatMessageContent: chatMessageContent,
+                executionSettings: this._promptExecutionSettings,
+                chatHistory: new ChatHistory(),
+                requestIndex: 0,
+                checkIfFunctionAdvertised: (_) => true,
+                options: this._functionChoiceBehaviorOptions,
+                kernel: kernel!,
+                isStreaming: false,
+                cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(actualContext);
+        Assert.Same(this._promptExecutionSettings, actualContext!.ExecutionSettings);
     }
 
     private sealed class AutoFunctionInvocationFilter(

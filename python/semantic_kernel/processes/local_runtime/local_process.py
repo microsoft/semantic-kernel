@@ -24,7 +24,7 @@ from semantic_kernel.processes.local_runtime.local_event import (
 from semantic_kernel.processes.local_runtime.local_message import LocalMessage
 from semantic_kernel.processes.local_runtime.local_message_factory import LocalMessageFactory
 from semantic_kernel.processes.local_runtime.local_step import LocalStep
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class LocalProcess(LocalStep):
     """A local process that contains a collection of steps."""
 
@@ -135,7 +135,7 @@ class LocalProcess(LocalStep):
                 process = LocalProcess(
                     process=step,
                     kernel=self.kernel,
-                    factorie=self.factories,
+                    factories=self.factories,
                     parent_process_id=self.id,
                 )
 
@@ -145,7 +145,7 @@ class LocalProcess(LocalStep):
                 assert step.state and step.state.id is not None  # nosec
 
                 # Create a LocalStep for the step
-                local_step = LocalStep(
+                local_step = LocalStep(  # type: ignore
                     step_info=step,
                     kernel=self.kernel,
                     factories=self.factories,
@@ -206,7 +206,7 @@ class LocalProcess(LocalStep):
         """Builds a KernelProcess from the current LocalProcess."""
         from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
 
-        process_state = KernelProcessState(self.name, self.id)
+        process_state = KernelProcessState(name=self.name, id=self.id)
         step_tasks = [step.to_kernel_process_step_info() for step in self.steps]
         steps = await asyncio.gather(*step_tasks)
         return KernelProcess(state=process_state, steps=steps, edges=self.output_edges)
@@ -229,15 +229,16 @@ class LocalProcess(LocalStep):
         """Processes events emitted by the given step and enqueues them."""
         all_step_events = step.get_all_events()
         for step_event in all_step_events:
+            # must come first because emitting the step event modifies its namespace
+            for edge in step.get_edge_for_event(step_event.id):
+                message = LocalMessageFactory.create_from_edge(edge, step_event.data)
+                message_channel.put(message)
+
             if step_event.visibility == KernelProcessEventVisibility.Public:
                 if isinstance(step_event, KernelProcessEvent):
                     await self.emit_event(step_event)  # type: ignore
                 elif isinstance(step_event, LocalEvent):
                     await self.emit_local_event(step_event)  # type: ignore
-
-            for edge in step.get_edge_for_event(step_event.id):
-                message = LocalMessageFactory.create_from_edge(edge, step_event.data)
-                message_channel.put(message)
 
     def dispose(self):
         """Clean up resources."""

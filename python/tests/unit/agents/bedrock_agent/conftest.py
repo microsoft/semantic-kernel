@@ -79,6 +79,18 @@ def bedrock_agent_model_with_id_prepared_dict():
 
 
 @pytest.fixture
+def bedrock_agent_model_with_id_preparing_dict():
+    return {
+        "agent": {
+            "agentId": "test_agent_id",
+            "agentName": "test_agent_name",
+            "foundationModel": "test_foundation_model",
+            "agentStatus": "PREPARING",
+        }
+    }
+
+
+@pytest.fixture
 def bedrock_agent_model_with_id_not_prepared_dict():
     return {
         "agent": {
@@ -113,6 +125,13 @@ def bedrock_action_group_mode_dict():
 @pytest.fixture
 def simple_response():
     return "test response"
+
+
+@pytest.fixture
+def bedrock_agent_non_streaming_empty_response():
+    return {
+        "completion": [],
+    }
 
 
 @pytest.fixture

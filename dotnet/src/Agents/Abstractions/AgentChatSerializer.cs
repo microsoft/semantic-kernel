@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,6 +12,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Serializes and deserializes an <see cref="AgentChat"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class AgentChatSerializer
 {
     private readonly AgentChatState _state;

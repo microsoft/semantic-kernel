@@ -58,8 +58,6 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
 
         while (true)
         {
-            const string LOAD_API_MANIFEST_PLUGIN = "Load API Manifest plugin(s)";
-            const string LOAD_ALL_API_MANIFEST_PLUGINS = "Load all available API Manifest plugins";
             const string LOAD_COPILOT_AGENT_PLUGIN = "Load Copilot Agent plugin(s)";
             const string LOAD_ALL_COPILOT_AGENT_PLUGINS = "Load all available Copilot Agent plugins";
             const string UNLOAD_ALL_PLUGINS = "Unload all plugins";
@@ -74,7 +72,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
                 new SelectionPrompt<string>()
                     .Title("SELECT AN OPTION:")
                     .PageSize(10)
-                    .AddChoices([LOAD_API_MANIFEST_PLUGIN, LOAD_ALL_API_MANIFEST_PLUGINS, LOAD_COPILOT_AGENT_PLUGIN, LOAD_ALL_COPILOT_AGENT_PLUGINS, UNLOAD_ALL_PLUGINS, SHOW_COPILOT_AGENT_MANIFEST, EXECUTE_GOAL, LIST_LOADED_PLUGINS, LIST_LOADED_PLUGINS_WITH_FUNCTIONS, LIST_LOADED_PLUGINS_WITH_FUNCTIONS_AND_PARAMETERS, EXIT]));
+                    .AddChoices([LOAD_COPILOT_AGENT_PLUGIN, LOAD_ALL_COPILOT_AGENT_PLUGINS, UNLOAD_ALL_PLUGINS, SHOW_COPILOT_AGENT_MANIFEST, EXECUTE_GOAL, LIST_LOADED_PLUGINS, LIST_LOADED_PLUGINS_WITH_FUNCTIONS, LIST_LOADED_PLUGINS_WITH_FUNCTIONS_AND_PARAMETERS, EXIT]));
 
             switch (selection)
             {
@@ -392,31 +390,55 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
         [
             "@odata.type",
             "attachments",
+            "allowNewTimeProposals",
             "bccRecipients",
             "bodyPreview",
+            "calendar",
             "categories",
             "ccRecipients",
+            "changeKey",
             "conversationId",
+            "coordinates",
             "conversationIndex",
+            "createdDateTime",
+            "discriminator",
+            "lastModifiedDateTime",
+            "locations",
             "extensions",
             "flag",
             "from",
             "hasAttachments",
+            "iCalUId",
             "id",
             "inferenceClassification",
             "internetMessageHeaders",
+            "instances",
+            "isCancelled",
             "isDeliveryReceiptRequested",
             "isDraft",
+            "isOrganizer",
             "isRead",
             "isReadReceiptRequested",
             "multiValueExtendedProperties",
+            "onlineMeeting",
+            "onlineMeetingProvider",
+            "onlineMeetingUrl",
+            "organizer",
+            "originalStart",
             "parentFolderId",
+            "range",
             "receivedDateTime",
+            "recurrence",
             "replyTo",
             "sender",
             "sentDateTime",
+            "seriesMasterId",
             "singleValueExtendedProperties",
+            "transactionId",
+            "time",
             "uniqueBody",
+            "uniqueId",
+            "uniqueIdType",
             "webLink",
         ],
         StringComparer.OrdinalIgnoreCase
@@ -477,8 +499,9 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
 #pragma warning restore SKEXP0040
-        if ("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
+        if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
+            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
+            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;

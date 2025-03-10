@@ -2,9 +2,15 @@
 
 from typing import Any
 
-from transformers import GenerationConfig
-
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+
+try:
+    from transformers import GenerationConfig
+
+    ready = True
+except ImportError:
+    GenerationConfig = Any
+    ready = False
 
 
 class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
@@ -19,8 +25,10 @@ class HuggingFacePromptExecutionSettings(PromptExecutionSettings):
     temperature: float = 1.0
     top_p: float = 1.0
 
-    def get_generation_config(self) -> GenerationConfig:
+    def get_generation_config(self) -> "GenerationConfig":
         """Get the generation config."""
+        if not ready:
+            raise ImportError("transformers is not installed.")
         return GenerationConfig(
             **self.model_dump(
                 include={"max_new_tokens", "pad_token_id", "eos_token_id", "temperature", "top_p"},

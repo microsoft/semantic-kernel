@@ -4,11 +4,10 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -77,34 +76,41 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 
 async def main():
+    kernel = _create_kernel_with_chat_completion("artdirector")
+    settings = kernel.get_prompt_execution_settings_from_service_id(service_id="artdirector")
+    # Configure the function choice behavior to auto invoke kernel functions
+    settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
+    agent_reviewer = ChatCompletionAgent(
+        kernel=kernel,
+        name=REVIEWER_NAME,
+        instructions=REVIEWER_INSTRUCTIONS,
+        arguments=KernelArguments(settings=settings),
+    )
+
+    # Create the Assistant Agent using Azure OpenAI resources
+    client, model = AzureAssistantAgent.setup_resources()
+
+    # Create the assistant definition
+    definition = await client.beta.assistants.create(
+        model=model,
+        name=COPYWRITER_NAME,
+        instructions=COPYWRITER_INSTRUCTIONS,
+    )
+
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    agent_writer = AzureAssistantAgent(
+        client=client,
+        definition=definition,
+    )
+
+    chat = AgentGroupChat(
+        agents=[agent_writer, agent_reviewer],
+        termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
+    )
+
+    input = "Write copy based on the food specials."
     try:
-        kernel = _create_kernel_with_chat_completion("artdirector")
-        settings = kernel.get_prompt_execution_settings_from_service_id(service_id="artdirector")
-        # Configure the function choice behavior to auto invoke kernel functions
-        settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
-        agent_reviewer = ChatCompletionAgent(
-            service_id="artdirector",
-            kernel=kernel,
-            name=REVIEWER_NAME,
-            instructions=REVIEWER_INSTRUCTIONS,
-            arguments=KernelArguments(settings=settings),
-        )
-
-        agent_writer = await OpenAIAssistantAgent.create(
-            service_id="copywriter",
-            kernel=Kernel(),
-            name=COPYWRITER_NAME,
-            instructions=COPYWRITER_INSTRUCTIONS,
-        )
-
-        chat = AgentGroupChat(
-            agents=[agent_writer, agent_reviewer],
-            termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
-        )
-
-        input = "Write copy based on the food specials."
-
-        await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
+        await chat.add_chat_message(input)
         print(f"# {AuthorRole.USER}: '{input}'")
 
         async for content in chat.invoke():
@@ -112,7 +118,7 @@ async def main():
 
         print(f"# IS COMPLETE: {chat.is_complete}")
     finally:
-        await agent_writer.delete()
+        await agent_writer.client.beta.assistants.delete(agent_writer.id)
 
 
 if __name__ == "__main__":

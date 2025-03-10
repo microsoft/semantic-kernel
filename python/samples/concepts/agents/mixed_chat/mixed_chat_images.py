@@ -3,20 +3,18 @@
 import asyncio
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
+from semantic_kernel.agents.open_ai import AzureAssistantAgent
 from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.annotation_content import AnnotationContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI, a chat completion  #
-# agent and have them participate in a group chat working with      #
-# image content.                                                    #
-#####################################################################
+"""
+The following sample demonstrates how to create an OpenAI
+assistant using either Azure OpenAI or OpenAI, a chat completion
+agent and have them participate in a group chat working with
+image content.
+"""
 
 
 def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
@@ -25,71 +23,83 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
     return kernel
 
 
-async def invoke_agent(
-    chat: AgentGroupChat, agent: ChatCompletionAgent | OpenAIAssistantAgent, input: str | None = None
-) -> None:
-    """Invoke the agent with the user input."""
-    if input:
-        await chat.add_chat_message(message=ChatMessageContent(role=AuthorRole.USER, content=input))
-        print(f"# {AuthorRole.USER}: '{input}'")
-
-    async for content in chat.invoke(agent=agent):
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
-        if len(content.items) > 0:
-            for item in content.items:
-                if isinstance(item, AnnotationContent):
-                    print(f"\n`{item.quote}` => {item.file_id}")
-                    response_content = await agent.client.files.content(item.file_id)
-                    print(response_content.text)
-
-
 async def main():
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
+
+    # Get the code interpreter tool and resources
+    code_interpreter_tool, code_interpreter_resources = AzureAssistantAgent.configure_code_interpreter_tool()
+
+    # Create the assistant definition
+    definition = await client.beta.assistants.create(
+        model=model,
+        name="Analyst",
+        instructions="Create charts as requested without explanation",
+        tools=code_interpreter_tool,
+        tool_resources=code_interpreter_resources,
+    )
+
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    analyst_agent = AzureAssistantAgent(
+        client=client,
+        definition=definition,
+    )
+
+    service_id = "summary"
+    summary_agent = ChatCompletionAgent(
+        kernel=_create_kernel_with_chat_completion(service_id=service_id),
+        instructions="Summarize the entire conversation for the user in natural language.",
+        name="Summarizer",
+    )
+
+    # Create the AgentGroupChat object, which will manage the chat between the agents
+    # We don't always need to specify the agents in the chat up front
+    # As shown below, calling `chat.invoke(agent=<agent>)` will automatically add the
+    # agent to the chat
+    chat = AgentGroupChat()
+
     try:
-        ANALYST_NAME = "Analyst"
-        ANALYST_INSTRUCTIONS = "Create charts as requested without explanation."
-        analyst_agent = await AzureAssistantAgent.create(
-            kernel=Kernel(),
-            enable_code_interpreter=True,
-            name=ANALYST_NAME,
-            instructions=ANALYST_INSTRUCTIONS,
+        user_and_agent_inputs = (
+            (
+                """
+                Graph the percentage of storm events by state using a pie chart:
+
+                    State, StormCount
+                    TEXAS, 4701
+                    KANSAS, 3166
+                    IOWA, 2337
+                    ILLINOIS, 2022
+                    MISSOURI, 2016
+                    GEORGIA, 1983
+                    MINNESOTA, 1881
+                    WISCONSIN, 1850
+                    NEBRASKA, 1766
+                    NEW YORK, 1750
+                """.strip(),
+                analyst_agent,
+            ),
+            (None, summary_agent),
         )
 
-        SUMMARIZER_NAME = "Summarizer"
-        SUMMARIZER_INSTRUCTIONS = "Summarize the entire conversation for the user in natural language."
-        service_id = "summary"
-        summary_agent = ChatCompletionAgent(
-            service_id=service_id,
-            kernel=_create_kernel_with_chat_completion(service_id=service_id),
-            instructions=SUMMARIZER_INSTRUCTIONS,
-            name=SUMMARIZER_NAME,
-        )
+        for input, agent in user_and_agent_inputs:
+            if input:
+                await chat.add_chat_message(input)
+                print(f"# {AuthorRole.USER}: '{input}'")
 
-        chat = AgentGroupChat()
-
-        await invoke_agent(
-            chat=chat,
-            agent=analyst_agent,
-            input="""
-            Graph the percentage of storm events by state using a pie chart:
-
-                State, StormCount
-                TEXAS, 4701
-                KANSAS, 3166
-                IOWA, 2337
-                ILLINOIS, 2022
-                MISSOURI, 2016
-                GEORGIA, 1983
-                MINNESOTA, 1881
-                WISCONSIN, 1850
-                NEBRASKA, 1766
-                NEW YORK, 1750
-            """,
-        )
-        await invoke_agent(chat=chat, agent=summary_agent)
+            async for content in chat.invoke(agent=agent):
+                print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+                if len(content.items) > 0:
+                    for item in content.items:
+                        if (
+                            isinstance(agent, AzureAssistantAgent)
+                            and isinstance(item, AnnotationContent)
+                            and item.file_id
+                        ):
+                            print(f"\n`{item.quote}` => {item.file_id}")
+                            response_content = await agent.client.files.content(item.file_id)
+                            print(response_content.text)
     finally:
-        if analyst_agent is not None:
-            [await analyst_agent.delete_file(file_id=file_id) for file_id in analyst_agent.code_interpreter_file_ids]
-            await analyst_agent.delete()
+        await client.beta.assistants.delete(analyst_agent.id)
 
 
 if __name__ == "__main__":

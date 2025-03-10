@@ -2,14 +2,20 @@
 
 
 import asyncio
+import logging
+import sys
 import uuid
 from collections.abc import AsyncIterable
-from functools import reduce
+from functools import partial, reduce
 from typing import Any, ClassVar
 
 from pydantic import ValidationError
 
-from semantic_kernel.agents.agent import Agent
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 from semantic_kernel.agents.bedrock.action_group_utils import (
     parse_function_result_contents,
     parse_return_control_payload,
@@ -18,6 +24,8 @@ from semantic_kernel.agents.bedrock.bedrock_agent_base import BedrockAgentBase
 from semantic_kernel.agents.bedrock.bedrock_agent_settings import BedrockAgentSettings
 from semantic_kernel.agents.bedrock.models.bedrock_agent_event_type import BedrockAgentEventType
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
+from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
+from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.binary_content import BinaryContent
@@ -29,58 +37,116 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.experimental_decorator import experimental_class
-from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import trace_agent_invocation
+from semantic_kernel.utils.async_utils import run_in_executor
+from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
+)
+
+logger = logging.getLogger(__name__)
 
 
-@experimental_class
-class BedrockAgent(BedrockAgentBase, Agent):
+@experimental
+class BedrockAgent(BedrockAgentBase):
     """Bedrock Agent.
 
     Manages the interaction with Amazon Bedrock Agent Service.
     """
 
-    channel_type: ClassVar[type[BedrockAgentChannel]] = BedrockAgentChannel
+    channel_type: ClassVar[type[AgentChannel]] = BedrockAgentChannel
 
     def __init__(
         self,
-        name: str,
+        agent_model: BedrockAgentModel | dict[str, Any],
         *,
-        id: str | None = None,
-        agent_resource_role_arn: str | None = None,
-        foundation_model: str | None = None,
-        kernel: Kernel | None = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         arguments: KernelArguments | None = None,
-        instructions: str | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
+        bedrock_runtime_client: Any | None = None,
+        bedrock_client: Any | None = None,
+        **kwargs,
     ) -> None:
         """Initialize the Bedrock Agent.
 
         Note that this only creates the agent object and does not create the agent in the service.
 
         Args:
-            name (str): The name of the agent.
-            id (str, optional): The unique identifier of the agent.
-            agent_resource_role_arn (str, optional): The ARN of the agent resource role.
-                Overrides the one in the env file.
-            foundation_model (str, optional): The foundation model. Overrides the one in the env file.
-            kernel (Kernel, optional): The kernel to use.
+            agent_model (BedrockAgentModel | dict[str, Any]): The agent model.
             function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
                 the kernel functions and filters.
+            kernel (Kernel, optional): The kernel to use.
+            plugins (list[KernelPlugin | object] | dict[str, KernelPlugin | object], optional): The plugins to use.
             arguments (KernelArguments, optional): The kernel arguments.
                 Invoke method arguments take precedence over the arguments provided here.
+            bedrock_runtime_client: The Bedrock Runtime Client.
+            bedrock_client: The Bedrock Client.
+            **kwargs: Additional keyword arguments.
+        """
+        args: dict[str, Any] = {
+            "agent_model": agent_model,
+            **kwargs,
+        }
+
+        if function_choice_behavior:
+            args["function_choice_behavior"] = function_choice_behavior
+        if kernel:
+            args["kernel"] = kernel
+        if plugins:
+            args["plugins"] = plugins
+        if arguments:
+            args["arguments"] = arguments
+        if bedrock_runtime_client:
+            args["bedrock_runtime_client"] = bedrock_runtime_client
+        if bedrock_client:
+            args["bedrock_client"] = bedrock_client
+
+        super().__init__(**args)
+
+    # region convenience class methods
+
+    @classmethod
+    async def create_and_prepare_agent(
+        cls,
+        name: str,
+        instructions: str,
+        *,
+        agent_resource_role_arn: str | None = None,
+        foundation_model: str | None = None,
+        bedrock_runtime_client: Any | None = None,
+        bedrock_client: Any | None = None,
+        kernel: Kernel | None = None,
+        plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
+        function_choice_behavior: FunctionChoiceBehavior | None = None,
+        arguments: KernelArguments | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> "BedrockAgent":
+        """Create a new agent asynchronously.
+
+        This is a convenience method that creates an instance of BedrockAgent and then creates the agent on the service.
+
+        Args:
+            name (str): The name of the agent.
             instructions (str, optional): The instructions for the agent.
+            agent_resource_role_arn (str, optional): The ARN of the agent resource role.
+            foundation_model (str, optional): The foundation model.
+            bedrock_runtime_client (Any, optional): The Bedrock Runtime Client.
+            bedrock_client (Any, optional): The Bedrock Client.
+            kernel (Kernel, optional): The kernel to use.
+            plugins (list[KernelPlugin | object] | dict[str, KernelPlugin | object], optional): The plugins to use.
+            function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
+                the kernel functions and filters. Only FunctionChoiceType.AUTO is supported.
+            arguments (KernelArguments, optional): The kernel arguments.
             prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
-                Cannot be set if instructions is set.
             env_file_path (str, optional): The path to the environment file.
             env_file_encoding (str, optional): The encoding of the environment file.
+
+        Returns:
+            An instance of BedrockAgent with the created agent.
         """
         try:
             bedrock_agent_settings = BedrockAgentSettings.create(
@@ -92,149 +158,42 @@ class BedrockAgent(BedrockAgentBase, Agent):
         except ValidationError as e:
             raise AgentInitializationException("Failed to initialize the Amazon Bedrock Agent settings.") from e
 
-        bedrock_agent_model = BedrockAgentModel(
-            agent_id=id,
-            agent_name=name,
-            foundation_model=bedrock_agent_settings.foundation_model,
-        )
+        import boto3
+        from botocore.exceptions import ClientError
 
-        prompt_template: PromptTemplateBase | None = None
-        if instructions and prompt_template_config and prompt_template_config.template:
-            raise AgentInitializationException("Cannot set both instructions and prompt_template_config.template.")
-        if prompt_template_config:
-            prompt_template = TEMPLATE_FORMAT_MAP[prompt_template_config.template_format](
-                prompt_template_config=prompt_template_config
+        bedrock_runtime_client = bedrock_runtime_client or boto3.client("bedrock-agent-runtime")
+        bedrock_client = bedrock_client or boto3.client("bedrock-agent")
+
+        try:
+            response = await run_in_executor(
+                None,
+                partial(
+                    bedrock_client.create_agent,
+                    agentName=name,
+                    foundationModel=bedrock_agent_settings.foundation_model,
+                    agentResourceRoleArn=bedrock_agent_settings.agent_resource_role_arn,
+                    instruction=instructions,
+                ),
             )
+        except ClientError as e:
+            logger.error(f"Failed to create agent {name}.")
+            raise AgentInitializationException("Failed to create the Amazon Bedrock Agent.") from e
 
-        args: dict[str, Any] = {
-            "agent_resource_role_arn": bedrock_agent_settings.agent_resource_role_arn,
-            "name": name,
-            "agent_model": bedrock_agent_model,
-        }
-        if id:
-            args["id"] = id
-        if instructions:
-            args["instructions"] = instructions
-        if kernel:
-            args["kernel"] = kernel
-        if function_choice_behavior:
-            args["function_choice_behavior"] = function_choice_behavior
-        if arguments:
-            args["arguments"] = arguments
-        if prompt_template:
-            args["prompt_template"] = prompt_template
-
-        super().__init__(**args)
-
-    # region convenience class methods
-
-    @classmethod
-    async def create(
-        cls,
-        name: str,
-        *,
-        agent_resource_role_arn: str | None = None,
-        foundation_model: str | None = None,
-        kernel: Kernel | None = None,
-        function_choice_behavior: FunctionChoiceBehavior | None = None,
-        arguments: KernelArguments | None = None,
-        instructions: str | None = None,
-        prompt_template_config: PromptTemplateConfig | None = None,
-        enable_code_interpreter: bool | None = None,
-        enable_user_input: bool | None = None,
-        enable_kernel_function: bool | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
-    ) -> "BedrockAgent":
-        """Create a new agent asynchronously.
-
-        This is a convenience method that creates an instance of BedrockAgent and then creates the agent on the service.
-
-        Args:
-            name (str): The name of the agent.
-            agent_resource_role_arn (str, optional): The ARN of the agent resource role.
-            foundation_model (str, optional): The foundation model.
-            kernel (Kernel, optional): The kernel to use.
-            function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
-                the kernel functions and filters.
-            arguments (KernelArguments, optional): The kernel arguments.
-            instructions (str, optional): The instructions for the agent.
-            prompt_template_config (PromptTemplateConfig, optional): The prompt template configuration.
-            enable_code_interpreter (bool, optional): Enable code interpretation.
-            enable_user_input (bool, optional): Enable user input.
-            enable_kernel_function (bool, optional): Enable kernel function.
-            env_file_path (str, optional): The path to the environment file.
-            env_file_encoding (str, optional): The encoding of the environment file.
-
-        Returns:
-            An instance of BedrockAgent with the created agent.
-        """
         bedrock_agent = cls(
-            name,
-            agent_resource_role_arn=agent_resource_role_arn,
-            foundation_model=foundation_model,
-            kernel=kernel,
+            response["agent"],
             function_choice_behavior=function_choice_behavior,
+            kernel=kernel,
+            plugins=plugins,
             arguments=arguments,
-            instructions=instructions,
-            prompt_template_config=prompt_template_config,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
+            bedrock_runtime_client=bedrock_runtime_client,
+            bedrock_client=bedrock_client,
         )
 
-        return await bedrock_agent.create_agent(
-            enable_code_interpreter=enable_code_interpreter,
-            enable_user_input=enable_user_input,
-            enable_kernel_function=enable_kernel_function,
-        )
-
-    @classmethod
-    async def retrieve(
-        cls,
-        id: str,
-        name: str,
-        *,
-        agent_resource_role_arn: str | None = None,
-        kernel: Kernel | None = None,
-        function_choice_behavior: FunctionChoiceBehavior | None = None,
-        env_file_path: str | None = None,
-        env_file_encoding: str | None = None,
-    ) -> "BedrockAgent":
-        """Retrieve an agent asynchronously.
-
-        This is a convenience method that creates an instance of BedrockAgent and
-        then retrieves an existing agent from the service.
-
-        Note that:
-        1. If the agent has existing action groups that require control returned to the user,
-        a kernel with the required functions must be provided.
-        2. If the agent has not been prepared, client code must prepare the agent by calling `prepare_agent()`.
-
-        If client code want to enable the available action groups, it can call the respective methods:
-        - `create_code_interpreter_action_group()`
-        - `create_user_input_action_group()`
-        - `create_kernel_function_action_group()`
-
-        Args:
-            id (str): The unique identifier of the agent.
-            name (str): The name of the agent.
-            agent_resource_role_arn (str, optional): The ARN of the agent resource role.
-            kernel (Kernel, optional): The kernel to use.
-            function_choice_behavior (FunctionChoiceBehavior, optional): The function choice behavior for accessing
-                the kernel functions and filters.
-            env_file_path (str, optional): The path to the environment file.
-            env_file_encoding (str, optional): The encoding of the environment file.
-        """
-        bedrock_agent = cls(
-            name,
-            id=id,
-            agent_resource_role_arn=agent_resource_role_arn,
-            kernel=kernel,
-            function_choice_behavior=function_choice_behavior,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-        bedrock_agent.agent_model = await bedrock_agent._get_agent()
+        # The agent will first enter the CREATING status.
+        # When the operation finishes, it will enter the NOT_PREPARED status.
+        # We need to wait for the agent to reach the NOT_PREPARED status before we can prepare it.
+        await bedrock_agent._wait_for_agent_status(BedrockAgentStatus.NOT_PREPARED)
+        await bedrock_agent.prepare_agent_and_wait_until_prepared()
 
         return bedrock_agent
 
@@ -252,50 +211,9 @@ class BedrockAgent(BedrockAgentBase, Agent):
 
     # endregion
 
-    async def create_agent(
-        self,
-        *,
-        enable_code_interpreter: bool | None = None,
-        enable_user_input: bool | None = None,
-        enable_kernel_function: bool | None = None,
-        **kwargs,
-    ) -> "BedrockAgent":
-        """Create an agent on the service asynchronously. This will also prepare the agent so that it ready for use.
-
-        Args:
-            enable_code_interpreter (bool, optional): Enable code interpretation.
-            enable_user_input (bool, optional): Enable user input.
-            enable_kernel_function (bool, optional): Enable kernel function.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            An instance of BedrockAgent with the created agent.
-        """
-        if not self.agent_model.foundation_model:
-            raise AgentInitializationException("Foundation model is required to create an agent.")
-
-        await self._create_agent(
-            self.instructions or await self.format_instructions(self.kernel, self.arguments) or "",
-            **kwargs,
-        )
-
-        if enable_code_interpreter:
-            await self.create_code_interpreter_action_group()
-        if enable_user_input:
-            await self.create_user_input_action_group()
-        if enable_kernel_function:
-            await self._create_kernel_function_action_group(self.kernel)
-
-        await self.prepare_agent()
-
-        if not self.agent_model.agent_id:
-            raise AgentInitializationException("Agent ID is not set.")
-        self.id = self.agent_model.agent_id
-
-        return self
-
-    @trace_agent_invocation
-    async def invoke(
+    @trace_agent_get_response
+    @override
+    async def get_response(
         self,
         session_id: str,
         input_text: str,
@@ -304,8 +222,8 @@ class BedrockAgent(BedrockAgentBase, Agent):
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs,
-    ) -> AsyncIterable[ChatMessageContent]:
-        """Invoke an agent.
+    ) -> ChatMessageContent:
+        """Get a response from the agent.
 
         Args:
             session_id (str): The session identifier. This is used to maintain the session state in the service.
@@ -316,7 +234,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             **kwargs: Additional keyword arguments.
 
         Returns:
-            An async iterable of chat message content.
+            A chat message content with the response.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -324,7 +242,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
         kwargs.setdefault("sessionState", {})
@@ -369,10 +287,99 @@ class BedrockAgent(BedrockAgentBase, Agent):
                 if trace_metadata:
                     chat_message_content.metadata.update({"trace": trace_metadata})
 
-                yield chat_message_content
-                return
+                if not chat_message_content:
+                    raise AgentInvokeException("No response from the agent.")
+
+                return chat_message_content
+
+        raise AgentInvokeException(
+            "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
+        )
 
     @trace_agent_invocation
+    @override
+    async def invoke(
+        self,
+        session_id: str,
+        input_text: str,
+        *,
+        agent_alias: str | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs,
+    ) -> AsyncIterable[ChatMessageContent]:
+        """Invoke an agent.
+
+        Args:
+            session_id (str): The session identifier. This is used to maintain the session state in the service.
+            input_text (str): The input text.
+            agent_alias (str, optional): The agent alias.
+            arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
+            kernel (Kernel, optional): The kernel to override the current kernel.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            An async iterable of chat message content.
+        """
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
+
+        kernel = kernel or self.kernel
+        arguments = self._merge_arguments(arguments)
+
+        kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = False
+        kwargs.setdefault("sessionState", {})
+
+        for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
+            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+
+            events: list[dict[str, Any]] = []
+            for event in response.get("completion", []):
+                events.append(event)
+
+            if any(BedrockAgentEventType.RETURN_CONTROL in event for event in events):
+                # Check if there is function call requests. If there are function calls,
+                # parse and invoke them and return the results back to the agent.
+                # Not yielding the function call results back to the user.
+                kwargs["sessionState"].update(
+                    await self._handle_return_control_event(
+                        next(event for event in events if BedrockAgentEventType.RETURN_CONTROL in event),
+                        kernel,
+                        arguments,
+                    )
+                )
+            else:
+                for event in events:
+                    if BedrockAgentEventType.CHUNK in event:
+                        yield self._handle_chunk_event(event)
+                    elif BedrockAgentEventType.FILES in event:
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            items=self._handle_files_event(event),  # type: ignore
+                            name=self.name,
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                        )
+                    elif BedrockAgentEventType.TRACE in event:
+                        yield ChatMessageContent(
+                            role=AuthorRole.ASSISTANT,
+                            name=self.name,
+                            content="",
+                            inner_content=event,
+                            ai_model_id=self.agent_model.foundation_model,
+                            metadata=self._handle_trace_event(event),
+                        )
+
+                return
+
+        raise AgentInvokeException(
+            "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
+        )
+
+    @trace_agent_invocation
+    @override
     async def invoke_stream(
         self,
         session_id: str,
@@ -402,7 +409,7 @@ class BedrockAgent(BedrockAgentBase, Agent):
             arguments.update(kwargs)
 
         kernel = kernel or self.kernel
-        arguments = self.merge_arguments(arguments)
+        arguments = self._merge_arguments(arguments)
 
         kwargs.setdefault("streamingConfigurations", {})["streamFinalResponse"] = True
         kwargs.setdefault("sessionState", {})

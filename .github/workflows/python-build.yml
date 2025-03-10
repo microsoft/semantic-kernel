@@ -4,13 +4,16 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   python-build-assets:
     if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'python-')
     name: Python Build Assets and add to Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    environment: "integration"
     env:
       UV_PYTHON: "3.10"
     steps:
@@ -21,6 +24,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ matrix.python-version }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Check version
         run: |
           echo "Building and uploading Python package version: ${{ github.event.release.tag_name }}"
@@ -31,3 +35,14 @@ jobs:
         with:
           files: |
             python/dist/*
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Start DevOps pipeline
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az pipelines run --id ${{ vars.ADO_PYTHON_RELEASE_ID }} --org ${{ vars.ADO_ORG }} --project ${{ vars.ADO_PROJECT_NAME }} --parameters tag=${{ github.event.release.tag_name }} delay=0

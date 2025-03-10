@@ -4,26 +4,20 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
+from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
 if TYPE_CHECKING:
-    from semantic_kernel.agents.agent import Agent
+    pass
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI         #
-# assistant using either Azure OpenAI or OpenAI, a chat completion  #
-# agent and have them participate in a group chat to work towards   #
-# the user's requirement. It also demonstrates how the underlying   #
-# agent reset method is used to clear the current state of the chat #
-#####################################################################
-
-INSTRUCTIONS = """
-The user may either provide information or query on information previously provided. 
-If the query does not correspond with information provided, inform the user that their query cannot be answered.
+"""
+The following sample demonstrates how to create an OpenAI
+assistant using either Azure OpenAI or OpenAI, a chat completion
+agent and have them participate in a group chat to work towards
+the user's requirement. It also demonstrates how the underlying
+agent reset method is used to clear the current state of the chat
 """
 
 
@@ -34,49 +28,75 @@ def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
 
 
 async def main():
+    # First create the ChatCompletionAgent
+    chat_agent = ChatCompletionAgent(
+        kernel=_create_kernel_with_chat_completion("chat"),
+        name="chat_agent",
+        instructions="""
+            The user may either provide information or query on information previously provided. 
+            If the query does not correspond with information provided, inform the user that their query 
+            cannot be answered.
+            """,
+    )
+
+    # Next, we will create the AzureAssistantAgent
+
+    # Create the client using Azure OpenAI resources and configuration
+    client, model = AzureAssistantAgent.setup_resources()
+
+    # Create the assistant definition
+    definition = await client.beta.assistants.create(
+        model=model,
+        name="copywriter",
+        instructions="""
+            The user may either provide information or query on information previously provided. 
+            If the query does not correspond with information provided, inform the user that their query 
+            cannot be answered.
+            """,
+    )
+
+    # Create the AzureAssistantAgent instance using the client and the assistant definition
+    assistant_agent = AzureAssistantAgent(
+        client=client,
+        definition=definition,
+    )
+
+    # Create the AgentGroupChat object, which will manage the chat between the agents
+    # We don't always need to specify the agents in the chat up front
+    # As shown below, calling `chat.invoke(agent=<agent>)` will automatically add the
+    # agent to the chat
+    chat = AgentGroupChat()
+
     try:
-        assistant_agent = await OpenAIAssistantAgent.create(
-            service_id="copywriter",
-            kernel=Kernel(),
-            name=f"{OpenAIAssistantAgent.__name__}",
-            instructions=INSTRUCTIONS,
-        )
+        user_inputs = [
+            "What is my favorite color?",
+            "I like green.",
+            "What is my favorite color?",
+            "[RESET]",
+            "What is my favorite color?",
+        ]
 
-        chat_agent = ChatCompletionAgent(
-            service_id="chat",
-            kernel=_create_kernel_with_chat_completion("chat"),
-            name=f"{ChatCompletionAgent.__name__}",
-            instructions=INSTRUCTIONS,
-        )
+        for user_input in user_inputs:
+            # Check for reset indicator
+            if user_input == "[RESET]":
+                print("\nResetting chat...")
+                await chat.reset()
+                continue
 
-        chat = AgentGroupChat()
-
-        async def invoke_agent(agent: "Agent", input: str | None = None):
-            if input is not None:
-                await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
-                print(f"\n{AuthorRole.USER}: '{input}'")
-
-            async for message in chat.invoke(agent=agent):
+            # First agent (assistant_agent) receives the user input
+            await chat.add_chat_message(user_input)
+            print(f"\n{AuthorRole.USER}: '{user_input}'")
+            async for message in chat.invoke(agent=assistant_agent):
                 if message.content is not None:
                     print(f"\n# {message.role} - {message.name or '*'}: '{message.content}'")
 
-        await invoke_agent(agent=assistant_agent, input="What is my favorite color?")
-        await invoke_agent(agent=chat_agent)
-
-        await invoke_agent(agent=assistant_agent, input="I like green.")
-        await invoke_agent(agent=chat_agent)
-
-        await invoke_agent(agent=assistant_agent, input="What is my favorite color?")
-        await invoke_agent(agent=chat_agent)
-
-        print("\nResetting chat...")
-        await chat.reset()
-
-        await invoke_agent(agent=assistant_agent, input="What is my favorite color?")
-        await invoke_agent(agent=chat_agent)
+            # Second agent (chat_agent) just responds without new user input
+            async for message in chat.invoke(agent=chat_agent):
+                if message.content is not None:
+                    print(f"\n# {message.role} - {message.name or '*'}: '{message.content}'")
     finally:
         await chat.reset()
-        await assistant_agent.delete()
+        await assistant_agent.client.beta.assistants.delete(assistant_agent.id)
 
 
 if __name__ == "__main__":
