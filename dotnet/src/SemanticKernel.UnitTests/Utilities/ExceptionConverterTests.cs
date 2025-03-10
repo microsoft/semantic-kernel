@@ -33,7 +33,7 @@ public class ExceptionJsonConverterTests
     }
 
     [Fact]
-    public void ItShouldSerializesExceptionCorrectly()
+    public void ItShouldSerializesExceptionWithInnerExceptionCorrectly()
     {
         // Act
         var json = JsonSerializer.Serialize(this._exception, this._options);
@@ -50,6 +50,32 @@ public class ExceptionJsonConverterTests
         Assert.Equal("System.Text.Json.JsonReaderException", innerExceptionElement.GetProperty("className").GetString());
         Assert.Equal(this._exception.InnerException!.Message, innerExceptionElement.GetProperty("message").GetString());
         Assert.Equal(this._exception.InnerException!.StackTrace, innerExceptionElement.GetProperty("stackTraceString").GetString());
+    }
+
+    [Fact]
+    public void ItShouldSerializesExceptionWithNoInnerExceptionCorrectly()
+    {
+        // Act
+        InvalidOperationException? exception = null;
+
+        try
+        {
+            throw new InvalidOperationException("Test exception");
+        }
+        catch (InvalidOperationException ex)
+        {
+            exception = ex;
+        }
+
+        var json = JsonSerializer.Serialize(exception, this._options);
+
+        // Assert
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
+
+        Assert.Equal("System.InvalidOperationException", jsonElement.GetProperty("className").GetString());
+        Assert.Equal(exception!.Message, jsonElement.GetProperty("message").GetString());
+        Assert.False(jsonElement.TryGetProperty("innerException", out var _));
+        Assert.Equal(exception.StackTrace, jsonElement.GetProperty("stackTraceString").GetString());
     }
 
     [Fact]

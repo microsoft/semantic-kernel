@@ -34,14 +34,10 @@ internal sealed class ExceptionJsonConverter : JsonConverter<object>
             writer.WriteStartObject();
             writer.WriteString(ClassNamePropertyName, ex.GetType().ToString());
             writer.WriteString(MessagePropertyName, ex.Message);
-            writer.WritePropertyName(InnerExceptionPropertyName);
             if (ex.InnerException is Exception innerEx)
             {
+                writer.WritePropertyName(InnerExceptionPropertyName);
                 this.Write(writer, innerEx, options);
-            }
-            else
-            {
-                writer.WriteNullValue();
             }
 
             writer.WriteString(StackTracePropertyName, ex.StackTrace);
