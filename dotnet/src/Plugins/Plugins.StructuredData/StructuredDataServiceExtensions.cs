@@ -32,7 +32,8 @@ public static class StructuredDataServiceExtensions
             Description = "Creates / Inserts the provided entity record into the database.",
             Parameters =
             [
-                new KernelParameterMetadata("entity") {
+                new KernelParameterMetadata("entity")
+                {
                     ParameterType = typeof(TEntity),
                     Schema = KernelJsonSchemaBuilder.Build(typeof(TEntity)),
                     Description = "Entity record information",
