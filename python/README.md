@@ -13,6 +13,66 @@ or all of them:
 ```bash
 python -m pip install --upgrade semantic-kernel[all]
 ```
+
+# Hardware Acceleration Support
+
+## Intel Gaudi HPU Support
+
+Semantic Kernel now supports Intel Gaudi HPUs for accelerated AI workloads. Gaudi HPUs (Habana Processing Units) are specialized AI accelerators designed by Habana Labs (an Intel company) that offer high-performance, cost-effective training and inference for deep learning models.
+
+### Key Benefits
+
+- **Cost-Effective Performance**: Gaudi HPUs can provide significant cost savings compared to other accelerators for certain AI workloads
+- **Optimized for Transformers**: Specially designed for transformer-based models like those used in LLMs
+- **Seamless Integration**: Works with popular frameworks like PyTorch and Hugging Face Transformers
+- **AWS DL1 and DL2 Support**: Fully compatible with AWS DL1 and DL2 instances
+
+### Installation for Gaudi HPU instances on AWS
+
+If you're using Semantic Kernel on AWS Gaudi HPU instances that already have PyTorch pre-installed (version 2.4.0a0+git74cd574), you can use the following methods to install Semantic Kernel without reinstalling PyTorch:
+
+#### Using the provided script
+
+```bash
+# Clone the repository
+git clone https://github.com/microsoft/semantic-kernel.git
+cd semantic-kernel
+
+# Run the Gaudi installation script
+./install_for_gaudi.sh
+```
+
+#### Using Make
+
+```bash
+# Clone the repository
+git clone https://github.com/microsoft/semantic-kernel.git
+cd semantic-kernel/python
+
+make install-uv
+# Install for Gaudi (skips PyTorch installation)
+make install-gaudi
+```
+
+### Using Semantic Kernel with Gaudi HPUs
+
+To use Semantic Kernel with Gaudi HPUs, all you need to do is add the `use_hpu=True` flag to the Hugging Face text embedding service.
+
+```python
+embedding_service = HuggingFaceTextEmbedding(ai_model_id="sentence-transformers/all-MiniLM-L6-v2", use_hpu=True)
+```
+
+### Performance Tuning for Gaudi
+
+For optimal performance on Gaudi HPUs:
+
+1. Use the `optimum-habana` package (automatically installed with the `gaudi` extras)
+2. Set appropriate batch sizes based on your model and available memory
+3. Enable mixed precision (FP16/BF16) for faster computation
+4. Consider using Habana-optimized models when available
+
+For more information about Intel Gaudi HPUs, visit the [Habana Labs documentation](https://docs.habana.ai/).
+
 # AI Services
 
 ## OpenAI / Azure OpenAI API keys
@@ -180,3 +240,13 @@ things stand in matching the features and functionality of the main SK branch.
 Over time there will be some features available only in the Python version, and
 others only in the C# version, for example adapters to external services,
 scientific libraries, etc.
+
+# Configuration System
+
+This directory contains a configuration system for the application. The system provides a clean, type-safe way to manage configuration options, while maintaining backward compatibility with the existing argparse-based approach.
+
+## Files
+
+- `config.py`: Contains the `Config` dataclass that defines all configuration options
+- `config_utils.py`: Provides utility functions to convert between the Config class and argparse
+- `test.py`: The main application file, updated to use the Config class
