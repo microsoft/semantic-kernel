@@ -145,7 +145,9 @@ def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelF
             "type": "object",
             "properties": {param.name: param.schema_data for param in metadata.parameters},
             "required": [p.name for p in metadata.parameters if p.is_required],
-        },
+        }
+        if metadata.parameters
+        else None,
     }
 
 

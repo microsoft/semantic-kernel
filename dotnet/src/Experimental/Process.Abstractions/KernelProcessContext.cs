@@ -33,4 +33,10 @@ public abstract class KernelProcessContext
     /// </summary>
     /// <returns></returns>
     public abstract Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync();
+
+    /// <summary>
+    /// Gets the id of the running process instance
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task<string> GetProcessIdAsync();
 }

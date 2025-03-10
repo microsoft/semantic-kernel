@@ -2,21 +2,28 @@
 
 import asyncio
 
+import boto3
+
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 
-# This sample shows how to interact with a Bedrock agent in the simplest way.
-# This sample uses the following main component(s):
-# - a Bedrock agent that has already been created
-# You will learn how to connect to an existing Bedrock agent and talk to it.
+"""
+The following sample demonstrates how to use an already existing
+Bedrock Agent within Semantic Kernel. This sample requires that you
+have an existing agent created either previously in code or via the
+AWS Console.
+This sample uses the following main component(s):
+- a Bedrock agent
+You will learn how to retrieve a Bedrock agent and talk to it.
+"""
 
-
-# Make sure to replace AGENT_NAME and AGENT_ID with the correct values
-AGENT_NAME = "semantic-kernel-bedrock-agent"
-AGENT_ID = "..."
+# Replace "your-agent-id" with the ID of the agent you want to use
+AGENT_ID = "your-agent-id"
 
 
 async def main():
-    bedrock_agent = await BedrockAgent.retrieve(AGENT_ID, AGENT_NAME)
+    client = boto3.client("bedrock-agent")
+    agent_model = client.get_agent(agentId=AGENT_ID)["agent"]
+    bedrock_agent = BedrockAgent(agent_model)
     session_id = BedrockAgent.create_session_id()
 
     try:

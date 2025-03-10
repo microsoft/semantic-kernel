@@ -14,13 +14,13 @@ public interface IExternalKernelProcessMessageChannel
     /// Initialization of the external messaging channel used
     /// </summary>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public abstract ValueTask Initialize();
+    abstract ValueTask Initialize();
 
     /// <summary>
     /// Uninitialization of the external messaging channel used
     /// </summary>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public abstract ValueTask Uninitialize();
+    abstract ValueTask Uninitialize();
 
     /// <summary>
     /// Emits the specified event from the step outside the SK process
@@ -28,5 +28,5 @@ public interface IExternalKernelProcessMessageChannel
     /// <param name="externalTopicEvent">name of the topic to be used externally as the event name</param>
     /// <param name="eventData">data to be transmitted externally</param>
     /// <returns></returns>
-    public abstract Task EmitExternalEventAsync(string externalTopicEvent, object? eventData);
+    abstract Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData);
 }

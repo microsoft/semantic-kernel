@@ -37,6 +37,8 @@ dependencies = [
     "openai ~= 1.61",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
+    "websockets >= 13, < 15",
+    "aiortc>=1.9.0",
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
@@ -65,7 +67,7 @@ chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform == 1.80.0",
+    "google-cloud-aiplatform == 1.82.0",
     "google-generativeai ~= 0.8"
 ]
 hugging_face = [
@@ -127,6 +129,10 @@ dapr = [
     "dapr>=1.14.0",
     "dapr-ext-fastapi>=1.14.0",
     "flask-dapr>=1.14.0"
+]
+realtime = [
+    "websockets >= 13, < 15",
+    "aiortc>=1.9.0",
 ]
 
 [tool.uv]
@@ -225,5 +231,3 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
-
-

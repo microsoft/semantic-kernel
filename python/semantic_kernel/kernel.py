@@ -5,7 +5,7 @@ from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -321,7 +321,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         function_call_count: int | None = None,
         request_index: int | None = None,
         is_streaming: bool = False,
-        function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
+        function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
         args_cloned = copy(arguments) if arguments else KernelArguments()
