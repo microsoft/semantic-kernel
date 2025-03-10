@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -27,7 +26,7 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
         string modelId = "amazon.titan-embed-text-v2:0";
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
         var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, mockBedrockApi.Object).Build();
-        var service = kernel.GetRequiredService<IChatCompletionService>();
+        var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
 
         // Assert
         Assert.Equal(modelId, service.Attributes[AIServiceExtensions.ModelIdKey]);
@@ -44,11 +43,11 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
         var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
 
         // Act
-        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(invalidModelId, mockBedrockApi.Object).Build();
+        var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(invalidModelId, mockBedrockApi.Object).Build();
 
         // Assert
         Assert.Throws<KernelException>(() =>
-            kernel.GetRequiredService<IChatCompletionService>());
+            kernel.GetRequiredService<ITextEmbeddingGenerationService>());
     }
 
     /// <summary>
