@@ -5,7 +5,7 @@ using Dapr.Actors.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process.Serialization;
-using SemanticKernel.Process.IntegrationTests.CloudEvents;
+using SemanticKernel.Process.TestsShared.CloudEvents;
 
 namespace SemanticKernel.Process.IntegrationTests.Controllers;
 
@@ -87,7 +87,10 @@ public class ProcessTestController : Controller
             return Task.FromResult<IActionResult>(this.NotFound());
         }
 
-        return Task.FromResult<IActionResult>(this.Ok(cloudClient));
+        var cloudClientCopy = JsonSerializer.Deserialize<MockCloudEventClient>(JsonSerializer.Serialize<MockCloudEventClient>(cloudClient));
+        cloudClient.Reset();
+
+        return Task.FromResult<IActionResult>(this.Ok(cloudClientCopy));
     }
 
     /// <summary>

@@ -212,6 +212,32 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <returns>A <see cref="ValueTask"/></returns>
     public ValueTask EmitEventAsync(KernelProcessEvent processEvent) => this.EmitEventAsync(ProcessEvent.Create(processEvent, this._eventNamespace!));
 
+    // TODO: this can be moved to shared runtime code, looks almost/same to localRuntime implementation
+    internal virtual void AssignStepFunctionParameterValues(ProcessMessage message)
+    {
+        if (this._functions is null || this._inputs is null || this._initialInputs is null)
+        {
+            throw new KernelException("The step has not been initialized.").Log(this._logger);
+        }
+
+        // Add the message values to the inputs for the function
+        foreach (var kvp in message.Values)
+        {
+            if (this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionName) && functionName != null && functionName.TryGetValue(kvp.Key, out object? parameterName) && parameterName != null)
+            {
+                this._logger?.LogWarning("Step {StepName} already has input for {FunctionName}.{Key}, it is being overwritten with a message from Step named '{SourceId}'.", this.Name, message.FunctionName, kvp.Key, message.SourceId);
+            }
+
+            if (!this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionParameters))
+            {
+                this._inputs[message.FunctionName] = [];
+                functionParameters = this._inputs[message.FunctionName];
+            }
+
+            functionParameters![kvp.Key] = kvp.Value;
+        }
+    }
+
     /// <summary>
     /// Handles a <see cref="ProcessMessage"/> that has been sent to the step.
     /// </summary>
@@ -234,21 +260,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._logger?.LogDebug("Received message from '{SourceId}' targeting function '{FunctionName}' and parameters '{Parameters}'.", message.SourceId, message.FunctionName, messageLogParameters);
 
         // Add the message values to the inputs for the function
-        foreach (var kvp in message.Values)
-        {
-            if (this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionName) && functionName != null && functionName.TryGetValue(kvp.Key, out object? parameterName) && parameterName != null)
-            {
-                this._logger?.LogWarning("Step {StepName} already has input for {FunctionName}.{Key}, it is being overwritten with a message from Step named '{SourceId}'.", this.Name, message.FunctionName, kvp.Key, message.SourceId);
-            }
-
-            if (!this._inputs.TryGetValue(message.FunctionName, out Dictionary<string, object?>? functionParameters))
-            {
-                this._inputs[message.FunctionName] = [];
-                functionParameters = this._inputs[message.FunctionName];
-            }
-
-            functionParameters![kvp.Key] = kvp.Value;
-        }
+        this.AssignStepFunctionParameterValues(message);
 
         // If we're still waiting for inputs on all of our functions then don't do anything.
         List<string> invocableFunctions = this._inputs.Where(i => i.Value != null && i.Value.All(v => v.Value != null)).Select(i => i.Key).ToList();
@@ -316,6 +328,11 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 #pragma warning restore CA1031 // Do not catch general exception types
     }
 
+    internal virtual Dictionary<string, Dictionary<string, object?>?> GenerateInitialInputs()
+    {
+        return this.FindInputChannels(this._functions, this._logger);
+    }
+
     /// <summary>
     /// Initializes the step with the provided step information.
     /// </summary>
@@ -338,15 +355,8 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             this._functions.Add(f.Name, f);
         }
 
-        // Creating external process channel actor to be used for external messaging by some steps
-        IExternalKernelProcessMessageChannel? externalMessageChannelActor = null;
-        var scopedExternalMessageBufferId = this.ScopedActorId(new ActorId(this.Id.GetId()));
-        var actor = this.ProxyFactory.CreateActorProxy<IExternalMessageBuffer>(scopedExternalMessageBufferId, nameof(ExternalMessageBufferActor));
-        externalMessageChannelActor = new ExternalMessageBufferActorWrapper(actor);
-
         // Initialize the input channels
-        // TODO: Issue #10328 Cloud Events - new Step type dedicated to work as Proxy Step abstraction https://github.com/microsoft/semantic-kernel/issues/10328
-        this._initialInputs = this.FindInputChannels(this._functions, this._logger, externalMessageChannelActor);
+        this._initialInputs = this.GenerateInitialInputs();
         this._inputs = this._initialInputs.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
 
         // Activate the step with user-defined state if needed
@@ -431,7 +441,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         bool foundEdge = false;
         foreach (KernelProcessEdge edge in this.GetEdgeForEvent(daprEvent.QualifiedId))
         {
-            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.Data);
+            ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, daprEvent.SourceId, daprEvent.Data);
             ActorId scopedStepId = this.ScopedActorId(new ActorId(edge.OutputTarget.StepId));
             IMessageBuffer targetStep = this.ProxyFactory.CreateActorProxy<IMessageBuffer>(scopedStepId, nameof(MessageBufferActor));
             await targetStep.EnqueueAsync(message.ToJson()).ConfigureAwait(false);
@@ -451,7 +461,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="actorId">The actor Id to scope.</param>
     /// <returns>A new <see cref="ActorId"/> which is scoped to the process.</returns>
-    private ActorId ScopedActorId(ActorId actorId)
+    internal ActorId ScopedActorId(ActorId actorId)
     {
         return new ActorId($"{this.ParentProcessId}.{actorId.GetId()}");
     }

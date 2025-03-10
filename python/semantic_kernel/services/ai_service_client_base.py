@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from abc import ABC
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, Any
 
 from pydantic.types import StringConstraints
 
@@ -25,7 +25,7 @@ class AIServiceClientBase(KernelBaseModel, ABC):
     ai_model_id: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
     service_id: str = ""
 
-    def model_post_init(self, __context: object | None = None):
+    def model_post_init(self, __context: Any):
         """Update the service_id if it is not set."""
         if not self.service_id:
             self.service_id = self.ai_model_id

@@ -24,7 +24,7 @@ It requires installing:
 - pyaudio
 - sounddevice
 - pydub
-e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+e.g. pip install pyaudio sounddevice pydub semantic-kernel[realtime]
 
 For more details of the exact setup, see the README.md in the realtime folder.
 """
@@ -42,8 +42,6 @@ async def main() -> None:
     # create the realtime client and optionally add the audio output function, this is optional
     # you can define the protocol to use, either "websocket" or "webrtc"
     # they will behave the same way, even though the underlying protocol is quite different
-    realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC())
-    # Create the settings for the session
     settings = OpenAIRealtimeExecutionSettings(
         instructions="""
     You are a chat bot. Your name is Mosscap and
@@ -58,9 +56,11 @@ async def main() -> None:
         # for more details.
         voice="alloy",
     )
+    realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC(), settings=settings)
+    # Create the settings for the session
     audio_player = AudioPlayerWebRTC()
     # the context manager calls the create_session method on the client and starts listening to the audio stream
-    async with audio_player, realtime_client(settings=settings, create_response=True):
+    async with audio_player, realtime_client:
         async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
             match event.event_type:
                 case "text":
@@ -76,9 +76,8 @@ async def main() -> None:
 
 if __name__ == "__main__":
     print(
-        "Instructions: The model will start speaking immediately,"
-        "this can be turned off by removing `create_response=True` above."
-        "The model will detect when you stop and automatically generate a response. "
+        "Instructions: start speaking. "
+        "The model will detect when you stop and automatically start responding. "
         "Press ctrl + c to stop the program."
     )
     asyncio.run(main())

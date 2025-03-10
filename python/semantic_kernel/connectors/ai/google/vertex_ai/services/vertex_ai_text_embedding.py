@@ -8,7 +8,7 @@ from numpy import array, ndarray
 from pydantic import ValidationError
 from vertexai.language_models import TextEmbedding, TextEmbeddingModel
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google.vertex_ai.services.vertex_ai_base import VertexAIBase
 from semantic_kernel.connectors.ai.google.vertex_ai.vertex_ai_prompt_execution_settings import (
     VertexAIEmbeddingPromptExecutionSettings,
