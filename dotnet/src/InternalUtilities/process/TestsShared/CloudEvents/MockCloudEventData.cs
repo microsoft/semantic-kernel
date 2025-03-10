@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Process.IntegrationTests.CloudEvents;
+using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel;
+
+namespace SemanticKernel.Process.TestsShared.CloudEvents;
 
 /// <summary>
 /// Mock cloud event data used for testing purposes only
@@ -10,10 +14,14 @@ public class MockCloudEventData
     /// <summary>
     /// Name of the mock topic
     /// </summary>
+    [DataMember]
+    [JsonPropertyName("topicName")]
     public required string TopicName { get; set; }
 
     /// <summary>
     /// Data emitted in the mock cloud event
     /// </summary>
-    public string? Data { get; set; }
+    [DataMember]
+    [JsonPropertyName("data")]
+    public KernelProcessProxyMessage? Data { get; set; }
 }

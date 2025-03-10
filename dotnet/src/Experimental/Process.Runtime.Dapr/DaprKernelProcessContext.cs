@@ -73,4 +73,11 @@ public class DaprKernelProcessContext : KernelProcessContext
     {
         throw new NotImplementedException();
     }
+
+    /// <inheritdoc/>
+    public override async Task<string> GetProcessIdAsync()
+    {
+        var processInfo = await this._daprProcess.GetProcessInfoAsync().ConfigureAwait(false);
+        return processInfo.State.Id!;
+    }
 }
