@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
+    <AssemblyName>Microsoft.Extensions.VectorData</AssemblyName>
     <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
-    <EnablePackageValidation>true</EnablePackageValidation>
+    <!--<EnablePackageValidation>true</EnablePackageValidation>-->
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -14,13 +14,11 @@
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
     <PackageValidationBaselineVersion>9.0.0-preview.1.24518.1</PackageValidationBaselineVersion>
-    <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
+    <Title>Microsoft.Extensions.VectorData</Title>
     <PackageId>$(AssemblyName)</PackageId>
-    <PackageDescription>Abstractions for vector database access.
-
-Commonly Used Types:
-Microsoft.Extensions.VectorData.IVectorStore
-Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt;</PackageDescription>
+    <PackageDescription>
+      Utilities for vector database access.
+    </PackageDescription>
     <PackageIcon>neticon.png</PackageIcon>
     <PackageIconUrl>neticon.png</PackageIconUrl>
     <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
@@ -35,6 +33,11 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Include neticon.png and PACKAGE.md in the project. -->
     <None Include="neticon.png" Pack="true" PackagePath="." />
     <None Include="PACKAGE.md" Pack="true" PackagePath="." />
@@ -44,4 +47,16 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Diagnostics/IsExternalInit.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Diagnostics/ExperimentalAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/LoggingExtensions.cs" Link="Diagnostics/LoggingExtensions.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Diagnostics/Verify.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Diagnostics/NullableAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Diagnostics/CompilerServicesAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/EmptyKeyedServiceProvider.cs" Link="System/EmptyKeyedServiceProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
 </Project>
