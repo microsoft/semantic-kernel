@@ -7,7 +7,6 @@ from azure.ai.projects.models import AzureAISearchTool, ConnectionType
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
 logging.basicConfig(level=logging.WARNING)
@@ -84,7 +83,7 @@ async def main() -> None:
                 # Add the user input as a chat message
                 await agent.add_chat_message(
                     thread_id=thread.id,
-                    message=ChatMessageContent(role=AuthorRole.USER, content=user_input),
+                    message=user_input,
                 )
                 print(f"# User: '{user_input}'\n")
                 # Invoke the agent for the specified thread
