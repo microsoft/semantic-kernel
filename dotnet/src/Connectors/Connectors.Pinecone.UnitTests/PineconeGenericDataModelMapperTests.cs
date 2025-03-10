@@ -77,20 +77,20 @@ public class PineconeGenericDataModelMapperTests
 
         // Assert
         Assert.Equal(TestKeyString, storageModel.Id);
-        Assert.Equal("string", (string?)storageModel.Metadata!["StringDataProp"].Inner);
+        Assert.Equal("string", (string?)storageModel.Metadata!["StringDataProp"]!.Value);
         // MetadataValue converts all numeric types to double.
-        Assert.Equal(1, (double?)storageModel.Metadata["IntDataProp"].Inner);
-        Assert.Equal(2, (double?)storageModel.Metadata["NullableIntDataProp"].Inner);
-        Assert.Equal(3L, (double?)storageModel.Metadata["LongDataProp"].Inner);
-        Assert.Equal(4L, (double?)storageModel.Metadata["NullableLongDataProp"].Inner);
-        Assert.Equal(5.0f, (double?)storageModel.Metadata["FloatDataProp"].Inner);
-        Assert.Equal(6.0f, (double?)storageModel.Metadata["NullableFloatDataProp"].Inner);
-        Assert.Equal(7.0, (double?)storageModel.Metadata["DoubleDataProp"].Inner);
-        Assert.Equal(8.0, (double?)storageModel.Metadata["NullableDoubleDataProp"].Inner);
-        Assert.Equal(true, (bool?)storageModel.Metadata["BoolDataProp"].Inner);
-        Assert.Equal(false, (bool?)storageModel.Metadata["NullableBoolDataProp"].Inner);
-        Assert.Equal(s_taglist, ((IEnumerable<MetadataValue>?)(storageModel.Metadata["TagListDataProp"].Inner!))
-            .Select(x => x.Inner as string)
+        Assert.Equal(1, (double?)storageModel.Metadata["IntDataProp"]!.Value);
+        Assert.Equal(2, (double?)storageModel.Metadata["NullableIntDataProp"]!.Value);
+        Assert.Equal(3L, (double?)storageModel.Metadata["LongDataProp"]!.Value);
+        Assert.Equal(4L, (double?)storageModel.Metadata["NullableLongDataProp"]!.Value);
+        Assert.Equal(5.0f, (double?)storageModel.Metadata["FloatDataProp"]!.Value);
+        Assert.Equal(6.0f, (double?)storageModel.Metadata["NullableFloatDataProp"]!.Value);
+        Assert.Equal(7.0, (double?)storageModel.Metadata["DoubleDataProp"]!.Value);
+        Assert.Equal(8.0, (double?)storageModel.Metadata["NullableDoubleDataProp"]!.Value);
+        Assert.Equal(true, (bool?)storageModel.Metadata["BoolDataProp"]!.Value);
+        Assert.Equal(false, (bool?)storageModel.Metadata["NullableBoolDataProp"]!.Value);
+        Assert.Equal(s_taglist, ((IEnumerable<MetadataValue>?)(storageModel.Metadata["TagListDataProp"]!.Value!))
+            .Select(x => x.Value as string)
             .ToArray());
         Assert.Equal(s_vector, storageModel.Values);
     }
@@ -136,9 +136,9 @@ public class PineconeGenericDataModelMapperTests
 
         // Assert
         Assert.Equal(TestKeyString, storageModel.Id);
-        Assert.True(storageModel.Metadata!["StringDataProp"].Inner == null);
-        Assert.True(storageModel.Metadata["NullableIntDataProp"].Inner == null);
-        Assert.True(storageModel.Metadata["NullableTagListDataProp"].Inner == null);
+        Assert.Null(storageModel.Metadata!["StringDataProp"]);
+        Assert.Null(storageModel.Metadata["NullableIntDataProp"]);
+        Assert.Null(storageModel.Metadata["NullableTagListDataProp"]);
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public class PineconeGenericDataModelMapperTests
         var storageModel = new Vector()
         {
             Id = TestKeyString,
-            Metadata = new MetadataMap()
+            Metadata = new Metadata()
             {
                 ["StringDataProp"] = (MetadataValue)"string",
                 ["IntDataProp"] = (MetadataValue)1,
@@ -168,7 +168,7 @@ public class PineconeGenericDataModelMapperTests
                 ["NullableBoolDataProp"] = (MetadataValue)false,
                 ["TagListDataProp"] = (MetadataValue)new MetadataValue[] { "tag1", "tag2" }
             },
-            Values = [1.0f, 2.0f, 3.0f]
+            Values = new float[] { 1.0f, 2.0f, 3.0f }
         };
 
         // Act
@@ -210,13 +210,13 @@ public class PineconeGenericDataModelMapperTests
         var storageModel = new Vector()
         {
             Id = TestKeyString,
-            Metadata = new MetadataMap()
+            Metadata = new Metadata()
             {
-                ["StringDataProp"] = new MetadataValue(),
-                ["NullableIntDataProp"] = new MetadataValue(),
-                ["NullableTagListDataProp"] = new MetadataValue(),
+                ["StringDataProp"] = null,
+                ["NullableIntDataProp"] = null,
+                ["NullableTagListDataProp"] = null,
             },
-            Values = [1.0f, 2.0f, 3.0f]
+            Values = new float[] { 1.0f, 2.0f, 3.0f }
         };
 
         var reader = new VectorStoreRecordPropertyReader(
@@ -327,7 +327,7 @@ public class PineconeGenericDataModelMapperTests
         var storageModel = new Vector()
         {
             Id = TestKeyString,
-            Values = [1.0f, 2.0f, 3.0f]
+            Values = new float[] { 1.0f, 2.0f, 3.0f }
         };
 
         // Act

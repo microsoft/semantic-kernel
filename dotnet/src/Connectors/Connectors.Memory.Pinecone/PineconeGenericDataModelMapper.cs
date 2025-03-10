@@ -42,10 +42,9 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
             if (dataModel.Data.TryGetValue(dataProperty.DataModelPropertyName, out var propertyValue))
             {
                 var propertyStorageName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
-                if (propertyValue is not null)
-                {
-                    metadata[propertyStorageName] = PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(propertyValue);
-                }
+                metadata[propertyStorageName] = propertyValue is not null
+                    ? PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(propertyValue)
+                    : null;
             }
         }
 
@@ -90,11 +89,12 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
             foreach (var dataProperty in this._propertyReader.DataProperties)
             {
                 var propertyStorageName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
-                if (storageModel.Metadata.TryGetValue(propertyStorageName, out var propertyValue) && propertyValue is not null)
+                if (storageModel.Metadata.TryGetValue(propertyStorageName, out var propertyValue))
                 {
-                    dataModel.Data[dataProperty.DataModelPropertyName] = PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(
-                        propertyValue,
-                        dataProperty.PropertyType);
+                    dataModel.Data[dataProperty.DataModelPropertyName] =
+                        propertyValue is not null
+                        ? PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(propertyValue, dataProperty.PropertyType)
+                        : null;
                 }
             }
         }
