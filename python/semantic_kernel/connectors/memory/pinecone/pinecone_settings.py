@@ -15,8 +15,10 @@ class PineconeSettings(KernelBaseSettings):
     Args:
     - api_key: SecretStr - Pinecone API key
         (Env var PINECONE_API_KEY)
+    - namespace: str - Pinecone namespace (optional, default is "")
     """
 
     env_prefix: ClassVar[str] = "PINECONE_"
 
     api_key: SecretStr
+    namespace: str = ""
