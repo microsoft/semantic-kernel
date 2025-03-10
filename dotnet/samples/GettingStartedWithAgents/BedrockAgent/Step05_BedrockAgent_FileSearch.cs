@@ -25,7 +25,7 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
         var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
         // Create a new BedrockAgent instance with the agent model and the client
         // so that we can interact with the agent using Semantic Kernel contents.
-        var bedrockAgent = new BedrockAgent(agentModel, this.Client);
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient);
         // Associate the agent with a knowledge base and prepare the agent
         await bedrockAgent.AssociateAgentKnowledgeBaseAsync(
             KnowledgeBaseId,

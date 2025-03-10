@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
+using Amazon.BedrockAgentRuntime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
@@ -29,6 +30,8 @@ public sealed class BedrockAgentTests : IDisposable
 
     private readonly AmazonBedrockAgentClient _client = new();
 
+    private readonly AmazonBedrockAgentRuntimeClient _runtimeClient = new();
+
     /// <summary>
     /// Integration test for invoking a <see cref="BedrockAgent"/>.
     /// </summary>
@@ -37,7 +40,7 @@ public sealed class BedrockAgentTests : IDisposable
     public async Task InvokeTestAsync(string input)
     {
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient);
 
         try
         {
@@ -57,7 +60,7 @@ public sealed class BedrockAgentTests : IDisposable
     public async Task InvokeStreamingTestAsync(string input)
     {
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient);
 
         try
         {
@@ -82,7 +85,7 @@ Dolphin  2")]
     public async Task InvokeWithCodeInterpreterTestAsync(string input)
     {
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient);
         await bedrockAgent.CreateCodeInterpreterActionGroupAsync();
 
         try
@@ -115,7 +118,7 @@ Dolphin  2")]
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
 
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client)
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient)
         {
             Kernel = kernel,
         };
@@ -217,6 +220,7 @@ Dolphin  2")]
     public void Dispose()
     {
         this._client.Dispose();
+        this._runtimeClient.Dispose();
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

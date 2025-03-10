@@ -81,7 +81,7 @@ Dolphin  2";
         var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
         // Create a new BedrockAgent instance with the agent model and the client
         // so that we can interact with the agent using Semantic Kernel contents.
-        var bedrockAgent = new BedrockAgent(agentModel, this.Client);
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient);
         // Create the code interpreter action group and prepare the agent for interaction
         await bedrockAgent.CreateCodeInterpreterActionGroupAsync();
 
