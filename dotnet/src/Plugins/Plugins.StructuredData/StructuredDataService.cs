@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+
+#pragma warning disable CA1308 // Normalize strings to uppercase
 
 namespace Microsoft.SemanticKernel;
 
@@ -154,70 +157,108 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
 
         var param = Expression.Parameter(typeof(TEntity), "p");
         var conditions = filter.Split([" and ", " or "], StringSplitOptions.None);
-        Expression? combined = null;
-        bool isOr = filter.Contains(" or ");
+        var isOr = filter.Contains(" or ");
 
-        foreach (var condition in conditions)
+        var expressions = conditions.Select(condition => ParseCondition<TEntity>(condition.Trim(), param));
+        var combined = CombineExpressions(expressions, isOr);
+
+        return Expression.Lambda<Func<TEntity, bool>>(combined, param);
+    }
+
+    private static Expression ParseCondition<TEntity>(string condition, ParameterExpression param)
+    {
+        return condition switch
         {
-            var trimmed = condition.Trim();
-            Expression? current = null;
+            var c when c.Contains("contains(") => ParseStringMethod(c, "contains", param, CreateContainsExpression),
+            var c when c.Contains("startswith(") => ParseStringMethod(c, "startswith", param, CreateStartsWithExpression),
+            var c when c.Contains("endswith(") => ParseStringMethod(c, "endswith", param, CreateEndsWithExpression),
+            _ => ParseComparisonCondition<TEntity>(condition, param)
+        };
+    }
 
-            if (trimmed.Contains("contains("))
-            {
-                current = ParseMethod(trimmed, "contains", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("Contains", [typeof(string)])!, v));
-            }
-            else if (trimmed.Contains("startswith("))
-            {
-                current = ParseMethod(trimmed, "startswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("StartsWith", [typeof(string)])!, v));
-            }
-            else if (trimmed.Contains("endswith("))
-            {
-                current = ParseMethod(trimmed, "endswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("EndsWith", [typeof(string)])!, v));
-            }
-            else
-            {
-                var tokens = trimmed.Split(' ');
-                var property = tokens[0];
-                var op = tokens[1];
-                var value = tokens[2].Trim('\'');
+    private static BinaryExpression ParseComparisonCondition<TEntity>(string condition, ParameterExpression param)
+    {
+        var tokens = condition.Split(' ');
+        var property = tokens[0];
+        var op = tokens[1].ToLowerInvariant();
+        var value = tokens[2].Trim('\'');
 
-                var member = Expression.Property(param, property);
-                ConstantExpression? constant = null;
-                if (member.Type == typeof(DateTime?) || member.Type == typeof(DateTime))
-                {
-                    constant = Expression.Constant(DateTime.Parse(value));
-                }
-                else
-                {
-                    constant = Expression.Constant(Convert.ChangeType(value, member.Type));
-                }
+        var member = Expression.Property(param, property);
 
-                current = op switch
-                {
-                    "gt" => Expression.GreaterThan(member, constant),
-                    "lt" => Expression.LessThan(member, constant),
-                    "eq" => Expression.Equal(member, constant),
-                    _ => throw new NotSupportedException($"Operator {op} not supported")
-                };
-            }
+        return value.Equals("null", StringComparison.OrdinalIgnoreCase)
+            ? CreateNullComparison(member, op)
+            : CreateValueComparison(member, op, value);
+    }
 
-            combined = combined == null ? current : (isOr ? Expression.OrElse(combined, current) : Expression.AndAlso(combined, current));
-        }
-
-        static Expression ParseMethod(string condition, string methodName, ParameterExpression param, Func<Expression, Expression, Expression> methodCall)
+    private static BinaryExpression CreateNullComparison(MemberExpression member, string op)
+    {
+        var nullConstant = Expression.Constant(null, member.Type);
+        return op switch
         {
-            var start = condition.IndexOf(methodName + "(", StringComparison.OrdinalIgnoreCase) + methodName.Length + 1;
-            var end = condition.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
-            var args = condition.Substring(start, end - start).Split(',');
-            var property = args[0].Trim();
-            var value = args[1].Trim().Trim('\'');
+            "eq" => Expression.Equal(member, nullConstant),
+            "ne" => Expression.NotEqual(member, nullConstant),
+            _ => throw new NotSupportedException($"Operator '{op}' is not supported for null comparisons.")
+        };
+    }
 
-            var member = Expression.Property(param, property);
-            var constant = Expression.Constant(value);
-            return methodCall(member, constant);
-        }
+    private static BinaryExpression CreateValueComparison(MemberExpression member, string op, string value)
+    {
+        var memberType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+        var convertedValue = ConvertValue(value, memberType);
+        var constant = Expression.Constant(convertedValue, member.Type);
 
-        return Expression.Lambda<Func<TEntity, bool>>(combined!, param);
+        return op switch
+        {
+            "gt" => Expression.GreaterThan(member, constant),
+            "lt" => Expression.LessThan(member, constant),
+            "eq" => Expression.Equal(member, constant),
+            "ne" => Expression.NotEqual(member, constant),
+            "ge" => Expression.GreaterThanOrEqual(member, constant),
+            "le" => Expression.LessThanOrEqual(member, constant),
+            _ => throw new NotSupportedException($"Operator '{op}' is not supported.")
+        };
+    }
+
+    private static object ConvertValue(string value, Type targetType)
+    {
+        return targetType == typeof(DateTime)
+            ? DateTime.Parse(value)
+            : Convert.ChangeType(value, targetType);
+    }
+
+    private static Expression ParseStringMethod(
+        string condition,
+        string methodName,
+        ParameterExpression param,
+        Func<Expression, Expression, Expression> createExpression)
+    {
+        var (property, value) = ParseMethodArguments(condition, methodName);
+        var member = Expression.Property(param, property);
+        var constant = Expression.Constant(value);
+        return createExpression(member, constant);
+    }
+
+    private static (string property, string value) ParseMethodArguments(string condition, string methodName)
+    {
+        var start = condition.IndexOf(methodName + "(", StringComparison.OrdinalIgnoreCase) + methodName.Length + 1;
+        var end = condition.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
+        var args = condition.Substring(start, end - start).Split(',');
+        return (args[0].Trim(), args[1].Trim().Trim('\''));
+    }
+
+    private static Expression CreateContainsExpression(Expression member, Expression value)
+        => Expression.Call(member, typeof(string).GetMethod("Contains", [typeof(string)])!, value);
+
+    private static Expression CreateStartsWithExpression(Expression member, Expression value)
+        => Expression.Call(member, typeof(string).GetMethod("StartsWith", [typeof(string)])!, value);
+
+    private static Expression CreateEndsWithExpression(Expression member, Expression value)
+        => Expression.Call(member, typeof(string).GetMethod("EndsWith", [typeof(string)])!, value);
+
+    private static Expression CombineExpressions(IEnumerable<Expression> expressions, bool isOr)
+    {
+        return expressions.Aggregate((current, next) =>
+            isOr ? Expression.OrElse(current, next) : Expression.AndAlso(current, next));
     }
 
     /// <summary>

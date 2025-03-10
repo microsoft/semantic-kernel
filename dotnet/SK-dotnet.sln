@@ -466,7 +466,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agents.Bedrock", "src\Agent
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelContextProtocol", "samples\Demos\ModelContextProtocol\ModelContextProtocol.csproj", "{B16AC373-3DA8-4505-9510-110347CD635D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructuredDataConnector", "samples\Demos\StructuredDataConnector\StructuredDataConnector.csproj", "{BEDAC050-016A-46F4-9173-339C46DFD3ED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructuredDataPlugin", "samples\Demos\StructuredDataPlugin\StructuredDataPlugin.csproj", "{BEDAC050-016A-46F4-9173-339C46DFD3ED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.StructuredData", "src\Plugins\Plugins.StructuredData\Plugins.StructuredData.csproj", "{0C81C377-3CDC-46A8-BED1-4B50BDA2202E}"
 EndProject

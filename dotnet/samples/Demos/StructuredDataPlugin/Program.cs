@@ -9,7 +9,7 @@ using System.Text.Json;
 #pragma warning disable SKEXP0070, SKEXP0050 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable CA2007, VSTHRD111 // .ConfigureAwait(false)
 
-namespace StructuredDataConnector;
+namespace StructuredDataPlugin;
 
 internal sealed class Program
 {
@@ -83,7 +83,7 @@ internal sealed class Program
         }
     }
 
-    private class MyHandler : HttpClientHandler
+    private sealed class MyHandler : HttpClientHandler
     {
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
         {

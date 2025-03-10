@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 #pragma warning disable CA2007, VSTHRD111 // .ConfigureAwait(false)
 
-namespace StructuredDataConnector;
+namespace StructuredDataPlugin;
 
 /// <summary>
 /// Represents a product entity in the database.

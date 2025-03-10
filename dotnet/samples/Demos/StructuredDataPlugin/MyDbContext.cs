@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 
 #pragma warning disable CA2007, VSTHRD111 // .ConfigureAwait(false)
 
-namespace StructuredDataConnector;
+namespace StructuredDataPlugin;
 
 internal sealed class MyDbContext : DbContext
 {
