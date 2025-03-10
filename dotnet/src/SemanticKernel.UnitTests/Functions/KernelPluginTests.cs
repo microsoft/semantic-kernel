@@ -208,8 +208,8 @@ public class KernelPluginTests
         AIFunction[] funcs = plugin.AsAIFunctions(kernel).ToArray();
         Assert.Equal(2, funcs.Length);
 
-        Assert.Equal("PluginName-Function1", funcs[0].Name);
-        Assert.Equal("PluginName-Function2", funcs[1].Name);
+        Assert.Equal("PluginName_Function1", funcs[0].Name);
+        Assert.Equal("PluginName_Function2", funcs[1].Name);
 
         var func1Properties = funcs[0].JsonSchema.GetProperty("properties").EnumerateObject().ToArray();
         var func2Properties = funcs[1].JsonSchema.GetProperty("properties").EnumerateObject().ToArray();
