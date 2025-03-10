@@ -36,13 +36,13 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
                 legacyFilter,
                 jsonSerializerOptions,
                 keyPropertyName,
                 storagePropertyNames),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
             _ => null
         };
 #pragma warning restore CS0618
@@ -65,6 +65,70 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
                 {{WeaviateConstants.ReservedKeyPropertyName}}
                 {{WeaviateConstants.ScorePropertyName}}
+                {{vectorsQuery}}
+              }
+            }
+          }
+        }
+        """;
+    }
+
+    /// <summary>
+    /// Builds Weaviate hybrid search query.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
+    /// </summary>
+    public static string BuildHybridSearchQuery<TRecord, TVector>(
+        TVector vector,
+        string keywords,
+        string collectionName,
+        string vectorPropertyName,
+        string keyPropertyName,
+        string textPropertyName,
+        JsonSerializerOptions jsonSerializerOptions,
+        HybridSearchOptions<TRecord> searchOptions,
+        IReadOnlyDictionary<string, string> storagePropertyNames,
+        IReadOnlyList<string> vectorPropertyStorageNames,
+        IReadOnlyList<string> dataPropertyStorageNames)
+    {
+        var vectorsQuery = searchOptions.IncludeVectors ?
+            $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
+            string.Empty;
+
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var filter = searchOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
+                legacyFilter,
+                jsonSerializerOptions,
+                keyPropertyName,
+                storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            _ => null
+        };
+#pragma warning restore CS0618
+
+        var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
+
+        return $$"""
+        {
+          Get {
+            {{collectionName}} (
+              limit: {{searchOptions.Top}}
+              offset: {{searchOptions.Skip}}
+              {{(filter is null ? "" : "where: " + filter)}}
+              hybrid: {
+                query: "{{keywords}}"
+                properties: ["{{textPropertyName}}"]
+                targetVectors: ["{{vectorPropertyName}}"]
+                vector: {{vectorArray}}
+                fusionType: rankedFusion
+              }
+            ) {
+              {{string.Join(" ", dataPropertyStorageNames)}}
+              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                {{WeaviateConstants.ReservedKeyPropertyName}}
+                {{WeaviateConstants.HybridScorePropertyName}}
                 {{vectorsQuery}}
               }
             }

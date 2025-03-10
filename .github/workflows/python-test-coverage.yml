@@ -32,6 +32,7 @@ jobs:
           version: "0.5.x"
           enable-cache: true
           cache-suffix: ${{ runner.os }}-${{ env.UV_PYTHON }}
+          cache-dependency-glob: "**/uv.lock"
       - name: Install the project
         run: uv sync --all-extras --dev
       - name: Test with pytest

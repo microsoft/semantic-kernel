@@ -73,6 +73,14 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     public virtual Task Bool()
         => this.TestFilterAsync(r => r.Bool);
 
+    [ConditionalFact]
+    public virtual Task Bool_And_Bool()
+        => this.TestFilterAsync(r => r.Bool && r.Bool);
+
+    [ConditionalFact]
+    public virtual Task Bool_Or_Not_Bool()
+        => this.TestFilterAsync(r => r.Bool || !r.Bool, expectAllResults: true);
+
     #endregion Equality
 
     #region Comparison
@@ -138,6 +146,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     [ConditionalFact]
     public virtual Task Not_over_bool()
         => this.TestFilterAsync(r => !r.Bool);
+
+    [ConditionalFact]
+    public virtual Task Not_over_bool_And_Comparison()
+        => this.TestFilterAsync(r => !r.Bool && r.Int != int.MaxValue);
 
     #endregion Logical operators
 
@@ -235,7 +247,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             new ReadOnlyMemory<float>([1, 2, 3]),
             new()
             {
-                NewFilter = filter,
+                Filter = filter,
                 Top = fixture.TestData.Count
             });
 
@@ -270,7 +282,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             new ReadOnlyMemory<float>([1, 2, 3]),
             new()
             {
-                Filter = legacyFilter,
+                OldFilter = legacyFilter,
                 Top = fixture.TestData.Count
             });
 

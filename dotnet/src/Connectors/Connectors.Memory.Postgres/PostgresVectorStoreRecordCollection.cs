@@ -168,6 +168,8 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <inheritdoc/>
     public virtual async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(records);
+
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
@@ -175,6 +177,11 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
+
+        if (storageModels.Count == 0)
+        {
+            yield break;
+        }
 
         var keys = storageModels.Select(model => model[this._propertyReader.KeyPropertyStoragePropertyName]!).ToList();
 
@@ -243,6 +250,8 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <inheritdoc/>
     public virtual Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         const string OperationName = "DeleteBatch";
         return this.RunOperationAsync(OperationName, () =>
             this._client.DeleteBatchAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, keys, cancellationToken)
@@ -266,12 +275,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
-
-        if (vectorProperty is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
-        }
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
 
         var pgVector = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
@@ -290,9 +294,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
                 pgVector,
                 searchOptions.Top,
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-                searchOptions.Filter,
+                searchOptions.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
-                searchOptions.NewFilter,
+                searchOptions.Filter,
                 searchOptions.Skip,
                 searchOptions.IncludeVectors,
                 cancellationToken)
@@ -318,40 +322,13 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken);
     }
 
-    /// <summary>
-    /// Get vector property to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
-    /// </summary>
-    /// <param name="vectorFieldName">The vector field name.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
-    {
-        // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(vectorFieldName))
-        {
-            // Check vector properties by data model property name.
-            var vectorProperty = this._propertyReader.VectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
-
-            if (vectorProperty is not null)
-            {
-                return vectorProperty;
-            }
-
-            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
-        }
-
-        // If vector property is not provided in options, return first vector property from schema.
-        return this._propertyReader.VectorProperty;
-    }
-
     private async Task RunOperationAsync(string operationName, Func<Task> operation)
     {
         try
         {
             await operation.Invoke().ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not NotSupportedException)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
@@ -368,7 +345,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not NotSupportedException)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {

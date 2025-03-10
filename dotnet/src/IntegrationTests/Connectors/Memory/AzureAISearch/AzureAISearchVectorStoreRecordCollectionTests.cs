@@ -68,7 +68,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             new()
             {
                 IncludeVectors = true,
-                Filter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
+                OldFilter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
             });
 
         // Assert
@@ -350,8 +350,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             new()
             {
                 IncludeVectors = includeVectors,
-                VectorPropertyName = "DescriptionEmbedding",
-                Filter = filter,
+                VectorProperty = r => r.DescriptionEmbedding,
+                OldFilter = filter,
             });
 
         // Assert.
@@ -389,8 +389,8 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
             "A hotel with great views.",
             new()
             {
-                VectorPropertyName = "DescriptionEmbedding",
-                Filter = filter,
+                VectorProperty = r => r.DescriptionEmbedding,
+                OldFilter = filter,
             });
 
         // Assert.

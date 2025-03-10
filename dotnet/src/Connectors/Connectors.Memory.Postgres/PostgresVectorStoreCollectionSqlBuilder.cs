@@ -124,7 +124,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction)
+    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction, bool ifNotExists)
     {
         // Only support creating HNSW index creation through the connector.
         var indexTypeName = indexKind switch
@@ -149,7 +149,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
 
         return new PostgresSqlCommandInfo(
             commandText: $@"
-                CREATE INDEX {indexName} ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
+                CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
         );
     }
 
@@ -281,11 +281,6 @@ WHERE "{keyColumn}" = ${1};
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
 
-        if (keys == null || keys.Count == 0)
-        {
-            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
-        }
-
         var keyProperty = properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault() ?? throw new ArgumentException("Properties must contain a key property", nameof(properties));
         var keyColumn = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
 
@@ -327,10 +322,6 @@ WHERE "{keyColumn}" = ${1};
     public PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
-        if (keys == null || keys.Count == 0)
-        {
-            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
-        }
 
         for (int i = 0; i < keys.Count; i++)
         {
@@ -381,9 +372,9 @@ WHERE "{keyColumn}" = ANY($1);
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var (where, parameters) = (oldFilter: legacyFilter, newFilter) switch
         {
-            (not null, not null) => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
+            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, propertyReader.RecordDefinition.Properties, legacyFilter, startParamIndex: 2),
-            (null, not null) => new PostgresFilterTranslator().Translate(propertyReader.StoragePropertyNamesMap, newFilter, startParamIndex: 2),
+            (null, not null) => GenerateNewFilterWhereClause(propertyReader, newFilter),
             _ => (Clause: string.Empty, Parameters: [])
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
@@ -424,6 +415,14 @@ FROM ({commandText}) AS subquery
             Parameters = [new NpgsqlParameter { Value = vectorValue }, .. parameters.Select(p => new NpgsqlParameter { Value = p })]
         };
     }
+
+    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordPropertyReader propertyReader, LambdaExpression newFilter)
+    {
+        PostgresFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, newFilter, startParamIndex: 2);
+        translator.Translate(appendWhere: true);
+        return (translator.Clause.ToString(), translator.ParameterValues);
+    }
+
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorSearchFilter legacyFilter, int startParamIndex)
     {

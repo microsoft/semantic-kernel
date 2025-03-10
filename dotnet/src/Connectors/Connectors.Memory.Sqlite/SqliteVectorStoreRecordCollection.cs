@@ -161,7 +161,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         Verify.NotNull(vector);
 
         var vectorType = vector.GetType();
-
         if (!SqliteConstants.SupportedVectorTypes.Contains(vectorType))
         {
             throw new NotSupportedException(
@@ -170,12 +169,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
-
-        if (vectorProperty is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
-        }
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
 
         var mappedArray = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
@@ -195,22 +189,25 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         if (searchOptions.Filter is not null)
         {
-            if (searchOptions.NewFilter is not null)
+            if (searchOptions.Filter is not null)
             {
-                throw new ArgumentException("Either Filter or NewFilter can be specified, but not both");
+                throw new ArgumentException("Either Filter or OldFilter can be specified, but not both");
             }
 
             // Old filter, we translate it to a list of SqliteWhereCondition, and merge these into the conditions we already have
-            var filterConditions = this.GetFilterConditions(searchOptions.Filter, this._dataTableName);
+            var filterConditions = this.GetFilterConditions(searchOptions.OldFilter, this._dataTableName);
 
             if (filterConditions is { Count: > 0 })
             {
                 conditions.AddRange(filterConditions);
             }
         }
-        else if (searchOptions.NewFilter is not null)
+        else if (searchOptions.Filter is not null)
         {
-            (extraWhereFilter, extraParameters) = new SqliteFilterTranslator().Translate(this._propertyReader.StoragePropertyNamesMap, searchOptions.NewFilter);
+            SqliteFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, searchOptions.Filter);
+            translator.Translate(appendWhere: false);
+            extraWhereFilter = translator.Clause.ToString();
+            extraParameters = translator.Parameters;
         }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
@@ -751,33 +748,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         return $"{DefaultVirtualTableNamePrefix}{dataTableName}";
-    }
-
-    /// <summary>
-    /// Get vector property to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
-    /// </summary>
-    /// <param name="vectorFieldName">The vector field name.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
-    {
-        // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(vectorFieldName))
-        {
-            // Check vector properties by data model property name.
-            var vectorProperty = this._propertyReader.VectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
-
-            if (vectorProperty is not null)
-            {
-                return vectorProperty;
-            }
-
-            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
-        }
-
-        // If vector property is not provided in options, return first vector property from schema.
-        return this._propertyReader.VectorProperty;
     }
 
     #endregion

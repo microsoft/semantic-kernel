@@ -263,23 +263,17 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         };
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this.GetVectorPropertyForSearch(searchOptions.VectorPropertyName);
-
-        if (vectorProperty is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector properties, so vector search is not possible.");
-        }
-
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
         var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.BuildFilter(
                 legacyFilter,
                 this._storagePropertyNames),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new AzureCosmosDBMongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureCosmosDBMongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
             _ => null
         };
 #pragma warning restore CS0618
@@ -488,33 +482,6 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         }
 
         return storagePropertyNames;
-    }
-
-    /// <summary>
-    /// Get vector property to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector property in <typeparamref name="TRecord"/> if not.
-    /// </summary>
-    /// <param name="vectorFieldName">The vector field name.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private VectorStoreRecordVectorProperty? GetVectorPropertyForSearch(string? vectorFieldName)
-    {
-        // If vector property name is provided in options, try to find it in schema or throw an exception.
-        if (!string.IsNullOrWhiteSpace(vectorFieldName))
-        {
-            // Check vector properties by data model property name.
-            var vectorProperty = this._propertyReader.VectorProperties
-                .FirstOrDefault(l => l.DataModelPropertyName.Equals(vectorFieldName, StringComparison.Ordinal));
-
-            if (vectorProperty is not null)
-            {
-                return vectorProperty;
-            }
-
-            throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{vectorFieldName}'.");
-        }
-
-        // If vector property is not provided in options, return first vector property from schema.
-        return this._propertyReader.VectorProperty;
     }
 
     /// <summary>

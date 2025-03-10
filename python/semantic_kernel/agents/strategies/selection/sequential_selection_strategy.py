@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from pydantic import PrivateAttr
 
 from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class SequentialSelectionStrategy(SelectionStrategy):
     """Round-robin turn-taking strategy. Agent order is based on the order in which they joined."""
 

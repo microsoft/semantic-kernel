@@ -67,7 +67,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var actual = await sut
             .VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
-                new() { Filter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true });
+                new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true });
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -321,7 +321,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             new()
             {
                 IncludeVectors = includeVectors,
-                Filter = filter
+                OldFilter = filter
             });
 
         // Assert

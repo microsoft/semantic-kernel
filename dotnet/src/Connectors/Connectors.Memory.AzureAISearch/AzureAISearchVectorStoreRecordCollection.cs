@@ -23,7 +23,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IVectorizableTextSearch<TRecord>
+public class AzureAISearchVectorStoreRecordCollection<TRecord> :
+    IVectorStoreRecordCollection<string, TRecord>,
+    IVectorizableTextSearch<TRecord>,
+    IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>The name of this database for telemetry purposes.</summary>
@@ -67,6 +70,9 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+
+    /// <summary>The default options for hybrid vector search.</summary>
+    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -316,33 +322,24 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     /// <inheritdoc />
     public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(vector);
-
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
-        if (vector is not ReadOnlyMemory<float> floatVector)
-        {
-            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Azure AI Search connector.");
-        }
+        var floatVector = VerifyVectorParam(vector);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty!.DataModelPropertyName);
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
+        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
         var filter = internalOptions switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
             _ => null
         };
 #pragma warning restore CS0618
@@ -385,19 +382,20 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        string? vectorFieldName = this.ResolveVectorFieldName(internalOptions.VectorPropertyName);
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty!.DataModelPropertyName);
 
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>();
-        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorFieldName } });
+        vectorQueries.Add(new VectorizableTextQuery(searchText) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
         var filter = internalOptions switch
         {
-            { Filter: not null, NewFilter: not null } => throw new ArgumentException("Either Filter or NewFilter can be specified, but not both"),
-            { Filter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
-            { NewFilter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
             _ => null
         };
 #pragma warning restore CS0618
@@ -426,6 +424,58 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
         }
 
         return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(keywords);
+        var floatVector = VerifyVectorParam(vector);
+
+        // Resolve options.
+        var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
+        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
+        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
+        var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);
+
+        // Configure search settings.
+        var vectorQueries = new List<VectorQuery>();
+        vectorQueries.Add(new VectorizedQuery(floatVector) { KNearestNeighborsCount = internalOptions.Top, Fields = { vectorPropertyName } });
+
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        // Build filter object.
+        var filter = internalOptions switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._propertyReader.JsonPropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => null
+        };
+#pragma warning restore CS0618
+
+        // Build search options.
+        var searchOptions = new SearchOptions
+        {
+            VectorSearch = new(),
+            Size = internalOptions.Top,
+            Skip = internalOptions.Skip,
+            Filter = filter,
+            IncludeTotalCount = internalOptions.IncludeTotalCount,
+        };
+        searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
+        searchOptions.SearchFields.Add(textDataPropertyName);
+
+        // Filter out vector fields if requested.
+        if (!internalOptions.IncludeVectors)
+        {
+            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
+            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+        }
+
+        var keywordsCombined = string.Join(" ", keywords);
+
+        return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, internalOptions.IncludeVectors, cancellationToken);
     }
 
     /// <summary>
@@ -587,31 +637,6 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
     }
 
     /// <summary>
-    /// Resolve the vector field name to use for a search by using the storage name for the field name from options
-    /// if available, and falling back to the first vector field name if not.
-    /// </summary>
-    /// <param name="optionsVectorFieldName">The vector field name provided via options.</param>
-    /// <returns>The resolved vector field name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the provided field name is not a valid field name.</exception>
-    private string ResolveVectorFieldName(string? optionsVectorFieldName)
-    {
-        string? vectorFieldName;
-        if (!string.IsNullOrWhiteSpace(optionsVectorFieldName))
-        {
-            if (!this._propertyReader.JsonPropertyNamesMap.TryGetValue(optionsVectorFieldName!, out vectorFieldName))
-            {
-                throw new InvalidOperationException($"The collection does not have a vector field named '{optionsVectorFieldName}'.");
-            }
-        }
-        else
-        {
-            vectorFieldName = this._propertyReader.FirstVectorPropertyJsonName;
-        }
-
-        return vectorFieldName!;
-    }
-
-    /// <summary>
     /// Get a document with the given key, and return null if it is not found.
     /// </summary>
     /// <typeparam name="T">The type to deserialize the document to.</typeparam>
@@ -667,5 +692,17 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> : IVectorStoreRec
                 OperationName = operationName
             };
         }
+    }
+
+    private static ReadOnlyMemory<float> VerifyVectorParam<TVector>(TVector vector)
+    {
+        Verify.NotNull(vector);
+
+        if (vector is not ReadOnlyMemory<float> floatVector)
+        {
+            throw new NotSupportedException($"The provided vector type {vector.GetType().FullName} is not supported by the Azure AI Search connector.");
+        }
+
+        return floatVector;
     }
 }

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines a vector property on a vector store record.
 /// </summary>
 /// <remarks>
-/// The characteristics defined here will influence how the property is treated by the vector store.
+/// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
 public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
 {
@@ -25,7 +25,7 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class by cloning the given source.
     /// </summary>
-    /// <param name="source">The source to clone</param>
+    /// <param name="source">The source to clone.</param>
     public VectorStoreRecordVectorProperty(VectorStoreRecordVectorProperty source)
         : base(source)
     {
@@ -38,26 +38,26 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// Gets or sets the number of dimensions that the vector has.
     /// </summary>
     /// <remarks>
-    /// This property is required when creating collections, but may be omitted if not using that functionality.
+    /// This property is required when creating collections, but can be omitted if not using that functionality.
     /// If not provided when trying to create a collection, create will fail.
     /// </remarks>
     public int? Dimensions { get; init; }
 
     /// <summary>
-    /// Gets the kind of index to use.
+    /// Gets or sets the kind of index to use.
     /// </summary>
-    /// <seealso cref="IndexKind"/>
-    /// <remarks>
-    /// Default varies by database type. See the documentation of your chosen database connector for more information.
-    /// </remarks>
+    /// <value>
+    /// The default varies by database type. See the documentation of your chosen database connector for more information.
+    /// </value>
+    /// <seealso cref="Microsoft.Extensions.VectorData.IndexKind"/>
     public string? IndexKind { get; init; }
 
     /// <summary>
-    /// Gets the distance function to use when comparing vectors.
+    /// Gets or sets the distance function to use when comparing vectors.
     /// </summary>
-    /// <seealso cref="DistanceFunction"/>
-    /// <remarks>
-    /// Default varies by database type. See the documentation of your chosen database connector for more information.
-    /// </remarks>
+    /// <value>
+    /// The default varies by database type. See the documentation of your chosen database connector for more information.
+    /// </value>
+    /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
     public string? DistanceFunction { get; init; }
 }

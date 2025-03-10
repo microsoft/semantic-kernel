@@ -534,7 +534,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await (await sut.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>([1f, 2f, 3f]),
-                new() { VectorPropertyName = "non-existent-property" }))
+                new() { VectorProperty = r => "non-existent-property" }))
                 .Results.ToListAsync());
     }
 

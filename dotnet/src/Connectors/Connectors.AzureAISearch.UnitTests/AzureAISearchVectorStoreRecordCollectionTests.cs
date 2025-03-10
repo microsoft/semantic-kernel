@@ -574,8 +574,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             {
                 Top = 5,
                 Skip = 3,
-                Filter = filter,
-                VectorPropertyName = nameof(MultiPropsModel.Vector1)
+                OldFilter = filter,
+                VectorProperty = record => record.Vector1
             },
             this._testCancellationToken);
 
@@ -616,8 +616,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             {
                 Top = 5,
                 Skip = 3,
-                Filter = filter,
-                VectorPropertyName = nameof(MultiPropsModel.Vector1)
+                OldFilter = filter,
+                VectorProperty = record => record.Vector1
             },
             this._testCancellationToken);
 

@@ -471,7 +471,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
             new()
             {
                 IncludeVectors = true,
-                Filter = filter,
+                OldFilter = filter,
+                VectorProperty = r => r.Vector1,
                 Top = 5,
                 Skip = 2
             });

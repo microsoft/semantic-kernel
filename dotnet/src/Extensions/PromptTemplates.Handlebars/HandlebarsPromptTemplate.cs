@@ -51,7 +51,8 @@ internal sealed class HandlebarsPromptTemplate : IPromptTemplate
         this.RegisterHelpers(handlebarsInstance, kernel, arguments, cancellationToken);
 
         var template = handlebarsInstance.Compile(this._promptModel.Template);
-        return System.Net.WebUtility.HtmlDecode(template(arguments).Trim());
+        var text = template(arguments).Trim();
+        return this._options.EnableHtmlDecoder ? System.Net.WebUtility.HtmlDecode(text) : text;
     }
 
     #region private

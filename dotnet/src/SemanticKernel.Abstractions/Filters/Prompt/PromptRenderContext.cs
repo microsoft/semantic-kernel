@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Microsoft.SemanticKernel;
@@ -53,6 +54,12 @@ public sealed class PromptRenderContext
     /// Gets the arguments associated with the operation.
     /// </summary>
     public KernelArguments Arguments { get; }
+
+    /// <summary>
+    /// The execution settings associated with the operation.
+    /// </summary>
+    [Experimental("SKEXP0001")]
+    public PromptExecutionSettings? ExecutionSettings { get; init; }
 
     /// <summary>
     /// Gets or sets the rendered prompt.

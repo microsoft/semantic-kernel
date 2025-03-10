@@ -378,16 +378,17 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     {
         Verify.NotNull(vector);
 
-        if (this._propertyReader.FirstVectorPropertyName is null)
-        {
-            throw new InvalidOperationException("The collection does not have any vector fields, so vector search is not possible.");
-        }
-
         var internalOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
 
         // Build query & search.
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(vectorBytes, internalOptions, this._propertyReader.JsonPropertyNamesMap, this._propertyReader.FirstVectorPropertyJsonName!, null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
+            vectorBytes,
+            internalOptions,
+            this._propertyReader.JsonPropertyNamesMap,
+            this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName),
+            null);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
             () => this._database
@@ -411,7 +412,8 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
                 });
 
             // Process the score of the result item.
-            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(internalOptions, this._propertyReader.VectorProperties, this._propertyReader.VectorProperty!);
+            var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+            var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 
             return new VectorSearchResult<TRecord>(mappedRecord, score);

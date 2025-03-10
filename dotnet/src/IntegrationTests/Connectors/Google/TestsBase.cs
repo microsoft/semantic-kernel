@@ -20,16 +20,18 @@ public abstract class TestsBase(ITestOutputHelper output)
 
     protected ITestOutputHelper Output { get; } = output;
 
-    protected IChatCompletionService GetChatService(ServiceType serviceType) => serviceType switch
+    protected IChatCompletionService GetChatService(ServiceType serviceType, bool isBeta = false) => serviceType switch
     {
         ServiceType.GoogleAI => new GoogleAIGeminiChatCompletionService(
             this.GoogleAIGetGeminiModel(),
-            this.GoogleAIGetApiKey()),
+            this.GoogleAIGetApiKey(),
+            isBeta ? GoogleAIVersion.V1_Beta : GoogleAIVersion.V1),
         ServiceType.VertexAI => new VertexAIGeminiChatCompletionService(
             modelId: this.VertexAIGetGeminiModel(),
             bearerKey: this.VertexAIGetBearerKey(),
             location: this.VertexAIGetLocation(),
-            projectId: this.VertexAIGetProjectId()),
+            projectId: this.VertexAIGetProjectId(),
+            isBeta ? VertexAIVersion.V1_Beta : VertexAIVersion.V1),
         _ => throw new ArgumentOutOfRangeException(nameof(serviceType), serviceType, null)
     };
 
@@ -69,10 +71,10 @@ public abstract class TestsBase(ITestOutputHelper output)
     private string GoogleAIGetGeminiVisionModel() => this._configuration.GetSection("GoogleAI:Gemini:VisionModelId").Get<string>()!;
     private string GoogleAIGetEmbeddingModel() => this._configuration.GetSection("GoogleAI:EmbeddingModelId").Get<string>()!;
     private string GoogleAIGetApiKey() => this._configuration.GetSection("GoogleAI:ApiKey").Get<string>()!;
-    private string VertexAIGetGeminiModel() => this._configuration.GetSection("VertexAI:Gemini:ModelId").Get<string>()!;
+    internal string VertexAIGetGeminiModel() => this._configuration.GetSection("VertexAI:Gemini:ModelId").Get<string>()!;
     private string VertexAIGetGeminiVisionModel() => this._configuration.GetSection("VertexAI:Gemini:VisionModelId").Get<string>()!;
     private string VertexAIGetEmbeddingModel() => this._configuration.GetSection("VertexAI:EmbeddingModelId").Get<string>()!;
-    private string VertexAIGetBearerKey() => this._configuration.GetSection("VertexAI:BearerKey").Get<string>()!;
-    private string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Location").Get<string>()!;
-    private string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:ProjectId").Get<string>()!;
+    internal string VertexAIGetBearerKey() => this._configuration.GetSection("VertexAI:BearerKey").Get<string>()!;
+    internal string VertexAIGetLocation() => this._configuration.GetSection("VertexAI:Location").Get<string>()!;
+    internal string VertexAIGetProjectId() => this._configuration.GetSection("VertexAI:ProjectId").Get<string>()!;
 }

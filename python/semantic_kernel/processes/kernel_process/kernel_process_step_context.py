@@ -6,10 +6,10 @@ from semantic_kernel.exceptions.process_exceptions import ProcessEventUndefinedE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process.kernel_process_message_channel import KernelProcessMessageChannel
 from semantic_kernel.processes.local_runtime.local_event import KernelProcessEvent
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class KernelProcessStepContext(KernelBaseModel):
     """The context of a step in a kernel process."""
 
@@ -17,9 +17,9 @@ class KernelProcessStepContext(KernelBaseModel):
 
     def __init__(self, channel: KernelProcessMessageChannel):
         """Initialize the step context."""
-        super().__init__(step_message_channel=channel)
+        super().__init__(step_message_channel=channel)  # type: ignore
 
-    async def emit_event(self, process_event: "KernelProcessEvent | str | Enum", **kwargs) -> None:
+    async def emit_event(self, process_event: "KernelProcessEvent | str | Enum | None", **kwargs) -> None:
         """Emit an event from the current step.
 
         It is possible to either specify a `KernelProcessEvent` object or the ID of the event
@@ -34,10 +34,9 @@ class KernelProcessStepContext(KernelBaseModel):
         if process_event is None:
             raise ProcessEventUndefinedException("Process event cannot be None")
 
-        if isinstance(process_event, Enum):
-            process_event = process_event.value
-
         if not isinstance(process_event, KernelProcessEvent):
-            process_event = KernelProcessEvent(id=process_event, **kwargs)
+            process_event = KernelProcessEvent(
+                id=process_event.value if isinstance(process_event, Enum) else process_event, **kwargs
+            )
 
         await self.step_message_channel.emit_event(process_event)

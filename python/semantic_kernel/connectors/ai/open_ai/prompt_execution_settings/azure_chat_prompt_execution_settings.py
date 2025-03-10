@@ -39,7 +39,7 @@ class ApiKeyAuthentication(AzureChatRequestBase):
     """API key authentication."""
 
     type: Annotated[Literal["APIKey", "api_key"], AfterValidator(to_snake)] = "api_key"
-    key: str | None = None
+    key: str
 
 
 class SystemAssignedManagedIdentityAuthentication(AzureChatRequestBase):

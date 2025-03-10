@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Diagnostics;
 
@@ -24,7 +27,8 @@ internal static class ActivityExtensions
         foreach (var tag in tags)
         {
             activity.SetTag(tag.Key, tag.Value);
-        };
+        }
+        ;
 
         return activity;
     }
@@ -50,5 +54,52 @@ internal static class ActivityExtensions
         activity.SetTag("error.type", exception.GetType().FullName);
         activity.SetStatus(ActivityStatusCode.Error, exception.Message);
         return activity;
+    }
+
+    public static async IAsyncEnumerable<TResult> RunWithActivityAsync<TResult>(
+        Func<Activity?> getActivity,
+        Func<IAsyncEnumerable<TResult>> operation,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        using var activity = getActivity();
+
+        ConfiguredCancelableAsyncEnumerable<TResult> result;
+
+        try
+        {
+            result = operation().WithCancellation(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (activity is not null)
+        {
+            activity.SetError(ex);
+            throw;
+        }
+
+        var resultEnumerator = result.ConfigureAwait(false).GetAsyncEnumerator();
+
+        try
+        {
+            while (true)
+            {
+                try
+                {
+                    if (!await resultEnumerator.MoveNextAsync())
+                    {
+                        break;
+                    }
+                }
+                catch (Exception ex) when (activity is not null)
+                {
+                    activity.SetError(ex);
+                    throw;
+                }
+
+                yield return resultEnumerator.Current;
+            }
+        }
+        finally
+        {
+            await resultEnumerator.DisposeAsync();
+        }
     }
 }

@@ -59,7 +59,7 @@ class ACASessionsSettings(KernelBaseSettings):
         else:
             endpoint_parsed = urlsplit(endpoint)._asdict()
         if endpoint_parsed["path"]:
-            endpoint_parsed["path"] = re.sub("/{2,}", "/", endpoint_parsed["path"])
+            endpoint_parsed["path"] = re.sub(r"/{2,}", "/", endpoint_parsed["path"])
         else:
             endpoint_parsed["path"] = "/"
         return str(urlunsplit(endpoint_parsed.values()))

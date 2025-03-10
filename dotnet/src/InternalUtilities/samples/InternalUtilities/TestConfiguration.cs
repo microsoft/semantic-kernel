@@ -24,6 +24,7 @@ public sealed class TestConfiguration
     public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
     public static AzureOpenAIConfig AzureOpenAI => LoadSection<AzureOpenAIConfig>();
     public static AzureAIInferenceConfig AzureAIInference => LoadSection<AzureAIInferenceConfig>();
+    public static AzureAIConfig AzureAI => LoadSection<AzureAIConfig>();
     public static AzureOpenAIConfig AzureOpenAIImages => LoadSection<AzureOpenAIConfig>();
     public static AzureOpenAIEmbeddingsConfig AzureOpenAIEmbeddings => LoadSection<AzureOpenAIEmbeddingsConfig>();
     public static AzureAISearchConfig AzureAISearch => LoadSection<AzureAISearchConfig>();
@@ -47,6 +48,9 @@ public sealed class TestConfiguration
     public static GoogleAIConfig GoogleAI => LoadSection<GoogleAIConfig>();
     public static VertexAIConfig VertexAI => LoadSection<VertexAIConfig>();
     public static AzureCosmosDbMongoDbConfig AzureCosmosDbMongoDb => LoadSection<AzureCosmosDbMongoDbConfig>();
+    public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
+    public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
+    public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -89,6 +93,12 @@ public sealed class TestConfiguration
         public string EmbeddingModelId { get; set; }
         public string EmbeddingModelPath { get; set; }
         public string EmbeddingVocabPath { get; set; }
+    }
+
+    public class AzureAIConfig
+    {
+        public string ConnectionString { get; set; }
+        public string ChatModelId { get; set; }
     }
 
     public class AzureOpenAIConfig
@@ -256,6 +266,11 @@ public sealed class TestConfiguration
         public string DatabaseName { get; set; }
     }
 
+    public class ApplicationInsightsConfig
+    {
+        public string ConnectionString { get; set; }
+    }
+
     /// <summary>
     /// Graph API connector configuration model.
     /// </summary>
@@ -301,5 +316,17 @@ public sealed class TestConfiguration
             this.TenantId = tenantId;
             this.RedirectUri = redirectUri;
         }
+    }
+
+    public class CrewAIConfig
+    {
+        public string Endpoint { get; set; }
+        public string AuthToken { get; set; }
+    }
+
+    public class BedrockAgentConfig
+    {
+        public string AgentResourceRoleArn { get; set; }
+        public string FoundationModel { get; set; }
     }
 }

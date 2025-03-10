@@ -6,39 +6,39 @@ using System.Collections.Generic;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Used to provide filtering when doing vector searches.
+/// Provides filtering when doing vector searches.
 /// Contains configuration for doing basic vector search filtering.
 /// </summary>
 /// <remarks>
-/// A filter has a collection of <see cref="FilterClause"/>s that can be used
+/// A filter has a collection of <see cref="FilterClause"/> instances that can be used
 /// to request that the underlying service filter the search results.
-/// All clauses are combined with and.
+/// All clauses are combined with 'and'.
 /// </remarks>
-[Obsolete("Use VectorSearchOptions.NewFilter instead of VectorSearchOptions.Filter")]
+[Obsolete("Use VectorSearchOptions.Filter instead of VectorSearchOptions.OldFilter")]
 public sealed class VectorSearchFilter
 {
-    /// <summary>The filter clauses to and together.</summary>
+    /// <summary>The filter clauses to 'and' together.</summary>
     private readonly List<FilterClause> _filterClauses = [];
 
     /// <summary>Gets the default search filter.</summary>
     public static VectorSearchFilter Default { get; } = new VectorSearchFilter();
 
     /// <summary>
-    /// The filter clauses to and together.
+    /// The filter clauses to 'and' together.
     /// </summary>
     public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
 
     /// <summary>
-    /// Create an instance of <see cref="VectorSearchFilter"/>
+    /// Creates a new instance of <see cref="VectorSearchFilter"/>
     /// </summary>
     public VectorSearchFilter()
     {
     }
 
     /// <summary>
-    /// Create an instance of <see cref="VectorSearchFilter"/> with the provided <see cref="FilterClause"/>s.
-    /// <param name="filterClauses">The <see cref="FilterClause"/> instances to use</param>
+    /// Creates a new instance of <see cref="VectorSearchFilter"/> with the provided <see cref="FilterClause"/> instances.
     /// </summary>
+    /// <param name="filterClauses">The <see cref="FilterClause"/> instances to use.</param>
     public VectorSearchFilter(IEnumerable<FilterClause> filterClauses)
     {
         if (filterClauses == null)
@@ -50,13 +50,13 @@ public sealed class VectorSearchFilter
     }
 
     /// <summary>
-    /// Add an equal to clause to the filter options.
+    /// Adds an 'equal to' clause to the filter options.
     /// </summary>
-    /// <param name="propertyName">Name of the property to check against. Use the name of the property from your data model or as provided in the record definition.</param>
-    /// <param name="value">Value that the property should match.</param>
-    /// <returns><see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
+    /// <param name="propertyName">The name of the property to check against. Use the name of the property from your data model or as provided in the record definition.</param>
+    /// <param name="value">The value that the property should match.</param>
+    /// <returns>A <see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
     /// <remarks>
-    /// This clause will check if a property is equal to a specific value.
+    /// This clause checks if a property is equal to a specific value.
     /// </remarks>
     public VectorSearchFilter EqualTo(string propertyName, object value)
     {
@@ -65,13 +65,13 @@ public sealed class VectorSearchFilter
     }
 
     /// <summary>
-    /// Add an any tag equal to clause to the filter options.
+    /// Adds an 'any tag equal to' clause to the filter options.
     /// </summary>
-    /// <param name="propertyName">Name of the property consisting of a list of values to check against. Use the name of the property from your data model or as provided in the record definition.</param>
-    /// <param name="value">Value that the list should contain.</param>
-    /// <returns><see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
+    /// <param name="propertyName">The name of the property consisting of a list of values to check against. Use the name of the property from your data model or as provided in the record definition.</param>
+    /// <param name="value">The value that the list should contain.</param>
+    /// <returns>A <see cref="VectorSearchFilter"/> instance to allow fluent configuration.</returns>
     /// <remarks>
-    /// This clause will check if a property consisting of a list of values contains a specific value.
+    /// This clause checks if a property consisting of a list of values contains a specific value.
     /// </remarks>
     public VectorSearchFilter AnyTagEqualTo(string propertyName, string value)
     {
