@@ -7,12 +7,14 @@ from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
-# This sample shows how to interact with a Bedrock agent that is capable of writing and executing code.
-# This sample uses the following main component(s):
-# - a Bedrock agent
-# You will learn how to create a new Bedrock agent and ask it a question that requires coding to answer.
-# After running this sample, a bar chart will be generated and saved to a file in the same directory
-# as this script.
+"""
+This sample shows how to interact with a Bedrock agent that is capable of writing and executing code.
+This sample uses the following main component(s):
+- a Bedrock agent
+You will learn how to create a new Bedrock agent and ask it a question that requires coding to answer.
+After running this sample, a bar chart will be generated and saved to a file in the same directory
+as this script.
+"""
 
 AGENT_NAME = "semantic-kernel-bedrock-agent"
 INSTRUCTION = "You are a friendly assistant. You help people find information."
