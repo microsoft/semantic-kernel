@@ -60,6 +60,8 @@ internal sealed class PineconeTestStore : TestStore
             apiKey: "ForPineconeLocalTheApiKeysAreIgnored",
             clientOptions: clientOptions);
 
+        Environment.SetEnvironmentVariable("PINECONE_GRPC_ENDPOINT", grpcUrl);
+
         this._defaultVectorStore = new(this._client);
     }
 

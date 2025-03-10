@@ -177,9 +177,16 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().DropIndexAsync(this._collectionName));
+        try
+        {
+            await this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().DropIndexAsync(this._collectionName)).ConfigureAwait(false);
+        }
+        catch (VectorStoreOperationException ex) when (ex.InnerException is RedisServerException innerEx && innerEx.Message.Contains("Unknown Index name"))
+        {
+            // Collection does not exist.
+        }
     }
 
     /// <inheritdoc />

@@ -45,17 +45,7 @@ public abstract class GenericDataModelConformanceTests<TKey>(VectorStoreFixture 
             Assert.Equal(inserted.Key, key);
 
             VectorStoreGenericDataModel<TKey>? received = await collection.GetAsync(key, new() { IncludeVectors = true });
-            Assert.NotNull(received);
-
-            Assert.Equal(received.Key, key);
-            foreach (var pair in inserted.Data)
-            {
-                Assert.Equal(pair.Value, received.Data[pair.Key]);
-            }
-
-            Assert.Equal(
-                ((ReadOnlyMemory<float>)inserted.Vectors[EmbeddingPropertyName]!).ToArray(),
-                ((ReadOnlyMemory<float>)received.Vectors[EmbeddingPropertyName]!).ToArray());
+            this.AssertEqual(inserted, received, includeVectors: true);
 
             await collection.DeleteAsync(key);
 

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 using Sdk = Pinecone;
@@ -120,9 +119,14 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-            // If the collection already exists, we should ignore the exception.
-            // TODO adsitnik: find out which exception is thrown when the collection already exists.
+            try
+            {
+                await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (VectorStoreOperationException ex) when (ex.InnerException is PineconeApiException apiEx && apiEx.InnerException is ConflictError)
+            {
+                // If the collection got created in the meantime, we should ignore the exception.
+            }
         }
     }
 
@@ -130,7 +134,17 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync(
             "DeleteCollection",
-            () => this._pineconeClient.DeleteIndexAsync(this.CollectionName, cancellationToken: cancellationToken));
+            async () =>
+            {
+                try
+                {
+                    await this._pineconeClient.DeleteIndexAsync(this.CollectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
+                }
+                catch (NotFoundError)
+                {
+                    // If the collection does not exist, we should ignore the exception.
+                }
+            });
 
     /// <inheritdoc />
     public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
@@ -329,15 +343,13 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             "Query",
             () => this.GetIndexClient().QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        if (response.Results is null)
+        if (response.Matches is null)
         {
             return new VectorSearchResults<TRecord>(Array.Empty<VectorSearchResult<TRecord>>().ToAsyncEnumerable());
         }
 
         // Pinecone does not provide a way to skip results, so we need to do it manually.
-        var skippedResults = response.Results
-            .Where(result => result.Matches is not null)
-            .SelectMany(result => result.Matches!)
+        var skippedResults = response.Matches
             .Skip(options.Skip);
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
@@ -363,7 +375,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (RpcException ex)
+        catch (PineconeApiException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
@@ -392,7 +404,26 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     private IndexClient GetIndexClient()
-        => this._indexClient ??= this._pineconeClient.Index(name: this.CollectionName);
+    {
+        if (this._indexClient is null)
+        {
+#if NON_PUBLISH
+            // When "host" is not provided for PineconeClient.Index,
+            // it will try to get the host from the Pinecone service.
+            // In the cloud environment it's fine, but with the local emulator
+            // it reports the address of the REST endpoint rather than the gRPC one.
+            // To work around this, we set the environment variable to the gRPC endpoint.
+            // But only for the non-publish build, so this logic is not used in production.
+            string? hostName = Environment.GetEnvironmentVariable("PINECONE_GRPC_ENDPOINT");
+#else
+            string? hostName = null;
+#endif
+
+            this._indexClient = this._pineconeClient.Index(name: this.CollectionName, hostName);
+        }
+
+        return this._indexClient;
+    }
 
     private static ServerlessSpecCloud MapCloud(string serverlessIndexCloud)
         => serverlessIndexCloud switch

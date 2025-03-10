@@ -18,6 +18,10 @@
     <Description>Pinecone connector for Semantic Kernel plugins and semantic memory</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)'!='Publish'">
+    <DefineConstants>$(DefineConstants);NON_PUBLISH</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Pinecone.Client" />
     <PackageReference Include="System.Text.Json" />

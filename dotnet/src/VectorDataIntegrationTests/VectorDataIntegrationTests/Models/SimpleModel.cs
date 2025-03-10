@@ -11,6 +11,8 @@ namespace VectorDataSpecificationTests.Models;
 /// <typeparam name="TKey">TKey is a generic parameter because different connectors support different key types.</typeparam>
 public sealed class SimpleModel<TKey>
 {
+    public const int DimensionCount = 10;
+
     [VectorStoreRecordKey(StoragePropertyName = "key")]
     public TKey? Id { get; set; }
 
@@ -20,6 +22,6 @@ public sealed class SimpleModel<TKey>
     [VectorStoreRecordData(StoragePropertyName = "number")]
     public int Number { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
+    [VectorStoreRecordVector(Dimensions: DimensionCount, StoragePropertyName = "embedding")]
     public ReadOnlyMemory<float> Floats { get; set; }
 }
