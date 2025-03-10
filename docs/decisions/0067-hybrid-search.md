@@ -1,11 +1,11 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed | rejected | accepted | deprecated | � | superseded by [ADR-0001](0001-madr-architecture-decisions.md)}
+status: accepted
 contact: westey-m
-date: 2024-11-27
-deciders: {list everyone involved in the decision}
-consulted: {list everyone whose opinions are sought (typically subject-matter experts); and with whom there is a two-way communication}
-informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
+date: 2024-03-10
+deciders: westey-m, rbarreto, markwallace, sergeymenshykh, eavanvalkenburg, roji, dmytrostruk
+consulted: rbarreto, markwallace, sergeymenshykh, eavanvalkenburg, roji, dmytrostruk
+informed: rbarreto, markwallace, sergeymenshykh, eavanvalkenburg, roji, dmytrostruk
 ---
 
 # Support Hybrid Search in VectorStore abstractions
@@ -109,19 +109,145 @@ Each DB has different keyword search capabilities. Some only support a very basi
 |HybridSearchWithKeywordsAndVectorizableText|HybridSearch|string[] + string|HybridSearchOptions|FullTextPropertyName|VectorPropertyName|
 |HybridSearchWithVectorizableKeywordsAndText|HybridSearchWithSparseVector|string[] + string|HybridSearchWithSparseVectorOptions|SparseVectorPropertyName|VectorPropertyName|
 
-|Area|Type of search|Method Name|
-|-|-|-|
-|**Non-vector Search**|||
-|Non-vector Search||Search|
-|**Vector Search**|||
-|Vector Search|With Vector|VectorSearch|
-|Vector Search|With Vectorizable Text (string)|VectorSearchWithText|
-|Vector Search|With Vectorizable Image (string/byte[]/other)|VectorSearchWithImage|
-|**Hybrid Search**|||
-|Hybrid Search|With DenseVector and string[] keywords|HybridSearch|
-|Hybrid Search|With vectorizable string and string[] keywords|HybridSearch|
-|Hybrid Search|With DenseVector and SparseVector|HybridSearchWithSparseVector|
-|Hybrid Search|With vectorizable string and sparse vectorisable string[] keywords|HybridSearchWithSparseVector|
+|Area|Type of search|Params|Method Name|
+|-|-|-|-|
+|**Non-vector Search**||||
+|Non-vector Search|Regular, without vector||Search|
+|**Vector Search with named methods**||||
+|Vector Search|With Vector|`ReadonlyMemory<float> vector`|VectorSearch|
+|Vector Search|With Vectorizable Text|`string text`|VectorSearchWithText|
+|Vector Search|With Vectorizable Image|`string/byte[]/other image`|VectorSearchWithImage|
+|Vector Search|With Vectorizable Image+Text|`string/byte[]/other image, string text`|VectorSearchWithImageAndText|
+|**Vector Search with named params**||||
+|Vector Search|With Vector|`new Vector(ReadonlyMemory<float>)`|VectorSearch|
+|Vector Search|With Vectorizable Text|`new VectorizableText(string text)`|VectorSearch|
+|Vector Search|With Vectorizable Image|`new VectorizableImage(string/byte[]/other image)`|VectorSearch|
+|Vector Search|With Vectorizable Image+Text|`VectorizableMultimodal(string/byte[]/other image, string text)`|VectorSearch|
+|**Hybrid Search**||||
+|Hybrid Search|With DenseVector and string[] keywords|`ReadonlyMemory<float> vector, string[] keywords`|HybridSearch|
+|Hybrid Search|With vectorizable string and string[] keywords|`string vectorizableText, string[] keywords`|HybridSearch|
+|Hybrid Search|With DenseVector and SparseVector|`ReadonlyMemory<float> vector, ? sparseVector`|HybridSearchWithSparseVector|
+|Hybrid Search|With vectorizable string and sparse vectorisable string[] keywords|`string vectorizableText, string[] vectorizableKeywords`|HybridSearchWithSparseVector|
+
+```csharp
+var collection;
+
+// ----------------------- Method names vary -----------------------
+// We'll need to add a new interface with a new method name for each data type that we want to search for.
+
+public Task VectorSearch(ReadonlyMemory<float> vector, VectorSearchOptions options = null, CancellationToken cancellationToken);
+public Task VectorSearchWithText(string text, VectorSearchOptions options = null, CancellationToken cancellationToken = null);
+public Task VectorSearchWithImage(VectorizableData image, VectorSearchOptions options = null, CancellationToken cancellationToken = null);
+collection.VectorSearchWithImageAndText(VectorizableData image, string text, VectorSearchOptions options = null, CancellationToken cancellationToken = null);
+
+collection.VectorSearch(new ReadonlyMemory<float>([...]));
+collection.VectorSearchWithText("Apples and oranges are tasty.");
+collection.VectorSearchWithImage("fdslkjfskdlfjdslkjfdskljfdslkjfsd");
+collection.VectorSearchWithImageAndText("fdslkjfskdlfjdslkjfdskljfdslkjfsd", "Apples and oranges are tasty.");
+
+// ----------------------- Param types vary -----------------------
+// We'll need to add a new interface for each data type that we want to search for.
+
+// Vector Search
+public Task VectorSearch<TRecord>(Embedding embedding, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+public Task VectorSearch<TRecord>(VectorizableImage vectorizableImage, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task VectorSearch<TRecord>(VectorizableMultimodal vectorizableMultiModal, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+
+collection.VectorSearch(new Embedding(new ReadonlyMemory<float>([...])));
+collection.VectorSearch(new VectorizableText("Apples and oranges are tasty."));
+collection.VectorSearch(new VectorizableImage("fdslkjfskdlfjdslkjfdskljfdslkjfsd"));
+collection.VectorSearch(new VectorizableMultimodal("fdslkjfskdlfjdslkjfdskljfdslkjfsd", "Apples and oranges are tasty."));
+
+// Hybrid search
+// Same as next option, since hybrid is currently explicitly dense vectors plus keywords.
+
+// ----------------------- Array of params inheriting from a common base type -----------------------
+// We can potentially add extension methods, to make it easier to use.
+// We just need to add new embedding or vectorizable data types for new data types that we want to search for.
+
+// Vector Search
+public Task VectorSearch<TRecord>(Embedding embedding, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task VectorSearch<TRecord>(VectorizableData vectorizableData, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task VectorSearch<TRecord>(VectorizableData[] vectorizableData, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task VectorSearch<TRecord, TVectorType>(TVectorType embedding, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+
+// Convenience extension methods
+public Task VectorSearch<TRecord>(Embedding embedding, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+public Task VectorSearch<TRecord>(string text, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+
+public Task Search<TRecord>(NonVectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+
+collection.VectorSearch(new Embedding(new ReadonlyMemory<float>([...])));
+collection.VectorSearch("Apples and oranges are tasty."); // Via extension?
+collection.VectorSearch(new VectorizableData("Apples and oranges are tasty.", "text/plain"));
+
+collection.VectorSearch(["Apples and oranges are tasty."]); // Via extension?
+collection.VectorSearch([new VectorizableData("Apples and oranges are tasty.", "text/plain")]);
+collection.VectorSearch([new VectorizableData("fdslkjfskdlfjdslkjfdskljfdslkjfsd", "image/jpeg")]);
+collection.VectorSearch([new VectorizableData("fdslkjfskdlfjdslkjfdskljfdslkjfsd", "image/jpeg"), new VectorizableText("Apples and oranges are tasty.")]);
+
+// Hybrid search
+public Task HybridSearch<TRecord, TVectorType>(TVector vector, VectorizableData vectorizableData, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+
+public Task HybridSearch<TRecord>(Embedding denseVector, Embedding sparseVector, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task HybridSearch<TRecord>(Embedding Densevector, VectorizableData sparseVectorizableData, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task HybridSearch<TRecord>(VectorizableData denseVectorizableData, VectorizableData sparseVectorizableData, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task HybridSearch<TRecord>(VectorizableData denseVectorizableData, Embedding sparseVector, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+
+collection.HybridSearch(new Embedding(new ReadonlyMemory<float>([...])), ["Apples", "Oranges"], new() { VectorPropertyName = "DescriptionEmbedding", FullTextPropertyName = "Keywords" })
+collection.HybridSearch(new VectorizableText("Apples and oranges are tasty."), ["Apples", "Oranges"], new() { VectorPropertyName = "DescriptionEmbedding", FullTextPropertyName = "Keywords" });
+collection.HybridSearchWithSparseVector(new Embedding(new ReadonlyMemory<float>([...])), new SparseEmbedding(), new() { VectorPropertyName = "DescriptionEmbedding", SparseVectorPropertyName = "KeywordsEmbedding" });
+collection.HybridSearchWithSparseVector(new VectorizableText("Apples and oranges are tasty."), new SparseEmbedding(), new() { VectorPropertyName = "DescriptionEmbedding", SparseVectorPropertyName = "KeywordsEmbedding" });
+collection.HybridSearchWithSparseVector(new VectorizableText("Apples and oranges are tasty."), new SparseVectorizableText("Apples", "Oranges"), new() { VectorPropertyName = "DescriptionEmbedding", SparseVectorPropertyName = "KeywordsEmbedding" });
+
+// ----------------------- One name, regular params, common options, with target property type determining search type -----------------------
+
+// With generic vector (short term)
+public Task HybridSearch<TRecord, TVectorType>(TVector vector, string[] keywords, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+
+// With embedding (long term)
+public Task HybridSearch<TRecord>(Embedding vector, string[] keywords, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+public Task HybridSearch<TRecord>(Embedding vector, SparseEmbedding sparseVector, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+public Task HybridSearch<TRecord>(string vectorizableText, SparseEmbedding sparseVector, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+public Task HybridSearch<TRecord>(string vectorizableText, string[] sparseVectorizableText, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+public Task HybridSearch<TRecord>(Embedding vector, string[] sparseVectorizableText, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+
+// Is there a good name for the fulltextsearchproperty/sparsevectorproperty.
+HybridSearchPropertyName
+AdditionalSearchPropertyName
+AdditionalPropertyName
+SecondaryPropertyName
+HybridSearchSecondaryPropertyName
+KeywordsPropertyName
+KeywordsSearchPropertyName
+
+// ----------------------- Pass Embedding/VectorizableContent via common base class with target property name -----------------------
+
+class SearchTarget<TRecord>();
+class VectorSearchTarget<TRecord, TVectorType>(ReadonlyMemory<TVectorType> vector, Expression<Func<TRecord, object>> targetProperty) : SearchTarget<TRecord>();
+class KeywordsSearchTarget<TRecord>(string[] keywords, Expression<Func<TRecord, object>> targetProperty) : SearchTarget<TRecord>();
+class SparseSearchTarget<TRecord>(SparseVector vector, Expression<Func<TRecord, object>> targetProperty) : SearchTarget<TRecord>();
+
+public Task HybridSearch(
+    SearchTarget<TRecord>[] searchParams,
+    HybridSearchOptions options = null,
+    CancellationToken cancellationToken);
+// Extension Methods:
+public Task HybridSearch(
+    ReadonlyMemory<float> vector vector,
+    string targetVectorPropertyName,
+    string[] keywords,
+    string targetHybridSearchPropertyName,
+    HybridSearchOptions options = null,
+    CancellationToken cancellationToken);
+public Task HybridSearch(
+    ReadonlyMemory<float> vector vector,
+    string targetVectorFieldName,
+    SparseVector sparseVector,
+    string targetHybridSearchPropertyName,
+    HybridSearchOptions options = null,
+    CancellationToken cancellationToken);
+```
 
 ### Keyword based hybrid search
 
@@ -393,3 +519,25 @@ Chosen option "2. Implicit Dense naming", since it is consistent with the existi
 ### Keyword splitting
 
 Chosen option "1. Accept Split keywords in interface", since it is the only one with broad support amongst databases.
+
+### Naming Options decision
+
+We agreed that our north star design would be to support the Embedding type and some form of vectorizable data (probably DataContent from MEAI) as input for both
+Regular search and Hybrid search.
+
+```csharp
+public Task VectorSearch<TRecord>(Embedding embedding, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task VectorSearch<TRecord>(VectorizableData vectorizableData, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+public Task VectorSearch<TRecord>(VectorizableData[] vectorizableData, VectorSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+
+public Task HybridSearch<TRecord, TVectorType>(TVector vector, VectorizableData vectorizableData, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken = null);
+```
+
+We will have a single HybridSearch method name, with different overloads in future for different inputs, however there will be a single options class.
+The property selector for choosing the target keyword field or in future the sparse vector field will be called `AdditionalPropertyName`.
+
+While we work on getting the right data types and Embedding types to be available, we will ship the following interface.
+
+```csharp
+public Task HybridSearch<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord> options = null, CancellationToken cancellationToken);
+```
