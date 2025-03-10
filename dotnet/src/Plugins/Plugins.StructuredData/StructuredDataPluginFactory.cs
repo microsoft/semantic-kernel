@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel;
+using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Reflection;
 
-namespace StructuredDataConnector;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Factory class for creating Semantic Kernel plugins that enable structured data operations.

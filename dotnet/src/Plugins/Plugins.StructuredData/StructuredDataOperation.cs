@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace StructuredDataConnector;
+using System;
+using System.Collections.Generic;
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A description of the supported database operations within a structured data service.
@@ -30,7 +33,7 @@ public readonly struct StructuredDataOperation : IEquatable<StructuredDataOperat
     /// <summary>
     /// The default set of supported operations.
     /// </summary>
-    public static readonly IReadOnlySet<StructuredDataOperation> Default = new HashSet<StructuredDataOperation>
+    public static readonly HashSet<StructuredDataOperation> Default = new()
     {
         Select,
         Insert,
@@ -49,10 +52,7 @@ public readonly struct StructuredDataOperation : IEquatable<StructuredDataOperat
     /// <param name="label">The label to associate with this operation.</param>
     public StructuredDataOperation(string label)
     {
-        if (string.IsNullOrWhiteSpace(label))
-        {
-            throw new ArgumentException("The value cannot be null or whitespace.", nameof(label));
-        }
+        Verify.NotNullOrWhiteSpace(label);
         this.Label = label;
     }
 

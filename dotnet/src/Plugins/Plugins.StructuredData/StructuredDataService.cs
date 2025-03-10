@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Data.Entity;
+using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection.Metadata;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace StructuredDataConnector;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides a structured data service for a database context.
@@ -33,8 +36,9 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// <param name="dbContext">The database context.</param>
     public StructuredDataService(TContext dbContext)
     {
-        this.Context = dbContext
-            ?? throw new ArgumentNullException(nameof(dbContext));
+        Verify.NotNull(dbContext);
+
+        this.Context = dbContext;
     }
 
     /// <summary>
@@ -62,7 +66,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// <returns>The inserted entity.</returns>
     public async Task<TEntity> InsertAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
     {
-        if (entity is null) { throw new ArgumentNullException(nameof(entity)); }
+        Verify.NotNull(entity);
 
         this.Context.Set<TEntity>().Add(entity);
         await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -79,7 +83,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// <returns>The number of affected rows.</returns>
     public async Task<int> UpdateAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
     {
-        if (entity is null) { throw new ArgumentNullException(nameof(entity)); }
+        Verify.NotNull(entity);
 
         var entry = this.Context.Entry(entity);
         if (entry.State == EntityState.Detached)
@@ -100,7 +104,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// <returns>The number of affected rows.</returns>
     public async Task<int> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
     {
-        if (entity is null) { throw new ArgumentNullException(nameof(entity)); }
+        Verify.NotNull(entity);
 
         var entry = this.Context.Entry(entity);
         if (entry.State == EntityState.Detached)
@@ -141,7 +145,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// <param name="filter">Filter string.</param>
     /// <returns>Expression representing the filter.</returns>
     /// <exception cref="NotSupportedException">Operator not supported.</exception>
-    protected virtual Expression<Func<TEntity, bool>> ParseQuery<TEntity>(string filter)
+    protected virtual Expression<Func<TEntity, bool>> ParseQuery<TEntity>(string? filter)
     {
         if (string.IsNullOrWhiteSpace(filter))
         {
@@ -149,8 +153,8 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
         }
 
         var param = Expression.Parameter(typeof(TEntity), "p");
-        var conditions = filter.Split(new[] { " and ", " or " }, StringSplitOptions.None);
-        Expression combined = null;
+        var conditions = filter.Split([" and ", " or "], StringSplitOptions.None);
+        Expression? combined = null;
         bool isOr = filter.Contains(" or ");
 
         foreach (var condition in conditions)
@@ -160,15 +164,15 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
 
             if (trimmed.Contains("contains("))
             {
-                current = ParseMethod(trimmed, "contains", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("Contains", new[] { typeof(string) }), v));
+                current = ParseMethod(trimmed, "contains", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("Contains", [typeof(string)])!, v));
             }
             else if (trimmed.Contains("startswith("))
             {
-                current = ParseMethod(trimmed, "startswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("StartsWith", new[] { typeof(string) }), v));
+                current = ParseMethod(trimmed, "startswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("StartsWith", [typeof(string)])!, v));
             }
             else if (trimmed.Contains("endswith("))
             {
-                current = ParseMethod(trimmed, "endswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("EndsWith", new[] { typeof(string) }), v));
+                current = ParseMethod(trimmed, "endswith", param, (m, v) => Expression.Call(m, typeof(string).GetMethod("EndsWith", [typeof(string)])!, v));
             }
             else
             {
@@ -196,12 +200,14 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
                     _ => throw new NotSupportedException($"Operator {op} not supported")
                 };
             }
+
+            combined = combined == null ? current : (isOr ? Expression.OrElse(combined, current) : Expression.AndAlso(combined, current));
         }
 
         static Expression ParseMethod(string condition, string methodName, ParameterExpression param, Func<Expression, Expression, Expression> methodCall)
         {
-            var start = condition.IndexOf(methodName + "(") + methodName.Length + 1;
-            var end = condition.LastIndexOf(")");
+            var start = condition.IndexOf(methodName + "(", StringComparison.OrdinalIgnoreCase) + methodName.Length + 1;
+            var end = condition.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
             var args = condition.Substring(start, end - start).Split(',');
             var property = args[0].Trim();
             var value = args[1].Trim().Trim('\'');
@@ -211,7 +217,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
             return methodCall(member, constant);
         }
 
-        return Expression.Lambda<Func<TEntity, bool>>(combined, param);
+        return Expression.Lambda<Func<TEntity, bool>>(combined!, param);
     }
 
     /// <summary>

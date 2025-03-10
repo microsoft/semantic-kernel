@@ -6,7 +6,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using System.Text.Json;
 
-#pragma warning disable SKEXP0070 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0070, SKEXP0050 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable CA2007, VSTHRD111 // .ConfigureAwait(false)
 
 namespace StructuredDataConnector;
@@ -85,11 +85,15 @@ internal sealed class Program
 
     private class MyHandler : HttpClientHandler
     {
+        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
+        {
+            WriteIndented = true,
+        };
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var requestBody = await request.Content.ReadAsStringAsync(cancellationToken);
+            var requestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
             // Console.WriteLine($"Request: {request.Method} {request.RequestUri}");
-            Console.WriteLine($"Request Body: {JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(requestBody), new JsonSerializerOptions { WriteIndented = true })}");
+            Console.WriteLine($"Request Body: {JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(requestBody), s_jsonSerializerOptions)}");
             // Custom logic for handling HTTP requests
             return await base.SendAsync(request, cancellationToken);
         }

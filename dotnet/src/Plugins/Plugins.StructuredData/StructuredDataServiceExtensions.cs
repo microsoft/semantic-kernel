@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Data.Entity;
-using System.Text.Json;
-using System.Text.Json.Schema;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.SemanticKernel;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace StructuredDataConnector;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Extension methods for <see cref="StructuredDataService{TContext}"/>.
