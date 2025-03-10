@@ -4,16 +4,16 @@ import faiss
 from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.faiss import FaissCollection, FaissStore
-from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data import (
+    DistanceFunction,
+    VectorSearchFilter,
+    VectorSearchOptions,
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
+from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
 @fixture(scope="function")

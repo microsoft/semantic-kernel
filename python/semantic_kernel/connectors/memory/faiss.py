@@ -26,7 +26,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import Ve
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.exceptions.vector_store_exceptions import (
+from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TModel]):
     """Create a Faiss collection.
 
-    The Faiss Collection builds on the InMemoryVectorCollection.
-    It adds Faiss Indexes for each of the vector fields.
+    The Faiss Collection builds on the InMemoryVectorCollection,
+    it maintains indexes and mappings for each vector field.
     """
 
     indexes: MutableMapping[str, faiss.Index] = Field(default_factory=dict)
@@ -137,7 +137,10 @@ class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TMod
     ) -> None:
         """Create a collection.
 
-        Create a Faiss index for each vector field.
+        Considering the complexity of different faiss indexes, we support a limited set.
+        For more advanced scenario's you can create your own indexes and pass them in here.
+        This includes indexes that need training, or GPU-based indexes, since you would also
+        need to build the faiss package for use with GPU's yourself.
 
         Args:
             index: The index to use, this can be used when there is only one vector field.
@@ -199,14 +202,21 @@ class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TMod
         assert isinstance(self.data_model_definition.fields.get(field), VectorStoreRecordVectorField)  # nosec
         if vector and field:
             return_list = []
+            # since the vector index works independently of the record index,
+            # we will need to get all records that adhere to the filter first
             filtered_records = self._get_filtered_records(options)
             np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
+            # then do the actual vector search
             distances, indexes = self.indexes[field].search(np_vector, min(options.top, self.indexes[field].ntotal))
+            # we then iterate through the results, the order is the order of relevance
+            # (less or most distance, dependant on distance metric used)
             for i, index in enumerate(indexes[0]):
                 key = list(self.indexes_key_map[field].keys())[index]
+                # if the key is not in the filtered records, we ignore it
                 if key not in filtered_records:
                     continue
                 filtered_records[key][IN_MEMORY_SCORE_KEY] = distances[0][i]
+                # so we return the list in the order of the search, with the record from the inner_storage.
                 return_list.append(filtered_records[key])
         return KernelSearchResults(
             results=self._get_vector_search_results_from_results(return_list, options),

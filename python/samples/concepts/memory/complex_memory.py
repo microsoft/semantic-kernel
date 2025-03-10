@@ -194,7 +194,6 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "faiss": lambda: FaissCollection[str, DataModel](
         collection_name=collection_name,
         data_model_type=DataModel,
-        enable_gpu=False,
     ),
 }
 
@@ -299,5 +298,4 @@ if __name__ == "__main__":
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     args = parser.parse_args()
-    args.collection = "faiss"
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))
