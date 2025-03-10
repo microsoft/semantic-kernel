@@ -66,7 +66,7 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
 
         // Assert
         Assert.Throws<KernelException>(() =>
-            kernel.GetRequiredService<IChatCompletionService>());
+            kernel.GetRequiredService<ITextEmbeddingGenerationService>());
     }
 
     /// <summary>
