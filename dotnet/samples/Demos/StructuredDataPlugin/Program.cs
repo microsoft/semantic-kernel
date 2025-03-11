@@ -24,15 +24,12 @@ internal sealed class Program
         var serviceProvider = serviceCollection.BuildServiceProvider();
         var config = serviceProvider.GetRequiredService<IConfiguration>();
         using var structuredDataService = serviceProvider.GetRequiredService<StructuredDataService<ApplicationDbContext>>();
-        using var myHandler = new MyHandler();
-        using var httpClient = new HttpClient(myHandler);
 
         // Create kernel builder and add OpenAI
         var kernelBuilder = Kernel.CreateBuilder()
             .AddOpenAIChatCompletion(
                 modelId: "gpt-4o",
-                apiKey: config["OpenAI:ApiKey"]!,
-                httpClient: httpClient);
+                apiKey: config["OpenAI:ApiKey"]!);
 
         // Add the database plugin using the factory with default operations
         var databasePlugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<ApplicationDbContext, Product>(
@@ -92,20 +89,6 @@ internal sealed class Program
 
             var result = await kernel.InvokePromptAsync(userInput, new(settings));
             Console.WriteLine($"\nResult: {result}");
-        }
-    }
-
-    private sealed class MyHandler : HttpClientHandler
-    {
-        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true };
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var requestBody = await request.Content!.ReadAsStringAsync(cancellationToken);
-            // Console.WriteLine($"Request: {request.Method} {request.RequestUri}");
-            // Console.WriteLine($"Request Body: {JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonElement>(requestBody), s_jsonSerializerOptions)}");
-            // Custom logic for handling HTTP requests
-            return await base.SendAsync(request, cancellationToken);
         }
     }
 }
