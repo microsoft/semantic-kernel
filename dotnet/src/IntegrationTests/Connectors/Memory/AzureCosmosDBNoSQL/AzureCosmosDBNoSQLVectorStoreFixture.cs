@@ -22,12 +22,17 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
     public AzureCosmosDBNoSQLVectorStoreFixture()
     {
         var connectionString = GetConnectionString();
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new ArgumentNullException($"{connectionString} string is not configured");
+        }
+
         var options = new CosmosClientOptions { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default };
 
         this._cosmosClient = new CosmosClient(connectionString, options);
     }
 
-    public static string GetConnectionString()
+    public static string? GetConnectionString()
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
@@ -40,13 +45,7 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             .AddUserSecrets<AzureCosmosDBNoSQLVectorStoreFixture>()
             .Build();
 
-        var settingValue = configuration[ConnectionStringKey];
-        if (string.IsNullOrWhiteSpace(settingValue))
-        {
-            throw new ArgumentNullException($"{settingValue} string is not configured");
-        }
-
-        return settingValue;
+        return configuration[ConnectionStringKey];
     }
 
     public async Task InitializeAsync()
