@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -795,9 +795,13 @@ internal sealed class MistralClient
                     content.Add(new ImageUrlChunk(imageContent.DataUri));
                 }
             }
+            else if(item is DocumentContent documentContent)
+            {
+                content.Add(new DocumentUrlChunk(documentContent.Link!));
+            }
             else
             {
-                throw new NotSupportedException("Invalid message content, only text and image url are supported.");
+                throw new NotSupportedException("Invalid message content, only text , image url and document url are supported.");
             }
         }
 
