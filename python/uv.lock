@@ -343,20 +343,6 @@ wheels = [
 
 [[package]]
 name = "azure-ai-inference"
-version = "1.0.0b9"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4e/6a/ed85592e5c64e08c291992f58b1a94dab6869f28fb0f40fd753dced73ba6/azure_ai_inference-1.0.0b9.tar.gz", hash = "sha256:1feb496bd84b01ee2691befc04358fa25d7c344d8288e99364438859ad7cd5a4", size = 182408 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4f/0f/27520da74769db6e58327d96c98e7b9a07ce686dff582c9a5ec60b03f9dd/azure_ai_inference-1.0.0b9-py3-none-any.whl", hash = "sha256:49823732e674092dad83bb8b0d1b65aa73111fab924d61349eb2a8cdc0493990", size = 124885 },
-]
-
-[[package]]
-name = "azure-ai-projects"
 version = "1.0.0b6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
@@ -364,9 +350,23 @@ dependencies = [
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/72/5f9a78c913af66c55222ff912227b494707c4adfbdca27a78c3687a1b8ba/azure_ai_projects-1.0.0b6.tar.gz", hash = "sha256:ce6cfb2403eeb1a80e5dd84193fb2864953cd95a351f3d4572a5451bbb4c30d2", size = 298737 }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/c9/264ae0ef0460dbd7c7efe1d3a093ad6a00fb2823d341ac457459396df2d6/azure_ai_inference-1.0.0b6.tar.gz", hash = "sha256:b8ac941de1e69151bad464191e18856d4e74f962ae03235da137a9a326143676", size = 145414 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/d9/14b31fc773072b63493d55a1a5b60e656f11aeea2b603fef2eb567686d96/azure_ai_projects-1.0.0b6-py3-none-any.whl", hash = "sha256:b0689825065648b54b4405e9edd22b1de3ea0dfc1ca3baf99db5173fd6208692", size = 187221 },
+    { url = "https://files.pythonhosted.org/packages/5a/aa/47459ab2e67c55ff98dbb9694c47cf98e484ce1ae1acb244d28b25a8c1c1/azure_ai_inference-1.0.0b6-py3-none-any.whl", hash = "sha256:5699ad78d70ec2d227a5eff2c1bafc845018f6624edc5b03589dfff861c54958", size = 115312 },
+]
+
+[[package]]
+name = "azure-ai-projects"
+version = "1.0.0b5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+    { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/0f/47600c1c3bb1b92913350c9878c517ccbd2630f4c5393cd4054dc71d5fbd/azure_ai_projects-1.0.0b5.tar.gz", hash = "sha256:7bb068b38a8810c5a59a628e18f196c76af2a06cb774e725b97bfc8b61b3aaf0", size = 303846 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2f/3b/5ef0717685e4d3e3b537d7538e430199ab4c16665766ab3de90d5fedc8ef/azure_ai_projects-1.0.0b5-py3-none-any.whl", hash = "sha256:7ed7a44e8d76bf108be7de6f33b9c54a63fc47193cd259770006a6862ce25ccd", size = 193481 },
 ]
 
 [[package]]
@@ -4537,15 +4537,15 @@ name = "qdrant-client"
 version = "1.13.2"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
-    "python_full_version == '3.11.*' and sys_platform == 'darwin'",
     "python_full_version < '3.11' and sys_platform == 'darwin'",
-    "python_full_version == '3.12.*' and sys_platform == 'linux'",
-    "python_full_version == '3.11.*' and sys_platform == 'linux'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
     "python_full_version < '3.11' and sys_platform == 'linux'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'linux'",
+    "python_full_version == '3.12.*' and sys_platform == 'linux'",
     "python_full_version < '3.11' and sys_platform == 'win32'",
+    "python_full_version == '3.11.*' and sys_platform == 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32'",
 ]
 dependencies = [
     { name = "grpcio", marker = "(python_full_version < '3.13' and sys_platform == 'darwin') or (python_full_version < '3.13' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'win32')" },
@@ -5176,8 +5176,8 @@ requires-dist = [
     { name = "aiortc", marker = "extra == 'realtime'", specifier = ">=1.9.0" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
-    { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
-    { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = ">=1.0.0b5" },
+    { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = "==1.0.0b6" },
+    { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = "==1.0.0b5" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = "~=1.13" },
