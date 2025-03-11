@@ -384,7 +384,7 @@ class PineconeCollection(
                     "You are using Pinecone with integrated embeddings, it is advisable to use the "
                     "vectorizable text search instead."
                     "Make sure to supply a vector created with the same model as the one used by the "
-                    f"index: {self.index.embed.model}"
+                    f"index: {self.index.embed.model if self.index else ''}"
                 )
             search_args = {
                 "vector": vector,
