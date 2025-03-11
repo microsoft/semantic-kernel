@@ -2,6 +2,7 @@
 
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
+using Amazon.BedrockAgentRuntime;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
@@ -12,10 +13,12 @@ public abstract class BaseBedrockAgentTest : BaseTest
     protected const string AgentDescription = "A helpful assistant who helps users find information.";
     protected const string AgentInstruction = "You're a helpful assistant who helps users find information.";
     protected readonly AmazonBedrockAgentClient Client;
+    protected readonly AmazonBedrockAgentRuntimeClient RuntimeClient;
 
     protected BaseBedrockAgentTest(ITestOutputHelper output) : base(output, redirectSystemConsoleOutput: true)
     {
         Client = new AmazonBedrockAgentClient();
+        RuntimeClient = new AmazonBedrockAgentRuntimeClient();
     }
 
     protected CreateAgentRequest GetCreateAgentRequest(string agentName) => new()
@@ -30,6 +33,7 @@ public abstract class BaseBedrockAgentTest : BaseTest
     protected override void Dispose(bool disposing)
     {
         Client?.Dispose();
+        RuntimeClient?.Dispose();
         base.Dispose(disposing);
     }
 
