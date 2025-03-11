@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel;
 
@@ -46,6 +47,12 @@ public static class OpenAIChatHistoryExtensions
         await foreach (var chatMessage in streamingMessageContents.ConfigureAwait(false))
         {
             metadata ??= (Dictionary<string, object?>?)chatMessage.Metadata;
+
+            // check if AutoInvoke started the next completion request
+            if (chatMessage.FinishReason == ChatFinishReason.FunctionCall || chatMessage.FinishReason == ChatFinishReason.ToolCalls || chatMessage.FinishReason == ChatFinishReason.Stop)
+            {
+                contentBuilder?.Clear();
+            }
 
             if (chatMessage.Content is { Length: > 0 } contentUpdate)
             {

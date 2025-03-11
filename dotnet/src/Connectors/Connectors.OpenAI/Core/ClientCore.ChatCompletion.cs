@@ -349,6 +349,7 @@ internal partial class ClientCore
                             }
                         }
                         streamedContents?.Add(openAIStreamingChatMessageContent);
+                        openAIStreamingChatMessageContent.FinishReason = ChatFinishReason.FunctionCall;
                         yield return openAIStreamingChatMessageContent;
                     }
 
@@ -397,7 +398,7 @@ internal partial class ClientCore
 
             if (lastMessage != null)
             {
-                yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content);
+                yield return new OpenAIStreamingChatMessageContent(lastMessage.Role, lastMessage.Content, completionsFinishReason: ChatFinishReason.FunctionCall);
                 yield break;
             }
 
