@@ -41,16 +41,16 @@ internal static class AgentToolDefinitionExtensions
                 string? type = parameterProps.TryGetValue("type", out var typeValue) && typeValue is string typeString ? typeString : null;
                 string? description = parameterProps.TryGetValue("description", out var descriptionValue) && descriptionValue is string descriptionString ? descriptionString : string.Empty;
 
-                if (name is null || type is null)
+                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(type))
                 {
                     throw new ArgumentException("The configuration keys 'name' and 'type' are required for a parameter.");
                 }
 
                 if (isRequired)
                 {
-                    parameterSpec.Required.Add(name);
+                    parameterSpec.Required.Add(name!);
                 }
-                parameterSpec.Properties.Add(name, KernelJsonSchema.Parse($"{{ \"type\": \"{type}\", \"description\": \"{description}\" }}"));
+                parameterSpec.Properties.Add(name!, KernelJsonSchema.Parse($"{{ \"type\": \"{type}\", \"description\": \"{description}\" }}"));
             }
         }
 

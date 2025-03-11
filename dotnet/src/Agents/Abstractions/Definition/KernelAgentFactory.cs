@@ -46,18 +46,13 @@ public abstract class KernelAgentFactory
     /// <param name="agentDefinition">Definition of the agent to create.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <return>The created <see cref="KernelAgent"/>, if null the agent type is not supported.</return>
-    public Task<KernelAgent> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public async Task<KernelAgent> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(agentDefinition);
 
-        var result = this.TryCreateAsync(kernel, agentDefinition, cancellationToken);
-        if (result is not null)
-        {
-            return result!;
-        }
-
-        throw new KernelException($"Agent type {agentDefinition.Type} is not supported.");
+        var kernelAgent = await this.TryCreateAsync(kernel, agentDefinition, cancellationToken).ConfigureAwait(false);
+        return (KernelAgent?)kernelAgent ?? throw new KernelException($"Agent type {agentDefinition.Type} is not supported.");
     }
 
     /// <summary>
