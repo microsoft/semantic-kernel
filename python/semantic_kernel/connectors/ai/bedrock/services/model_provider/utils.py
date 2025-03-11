@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.connectors.ai.bedrock.bedrock_prompt_execution_settings import BedrockChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
-from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -102,7 +101,7 @@ def _format_assistant_message(message: ChatMessageContent) -> dict[str, Any]:
             contents.append({
                 "toolUse": {
                     "toolUseId": item.id,
-                    "name": item.custom_fully_qualified_name(BEDROCK_FUNCTION_NAME_SEPARATOR),
+                    "name": item.name,
                     "input": item.arguments
                     if isinstance(item.arguments, Mapping)
                     else json.loads(item.arguments or "{}"),
@@ -157,19 +156,6 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], dict[str, An
     AuthorRole.TOOL: _format_tool_message,
 }
 
-# The separator used in the fully qualified name of the function instead of the default "-" separator.
-# This is required since Bedrock disallows "-" in the function name.
-# https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ToolSpecification.html#API_runtime_ToolSpecification_Contents
-BEDROCK_FUNCTION_NAME_SEPARATOR = "_"
-
-
-def format_bedrock_function_name_to_kernel_function_fully_qualified_name(bedrock_function_name: str) -> str:
-    """Format the Bedrock function name to the kernel function fully qualified name."""
-    if BEDROCK_FUNCTION_NAME_SEPARATOR in bedrock_function_name:
-        plugin_name, function_name = bedrock_function_name.split(BEDROCK_FUNCTION_NAME_SEPARATOR, 1)
-        return f"{plugin_name}{DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR}{function_name}"
-    return bedrock_function_name
-
 
 def update_settings_from_function_choice_configuration(
     function_choice_configuration: "FunctionCallChoiceConfiguration",
@@ -198,16 +184,14 @@ def update_settings_from_function_choice_configuration(
             else:
                 settings.tool_choice = {
                     "tool": {
-                        "name": function_choice_configuration.available_functions[0].custom_fully_qualified_name(
-                            BEDROCK_FUNCTION_NAME_SEPARATOR
-                        ),
+                        "name": function_choice_configuration.available_functions[0].fully_qualified_name,
                     }
                 }
 
         settings.tools = [
             {
                 "toolSpec": {
-                    "name": function.custom_fully_qualified_name(BEDROCK_FUNCTION_NAME_SEPARATOR),
+                    "name": function.fully_qualified_name,
                     "description": function.description or "",
                     "inputSchema": {
                         "json": {

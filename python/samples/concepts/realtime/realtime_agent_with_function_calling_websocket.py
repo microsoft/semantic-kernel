@@ -5,24 +5,20 @@ import logging
 from datetime import datetime
 from random import randint
 
-from samples.concepts.realtime.utils import AudioPlayerWebRTC, AudioRecorderWebRTC, check_audio_devices
+from samples.concepts.realtime.utils import AudioPlayerWebsocket, AudioRecorderWebsocket
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
+    AzureRealtimeExecutionSettings,
+    AzureRealtimeWebsocket,
     ListenEvents,
-    OpenAIRealtimeExecutionSettings,
-    OpenAIRealtimeWebRTC,
     TurnDetection,
 )
-from semantic_kernel.contents import ChatHistory
-from semantic_kernel.contents.realtime_events import RealtimeTextEvent
+from semantic_kernel.contents import ChatHistory, RealtimeTextEvent
 from semantic_kernel.functions import kernel_function
 
-logging.basicConfig(level=logging.WARNING)
-utils_log = logging.getLogger("samples.concepts.realtime.utils")
-utils_log.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 """
 This simple sample demonstrates how to use the OpenAI Realtime API to create
@@ -32,18 +28,10 @@ It requires installing:
 - pyaudio
 - sounddevice
 - pydub
-e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+e.g. pip install pyaudio sounddevice pydub semantic-kernel[realtime]
 
 For more details of the exact setup, see the README.md in the realtime folder.
 """
-
-# The characterics of your speaker and microphone are a big factor in a smooth conversation
-# so you may need to try out different devices for each.
-# you can also play around with the turn_detection settings to get the best results.
-# It has device id's set in the AudioRecorderStream and AudioPlayerAsync classes,
-# so you may need to adjust these for your system.
-# you can disable the check for available devices by commenting the line below
-check_audio_devices()
 
 
 @kernel_function
@@ -71,26 +59,28 @@ def goodbye():
 
 async def main() -> None:
     print_transcript = True
-    # create the Kernel and add a simple function for function calling.
+    # create a Kernel and add a simple function for function calling.
     kernel = Kernel()
     kernel.add_functions(plugin_name="helpers", functions=[goodbye, get_weather, get_date_time])
 
+    # create the realtime agent, in this using Azure OpenAI through Websockets,
+    # there are also OpenAI Websocket and WebRTC clients
+    # See realtime_agent_with_function_calling_webrtc.py for an example of the WebRTC client
+    realtime_agent = AzureRealtimeWebsocket()
     # create the audio player and audio track
     # both take a device_id parameter, which is the index of the device to use, if None the default device is used
-    audio_player = AudioPlayerWebRTC()
-    # create the realtime client and optionally add the audio output function, this is optional
-    # and can also be passed in the receive method
-    realtime_client = OpenAIRealtimeWebRTC(audio_track=AudioRecorderWebRTC())
+    audio_player = AudioPlayerWebsocket()
+    audio_recorder = AudioRecorderWebsocket(realtime_client=realtime_agent)
 
     # Create the settings for the session
-    # The realtime api, does not use a system message, but takes instructions as a parameter for a session
+    # The realtime api, does not use a system message, but, like agents, takes instructions as a parameter for a session
     # Another important setting is to tune the server_vad turn detection
     # if this is turned off (by setting turn_detection=None), you will have to send
     # the "input_audio_buffer.commit" and "response.create" event to the realtime api
     # to signal the end of the user's turn and start the response.
     # manual VAD is not part of this sample
     # for more info: https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-turn_detection
-    settings = OpenAIRealtimeExecutionSettings(
+    settings = AzureRealtimeExecutionSettings(
         instructions="""
     You are a chat bot. Your name is Mosscap and
     you have one goal: figure out what people need.
@@ -99,26 +89,33 @@ async def main() -> None:
     effectively, but you tend to answer with long
     flowery prose.
     """,
+        # see https://platform.openai.com/docs/api-reference/realtime-sessions/create#realtime-sessions-create-voice for the full list of voices # noqa: E501
         voice="alloy",
         turn_detection=TurnDetection(type="server_vad", create_response=True, silence_duration_ms=800, threshold=0.8),
         function_choice_behavior=FunctionChoiceBehavior.Auto(),
     )
-    # and we can add a chat history to conversation after starting it
+    # and we can add a chat history to conversation to seed the conversation
     chat_history = ChatHistory()
-    chat_history.add_user_message("Hi there, who are you?")
-    chat_history.add_assistant_message("I am Mosscap, a chat bot. I'm trying to figure out what people need.")
+    chat_history.add_user_message("Hi there, I'm based in Amsterdam.")
+    chat_history.add_assistant_message(
+        "I am Mosscap, a chat bot. I'm trying to figure out what people need, "
+        "I can tell you what the weather is or the time."
+    )
 
-    # the context manager calls the create_session method on the client and starts listening to the audio stream
+    # the context manager calls the create_session method on the agent and starts listening to the audio stream
     async with (
         audio_player,
-        realtime_client(
+        audio_recorder,
+        realtime_agent(
             settings=settings,
             chat_history=chat_history,
             kernel=kernel,
             create_response=True,
         ),
     ):
-        async for event in realtime_client.receive(audio_output_callback=audio_player.client_callback):
+        # the audio_output_callback can be added here or in the constructor
+        # using this gives the smoothest experience
+        async for event in realtime_agent.receive(audio_output_callback=audio_player.client_callback):
             match event:
                 case RealtimeTextEvent():
                     if print_transcript:
@@ -130,12 +127,13 @@ async def main() -> None:
                             if print_transcript:
                                 print("\nMosscap (transcript): ", end="")
                         case ListenEvents.ERROR:
+                            print(event.service_event)
                             logger.error(event.service_event)
 
 
 if __name__ == "__main__":
     print(
-        "Instructions: The model will start speaking immediately,"
+        "Instructions: The agent will start speaking immediately,"
         "this can be turned off by removing `create_response=True` above."
         "The model will detect when you stop and automatically generate a response. "
         "Press ctrl + c to stop the program."

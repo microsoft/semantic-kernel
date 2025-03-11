@@ -5,8 +5,8 @@ on:
     types: [published]
 
 permissions:
-  contents: read
-  id-token: "write"
+  contents: write
+  id-token: write
 
 jobs:
   python-build-assets:
@@ -14,8 +14,6 @@ jobs:
     name: Python Build Assets and add to Release
     runs-on: ubuntu-latest
     environment: "integration"
-    permissions:
-      contents: write
     env:
       UV_PYTHON: "3.10"
     steps:

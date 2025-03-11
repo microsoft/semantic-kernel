@@ -21,7 +21,6 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
 from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import (
     MESSAGE_CONVERTERS,
     finish_reason_from_bedrock_to_semantic_kernel,
-    format_bedrock_function_name_to_kernel_function_fully_qualified_name,
     remove_none_recursively,
     update_settings_from_function_choice_configuration,
 )
@@ -254,9 +253,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
                 items.append(
                     FunctionCallContent(
                         id=content["toolUse"]["toolUseId"],
-                        name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
-                            content["toolUse"]["name"]
-                        ),
+                        name=content["toolUse"]["name"],
                         arguments=content["toolUse"]["input"],
                     )
                 )
@@ -323,9 +320,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             items.append(
                 FunctionCallContent(
                     id=event["contentBlockStart"]["start"]["toolUse"]["toolUseId"],
-                    name=format_bedrock_function_name_to_kernel_function_fully_qualified_name(
-                        event["contentBlockStart"]["start"]["toolUse"]["name"]
-                    ),
+                    name=event["contentBlockStart"]["start"]["toolUse"]["name"],
                 )
             )
 

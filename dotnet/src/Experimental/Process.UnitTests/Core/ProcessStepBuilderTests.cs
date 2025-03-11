@@ -45,7 +45,7 @@ public class ProcessStepBuilderTests
         // Assert
         Assert.NotNull(edgeBuilder);
         Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
-        Assert.EndsWith("TestEvent", edgeBuilder.EventId);
+        Assert.EndsWith("TestEvent", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public class ProcessStepBuilderTests
         // Assert
         Assert.NotNull(edgeBuilder);
         Assert.IsType<ProcessStepEdgeBuilder>(edgeBuilder);
-        Assert.EndsWith("TestFunction.OnResult", edgeBuilder.EventId);
+        Assert.EndsWith("TestFunction.OnResult", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public class ProcessStepBuilderTests
 
         // Assert
         Assert.NotNull(edgeBuilder);
-        Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventId);
+        Assert.EndsWith("TestFunction.OnError", edgeBuilder.EventData.EventId);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class ProcessStepBuilderTests
     {
         // Arrange
         var stepBuilder = new TestProcessStepBuilder("TestStep");
-        var edgeBuilder = new ProcessStepEdgeBuilder(stepBuilder, "TestEvent");
+        var edgeBuilder = new ProcessStepEdgeBuilder(stepBuilder, "TestEvent", "TestEvent");
 
         // Act
         stepBuilder.LinkTo("TestEvent", edgeBuilder);

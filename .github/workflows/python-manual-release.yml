@@ -9,10 +9,10 @@ on:
 
 permissions:
   contents: read
-  id-token: "write"
+  id-token: write
 
 jobs:
-  python-build-assets:
+  python-start-ado-release-job:
     name: Trigger ADO Pipeline for Python Release
     runs-on: ubuntu-latest
     environment: "integration"
