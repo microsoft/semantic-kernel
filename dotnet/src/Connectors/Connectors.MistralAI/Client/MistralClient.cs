@@ -698,6 +698,8 @@ internal sealed class MistralClient
             FrequencyPenalty = executionSettings.FrequencyPenalty,
             PresencePenalty = executionSettings.PresencePenalty,
             Stop = executionSettings.Stop,
+            DocumentImageLimit = executionSettings.DocumentImageLimit,
+            DocumentPageLimit = executionSettings.DocumentPageLimit
         };
 
         executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
