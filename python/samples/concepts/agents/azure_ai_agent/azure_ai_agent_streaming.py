@@ -6,9 +6,7 @@ from typing import Annotated
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 
 
 # Define a sample plugin for the sample
@@ -54,10 +52,8 @@ async def main() -> None:
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
+            plugins=[MenuPlugin()],  # add the sample plugin to the agent
         )
-
-        # Add the sample plugin to the kernel
-        agent.kernel.add_plugin(MenuPlugin(), plugin_name="menu")
 
         # Create a new thread
         thread = await client.agents.create_thread()
@@ -73,16 +69,16 @@ async def main() -> None:
             for user_input in user_inputs:
                 # Add the user input as a chat message
                 await agent.add_chat_message(
-                    thread_id=thread.id, message=ChatMessageContent(role=AuthorRole.USER, content=user_input)
+                    thread_id=thread.id,
+                    message=user_input,
                 )
                 print(f"# User: '{user_input}'")
                 first_chunk = True
                 async for content in agent.invoke_stream(thread_id=thread.id):
-                    if content.role != AuthorRole.TOOL:
-                        if first_chunk:
-                            print(f"# {content.role}: ", end="", flush=True)
-                            first_chunk = False
-                        print(content.content, end="", flush=True)
+                    if first_chunk:
+                        print(f"# {content.role}: ", end="", flush=True)
+                        first_chunk = False
+                    print(content.content, end="", flush=True)
                 print()
         finally:
             await client.agents.delete_thread(thread.id)

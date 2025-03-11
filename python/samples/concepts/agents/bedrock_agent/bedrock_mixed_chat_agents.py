@@ -10,13 +10,15 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
-# This sample shows how to use a bedrock agent in a group chat that includes multiple agents of different roles.
-# This sample uses the following main component(s):
-# - a Bedrock agent
-# - a ChatCompletionAgent
-# - an AgentGroupChat
-# You will learn how to create a new or connect to an existing Bedrock agent and put it in a group chat with
-# another agent.
+"""
+This sample shows how to use a bedrock agent in a group chat that includes multiple agents of different roles.
+This sample uses the following main component(s):
+- a Bedrock agent
+- a ChatCompletionAgent
+- an AgentGroupChat
+You will learn how to create a new or connect to an existing Bedrock agent and put it in a group chat with
+another agent.
+"""
 
 # This will be a chat completion agent
 REVIEWER_NAME = "ArtDirector"
