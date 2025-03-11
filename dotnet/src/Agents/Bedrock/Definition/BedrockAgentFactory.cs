@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
+using Amazon.BedrockAgentRuntime;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -39,7 +40,8 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
         if (agentDefinition.Type?.Equals(BedrockAgentType, System.StringComparison.Ordinal) ?? false)
         {
             var agentResourceRoleArn = GetAgentResourceRoleArn(agentDefinition);
-            using var agentClient = new AmazonBedrockAgentClient();
+            var agentClient = new AmazonBedrockAgentClient();
+            var runtimeClient = new AmazonBedrockAgentRuntimeClient();
             var agentModel = await agentClient.CreateAndPrepareAgentAsync(
                     new()
                     {
@@ -51,7 +53,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
                     },
                     cancellationToken
                 ).ConfigureAwait(false);
-            return new BedrockAgent(agentModel, agentClient)
+            return new BedrockAgent(agentModel, agentClient, runtimeClient)
             {
                 Kernel = kernel
             };
