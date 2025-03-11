@@ -143,7 +143,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
         // Handle enumerables
         if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(propertyType))
         {
-            Type elementType = propertyType.GetGenericArguments()[0];
+            Type elementType = propertyType.IsArray ? propertyType.GetElementType()! : propertyType.GetGenericArguments()[0];
             var underlyingPgType = GetPostgresTypeName(elementType);
             return (underlyingPgType.PgType + "[]", true);
         }

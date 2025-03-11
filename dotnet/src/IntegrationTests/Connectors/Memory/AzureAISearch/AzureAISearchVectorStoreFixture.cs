@@ -29,8 +29,13 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Test index name which consists out of "hotels-" and the machine name with any non-alphanumeric characters removed.
     /// </summary>
+    private readonly string _testIndexName = "hotels-" + TestIndexPostfix;
+
+    /// <summary>
+    /// Gets the test index name postfix that is derived from the local machine name used to avoid clashes between test runs from different callers.
+    /// </summary>
 #pragma warning disable CA1308 // Normalize strings to uppercase
-    private readonly string _testIndexName = "hotels-" + new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
+    public static string TestIndexPostfix { get; private set; } = new Regex("[^a-zA-Z0-9]").Replace(Environment.MachineName.ToLowerInvariant(), "");
 #pragma warning restore CA1308 // Normalize strings to uppercase
 
     /// <summary>
@@ -44,11 +49,19 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
         .Build();
 
     /// <summary>
+    /// Get the test configuration for Azure AI Search.
+    /// </summary>
+    public static AzureAISearchConfiguration? GetAzureAISearchConfiguration()
+    {
+        return s_configuration.GetSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreFixture"/> class.
     /// </summary>
     public AzureAISearchVectorStoreFixture()
     {
-        var config = s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+        var config = GetAzureAISearchConfiguration();
         Assert.NotNull(config);
         this.Config = config;
         this.SearchIndexClient = new SearchIndexClient(new Uri(config.ServiceUrl), new AzureKeyCredential(config.ApiKey));

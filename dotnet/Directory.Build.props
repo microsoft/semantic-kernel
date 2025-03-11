@@ -25,6 +25,11 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
 
+  <!-- .NET Framework/.NET Standard don't property support nullable reference types, suppress any warnings for those TFMs -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net472' ">
+    <NoWarn>$(NoWarn);CS8604;CS8602</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup>
     <RepoRoot>$([System.IO.Path]::GetDirectoryName($([MSBuild]::GetPathOfFileAbove('.gitignore', '$(MSBuildThisFileDirectory)'))))</RepoRoot>
   </PropertyGroup>
