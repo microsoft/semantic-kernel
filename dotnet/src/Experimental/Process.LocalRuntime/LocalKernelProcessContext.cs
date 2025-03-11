@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
-using Microsoft.VisualStudio.Threading;
 
 namespace Microsoft.SemanticKernel;
 
@@ -10,9 +9,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAsyncDisposable
 {
-    private readonly JoinableTaskFactory _joinableTaskFactory;
-    private readonly JoinableTaskContext _joinableTaskContext;
-
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
@@ -28,9 +24,6 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
             EventProxy = eventProxy,
             ExternalMessageChannel = externalMessageChannel,
         };
-
-        this._joinableTaskContext = new JoinableTaskContext();
-        this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
     }
 
     internal Task StartWithEventAsync(KernelProcessEvent initialEvent, Kernel? kernel = null) =>
@@ -62,14 +55,6 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     public async ValueTask DisposeAsync()
     {
         await this._localProcess.DisposeAsync().ConfigureAwait(false);
-        if (this._joinableTaskContext is System.IAsyncDisposable asyncDisposableContext)
-        {
-            await asyncDisposableContext.DisposeAsync().ConfigureAwait(false);
-        }
-        else
-        {
-            this._joinableTaskContext.Dispose();
-        }
     }
 
     /// <inheritdoc/>
