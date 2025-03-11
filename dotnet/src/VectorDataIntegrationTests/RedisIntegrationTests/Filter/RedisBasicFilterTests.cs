@@ -37,6 +37,15 @@ public abstract class RedisBasicFilterTests(BasicFilterTests<string>.Fixture fix
     public override Task Not_over_bool()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Not_over_bool());
 
+    public override Task Bool_And_Bool()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Bool_And_Bool());
+
+    public override Task Bool_Or_Not_Bool()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Bool_Or_Not_Bool());
+
+    public override Task Not_over_bool_And_Comparison()
+        => Assert.ThrowsAsync<InvalidOperationException>(() => base.Not_over_bool_And_Comparison());
+
     #endregion
 
     #region Contains
