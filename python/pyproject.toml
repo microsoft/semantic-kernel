@@ -57,7 +57,7 @@ autogen = [
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
-    "azure-ai-projects >= 1.0.0b5",
+    "azure-ai-projects == 1.0.0b5",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
@@ -69,6 +69,9 @@ chroma = [
 google = [
     "google-cloud-aiplatform == 1.82.0",
     "google-generativeai ~= 0.8"
+]
+faiss = [
+    "faiss-cpu>=1.10.0"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
