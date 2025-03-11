@@ -52,7 +52,7 @@ public sealed class RestApiOperationResponse
     public IDictionary<string, IEnumerable<string>>? Headers { get; set; }
 
     /// <summary>
-    /// Gets a dictionary for ambient data associated with the response/
+    /// Gets a dictionary for ambient data associated with the response.
     /// </summary>
     [Experimental("SKEXP0040")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

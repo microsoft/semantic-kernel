@@ -66,7 +66,7 @@ public sealed class OpenApiPlugin_RestApiOperationResponseFactory(ITestOutputHel
         }
 
         // Include the request options in the operation response
-        if (context.Request.Options != null)
+        if (context.Request.Options is not null)
         {
             response.Data ??= new Dictionary<string, object?>();
             response.Data["RequestOptions"] = context.Request.Options;
