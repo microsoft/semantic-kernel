@@ -138,11 +138,15 @@
     <PackageVersion Include="YamlDotNet" Version="15.3.0" />
     <PackageVersion Include="Fluid.Core" Version="2.11.1" />
     <!-- Memory stores -->
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.45.2" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.48.0-preview.0" />
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
+    <PackageVersion Include="Testcontainers" Version="4.1.0" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.1.0" />
+    <PackageVersion Include="Testcontainers.MongoDB" Version="4.1.0"/>
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0"/>
+    <PackageVersion Include="Testcontainers.Redis" Version="4.1.0"/>
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.12.0" />
     <!-- Symbols -->
