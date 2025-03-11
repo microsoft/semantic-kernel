@@ -20,6 +20,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
     /// <summary>Returns distance function specified on vector property or default <see cref="MongoDBConstants.DefaultDistanceFunction"/>.</summary>
     public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : MongoDBConstants.DefaultDistanceFunction;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Build Azure CosmosDB MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
@@ -86,6 +87,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping
 
         return filter;
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>Returns search part of the search query for <see cref="IndexKind.Hnsw"/> index kind.</summary>
     public static BsonDocument GetSearchQueryForHnswIndex<TVector>(

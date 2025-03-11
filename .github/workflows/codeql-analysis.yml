@@ -6,7 +6,8 @@ name: "CodeQL"
 
 on:
   push:
-    branches: ["main", "experimental*", "feature*", "*-development"]
+    # TODO: Add "feature*" back in again, once we determine the cause of the ongoing CodeQL failures.
+    branches: ["main", "experimental*", "*-development"]
   schedule:
     - cron: "17 11 * * 2"
 
