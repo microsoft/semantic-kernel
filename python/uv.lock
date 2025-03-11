@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
@@ -357,16 +356,16 @@ wheels = [
 
 [[package]]
 name = "azure-ai-projects"
-version = "1.0.0b6"
+version = "1.0.0b7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "azure-core", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "isodate", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/72/5f9a78c913af66c55222ff912227b494707c4adfbdca27a78c3687a1b8ba/azure_ai_projects-1.0.0b6.tar.gz", hash = "sha256:ce6cfb2403eeb1a80e5dd84193fb2864953cd95a351f3d4572a5451bbb4c30d2", size = 298737 }
+sdist = { url = "https://files.pythonhosted.org/packages/85/1c/b8011bf6feb72c103eaead5e529594fbf2c1269e9f97d0431f824f7dee43/azure_ai_projects-1.0.0b7.tar.gz", hash = "sha256:7e36addea17f3966f28ad82be8066fdc33743c71edd2dfd982d24630598fd9b1", size = 305362 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/d9/14b31fc773072b63493d55a1a5b60e656f11aeea2b603fef2eb567686d96/azure_ai_projects-1.0.0b6-py3-none-any.whl", hash = "sha256:b0689825065648b54b4405e9edd22b1de3ea0dfc1ca3baf99db5173fd6208692", size = 187221 },
+    { url = "https://files.pythonhosted.org/packages/a7/68/53786f6a5e7496b01028bdb1de975a91d10a479aecb27e02231d3de6d131/azure_ai_projects-1.0.0b7-py3-none-any.whl", hash = "sha256:14325a2419799451c03629c30fe72a560a07cac52b5dcba4bfb61a6de2f20ae7", size = 188889 },
 ]
 
 [[package]]
@@ -5142,7 +5141,7 @@ requires-dist = [
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
     { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
-    { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = ">=1.0.0b5" },
+    { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = ">=1.0.0b7" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
     { name = "azure-identity", specifier = "~=1.13" },
@@ -5194,7 +5193,6 @@ requires-dist = [
     { name = "websockets", specifier = ">=13,<15" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<15" },
 ]
-provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "dapr", "google", "hugging-face", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "usearch", "weaviate"]
 
 [package.metadata.requires-dev]
 dev = [
