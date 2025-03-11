@@ -25,6 +25,6 @@ internal sealed class EmbedResponse
     /// <summary>
     /// A list containing float arrays of the embeddings for each text string.
     /// </summary>
-    [JsonPropertyName("embedding")]
+    [JsonPropertyName("embeddings")]
     public IList<IList<float>?>? Embeddings { get; set; }
 }

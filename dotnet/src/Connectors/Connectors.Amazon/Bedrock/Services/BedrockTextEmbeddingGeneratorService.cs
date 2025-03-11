@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Connectors.Amazon;
 
 /// <summary>
-/// Represents a chat completion service using Amazon Bedrock API.
+/// Represents a text embeddings generation service using Amazon Bedrock API.
 /// </summary>
 public class BedrockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
 {
@@ -21,7 +21,7 @@ public class BedrockTextEmbeddingGenerationService : ITextEmbeddingGenerationSer
     private readonly BedrockTextEmbeddingGenerationClient _embeddingGenerationClient;
 
     /// <summary>
-    /// Initializes an instance of the <see cref="BedrockChatCompletionService" /> using an <see cref="IAmazonBedrockRuntime" />.
+    /// Initializes an instance of the <see cref="BedrockTextEmbeddingGenerationService" /> using an <see cref="IAmazonBedrockRuntime" />.
     /// </summary>
     /// <param name="modelId">Bedrock model id, see https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html</param>
     /// <param name="bedrockRuntime">The <see cref="IAmazonBedrockRuntime"/> instance to be used.</param>
