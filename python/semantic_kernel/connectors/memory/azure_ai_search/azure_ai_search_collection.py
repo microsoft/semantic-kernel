@@ -162,7 +162,7 @@ class AzureAISearchCollection(
         self,
         records: Sequence[Any],
         **kwargs: Any,
-    ) -> Sequence[str]:
+    ) -> Sequence[TKey]:
         if not isinstance(records, list):
             records = list(records)
         results = await self.search_client.merge_or_upload_documents(documents=records, **kwargs)

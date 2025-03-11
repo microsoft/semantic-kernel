@@ -316,6 +316,8 @@ class PineconeCollection(
         """Upsert the records to the Pinecone collection."""
         if not self.index_client:
             await self._load_index_client()
+        if not self.index_client:
+            raise VectorStoreOperationException("Pinecone collection is not initialized.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if self._integrated_embeddings:
@@ -337,6 +339,8 @@ class PineconeCollection(
         """Get the records from the Pinecone collection."""
         if not self.index_client:
             await self._load_index_client()
+        if not self.index_client:
+            raise VectorStoreOperationException("Pinecone collection is not initialized.")
         namespace = kwargs.get("namespace", self.namespace)
         if isinstance(self.index_client, GRPCIndex):
             response = self.index_client.fetch(ids=keys, namespace=namespace)
@@ -349,6 +353,8 @@ class PineconeCollection(
         """Delete the records from the Pinecone collection."""
         if not self.index_client:
             await self._load_index_client()
+        if not self.index_client:
+            raise VectorStoreOperationException("Pinecone collection is not initialized.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if isinstance(self.index_client, GRPCIndex):
@@ -368,6 +374,8 @@ class PineconeCollection(
         """Search the records in the Pinecone collection."""
         if not self.index_client:
             await self._load_index_client()
+        if not self.index_client:
+            raise VectorStoreOperationException("Pinecone collection is not initialized.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if vector is not None:
@@ -427,7 +435,7 @@ class PineconeCollection(
 
     def _build_filter(self, filters: VectorSearchFilter) -> dict[str, Any]:
         """Build the filter for the Pinecone collection."""
-        ret_filter = {}
+        ret_filter: dict[str, Any] = {}
         ret_filter = {"$and": []}
         for filter in filters.filters:
             ret_filter["$and"].append({filter.field_name: {"$eq": filter.value}})
@@ -515,7 +523,7 @@ class PineconeStore(VectorStore):
         )
 
     @override
-    async def list_collection_names(self) -> list[str]:
+    async def list_collection_names(self, **kwargs) -> Sequence[str]:
         """List the Pinecone collection names."""
         if isinstance(self.client, PineconeGRPC):
             return [idx.name for idx in self.client.list_indexes()]
