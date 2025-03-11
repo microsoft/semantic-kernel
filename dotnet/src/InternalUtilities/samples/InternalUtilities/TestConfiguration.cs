@@ -99,6 +99,8 @@ public sealed class TestConfiguration
     {
         public string ConnectionString { get; set; }
         public string ChatModelId { get; set; }
+        public string BingConnectionId { get; set; }
+        public string VectorStoreId { get; set; }
     }
 
     public class AzureOpenAIConfig

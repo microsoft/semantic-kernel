@@ -39,7 +39,7 @@ public class AggregatorKernelAgentFactoryTests
     }
 
     /// <summary>
-    /// Verifies that the <see cref="AggregatorKernelAgentFactory"/> returns null for an unknown agent type.
+    /// Verifies that the <see cref="AggregatorKernelAgentFactory"/> throws <see cref="KernelException"/> for an unknown agent type.
     /// </summary>
     [Fact]
     public async Task ItReturnsNullForUnknowAgentTypeAsync()
@@ -49,11 +49,8 @@ public class AggregatorKernelAgentFactoryTests
         var kernel = new Kernel();
         var target = new AggregatorKernelAgentFactory(new MyKernelAgentFactory1(), new MyKernelAgentFactory2());
 
-        // Act
-        var result = await target.CreateAsync(kernel, agentDefinition);
-
-        // Assert
-        Assert.Null(result);
+        // Act & Assert
+        await Assert.ThrowsAsync<KernelException>(async () => await target.CreateAsync(kernel, agentDefinition));
     }
 
     #region private
