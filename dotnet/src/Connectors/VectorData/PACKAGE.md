@@ -16,12 +16,23 @@ This package is typically used with an implementation of the vector database abs
 
 ## Related Packages
 
+Vector Database abstractions:
+
+- `Microsoft.Extensions.VectorData.Abstractions`
+
+Vector Database implementations:
+
 - `Microsoft.SemanticKernel.Connectors.AzureAISearch`
 - `Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB`
 - `Microsoft.SemanticKernel.Connectors.AzureCosmosNoSQL`
+- `Microsoft.SemanticKernel.Connectors.InMemory`
+- `Microsoft.SemanticKernel.Connectors.MongoDB`
 - `Microsoft.SemanticKernel.Connectors.Pinecone`
+- `Microsoft.SemanticKernel.Connectors.Postgres`
 - `Microsoft.SemanticKernel.Connectors.Qdrant`
 - `Microsoft.SemanticKernel.Connectors.Redis`
+- `Microsoft.SemanticKernel.Connectors.Sqlite`
+- `Microsoft.SemanticKernel.Connectors.SqlServer`
 - `Microsoft.SemanticKernel.Connectors.Weaviate`
 
 ## Feedback & Contributing
