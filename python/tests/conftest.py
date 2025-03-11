@@ -508,6 +508,28 @@ def redis_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
 
 
 @fixture
+def pinecone_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
+    """Fixture to set environment variables for Pinecone."""
+    if exclude_list is None:
+        exclude_list = []
+
+    if override_env_param_dict is None:
+        override_env_param_dict = {}
+
+    env_vars = {"PINECONE_API_KEY": "test_key"}
+
+    env_vars.update(override_env_param_dict)
+
+    for key, value in env_vars.items():
+        if key not in exclude_list:
+            monkeypatch.setenv(key, value)
+        else:
+            monkeypatch.delenv(key, raising=False)
+
+    return env_vars
+
+
+@fixture
 def index_kind(request) -> str:
     if hasattr(request, "param"):
         return request.param

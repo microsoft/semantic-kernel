@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from inspect import isawaitable
 from typing import Any, ClassVar, Generic, TypeVar
 
-from pydantic import PrivateAttr
+from semantic_kernel.kernel_types import OneOrMany
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -16,6 +16,7 @@ else:
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
+from pydantic import PrivateAttr
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.data.const import DistanceFunction
@@ -37,7 +38,6 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.kernel_types import OneOrMany
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +58,7 @@ class PineconeCollection(
     VectorizableTextSearchMixin[TModel],
     Generic[TKey, TModel],
 ):
-    """Pinecone collection class.
-
-    This class is used to create a Pinecone collection.
-    """
+    """Interact with a Pinecone Index."""
 
     client: PineconeGRPC | PineconeAsyncio
     namespace: str = ""
@@ -83,7 +80,20 @@ class PineconeCollection(
         env_file_encoding: str | None = None,
         **kwargs: str,
     ) -> None:
-        """Initialize the Pinecone collection."""
+        """Initialize the Pinecone collection.
+
+        Args:
+            collection_name: The name of the Pinecone collection.
+            data_model_type: The type of the data model.
+            data_model_definition: The definition of the data model.
+            client: The Pinecone client to use. If not provided, a new client will be created.
+            use_grpc: Whether to use the GRPC client or not. Default is False.
+            api_key: The Pinecone API key. If not provided, it will be read from the environment.
+            namespace: The namespace to use. Default is "".
+            env_file_path: The path to the environment file. If not provided, it will be read from the default location.
+            env_file_encoding: The encoding of the environment file.
+            kwargs: Additional arguments to pass to the Pinecone client.
+        """
         managed_client = not client
 
         settings = PineconeSettings.create(
@@ -186,7 +196,7 @@ class PineconeCollection(
         if isawaitable(index):
             index = await index
         self.index = index
-        await self._get_index_client()
+        await self._load_index_client()
 
     async def _create_regular_index(self, metric: Metric, vector: VectorStoreRecordVectorField, **kwargs: Any) -> None:
         """Create the Pinecone index with the embed parameter."""
@@ -205,9 +215,9 @@ class PineconeCollection(
         if isawaitable(index):
             index = await index
         self.index = index
-        await self._get_index_client()
+        await self._load_index_client()
 
-    async def _get_index_client(self) -> None:
+    async def _load_index_client(self) -> None:
         if not self.index:
             index = self.client.describe_index(self.collection_name)
             if isawaitable(index):
@@ -236,11 +246,11 @@ class PineconeCollection(
             else self.client.has_index(self.collection_name)
         )
         if exists:
-            await self._get_index_client()
+            await self._load_index_client()
         return exists
 
     @override
-    async def delete_collection(self) -> None:
+    async def delete_collection(self, **kwargs: Any) -> None:
         """Delete the Pinecone collection."""
         if not await self.does_collection_exist():
             if self.index or self.index_client:
@@ -300,19 +310,21 @@ class PineconeCollection(
     @override
     async def _inner_upsert(
         self,
-        records: list[Vector],
+        records: Sequence[Any],
         **kwargs: Any,
-    ) -> OneOrMany[TKey] | None:
+    ) -> Sequence[TKey]:
         """Upsert the records to the Pinecone collection."""
         if not self.index_client:
-            await self._get_index_client()
+            await self._load_index_client()
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if self._integrated_embeddings:
             if isinstance(self.index_client, GRPCIndex):
-                self.index_client.upsert(vectors=records, **kwargs)
-            else:
-                await self.index_client.upsert_records(records=records, **kwargs)
+                raise VectorStoreOperationException(
+                    "Pinecone GRPC client does not support integrated embeddings. "
+                    "Please use the Pinecone Asyncio client."
+                )
+            await self.index_client.upsert_records(records=records, **kwargs)
             return [record["_id"] for record in records]
         if isinstance(self.index_client, GRPCIndex):
             self.index_client.upsert(records, **kwargs)
@@ -321,10 +333,10 @@ class PineconeCollection(
         return [record.id for record in records]
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[Vector]:
+    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
         """Get the records from the Pinecone collection."""
         if not self.index_client:
-            await self._get_index_client()
+            await self._load_index_client()
         namespace = kwargs.get("namespace", self.namespace)
         if isinstance(self.index_client, GRPCIndex):
             response = self.index_client.fetch(ids=keys, namespace=namespace)
@@ -333,10 +345,10 @@ class PineconeCollection(
         return list(response.vectors.values())
 
     @override
-    async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         """Delete the records from the Pinecone collection."""
         if not self.index_client:
-            await self._get_index_client()
+            await self._load_index_client()
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if isinstance(self.index_client, GRPCIndex):
@@ -355,7 +367,7 @@ class PineconeCollection(
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Search the records in the Pinecone collection."""
         if not self.index_client:
-            await self._get_index_client()
+            await self._load_index_client()
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if vector is not None:
@@ -451,10 +463,7 @@ class PineconeCollection(
 
 
 class PineconeStore(VectorStore):
-    """Pinecone store class.
-
-    This class is used to create a Pinecone store.
-    """
+    """Pinecone Vector Store, for interacting with Pinecone collections."""
 
     client: PineconeGRPC | PineconeAsyncio
 
@@ -467,17 +476,24 @@ class PineconeStore(VectorStore):
         use_grpc: bool = False,
         **kwargs: str,
     ) -> None:
-        """Initialize the Pinecone store."""
+        """Initialize the Pinecone store.
+
+        Args:
+            client: The Pinecone client to use. If not provided, a new client will be created.
+            api_key: The Pinecone API key. If not provided, it will be read from the environment.
+            env_file_path: The path to the environment file. If not provided, it will be read from the default location.
+            env_file_encoding: The encoding of the environment file.
+            use_grpc: Whether to use the GRPC client or not. Default is False.
+            kwargs: Additional arguments to pass to the Pinecone client.
+
+        """
         managed_client = not client
         if not client:
-            from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
-
             settings = PineconeSettings.create(
                 api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
             )
-
         if not settings.api_key:
             raise VectorStoreInitializationException("Pinecone API key is required.")
 
