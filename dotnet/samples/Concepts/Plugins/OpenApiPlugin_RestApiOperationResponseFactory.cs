@@ -69,7 +69,7 @@ public sealed class OpenApiPlugin_RestApiOperationResponseFactory(ITestOutputHel
         if (context.Request.Options is not null)
         {
             response.Data ??= new Dictionary<string, object?>();
-            response.Data["RequestOptions"] = context.Request.Options;
+            response.Data["http.request.options"] = context.Request.Options;
         }
 
         // Return the modified response that will be returned to the caller
