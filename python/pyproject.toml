@@ -56,7 +56,7 @@ autogen = [
     "autogen-agentchat >= 0.2, <0.4"
 ]
 azure = [
-    "azure-ai-inference == 1.0.0b6",
+    "azure-ai-inference >= 1.0.0b6",
     "azure-ai-projects == 1.0.0b5",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",

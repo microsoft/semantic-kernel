@@ -5176,7 +5176,7 @@ requires-dist = [
     { name = "aiortc", marker = "extra == 'realtime'", specifier = ">=1.9.0" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = "~=0.32" },
     { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.2,<0.4" },
-    { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = "==1.0.0b6" },
+    { name = "azure-ai-inference", marker = "extra == 'azure'", specifier = ">=1.0.0b6" },
     { name = "azure-ai-projects", marker = "extra == 'azure'", specifier = "==1.0.0b5" },
     { name = "azure-core-tracing-opentelemetry", marker = "extra == 'azure'", specifier = ">=1.0.0b11" },
     { name = "azure-cosmos", marker = "extra == 'azure'", specifier = "~=4.7" },
