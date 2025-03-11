@@ -69,7 +69,7 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
         }
         finally
         {
-            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 }

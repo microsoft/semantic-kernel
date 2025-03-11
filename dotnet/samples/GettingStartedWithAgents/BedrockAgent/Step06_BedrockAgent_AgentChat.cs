@@ -70,7 +70,7 @@ public class Step06_BedrockAgent_AgentChat(ITestOutputHelper output) : BaseBedro
         }
         finally
         {
-            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 

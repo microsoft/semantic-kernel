@@ -71,7 +71,7 @@ Dolphin  2";
         }
         finally
         {
-            await this.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 

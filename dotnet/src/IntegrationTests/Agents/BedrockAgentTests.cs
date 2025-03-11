@@ -48,7 +48,7 @@ public sealed class BedrockAgentTests : IDisposable
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -68,7 +68,7 @@ public sealed class BedrockAgentTests : IDisposable
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -103,7 +103,7 @@ Dolphin  2")]
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -130,7 +130,7 @@ Dolphin  2")]
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
