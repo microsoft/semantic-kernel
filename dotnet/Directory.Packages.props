@@ -20,6 +20,7 @@
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.3.0" />
     <PackageVersion Include="Azure.Search.Documents" Version="11.6.0" />
+    <PackageVersion Include="Community.OData.Linq" Version="2.1.0" />
     <PackageVersion Include="Dapr.Actors" Version="1.14.0" />
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />

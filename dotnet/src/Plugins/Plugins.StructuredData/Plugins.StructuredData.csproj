@@ -12,8 +12,8 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <Title>Semantic Kernel - AI Plugins</Title>
-    <Description>Semantic Kernel AI plugins.</Description>
+    <Title>Semantic Kernel - Entity Framework Structured Data Plugin</Title>
+    <Description>Semantic Kernel Entity Framework plugin for structured data access and manipulation using Entity Framework. Enables AI interactions with relational databases through Entity Framework contexts.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Community.OData.Linq" />
     <PackageReference Include="EntityFramework" />
   </ItemGroup>
 

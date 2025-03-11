@@ -61,8 +61,8 @@ The implementation includes:
 3. Usage Example:
 
 ```csharp
-var service = new StructuredDataService<MyDbContext>(dbContext);
-var plugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<MyDbContext, MyEntity>(
+var service = new StructuredDataService<ApplicationDbContext>(dbContext);
+var plugin = StructuredDataPluginFactory.CreateStructuredDataPlugin<ApplicationDbContext, MyEntity>(
     service,
     operations: StructuredDataOperation.Default);
 ```

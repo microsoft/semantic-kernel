@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Community.OData.Linq;
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
 
@@ -55,9 +55,14 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     public IQueryable<TEntity> Select<TEntity>(string? query = null)
         where TEntity : class
     {
-        var expression = this.ParseQuery<TEntity>(query);
+        var result = this.Context.Set<TEntity>().AsQueryable();
 
-        return this.Context.Set<TEntity>().Where(expression);
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            result = result.OData().Filter(query);
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -72,6 +77,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
         Verify.NotNull(entity);
 
         this.Context.Set<TEntity>().Add(entity);
+
         await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return entity;
@@ -88,14 +94,39 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     {
         Verify.NotNull(entity);
 
-        var entry = this.Context.Entry(entity);
-        if (entry.State == EntityState.Detached)
+        try
         {
-            this.Context.Set<TEntity>().Attach(entity);
-            entry.State = EntityState.Modified;
-        }
+            var entry = this.Context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                // Get primary key values from the entity
+                var objectContext = ((IObjectContextAdapter)this.Context).ObjectContext;
+                var objectSet = objectContext.CreateObjectSet<TEntity>();
+                var keyNames = objectSet.EntitySet.ElementType.KeyMembers.Select(k => k.Name).ToArray();
+                var keyValues = keyNames.Select(k => entry.Property(k).CurrentValue).ToArray();
 
-        return await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                // Try to find existing entity with same key
+                var existingEntity = this.Context.Set<TEntity>().Find(keyValues);
+                if (existingEntity != null)
+                {
+                    // If entity exists, update its values
+                    this.Context.Entry(existingEntity).CurrentValues.SetValues(entity);
+                }
+                else
+                {
+                    // If no existing entity, attach and mark as modified
+                    this.Context.Set<TEntity>().Attach(entity);
+                    entry.State = EntityState.Modified;
+                }
+            }
+
+            return await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error updating entity: {e.Message}");
+            throw new InvalidOperationException($"Failed to update entity: {e.Message}", e);
+        }
     }
 
     /// <summary>
@@ -108,15 +139,41 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     public async Task<int> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
     {
         Verify.NotNull(entity);
-
-        var entry = this.Context.Entry(entity);
-        if (entry.State == EntityState.Detached)
+        try
         {
-            this.Context.Set<TEntity>().Attach(entity);
-        }
-        this.Context.Set<TEntity>().Remove(entity);
+            var entry = this.Context.Entry(entity);
+            if (entry.State == EntityState.Detached)
+            {
+                // Get primary key values from the entity
+                var objectContext = ((IObjectContextAdapter)this.Context).ObjectContext;
+                var objectSet = objectContext.CreateObjectSet<TEntity>();
+                var keyNames = objectSet.EntitySet.ElementType.KeyMembers.Select(k => k.Name).ToArray();
+                var keyValues = keyNames.Select(k => entry.Property(k).CurrentValue).ToArray();
 
-        return await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                // Try to find existing entity with same key
+                var existingEntity = this.Context.Set<TEntity>().Find(keyValues);
+                if (existingEntity is not null)
+                {
+                    this.Context.Set<TEntity>().Remove(existingEntity);
+                }
+                else
+                {
+                    // If no existing entity, attach and remove
+                    this.Context.Set<TEntity>().Attach(entity);
+                    this.Context.Set<TEntity>().Remove(entity);
+                }
+            }
+            else
+            {
+                this.Context.Set<TEntity>().Remove(entity);
+            }
+            return await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error deleting entity: {e.Message}");
+            throw new InvalidOperationException($"Failed to delete entity: {e.Message}", e);
+        }
     }
 
     /// <summary>
@@ -135,130 +192,6 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
         }
 
         this._disposed = true;
-    }
-
-    /// <summary>
-    /// Parses a filter string into an expression.
-    /// </summary>
-    /// <remarks>
-    /// The filter query parameter is a string where users can pass expressions like
-    /// <code>price gt 100 and category eq 'electronics'</code>
-    /// </remarks>
-    /// <typeparam name="TEntity">Entity type.</typeparam>
-    /// <param name="filter">Filter string.</param>
-    /// <returns>Expression representing the filter.</returns>
-    /// <exception cref="NotSupportedException">Operator not supported.</exception>
-    protected virtual Expression<Func<TEntity, bool>> ParseQuery<TEntity>(string? filter)
-    {
-        if (string.IsNullOrWhiteSpace(filter))
-        {
-            return p => true;
-        }
-
-        var param = Expression.Parameter(typeof(TEntity), "p");
-        var conditions = filter.Split([" and ", " or "], StringSplitOptions.None);
-        var isOr = filter.Contains(" or ");
-
-        var expressions = conditions.Select(condition => ParseCondition<TEntity>(condition.Trim(), param));
-        var combined = CombineExpressions(expressions, isOr);
-
-        return Expression.Lambda<Func<TEntity, bool>>(combined, param);
-    }
-
-    private static Expression ParseCondition<TEntity>(string condition, ParameterExpression param)
-    {
-        return condition switch
-        {
-            var c when c.Contains("contains(") => ParseStringMethod(c, "contains", param, CreateContainsExpression),
-            var c when c.Contains("startswith(") => ParseStringMethod(c, "startswith", param, CreateStartsWithExpression),
-            var c when c.Contains("endswith(") => ParseStringMethod(c, "endswith", param, CreateEndsWithExpression),
-            _ => ParseComparisonCondition<TEntity>(condition, param)
-        };
-    }
-
-    private static BinaryExpression ParseComparisonCondition<TEntity>(string condition, ParameterExpression param)
-    {
-        var tokens = condition.Split(' ');
-        var property = tokens[0];
-        var op = tokens[1].ToLowerInvariant();
-        var value = tokens[2].Trim('\'');
-
-        var member = Expression.Property(param, property);
-
-        return value.Equals("null", StringComparison.OrdinalIgnoreCase)
-            ? CreateNullComparison(member, op)
-            : CreateValueComparison(member, op, value);
-    }
-
-    private static BinaryExpression CreateNullComparison(MemberExpression member, string op)
-    {
-        var nullConstant = Expression.Constant(null, member.Type);
-        return op switch
-        {
-            "eq" => Expression.Equal(member, nullConstant),
-            "ne" => Expression.NotEqual(member, nullConstant),
-            _ => throw new NotSupportedException($"Operator '{op}' is not supported for null comparisons.")
-        };
-    }
-
-    private static BinaryExpression CreateValueComparison(MemberExpression member, string op, string value)
-    {
-        var memberType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
-        var convertedValue = ConvertValue(value, memberType);
-        var constant = Expression.Constant(convertedValue, member.Type);
-
-        return op switch
-        {
-            "gt" => Expression.GreaterThan(member, constant),
-            "lt" => Expression.LessThan(member, constant),
-            "eq" => Expression.Equal(member, constant),
-            "ne" => Expression.NotEqual(member, constant),
-            "ge" => Expression.GreaterThanOrEqual(member, constant),
-            "le" => Expression.LessThanOrEqual(member, constant),
-            _ => throw new NotSupportedException($"Operator '{op}' is not supported.")
-        };
-    }
-
-    private static object ConvertValue(string value, Type targetType)
-    {
-        return targetType == typeof(DateTime)
-            ? DateTime.Parse(value)
-            : Convert.ChangeType(value, targetType);
-    }
-
-    private static Expression ParseStringMethod(
-        string condition,
-        string methodName,
-        ParameterExpression param,
-        Func<Expression, Expression, Expression> createExpression)
-    {
-        var (property, value) = ParseMethodArguments(condition, methodName);
-        var member = Expression.Property(param, property);
-        var constant = Expression.Constant(value);
-        return createExpression(member, constant);
-    }
-
-    private static (string property, string value) ParseMethodArguments(string condition, string methodName)
-    {
-        var start = condition.IndexOf(methodName + "(", StringComparison.OrdinalIgnoreCase) + methodName.Length + 1;
-        var end = condition.LastIndexOf(")", StringComparison.OrdinalIgnoreCase);
-        var args = condition.Substring(start, end - start).Split(',');
-        return (args[0].Trim(), args[1].Trim().Trim('\''));
-    }
-
-    private static Expression CreateContainsExpression(Expression member, Expression value)
-        => Expression.Call(member, typeof(string).GetMethod("Contains", [typeof(string)])!, value);
-
-    private static Expression CreateStartsWithExpression(Expression member, Expression value)
-        => Expression.Call(member, typeof(string).GetMethod("StartsWith", [typeof(string)])!, value);
-
-    private static Expression CreateEndsWithExpression(Expression member, Expression value)
-        => Expression.Call(member, typeof(string).GetMethod("EndsWith", [typeof(string)])!, value);
-
-    private static Expression CombineExpressions(IEnumerable<Expression> expressions, bool isOr)
-    {
-        return expressions.Aggregate((current, next) =>
-            isOr ? Expression.OrElse(current, next) : Expression.AndAlso(current, next));
     }
 
     /// <summary>

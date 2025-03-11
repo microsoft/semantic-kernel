@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -181,9 +182,9 @@ public class StructuredDataServiceTests
         var testDate = new DateTime(2023, 1, 1);
         var entities = new[]
         {
-            new TestEntity { Id = 1, Name = "Test1", CreatedDate = testDate },
-            new TestEntity { Id = 2, Name = "Test2", CreatedDate = null },
-            new TestEntity { Id = 3, Name = "Test3", CreatedDate = testDate.AddDays(1) }
+            new TestEntity { Id = 1, Name = "Test1", NullableDate = testDate },
+            new TestEntity { Id = 2, Name = "Test2", NullableDate = null },
+            new TestEntity { Id = 3, Name = "Test3", NullableDate = testDate.AddDays(1) }
         }.AsQueryable();
 
         mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Provider).Returns(entities.Provider);
@@ -197,17 +198,17 @@ public class StructuredDataServiceTests
 
         // Act & Assert
         // Test exact date match with non-null value
-        var result1 = service.Select<TestEntity>($"CreatedDate eq '{testDate:yyyy-MM-dd}'").ToList();
+        var result1 = service.Select<TestEntity>($"NullableDate eq {testDate:yyyy-MM-ddTHH:mm:ssZ}").ToList();
         Assert.Single(result1);
         Assert.Equal(1, result1[0].Id);
 
         // Test null handling
-        var result2 = service.Select<TestEntity>("CreatedDate eq null").ToList();
+        var result2 = service.Select<TestEntity>("NullableDate eq null").ToList();
         Assert.Single(result2);
         Assert.Equal(2, result2[0].Id);
 
         // Test greater than comparison
-        var result3 = service.Select<TestEntity>($"CreatedDate gt '{testDate:yyyy-MM-dd}'").ToList();
+        var result3 = service.Select<TestEntity>($"NullableDate gt {testDate:yyyy-MM-ddTHH:mm:ssZ}").ToList();
         Assert.Single(result3);
         Assert.Equal(3, result3[0].Id);
     }
@@ -221,9 +222,9 @@ public class StructuredDataServiceTests
         var testDate = new DateTime(2023, 1, 1);
         var entities = new[]
         {
-            new TestEntity { Id = 1, Name = "Test1", CreatedDate = testDate },
-            new TestEntity { Id = 2, Name = "Test2", CreatedDate = null },
-            new TestEntity { Id = 3, Name = "Test3", CreatedDate = testDate }
+            new TestEntity { Id = 1, Name = "Test1", NullableDate = testDate },
+            new TestEntity { Id = 2, Name = "Test2", NullableDate = null },
+            new TestEntity { Id = 3, Name = "Test3", NullableDate = testDate }
         }.AsQueryable();
 
         mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Provider).Returns(entities.Provider);
@@ -237,20 +238,19 @@ public class StructuredDataServiceTests
 
         // Act & Assert
         // Test combination of date and string conditions
-        var result = service.Select<TestEntity>($"CreatedDate eq '{testDate:yyyy-MM-dd}' and Name eq 'Test1'").ToList();
+        var result = service.Select<TestEntity>($"NullableDate eq {testDate:yyyy-MM-ddTHH:mm:ssZ} and Name eq 'Test1'").ToList();
         Assert.Single(result);
         Assert.Equal(1, result[0].Id);
 
         // Test OR condition with null
-        var result2 = service.Select<TestEntity>("CreatedDate eq null or Name eq 'Test3'").ToList();
+        var result2 = service.Select<TestEntity>("NullableDate eq null or Name eq 'Test3'").ToList();
         Assert.Equal(2, result2.Count);
         Assert.Contains(result2, e => e.Id == 2);
         Assert.Contains(result2, e => e.Id == 3);
     }
 
     [Theory]
-    [InlineData("2023-01-01")]
-    [InlineData("2023-01-01T00:00:00")]
+    [InlineData("2023-01-01T00:00:00Z")]
     [InlineData("2023-01-01T00:00:00.000Z")]
     public void SelectWithDateTimeFilterHandlesVariousDateFormats(string dateFormat)
     {
@@ -260,8 +260,8 @@ public class StructuredDataServiceTests
         var testDate = new DateTime(2023, 1, 1);
         var entities = new[]
         {
-            new TestEntity { Id = 1, CreatedDate = testDate },
-            new TestEntity { Id = 2, CreatedDate = testDate.AddDays(1) }
+            new TestEntity { Id = 1, NullableDate = testDate },
+            new TestEntity { Id = 2, NullableDate = testDate.AddDays(1) }
         }.AsQueryable();
 
         mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Provider).Returns(entities.Provider);
@@ -274,7 +274,7 @@ public class StructuredDataServiceTests
         using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
 
         // Act
-        var result = service.Select<TestEntity>($"CreatedDate eq '{dateFormat}'").ToList();
+        var result = service.Select<TestEntity>($"NullableDate eq {dateFormat}").ToList();
 
         // Assert
         Assert.Single(result);
@@ -365,11 +365,113 @@ public class StructuredDataServiceTests
         Assert.Equal(expectedCount, result.Count);
     }
 
+    [Fact]
+    public void SelectWithQuotedStringHandlesSpacesCorrectly()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        var mockSet = new Mock<DbSet<TestEntity>>();
+        var entities = new[]
+        {
+            new TestEntity { Id = 1, Name = "Sample Product" },
+            new TestEntity { Id = 2, Name = "Another Product" }
+        }.AsQueryable();
+
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Provider).Returns(entities.Provider);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Expression).Returns(entities.Expression);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.ElementType).Returns(entities.ElementType);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.GetEnumerator()).Returns(entities.GetEnumerator());
+
+        mockContext.Setup(c => c.Set<TestEntity>()).Returns(mockSet.Object);
+
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        // Test single quotes
+        var result1 = service.Select<TestEntity>("Name eq 'Sample Product'").ToList();
+        Assert.Single(result1);
+        Assert.Equal("Sample Product", result1[0].Name);
+    }
+
+    [Fact]
+    public void SelectWithQuotedStringHandlesComplexQueries()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        var mockSet = new Mock<DbSet<TestEntity>>();
+        var entities = new[]
+        {
+            new TestEntity { Id = 1, Name = "Product with and", NullableDouble = 10 },
+            new TestEntity { Id = 2, Name = "Product or test", NullableDouble = 20 },
+            new TestEntity { Id = 3, Name = "Simple Product", NullableDouble = 30 }
+        }.AsQueryable();
+
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Provider).Returns(entities.Provider);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Expression).Returns(entities.Expression);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.ElementType).Returns(entities.ElementType);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.GetEnumerator()).Returns(entities.GetEnumerator());
+
+        mockContext.Setup(c => c.Set<TestEntity>()).Returns(mockSet.Object);
+
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        // Test string containing 'and'
+        var result1 = service.Select<TestEntity>("Name eq 'Product with and'").ToList();
+        Assert.Single(result1);
+        Assert.Equal("Product with and", result1[0].Name);
+
+        // Test complex condition with quoted string and numeric comparison
+        var result2 = service.Select<TestEntity>("Name eq 'Product with and' and NullableDouble lt 15").ToList();
+        Assert.Single(result2);
+        Assert.Equal(10, result2[0].NullableDouble);
+
+        // Test OR condition with quoted strings
+        var result3 = service.Select<TestEntity>("Name eq 'Product with and' or Name eq 'Product or test'").ToList();
+        Assert.Equal(2, result3.Count);
+        Assert.Contains(result3, e => e.Name == "Product with and");
+        Assert.Contains(result3, e => e.Name == "Product or test");
+    }
+
+    [Fact]
+    public void SelectWithQuotedStringHandlesEscapedQuotes()
+    {
+        // Arrange
+        var mockContext = new Mock<TestDbContext>("TestConnection");
+        var mockSet = new Mock<DbSet<TestEntity>>();
+        var entities = new[]
+        {
+            new TestEntity { Id = 1, Name = "Product's Test" },
+            new TestEntity { Id = 2, Name = "Product \"Quote\" Test" }
+        }.AsQueryable();
+
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Provider).Returns(entities.Provider);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.Expression).Returns(entities.Expression);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.ElementType).Returns(entities.ElementType);
+        mockSet.As<IQueryable<TestEntity>>().Setup(m => m.GetEnumerator()).Returns(entities.GetEnumerator());
+
+        mockContext.Setup(c => c.Set<TestEntity>()).Returns(mockSet.Object);
+
+        using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
+
+        // Act & Assert
+        // Test string with single quote
+        var result1 = service.Select<TestEntity>("Name eq 'Product''s Test'").ToList();
+        Assert.Single(result1);
+        Assert.Equal("Product's Test", result1[0].Name);
+
+        // Test string with double quotes
+        var result2 = service.Select<TestEntity>(@"Name eq 'Product ""Quote"" Test'").ToList();
+        Assert.Single(result2);
+        Assert.Equal("Product \"Quote\" Test", result2[0].Name);
+    }
+
     public class TestEntity
     {
         public int Id { get; set; }
         public string? Name { get; set; }
-        public DateTime? CreatedDate { get; set; }
+
+        public DateTime? NullableDate { get; set; }
         public int? NullableInt { get; set; }
         public double? NullableDouble { get; set; }
         public bool? NullableBool { get; set; }

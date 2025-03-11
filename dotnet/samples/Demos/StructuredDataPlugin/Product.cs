@@ -4,8 +4,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-#pragma warning disable CA2007, VSTHRD111 // .ConfigureAwait(false)
-
 namespace StructuredDataPlugin;
 
 /// <summary>
@@ -23,12 +21,19 @@ public sealed class Product
     /// <summary>
     /// The description of the product.
     /// </summary>
-    [Description("The description of the product.")]
-    public string? Description { get; set; }
+    [Description("The name of the product.")]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// The price of the product.
+    /// </summary>
+    [Description("The price of the product in USD.")]
+    public decimal? Price { get; set; }
 
     /// <summary>
     /// The date the product was created.
     /// </summary>
     [Description("The date the product was created")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime? DateCreated { get; set; }
 }

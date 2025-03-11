@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 public static class StructuredDataServiceExtensions
 {
     /// <summary>
-    /// Creates a <see cref="KernelFunction"/> from the entity insertion method.
+    /// Creates a <see cref="KernelFunction"/> from the entity insert method.
     /// </summary>
     /// <typeparam name="TContext">The database context type.</typeparam>
     /// <typeparam name="TEntity">The entity type.</typeparam>
@@ -52,7 +53,7 @@ public static class StructuredDataServiceExtensions
     }
 
     /// <summary>
-    /// Creates a <see cref="KernelFunction"/> from the entity insertion method.
+    /// Creates a <see cref="KernelFunction"/> from the entity select method.
     /// </summary>
     /// <typeparam name="TContext">The database context type.</typeparam>
     /// <typeparam name="TEntity">The entity type.</typeparam>
@@ -74,7 +75,7 @@ public static class StructuredDataServiceExtensions
                 new KernelParameterMetadata("filter")
                 {
                     ParameterType = typeof(string),
-                    Description = string.Concat($"A filter expression to query {typeof(TEntity).Name}.",
+                    Description = string.Concat($"A ODATA filter expression to query {typeof(TEntity).Name}.",
                         "Supported operators: ",
                         "'gt' (greater than), ",
                         "'lt' (less than), ",
@@ -90,10 +91,8 @@ public static class StructuredDataServiceExtensions
             ReturnParameter = new() { ParameterType = typeof(IList<TEntity>) },
         };
 
-        async Task<IList<TEntity>> SelectAsync(string? filter = null, CancellationToken cancellationToken = default)
-        {
-            return await service.Select<TEntity>(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
-        }
+        Task<IList<TEntity>> SelectAsync(string? filter = null, CancellationToken cancellationToken = default)
+            => Task.FromResult<IList<TEntity>>(service.Select<TEntity>(filter).ToList());
 
         return KernelFunctionFactory.CreateFromMethod(SelectAsync, options);
     }
