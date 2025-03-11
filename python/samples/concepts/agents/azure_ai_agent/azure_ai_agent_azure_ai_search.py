@@ -7,7 +7,6 @@ from azure.ai.projects.models import AzureAISearchTool, ConnectionType
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.utils.author_role import AuthorRole
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -88,8 +87,7 @@ async def main() -> None:
                 print(f"# User: '{user_input}'\n")
                 # Invoke the agent for the specified thread
                 async for content in agent.invoke(thread_id=thread.id):
-                    if content.role != AuthorRole.TOOL:
-                        print(f"# Agent: {content.content}\n")
+                    print(f"# Agent: {content.content}\n")
         finally:
             await client.agents.delete_thread(thread.id)
             await client.agents.delete_agent(agent.id)

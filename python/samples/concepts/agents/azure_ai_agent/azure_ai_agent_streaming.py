@@ -6,8 +6,7 @@ from typing import Annotated
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 
 
 # Define a sample plugin for the sample
@@ -76,11 +75,10 @@ async def main() -> None:
                 print(f"# User: '{user_input}'")
                 first_chunk = True
                 async for content in agent.invoke_stream(thread_id=thread.id):
-                    if content.role != AuthorRole.TOOL:
-                        if first_chunk:
-                            print(f"# {content.role}: ", end="", flush=True)
-                            first_chunk = False
-                        print(content.content, end="", flush=True)
+                    if first_chunk:
+                        print(f"# {content.role}: ", end="", flush=True)
+                        first_chunk = False
+                    print(content.content, end="", flush=True)
                 print()
         finally:
             await client.agents.delete_thread(thread.id)
