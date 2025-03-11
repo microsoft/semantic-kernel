@@ -43,16 +43,17 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+TKey = TypeVar("TKey", bound=str)
 TModel = TypeVar("TModel")
 
 
 @experimental
 class AzureAISearchCollection(
-    VectorSearchBase[str, TModel],
+    VectorSearchBase[TKey, TModel],
     VectorizableTextSearchMixin[TModel],
     VectorizedSearchMixin[TModel],
     VectorTextSearchMixin[TModel],
-    Generic[TModel],
+    Generic[TKey, TModel],
 ):
     """Azure AI Search collection implementation."""
 

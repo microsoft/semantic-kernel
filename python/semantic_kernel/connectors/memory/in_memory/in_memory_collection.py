@@ -32,6 +32,7 @@ from semantic_kernel.utils.list_handler import empty_generator
 
 TKey = TypeVar("TKey", bound=str | int | float)
 
+TKey = TypeVar("TKey", bound=KEY_TYPES)
 TModel = TypeVar("TModel")
 
 IN_MEMORY_SCORE_KEY = "in_memory_search_score"
