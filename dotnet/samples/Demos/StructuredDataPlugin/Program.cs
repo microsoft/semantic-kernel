@@ -74,8 +74,8 @@ internal sealed class Program
         Console.WriteLine("\nStarting interactive mode (type 'exit' to quit)");
         Console.WriteLine("You can try queries like:");
         Console.WriteLine("- Find all products under $50");
-        Console.WriteLine("- Insert a new product with name 'Test Product' and price 19.99");
-        Console.WriteLine("- Update the price of 'Test Product' to 25.99");
+        Console.WriteLine("- Insert a new product with name 'Table' and price 19.99");
+        Console.WriteLine("- Update the price of 'Table' to 25.99");
 
         while (true)
         {
