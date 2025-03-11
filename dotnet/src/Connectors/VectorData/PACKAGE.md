@@ -4,7 +4,7 @@ Contains utilities for accessing Vector Databases and Vector Indexes.
 
 ## Key Features
 
-- Telemetry for Vector Database implementations which are provided in other packages including `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
+- Telemetry for any Vector Database implementation. Vector Database implementations are provided separately in other packages, for example  `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
 
 ## How to Use
 
