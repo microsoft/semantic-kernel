@@ -15,7 +15,7 @@ public sealed class AzureAISearchConfigConditionAttribute : Attribute, ITestCond
     public ValueTask<bool> IsMetAsync()
     {
         var config = AzureAISearchVectorStoreFixture.GetAzureAISearchConfiguration();
-        var isMet = config is not null && !string.IsNullOrWhiteSpace(config.ServiceUrl) && !string.IsNullOrWhiteSpace(config.ApiKey);
+        var isMet = config is not null && !string.IsNullOrWhiteSpace(config?.ServiceUrl) && !string.IsNullOrWhiteSpace(config?.ApiKey);
 
         return ValueTask.FromResult(isMet);
     }
