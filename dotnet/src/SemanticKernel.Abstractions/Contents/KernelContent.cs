@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel;
 [JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
 [JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
 [JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
+[JsonDerivedType(typeof(DocumentContent), typeDiscriminator: nameof(DocumentContent))]
 #pragma warning disable SKEXP0110
 [JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
 [JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]
