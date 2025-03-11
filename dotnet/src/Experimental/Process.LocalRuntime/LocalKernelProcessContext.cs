@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.VisualStudio.Threading;
@@ -9,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides context and actions on a process that is running locally.
 /// </summary>
-public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposable
+public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAsyncDisposable
 {
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
@@ -60,10 +59,17 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     /// <summary>
     /// Disposes of the resources used by the process.
     /// </summary>
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        this._joinableTaskFactory.Run(() => this._localProcess.DisposeAsync().AsTask());
-        this._joinableTaskContext.Dispose();
+        await this._localProcess.DisposeAsync().ConfigureAwait(false);
+        if (this._joinableTaskContext is System.IAsyncDisposable asyncDisposableContext)
+        {
+            await asyncDisposableContext.DisposeAsync().ConfigureAwait(false);
+        }
+        else
+        {
+            this._joinableTaskContext.Dispose();
+        }
     }
 
     /// <inheritdoc/>

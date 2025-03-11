@@ -37,7 +37,7 @@ public class LocalProxyTests
         Kernel kernel = new();
 
         // Act
-        using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
         {
             // Assert
             var runningProcessId = await processContext.GetProcessIdAsync();
@@ -99,7 +99,7 @@ public class LocalProxyTests
         Kernel kernel = new();
 
         // Act
-        using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
         {
             // Assert
             var runningProcessId = await processContext.GetProcessIdAsync();
@@ -142,7 +142,7 @@ public class LocalProxyTests
         Kernel kernel = new();
 
         // Act
-        using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
         {
             // Assert
             var runningProcessId = await processContext.GetProcessIdAsync();
@@ -189,7 +189,7 @@ public class LocalProxyTests
         Kernel kernel = new();
 
         // Act
-        using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
         {
             // Assert
             var runningProcessId = await processContext.GetProcessIdAsync();
