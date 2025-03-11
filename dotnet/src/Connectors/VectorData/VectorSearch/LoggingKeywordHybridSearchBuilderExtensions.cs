@@ -17,6 +17,7 @@ public static class LoggingKeywordHybridSearchBuilderExtensions
     /// <param name="loggerFactory">
     /// An optional <see cref="ILoggerFactory"/> used to create a logger with which logging should be performed.
     /// If not supplied, a required instance will be resolved from the service provider.
+    /// If resolved <see cref="ILoggerFactory"/> is <see cref="NullLoggerFactory"/>, it will be skipped and the inner service will be used instead.
     /// </param>
     /// <returns>The <paramref name="builder"/>.</returns>
     public static KeywordHybridSearchBuilder<TRecord> UseLogging<TRecord>(
