@@ -60,7 +60,12 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             service_id (str): Service ID for the model. (optional)
         """
         try:
-            nvidia_settings = NvidiaSettings.create(api_key=api_key, base_url=base_url, embedding_model_id=ai_model_id)
+            nvidia_settings = NvidiaSettings.create(
+                api_key=api_key,
+                base_url=base_url,
+                embedding_model_id=ai_model_id,
+                env_file_path=env_file_path,
+            )
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create NVIDIA settings.", ex) from ex
         if not nvidia_settings.embedding_model_id:
