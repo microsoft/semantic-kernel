@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("PostgresVectorStoreCollection")]
 public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStoreFixture fixture)
 {
@@ -41,6 +43,24 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             {
                 await sut.DeleteCollectionAsync();
             }
+        }
+    }
+
+    [Fact]
+    public async Task CanCreateCollectionWithSpecialCharactersInNameAsync()
+    {
+        // Arrange
+        var sut = fixture.GetCollection<int, PostgresHotel<int>>("Special-Char");
+
+        try
+        {
+            // Act
+            await sut.CreateCollectionAsync();
+        }
+        finally
+        {
+            // Cleanup
+            await sut.DeleteCollectionAsync();
         }
     }
 
@@ -82,8 +102,10 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             Assert.Equal("tag1", fetchedHotel1!.Tags![0]);
             Assert.Equal("tag2", fetchedHotel1!.Tags![1]);
             Assert.Null(fetchedHotel1!.ListInts);
-            Assert.Equal(TruncateMilliseconds(fetchedHotel1.CreatedAt), TruncateMilliseconds(writtenHotel1.CreatedAt));
-            Assert.Equal(TruncateMilliseconds(fetchedHotel1.UpdatedAt), TruncateMilliseconds(writtenHotel1.UpdatedAt));
+
+            // Since these values are updated in the database, they will not match existly, but should be very close to each other.
+            Assert.True(TruncateMilliseconds(fetchedHotel1.CreatedAt) >= TruncateMilliseconds(writtenHotel1.CreatedAt) && TruncateMilliseconds(fetchedHotel1.CreatedAt) <= TruncateMilliseconds(writtenHotel1.CreatedAt).AddSeconds(1));
+            Assert.True(TruncateMilliseconds(fetchedHotel1.UpdatedAt) >= TruncateMilliseconds(writtenHotel1.UpdatedAt) && TruncateMilliseconds(fetchedHotel1.UpdatedAt) <= TruncateMilliseconds(writtenHotel1.UpdatedAt).AddSeconds(1));
 
             Assert.NotNull(fetchedHotel2);
             Assert.Equal(2, fetchedHotel2!.HotelId);
@@ -97,8 +119,10 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             Assert.Equal(2, fetchedHotel2!.ListInts!.Count);
             Assert.Equal(1, fetchedHotel2!.ListInts![0]);
             Assert.Equal(2, fetchedHotel2!.ListInts![1]);
-            Assert.Equal(TruncateMilliseconds(fetchedHotel2.CreatedAt), TruncateMilliseconds(writtenHotel2.CreatedAt));
-            Assert.Equal(TruncateMilliseconds(fetchedHotel2.UpdatedAt), TruncateMilliseconds(writtenHotel2.UpdatedAt));
+
+            // Since these values are updated in the database, they will not match existly, but should be very close to each other.
+            Assert.True(TruncateMilliseconds(fetchedHotel2.CreatedAt) >= TruncateMilliseconds(writtenHotel2.CreatedAt) && TruncateMilliseconds(fetchedHotel2.CreatedAt) <= TruncateMilliseconds(writtenHotel2.CreatedAt).AddSeconds(1));
+            Assert.True(TruncateMilliseconds(fetchedHotel2.UpdatedAt) >= TruncateMilliseconds(writtenHotel2.UpdatedAt) && TruncateMilliseconds(fetchedHotel2.UpdatedAt) <= TruncateMilliseconds(writtenHotel2.UpdatedAt).AddSeconds(1));
         }
         finally
         {
@@ -385,7 +409,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             IncludeVectors = false,
             Top = 5,
-            Filter = new([
+            OldFilter = new([
                 new EqualToFilterClause("HotelRating", 2.5f)
             ])
         });
@@ -418,7 +442,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             IncludeVectors = false,
             Top = 5,
-            Filter = new([
+            OldFilter = new([
                 new AnyTagEqualToFilterClause("Tags", "tag2")
             ])
         });

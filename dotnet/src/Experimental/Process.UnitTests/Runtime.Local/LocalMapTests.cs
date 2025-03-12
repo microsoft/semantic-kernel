@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Process.Runtime.Local.UnitTests;
@@ -261,8 +261,8 @@ public class LocalMapTests
             .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         // CountStep is not part of the map operation, rather it has been defined on the "outer" process.
-        CountStep.Index = 0; // Reset static state (test hack)
-        ProcessStepBuilder countStep = process.AddStepFromType<CountStep>();
+        CommonSteps.CountStep.Index = 0; // Reset static state (test hack)
+        ProcessStepBuilder countStep = process.AddStepFromType<CommonSteps.CountStep>();
         mapStep.MapOperation
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
@@ -287,6 +287,7 @@ public class LocalMapTests
     public async Task ProcessMapResultWithTargetExtraAsync()
     {
         // Arrange
+        CommonSteps.CountStep.Index = 0;
         ProcessBuilder process = new(nameof(ProcessMapResultProcessOperationAsync));
 
         ProcessBuilder mapProcess = new("MapOperation");
@@ -295,7 +296,7 @@ public class LocalMapTests
             .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
-        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CountStep>();
+        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CommonSteps.CountStep>();
         computeStep
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
@@ -319,7 +320,7 @@ public class LocalMapTests
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
         Assert.Equal(55L, unionState.SquareResult);
-        Assert.Equal(5, CountStep.Index);
+        Assert.Equal(5, CommonSteps.CountStep.Index);
     }
 
     /// <summary>
@@ -522,22 +523,6 @@ public class LocalMapTests
         public void FormatValues(IList<string> values)
         {
             this._state.FormatResult = string.Join("/", values);
-        }
-    }
-
-    /// <summary>
-    /// The step that counts how many times it has been invoked.
-    /// </summary>
-    private sealed class CountStep : KernelProcessStep
-    {
-        public const string CountFunction = nameof(Count);
-
-        public static int Index = 0;
-
-        [KernelFunction]
-        public void Count()
-        {
-            Interlocked.Increment(ref Index);
         }
     }
 }

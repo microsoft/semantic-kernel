@@ -41,9 +41,11 @@ class RepoFilePlugin:
     @kernel_function(description="List all files or subdirectories in a directory.")
     def list_directory(
         self, path: Annotated[str, "Path of a directory relative to the root of the repository."]
-    ) -> Annotated[str, "Returns a list of files and subdirectories."]:
+    ) -> Annotated[str, "Returns a list of files and subdirectories as a string."]:
         path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", path)
         try:
-            return os.listdir(path)
+            files = os.listdir(path)
+            # Join the list of files into a single string
+            return "\n".join(files)
         except FileNotFoundError:
             raise FileNotFoundError(f"Directory {path} not found in repository.")

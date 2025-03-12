@@ -8,14 +8,14 @@ from pydantic import Field
 
 from semantic_kernel.contents.const import ANNOTATION_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="AnnotationContent")
 
 
-@experimental_class
+@experimental
 class AnnotationContent(KernelContent):
     """Annotation content."""
 
@@ -25,10 +25,11 @@ class AnnotationContent(KernelContent):
     quote: str | None = None
     start_index: int | None = None
     end_index: int | None = None
+    url: str | None = None
 
     def __str__(self) -> str:
         """Return the string representation of the annotation content."""
-        return f"AnnotationContent(file_id={self.file_id}, quote={self.quote}, start_index={self.start_index}, end_index={self.end_index})"  # noqa: E501
+        return f"AnnotationContent(file_id={self.file_id}, url={self.url}, quote={self.quote}, start_index={self.start_index}, end_index={self.end_index})"  # noqa: E501
 
     def to_element(self) -> Element:
         """Convert the annotation content to an Element."""
@@ -41,6 +42,8 @@ class AnnotationContent(KernelContent):
             element.set("start_index", str(self.start_index))
         if self.end_index is not None:
             element.set("end_index", str(self.end_index))
+        if self.url is not None:
+            element.set("url", self.url)
         return element
 
     @classmethod
@@ -51,11 +54,12 @@ class AnnotationContent(KernelContent):
             quote=element.get("quote"),
             start_index=int(element.get("start_index")) if element.get("start_index") else None,  # type: ignore
             end_index=int(element.get("end_index")) if element.get("end_index") else None,  # type: ignore
+            url=element.get("url") if element.get("url") else None,  # type: ignore
         )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert the instance to a dictionary."""
         return {
             "type": "text",
-            "text": f"{self.file_id} {self.quote} (Start Index={self.start_index}->End Index={self.end_index})",
+            "text": f"{self.file_id or self.url} {self.quote} (Start Index={self.start_index}->End Index={self.end_index})",  # noqa: E501
         }

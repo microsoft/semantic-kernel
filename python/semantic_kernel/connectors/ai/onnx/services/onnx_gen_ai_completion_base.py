@@ -5,12 +5,17 @@ import os
 from collections.abc import AsyncGenerator
 from typing import Any
 
-import onnxruntime_genai as OnnxRuntimeGenAi
-
 from semantic_kernel.connectors.ai.onnx.onnx_gen_ai_prompt_execution_settings import OnnxGenAIPromptExecutionSettings
 from semantic_kernel.contents import ImageContent
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidResponseError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+
+try:
+    import onnxruntime_genai as OnnxRuntimeGenAi
+
+    ready = True
+except ImportError:
+    ready = False
 
 
 class OnnxGenAICompletionBase(KernelBaseModel):
@@ -31,6 +36,8 @@ class OnnxGenAICompletionBase(KernelBaseModel):
         Raises:
             ServiceInitializationError: When model cannot be loaded
         """
+        if not ready:
+            raise ImportError("onnxruntime-genai is not installed.")
         try:
             json_gen_ai_config = os.path.join(ai_model_path + "/genai_config.json")
             with open(json_gen_ai_config) as file:

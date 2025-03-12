@@ -326,3 +326,4 @@ def test_from_yaml_with_function_choice_behavior():
 def test_multiple_param_in_prompt():
     func = KernelFunctionFromPrompt("test", prompt="{{$param}}{{$param}}")
     assert len(func.parameters) == 1
+    assert func.metadata.parameters[0].schema_data == {"type": "object"}

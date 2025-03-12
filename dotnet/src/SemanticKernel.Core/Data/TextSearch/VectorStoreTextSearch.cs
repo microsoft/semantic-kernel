@@ -197,9 +197,11 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     private async Task<VectorSearchResults<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
-        var vectorSearchOptions = new VectorSearchOptions
+        var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
-            Filter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+            OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             Skip = searchOptions.Skip,
             Top = searchOptions.Top,
         };

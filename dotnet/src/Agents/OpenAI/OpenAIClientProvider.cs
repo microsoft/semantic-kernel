@@ -3,6 +3,7 @@ using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -10,23 +11,31 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
+using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
 /// Provides an <see cref="OpenAIClient"/> for use by <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+[Experimental("SKEXP0110")]
 public sealed class OpenAIClientProvider
 {
     /// <summary>
     /// Specifies a key that avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.
     /// </summary>
     private const string SingleSpaceKey = " ";
+    private AssistantClient? _assistantClient;
 
     /// <summary>
     /// Gets an active client instance.
     /// </summary>
     public OpenAIClient Client { get; }
+
+    /// <summary>
+    /// Gets an active assistant client instance.
+    /// </summary>
+    public AssistantClient AssistantClient => this._assistantClient ??= this.Client.GetAssistantClient();
 
     /// <summary>
     /// Gets configuration keys required for <see cref="AgentChannel"/> management.
@@ -36,7 +45,7 @@ public sealed class OpenAIClientProvider
     private OpenAIClientProvider(OpenAIClient client, IEnumerable<string> keys)
     {
         this.Client = client;
-        this.ConfigurationKeys = keys.ToArray();
+        this.ConfigurationKeys = [.. keys];
     }
 
     /// <summary>

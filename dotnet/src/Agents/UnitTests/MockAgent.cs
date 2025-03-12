@@ -41,7 +41,7 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
     }
 
     // Expose protected method for testing
-    public new KernelArguments? MergeArguments(KernelArguments? arguments)
+    public new KernelArguments MergeArguments(KernelArguments? arguments)
     {
         return base.MergeArguments(arguments);
     }

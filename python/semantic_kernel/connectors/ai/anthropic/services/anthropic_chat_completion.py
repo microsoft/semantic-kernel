@@ -35,9 +35,9 @@ from semantic_kernel.connectors.ai.chat_completion_client_base import ChatComple
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ITEM_TYPES, ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.streaming_chat_message_content import ITEM_TYPES as STREAMING_ITEM_TYPES
+from semantic_kernel.contents.streaming_chat_message_content import STREAMING_CMC_ITEM_TYPES as STREAMING_ITEM_TYPES
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
@@ -49,7 +49,7 @@ from semantic_kernel.exceptions.service_exceptions import (
     ServiceInvalidResponseError,
     ServiceResponseException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
     trace_chat_completion,
     trace_streaming_chat_completion,
@@ -68,7 +68,7 @@ ANTHROPIC_TO_SEMANTIC_KERNEL_FINISH_REASON_MAP = {
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class AnthropicChatCompletion(ChatCompletionClientBase):
     """Anthropic ChatCompletion class."""
 
@@ -261,7 +261,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
         self, response: Message, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object."""
-        items: list[ITEM_TYPES] = []
+        items: list[CMC_ITEM_TYPES] = []
         items += self._get_tool_calls_from_message(response)
 
         for content_block in response.content:

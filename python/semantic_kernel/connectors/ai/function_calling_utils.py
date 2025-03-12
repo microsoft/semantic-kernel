@@ -1,10 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections import OrderedDict
+from collections.abc import Callable
+from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.ai.function_choice_behavior import (
@@ -15,6 +18,7 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+    from semantic_kernel.kernel import Kernel
 
 
 def update_settings_from_function_call_configuration(
@@ -102,8 +106,8 @@ def merge_function_results(
 
 def merge_streaming_function_results(
     messages: list["ChatMessageContent | StreamingChatMessageContent"],
-    ai_model_id: str,
-    function_invoke_attempt: int,
+    ai_model_id: str | None = None,
+    function_invoke_attempt: int | None = None,
 ) -> list["StreamingChatMessageContent"]:
     """Combine multiple streaming function result content types to one streaming chat message content type.
 
@@ -134,3 +138,36 @@ def merge_streaming_function_results(
             function_invoke_attempt=function_invoke_attempt,
         )
     ]
+
+
+@experimental
+def prepare_settings_for_function_calling(
+    settings: "PromptExecutionSettings",
+    settings_class: type["PromptExecutionSettings"],
+    update_settings_callback: Callable[..., None],
+    kernel: "Kernel",
+) -> "PromptExecutionSettings":
+    """Prepare settings for the service.
+
+    Args:
+        settings: Prompt execution settings.
+        settings_class: The settings class.
+        update_settings_callback: The callback to update the settings.
+        kernel: Kernel instance.
+
+    Returns:
+        PromptExecutionSettings of type settings_class.
+    """
+    settings = deepcopy(settings)
+    if not isinstance(settings, settings_class):
+        settings = settings_class.from_prompt_execution_settings(settings)
+
+    if settings.function_choice_behavior:
+        # Configure the function choice behavior into the settings object
+        # that will become part of the request to the AI service
+        settings.function_choice_behavior.configure(
+            kernel=kernel,
+            update_settings_callback=update_settings_callback,
+            settings=settings,
+        )
+    return settings

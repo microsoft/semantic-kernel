@@ -5,25 +5,24 @@ import sys
 from collections.abc import AsyncIterable
 from typing import Any, ClassVar
 
-from semantic_kernel.agents.agent import Agent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentChatException
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
+from semantic_kernel.agents.agent import Agent
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentChatException
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class BedrockAgentChannel(AgentChannel, ChatHistory):
     """An AgentChannel for a BedrockAgent that is based on a ChatHistory.
 
@@ -37,11 +36,12 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
     MESSAGE_PLACEHOLDER: ClassVar[str] = "[SILENCE]"
 
     @override
-    async def invoke(self, agent: "Agent") -> AsyncIterable[tuple[bool, ChatMessageContent]]:
+    async def invoke(self, agent: "Agent", **kwargs: Any) -> AsyncIterable[tuple[bool, ChatMessageContent]]:
         """Perform a discrete incremental interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
+            kwargs: Additional keyword arguments.
 
         Returns:
             An async iterable of ChatMessageContent with a boolean indicating if the
@@ -75,12 +75,14 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
         self,
         agent: "Agent",
         messages: list[ChatMessageContent],
+        **kwargs: Any,
     ) -> AsyncIterable[ChatMessageContent]:
         """Perform a streaming interaction between a single Agent and AgentChat.
 
         Args:
             agent: The agent to interact with.
             messages: The history of messages in the conversation.
+            kwargs: Additional keyword arguments.
 
         Returns:
             An async iterable of ChatMessageContent.

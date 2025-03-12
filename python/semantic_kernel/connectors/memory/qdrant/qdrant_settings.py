@@ -5,12 +5,12 @@ from typing import ClassVar
 from pydantic import HttpUrl, SecretStr, model_validator
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 IN_MEMORY_STRING = ":memory:"
 
 
-@experimental_class
+@experimental
 class QdrantSettings(KernelBaseSettings):
     """Qdrant settings currently used by the Qdrant Vector Record Store."""
 

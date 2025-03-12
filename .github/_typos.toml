@@ -23,7 +23,10 @@ extend-exclude = [
     "PopulationByCountry.csv",
     "PopulationByAdmin1.csv",
     "WomensSuffrage.txt",
-    "SK-dotnet.sln.DotSettings"
+    "SK-dotnet.sln.DotSettings",
+    "**/azure_ai_search_hotel_samples/README.md",
+    "**/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs",
+    "**/Demos/ProcessFrameworkWithAspire/**/*.http"
 ]
 
 [default.extend-words]
@@ -39,6 +42,7 @@ prompty = "prompty"       # prompty is a format name.
 ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
 pn = "pn"                 # Kiota parameter
+nin = "nin"               # MongoDB "not in" operator
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service

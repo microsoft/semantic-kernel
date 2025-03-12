@@ -104,9 +104,9 @@ jobs:
         shell: bash
         if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
-          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | tr '\n' ' ')
+          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | grep -v "VectorDataIntegrationTests.csproj" | tr '\n' ' ')
           for project in $INTEGRATION_TEST_PROJECTS; do
-            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+            dotnet test -f net8.0 -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done
         env:
           # Azure OpenAI Deployments
@@ -148,11 +148,17 @@ jobs:
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.3
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
-          reporttypes: "JsonSummary"
+          reporttypes: "HtmlInline;JsonSummary"
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
+          path: ./TestResults/Reports # Directory containing files to upload
 
       - name: Check coverage
         shell: pwsh

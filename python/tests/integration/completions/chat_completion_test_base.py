@@ -5,6 +5,11 @@ import os
 import sys
 from typing import Annotated
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 import pytest
 from azure.ai.inference.aio import ChatCompletionsClient
 from azure.identity import DefaultAzureCredential
@@ -41,11 +46,6 @@ from semantic_kernel.utils.authentication.entra_id_authentication import get_ent
 from tests.integration.completions.completion_test_base import CompletionTestBase, ServiceType
 from tests.utils import is_service_setup_for_testing
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
 # 1. OpenAI and Azure OpenAI services are always setup for testing.
@@ -67,8 +67,6 @@ onnx_setup: bool = is_service_setup_for_testing(
     ["ONNX_GEN_AI_CHAT_MODEL_FOLDER"], raise_if_not_set=False
 )  # Tests are optional for ONNX
 anthropic_setup: bool = is_service_setup_for_testing(["ANTHROPIC_API_KEY", "ANTHROPIC_CHAT_MODEL_ID"])
-# When testing Bedrock, after logging into AWS CLI this has been set, so we can use it to check if the service is setup
-bedrock_setup: bool = is_service_setup_for_testing(["AWS_DEFAULT_REGION"], raise_if_not_set=False)
 
 
 # A mock plugin that contains a function that returns a complex object.
@@ -90,7 +88,9 @@ class ChatCompletionTestBase(CompletionTestBase):
     """Base class for testing completion services."""
 
     @override
-    @pytest.fixture(scope="function")
+    @pytest.fixture(
+        scope="function"
+    )  # This needs to be scoped to function to avoid resources getting cleaned up after each test
     def services(self) -> dict[str, tuple[ServiceType | None, type[PromptExecutionSettings] | None]]:
         azure_openai_setup = True
         azure_openai_settings = AzureOpenAISettings.create()
@@ -152,27 +152,27 @@ class ChatCompletionTestBase(CompletionTestBase):
                 OnnxGenAIPromptExecutionSettings,
             ),
             "bedrock_amazon_titan": (
-                BedrockChatCompletion(model_id="amazon.titan-text-premier-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_chat_completion_client("amazon.titan-text-premier-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_ai21labs": (
-                BedrockChatCompletion(model_id="ai21.jamba-1-5-mini-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_chat_completion_client("ai21.jamba-1-5-mini-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_anthropic_claude": (
-                BedrockChatCompletion(model_id="anthropic.claude-3-5-sonnet-20240620-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_chat_completion_client("anthropic.claude-3-sonnet-20240229-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_cohere_command": (
-                BedrockChatCompletion(model_id="cohere.command-r-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_chat_completion_client("cohere.command-r-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_meta_llama": (
-                BedrockChatCompletion(model_id="meta.llama3-70b-instruct-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_chat_completion_client("meta.llama3-70b-instruct-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
             "bedrock_mistralai": (
-                BedrockChatCompletion(model_id="mistral.mistral-small-2402-v1:0") if bedrock_setup else None,
+                self._try_create_bedrock_chat_completion_client("mistral.mistral-small-2402-v1:0"),
                 BedrockChatPromptExecutionSettings,
             ),
         }
@@ -218,3 +218,13 @@ class ChatCompletionTestBase(CompletionTestBase):
         if parts:
             return sum(parts[1:], parts[0])
         raise AssertionError("No response")
+
+    def _try_create_bedrock_chat_completion_client(self, model_id: str) -> BedrockChatCompletion | None:
+        try:
+            return BedrockChatCompletion(model_id=model_id)
+        except Exception as ex:
+            from conftest import logger
+
+            logger.warning(ex)
+            # Returning None so that the test that uses this service will be skipped
+            return None

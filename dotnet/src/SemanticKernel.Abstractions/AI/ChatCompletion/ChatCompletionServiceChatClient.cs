@@ -35,7 +35,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public async Task<Extensions.AI.ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Extensions.AI.ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatMessages);
 
@@ -53,7 +53,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatMessages);
 
@@ -82,6 +82,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             serviceKey is not null ? null :
             serviceType.IsInstanceOfType(this) ? this :
             serviceType.IsInstanceOfType(this._chatCompletionService) ? this._chatCompletionService :
+            serviceType.IsInstanceOfType(this.Metadata) ? this.Metadata :
             null;
     }
 
@@ -191,11 +192,11 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         return settings;
     }
 
-    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="StreamingChatCompletionUpdate"/>.</summary>
+    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    private static StreamingChatCompletionUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
+    private static ChatResponseUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
     {
-        StreamingChatCompletionUpdate update = new()
+        ChatResponseUpdate update = new()
         {
             AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
             AuthorName = content.AuthorName,
