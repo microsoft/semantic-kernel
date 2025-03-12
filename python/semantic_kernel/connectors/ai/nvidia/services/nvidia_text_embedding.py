@@ -4,7 +4,6 @@ import asyncio
 import copy
 import logging
 import sys
-import warnings
 from typing import Any
 
 if sys.version_info >= (3, 12):
@@ -70,9 +69,9 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             raise ServiceInitializationError("Failed to create NVIDIA settings.", ex) from ex
         if not nvidia_settings.embedding_model_id:
             nvidia_settings.embedding_model_id = "nvidia/nv-embedqa-e5-v5"
-            warnings(f"Default embedding model set as: {nvidia_settings.embedding_model_id}")
-        if not (api_key or nvidia_settings.api_key):
-            warnings("API_KEY is missing, inference may fail.")
+            logger.warning(f"Default embedding model set as: {nvidia_settings.embedding_model_id}")
+        if not nvidia_settings.api_key:
+            logger.warning("API_KEY is missing, inference may fail.")
         if not client:
             client = AsyncOpenAI(api_key=nvidia_settings.api_key.get_secret_value(), base_url=nvidia_settings.base_url)
         super().__init__(
@@ -99,7 +98,7 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
     async def generate_raw_embeddings(
         self,
         texts: list[str],
-        settings: "NvidiaEmbeddingPromptExecutionSettings | None" = None,
+        settings: "PromptExecutionSettings | None" = None,
         batch_size: int | None = None,
         **kwargs: Any,
     ) -> Any:
