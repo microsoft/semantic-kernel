@@ -495,7 +495,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelContextProtocol", "sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructuredDataPlugin", "samples\Demos\StructuredDataPlugin\StructuredDataPlugin.csproj", "{BEDAC050-016A-46F4-9173-339C46DFD3ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.StructuredData", "src\Plugins\Plugins.StructuredData\Plugins.StructuredData.csproj", "{0C81C377-3CDC-46A8-BED1-4B50BDA2202E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins.StructuredData.EntityFramework", "src\Plugins\Plugins.StructuredData.EntityFramework\Plugins.StructuredData.EntityFramework.csproj", "{0C81C377-3CDC-46A8-BED1-4B50BDA2202E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerIntegrationTests", "src\VectorDataIntegrationTests\SqlServerIntegrationTests\SqlServerIntegrationTests.csproj", "{A5E6193C-8431-4C6E-B674-682CB41EAA0C}"
 EndProject
