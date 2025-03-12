@@ -33,7 +33,7 @@ async def test_google_search_init_success(google_search) -> None:
     assert google_search.settings.engine_id == "test_id"
 
 
-@pytest.mark.parametrize("exclude_list", [["GOOGLE_API_KEY"]], indirect=True)
+@pytest.mark.parametrize("exclude_list", [["GOOGLE_SEARCH_API_KEY"]], indirect=True)
 async def test_google_search_init_validation_error(google_search_unit_test_env) -> None:
     """Test that GoogleSearch raises ServiceInitializationError when GoogleSearchSettings creation fails."""
     with pytest.raises(ServiceInitializationError):
