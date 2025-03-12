@@ -42,7 +42,7 @@ def pytest_configure(config):
 
 @fixture(scope="function")
 def kernel() -> "Kernel":
-    from semantic_kernel.kernel import Kernel
+    from semantic_kernel import Kernel
 
     return Kernel()
 
@@ -590,7 +590,7 @@ def dataclass_vector_data_model_array(
 @fixture
 def data_model_definition(
     index_kind: str, distance_function: str, vector_property_type: str, dimensions: int
-) -> object:
+) -> VectorStoreRecordDefinition:
     return VectorStoreRecordDefinition(
         fields={
             "id": VectorStoreRecordKeyField(),

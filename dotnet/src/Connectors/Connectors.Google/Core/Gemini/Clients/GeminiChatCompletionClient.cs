@@ -305,7 +305,7 @@ internal sealed class GeminiChatCompletionClient : ClientBase
         if (this.Logger.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(chatHistory, JsonOptionsCache.ChatHistory),
                 JsonSerializer.Serialize(geminiExecutionSettings));
         }
 
