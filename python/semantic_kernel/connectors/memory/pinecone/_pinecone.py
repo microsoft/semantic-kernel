@@ -6,8 +6,6 @@ from collections.abc import Sequence
 from inspect import isawaitable
 from typing import Any, ClassVar, Generic, TypeVar
 
-from semantic_kernel.kernel_types import OneOrMany
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -38,6 +36,7 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.kernel_types import OneOrMany
 
 logger = logging.getLogger(__name__)
 
@@ -163,11 +162,6 @@ class PineconeCollection(
             metric = Metric.COSINE
         embed = kwargs.pop("embed", None)
         if embed:
-            if isinstance(self.client, PineconeGRPC):
-                raise VectorStoreOperationException(
-                    "Pinecone GRPC client does not support integrated embeddings. "
-                    "Please use the Pinecone Asyncio client."
-                )
             await self._create_index_with_integrated_embeddings(embed, metric, **kwargs)
         else:
             await self._create_regular_index(metric, vector, **kwargs)
@@ -176,6 +170,10 @@ class PineconeCollection(
         self, embed: dict[str, Any], metric: Metric, **kwargs: Any
     ) -> None:
         """Create the Pinecone index with the embed parameter."""
+        if isinstance(self.client, PineconeGRPC):
+            raise VectorStoreOperationException(
+                "Pinecone GRPC client does not support integrated embeddings. Please use the Pinecone Asyncio client."
+            )
         cloud = kwargs.pop("cloud", "aws")
         region = kwargs.pop("region", "us-east-1")
         if "metric" not in embed:
@@ -192,10 +190,7 @@ class PineconeCollection(
             "embed": embed,
         }
         index_creation_args.update(kwargs)
-        index = self.client.create_index_for_model(**index_creation_args)
-        if isawaitable(index):
-            index = await index
-        self.index = index
+        self.index = await self.client.create_index_for_model(**index_creation_args)
         await self._load_index_client()
 
     async def _create_regular_index(self, metric: Metric, vector: VectorStoreRecordVectorField, **kwargs: Any) -> None:
@@ -409,6 +404,11 @@ class PineconeCollection(
                 raise VectorStoreOperationException(
                     "Pinecone collection only support vectorizable text search when integrated embeddings are used.",
                 )
+            if isinstance(self.index_client, GRPCIndex):
+                raise VectorStoreOperationException(
+                    "Pinecone GRPC client does not support integrated embeddings. "
+                    "Please use the Pinecone Asyncio client."
+                )
             # using integrated embeddings you do not get vectors back
             # and the deserializer will not be able to deserialize the results
             # so we need to set include_vectors to False
@@ -420,10 +420,7 @@ class PineconeCollection(
             if options.filter:
                 search_args["query"]["filter"] = self._build_filter(options.filter)
 
-            if isinstance(self.index_client, GRPCIndex):
-                results = self.index_client.search_records(**search_args)
-            else:
-                results = await self.index_client.search_records(**search_args)
+            results = await self.index_client.search_records(**search_args)
             return KernelSearchResults(
                 results=self._get_vector_search_results_from_results(results.result.hits, options),
                 total_count=len(results.result.hits),
