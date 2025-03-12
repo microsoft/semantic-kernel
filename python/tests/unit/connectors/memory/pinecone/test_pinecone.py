@@ -12,12 +12,13 @@ from pinecone.core.openapi.db_data.models import (
     SearchUsage,
 )
 from pinecone.data.index_asyncio import _IndexAsyncio
-from pytest import fixture, mark
+from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.pinecone import PineconeStore
 from semantic_kernel.connectors.memory.pinecone._pinecone import PineconeCollection
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 BASE_PATH_ASYNCIO = "pinecone.PineconeAsyncio"
 BASE_PATH_INDEX_CLIENT_ASYNCIO = "pinecone.data.index_asyncio._IndexAsyncio"
@@ -116,6 +117,13 @@ async def test_create_store(pinecone_unit_test_env):
     assert store.client is not None
 
 
+@mark.parametrize("exclude_list", [["PINECONE_API_KEY"]], indirect=True)
+async def test_create_store_fail(pinecone_unit_test_env):
+    """Test the creation of a Pinecone store."""
+    with raises(VectorStoreInitializationException):
+        PineconeStore(env_file_path="test.env")
+
+
 def test_create_store_grpc(pinecone_unit_test_env):
     """Test the creation of a Pinecone store."""
 
@@ -123,6 +131,17 @@ def test_create_store_grpc(pinecone_unit_test_env):
     store = PineconeStore(use_grpc=True)
     assert store is not None
     assert store.client is not None
+
+
+@mark.parametrize("exclude_list", [["PINECONE_API_KEY"]], indirect=True)
+async def test_create_collection_fail(pinecone_unit_test_env, data_model_definition):
+    with raises(VectorStoreInitializationException):
+        PineconeCollection(
+            collection_name="test_collection",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            env_file_path="test.env",
+        )
 
 
 async def test_get_collection(store, data_model_definition):

@@ -14,7 +14,7 @@ else:
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
-from pydantic import PrivateAttr
+from pydantic import PrivateAttr, ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.data.const import DistanceFunction
@@ -95,15 +95,15 @@ class PineconeCollection(
         """
         managed_client = not client
 
-        settings = PineconeSettings.create(
-            api_key=api_key,
-            namespace=namespace,
-            env_file_path=env_file_path,
-            env_file_encoding=env_file_encoding,
-        )
-
-        if not settings.api_key:
-            raise VectorStoreInitializationException("Pinecone API key is required.")
+        try:
+            settings = PineconeSettings.create(
+                api_key=api_key,
+                namespace=namespace,
+                env_file_path=env_file_path,
+                env_file_encoding=env_file_encoding,
+            )
+        except ValidationError as exc:
+            raise VectorStoreInitializationException(f"Failed to create Pinecone settings: {exc}") from exc
 
         if not client:
             if use_grpc:
@@ -494,13 +494,14 @@ class PineconeStore(VectorStore):
         """
         managed_client = not client
         if not client:
-            settings = PineconeSettings.create(
-                api_key=api_key,
-                env_file_path=env_file_path,
-                env_file_encoding=env_file_encoding,
-            )
-        if not settings.api_key:
-            raise VectorStoreInitializationException("Pinecone API key is required.")
+            try:
+                settings = PineconeSettings.create(
+                    api_key=api_key,
+                    env_file_path=env_file_path,
+                    env_file_encoding=env_file_encoding,
+                )
+            except ValidationError as exc:
+                raise VectorStoreInitializationException(f"Failed to create Pinecone settings: {exc}") from exc
 
         if not client:
             if use_grpc:
