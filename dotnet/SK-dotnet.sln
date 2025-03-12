@@ -121,6 +121,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 		src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs = src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs
 		src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs = src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs
+		src\InternalUtilities\src\Diagnostics\UnreachableException.cs = src\InternalUtilities\src\Diagnostics\UnreachableException.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
@@ -145,6 +146,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10
 		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
 		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
 		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
+		src\InternalUtilities\src\System\IndexRange.cs = src\InternalUtilities\src\System\IndexRange.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"
@@ -232,6 +234,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-A
 		src\InternalUtilities\src\Text\SseJsonParser.cs = src\InternalUtilities\src\Text\SseJsonParser.cs
 		src\InternalUtilities\src\Text\SseLine.cs = src\InternalUtilities\src\Text\SseLine.cs
 		src\InternalUtilities\src\Text\SseReader.cs = src\InternalUtilities\src\Text\SseReader.cs
+		src\InternalUtilities\src\Text\ExceptionJsonConverter.cs = src\InternalUtilities\src\Text\ExceptionJsonConverter.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-FA0D-45E6-80BA-22A373609E89}"
@@ -1572,6 +1575,7 @@ Global
 		{89FC596F-CB81-4733-829B-4527D0FFC291} = {5A7028A7-4DDF-4E4F-84A9-37CE8F8D7E89}
 		{A5E6193C-8431-4C6E-B674-682CB41EAA0C} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 		{8A40AE00-4A7D-4ED0-A9DA-BB7A98EFABD3} = {24503383-A8C4-4255-9998-28D70FE8E99A}
+		{A5E6193C-8431-4C6E-B674-682CB41EAA0C} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}

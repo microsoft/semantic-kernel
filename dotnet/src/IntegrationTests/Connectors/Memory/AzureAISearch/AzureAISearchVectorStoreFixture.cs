@@ -53,7 +53,7 @@ public class AzureAISearchVectorStoreFixture : IAsyncLifetime
     /// </summary>
     public static AzureAISearchConfiguration? GetAzureAISearchConfiguration()
     {
-        return s_configuration.GetRequiredSection("AzureAISearch").Get<AzureAISearchConfiguration>();
+        return s_configuration.GetSection("AzureAISearch").Get<AzureAISearchConfiguration>();
     }
 
     /// <summary>

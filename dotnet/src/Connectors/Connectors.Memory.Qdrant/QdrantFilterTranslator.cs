@@ -205,10 +205,14 @@ internal class QdrantFilterTranslator
         static RepeatedField<Condition> GetShouldConditions(Filter filter)
             => filter switch
             {
+                // If the filter only contains Should conditions (string of ORs), those can be directly added to the result
+                // (concatenated into the Should with whatever comes out of the other side)
                 { Must.Count: 0, MustNot.Count: 0 } => filter.Should,
-                { Must.Count: 1, MustNot.Count: 0, Should.Count: 0 } => [filter.Must[0]],
-                { Must.Count: 0, MustNot.Count: 1, Should.Count: 0 } => [filter.MustNot[0]],
 
+                // If the filter is just a single Must condition, it can also be directly added to the result.
+                { Must.Count: 1, MustNot.Count: 0, Should.Count: 0 } => [filter.Must[0]],
+
+                // For all other cases, we need to wrap the filter in a condition and return that, to preserve the logical structure.
                 _ => [new Condition { Filter = filter }]
             };
     }

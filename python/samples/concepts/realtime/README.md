@@ -11,7 +11,7 @@ To run these samples, you will need to have the following setup:
   - pyaudio
   - sounddevice
   - pydub
-    e.g. pip install pyaudio sounddevice pydub semantic_kernel[realtime]
+    e.g. pip install pyaudio sounddevice pydub semantic-kernel[realtime]
 
 The samples all run as python scripts, that can either be started directly or through your IDE.
 
@@ -41,10 +41,10 @@ The following two samples use function calling with the following functions:
 
 A line is logged whenever one of these functions is called.
 
-### [Chat with function calling Websocket](./realtime_chat_with_function_calling_websocket.py)
+### [Chat with function calling Websocket](./realtime_agent_with_function_calling_websocket.py)
 
-This sample uses the websocket api with Azure OpenAI to run the interaction with the voice model, but now with function calling.
+This sample uses the websocket api with Azure OpenAI to run a voice agent, capable of taking actions on your behalf.
 
-### [Chat with function calling WebRTC](./realtime_chat_with_function_calling_webrtc.py)
+### [Chat with function calling WebRTC](./realtime_agent_with_function_calling_webrtc.py)
 
-This sample uses the WebRTC api with OpenAI to run the interaction with the voice model, but now with function calling.
+This sample uses the WebRTC api with OpenAI to run a voice agent, capable of taking actions on your behalf.

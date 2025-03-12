@@ -14,7 +14,7 @@ public sealed class AzureCosmosDBNoSQLConnectionStringSetConditionAttribute : At
 {
     public ValueTask<bool> IsMetAsync()
     {
-        var isMet = AzureCosmosDBNoSQLVectorStoreFixture.GetConnectionString() is not null;
+        var isMet = !string.IsNullOrEmpty(AzureCosmosDBNoSQLVectorStoreFixture.GetConnectionString());
 
         return ValueTask.FromResult(isMet);
     }

@@ -31,15 +31,18 @@ else
 
 Kernel kernel = builder.Build();
 
-// Add the MCP simple tools as Kernel functions
+// Create an MCPClient for the GitHub server
 var mcpClient = await McpDotNetExtensions.GetGitHubToolsAsync().ConfigureAwait(false);
-var functions = await mcpClient.MapToFunctionsAsync().ConfigureAwait(false);
 
-foreach (var function in functions)
+// Retrieve the list of tools available on the GitHub server
+var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
+foreach (var tool in tools.Tools)
 {
-    Console.WriteLine($"{function.Name}: {function.Description}");
+    Console.WriteLine($"{tool.Name}: {tool.Description}");
 }
 
+// Add the MCP tools as Kernel functions
+var functions = await mcpClient.MapToFunctionsAsync().ConfigureAwait(false);
 kernel.Plugins.AddFromFunctions("GitHub", functions);
 
 // Enable automatic function calling
