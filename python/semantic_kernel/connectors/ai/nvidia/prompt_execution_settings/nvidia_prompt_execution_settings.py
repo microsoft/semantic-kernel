@@ -27,13 +27,13 @@ class NvidiaPromptExecutionSettings(PromptExecutionSettings):
 
 
 class NvidiaEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
-    """Settings for NVIDIA embedding prompt execution"""
+    """Settings for NVIDIA embedding prompt execution."""
 
     input: str | list[str] | None = None
     ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
     encoding_format: Literal["float", "base64"] | None = None
     truncate: Literal["NONE", "START", "END"] | None = None
-    input_type: Literal["passage", "query"] | None = None
+    input_type: Literal["passage", "query"] = "query"  # required param with default value query
     user: str | None = None
     extra_headers: dict | None = None
     extra_body: dict | None = None
