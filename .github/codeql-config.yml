@@ -1,2 +1,2 @@
 paths-ignore:
-  - dotnet/samples/Demos/HuggingFaceImageToText
+  - dotnet/samples/Demos/HuggingFaceImageToText/**
