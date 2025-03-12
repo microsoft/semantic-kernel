@@ -17,10 +17,10 @@ from semantic_kernel.connectors.memory.postgres.constants import (
 )
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorConnectionException
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class PostgresSettings(KernelBaseSettings):
     """Postgres model settings.
 
@@ -59,12 +59,12 @@ class PostgresSettings(KernelBaseSettings):
     env_prefix: ClassVar[str] = "POSTGRES_"
 
     connection_string: SecretStr | None = None
-    host: str | None = Field(None, alias=PGHOST_ENV_VAR)
-    port: int | None = Field(5432, alias=PGPORT_ENV_VAR)
-    dbname: str | None = Field(None, alias=PGDATABASE_ENV_VAR)
-    user: str | None = Field(None, alias=PGUSER_ENV_VAR)
-    password: SecretStr | None = Field(None, alias=PGPASSWORD_ENV_VAR)
-    sslmode: str | None = Field(None, alias=PGSSL_MODE_ENV_VAR)
+    host: str | None = Field(default=None, alias=PGHOST_ENV_VAR)
+    port: int | None = Field(default=5432, alias=PGPORT_ENV_VAR)
+    dbname: str | None = Field(default=None, alias=PGDATABASE_ENV_VAR)
+    user: str | None = Field(default=None, alias=PGUSER_ENV_VAR)
+    password: SecretStr | None = Field(default=None, alias=PGPASSWORD_ENV_VAR)
+    sslmode: str | None = Field(default=None, alias=PGSSL_MODE_ENV_VAR)
 
     min_pool: int = 1
     max_pool: int = 5

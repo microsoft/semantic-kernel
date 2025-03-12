@@ -14,10 +14,17 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// </summary>
 public sealed class AzureAIClientProvider
 {
+    private AgentsClient? _agentsClient;
+
     /// <summary>
     /// Gets an active client instance.
     /// </summary>
     public AIProjectClient Client { get; }
+
+    /// <summary>
+    /// Gets an active assistant client instance.
+    /// </summary>
+    public AgentsClient AgentsClient => this._agentsClient ??= this.Client.GetAgentsClient();
 
     /// <summary>
     /// Configuration keys required for <see cref="AgentChannel"/> management.

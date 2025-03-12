@@ -7,7 +7,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);SKEXP0110</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <VersionSuffix>alpha</VersionSuffix>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/azure/Policies/GeneratedActionPipelinePolicy.cs" Link="%(RecursiveDir)Azure/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/planning/Schema/JsonSchemaFunctionParameters.cs" Link="%(RecursiveDir)Schema/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/*" Link="%(RecursiveDir)Http/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/*" Link="%(RecursiveDir)Text/%(Filename)%(Extension)" />

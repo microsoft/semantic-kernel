@@ -3,10 +3,10 @@
 from typing import ClassVar
 
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class BedrockAgentSettings(KernelBaseSettings):
     """Amazon Bedrock Agent service settings.
 
@@ -23,11 +23,10 @@ class BedrockAgentSettings(KernelBaseSettings):
             https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html
             (Env var BEDROCK_AGENT_AGENT_RESOURCE_ROLE_ARN)
         - foundation_model: str - The Amazon Bedrock foundation model ID to use.
-            This is required when creating a new agent.
             (Env var BEDROCK_AGENT_FOUNDATION_MODEL)
     """
 
     env_prefix: ClassVar[str] = "BEDROCK_AGENT_"
 
     agent_resource_role_arn: str
-    foundation_model: str | None = None
+    foundation_model: str

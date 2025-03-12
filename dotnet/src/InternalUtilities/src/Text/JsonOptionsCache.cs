@@ -38,4 +38,12 @@ internal static class JsonOptionsCache
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
     };
+
+    /// <summary>
+    /// Gets the <see cref="JsonSerializerOptions"/> configured for serializing chat history data.
+    /// </summary>
+    public static JsonSerializerOptions ChatHistory { get; } = new()
+    {
+        Converters = { new ExceptionJsonConverter() }
+    };
 }

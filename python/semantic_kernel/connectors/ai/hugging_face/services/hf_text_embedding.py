@@ -13,19 +13,20 @@ import sentence_transformers
 import torch
 from numpy import ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.exceptions import ServiceResponseException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from torch import Tensor
 
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
     """Hugging Face text embedding service."""
 

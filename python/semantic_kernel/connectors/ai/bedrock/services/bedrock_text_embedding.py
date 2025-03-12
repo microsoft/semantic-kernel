@@ -6,7 +6,6 @@ import sys
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
-import boto3
 from numpy import array, ndarray
 from pydantic import ValidationError
 
@@ -24,10 +23,10 @@ from semantic_kernel.connectors.ai.bedrock.services.model_provider.bedrock_model
     get_text_embedding_request_body,
     parse_text_embedding_response,
 )
-from semantic_kernel.connectors.ai.bedrock.services.model_provider.utils import run_in_executor
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError, ServiceInvalidRequestError
+from semantic_kernel.utils.async_utils import run_in_executor
 
 if TYPE_CHECKING:
     pass
@@ -70,8 +69,8 @@ class BedrockTextEmbedding(BedrockBase, EmbeddingGeneratorBase):
         super().__init__(
             ai_model_id=bedrock_settings.embedding_model_id,
             service_id=service_id or bedrock_settings.embedding_model_id,
-            bedrock_runtime_client=runtime_client or boto3.client("bedrock-runtime"),
-            bedrock_client=client or boto3.client("bedrock"),
+            runtime_client=runtime_client,
+            client=client,
         )
 
     @override

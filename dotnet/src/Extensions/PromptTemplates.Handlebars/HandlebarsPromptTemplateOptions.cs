@@ -49,6 +49,11 @@ public sealed class HandlebarsPromptTemplateOptions : HandlebarsHelpersOptions
     public Action<RegisterHelperCallback, HandlebarsPromptTemplateOptions, KernelArguments>? RegisterCustomHelpers { get; set; }
 
     /// <summary>
+    /// Flag indicating whether to enable HTML decoding of the rendered template.
+    /// </summary>
+    public bool EnableHtmlDecoder { get; set; } = true;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="HandlebarsPromptTemplateOptions"/> class.
     /// </summary>
     /// <remarks>Categories only filters built-in dotnet helpers, the ones defined here: https://github.com/Handlebars-Net/Handlebars.Net.Helpers/wiki.</remarks>

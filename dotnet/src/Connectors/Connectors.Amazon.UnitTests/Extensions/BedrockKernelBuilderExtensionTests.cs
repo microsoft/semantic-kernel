@@ -4,6 +4,7 @@ using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
@@ -18,13 +19,15 @@ public class BedrockKernelBuilderExtensionTests
     /// <summary>
     /// Checks that AddBedrockTextGenerationService builds a proper kernel with a null bedrockRuntime.
     /// </summary>
-    [Fact]
-    public void AddBedrockTextGenerationCreatesServiceWithNonNullBedrockRuntime()
+    [Theory]
+    [InlineData("amazon.titan-text-premier-v1:0")]
+    [InlineData("us.amazon.titan-text-premier-v1:0")]
+    public void AddBedrockTextGenerationCreatesServiceWithNonNullBedrockRuntime(string modelId)
     {
         // Arrange
         var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
         var builder = Kernel.CreateBuilder();
-        builder.AddBedrockTextGenerationService("amazon.titan-text-premier-v1:0", bedrockRuntime);
+        builder.AddBedrockTextGenerationService(modelId, bedrockRuntime);
 
         // Act
         var kernel = builder.Build();
@@ -37,13 +40,15 @@ public class BedrockKernelBuilderExtensionTests
     /// <summary>
     /// Checks that AddBedrockChatCompletionService builds a proper kernel with a non-null bedrockRuntime.
     /// </summary>
-    [Fact]
-    public void AddBedrockChatCompletionCreatesServiceWithNonNullBedrockRuntime()
+    [Theory]
+    [InlineData("amazon.titan-text-premier-v1:0")]
+    [InlineData("us.amazon.titan-text-premier-v1:0")]
+    public void AddBedrockChatCompletionCreatesServiceWithNonNullBedrockRuntime(string modelId)
     {
         // Arrange
         var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
         var builder = Kernel.CreateBuilder();
-        builder.AddBedrockChatCompletionService("amazon.titan-text-premier-v1:0", bedrockRuntime);
+        builder.AddBedrockChatCompletionService(modelId, bedrockRuntime);
 
         // Act
         var kernel = builder.Build();
@@ -51,6 +56,25 @@ public class BedrockKernelBuilderExtensionTests
 
         // Assert
         Assert.IsType<BedrockChatCompletionService>(service);
+    }
+
+    /// <summary>
+    /// Checks that AddBedrockTextEmbeddingGenerationService builds a proper kernel with a non-null bedrockRuntime.
+    /// </summary>
+    [Fact]
+    public void AddBedrockTextEmbeddingGenerationCreatesServiceWithNonNullBedrockRuntime()
+    {
+        // Arrange
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var builder = Kernel.CreateBuilder();
+        builder.AddBedrockTextEmbeddingGenerationService("amazon.titan-embed-text-v2:0", bedrockRuntime);
+
+        // Act
+        var kernel = builder.Build();
+        var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+
+        // Assert
+        Assert.IsType<BedrockTextEmbeddingGenerationService>(service);
     }
 
     [Fact]
@@ -64,5 +88,23 @@ public class BedrockKernelBuilderExtensionTests
 
         // Assert
         // No exceptions should be thrown
+    }
+
+    [Theory]
+    [InlineData("unknown.titan-text-premier-v1:0")]
+    [InlineData("us.unknown.titan-text-premier-v1:0")]
+    public void AwsUnknownBedrockTextCompletionModelShouldThrowException(string modelId)
+    {
+        // Arrange
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+        var builder = Kernel.CreateBuilder();
+        builder.AddBedrockTextGenerationService(modelId, bedrockRuntime);
+
+        // Act & Assert
+        Assert.Throws<KernelException>(() =>
+        {
+            var kernel = builder.Build();
+            kernel.GetRequiredService<ITextGenerationService>();
+        });
     }
 }

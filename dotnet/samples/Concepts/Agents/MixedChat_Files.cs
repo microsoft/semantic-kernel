@@ -3,7 +3,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using OpenAI.Files;
+using OpenAI.Assistants;
 using Resources;
 
 namespace Agents;
@@ -12,36 +12,27 @@ namespace Agents;
 /// Demonstrate <see cref="ChatCompletionAgent"/> agent interacts with
 /// <see cref="OpenAIAssistantAgent"/> when it produces file output.
 /// </summary>
-public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
+public class MixedChat_Files(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     private const string SummaryInstructions = "Summarize the entire conversation for the user in natural language.";
 
     [Fact]
     public async Task AnalyzeFileAndGenerateReportAsync()
     {
-        OpenAIClientProvider provider = this.GetClientProvider();
-
-        OpenAIFileClient fileClient = provider.Client.GetOpenAIFileClient();
-
-        OpenAIFile uploadFile =
-            await fileClient.UploadFileAsync(
-                new BinaryData(await EmbeddedResource.ReadAllAsync("30-user-context.txt")),
-                "30-user-context.txt",
-                FileUploadPurpose.Assistants);
-
-        Console.WriteLine(this.ApiKey);
+        await using Stream stream = EmbeddedResource.ReadStream("30-user-context.txt")!;
+        string fileId = await this.Client.UploadAssistantFileAsync(stream, "30-user-context.txt");
 
         // Define the agents
-        OpenAIAssistantAgent analystAgent =
-            await OpenAIAssistantAgent.CreateAsync(
-                provider,
-                definition: new OpenAIAssistantDefinition(this.Model)
-                {
-                    EnableCodeInterpreter = true,
-                    CodeInterpreterFileIds = [uploadFile.Id], // Associate uploaded file with assistant code-interpreter
-                    Metadata = AssistantSampleMetadata,
-                },
-                kernel: new Kernel());
+        // Define the assistant
+        Assistant assistant =
+            await this.AssistantClient.CreateAssistantAsync(
+                this.Model,
+                enableCodeInterpreter: true,
+                codeInterpreterFileIds: [fileId],
+                metadata: SampleMetadata);
+
+        // Create the agent
+        OpenAIAssistantAgent analystAgent = new(assistant, this.AssistantClient);
 
         ChatCompletionAgent summaryAgent =
             new()
@@ -66,8 +57,8 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
         }
         finally
         {
-            await analystAgent.DeleteAsync();
-            await fileClient.DeleteFileAsync(uploadFile.Id);
+            await this.AssistantClient.DeleteAssistantAsync(analystAgent.Id);
+            await this.Client.DeleteFileAsync(fileId);
         }
 
         // Local function to invoke agent and display the conversation messages.
@@ -83,7 +74,7 @@ public class MixedChat_Files(ITestOutputHelper output) : BaseAgentsTest(output)
             await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
             {
                 this.WriteAgentChatMessage(response);
-                await this.DownloadResponseContentAsync(fileClient, response);
+                await this.DownloadResponseContentAsync(response);
             }
         }
     }

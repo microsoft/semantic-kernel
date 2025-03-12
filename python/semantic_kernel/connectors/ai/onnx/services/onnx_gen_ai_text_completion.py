@@ -20,12 +20,12 @@ from semantic_kernel.connectors.ai.text_completion_client_base import TextComple
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class OnnxGenAITextCompletion(TextCompletionClientBase, OnnxGenAICompletionBase):
     """OnnxGenAI text completion service."""
 

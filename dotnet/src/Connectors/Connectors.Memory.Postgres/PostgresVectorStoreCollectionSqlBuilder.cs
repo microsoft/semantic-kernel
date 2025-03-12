@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
@@ -20,12 +21,13 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     public PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
     {
         return new PostgresSqlCommandInfo(
-            commandText: @"
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = $1
-                    AND table_type = 'BASE TABLE'
-                    AND table_name = $2",
+            commandText: """
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = $1
+    AND table_type = 'BASE TABLE'
+    AND table_name = $2
+""",
             parameters: [
                 new NpgsqlParameter() { Value = schema },
                 new NpgsqlParameter() { Value = tableName }
@@ -37,11 +39,11 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     public PostgresSqlCommandInfo BuildGetTablesCommand(string schema)
     {
         return new PostgresSqlCommandInfo(
-            commandText: @"
-                SELECT table_name
-                FROM information_schema.tables
-                WHERE table_schema = $1
-                    AND table_type = 'BASE TABLE'",
+            commandText: """
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = $1 AND table_type = 'BASE TABLE'
+""",
             parameters: [new NpgsqlParameter() { Value = schema }]
         );
     }
@@ -122,7 +124,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction)
+    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction, bool ifNotExists)
     {
         // Only support creating HNSW index creation through the connector.
         var indexTypeName = indexKind switch
@@ -147,7 +149,7 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
 
         return new PostgresSqlCommandInfo(
             commandText: $@"
-                CREATE INDEX {indexName} ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
+                CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
         );
     }
 
@@ -167,11 +169,12 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         var valuesParams = string.Join(", ", columns.Select((k, i) => $"${i + 1}"));
         var columnsWithIndex = columns.Select((k, i) => (col: k, idx: i));
         var updateColumnsWithParams = string.Join(", ", columnsWithIndex.Where(c => c.col != keyColumn).Select(c => $"\"{c.col}\"=${c.idx + 1}"));
-        var commandText = $@"
-                INSERT INTO {schema}.""{tableName}"" ({columnNames})
-                VALUES({valuesParams})
-                ON CONFLICT (""{keyColumn}"")
-                DO UPDATE SET {updateColumnsWithParams};";
+        var commandText = $"""
+INSERT INTO {schema}."{tableName}" ({columnNames})
+VALUES ({valuesParams})
+ON CONFLICT ("{keyColumn}")
+DO UPDATE SET {updateColumnsWithParams};
+""";
 
         return new PostgresSqlCommandInfo(commandText)
         {
@@ -204,11 +207,12 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         var updateSetClause = string.Join(", ", columns.Where(c => c != keyColumn).Select(c => $"\"{c}\" = EXCLUDED.\"{c}\""));
 
         // Generate the SQL command
-        var commandText = $@"
-            INSERT INTO {schema}.""{tableName}"" ({columnNames})
-            VALUES {valuesRows}
-            ON CONFLICT (""{keyColumn}"")
-            DO UPDATE SET {updateSetClause}; ";
+        var commandText = $"""
+INSERT INTO {schema}."{tableName}" ({columnNames})
+VALUES {valuesRows}
+ON CONFLICT ("{keyColumn}")
+DO UPDATE SET {updateSetClause};
+""";
 
         // Generate the parameters
         var parameters = new List<NpgsqlParameter>();
@@ -262,10 +266,11 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         var queryColumnList = string.Join(", ", queryColumns);
 
         return new PostgresSqlCommandInfo(
-            commandText: $@"
-                SELECT {queryColumnList}
-                FROM {schema}.""{tableName}""
-                WHERE ""{keyColumn}"" = ${1};",
+            commandText: $"""
+SELECT {queryColumnList}
+FROM {schema}."{tableName}"
+WHERE "{keyColumn}" = ${1};
+""",
             parameters: [new NpgsqlParameter() { Value = key }]
         );
     }
@@ -275,11 +280,6 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         where TKey : notnull
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
-
-        if (keys == null || keys.Count == 0)
-        {
-            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
-        }
 
         var keyProperty = properties.OfType<VectorStoreRecordKeyProperty>().FirstOrDefault() ?? throw new ArgumentException("Properties must contain a key property", nameof(properties));
         var keyColumn = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
@@ -294,10 +294,11 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         var keyParams = string.Join(", ", keys.Select((k, i) => $"${i + 1}"));
 
         // Generate the SQL command
-        var commandText = $@"
-            SELECT {columnNames}
-            FROM {schema}.""{tableName}""
-            WHERE ""{keyColumn}"" = ANY($1);";
+        var commandText = $"""
+SELECT {columnNames}
+FROM {schema}."{tableName}"
+WHERE "{keyColumn}" = ANY($1);
+""";
 
         return new PostgresSqlCommandInfo(commandText)
         {
@@ -309,9 +310,10 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     public PostgresSqlCommandInfo BuildDeleteCommand<TKey>(string schema, string tableName, string keyColumn, TKey key)
     {
         return new PostgresSqlCommandInfo(
-            commandText: $@"
-                DELETE FROM {schema}.""{tableName}""
-                WHERE ""{keyColumn}"" = ${1};",
+            commandText: $"""
+DELETE FROM {schema}."{tableName}"
+WHERE "{keyColumn}" = ${1};
+""",
             parameters: [new NpgsqlParameter() { Value = key }]
         );
     }
@@ -320,10 +322,6 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
     public PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
-        if (keys == null || keys.Count == 0)
-        {
-            throw new ArgumentException("Keys cannot be null or empty", nameof(keys));
-        }
 
         for (int i = 0; i < keys.Count; i++)
         {
@@ -333,9 +331,10 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
             }
         }
 
-        var commandText = $@"
-            DELETE FROM {schema}.""{tableName}""
-            WHERE ""{keyColumn}"" = ANY($1);";
+        var commandText = $"""
+DELETE FROM {schema}."{tableName}"
+WHERE "{keyColumn}" = ANY($1);
+""";
 
         return new PostgresSqlCommandInfo(commandText)
         {
@@ -343,13 +342,14 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         };
     }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetNearestMatchCommand(
-        string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue,
-        VectorSearchFilter? filter, int? skip, bool includeVectors, int limit)
+    public PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(
+        string schema, string tableName, VectorStoreRecordPropertyReader propertyReader, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue,
+        VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
     {
         var columns = string.Join(" ,",
-            properties
+            propertyReader.RecordDefinition.Properties
                 .Select(property => property.StoragePropertyName ?? property.DataModelPropertyName)
                 .Select(column => $"\"{column}\"")
         );
@@ -367,14 +367,24 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         };
 
         var vectorColumn = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-        // Start where clause params at 2, vector takes param 1.
-        var where = GenerateWhereClause(schema, tableName, properties, filter, startParamIndex: 2);
 
-        var commandText = $@"
-            SELECT {columns}, ""{vectorColumn}"" {distanceOp} $1 AS ""{PostgresConstants.DistanceColumnName}""
-            FROM {schema}.""{tableName}"" {where.Clause}
-            ORDER BY {PostgresConstants.DistanceColumnName}
-            LIMIT {limit}";
+        // Start where clause params at 2, vector takes param 1.
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var (where, parameters) = (oldFilter: legacyFilter, newFilter) switch
+        {
+            (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, propertyReader.RecordDefinition.Properties, legacyFilter, startParamIndex: 2),
+            (null, not null) => GenerateNewFilterWhereClause(propertyReader, newFilter),
+            _ => (Clause: string.Empty, Parameters: [])
+        };
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+
+        var commandText = $"""
+SELECT {columns}, "{vectorColumn}" {distanceOp} $1 AS "{PostgresConstants.DistanceColumnName}"
+FROM {schema}."{tableName}" {where}
+ORDER BY {PostgresConstants.DistanceColumnName}
+LIMIT {limit}
+""";
 
         if (skip.HasValue) { commandText += $" OFFSET {skip.Value}"; }
 
@@ -383,9 +393,10 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         // Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if (vectorProperty.DistanceFunction == DistanceFunction.CosineSimilarity)
         {
-            commandText = $@"
-                SELECT {columns}, 1 - ""{PostgresConstants.DistanceColumnName}"" AS ""{PostgresConstants.DistanceColumnName}""
-                FROM ({commandText}) AS subquery";
+            commandText = $"""
+SELECT {columns}, 1 - "{PostgresConstants.DistanceColumnName}" AS "{PostgresConstants.DistanceColumnName}"
+FROM ({commandText}) AS subquery
+""";
         }
 
         // For inner product, we need to take -1 * inner product.
@@ -393,28 +404,35 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         // Instead we'll wrap the query in a subquery and modify the distance in the outer query.
         if (vectorProperty.DistanceFunction == DistanceFunction.DotProductSimilarity)
         {
-            commandText = $@"
-                SELECT {columns}, -1 * ""{PostgresConstants.DistanceColumnName}"" AS ""{PostgresConstants.DistanceColumnName}""
-                FROM ({commandText}) AS subquery";
+            commandText = $"""
+SELECT {columns}, -1 * "{PostgresConstants.DistanceColumnName}" AS "{PostgresConstants.DistanceColumnName}"
+FROM ({commandText}) AS subquery
+""";
         }
 
         return new PostgresSqlCommandInfo(commandText)
         {
-            Parameters = [new NpgsqlParameter() { Value = vectorValue }, .. where.Parameters.Select(p => new NpgsqlParameter() { Value = p })]
+            Parameters = [new NpgsqlParameter { Value = vectorValue }, .. parameters.Select(p => new NpgsqlParameter { Value = p })]
         };
     }
 
-    internal static (string Clause, List<object> Parameters) GenerateWhereClause(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorSearchFilter? filter, int startParamIndex)
+    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordPropertyReader propertyReader, LambdaExpression newFilter)
     {
-        if (filter == null) { return (string.Empty, new List<object>()); }
+        PostgresFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, newFilter, startParamIndex: 2);
+        translator.Translate(appendWhere: true);
+        return (translator.Clause.ToString(), translator.ParameterValues);
+    }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+    internal static (string Clause, List<object> Parameters) GenerateLegacyFilterWhereClause(string schema, string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorSearchFilter legacyFilter, int startParamIndex)
+    {
         var whereClause = new StringBuilder("WHERE ");
         var filterClauses = new List<string>();
         var parameters = new List<object>();
 
         var paramIndex = startParamIndex;
 
-        foreach (var filterClause in filter.FilterClauses)
+        foreach (var filterClause in legacyFilter.FilterClauses)
         {
             if (filterClause is EqualToFilterClause equalTo)
             {
@@ -450,4 +468,5 @@ internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCol
         whereClause.Append(string.Join(" AND ", filterClauses));
         return (whereClause.ToString(), parameters);
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 }

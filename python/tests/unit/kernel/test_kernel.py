@@ -283,12 +283,12 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
         patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[func_meta]),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
         )
 
 
@@ -314,12 +314,12 @@ async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_too
         patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -340,12 +340,12 @@ async def test_invoke_function_call_non_allowed_func_throws(kernel: Kernel, get_
 
     with patch("semantic_kernel.kernel.logger", autospec=True):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
         )
 
 
@@ -369,12 +369,12 @@ async def test_invoke_function_call_no_name_throws(kernel: Kernel, get_tool_call
         patch("semantic_kernel.kernel.logger", autospec=True),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -400,12 +400,12 @@ async def test_invoke_function_call_not_enough_parsed_args(kernel: Kernel, get_t
         patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -435,12 +435,12 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
 
     with patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock:
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
     logger_mock.info.assert_any_call(
@@ -761,7 +761,7 @@ def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_servic
 def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):
     assert hasattr(experimental_plugin_class, "is_experimental")
     assert experimental_plugin_class.is_experimental
-    assert "This class is experimental and may change in the future." in experimental_plugin_class.__doc__
+    assert "This class is marked as 'experimental' and may change in the future" in experimental_plugin_class.__doc__
 
 
 # endregion
