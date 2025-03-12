@@ -20,22 +20,20 @@ class NvidiaPromptExecutionSettings(PromptExecutionSettings):
         As well as any fields that are None.
         """
         return self.model_dump(
-            exclude={"service_id", "extension_data", "structured_json_response", "input_type"},
+            exclude={"service_id", "extension_data", "structured_json_response", "input_type", "truncate"},
             exclude_none=True,
             by_alias=True,
         )
 
 
 class NvidiaEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
-    """Settings for NVIDIA embedding prompt execution."""
+    """Settings for NVIDIA embedding prompt execution"""
 
-    """Specific settings for the text embedding endpoint."""
-
-    input: str | list[str] | list[int] | list[list[int]] | None = None
-    model: str = None
-    encoding_format: Literal["float", "base64"] | None = "float"  # default to float
-    truncate: Literal[None, "NONE", "START", "END"] | None = None
-    input_type: Literal["passage", "query"] | None = "passage"  # default to passage
+    input: str | list[str] | None = None
+    ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
+    encoding_format: Literal["float", "base64"] | None = None
+    truncate: Literal["NONE", "START", "END"] | None = None
+    input_type: Literal["passage", "query"] | None = None
     user: str | None = None
     extra_headers: dict | None = None
     extra_body: dict | None = None

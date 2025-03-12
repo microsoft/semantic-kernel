@@ -3,6 +3,8 @@
 import logging
 import sys
 from typing import Any
+import asyncio
+import copy
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -62,6 +64,8 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             raise ServiceInitializationError("Failed to create NVIDIA settings.", ex) from ex
         if not nvidia_settings.embedding_model_id:
             raise ServiceInitializationError("The NVIDIA embedding model ID is required.")
+        if not nvidia_settings.base_url:
+            raise ServiceInitializationError("The NVIDIA base url is required.")
         if not (api_key or nvidia_settings.api_key):
             raise ServiceInitializationError("Please provide an api_key")
         if not client:
@@ -108,23 +112,33 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
             if not isinstance(settings, NvidiaEmbeddingPromptExecutionSettings):
                 settings = self.get_prompt_execution_settings_from_settings(settings)
         assert isinstance(settings, NvidiaEmbeddingPromptExecutionSettings)  # nosec
-        if settings.model is None:
-            settings.model = self.ai_model_id
+        if settings.ai_model_id is None:
+            settings.ai_model_id = self.ai_model_id
         for key, value in kwargs.items():
             setattr(settings, key, value)
 
-        # move input_type to extra-body
+        # move input_type and truncate to extra-body
         if not settings.extra_body:
             settings.extra_body = {}
         settings.extra_body.setdefault("input_type", settings.input_type)
+        if settings.truncate is not None:
+            settings.extra_body.setdefault("truncate", settings.truncate)
+
         raw_embeddings = []
+        tasks = []
+
         batch_size = batch_size or len(texts)
         for i in range(0, len(texts), batch_size):
             batch = texts[i : i + batch_size]
-            settings.input = batch
-            raw_embedding = await self._send_request(settings=settings)
+            batch_settings = copy.deepcopy(settings)
+            batch_settings.input = batch
+            tasks.append(self._send_request(settings=batch_settings))
+
+        results = await asyncio.gather(*tasks)
+        for raw_embedding in results:
             assert isinstance(raw_embedding, list)  # nosec
             raw_embeddings.extend(raw_embedding)
+
         return raw_embeddings
 
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
