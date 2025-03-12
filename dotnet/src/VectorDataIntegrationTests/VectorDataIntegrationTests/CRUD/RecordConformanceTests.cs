@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
+using VectorDataSpecificationTests.Models;
 using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
 namespace VectorDataSpecificationTests.CRUD;
 
-public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFixture<TKey> fixture) where TKey : notnull
+public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) where TKey : notnull
 {
     [ConditionalFact]
     public async Task GetAsyncThrowsArgumentNullExceptionForNullKey()
@@ -36,9 +36,9 @@ public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFix
     {
         var expectedRecord = fixture.TestData[0];
 
-        var received = await fixture.Collection.GetAsync(expectedRecord.Key, new() { IncludeVectors = includeVectors });
+        var received = await fixture.Collection.GetAsync(expectedRecord.Id, new() { IncludeVectors = includeVectors });
 
-        AssertEqual(expectedRecord, received, includeVectors);
+        expectedRecord.AssertEqual(received, includeVectors);
     }
 
     [ConditionalFact]
@@ -53,17 +53,12 @@ public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFix
     {
         var collection = fixture.Collection;
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
-        VectorStoreGenericDataModel<TKey> inserted = new(expectedKey)
+        SimpleModel<TKey> inserted = new()
         {
-            Data =
-            {
-                [GenericDataModelFixture<TKey>.StringPropertyName] = "some",
-                [GenericDataModelFixture<TKey>.IntegerPropertyName] = 123
-            },
-            Vectors =
-            {
-                [GenericDataModelFixture<TKey>.EmbeddingPropertyName] = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, GenericDataModelFixture<TKey>.DimensionCount).ToArray())
-            }
+            Id = expectedKey,
+            Text = "some",
+            Number = 123,
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, SimpleModel<TKey>.DimensionCount).ToArray())
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
@@ -71,7 +66,7 @@ public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFix
         Assert.Equal(expectedKey, key);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = includeVectors });
-        AssertEqual(inserted, received, includeVectors);
+        inserted.AssertEqual(received, includeVectors);
     }
 
     [ConditionalFact]
@@ -86,25 +81,20 @@ public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFix
     {
         var collection = fixture.Collection;
         var existingRecord = fixture.TestData[1];
-        VectorStoreGenericDataModel<TKey> updated = new(existingRecord.Key)
+        SimpleModel<TKey> updated = new()
         {
-            Data =
-            {
-                [GenericDataModelFixture<TKey>.StringPropertyName] = "different",
-                [GenericDataModelFixture<TKey>.IntegerPropertyName] = 456
-            },
-            Vectors =
-            {
-                [GenericDataModelFixture<TKey>.EmbeddingPropertyName] = new ReadOnlyMemory<float>(Enumerable.Repeat(0.7f, GenericDataModelFixture<TKey>.DimensionCount).ToArray())
-            }
+            Id = existingRecord.Id,
+            Text = "updated",
+            Number = 456,
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.2f, SimpleModel<TKey>.DimensionCount).ToArray())
         };
 
-        Assert.NotNull(await collection.GetAsync(existingRecord.Key));
+        Assert.NotNull(await collection.GetAsync(existingRecord.Id));
         TKey key = await collection.UpsertAsync(updated);
-        Assert.Equal(existingRecord.Key, key);
+        Assert.Equal(existingRecord.Id, key);
 
-        var received = await collection.GetAsync(existingRecord.Key, new() { IncludeVectors = includeVectors });
-        AssertEqual(updated, received, includeVectors);
+        var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = includeVectors });
+        updated.AssertEqual(received, includeVectors);
     }
 
     [ConditionalFact]
@@ -120,29 +110,8 @@ public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFix
     {
         var recordToRemove = fixture.TestData[2];
 
-        Assert.NotNull(await fixture.Collection.GetAsync(recordToRemove.Key));
-        await fixture.Collection.DeleteAsync(recordToRemove.Key);
-        Assert.Null(await fixture.Collection.GetAsync(recordToRemove.Key));
-    }
-
-    private static void AssertEqual(VectorStoreGenericDataModel<TKey> expected, VectorStoreGenericDataModel<TKey>? actual, bool includeVectors)
-    {
-        Assert.NotNull(actual);
-        Assert.Equal(expected.Key, actual.Key);
-        foreach (var pair in expected.Data)
-        {
-            Assert.Equal(pair.Value, actual.Data[pair.Key]);
-        }
-
-        if (includeVectors)
-        {
-            Assert.Equal(
-                ((ReadOnlyMemory<float>)expected.Vectors[GenericDataModelFixture<TKey>.EmbeddingPropertyName]!).ToArray(),
-                ((ReadOnlyMemory<float>)actual.Vectors[GenericDataModelFixture<TKey>.EmbeddingPropertyName]!).ToArray());
-        }
-        else
-        {
-            Assert.Empty(actual.Vectors);
-        }
+        Assert.NotNull(await fixture.Collection.GetAsync(recordToRemove.Id));
+        await fixture.Collection.DeleteAsync(recordToRemove.Id);
+        Assert.Null(await fixture.Collection.GetAsync(recordToRemove.Id));
     }
 }
