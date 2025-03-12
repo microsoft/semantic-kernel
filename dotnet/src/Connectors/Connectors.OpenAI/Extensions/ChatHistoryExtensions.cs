@@ -48,10 +48,27 @@ public static class OpenAIChatHistoryExtensions
         {
             metadata ??= (Dictionary<string, object?>?)chatMessage.Metadata;
 
-            // check if AutoInvoke started the next completion request
-            if (chatMessage.FinishReason == ChatFinishReason.FunctionCall || chatMessage.FinishReason == ChatFinishReason.ToolCalls || chatMessage.FinishReason == ChatFinishReason.Stop)
+            if(chatMessage.FinishReason == ChatFinishReason.FunctionCall)
             {
+                if (messageContents.Count != 0)
+                {
+                    var role = streamedRole ?? AuthorRole.Assistant;
+
+                    chatHistory.Add(
+                        new OpenAIChatMessageContent(
+                            role,
+                            contentBuilder?.ToString() ?? string.Empty,
+                            messageContents[0].ModelId!,
+                            includeToolCalls
+                                ? OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex)
+                                : [],
+                            metadata)
+                        { AuthorName = streamedName });
+                }
                 contentBuilder?.Clear();
+                toolCallIdsByIndex?.Clear();
+                functionNamesByIndex?.Clear();
+                functionArgumentBuildersByIndex?.Clear();
             }
 
             if (chatMessage.Content is { Length: > 0 } contentUpdate)
