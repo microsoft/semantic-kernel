@@ -30,6 +30,7 @@ public sealed class MongoDBVectorStoreTests
         Assert.Throws<NotSupportedException>(() => sut.GetCollection<Guid, MongoDBHotelModel>("collection"));
     }
 
+#pragma warning disable CS0618 // IMongoDBVectorStoreRecordCollectionFactoryß is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -58,6 +59,7 @@ public sealed class MongoDBVectorStoreTests
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
+#pragma warning restore CS0618
 
     [Fact]
     public void GetCollectionWithoutFactoryReturnsDefaultCollection()

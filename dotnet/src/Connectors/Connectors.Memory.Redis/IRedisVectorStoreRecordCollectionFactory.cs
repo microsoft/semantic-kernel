@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using StackExchange.Redis;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// Interface for constructing <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> Redis instances when using <see cref="IVectorStore"/> to retrieve these.
 /// </summary>
+[Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
 public interface IRedisVectorStoreRecordCollectionFactory
 {
     /// <summary>
