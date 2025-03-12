@@ -31,8 +31,8 @@ class NvidiaEmbeddingPromptExecutionSettings(NvidiaPromptExecutionSettings):
 
     input: str | list[str] | None = None
     ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
-    encoding_format: Literal["float", "base64"] | None = None
-    truncate: Literal["NONE", "START", "END"] | None = None
+    encoding_format: Literal["float", "base64"] = "float"
+    truncate: Literal["NONE", "START", "END"] = "NONE"
     input_type: Literal["passage", "query"] = "query"  # required param with default value query
     user: str | None = None
     extra_headers: dict | None = None

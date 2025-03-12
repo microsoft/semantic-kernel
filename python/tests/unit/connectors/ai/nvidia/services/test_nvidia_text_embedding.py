@@ -82,7 +82,7 @@ async def test_embedding_calls_with_parameters(mock_create, nvidia_unit_test_env
         model=ai_model_id,
         dimensions=embedding_dimensions,
         encoding_format="float",
-        extra_body={"input_type": "passage", "truncate": "NONE"},
+        extra_body={"input_type": "query", "truncate": "NONE"},
     )
 
 
@@ -99,7 +99,7 @@ async def test_embedding_calls_with_settings(mock_create, nvidia_unit_test_env) 
         input=texts,
         model=ai_model_id,
         encoding_format="float",
-        extra_body={"input_type": "passage", "truncate": "NONE"}
+        extra_body={"input_type": "query", "truncate": "NONE"},
     )
 
 
@@ -130,5 +130,5 @@ async def test_embedding_pes(mock_create, nvidia_unit_test_env) -> None:
         input=texts,
         model=ai_model_id,
         encoding_format="float",
-        extra_body={"input_type": "passage", "truncate": "NONE"}
+        extra_body={"input_type": "query", "truncate": "NONE"},
     )

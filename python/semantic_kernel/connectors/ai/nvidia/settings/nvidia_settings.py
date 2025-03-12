@@ -29,6 +29,6 @@ class NvidiaSettings(KernelBaseSettings):
 
     env_prefix: ClassVar[str] = "NVIDIA_"
 
-    api_key: SecretStr | None = None
-    base_url: str | None = "https://integrate.api.nvidia.com/v1"
-    embedding_model_id: str | None = "nvidia/nv-embedqa-e5-v5"
+    api_key: SecretStr = None
+    base_url: str = "https://integrate.api.nvidia.com/v1"
+    embedding_model_id: str | None

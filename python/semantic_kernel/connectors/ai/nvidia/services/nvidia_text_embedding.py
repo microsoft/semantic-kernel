@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import logging
-import sys
-from typing import Any
 import asyncio
 import copy
+import logging
+import sys
+import warnings
+from typing import Any
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -63,11 +64,10 @@ class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create NVIDIA settings.", ex) from ex
         if not nvidia_settings.embedding_model_id:
-            raise ServiceInitializationError("The NVIDIA embedding model ID is required.")
-        if not nvidia_settings.base_url:
-            raise ServiceInitializationError("The NVIDIA base url is required.")
+            nvidia_settings.embedding_model_id = "nvidia/nv-embedqa-e5-v5"
+            warnings(f"Default embedding model set as: {nvidia_settings.embedding_model_id}")
         if not (api_key or nvidia_settings.api_key):
-            raise ServiceInitializationError("Please provide an api_key")
+            warnings("API_KEY is missing, inference may fail.")
         if not client:
             client = AsyncOpenAI(api_key=nvidia_settings.api_key.get_secret_value(), base_url=nvidia_settings.base_url)
         super().__init__(
