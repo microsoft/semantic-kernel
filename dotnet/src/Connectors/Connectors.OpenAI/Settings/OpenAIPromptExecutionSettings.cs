@@ -365,7 +365,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     }
 
     /// <summary>
-    /// Whether or not to store the output of this chat completion request for use in the OpenAI model distillation or evals products.
+    /// Enables the web search feature when specified. If set to null, the option is ignored during serialization.
     /// </summary>
     [Experimental("SKEXP0010")]
     [JsonPropertyName("web_search_options")]
