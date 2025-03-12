@@ -1,0 +1,2 @@
+paths-ignore:
+  - dotnet/samples/Demos/HuggingFaceImageToText
