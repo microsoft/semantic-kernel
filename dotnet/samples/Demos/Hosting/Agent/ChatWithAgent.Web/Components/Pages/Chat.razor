@@ -5,6 +5,7 @@
 @rendermode InteractiveServer
 
 @inject AgentCompletionsApiClient AgentCompletionsApi
+@inject FilesApiClient FileApi;
 
 <PageTitle>Chat</PageTitle>
 
@@ -21,7 +22,13 @@
     </div>
     <div class="chat-input">
         <textarea @bind="userMessage" @bind:event="oninput" @onkeydown="HandleKeyDown" placeholder="Enter your message"></textarea>
-        <button class="btn btn-primary" @onclick="SendMessage" disabled="@string.IsNullOrWhiteSpace(userMessage)">Send</button>
+        <div class="chat-button-container">
+            <label title="Upload file(s)">
+                <img src="images/paperclip.svg" class="clip-icon" />
+                <InputFile type="file" OnChange="UploadFiles" accept=".pdf" hidden/>
+            </label>
+            <button class="btn btn-primary" @onclick="SendMessage" disabled="@string.IsNullOrWhiteSpace(userMessage)">Send</button>
+        </div>
     </div>
 </div>
 
@@ -65,6 +72,11 @@
         {
             await SendMessage();
         }
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        await FileApi.UploadFilesAsync(e.GetMultipleFiles());
     }
 
     private class Message

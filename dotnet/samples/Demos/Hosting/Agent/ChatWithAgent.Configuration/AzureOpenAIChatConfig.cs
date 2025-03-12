@@ -29,4 +29,14 @@ public sealed class AzureOpenAIChatConfig
     /// The chat model version.
     /// </summary>
     public string ModelVersion { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The SKU name.
+    /// </summary>
+    public string? SkuName { get; set; }
+
+    /// <summary>
+    /// The SKU capacity
+    /// </summary>
+    public int? SkuCapacity { get; set; }
 }
