@@ -38,7 +38,7 @@ internal sealed class PdfLoader<TKey>(
     int batchLoadingDelayMilliseconds) : IDataLoader where TKey : notnull
 {
     /// <inheritdoc/>
-    public async Task LoadPdfAsync(Stream content, string fileName, CancellationToken cancellationToken)
+    public async Task LoadAsync(Stream content, string fileName, CancellationToken cancellationToken)
     {
         // Create the collection if it doesn't exist.
         await vectorStoreRecordCollection.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);

@@ -53,7 +53,7 @@ public sealed class FilesController : ControllerBase
 
             using var stream = file.OpenReadStream();
 
-            await this._dataLoader.LoadPdfAsync(stream, file.FileName, cancellationToken).ConfigureAwait(false);
+            await this._dataLoader.LoadAsync(stream, file.FileName, cancellationToken).ConfigureAwait(false);
         }
 
         return this.Ok("Files uploaded successfully.");
