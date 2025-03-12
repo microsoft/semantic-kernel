@@ -28,7 +28,6 @@ internal static class ActivityExtensions
         {
             activity.SetTag(tag.Key, tag.Value);
         }
-        ;
 
         return activity;
     }
