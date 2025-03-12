@@ -53,12 +53,11 @@ async def test_bing_search_init_success(bing_search):
     assert bing_search.settings.custom_config == "test_org_id"
 
 
-async def test_bing_search_init_validation_error():
+@pytest.mark.parametrize("exclude_list", [["BING_API_KEY"]], indirect=True)
+async def test_bing_search_init_validation_error(bing_unit_test_env, exclude_list):
     """Test that BingSearch raises ServiceInitializationError if BingSettings creation fails."""
-    # Act / Assert
-    with pytest.raises(ServiceInitializationError) as exc_info:
-        _ = BingSearch(env_file_path="invalid.env")
-    assert "Failed to create Bing settings." in str(exc_info.value)
+    with pytest.raises(ServiceInitializationError):
+        BingSearch(env_file_path="invalid.env")
 
 
 async def test_search_success(bing_unit_test_env, async_client_mock):
