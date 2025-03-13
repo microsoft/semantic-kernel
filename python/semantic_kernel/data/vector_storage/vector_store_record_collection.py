@@ -533,7 +533,9 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
         store_model = {}
         for field_name in self.data_model_definition.field_names:
             value = record[field_name] if isinstance(record, Mapping) else getattr(record, field_name)
-            if func := getattr(self.data_model_definition.fields[field_name], "serialize_function", None):
+            if (
+                func := getattr(self.data_model_definition.fields[field_name], "serialize_function", None)
+            ) and value is not None:
                 value = func(value)
             store_model[field_name] = value
         return store_model
