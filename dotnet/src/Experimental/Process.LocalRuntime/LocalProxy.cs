@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 
@@ -76,5 +78,29 @@ internal sealed class LocalProxy : LocalStep
         await this.ExternalMessageChannel.Initialize().ConfigureAwait(false);
         await base.InitializeStepAsync().ConfigureAwait(false);
         this._isInitialized = true;
+    }
+
+    /// <summary>
+    /// Deinitialization of the Proxy Step, calling <see cref="KernelProxyStep.DeactivateAsync(KernelProcessStepExternalContext)"/>
+    /// </summary>
+    /// <returns></returns>
+    public override async Task DeinitializeStepAsync()
+    {
+        MethodInfo? derivedMethod = this._stepInfo.InnerStepType.GetMethod(
+            nameof(KernelProxyStep.DeactivateAsync),
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+            binder: null,
+            types: [typeof(KernelProcessStepExternalContext)],
+            modifiers: null);
+
+        if (derivedMethod != null && this._stepInstance != null)
+        {
+            var context = new KernelProcessStepExternalContext(this.ExternalMessageChannel);
+            ValueTask deactivateTask =
+                (ValueTask?)derivedMethod.Invoke(this._stepInstance, [context]) ??
+                throw new KernelException($"The derived DeactivateAsync method failed to complete for step {this.Name}.").Log(this._logger);
+
+            await deactivateTask.ConfigureAwait(false);
+        }
     }
 }
