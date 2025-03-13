@@ -14,7 +14,7 @@ else:
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
 from pinecone.grpc import GRPCIndex, GRPCVector, PineconeGRPC
-from pydantic import PrivateAttr, ValidationError
+from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.data.const import DistanceFunction
@@ -64,7 +64,7 @@ class PineconeCollection(
     index: IndexModel | None = None
     index_client: IndexAsyncio | GRPCIndex | None = None
     supported_key_types: ClassVar[list[str] | None] = ["str"]
-    _integrated_embeddings: bool = PrivateAttr(default=False)
+    embed_settings: dict[str, Any] | None = None
 
     def __init__(
         self,
@@ -72,6 +72,8 @@ class PineconeCollection(
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
         client: PineconeGRPC | PineconeAsyncio | None = None,
+        embed_model: str | None = None,
+        embed_settings: dict[str, Any] | None = None,
         use_grpc: bool = False,
         api_key: str | None = None,
         namespace: str | None = None,
@@ -87,6 +89,13 @@ class PineconeCollection(
             data_model_definition: The definition of the data model.
             client: The Pinecone client to use. If not provided, a new client will be created.
             use_grpc: Whether to use the GRPC client or not. Default is False.
+            embed_model: The settings for the embedding model. If not provided, it will be read from the environment.
+                This cannot be combined with a GRPC client.
+            embed_settings: The settings for the embedding model. If not provided, the model can be read
+            from the environment.
+                The other settings are created based on the data model.
+                See the pinecone documentation for more details.
+                This cannot be combined with a GRPC client.
             api_key: The Pinecone API key. If not provided, it will be read from the environment.
             namespace: The namespace to use. Default is "".
             env_file_path: The path to the environment file. If not provided, it will be read from the default location.
@@ -98,6 +107,7 @@ class PineconeCollection(
         try:
             settings = PineconeSettings.create(
                 api_key=api_key,
+                embed_model=embed_model,
                 namespace=namespace,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -105,6 +115,18 @@ class PineconeCollection(
         except ValidationError as exc:
             raise VectorStoreInitializationException(f"Failed to create Pinecone settings: {exc}") from exc
 
+        if embed_settings:
+            if "model" not in embed_settings:
+                embed_settings["model"] = settings.embed_model
+            if settings.embed_model and embed_settings["model"] != settings.embed_model:
+                logger.warning(
+                    "The model in the embed_settings is different from the one in "
+                    "the settings. The one in the settings will be used."
+                )
+        elif settings.embed_model:
+            embed_settings = {
+                "model": settings.embed_model,
+            }
         if not client:
             if use_grpc:
                 client = PineconeGRPC(
@@ -122,6 +144,7 @@ class PineconeCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             client=client,
+            embed_settings=embed_settings,
             namespace=settings.namespace,
             managed_client=managed_client,
             **kwargs,
@@ -133,7 +156,21 @@ class PineconeCollection(
         if len(self.data_model_definition.vector_field_names) > 1:
             raise VectorStoreInitializationException(
                 "Pinecone only supports one (or zero when using the integrated inference) vector field. "
-                "Please use a different data model."
+                "Please use a different data model or "
+                f"remove {len(self.data_model_definition.vector_field_names) - 1} vector fields."
+            )
+        if len(self.data_model_definition.vector_field_names) == 0 and not self.embed_settings:
+            logger.warning(
+                "Pinecone collection does not have a vector field. "
+                "Please use the integrated inference to create the vector field. "
+                "Pass in the `embed` parameter to the collection creation method. "
+                "See https://docs.pinecone.io/guides/inference/understanding-inference for more details."
+            )
+        if self.embed_settings is not None and not self.data_model_definition.vector_fields[0].local_embedding:
+            raise VectorStoreInitializationException(
+                "Pinecone collection with integrated inference only supports a non-local embedding field."
+                "Change the `local_embedding` property to False in the data model."
+                f"Field name: {self.data_model_definition.vector_field_names[0]}"
             )
 
     @override
@@ -151,33 +188,38 @@ class PineconeCollection(
                 - cloud: The cloud provider to use. Default is "aws".
                 - region: The region to use. Default is "us-east-1".
         """
-        vector = self.data_model_definition.vector_fields[0]
-        if vector.distance_function:
-            metric = DISTANCE_METRIC_MAP.get(vector.distance_function, None)
-            if not metric:
-                raise VectorStoreOperationException(
-                    f"Distance function {vector.distance_function} is not supported by Pinecone."
-                )
-        else:
-            metric = Metric.COSINE
-        embed = kwargs.pop("embed", None)
-        if embed:
-            await self._create_index_with_integrated_embeddings(embed, metric, **kwargs)
-        else:
-            await self._create_regular_index(metric, vector, **kwargs)
+        vector_field = self.data_model_definition.vector_fields[0] if self.data_model_definition.vector_fields else None
+        await (
+            self._create_index_with_integrated_embeddings(vector_field, **kwargs)
+            if self.embed_settings is not None or "embed" in kwargs
+            else self._create_regular_index(vector_field, **kwargs)
+        )
 
     async def _create_index_with_integrated_embeddings(
-        self, embed: dict[str, Any], metric: Metric, **kwargs: Any
+        self, vector_field: VectorStoreRecordVectorField | None, **kwargs: Any
     ) -> None:
         """Create the Pinecone index with the embed parameter."""
         if isinstance(self.client, PineconeGRPC):
             raise VectorStoreOperationException(
                 "Pinecone GRPC client does not support integrated embeddings. Please use the Pinecone Asyncio client."
             )
+        if self.embed_settings:
+            embed = self.embed_settings.copy()
+            embed.update(kwargs.pop("embed", {}))
+        else:
+            embed = kwargs.pop("embed", {})
         cloud = kwargs.pop("cloud", "aws")
         region = kwargs.pop("region", "us-east-1")
         if "metric" not in embed:
-            embed["metric"] = metric
+            if vector_field and vector_field.distance_function:
+                if vector_field.distance_function not in DISTANCE_METRIC_MAP:
+                    raise VectorStoreOperationException(
+                        f"Distance function {vector_field.distance_function} is not supported by Pinecone."
+                    )
+                embed["metric"] = DISTANCE_METRIC_MAP[vector_field.distance_function]
+            else:
+                logger.info("Metric not set, defaulting to cosine.")
+                embed["metric"] = Metric.COSINE
         if "field_map" not in embed:
             for field in self.data_model_definition.fields.values():
                 if isinstance(field, VectorStoreRecordDataField) and field.has_embedding:
@@ -193,15 +235,27 @@ class PineconeCollection(
         self.index = await self.client.create_index_for_model(**index_creation_args)
         await self._load_index_client()
 
-    async def _create_regular_index(self, metric: Metric, vector: VectorStoreRecordVectorField, **kwargs: Any) -> None:
+    async def _create_regular_index(self, vector_field: VectorStoreRecordVectorField | None, **kwargs: Any) -> None:
         """Create the Pinecone index with the embed parameter."""
+        if not vector_field:
+            raise VectorStoreOperationException(
+                "Pinecone collection needs a vector field, when not using the integrated embeddings."
+            )
+        if vector_field.distance_function:
+            metric = DISTANCE_METRIC_MAP.get(vector_field.distance_function, None)
+            if not metric:
+                raise VectorStoreOperationException(
+                    f"Distance function {vector_field.distance_function} is not supported by Pinecone."
+                )
+        else:
+            metric = Metric.COSINE
         cloud = kwargs.pop("cloud", "aws")
         region = kwargs.pop("region", "us-east-1")
         spec = kwargs.pop("spec", ServerlessSpec(cloud=cloud, region=region))
         index_creation_args = {
             "name": self.collection_name,
             "spec": spec,
-            "dimension": vector.dimensions,
+            "dimension": vector_field.dimensions,
             "metric": metric,
             "vector_type": "dense",
         }
@@ -224,7 +278,7 @@ class PineconeCollection(
                     "Pinecone GRPC client does not support integrated embeddings. "
                     "Please use the Pinecone Asyncio client."
                 )
-            self._integrated_embeddings = True
+            self.embed_settings = self.index.embed
         if not self.index_client:
             self.index_client = (
                 self.client.IndexAsyncio(host=self.index.host)
@@ -273,7 +327,7 @@ class PineconeCollection(
                 values=record.get(self.data_model_definition.vector_field_names[0], None),
                 metadata={key: value for key, value in record.items() if key in metadata_fields},
             )
-        if self._integrated_embeddings:
+        if self.embed_settings is not None:
             record.pop(self.data_model_definition.vector_field_names[0], None)
             record["_id"] = record.pop(self._key_field_name)
             return record
@@ -315,7 +369,7 @@ class PineconeCollection(
             raise VectorStoreOperationException("Pinecone collection is not initialized.")
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
-        if self._integrated_embeddings:
+        if self.embed_settings is not None:
             if isinstance(self.index_client, GRPCIndex):
                 raise VectorStoreOperationException(
                     "Pinecone GRPC client does not support integrated embeddings. "
@@ -374,60 +428,65 @@ class PineconeCollection(
         if "namespace" not in kwargs:
             kwargs["namespace"] = self.namespace
         if vector is not None:
-            if self._integrated_embeddings:
-                logger.warning(
-                    "You are using Pinecone with integrated embeddings, it is advisable to use the "
-                    "vectorizable text search instead."
-                    "Make sure to supply a vector created with the same model as the one used by the "
-                    f"index: {self.index.embed.model if self.index else ''}"
+            if self.embed_settings is not None:
+                raise VectorStoreOperationException(
+                    "Pinecone collection only support vector search when integrated embeddings are used.",
                 )
-            search_args = {
-                "vector": vector,
-                "top_k": options.top,
-                "include_metadata": True,
-                "include_values": options.include_vectors,
-                "namespace": kwargs.get("namespace", self.namespace),
-            }
-            if options.filter:
-                search_args["filter"] = self._build_filter(options.filter)
-
-            if isinstance(self.index_client, GRPCIndex):
-                results = self.index_client.query(**search_args)
-            else:
-                results = await self.index_client.query(**search_args)
-            return KernelSearchResults(
-                results=self._get_vector_search_results_from_results(results.matches, options),
-                total_count=len(results.matches),
-            )
+            return await self._inner_vectorized_search(vector, options, **kwargs)
         if vectorizable_text is not None:
-            if not self._integrated_embeddings:
+            if self.embed_settings is None:
                 raise VectorStoreOperationException(
                     "Pinecone collection only support vectorizable text search when integrated embeddings are used.",
                 )
-            if isinstance(self.index_client, GRPCIndex):
-                raise VectorStoreOperationException(
-                    "Pinecone GRPC client does not support integrated embeddings. "
-                    "Please use the Pinecone Asyncio client."
-                )
-            # using integrated embeddings you do not get vectors back
-            # and the deserializer will not be able to deserialize the results
-            # so we need to set include_vectors to False
-            options.include_vectors = False
-            search_args = {
-                "query": {"inputs": {"text": vectorizable_text}, "top_k": options.top},
-                "namespace": kwargs.get("namespace", self.namespace),
-            }
-            if options.filter:
-                search_args["query"]["filter"] = self._build_filter(options.filter)
-
-            results = await self.index_client.search_records(**search_args)
-            return KernelSearchResults(
-                results=self._get_vector_search_results_from_results(results.result.hits, options),
-                total_count=len(results.result.hits),
-            )
+            return await self._inner_vectorizable_text_search(vectorizable_text, options, **kwargs)
 
         raise VectorStoreOperationException(
             "Pinecone collection does not support text search. Please provide a vector.",
+        )
+
+    async def _inner_vectorizable_text_search(
+        self,
+        vectorizable_text: str,
+        options: VectorSearchOptions,
+        **kwargs: Any,
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        if not self.index_client or isinstance(self.index_client, GRPCIndex):
+            raise VectorStoreOperationException(
+                "Pinecone GRPC client does not support integrated embeddings. Please use the Pinecone Asyncio client."
+            )
+        search_args = {
+            "query": {"inputs": {"text": vectorizable_text}, "top_k": options.top},
+            "namespace": kwargs.get("namespace", self.namespace),
+        }
+        if options.filter:
+            search_args["query"]["filter"] = self._build_filter(options.filter)
+
+        results = await self.index_client.search_records(**search_args)
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(results.result.hits, options),
+            total_count=len(results.result.hits),
+        )
+
+    async def _inner_vectorized_search(
+        self, vector: list[float | int], options: VectorSearchOptions, **kwargs: Any
+    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+        """Search the records in the Pinecone collection."""
+        assert self.index_client is not None  # nosec
+        search_args = {
+            "vector": vector,
+            "top_k": options.top,
+            "include_metadata": True,
+            "include_values": options.include_vectors,
+            "namespace": kwargs.get("namespace", self.namespace),
+        }
+        if options.filter:
+            search_args["filter"] = self._build_filter(options.filter)
+        results = self.index_client.query(**search_args)
+        if isawaitable(results):
+            results = await results
+        return KernelSearchResults(
+            results=self._get_vector_search_results_from_results(results.matches, options),
+            total_count=len(results.matches),
         )
 
     def _build_filter(self, filters: VectorSearchFilter) -> dict[str, Any]:
@@ -444,13 +503,13 @@ class PineconeCollection(
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
-        if self._integrated_embeddings:
+        if self.embed_settings is not None:
             return {"_id": result["_id"], **result["fields"]}
         return result
 
     @override
     def _get_score_from_result(self, result: Any) -> float | None:
-        if self._integrated_embeddings:
+        if self.embed_settings is not None:
             return result._score
         return result.score
 
