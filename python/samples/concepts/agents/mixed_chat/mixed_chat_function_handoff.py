@@ -19,10 +19,10 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.kernel import Kernel
 
-#####################################################################
-# The following sample demonstrates how to create an OpenAI Swarm   #
-# Agent Networking using Semantic Kernel                            #
-#####################################################################
+#######################################################################
+# The following sample demonstrates how to create an Handoff Pattern  #
+# with Kernel Functions using Semantic Kernel                         #
+#######################################################################
 
 PLANNER_INSTRUCTIONS = """You are a research planning coordinator.
     Coordinate market research by delegating to specialized agents:
@@ -93,8 +93,8 @@ class ApprovalTerminationStrategy(TerminationStrategy):
         return "terminate" in history[-1].content.lower()
 
 
-class SwarmSelectionStrategy(SelectionStrategy):
-    """Swarm Agent Strategy, Agents are selected with FunctionCalls that return an Agent Type."""
+class FunctionHandoffSelectionStrategy(SelectionStrategy):
+    """FunctionHandoff Agent Strategy, Agents are selected with Kernel Functions that return an Agent Type."""
 
     current_agent: Agent | None = None
 
@@ -103,7 +103,7 @@ class SwarmSelectionStrategy(SelectionStrategy):
         agents: list["Agent"],
         history: list["ChatMessageContent"],
     ) -> "Agent":
-        """Select the next agent in a swarm fashion.
+        """Select the next agent with a Kernel Function.
 
         Args:
             agents: The list of agents to select from.
@@ -169,7 +169,7 @@ def _add_handoff(kernel: Kernel, agent_handoff: Agent):
 
 
 # Configure the function choice behavior to auto invoke kernel functions
-# Currently Parallel Tool Calls is not supported for the Swarm Approach
+# Currently Parallel Tool Calls is not supported for this sample
 settings = AzureChatPromptExecutionSettings()
 settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 settings.parallel_tool_calls = False
@@ -218,7 +218,7 @@ _add_agent_handoffs(writer_agent, [planner_agent])
 async def main():
     chat = AgentGroupChat(
         agents=[planner_agent, news_agent, financial_agent, writer_agent],
-        selection_strategy=SwarmSelectionStrategy(),
+        selection_strategy=FunctionHandoffSelectionStrategy(),
         termination_strategy=ApprovalTerminationStrategy(maximum_iterations=10),
     )
 
