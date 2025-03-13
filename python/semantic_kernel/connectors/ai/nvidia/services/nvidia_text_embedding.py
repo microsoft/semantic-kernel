@@ -24,12 +24,12 @@ from semantic_kernel.connectors.ai.nvidia.services.nvidia_model_types import Nvi
 from semantic_kernel.connectors.ai.nvidia.settings.nvidia_settings import NvidiaSettings
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class NvidiaTextEmbedding(NvidiaHandler, EmbeddingGeneratorBase):
     """Nvidia text embedding service."""
 
