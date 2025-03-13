@@ -79,7 +79,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
 
         // The record definition describes the distance function,
         // so we need a dedicated collection per test.
-        string uniqueCollectionName = Guid.NewGuid().ToString();
+        string uniqueCollectionName = fixture.GetUniqueCollectionName();
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(
             uniqueCollectionName, this.GetRecordDefinition(distanceFunction));
 
