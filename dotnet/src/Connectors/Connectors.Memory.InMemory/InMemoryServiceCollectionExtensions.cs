@@ -14,50 +14,92 @@ namespace Microsoft.SemanticKernel;
 public static class InMemoryServiceCollectionExtensions
 {
     /// <summary>
-    /// Register an InMemory <see cref="IVectorStore"/> with the specified service ID.
+    /// Registers an InMemory <see cref="IVectorStore"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddInMemoryVectorStore(this IServiceCollection services, string? serviceId = default)
+    public static IServiceCollection AddInMemoryVectorStore(
+        this IServiceCollection serviceCollection,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedInMemoryVectorStore(serviceCollection, serviceKey: null, lifetime);
+
+    /// <summary>
+    /// Registers an InMemory <see cref="IVectorStore"/>.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddKeyedInMemoryVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        services.AddKeyedSingleton<InMemoryVectorStore, InMemoryVectorStore>(serviceId);
-        services.AddKeyedSingleton<IVectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<InMemoryVectorStore>(serviceId));
-        return services;
+        serviceCollection.Add(new ServiceDescriptor(typeof(InMemoryVectorStore), serviceKey, typeof(InMemoryVectorStore), lifetime));
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<InMemoryVectorStore>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register an InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
+    /// Register an InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        where TKey : notnull
+        => AddKeyedInMemoryVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, options, lifetime);
+
+    /// <summary>
+    /// Register a keyed InMemory <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddKeyedInMemoryVectorStoreRecordCollection<TKey, TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
     {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<TKey, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var selectedOptions = options ?? sp.GetService<InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>>();
-                return (new InMemoryVectorStoreRecordCollection<TKey, TRecord>(collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<TKey, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new InMemoryVectorStoreRecordCollection<TKey, TRecord>(
+                    collectionName,
+                    options ?? serviceProvider.GetService<InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>>()),
+                lifetime));
 
-        services.AddKeyedSingleton<IVectorizedSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceId);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceKey),
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 }

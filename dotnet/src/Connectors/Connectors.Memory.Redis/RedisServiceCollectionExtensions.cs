@@ -13,199 +13,312 @@ namespace Microsoft.SemanticKernel;
 public static class RedisServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// Registers a Redis <see cref="IVectorStore"/>, retrieving the Redis <see cref="IDatabase"/> from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, RedisVectorStoreOptions? options = default, string? serviceId = default)
-    {
+    public static IServiceCollection AddRedisVectorStore(
+        this IServiceCollection serviceCollection,
+        RedisVectorStoreOptions? options = default,
         // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
         // cannot make assumptions about how IDatabase is being managed.
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IDatabase>();
-                var selectedOptions = options ?? sp.GetService<RedisVectorStoreOptions>();
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedRedisVectorStore(serviceCollection, serviceKey: null, options, lifetime);
 
-                return new RedisVectorStore(
-                    database,
-                    selectedOptions);
-            });
+    /// <summary>
+    /// Registers a keyed Redis <see cref="IVectorStore"/>, retrieving the Redis <see cref="IDatabase"/> from the dependency injection container.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddKeyedRedisVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        RedisVectorStoreOptions? options = default,
+        // If we are not constructing the ConnectionMultiplexer, add the IVectorStore as transient, since we
+        // cannot make assumptions about how IDatabase is being managed.
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) => new RedisVectorStore(
+                    serviceProvider.GetRequiredService<IDatabase>(),
+                    options ?? serviceProvider.GetService<RedisVectorStoreOptions>()),
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStore"/> with the specified service ID and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
+    /// Registers a Redis <see cref="IVectorStore"/>, using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string. If not provided, an <see cref="IDatabase"/> instance will be requested from the dependency injection container.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddRedisVectorStore(this IServiceCollection services, string redisConnectionConfiguration, RedisVectorStoreOptions? options = default, string? serviceId = default)
-    {
+    public static IServiceCollection AddRedisVectorStore(
+        this IServiceCollection serviceCollection,
+        string redisConnectionConfiguration,
+        RedisVectorStoreOptions? options = default,
         // If we are constructing the ConnectionMultiplexer, add the IVectorStore as singleton, since we are managing the lifetime
         // of the ConnectionMultiplexer, and the recommendation from StackExchange.Redis is to share the ConnectionMultiplexer.
-        services.AddKeyedSingleton<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                var selectedOptions = options ?? sp.GetService<RedisVectorStoreOptions>();
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedRedisVectorStore(serviceCollection, serviceKey: null, redisConnectionConfiguration, options, lifetime);
 
-                return new RedisVectorStore(
-                    database,
-                    selectedOptions);
-            });
+    /// <summary>
+    /// Registers a keyed Redis <see cref="IVectorStore"/>, using the provided <paramref name="redisConnectionConfiguration"/>.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="redisConnectionConfiguration">The Redis connection configuration string. If not provided, an <see cref="IDatabase"/> instance will be requested from the dependency injection container.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddKeyedRedisVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string redisConnectionConfiguration,
+        RedisVectorStoreOptions? options = default,
+        // If we are constructing the ConnectionMultiplexer, add the IVectorStore as singleton, since we are managing the lifetime
+        // of the ConnectionMultiplexer, and the recommendation from StackExchange.Redis is to share the ConnectionMultiplexer.
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) => new RedisVectorStore(
+                    ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase(),
+                    options ?? serviceProvider.GetService<RedisVectorStoreOptions>()),
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the specified service ID
-    /// and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// Registers a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, retrieving the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedRedisHashSetVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, retrieving the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedRedisHashSetVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IDatabase>();
-                var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new RedisHashSetVectorStoreRecordCollection<TRecord>(
+                    serviceProvider.GetRequiredService<IDatabase>(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
 
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the specified service ID
-    /// and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
+    /// Registers a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisHashSetVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         string redisConnectionConfiguration,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
-    {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
-    }
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    => AddKeyedRedisHashSetVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, redisConnectionConfiguration, options, lifetime);
 
     /// <summary>
-    /// Register a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the specified service ID
-    /// and where the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// Registers a keyed Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
-    /// <returns>Service collection.</returns>
-    public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
-        string collectionName,
-        RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
-    {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IDatabase>();
-                var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Register a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the specified service ID
-    /// and where the Redis <see cref="IDatabase"/> is constructed using the provided <paramref name="redisConnectionConfiguration"/>.
-    /// </summary>
-    /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="redisConnectionConfiguration">The Redis connection configuration string.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedRedisHashSetVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        string redisConnectionConfiguration,
+        RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new RedisHashSetVectorStoreRecordCollection<TRecord>(
+                    ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
+    }
+
+    /// <summary>
+    /// Registers a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, retrieving the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
+        string collectionName,
+        RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedRedisJsonVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>, retrieving the Redis <see cref="IDatabase"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedRedisJsonVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new RedisJsonVectorStoreRecordCollection<TRecord>(
+                    serviceProvider.GetRequiredService<IDatabase>(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
+    }
+
+    /// <summary>
+    /// Registers a Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> using the provided <paramref name="redisConnectionConfiguration"/>.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="redisConnectionConfiguration">The Redis connection configuration string.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddRedisJsonVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
         string collectionName,
         string redisConnectionConfiguration,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
-    {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
-                var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
-    }
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedRedisJsonVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, redisConnectionConfiguration, options, lifetime);
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Registers a keyed Redis <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> using the provided <paramref name="redisConnectionConfiguration"/>.
     /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="redisConnectionConfiguration">The Redis connection configuration string.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedRedisJsonVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        string redisConnectionConfiguration,
+        RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new RedisJsonVectorStoreRecordCollection<TRecord>(
+                    ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
     }
 }

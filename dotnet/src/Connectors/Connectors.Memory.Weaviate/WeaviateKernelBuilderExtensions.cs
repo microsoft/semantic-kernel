@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Net.Http;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Weaviate <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class WeaviateKernelBuilderExtensions
 {
     /// <summary>
@@ -29,7 +31,7 @@ public static class WeaviateKernelBuilderExtensions
         WeaviateVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddWeaviateVectorStore(httpClient, options, serviceId);
+        builder.Services.AddKeyedWeaviateVectorStore(serviceId, httpClient, options);
         return builder;
     }
 
@@ -54,7 +56,7 @@ public static class WeaviateKernelBuilderExtensions
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddWeaviateVectorStoreRecordCollection(collectionName, httpClient, options, serviceId);
+        builder.Services.AddKeyedWeaviateVectorStoreRecordCollection(serviceId, collectionName, httpClient, options);
         return builder;
     }
 }

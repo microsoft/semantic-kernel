@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Data services on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class InMemoryKernelBuilderExtensions
 {
     /// <summary>
@@ -18,7 +20,7 @@ public static class InMemoryKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddInMemoryVectorStore(this IKernelBuilder builder, string? serviceId = default)
     {
-        builder.Services.AddInMemoryVectorStore(serviceId);
+        builder.Services.AddKeyedInMemoryVectorStore(serviceId);
         return builder;
     }
 
@@ -39,7 +41,7 @@ public static class InMemoryKernelBuilderExtensions
         string? serviceId = default)
         where TKey : notnull
     {
-        builder.Services.AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
+        builder.Services.AddKeyedInMemoryVectorStoreRecordCollection<TKey, TRecord>(serviceId, collectionName, options);
         return builder;
     }
 }

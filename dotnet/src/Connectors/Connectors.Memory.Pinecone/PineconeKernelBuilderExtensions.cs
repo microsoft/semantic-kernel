@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
 using Sdk = Pinecone;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Pinecone <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class PineconeKernelBuilderExtensions
 {
     /// <summary>
@@ -20,7 +22,7 @@ public static class PineconeKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddPineconeVectorStore(this IKernelBuilder builder, PineconeVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddPineconeVectorStore(options, serviceId);
+        builder.Services.AddKeyedPineconeVectorStore(serviceId, options);
         return builder;
     }
 
@@ -34,7 +36,7 @@ public static class PineconeKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddPineconeVectorStore(this IKernelBuilder builder, string apiKey, PineconeVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddPineconeVectorStore(apiKey, options, serviceId);
+        builder.Services.AddKeyedPineconeVectorStore(serviceId, apiKey, options);
         return builder;
     }
 
@@ -54,7 +56,7 @@ public static class PineconeKernelBuilderExtensions
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
+        builder.Services.AddKeyedPineconeVectorStoreRecordCollection<TRecord>(serviceId, collectionName, options);
         return builder;
     }
 
@@ -76,7 +78,7 @@ public static class PineconeKernelBuilderExtensions
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, apiKey, options, serviceId);
+        builder.Services.AddKeyedPineconeVectorStoreRecordCollection<TRecord>(serviceId, collectionName, apiKey, options);
         return builder;
     }
 }

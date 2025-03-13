@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Azure AI Search <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class AzureAISearchKernelBuilderExtensions
 {
     /// <summary>
@@ -23,7 +24,7 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStore(options, serviceId);
+        builder.Services.AddKeyedAzureAISearchVectorStore(serviceId, options);
         return builder;
     }
 
@@ -38,7 +39,7 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, Uri endpoint, TokenCredential tokenCredential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStore(endpoint, tokenCredential, options, serviceId);
+        builder.Services.AddKeyedAzureAISearchVectorStore(serviceId, endpoint, tokenCredential, options);
         return builder;
     }
 
@@ -53,7 +54,7 @@ public static class AzureAISearchKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddAzureAISearchVectorStore(this IKernelBuilder builder, Uri endpoint, AzureKeyCredential credential, AzureAISearchVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStore(endpoint, credential, options, serviceId);
+        builder.Services.AddKeyedAzureAISearchVectorStore(serviceId, endpoint, credential, options);
         return builder;
     }
 
@@ -73,7 +74,7 @@ public static class AzureAISearchKernelBuilderExtensions
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
+        builder.Services.AddKeyedAzureAISearchVectorStoreRecordCollection<TRecord>(serviceId, collectionName, options);
         return builder;
     }
 
@@ -97,7 +98,7 @@ public static class AzureAISearchKernelBuilderExtensions
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, tokenCredential, options, serviceId);
+        builder.Services.AddKeyedAzureAISearchVectorStoreRecordCollection<TRecord>(serviceId, collectionName, endpoint, tokenCredential, options);
         return builder;
     }
 
@@ -121,7 +122,7 @@ public static class AzureAISearchKernelBuilderExtensions
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, credential, options, serviceId);
+        builder.Services.AddKeyedAzureAISearchVectorStoreRecordCollection<TRecord>(serviceId, collectionName, endpoint, credential, options);
         return builder;
     }
 }
