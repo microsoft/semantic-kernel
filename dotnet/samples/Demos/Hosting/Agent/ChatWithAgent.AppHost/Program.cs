@@ -30,7 +30,7 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
     IResourceBuilder<IResourceWithConnectionString>? embeddingsResource = null;
 
     // Add Azure OpenAI service and configured AI models
-    if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+    if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
     {
         if (builder.ExecutionContext.IsPublishMode)
         {
@@ -50,7 +50,7 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
             }
 
             // Add deployment
-            if (config.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+            if (config.Rag.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
             {
                 embeddingsResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
                     name: config.AzureOpenAIEmbeddings.DeploymentName,
@@ -69,7 +69,7 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
     }
 
     // Add OpenAI service via connection string
-    if (config.AIChatService == OpenAIChatConfig.ConfigSectionName || config.Rag?.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
+    if (config.AIChatService == OpenAIChatConfig.ConfigSectionName || config.Rag.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
     {
         chatResource = embeddingsResource = builder.AddConnectionString(HostConfig.OpenAIConnectionStringName);
     }
@@ -79,9 +79,9 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
         throw new NotSupportedException($"AI Chat service '{config.AIChatService}' is not supported.");
     }
 
-    if (config.Rag is not null && embeddingsResource is null)
+    if (embeddingsResource is null)
     {
-        throw new NotSupportedException($"AI Embedding service '{config.Rag?.AIEmbeddingService}' is not supported.");
+        throw new NotSupportedException($"AI Embedding service '{config.Rag.AIEmbeddingService}' is not supported.");
     }
 
     return [chatResource, embeddingsResource];

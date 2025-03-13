@@ -44,32 +44,29 @@ public static class ResourceBuilderExtensions
         }
 
         // Add RAG configuration to the environment variables so that Api Service can access it.
-        if (config.Rag is not null)
+        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.AIEmbeddingService)}", config.Rag.AIEmbeddingService);
+        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.VectorStoreType)}", config.Rag.VectorStoreType);
+        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.CollectionName)}", config.Rag.CollectionName);
+        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchSize)}", config.Rag.PdfBatchSize.ToString());
+        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchLoadingDelayMilliseconds)}", config.Rag.PdfBatchLoadingDelayMilliseconds.ToString());
+
+        switch (config.Rag.AIEmbeddingService)
         {
-            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.AIEmbeddingService)}", config.Rag.AIEmbeddingService);
-            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.VectorStoreType)}", config.Rag.VectorStoreType);
-            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.CollectionName)}", config.Rag.CollectionName);
-            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchSize)}", config.Rag.PdfBatchSize.ToString());
-            builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchLoadingDelayMilliseconds)}", config.Rag.PdfBatchLoadingDelayMilliseconds.ToString());
-
-            switch (config.Rag?.AIEmbeddingService)
+            case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
             {
-                case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
-                {
-                    builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.DeploymentName)}", config.AzureOpenAIEmbeddings.DeploymentName);
-                    builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.ModelName)}", config.AzureOpenAIEmbeddings.ModelName);
-                    break;
-                }
-
-                case OpenAIEmbeddingsConfig.ConfigSectionName:
-                {
-                    builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.OpenAIEmbeddings)}__{nameof(config.OpenAIEmbeddings.ModelName)}", config.OpenAIEmbeddings.ModelName);
-                    break;
-                }
-
-                default:
-                    throw new NotSupportedException($"AI service '{config.Rag?.AIEmbeddingService}' is not supported.");
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.DeploymentName)}", config.AzureOpenAIEmbeddings.DeploymentName);
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.AzureOpenAIEmbeddings)}__{nameof(config.AzureOpenAIEmbeddings.ModelName)}", config.AzureOpenAIEmbeddings.ModelName);
+                break;
             }
+
+            case OpenAIEmbeddingsConfig.ConfigSectionName:
+            {
+                builder.WithEnvironment($"{HostConfig.AIServicesSectionName}__{nameof(config.OpenAIEmbeddings)}__{nameof(config.OpenAIEmbeddings.ModelName)}", config.OpenAIEmbeddings.ModelName);
+                break;
+            }
+
+            default:
+                throw new NotSupportedException($"AI service '{config.Rag.AIEmbeddingService}' is not supported.");
         }
 
         return builder;

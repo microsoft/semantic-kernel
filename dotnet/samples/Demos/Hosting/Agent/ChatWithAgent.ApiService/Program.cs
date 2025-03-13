@@ -4,6 +4,7 @@ using System;
 using System.ClientModel.Primitives;
 using Azure.Identity;
 using ChatWithAgent.ApiService.Config;
+using ChatWithAgent.ApiService.Resources;
 using ChatWithAgent.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,7 +16,9 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace ChatWithAgent.ApiService;
 
@@ -50,10 +53,7 @@ public static class Program
         AddAIServices(builder, config.Host);
 
         // Add Vector Store.
-        AddVectorStore(builder, config.Host.Rag);
-
-        // Add Chat Completion Agent.
-        AddAgent(builder, config.Agent);
+        AddVectorStore(builder, config);
 
         var app = builder.Build();
 
@@ -76,7 +76,7 @@ public static class Program
     private static void AddAIServices(WebApplicationBuilder builder, HostConfig config)
     {
         // Add AzureOpenAI client.
-        if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag?.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
+        if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag.AIEmbeddingService == AzureOpenAIEmbeddingsConfig.ConfigSectionName)
         {
             builder.AddAzureOpenAIClient(
                 connectionName: HostConfig.AzureOpenAIConnectionStringName,
@@ -93,7 +93,7 @@ public static class Program
         }
 
         // Add OpenAI client.
-        if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag?.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
+        if (config.AIChatService == AzureOpenAIChatConfig.ConfigSectionName || config.Rag.AIEmbeddingService == OpenAIEmbeddingsConfig.ConfigSectionName)
         {
             builder.AddOpenAIClient(HostConfig.OpenAIConnectionStringName);
         }
@@ -115,24 +115,21 @@ public static class Program
                 throw new NotSupportedException($"AI chat service '{config.AIChatService}' is not supported.");
         }
 
-        if (config.Rag is not null)
+        // Add text embedding generation services.
+        switch (config.Rag.AIEmbeddingService)
         {
-            // Add text embedding generation services.
-            switch (config.Rag.AIEmbeddingService)
+            case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
             {
-                case AzureOpenAIEmbeddingsConfig.ConfigSectionName:
-                {
-                    builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.AzureOpenAIEmbeddings.DeploymentName, modelId: config.AzureOpenAIEmbeddings.ModelName);
-                    break;
-                }
-                case OpenAIEmbeddingsConfig.ConfigSectionName:
-                {
-                    builder.Services.AddOpenAITextEmbeddingGeneration(config.OpenAIEmbeddings.ModelName);
-                    break;
-                }
-                default:
-                    throw new NotSupportedException($"AI embeddings service '{config.Rag.AIEmbeddingService}' is not supported.");
+                builder.Services.AddAzureOpenAITextEmbeddingGeneration(config.AzureOpenAIEmbeddings.DeploymentName, modelId: config.AzureOpenAIEmbeddings.ModelName);
+                break;
             }
+            case OpenAIEmbeddingsConfig.ConfigSectionName:
+            {
+                builder.Services.AddOpenAITextEmbeddingGeneration(config.OpenAIEmbeddings.ModelName);
+                break;
+            }
+            default:
+                throw new NotSupportedException($"AI embeddings service '{config.Rag.AIEmbeddingService}' is not supported.");
         }
     }
 
@@ -141,35 +138,45 @@ public static class Program
     /// </summary>
     /// <param name="builder">The web application builder.</param>
     /// <param name="config">The RAG configuration.</param>
-    private static void AddVectorStore(WebApplicationBuilder builder, RagConfig? config)
+    private static void AddVectorStore(WebApplicationBuilder builder, ServiceConfig config)
     {
-        if (config is not null)
+        // Add Vector Store
+        switch (config.Host.Rag.VectorStoreType)
         {
-            // Add Vector Store
-            switch (config.VectorStoreType)
+            case "InMemory":
             {
-                case "InMemory":
-                {
-                    builder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(config.CollectionName);
-                    break;
-                }
-                default:
-                    throw new NotSupportedException($"Vector store type '{config.VectorStoreType}' is not supported.");
+                builder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(config.Host.Rag.CollectionName);
+                break;
             }
-
-            // Register all the other required services.
-            switch (config.VectorStoreType)
-            {
-                case "InMemory":
-                    RegisterServices<string>(builder, config);
-                    break;
-                default:
-                    throw new NotSupportedException($"Vector store type '{config.VectorStoreType}' is not supported.");
-            }
+            default:
+                throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
         }
 
-        static void RegisterServices<TKey>(WebApplicationBuilder builder, RagConfig ragConfig) where TKey : notnull
+        // Register all the other required services.
+        switch (config.Host.Rag.VectorStoreType)
         {
+            case "InMemory":
+                AddRagServicesa<string>(builder, config.Host.Rag);
+                AddAgent<string>(builder);
+                break;
+            default:
+                throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
+        }
+
+        static void AddRagServicesa<TKey>(WebApplicationBuilder builder, RagConfig ragConfig) where TKey : notnull
+        {
+            // Add a text search implementation that uses the registered vector store record collection for search.
+            builder.Services.AddVectorStoreTextSearch<TextSnippet<TKey>>(
+                new TextSearchStringMapper((result) => (result as TextSnippet<TKey>)!.Text!),
+                new TextSearchResultMapper((result) =>
+                {
+                    // Create a mapping from the Vector Store data type to the data type returned by the Text Search.
+                    // This text search will ultimately be used in a plugin and this TextSearchResult will be returned to the prompt template
+                    // when the plugin is invoked from the prompt template.
+                    var castResult = result as TextSnippet<TKey>;
+                    return new TextSearchResult(value: castResult!.Text!) { Name = castResult.ReferenceDescription };
+                }));
+
             builder.Services.AddSingleton<UniqueKeyGenerator<string>>(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));
             builder.Services.AddSingleton<IDataLoader, PdfLoader<TKey>>((sp) =>
             {
@@ -195,18 +202,30 @@ public static class Program
     /// Adds the chat completion agent to the service collection.
     /// </summary>
     /// <param name="builder">The web application builder.</param>
-    /// <param name="config">The agent configuration.</param>
-    private static void AddAgent(WebApplicationBuilder builder, AgentConfig config)
+    /// <typeparam name="TKey">The type of the data model key.</typeparam>
+    private static void AddAgent<TKey>(WebApplicationBuilder builder)
     {
+        PromptTemplateConfig templateConfig = new()
+        {
+            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+            Template = EmbeddedResource.Read("AgentDefinition.yaml")
+        };
+
+        HandlebarsPromptTemplateFactory handlebarsPromptTemplateFactory = new();
+
         // Add chat completion agent.
         builder.Services.AddTransient<ChatCompletionAgent>((sp) =>
         {
-            return new ChatCompletionAgent()
+            Kernel kernel = sp.GetRequiredService<Kernel>();
+            VectorStoreTextSearch<TextSnippet<TKey>> vectorStoreTextSearch = sp.GetRequiredService<VectorStoreTextSearch<TextSnippet<TKey>>>();
+
+            // Add a search plugin to the kernel which we will use in the template below
+            // to do a vector search for related information to the user query.
+            kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+
+            return new ChatCompletionAgent(templateConfig, handlebarsPromptTemplateFactory)
             {
-                Kernel = sp.GetRequiredService<Kernel>(),
-                Name = config.Name,
-                Description = config.Description,
-                Instructions = config.Instructions
+                Kernel = kernel,
             };
         });
     }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.ChatCompletion;
+
 namespace ChatWithAgent.ApiService;
 
 /// <summary>
@@ -11,6 +13,11 @@ public sealed class AgentCompletionRequest
     /// Gets or sets the prompt.
     /// </summary>
     public required string Prompt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the chat history.
+    /// </summary>
+    public required ChatHistory ChatHistory { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether streaming is requested.
