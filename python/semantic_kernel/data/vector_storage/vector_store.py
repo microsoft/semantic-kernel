@@ -1,9 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import sys
 from abc import abstractmethod
 from collections.abc import Sequence
 from typing import Any
+
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
 
 from pydantic import Field
 
@@ -36,7 +42,7 @@ class VectorStore(KernelBaseModel):
         """Get the names of all collections."""
         ...  # pragma: no cover
 
-    async def __aenter__(self) -> "VectorStore":
+    async def __aenter__(self) -> Self:
         """Enter the context manager."""
         return self
 

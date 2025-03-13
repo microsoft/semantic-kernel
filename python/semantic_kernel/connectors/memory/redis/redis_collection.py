@@ -8,7 +8,7 @@ import sys
 from abc import abstractmethod
 from collections.abc import Sequence
 from copy import copy
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -58,13 +58,19 @@ from semantic_kernel.utils.list_handler import desync_list
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+TKey = TypeVar("TKey", bound=str)
 TModel = TypeVar("TModel")
 
 TQuery = TypeVar("TQuery", bound=BaseQuery)
 
 
 @experimental
-class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TModel], VectorTextSearchMixin[TModel]):
+class RedisCollection(
+    VectorSearchBase[TKey, TModel],
+    VectorizedSearchMixin[TModel],
+    VectorTextSearchMixin[TModel],
+    Generic[TKey, TModel],
+):
     """A vector store record collection implementation using Redis."""
 
     redis_database: Redis
@@ -264,7 +270,7 @@ class RedisCollection(VectorSearchBase[str, TModel], VectorizedSearchMixin[TMode
 
 
 @experimental
-class RedisHashsetCollection(RedisCollection):
+class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
     """A vector store record collection implementation using Redis Hashsets."""
 
     def __init__(
@@ -384,7 +390,7 @@ class RedisHashsetCollection(RedisCollection):
 
 
 @experimental
-class RedisJsonCollection(RedisCollection):
+class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
     """A vector store record collection implementation using Redis Json."""
 
     def __init__(
