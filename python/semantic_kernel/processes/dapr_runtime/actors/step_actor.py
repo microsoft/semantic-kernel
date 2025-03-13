@@ -102,7 +102,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         await self._int_initialize_step(step_info, input_dict.get("parent_process_id"))
 
         try:
-            await self._state_manager.try_add_state(ActorStateKeys.StepInfoState.value, step_info)
+            await self._state_manager.try_add_state(ActorStateKeys.StepInfoState.value, step_info.model_dump_json())
             await self._state_manager.try_add_state(
                 ActorStateKeys.StepParentProcessId.value, input_dict.get("parent_process_id")
             )
