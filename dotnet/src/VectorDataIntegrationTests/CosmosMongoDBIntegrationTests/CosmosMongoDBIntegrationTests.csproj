@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <RootNamespace>MongoDBIntegrationTests</RootNamespace>
+    <RootNamespace>CosmosMongoDBIntegrationTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
