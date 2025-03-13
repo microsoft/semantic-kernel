@@ -4,7 +4,7 @@ using VectorDataSpecificationTests.Support;
 
 namespace RedisIntegrationTests.Support;
 
-public class RedisFixture : VectorStoreFixture
+public class RedisJsonFixture : VectorStoreFixture
 {
-    public override TestStore TestStore => RedisTestStore.Instance;
+    public override TestStore TestStore => RedisTestStore.JsonInstance;
 }
