@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -21,6 +22,9 @@ public class LoggingVectorStore : IVectorStore
     /// <summary>The underlying <see cref="IVectorStore"/>.</summary>
     private readonly IVectorStore _innerStore;
 
+    /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>
+    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LoggingVectorStore"/> class.
     /// </summary>
@@ -37,9 +41,15 @@ public class LoggingVectorStore : IVectorStore
 
     /// <inheritdoc/>
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) where TKey : notnull
-        => new LoggingVectorStoreRecordCollection<TKey, TRecord>(
-            this._innerStore.GetCollection<TKey, TRecord>(name, vectorStoreRecordDefinition),
-            this._logger);
+    {
+        return
+            new LoggingVectorStoreRecordCollection<TKey, TRecord>(
+                this._innerStore.GetCollection<TKey, TRecord>(name, vectorStoreRecordDefinition),
+                this._logger)
+            {
+                JsonSerializerOptions = this.JsonSerializerOptions
+            };
+    }
 
     /// <inheritdoc/>
     public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)

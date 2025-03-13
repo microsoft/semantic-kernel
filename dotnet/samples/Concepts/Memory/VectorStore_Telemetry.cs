@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -28,7 +30,17 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         // Manually construct an InMemory vector store with enabled logging.
         var vectorStore = new InMemoryVectorStore()
             .AsBuilder()
-            .UseLogging(this.LoggerFactory)
+            .UseLogging(this.LoggerFactory, vectorStore =>
+            {
+                // Configure custom JSON serializer options for logging data.
+                vectorStore.JsonSerializerOptions = new JsonSerializerOptions
+                {
+                    TypeInfoResolver = new DefaultJsonTypeInfoResolver
+                    {
+                        Modifiers = { GlossaryModifier }
+                    }
+                };
+            })
             .Build();
 
         await RunExampleAsync(textEmbeddingGenerationService, vectorStore);
@@ -66,7 +78,17 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         // Register InMemoryVectorStore with enabled logging.
         serviceCollection
             .AddVectorStore(s => s.GetRequiredService<InMemoryVectorStore>())
-            .UseLogging(this.LoggerFactory);
+            .UseLogging(this.LoggerFactory, vectorStore =>
+            {
+                // Configure custom JSON serializer options for logging data.
+                vectorStore.JsonSerializerOptions = new JsonSerializerOptions
+                {
+                    TypeInfoResolver = new DefaultJsonTypeInfoResolver
+                    {
+                        Modifiers = { GlossaryModifier }
+                    }
+                };
+            });
 
         var services = serviceCollection.BuildServiceProvider();
 
@@ -176,5 +198,24 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
             Term = "RAG",
             Definition = "Retrieval Augmented Generation - a term that refers to the process of retrieving additional data to provide as context to an LLM to use when generating a response (completion) to a user’s question (prompt)."
         };
+    }
+
+    private static void GlossaryModifier(JsonTypeInfo typeInfo)
+    {
+        // Only apply to the Glossary class
+        if (typeInfo.Type != typeof(Glossary))
+        {
+            return;
+        }
+
+        // Find the DefinitionEmbedding property and configure it to be ignored
+        foreach (var property in typeInfo.Properties)
+        {
+            if (property.Name.Equals("DefinitionEmbedding", StringComparison.OrdinalIgnoreCase))
+            {
+                // Set ShouldSerialize to false to ignore this property
+                property.ShouldSerialize = static (obj, value) => false;
+            }
+        }
     }
 }

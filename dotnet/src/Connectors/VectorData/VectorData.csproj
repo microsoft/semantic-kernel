@@ -35,6 +35,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,6 +54,7 @@
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Diagnostics/Verify.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Diagnostics/NullableAttributes.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Diagnostics/CompilerServicesAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/EmptyKeyedServiceProvider.cs" Link="System/EmptyKeyedServiceProvider.cs" />
   </ItemGroup>
 
