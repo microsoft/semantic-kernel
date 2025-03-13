@@ -14,154 +14,229 @@ namespace Microsoft.SemanticKernel;
 public static class MongoDBServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a MongoDB <see cref="IVectorStore"/> with the specified service ID
-    /// and where the MongoDB <see cref="IMongoDatabase"/> is retrieved from the dependency injection container.
+    /// Registers a MongoDB <see cref="IVectorStore"/>, retrieving the <see cref="IMongoDatabase"/> from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddMongoDBVectorStore(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         MongoDBVectorStoreOptions? options = default,
-        string? serviceId = default)
-    {
         // If we are not constructing MongoDatabase, add the IVectorStore as transient, since we
         // cannot make assumptions about how MongoDatabase is being managed.
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IMongoDatabase>();
-                var selectedOptions = options ?? sp.GetService<MongoDBVectorStoreOptions>();
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedMongoDBVectorStore(serviceCollection, serviceKey: null, options, lifetime);
 
-                return new MongoDBVectorStore(database, options);
-            });
+    /// <summary>
+    /// Registers a keyed MongoDB <see cref="IVectorStore"/>, retrieving the <see cref="IMongoDatabase"/> from the dependency injection container.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedMongoDBVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        MongoDBVectorStoreOptions? options = default,
+        // If we are not constructing MongoDatabase, add the IVectorStore as transient, since we
+        // cannot make assumptions about how MongoDatabase is being managed.
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) => new MongoDBVectorStore(
+                    serviceProvider.GetRequiredService<IMongoDatabase>(),
+                    options ?? serviceProvider.GetService<MongoDBVectorStoreOptions>()),
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a MongoDB <see cref="IVectorStore"/> with the specified service ID
-    /// and where the MongoDB <see cref="IMongoDatabase"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// Registers a MongoDB <see cref="IVectorStore"/>, using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
     /// <param name="connectionString">Connection string required to connect to MongoDB.</param>
     /// <param name="databaseName">Database name for MongoDB.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddMongoDBVectorStore(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string connectionString,
         string databaseName,
         MongoDBVectorStoreOptions? options = default,
-        string? serviceId = default)
-    {
         // If we are constructing IMongoDatabase, add the IVectorStore as singleton, since we are managing the lifetime of it,
         // and the recommendation from Mongo is to register it with a singleton lifetime.
-        services.AddKeyedSingleton<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var settings = MongoClientSettings.FromConnectionString(connectionString);
-                settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    => AddKeyedMongoDBVectorStore(serviceCollection, serviceKey: null, connectionString, databaseName, options, lifetime);
 
-                var mongoClient = new MongoClient(settings);
-                var database = mongoClient.GetDatabase(databaseName);
+    /// <summary>
+    /// Registers a keyed MongoDB <see cref="IVectorStore"/>, using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="connectionString">Connection string required to connect to MongoDB.</param>
+    /// <param name="databaseName">Database name for MongoDB.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedMongoDBVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string connectionString,
+        string databaseName,
+        MongoDBVectorStoreOptions? options = default,
+        // If we are constructing IMongoDatabase, add the IVectorStore as singleton, since we are managing the lifetime of it,
+        // and the recommendation from Mongo is to register it with a singleton lifetime.
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var settings = MongoClientSettings.FromConnectionString(connectionString);
+                    settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
-                var selectedOptions = options ?? sp.GetService<MongoDBVectorStoreOptions>();
+                    var mongoClient = new MongoClient(settings);
+                    var database = mongoClient.GetDatabase(databaseName);
 
-                return new MongoDBVectorStore(database, options);
-            });
+                    return new MongoDBVectorStore(database, options ?? serviceProvider.GetService<MongoDBVectorStoreOptions>());
+                },
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the MongoDB <see cref="IMongoDatabase"/> is retrieved from the dependency injection container.
+    /// Registers a MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="IMongoDatabase"/> from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddMongoDBVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedMongoDBVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="IMongoDatabase"/> from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedMongoDBVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IMongoDatabase>();
-                var selectedOptions = options ?? sp.GetService<MongoDBVectorStoreRecordCollectionOptions<TRecord>>();
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new MongoDBVectorStoreRecordCollection<TRecord>(
+                    serviceProvider.GetRequiredService<IMongoDatabase>(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<MongoDBVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
 
-                return new MongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
 
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the MongoDB <see cref="IMongoDatabase"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// Registers a MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="connectionString">Connection string required to connect to MongoDB.</param>
     /// <param name="databaseName">Database name for MongoDB.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddMongoDBVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         string connectionString,
         string databaseName,
         MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
-    {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var settings = MongoClientSettings.FromConnectionString(connectionString);
-                settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
-
-                var mongoClient = new MongoClient(settings);
-                var database = mongoClient.GetDatabase(databaseName);
-
-                var selectedOptions = options ?? sp.GetService<MongoDBVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return new MongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
-    }
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    => AddKeyedMongoDBVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, connectionString, databaseName, options, lifetime);
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Registers a keyed MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="connectionString">Connection string required to connect to MongoDB.</param>
+    /// <param name="databaseName">Database name for MongoDB.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedMongoDBVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        string connectionString,
+        string databaseName,
+        MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var settings = MongoClientSettings.FromConnectionString(connectionString);
+                    settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+
+                    var mongoClient = new MongoClient(settings);
+                    var database = mongoClient.GetDatabase(databaseName);
+
+                    var selectedOptions = options ?? serviceProvider.GetService<MongoDBVectorStoreRecordCollectionOptions<TRecord>>();
+
+                    return new MongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                },
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
     }
 }

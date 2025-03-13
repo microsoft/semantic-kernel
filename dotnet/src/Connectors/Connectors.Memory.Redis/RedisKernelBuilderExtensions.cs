@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using StackExchange.Redis;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Redis <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class RedisKernelBuilderExtensions
 {
     /// <summary>
@@ -20,7 +22,7 @@ public static class RedisKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddRedisVectorStore(this IKernelBuilder builder, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddRedisVectorStore(options, serviceId);
+        builder.Services.AddKeyedRedisVectorStore(serviceId, options);
         return builder;
     }
 
@@ -34,7 +36,7 @@ public static class RedisKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddRedisVectorStore(this IKernelBuilder builder, string redisConnectionConfiguration, RedisVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddRedisVectorStore(redisConnectionConfiguration, options, serviceId);
+        builder.Services.AddKeyedRedisVectorStore(serviceId, redisConnectionConfiguration, options);
         return builder;
     }
 
@@ -54,7 +56,7 @@ public static class RedisKernelBuilderExtensions
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddRedisHashSetVectorStoreRecordCollection(collectionName, options, serviceId);
+        builder.Services.AddKeyedRedisHashSetVectorStoreRecordCollection(serviceId, collectionName, options);
         return builder;
     }
 
@@ -76,7 +78,7 @@ public static class RedisKernelBuilderExtensions
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddRedisHashSetVectorStoreRecordCollection(collectionName, redisConnectionConfiguration, options, serviceId);
+        builder.Services.AddKeyedRedisHashSetVectorStoreRecordCollection(serviceId, collectionName, redisConnectionConfiguration, options);
         return builder;
     }
 
@@ -96,7 +98,7 @@ public static class RedisKernelBuilderExtensions
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddRedisJsonVectorStoreRecordCollection(collectionName, options, serviceId);
+        builder.Services.AddKeyedRedisJsonVectorStoreRecordCollection(serviceId, collectionName, options);
         return builder;
     }
 
@@ -118,7 +120,7 @@ public static class RedisKernelBuilderExtensions
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddRedisJsonVectorStoreRecordCollection(collectionName, redisConnectionConfiguration, options, serviceId);
+        builder.Services.AddKeyedRedisJsonVectorStoreRecordCollection(serviceId, collectionName, redisConnectionConfiguration, options);
         return builder;
     }
 }

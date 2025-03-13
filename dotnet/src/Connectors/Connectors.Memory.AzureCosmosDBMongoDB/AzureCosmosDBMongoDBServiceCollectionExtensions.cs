@@ -14,154 +14,231 @@ namespace Microsoft.SemanticKernel;
 public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Azure CosmosDB MongoDB <see cref="IVectorStore"/> with the specified service ID
-    /// and where the Azure CosmosDB MongoDB <see cref="IMongoDatabase"/> is retrieved from the dependency injection container.
+    /// Registers an Azure CosmosDB MongoDB <see cref="IVectorStore"/>, retrieving the <see cref="IMongoDatabase"/> from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddAzureCosmosDBMongoDBVectorStore(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         AzureCosmosDBMongoDBVectorStoreOptions? options = default,
-        string? serviceId = default)
-    {
         // If we are not constructing MongoDatabase, add the IVectorStore as transient, since we
         // cannot make assumptions about how MongoDatabase is being managed.
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IMongoDatabase>();
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreOptions>();
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    => AddKeyedAzureCosmosDBMongoDBVectorStore(serviceCollection, serviceKey: null, options, lifetime);
 
-                return new AzureCosmosDBMongoDBVectorStore(database, options);
-            });
+    /// <summary>
+    /// Registers a keyed Azure CosmosDB MongoDB <see cref="IVectorStore"/>, retrieving the <see cref="IMongoDatabase"/> from the dependency injection container.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the store. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedAzureCosmosDBMongoDBVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        AzureCosmosDBMongoDBVectorStoreOptions? options = default,
+        // If we are not constructing MongoDatabase, add the IVectorStore as transient, since we
+        // cannot make assumptions about how MongoDatabase is being managed.
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) => new AzureCosmosDBMongoDBVectorStore(
+                    serviceProvider.GetRequiredService<IMongoDatabase>(),
+                    options ?? serviceProvider.GetService<AzureCosmosDBMongoDBVectorStoreOptions>()),
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a Azure CosmosDB MongoDB <see cref="IVectorStore"/> with the specified service ID
-    /// and where the Azure CosmosDB MongoDB <see cref="IMongoDatabase"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// Registers an Azure CosmosDB MongoDB <see cref="IVectorStore"/>, using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="connectionString">Connection string required to connect to Azure CosmosDB MongoDB.</param>
     /// <param name="databaseName">Database name for Azure CosmosDB MongoDB.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddAzureCosmosDBMongoDBVectorStore(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string connectionString,
         string databaseName,
         AzureCosmosDBMongoDBVectorStoreOptions? options = default,
-        string? serviceId = default)
-    {
         // If we are constructing IMongoDatabase, add the IVectorStore as singleton, since we are managing the lifetime of it,
         // and the recommendation from Mongo is to register it with a singleton lifetime.
-        services.AddKeyedSingleton<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var settings = MongoClientSettings.FromConnectionString(connectionString);
-                settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedAzureCosmosDBMongoDBVectorStore(serviceCollection, serviceKey: null, connectionString, databaseName, options, lifetime);
 
-                var mongoClient = new MongoClient(settings);
-                var database = mongoClient.GetDatabase(databaseName);
+    /// <summary>
+    /// Registers a keyed Azure CosmosDB MongoDB <see cref="IVectorStore"/>, using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB MongoDB.</param>
+    /// <param name="databaseName">Database name for Azure CosmosDB MongoDB.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedAzureCosmosDBMongoDBVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string connectionString,
+        string databaseName,
+        AzureCosmosDBMongoDBVectorStoreOptions? options = default,
+        // If we are constructing IMongoDatabase, add the IVectorStore as singleton, since we are managing the lifetime of it,
+        // and the recommendation from Mongo is to register it with a singleton lifetime.
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var settings = MongoClientSettings.FromConnectionString(connectionString);
+                    settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
 
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreOptions>();
+                    var mongoClient = new MongoClient(settings);
+                    var database = mongoClient.GetDatabase(databaseName);
 
-                return new AzureCosmosDBMongoDBVectorStore(database, options);
-            });
+                    options ??= serviceProvider.GetService<AzureCosmosDBMongoDBVectorStoreOptions>();
 
-        return services;
+                    return new AzureCosmosDBMongoDBVectorStore(database, options);
+                },
+                lifetime));
+
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register an Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the Azure CosmosDB MongoDB <see cref="IMongoDatabase"/> is retrieved from the dependency injection container.
+    /// Registers an Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="IMongoDatabase"/> is retrieved from the dependency injection container.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedAzureCosmosDBMongoDBVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="IMongoDatabase"/> is retrieved from the dependency injection container.
+    /// </summary>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var database = sp.GetRequiredService<IMongoDatabase>();
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>>();
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
+                    serviceProvider.GetRequiredService<IMongoDatabase>(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
 
-                return new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
 
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register an Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the Azure CosmosDB MongoDB <see cref="IMongoDatabase"/> is constructed using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
+    /// Registers an Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>
+    /// using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="connectionString">Connection string required to connect to Azure CosmosDB MongoDB.</param>
     /// <param name="databaseName">Database name for Azure CosmosDB MongoDB.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         string connectionString,
         string databaseName,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
-    {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var settings = MongoClientSettings.FromConnectionString(connectionString);
-                settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
-
-                var mongoClient = new MongoClient(settings);
-                var database = mongoClient.GetDatabase(databaseName);
-
-                var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
-            });
-
-        AddVectorizedSearch<TRecord>(services, serviceId);
-
-        return services;
-    }
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedAzureCosmosDBMongoDBVectorStoreRecordCollection(serviceCollection, serviceKey: null, collectionName, connectionString, databaseName, options, lifetime);
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Registers a keyed Azure CosmosDB MongoDB <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>
+    /// using the provided <paramref name="connectionString"/> and <paramref name="databaseName"/>.
     /// </summary>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="connectionString">Connection string required to connect to Azure CosmosDB MongoDB.</param>
+    /// <param name="databaseName">Database name for Azure CosmosDB MongoDB.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        string connectionString,
+        string databaseName,
+        AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceId);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<string, TRecord>),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var settings = MongoClientSettings.FromConnectionString(connectionString);
+                    settings.ApplicationName = HttpHeaderConstant.Values.UserAgent;
+
+                    var mongoClient = new MongoClient(settings);
+                    var database = mongoClient.GetDatabase(databaseName);
+
+                    options ??= serviceProvider.GetService<AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>>();
+
+                    return new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, options);
+                },
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<string, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
     }
 }

@@ -13,147 +13,231 @@ namespace Microsoft.SemanticKernel;
 public static class QdrantServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStore"/> with the specified service ID and where <see cref="QdrantClient"/> is retrieved from the dependency injection container.
+    /// Registers a Qdrant <see cref="IVectorStore"/>, retrieving the <see cref="QdrantClient"/> from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddQdrantVectorStore(this IServiceCollection services, QdrantVectorStoreOptions? options = default, string? serviceId = default)
-    {
+    public static IServiceCollection AddQdrantVectorStore(
+        this IServiceCollection serviceCollection,
+        QdrantVectorStoreOptions? options = default,
         // If we are not constructing the QdrantClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how QdrantClient is being managed.
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var qdrantClient = sp.GetRequiredService<QdrantClient>();
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreOptions>();
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    => AddKeyedQdrantVectorStore(serviceCollection, serviceKey: null, options, lifetime);
 
-                return new QdrantVectorStore(
-                    qdrantClient,
-                    selectedOptions);
-            });
-
-        return services;
-    }
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStore"/> with the specified service ID and where <see cref="QdrantClient"/> is constructed using the provided parameters.
+    /// Registers a keyed Qdrant <see cref="IVectorStore"/>, retrieving the <see cref="QdrantClient"/> from the dependency injection container.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddKeyedQdrantVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        QdrantVectorStoreOptions? options = default,
+        // If we are not constructing the QdrantClient, add the IVectorStore as transient, since we
+        // cannot make assumptions about how QdrantClient is being managed.
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) => new QdrantVectorStore(
+                    serviceProvider.GetRequiredService<QdrantClient>(),
+                    options ?? serviceProvider.GetService<QdrantVectorStoreOptions>()),
+                lifetime));
+
+        return serviceCollection;
+    }
+
+    /// <summary>
+    /// Registers a Qdrant <see cref="IVectorStore"/> using the provided parameters.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="host">The Qdrant service host name.</param>
     /// <param name="port">The Qdrant service port.</param>
     /// <param name="https">A value indicating whether to use HTTPS for communicating with Qdrant.</param>
     /// <param name="apiKey">The Qdrant service API key.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddQdrantVectorStore(this IServiceCollection services, string host, int port = 6334, bool https = false, string? apiKey = default, QdrantVectorStoreOptions? options = default, string? serviceId = default)
+    public static IServiceCollection AddQdrantVectorStore(
+        this IServiceCollection serviceCollection,
+        string host,
+        int port = 6334,
+        bool https = false,
+        string? apiKey = default,
+        QdrantVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
+        => AddKeyedQdrantVectorStore(serviceCollection, serviceKey: null, host, port, https, apiKey, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed Qdrant <see cref="IVectorStore"/> using the provided parameters.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="host">The Qdrant service host name.</param>
+    /// <param name="port">The Qdrant service port.</param>
+    /// <param name="https">A value indicating whether to use HTTPS for communicating with Qdrant.</param>
+    /// <param name="apiKey">The Qdrant service API key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Singleton"/>.</param>
+    /// <returns>The service collection.</returns>
+    public static IServiceCollection AddKeyedQdrantVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string host,
+        int port = 6334,
+        bool https = false,
+        string? apiKey = default,
+        QdrantVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        services.AddKeyedSingleton<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var qdrantClient = new QdrantClient(host, port, https, apiKey);
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreOptions>();
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) => new QdrantVectorStore(
+                    new QdrantClient(host, port, https, apiKey),
+                    options ?? serviceProvider.GetService<QdrantVectorStoreOptions>()),
+                lifetime));
 
-                return new QdrantVectorStore(
-                    qdrantClient,
-                    selectedOptions);
-            });
-
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the Qdrant <see cref="QdrantClient"/> is retrieved from the dependency injection container.
+    /// Registers a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="QdrantClient"/> from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddQdrantVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TKey : notnull
-    {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var qdrantClient = sp.GetRequiredService<QdrantClient>();
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return (new QdrantVectorStoreRecordCollection<TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-            });
-
-        AddVectorizedSearch<TKey, TRecord>(services, serviceId);
-
-        return services;
-    }
+        => AddKeyedQdrantVectorStoreRecordCollection<TKey, TRecord>(serviceCollection, serviceKey: null, collectionName, options, lifetime);
 
     /// <summary>
-    /// Register a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the Qdrant <see cref="QdrantClient"/> is constructed using the provided parameters.
+    /// Registers a keyed Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="QdrantClient"/> from the dependency injection container.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedQdrantVectorStoreRecordCollection<TKey, TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        where TKey : notnull
+    {
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<TKey, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new QdrantVectorStoreRecordCollection<TRecord>(
+                    serviceProvider.GetRequiredService<QdrantClient>(),
+                    collectionName,
+                    options ?? serviceProvider.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceKey),
+                lifetime));
+        return serviceCollection;
+    }
+
+    /// <summary>
+    /// Registers a Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>, using the provided parameters.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="host">The Qdrant service host name.</param>
     /// <param name="port">The Qdrant service port.</param>
     /// <param name="https">A value indicating whether to use HTTPS for communicating with Qdrant.</param>
     /// <param name="apiKey">The Qdrant service API key.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddQdrantVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         string host,
         int port = 6334,
         bool https = false,
         string? apiKey = default,
         QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
-    {
-        services.AddKeyedSingleton<IVectorStoreRecordCollection<TKey, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var qdrantClient = new QdrantClient(host, port, https, apiKey);
-                var selectedOptions = options ?? sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return (new QdrantVectorStoreRecordCollection<TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-            });
-
-        AddVectorizedSearch<TKey, TRecord>(services, serviceId);
-
-        return services;
-    }
+        => AddKeyedQdrantVectorStoreRecordCollection<TKey, TRecord>(serviceCollection, serviceKey: null, collectionName, host, port, https, apiKey, options, lifetime);
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Registers a keyed Qdrant <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>, using the provided parameters.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId)
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="host">The Qdrant service host name.</param>
+    /// <param name="port">The Qdrant service port.</param>
+    /// <param name="https">A value indicating whether to use HTTPS for communicating with Qdrant.</param>
+    /// <param name="apiKey">The Qdrant service API key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedQdrantVectorStoreRecordCollection<TKey, TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        string host,
+        int port = 6334,
+        bool https = false,
+        string? apiKey = default,
+        QdrantVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceId);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<TKey, TRecord>),
+                serviceKey,
+                (serviceProvider, _) => new QdrantVectorStoreRecordCollection<TRecord>(
+                    new QdrantClient(host, port, https, apiKey),
+                    collectionName,
+                    options ?? serviceProvider.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>()),
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
     }
 }

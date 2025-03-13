@@ -14,175 +14,248 @@ namespace Microsoft.SemanticKernel;
 public static class SqliteServiceCollectionExtensions
 {
     /// <summary>
-    /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID
-    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container.
+    /// Registers a SQLite <see cref="IVectorStore"/>, retrieving the SQLite <see cref="SqliteConnection"/> from the dependency injection container.
     /// In this case vector search extension loading should be handled manually.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddSqliteVectorStore(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         SqliteVectorStoreOptions? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+    => AddKeyedSqliteVectorStore(serviceCollection, serviceKey: null, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed SQLite <see cref="IVectorStore"/>, retrieving the SQLite <see cref="SqliteConnection"/> from the dependency injection container.
+    /// In this case vector search extension loading should be handled manually.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedSqliteVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        SqliteVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var connection = sp.GetRequiredService<SqliteConnection>();
-
-                if (connection.State != ConnectionState.Open)
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) =>
                 {
-                    connection.Open();
-                }
+                    var connection = serviceProvider.GetRequiredService<SqliteConnection>();
 
-                var selectedOptions = options ?? sp.GetService<SqliteVectorStoreOptions>();
+                    if (connection.State != ConnectionState.Open)
+                    {
+                        connection.Open();
+                    }
 
-                return new SqliteVectorStore(connection, options);
-            });
+                    return new SqliteVectorStore(connection, options ?? serviceProvider.GetService<SqliteVectorStoreOptions>());
+                },
+                lifetime));
 
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a SQLite <see cref="IVectorStore"/> with the specified service ID.
-    /// <see cref="SqliteConnection"/> instance will be initialized, connection will be opened and vector search extension with be loaded.
+    /// Registers a SQLite <see cref="IVectorStore"/>, using the specified connection string.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStore"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStore"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddSqliteVectorStore(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string connectionString,
         SqliteVectorStoreOptions? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        => AddKeyedSqliteVectorStore(serviceCollection, serviceKey: null, connectionString, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed SQLite <see cref="IVectorStore"/>, using the specified connection string.
+    /// </summary>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStore"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedSqliteVectorStore(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string connectionString,
+        SqliteVectorStoreOptions? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
     {
-        services.AddKeyedTransient<IVectorStore>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var connection = new SqliteConnection(connectionString);
-                var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStore),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var connection = new SqliteConnection(connectionString);
+                    var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
 
-                connection.Open();
+                    connection.Open();
+                    connection.LoadExtension(extensionName);
 
-                connection.LoadExtension(extensionName);
+                    return new SqliteVectorStore(connection, options ?? serviceProvider.GetService<SqliteVectorStoreOptions>());
+                },
+                lifetime));
 
-                var selectedOptions = options ?? sp.GetService<SqliteVectorStoreOptions>();
-                return new SqliteVectorStore(connection, options);
-            });
-
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Register a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID
-    /// and where the SQLite <see cref="SqliteConnection"/> is retrieved from the dependency injection container.
+    /// Registers a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="SqliteConnection"/> from the dependency injection container.
     /// In this case vector search extension loading should be handled manually.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
     public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
+        this IServiceCollection serviceCollection,
         string collectionName,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TKey : notnull
-    {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var connection = sp.GetRequiredService<SqliteConnection>();
-
-                if (connection.State != ConnectionState.Open)
-                {
-                    connection.Open();
-                }
-
-                var selectedOptions = options ?? sp.GetService<SqliteVectorStoreRecordCollectionOptions<TRecord>>();
-
-                return (new SqliteVectorStoreRecordCollection<TRecord>(connection, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-            });
-
-        AddVectorizedSearch<TKey, TRecord>(services, serviceId);
-
-        return services;
-    }
+        => AddKeyedSqliteVectorStoreRecordCollection<TKey, TRecord>(serviceCollection, serviceKey: null, collectionName, options, lifetime);
 
     /// <summary>
-    /// Register a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> with the specified service ID.
-    /// <see cref="SqliteConnection"/> instance will be initialized, connection will be opened and vector search extension with be loaded.
+    /// Registers a keyed SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/>,
+    /// retrieving the <see cref="SqliteConnection"/> from the dependency injection container.
+    /// In this case vector search extension loading should be handled manually.
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
     /// <typeparam name="TRecord">The type of the record.</typeparam>
-    /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
     /// <param name="collectionName">The name of the collection.</param>
-    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
-    /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
-    /// <param name="serviceId">An optional service id to use as the service key.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
     /// <returns>Service collection.</returns>
-    public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
-        this IServiceCollection services,
+    public static IServiceCollection AddKeyedSqliteVectorStoreRecordCollection<TKey, TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
         string collectionName,
-        string connectionString,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
-        string? serviceId = default)
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TKey : notnull
     {
-        services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                var connection = new SqliteConnection(connectionString);
-                var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<TKey, TRecord>),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var connection = serviceProvider.GetRequiredService<SqliteConnection>();
 
-                connection.Open();
+                    if (connection.State != ConnectionState.Open)
+                    {
+                        connection.Open();
+                    }
 
-                connection.LoadExtension(extensionName);
+                    return new SqliteVectorStoreRecordCollection<TRecord>(
+                        connection,
+                        collectionName,
+                        options ?? serviceProvider.GetService<SqliteVectorStoreRecordCollectionOptions<TRecord>>());
+                },
+                lifetime));
 
-                var selectedOptions = options ?? sp.GetService<SqliteVectorStoreRecordCollectionOptions<TRecord>>();
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceKey),
+                lifetime));
 
-                return (new SqliteVectorStoreRecordCollection<TRecord>(connection, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
-            });
-
-        AddVectorizedSearch<TKey, TRecord>(services, serviceId);
-
-        return services;
+        return serviceCollection;
     }
 
     /// <summary>
-    /// Also register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> with the given <paramref name="serviceId"/> as a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Registers a SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> usihng the provided connection string/
     /// </summary>
     /// <typeparam name="TKey">The type of the key.</typeparam>
-    /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
-    /// <param name="services">The service collection to register on.</param>
-    /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId)
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddSqliteVectorStoreRecordCollection<TKey, TRecord>(
+        this IServiceCollection serviceCollection,
+        string collectionName,
+        string connectionString,
+        SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
+        where TKey : notnull
+        => AddKeyedSqliteVectorStoreRecordCollection<TKey, TRecord>(serviceCollection, serviceKey: null, collectionName, connectionString, options, lifetime);
+
+    /// <summary>
+    /// Registers a keyed SQLite <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> and <see cref="IVectorizedSearch{TRecord}"/> usihng the provided connection string/
+    /// </summary>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <typeparam name="TRecord">The type of the record.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/> to which the vector store should be added.</param>
+    /// <param name="serviceKey">The key with which to associate the vector store.</param>
+    /// <param name="collectionName">The name of the collection.</param>
+    /// <param name="connectionString">Connection string for <see cref="SqliteConnection"/>.</param>
+    /// <param name="options">Options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
+    /// <param name="lifetime">The service lifetime for the client. Defaults to <see cref="ServiceLifetime.Transient"/>.</param>
+    /// <returns>Service collection.</returns>
+    public static IServiceCollection AddKeyedSqliteVectorStoreRecordCollection<TKey, TRecord>(
+        this IServiceCollection serviceCollection,
+        object? serviceKey,
+        string collectionName,
+        string connectionString,
+        SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default,
+        ServiceLifetime lifetime = ServiceLifetime.Transient)
         where TKey : notnull
     {
-        services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
-            serviceId,
-            (sp, obj) =>
-            {
-                return sp.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceId);
-            });
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorStoreRecordCollection<TKey, TRecord>),
+                serviceKey,
+                (serviceProvider, _) =>
+                {
+                    var connection = new SqliteConnection(connectionString);
+                    var extensionName = GetExtensionName(options?.VectorSearchExtensionName);
+
+                    connection.Open();
+                    connection.LoadExtension(extensionName);
+
+                    return new SqliteVectorStoreRecordCollection<TRecord>(
+                        connection,
+                        collectionName,
+                        options ?? serviceProvider.GetService<SqliteVectorStoreRecordCollectionOptions<TRecord>>());
+                },
+                lifetime));
+
+        serviceCollection.Add(
+            new ServiceDescriptor(
+                typeof(IVectorizedSearch<TRecord>),
+                serviceKey,
+                static (serviceProvider, serviceKey) => serviceProvider.GetRequiredKeyedService<IVectorStoreRecordCollection<TKey, TRecord>>(serviceKey),
+                lifetime));
+
+        return serviceCollection;
     }
 
     /// <summary>
     /// Returns extension name for vector search.
     /// </summary>
     private static string GetExtensionName(string? extensionName)
-    {
-        return !string.IsNullOrWhiteSpace(extensionName) ? extensionName! : SqliteConstants.VectorSearchExtensionName;
-    }
+        => !string.IsNullOrWhiteSpace(extensionName) ? extensionName! : SqliteConstants.VectorSearchExtensionName;
 }

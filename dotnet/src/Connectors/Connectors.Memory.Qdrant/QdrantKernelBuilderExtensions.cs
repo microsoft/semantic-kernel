@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Qdrant <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class QdrantKernelBuilderExtensions
 {
     /// <summary>
@@ -20,7 +22,7 @@ public static class QdrantKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddQdrantVectorStore(this IKernelBuilder builder, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddQdrantVectorStore(options, serviceId);
+        builder.Services.AddKeyedQdrantVectorStore(serviceId, options);
         return builder;
     }
     /// <summary>
@@ -36,7 +38,7 @@ public static class QdrantKernelBuilderExtensions
     /// <returns>The kernel builder.</returns>
     public static IKernelBuilder AddQdrantVectorStore(this IKernelBuilder builder, string host, int port = 6334, bool https = false, string? apiKey = default, QdrantVectorStoreOptions? options = default, string? serviceId = default)
     {
-        builder.Services.AddQdrantVectorStore(host, port, https, apiKey, options, serviceId);
+        builder.Services.AddKeyedQdrantVectorStore(serviceId, host, port, https, apiKey, options);
         return builder;
     }
 
@@ -58,7 +60,7 @@ public static class QdrantKernelBuilderExtensions
         string? serviceId = default)
         where TKey : notnull
     {
-        builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
+        builder.Services.AddKeyedQdrantVectorStoreRecordCollection<TKey, TRecord>(serviceId, collectionName, options);
         return builder;
     }
 
@@ -88,7 +90,7 @@ public static class QdrantKernelBuilderExtensions
         string? serviceId = default)
         where TKey : notnull
     {
-        builder.Services.AddQdrantVectorStoreRecordCollection<TKey, TRecord>(collectionName, host, port, https, apiKey, options, serviceId);
+        builder.Services.AddKeyedQdrantVectorStoreRecordCollection<TKey, TRecord>(serviceId, collectionName, host, port, https, apiKey, options);
         return builder;
     }
 }

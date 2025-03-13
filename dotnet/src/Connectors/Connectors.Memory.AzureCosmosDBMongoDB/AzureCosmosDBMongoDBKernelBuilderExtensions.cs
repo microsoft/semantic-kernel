@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using MongoDB.Driver;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Azure CosmosDB MongoDB <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class AzureCosmosDBMongoDBKernelBuilderExtensions
 {
     /// <summary>
@@ -24,7 +26,7 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         AzureCosmosDBMongoDBVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBMongoDBVectorStore(options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBMongoDBVectorStore(serviceId, options);
         return builder;
     }
 
@@ -45,7 +47,7 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         AzureCosmosDBMongoDBVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBMongoDBVectorStore(connectionString, databaseName, options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBMongoDBVectorStore(serviceId, connectionString, databaseName, options);
         return builder;
     }
 
@@ -65,7 +67,7 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(serviceId, collectionName, options);
         return builder;
     }
 
@@ -89,7 +91,7 @@ public static class AzureCosmosDBMongoDBKernelBuilderExtensions
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(serviceId, collectionName, connectionString, databaseName, options);
         return builder;
     }
 }

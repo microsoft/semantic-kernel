@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Azure CosmosDB NoSQL <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("Call the corresponding method on the Services property of your IKernelBuilder instance.")]
 public static class AzureCosmosDBNoSQLKernelBuilderExtensions
 {
     /// <summary>
@@ -24,7 +26,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         AzureCosmosDBNoSQLVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBNoSQLVectorStore(options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBNoSQLVectorStore(serviceId, options);
         return builder;
     }
 
@@ -45,11 +47,11 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         AzureCosmosDBNoSQLVectorStoreOptions? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBNoSQLVectorStore(
+        builder.Services.AddKeyedAzureCosmosDBNoSQLVectorStore(
+            serviceId,
             connectionString,
             databaseName,
-            options,
-            serviceId);
+            options);
 
         return builder;
     }
@@ -70,7 +72,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(serviceId, collectionName, options);
         return builder;
     }
 
@@ -94,7 +96,7 @@ public static class AzureCosmosDBNoSQLKernelBuilderExtensions
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
     {
-        builder.Services.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(collectionName, connectionString, databaseName, options, serviceId);
+        builder.Services.AddKeyedAzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(serviceId, collectionName, connectionString, databaseName, options);
         return builder;
     }
 }
