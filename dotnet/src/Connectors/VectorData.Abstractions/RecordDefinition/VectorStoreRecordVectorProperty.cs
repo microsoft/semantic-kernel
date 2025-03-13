@@ -35,6 +35,17 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     }
 
     /// <summary>
+    /// Gets or sets the embedding generator to use for this property.
+    /// </summary>
+    /// <remarks>
+    /// TODO
+    /// If not set, embedding generation will be performed in the database, if supported by your connector.
+    /// If not supported, only pre-generated embeddings can be used, e.g. via <see cref="IVectorizedSearch{TRecord}.SearchEmbeddingAsync{TVector}"/>.
+    /// </remarks>
+    // TODO: Change type from object? to non-generic IEmbeddingGenerator once MEAI is updated.
+    public object? EmbeddingGenerator { get; init; }
+
+    /// <summary>
     /// Gets or sets the number of dimensions that the vector has.
     /// </summary>
     /// <remarks>

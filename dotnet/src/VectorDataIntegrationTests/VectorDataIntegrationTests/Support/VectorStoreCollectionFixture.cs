@@ -8,14 +8,15 @@ namespace VectorDataSpecificationTests.Support;
 /// A test fixture that sets up a single collection in the test vector store, with a specific record definition
 /// and test data.
 /// </summary>
-public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreFixture
+public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorDataFixture
     where TKey : notnull
 {
     private List<TRecord>? _testData;
 
     protected abstract string CollectionName { get; }
     protected abstract VectorStoreRecordDefinition GetRecordDefinition();
-    protected abstract List<TRecord> BuildTestData();
+
+    protected virtual List<TRecord> BuildTestData() => [];
 
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;

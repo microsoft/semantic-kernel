@@ -19,4 +19,13 @@ public sealed class VectorStoreRecordDefinition
     /// Gets or sets the list of properties that are stored in the record.
     /// </summary>
     public IReadOnlyList<VectorStoreRecordProperty> Properties { get; init; } = s_emptyFields;
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this collection.
+    /// </summary>
+    /// <remarks>
+    /// TODO
+    /// </remarks>
+    // TODO: Change type from object? to non-generic IEmbeddingGenerator once MEAI is updated.
+    public object? EmbeddingGenerator { get; init; }
 }

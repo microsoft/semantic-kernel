@@ -7,7 +7,7 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.CRUD;
 
-public abstract class GenericDataModelConformanceTests<TKey>(VectorStoreFixture fixture)
+public abstract class GenericDataModelConformanceTests<TKey>(VectorDataFixture fixture)
     : ConformanceTestsBase<TKey, VectorStoreGenericDataModel<TKey>>(fixture) where TKey : notnull
 {
     private const string KeyPropertyName = "key";

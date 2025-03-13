@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="xunit" />
     <PackageReference Include="System.Linq.Async" /> <!-- Remove when targeting .NET 10 -->
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>

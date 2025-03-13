@@ -4,7 +4,7 @@ using VectorDataSpecificationTests.Support;
 
 namespace PostgresIntegrationTests.Support;
 
-public class PostgresFixture : VectorStoreFixture
+public class PostgresFixture : VectorDataFixture
 {
     public override TestStore TestStore => PostgresTestStore.Instance;
 }

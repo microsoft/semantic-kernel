@@ -6,7 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.Properties;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -23,6 +25,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 {
     /// <inheritdoc />
     public string CollectionName { get; }
+
+    /// <summary>The vector store for this collection.</summary>
+    private readonly PostgresVectorStore _store;
 
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
@@ -46,29 +51,30 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public PostgresVectorStoreRecordCollection(NpgsqlDataSource dataSource, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
-        : this(new PostgresVectorStoreDbClient(dataSource), collectionName, options)
+        : this(new PostgresVectorStore(dataSource), collectionName, options)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
-    /// <param name="client">The client to use for interacting with the database.</param>
+    /// <param name="vectorStore">The vector store instance for this collection.</param>
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <remarks>
     /// This constructor is internal. It allows internal code to create an instance of this class with a custom client.
     /// </remarks>
-    internal PostgresVectorStoreRecordCollection(IPostgresVectorStoreDbClient client, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
+    internal PostgresVectorStoreRecordCollection(PostgresVectorStore vectorStore, string collectionName, PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
-        Verify.NotNull(client);
+        Verify.NotNull(vectorStore);
         Verify.NotNullOrWhiteSpace(collectionName);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.DictionaryCustomMapper is not null, PostgresConstants.SupportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
-        this._client = client;
+        this._store = vectorStore;
+        this._client = vectorStore.PostgresClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PostgresVectorStoreRecordCollectionOptions<TRecord>();
         this._propertyReader = new VectorStoreRecordPropertyReader(
@@ -259,10 +265,57 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> SearchAsync<T>(
+        T value,
+        VectorSearchOptions<TRecord>? options = default,
+        CancellationToken cancellationToken = default)
     {
-        const string OperationName = "VectorizedSearch";
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
+        var embeddingGenerator = vectorProperty.EmbeddingGenerator
+                                 ?? this._options.VectorStoreRecordDefinition?.EmbeddingGenerator
+                                 ?? this._store.Options.EmbeddingGenerator;
 
+        switch (embeddingGenerator)
+        {
+            case IEmbeddingGenerator<T, Embedding<float>> generator:
+                var embeddings = await generator.GenerateAsync([value], options: new() { Dimensions = vectorProperty.Dimensions }, cancellationToken)
+                    .ConfigureAwait(false);
+                if (embeddings.Count != 1)
+                {
+                    throw new InvalidOperationException($"The embedding generator returned {embeddings.Count} embeddings instead of the expected 1.");
+                }
+
+                return await this.SearchCoreAsync(embeddings.Single().Vector, vectorProperty, operationName: "Search", options, cancellationToken)
+                    .ConfigureAwait(false);
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfigured);
+
+            default:
+                throw new InvalidOperationException(string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfigured, typeof(T).Name, embeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual Task<VectorSearchResults<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
+
+        return this.SearchCoreAsync(vector, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private Task<VectorSearchResults<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        VectorStoreRecordVectorProperty vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+    {
         Verify.NotNull(vector);
 
         var vectorType = vector.GetType();
@@ -275,8 +328,6 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
-
         var pgVector = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
         Verify.NotNull(pgVector);
@@ -285,7 +336,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = searchOptions.Top + searchOptions.Skip;
 
-        return this.RunOperationAsync(OperationName, () =>
+        return this.RunOperationAsync(operationName, () =>
         {
             var results = this._client.GetNearestMatchesAsync(
                 this.CollectionName,
@@ -305,7 +356,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
                     var record = VectorStoreErrorHandler.RunModelConversion(
                         PostgresConstants.DatabaseName,
                         this.CollectionName,
-                        OperationName,
+                        operationName,
                         () => this._mapper.MapFromStorageToDataModel(
                             result.Row, new StorageToDataModelMapperOptions() { IncludeVectors = searchOptions.IncludeVectors })
                     );
@@ -316,6 +367,10 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             return Task.FromResult(new VectorSearchResults<TRecord>(results));
         });
     }
+
+    /// <inheritdoc />
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        => this.SearchEmbeddingAsync(vector, options, cancellationToken);
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
