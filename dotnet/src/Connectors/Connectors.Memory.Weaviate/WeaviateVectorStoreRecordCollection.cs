@@ -540,6 +540,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
+        // Based on https://weaviate.io/developers/weaviate/starter-guides/managing-collections#collection--property-names
         char first = collectionName[0];
         if (!(first is >= 'A' and <= 'Z'))
         {
