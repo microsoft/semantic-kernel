@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -19,10 +20,12 @@ public static class LoggingVectorStoreBuilderExtensions
     /// If not supplied, a required instance will be resolved from the service provider.
     /// If resolved <see cref="ILoggerFactory"/> is <see cref="NullLoggerFactory"/>, it will be skipped and the inner service will be used instead.
     /// </param>
+    /// <param name="configure">An optional callback that can be used to configure the <see cref="LoggingVectorStore"/> instance.</param>
     /// <returns>The <paramref name="builder"/>.</returns>
     public static VectorStoreBuilder UseLogging(
         this VectorStoreBuilder builder,
-        ILoggerFactory? loggerFactory = null)
+        ILoggerFactory? loggerFactory = null,
+        Action<LoggingVectorStore>? configure = null)
     {
         Verify.NotNull(builder);
 
@@ -35,7 +38,11 @@ public static class LoggingVectorStoreBuilderExtensions
                 return innerStore;
             }
 
-            return new LoggingVectorStore(innerStore, loggerFactory.CreateLogger(typeof(LoggingVectorStore)));
+            var vectorStore = new LoggingVectorStore(innerStore, loggerFactory.CreateLogger(typeof(LoggingVectorStore)));
+
+            configure?.Invoke(vectorStore);
+
+            return vectorStore;
         });
     }
 }
