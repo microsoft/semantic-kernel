@@ -47,7 +47,7 @@ async def test_initialize_step(actor_context):
         await actor_context.initialize_step(input_data)
 
         assert actor_context.step_info is not None
-        mock_try_add_state.assert_any_call("DaprStepInfo", actor_context.step_info)
+        mock_try_add_state.assert_any_call("DaprStepInfo", actor_context.step_info.model_dump_json())
         mock_save_state.assert_called_once()
 
 
