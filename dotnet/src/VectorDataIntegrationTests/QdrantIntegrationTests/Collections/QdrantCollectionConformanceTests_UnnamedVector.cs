@@ -6,7 +6,7 @@ using Xunit;
 
 namespace QdrantIntegrationTests.Collections;
 
-public class QdrantCollectionConformanceTests(QdrantFixture fixture)
-    : CollectionConformanceTests<ulong>(fixture), IClassFixture<QdrantFixture>
+public class QdrantCollectionConformanceTests_UnnamedVector(QdrantUnnamedVectorFixture fixture)
+    : CollectionConformanceTests<ulong>(fixture), IClassFixture<QdrantUnnamedVectorFixture>
 {
 }

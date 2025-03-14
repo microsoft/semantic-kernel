@@ -4,7 +4,7 @@ using VectorDataSpecificationTests.Support;
 
 namespace QdrantIntegrationTests.Support;
 
-public class QdrantFixture : VectorStoreFixture
+public class QdrantUnnamedVectorFixture : VectorStoreFixture
 {
-    public override TestStore TestStore => QdrantTestStore.Instance;
+    public override TestStore TestStore => QdrantTestStore.UnnamedVectorInstance;
 }
