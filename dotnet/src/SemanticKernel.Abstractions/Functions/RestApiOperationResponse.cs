@@ -47,7 +47,6 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// The response headers.
     /// </summary>
-    [Experimental("SKEXP0040")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, IEnumerable<string>>? Headers { get; set; }
 

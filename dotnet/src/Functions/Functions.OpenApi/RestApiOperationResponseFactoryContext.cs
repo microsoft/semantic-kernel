@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -8,7 +7,6 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// <summary>
 /// Represents the context for the <see cref="RestApiOperationResponseFactory"/>."/>
 /// </summary>
-[Experimental("SKEXP0040")]
 public sealed class RestApiOperationResponseFactoryContext
 {
     /// <summary>
