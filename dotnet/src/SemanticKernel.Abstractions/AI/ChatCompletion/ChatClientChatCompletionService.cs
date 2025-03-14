@@ -67,7 +67,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                 .Skip(currentSize)
                 .Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
 
-        return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
+        return completion.Messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
     }
 
     /// <inheritdoc/>
@@ -283,7 +283,6 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             null)
         {
             InnerContent = update.RawRepresentation,
-            ChoiceIndex = update.ChoiceIndex,
             Metadata = update.AdditionalProperties,
             ModelId = update.ModelId
         };

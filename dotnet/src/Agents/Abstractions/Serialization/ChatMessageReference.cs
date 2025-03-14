@@ -38,8 +38,7 @@ public sealed class ChatMessageReference(ChatMessageContent message)
     /// <summary>
     /// Gets the referenced <see cref="KernelContent.MimeType"/> property.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? MimeType => message.MimeType;
+    public string MimeType => message.MimeType;
 
     /// <summary>
     /// Converts a set of messages to <see cref="ChatMessageReference"/> instances.

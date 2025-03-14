@@ -106,7 +106,7 @@ public class BinaryContent : KernelContent
     /// <param name="mimeType">The mime type of the content</param>
     public BinaryContent(
         ReadOnlyMemory<byte> data,
-        string? mimeType)
+        string mimeType)
     {
         Verify.NotNull(data, nameof(data));
         if (data.IsEmpty)

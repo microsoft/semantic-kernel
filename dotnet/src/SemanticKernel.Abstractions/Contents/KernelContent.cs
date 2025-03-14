@@ -26,8 +26,7 @@ public abstract class KernelContent
     /// <summary>
     /// MIME type of the content.
     /// </summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? MimeType { get; set; }
+    public string MimeType { get; set; }
 
     /// <summary>
     /// The inner content representation. Use this to bypass the current abstraction.
