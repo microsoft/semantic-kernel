@@ -805,7 +805,7 @@ internal sealed class MistralClient
                 }
                 else
                 {
-                    throw new ArgumentException("Document should be be send as `url` not as `base64` or `array of byte`");
+                    throw new ArgumentException("Document should be send as `url` not as `base64` or `array of byte`");
                 }
             }
             else
