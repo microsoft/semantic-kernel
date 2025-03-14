@@ -34,7 +34,7 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
     /// <inheritdoc />
     public Vector MapFromDataToStorageModel(VectorStoreGenericDataModel<string> dataModel)
     {
-        var metadata = new MetadataMap();
+        var metadata = new Metadata();
 
         // Map data properties.
         foreach (var dataProperty in this._propertyReader.DataProperties)
@@ -42,9 +42,9 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
             if (dataModel.Data.TryGetValue(dataProperty.DataModelPropertyName, out var propertyValue))
             {
                 var propertyStorageName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
-                metadata[propertyStorageName] = propertyValue == null ?
-                    new MetadataValue() :
-                    PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(propertyValue);
+                metadata[propertyStorageName] = propertyValue is not null
+                    ? PineconeVectorStoreRecordFieldMapping.ConvertToMetadataValue(propertyValue)
+                    : null;
             }
         }
 
@@ -62,8 +62,8 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
         // TODO: what about sparse values?
         var result = new Vector
         {
-            Id = (string)dataModel.Key,
-            Values = values.ToArray(),
+            Id = dataModel.Key,
+            Values = values,
             Metadata = metadata,
             SparseValues = null
         };
@@ -80,7 +80,7 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
         // Set Vector.
         if (options?.IncludeVectors is true)
         {
-            dataModel.Vectors.Add(this._propertyReader.FirstVectorPropertyName!, new ReadOnlyMemory<float>(storageModel.Values));
+            dataModel.Vectors.Add(this._propertyReader.FirstVectorPropertyName!, storageModel.Values);
         }
 
         // Set Data.
@@ -91,9 +91,10 @@ internal sealed class PineconeGenericDataModelMapper : IVectorStoreRecordMapper<
                 var propertyStorageName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
                 if (storageModel.Metadata.TryGetValue(propertyStorageName, out var propertyValue))
                 {
-                    dataModel.Data[dataProperty.DataModelPropertyName] = PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(
-                        propertyValue,
-                        dataProperty.PropertyType);
+                    dataModel.Data[dataProperty.DataModelPropertyName] =
+                        propertyValue is not null
+                        ? PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(propertyValue, dataProperty.PropertyType)
+                        : null;
                 }
             }
         }
