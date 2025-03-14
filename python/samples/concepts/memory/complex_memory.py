@@ -29,6 +29,7 @@ from semantic_kernel.connectors.memory.pinecone import PineconeCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
+from semantic_kernel.connectors.memory.sql_server import AzureSqlCollection
 from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
     VectorizableTextSearchMixin,
@@ -120,7 +121,7 @@ collection_name = "test"
 # Depending on the vector database, the index kind and distance function may need to be adjusted
 # since not all combinations are supported by all databases.
 # The values below might need to be changed for your collection to work.
-distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
+distance_function = DistanceFunction.COSINE_DISTANCE
 index_kind = IndexKind.FLAT
 DataModel = get_data_model("array", index_kind, distance_function)
 
@@ -203,6 +204,10 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection[str, DataModel]]
     "pinecone": lambda: PineconeCollection[str, DataModel](
         collection_name=collection_name,
         data_model_type=DataModel,
+    ),
+    "azure_sql": lambda: AzureSqlCollection[str, DataModel](
+        data_model_type=DataModel,
+        collection_name=collection_name,
     ),
 }
 
@@ -339,4 +344,5 @@ if __name__ == "__main__":
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     args = parser.parse_args()
+    args.collection = "azure_sql"
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))

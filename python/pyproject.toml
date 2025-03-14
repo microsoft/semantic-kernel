@@ -138,6 +138,9 @@ realtime = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
 ]
+sql = [
+    "pyodbc >= 5.2"
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
