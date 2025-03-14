@@ -41,7 +41,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
             new ChatHistory(chatMessages.Select(m => m.ToChatMessageContent())),
-            ToPromptExecutionSettings(options),
+            options.ToPromptExecutionSettings(),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
 
@@ -59,7 +59,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
             new ChatHistory(chatMessages.Select(m => m.ToChatMessageContent())),
-            ToPromptExecutionSettings(options),
+            options.ToPromptExecutionSettings(),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
         {

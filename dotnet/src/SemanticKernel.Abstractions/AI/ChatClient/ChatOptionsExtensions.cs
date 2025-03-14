@@ -11,10 +11,10 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Extensions methods for <see cref="ChatOptions"/>.
 /// </summary>
-public static class ChatOptionsExtensions
+internal static class ChatOptionsExtensions
 {
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>
-    public static PromptExecutionSettings? ToPromptExecutionSettings(this ChatOptions? options)
+    internal static PromptExecutionSettings? ToPromptExecutionSettings(this ChatOptions? options)
     {
         if (options is null)
         {
