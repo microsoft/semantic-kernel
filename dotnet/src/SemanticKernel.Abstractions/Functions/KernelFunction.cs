@@ -528,7 +528,7 @@ public abstract class KernelFunction
             this._kernel = kernel;
             this.Name = string.IsNullOrWhiteSpace(kernelFunction.PluginName) ?
                 kernelFunction.Name :
-                $"{kernelFunction.PluginName}-{kernelFunction.Name}";
+                $"{kernelFunction.PluginName}_{kernelFunction.Name}";
 
             this.JsonSchema = BuildFunctionSchema(kernelFunction);
         }
