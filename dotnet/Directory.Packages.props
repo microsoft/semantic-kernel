@@ -33,6 +33,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.41.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.41.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.41.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.41.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.10" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />

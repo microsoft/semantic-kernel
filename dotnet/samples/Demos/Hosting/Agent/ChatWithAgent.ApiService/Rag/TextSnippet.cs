@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel.Data;
 
 namespace ChatWithAgent.ApiService;
 
@@ -15,9 +16,11 @@ internal sealed class TextSnippet<TKey>
     public required TKey Key { get; set; }
 
     [VectorStoreRecordData]
+    [TextSearchResultValue]
     public string? Text { get; set; }
 
     [VectorStoreRecordData]
+    [TextSearchResultName]
     public string? ReferenceDescription { get; set; }
 
     [VectorStoreRecordVector(1536)]

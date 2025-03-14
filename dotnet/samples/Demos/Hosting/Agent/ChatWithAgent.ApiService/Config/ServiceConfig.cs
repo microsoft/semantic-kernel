@@ -10,7 +10,6 @@ namespace ChatWithAgent.ApiService.Config;
 /// </summary>
 public sealed class ServiceConfig
 {
-    private readonly AgentConfig _agentConfig = new();
     private readonly HostConfig _hostConfig;
 
     /// <summary>
@@ -19,17 +18,8 @@ public sealed class ServiceConfig
     /// <param name="configurationManager">The configuration manager.</param>
     public ServiceConfig(ConfigurationManager configurationManager)
     {
-        configurationManager
-            .GetSection(AgentConfig.ConfigSectionName)
-            .Bind(this._agentConfig);
-
         this._hostConfig = new HostConfig(configurationManager);
     }
-
-    /// <summary>
-    /// Agent configuration.
-    /// </summary>
-    public AgentConfig Agent => this._agentConfig;
 
     /// <summary>
     /// Host configuration.

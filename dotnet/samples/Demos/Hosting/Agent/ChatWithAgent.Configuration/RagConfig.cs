@@ -10,6 +10,11 @@ namespace ChatWithAgent.Configuration;
 public sealed class RagConfig
 {
     /// <summary>
+    /// Configuration section name.
+    /// </summary>
+    public const string ConfigSectionName = "RagConfig";
+
+    /// <summary>
     /// The AI embeddings service to use.
     /// </summary>
     [Required]

@@ -35,6 +35,8 @@ public sealed class HostConfig
 
     private readonly OpenAIEmbeddingsConfig _openAIEmbeddingsConfig = new();
 
+    private readonly RagConfig _ragConfig = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HostConfig"/> class.
     /// </summary>
@@ -53,6 +55,9 @@ public sealed class HostConfig
         configurationManager
             .GetSection($"{AIServicesSectionName}:{OpenAIEmbeddingsConfig.ConfigSectionName}")
             .Bind(this._openAIEmbeddingsConfig);
+        configurationManager
+            .GetSection($"{AIServicesSectionName}:{RagConfig.ConfigSectionName}")
+            .Bind(this._ragConfig);
         configurationManager
             .Bind(this);
 
@@ -88,5 +93,5 @@ public sealed class HostConfig
     /// <summary>
     /// The RAG configuration.
     /// </summary>
-    public RagConfig? Rag { get; set; }
+    public RagConfig Rag => this._ragConfig;
 }
