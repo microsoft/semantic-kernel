@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 
-namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
 /// Extensions associated with <see cref="AmazonBedrockAgentClient"/>

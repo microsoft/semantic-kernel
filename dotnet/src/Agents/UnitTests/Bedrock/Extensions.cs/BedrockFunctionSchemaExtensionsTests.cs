@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+using Microsoft.SemanticKernel.Agents.Bedrock;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Bedrock.Extensions;

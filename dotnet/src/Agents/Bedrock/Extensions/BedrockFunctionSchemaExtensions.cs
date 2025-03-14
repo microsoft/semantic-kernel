@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime.Model;
 
-namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
 /// Extensions associated with the status of a <see cref="BedrockAgent"/>.
