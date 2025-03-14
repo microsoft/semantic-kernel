@@ -82,6 +82,8 @@ internal sealed class PdfLoader<TKey>(
 
             await foreach (var key in upsertedKeys.ConfigureAwait(false))
             {
+                // Consider dropping this logging in favor of the vector store's built-in logging, which will be available under LogLevel.Debug
+                // out-of-the-box once the telemetry implementation for vector stores is complete. 
                 if (logger.IsEnabled(LogLevel.Information))
                 {
                     logger.LogInformation("Upserted record {Key} into VectorDB", key);

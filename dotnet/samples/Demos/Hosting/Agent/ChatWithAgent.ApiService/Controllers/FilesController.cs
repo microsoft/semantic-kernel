@@ -14,7 +14,6 @@ namespace ChatWithAgent.ApiService;
 /// </summary>
 [ApiController]
 [Route("files")]
-
 public sealed class FilesController : ControllerBase
 {
     private readonly IDataLoader _dataLoader;
