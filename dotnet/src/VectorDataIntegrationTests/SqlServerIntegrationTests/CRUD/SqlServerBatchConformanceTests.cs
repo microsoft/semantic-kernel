@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SqlServerIntegrationTests.CRUD;
 
-public class SqlServerBatchConformanceTests(SqlServerFixture fixture)
-    : BatchConformanceTests<string>(fixture), IClassFixture<SqlServerFixture>
+public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
+    : BatchConformanceTests<string>(fixture), IClassFixture<SqlServerSimpleModelFixture>
 {
 }
