@@ -37,9 +37,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
-    /// <summary>Command builder for queries in SQLite database.</summary>
-    private readonly SqliteVectorStoreCollectionCommandBuilder _commandBuilder;
-
     /// <summary>Contains helpers for reading vector store model properties and their attributes.</summary>
     private readonly VectorStoreRecordPropertyReader _propertyReader;
 
@@ -115,8 +112,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         this._vectorTableStoragePropertyNames = new(() => [this._propertyReader.KeyPropertyStoragePropertyName, .. this._propertyReader.VectorPropertyStoragePropertyNames]);
 
         this._mapper = this.InitializeMapper();
-
-        this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder();
     }
 
     /// <inheritdoc />
@@ -125,7 +120,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "TableCount";
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        using var command = this._commandBuilder.BuildTableCountCommand(connection, this._dataTableName);
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildTableCountCommand(connection, this._dataTableName);
 
         var result = await this
             .RunOperationAsync(OperationName, () => command.ExecuteScalarAsync(cancellationToken))
@@ -243,7 +238,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         await foreach (var record in this.InternalGetBatchAsync(connection, keys, options, cancellationToken).ConfigureAwait(false))
@@ -260,7 +255,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         await foreach (var record in this.InternalUpsertBatchAsync<ulong>(connection, records, cancellationToken)
@@ -296,7 +291,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<string> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         await foreach (var record in this.InternalGetBatchAsync(connection, keys, options, cancellationToken).ConfigureAwait(false))
@@ -374,7 +369,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        using var command = this._commandBuilder.BuildSelectLeftJoinCommand(
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
             connection,
             this._vectorTableName,
             this._dataTableName,
@@ -444,7 +439,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "CreateTable";
 
-        using var command = this._commandBuilder.BuildCreateTableCommand(connection, tableName, columns, ifNotExists);
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildCreateTableCommand(connection, tableName, columns, ifNotExists);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
@@ -453,7 +448,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "CreateVirtualTable";
 
-        using var command = this._commandBuilder.BuildCreateVirtualTableCommand(connection, tableName, columns, ifNotExists, extensionName);
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildCreateVirtualTableCommand(connection, tableName, columns, ifNotExists, extensionName);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
@@ -462,7 +457,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     {
         const string OperationName = "DropTable";
 
-        using var command = this._commandBuilder.BuildDropTableCommand(connection, tableName);
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildDropTableCommand(connection, tableName);
 
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
@@ -520,7 +515,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         if (includeVectors)
         {
-            command = this._commandBuilder.BuildSelectLeftJoinCommand(
+            command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
                 connection,
                 this._dataTableName,
                 this._vectorTableName,
@@ -533,7 +528,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
         else
         {
-            command = this._commandBuilder.BuildSelectCommand(
+            command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectCommand(
                 connection,
                 this._dataTableName,
                 this._dataTableStoragePropertyNames.Value,
@@ -608,14 +603,14 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         {
             // Deleting vector records first since current version of vector search extension
             // doesn't support Upsert operation, only Delete/Insert.
-            using var vectorDeleteCommand = this._commandBuilder.BuildDeleteCommand(
+            using var vectorDeleteCommand = SqliteVectorStoreCollectionCommandBuilder.BuildDeleteCommand(
                 connection,
                 this._vectorTableName,
                 [condition]);
 
             await vectorDeleteCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 
-            using var vectorInsertCommand = this._commandBuilder.BuildInsertCommand(
+            using var vectorInsertCommand = SqliteVectorStoreCollectionCommandBuilder.BuildInsertCommand(
                 connection,
                 this._vectorTableName,
                 this._propertyReader.KeyPropertyStoragePropertyName,
@@ -625,7 +620,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             await vectorInsertCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        using var dataCommand = this._commandBuilder.BuildInsertCommand(
+        using var dataCommand = SqliteVectorStoreCollectionCommandBuilder.BuildInsertCommand(
             connection,
             this._dataTableName,
             this._propertyReader.KeyPropertyStoragePropertyName,
@@ -680,7 +675,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         if (this._vectorPropertiesExist)
         {
-            using var vectorCommand = this._commandBuilder.BuildDeleteCommand(
+            using var vectorCommand = SqliteVectorStoreCollectionCommandBuilder.BuildDeleteCommand(
                 connection,
                 this._vectorTableName,
                 [condition]);
@@ -688,7 +683,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             tasks.Add(this.RunOperationAsync(OperationName, () => vectorCommand.ExecuteNonQueryAsync(cancellationToken)));
         }
 
-        using var dataCommand = this._commandBuilder.BuildDeleteCommand(
+        using var dataCommand = SqliteVectorStoreCollectionCommandBuilder.BuildDeleteCommand(
             connection,
             this._dataTableName,
             [condition]);

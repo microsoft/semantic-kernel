@@ -15,9 +15,9 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// Command builder for queries in SQLite database.
 /// </summary>
 [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "User input is passed using command parameters.")]
-internal sealed class SqliteVectorStoreCollectionCommandBuilder
+internal static class SqliteVectorStoreCollectionCommandBuilder
 {
-    public DbCommand BuildTableCountCommand(SqliteConnection connection, string tableName)
+    public static DbCommand BuildTableCountCommand(SqliteConnection connection, string tableName)
     {
         Verify.NotNullOrWhiteSpace(tableName);
 
@@ -35,7 +35,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildCreateTableCommand(SqliteConnection connection, string tableName, IReadOnlyList<SqliteColumn> columns, bool ifNotExists)
+    public static DbCommand BuildCreateTableCommand(SqliteConnection connection, string tableName, IReadOnlyList<SqliteColumn> columns, bool ifNotExists)
     {
         var builder = new StringBuilder();
 
@@ -51,7 +51,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildCreateVirtualTableCommand(
+    public static DbCommand BuildCreateVirtualTableCommand(
         SqliteConnection connection,
         string tableName,
         IReadOnlyList<SqliteColumn> columns,
@@ -72,7 +72,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildDropTableCommand(SqliteConnection connection, string tableName)
+    public static DbCommand BuildDropTableCommand(SqliteConnection connection, string tableName)
     {
         string query = $"DROP TABLE [{tableName}];";
 
@@ -83,7 +83,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildInsertCommand(
+    public static DbCommand BuildInsertCommand(
         SqliteConnection connection,
         string tableName,
         string rowIdentifier,
@@ -120,7 +120,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildSelectCommand(
+    public static DbCommand BuildSelectCommand(
         SqliteConnection connection,
         string tableName,
         IReadOnlyList<string> columnNames,
@@ -129,7 +129,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        var (command, whereClause) = this.GetCommandWithWhereClause(connection, conditions);
+        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
 
         builder.AppendLine($"SELECT {string.Join(", ", columnNames)}");
         builder.AppendLine($"FROM {tableName}");
@@ -142,7 +142,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildSelectLeftJoinCommand(
+    public static DbCommand BuildSelectLeftJoinCommand(
         SqliteConnection connection,
         string leftTable,
         string rightTable,
@@ -162,7 +162,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
             .. rightTablePropertyNames.Select(property => $"{rightTable}.{property}"),
         ];
 
-        var (command, whereClause) = this.GetCommandWithWhereClause(connection, conditions, extraWhereFilter, extraParameters);
+        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, extraWhereFilter, extraParameters);
 
         builder.AppendLine($"SELECT {string.Join(", ", propertyNames)}");
         builder.AppendLine($"FROM {leftTable} ");
@@ -176,14 +176,14 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public DbCommand BuildDeleteCommand(
+    public static DbCommand BuildDeleteCommand(
         SqliteConnection connection,
         string tableName,
         List<SqliteWhereCondition> conditions)
     {
         var builder = new StringBuilder();
 
-        var (command, whereClause) = this.GetCommandWithWhereClause(connection, conditions);
+        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
 
         builder.AppendLine($"DELETE FROM [{tableName}]");
 
@@ -232,7 +232,7 @@ internal sealed class SqliteVectorStoreCollectionCommandBuilder
         return string.Join(" ", columnDefinitionParts);
     }
 
-    private (DbCommand Command, string WhereClause) GetCommandWithWhereClause(
+    private static (DbCommand Command, string WhereClause) GetCommandWithWhereClause(
         SqliteConnection connection,
         List<SqliteWhereCondition> conditions,
         string? extraWhereFilter = null,

@@ -15,13 +15,11 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 {
     private readonly SqliteCommand _command;
     private readonly SqliteConnection _connection;
-    private readonly SqliteVectorStoreCollectionCommandBuilder _commandBuilder;
 
     public SqliteVectorStoreCollectionCommandBuilderTests()
     {
         this._command = new() { Connection = this._connection };
         this._connection = new();
-        this._commandBuilder = new();
     }
 
     [Fact]
@@ -31,7 +29,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         const string TableName = "TestTable";
 
         // Act
-        var command = this._commandBuilder.BuildTableCountCommand(this._connection, TableName);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildTableCountCommand(this._connection, TableName);
 
         // Assert
         Assert.Equal("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=@tableName;", command.CommandText);
@@ -54,7 +52,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = this._commandBuilder.BuildCreateTableCommand(this._connection, TableName, columns, ifNotExists);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildCreateTableCommand(this._connection, TableName, columns, ifNotExists);
 
         // Assert
         Assert.Contains("CREATE TABLE", command.CommandText);
@@ -82,7 +80,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = this._commandBuilder.BuildCreateVirtualTableCommand(this._connection, TableName, columns, ifNotExists, ExtensionName);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildCreateVirtualTableCommand(this._connection, TableName, columns, ifNotExists, ExtensionName);
 
         // Assert
         Assert.Contains("CREATE VIRTUAL TABLE", command.CommandText);
@@ -102,7 +100,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         const string TableName = "TestTable";
 
         // Act
-        var command = this._commandBuilder.BuildDropTableCommand(this._connection, TableName);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildDropTableCommand(this._connection, TableName);
 
         // Assert
         Assert.Equal("DROP TABLE [TestTable];", command.CommandText);
@@ -125,7 +123,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = this._commandBuilder.BuildInsertCommand(
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildInsertCommand(
             this._connection,
             TableName,
             RowIdentifier,
@@ -183,7 +181,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = this._commandBuilder.BuildSelectCommand(this._connection, TableName, columnNames, conditions, orderByPropertyName);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectCommand(this._connection, TableName, columnNames, conditions, orderByPropertyName);
 
         // Assert
         Assert.Contains("SELECT Id, Name, Age, Address", command.CommandText);
@@ -228,7 +226,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = this._commandBuilder.BuildSelectLeftJoinCommand(
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
             this._connection,
             LeftTable,
             RightTable,
@@ -277,7 +275,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         };
 
         // Act
-        var command = this._commandBuilder.BuildDeleteCommand(this._connection, TableName, conditions);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildDeleteCommand(this._connection, TableName, conditions);
 
         // Assert
         Assert.Contains("DELETE FROM [TestTable]", command.CommandText);
