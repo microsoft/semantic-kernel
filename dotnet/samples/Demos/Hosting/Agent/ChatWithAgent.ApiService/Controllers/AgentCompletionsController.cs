@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -41,6 +42,8 @@ public sealed class AgentCompletionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CompleteAsync([FromBody] AgentCompletionRequest request, CancellationToken cancellationToken)
     {
+        ValidateChatHistory(request.ChatHistory);
+
         // Add the "question" argument used in the agent template.
         var arguments = new KernelArguments
         {
@@ -88,6 +91,21 @@ public sealed class AgentCompletionsController : ControllerBase
         await foreach (StreamingChatMessageContent item in content.ConfigureAwait(false))
         {
             yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Validates the chat history.
+    /// </summary>
+    /// <param name="chatHistory">The chat history to validate.</param>
+    private static void ValidateChatHistory(ChatHistory chatHistory)
+    {
+        foreach (ChatMessageContent content in chatHistory)
+        {
+            if (content.Role == AuthorRole.System)
+            {
+                throw new ArgumentException("A system message is provided by the agent and should not be included in the chat history.");
+            }
         }
     }
 }
