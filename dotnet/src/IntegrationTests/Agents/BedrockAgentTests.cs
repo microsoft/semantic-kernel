@@ -312,8 +312,8 @@ Dolphin  2")]
 
         public sealed class MenuItem
         {
-            public string Category { get; init; }
-            public string Name { get; init; }
+            public required string Category { get; init; }
+            public required string Name { get; init; }
             public float Price { get; init; }
             public bool IsSpecial { get; init; }
         }
