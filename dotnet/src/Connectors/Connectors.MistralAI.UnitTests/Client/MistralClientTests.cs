@@ -622,6 +622,149 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(settings.ResponseFormat, clonedMistralAISettings.ResponseFormat);
     }
 
+    [Fact]
+    public void ValidateToMistralChatMessagesWithArrayOfByteBinaryContent()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+            [
+                new BinaryContent(data:new byte[] { 1, 2, 3 },mimeType:"application/pdf")
+            ],
+        };
+
+        // Act
+        // Assert
+        Assert.Throws<ArgumentException>(() => client.ToMistralChatMessages(chatMessage, default));
+    }
+
+    [Fact]
+    public void ValidateToMistralChatMessagesWithBase64BinaryContent()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+            [
+                new BinaryContent(dataUri:"data:application/pdf:base64,sdfghjyswedfghjjhertgiutdgbg")
+            ],
+        };
+
+        // Act
+        // Assert
+        Assert.Throws<ArgumentException>(() => client.ToMistralChatMessages(chatMessage, default));
+    }
+
+    [Fact]
+    public void ValidateToMistralChatMessagesWithUrlBinaryContent()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+            [
+                new BinaryContent(new Uri("https://arxiv.org/pdf/1805.04770"))
+            ],
+        };
+
+        // Act
+        var message = client.ToMistralChatMessages(chatMessage, default);
+        var contents = message[0].Content as List<ContentChunk>;
+        var content = contents![0] as DocumentUrlChunk;
+
+        // Assert
+        Assert.NotNull(message);
+        Assert.Single(message);
+        Assert.IsType<MistralChatMessage>(message[0]);
+        Assert.Equal("user", message[0].Role);
+
+        Assert.IsType<List<ContentChunk>>(message[0].Content);
+        Assert.NotNull(contents);
+        Assert.Single(contents);
+
+        Assert.IsType<DocumentUrlChunk>(content);
+        Assert.NotNull(content);
+        Assert.Equal("https://arxiv.org/pdf/1805.04770", content.DocumentUrl);
+        Assert.Equal("document_url",content.Type);
+    }
+
+    [Fact]
+    public async Task ValidateToMistralChatMessagesWithDocumentRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateMistralClient("mistral-small-latest", "https://api.mistral.ai/v1/chat/completions", "chat_completions_response_with_document.json");
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(
+                AuthorRole.User,
+                [
+                    new TextContent("Summarize the document for me."),
+                    new BinaryContent(new Uri("https://arxiv.org/pdf/1805.04770"))
+                ]),
+        };
+
+        // Act
+        var executionSettings = new MistralAIPromptExecutionSettings {DocumentPageLimit = 64, DocumentImageLimit = 8};
+        await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
+        var request = this.DelegatingHandler!.RequestContent;
+
+        // Assert
+        Assert.NotNull(request);
+        var chatRequest = JsonSerializer.Deserialize<ChatCompletionRequest>(request);
+        Assert.NotNull(chatRequest);
+        Assert.Equal("mistral-small-latest", chatRequest.Model);
+        Assert.Single(chatRequest.Messages);
+        Assert.Equal("user", chatRequest.Messages[0].Role);
+        Assert.NotNull(chatRequest.Messages[0].Content);
+
+        // Assert
+        var content = JsonSerializer.Serialize(chatRequest.Messages[0].Content);
+        string json = "[{\"text\":\"Summarize the document for me.\",\"type\":\"text\"},{\"document_url\":\"https://arxiv.org/pdf/1805.04770\",\"type\":\"document_url\"}]";
+        Assert.Equal(json,content);
+    }
+
+    [Fact]
+    public async Task ValidateToMistralChatMessagesWithDocumentResponseAsync()
+    {
+        // Arrange
+        var client = this.CreateMistralClient("mistral-small-latest", "https://api.mistral.ai/v1/chat/completions", "chat_completions_response_with_document.json");
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(
+                AuthorRole.User,
+                [
+                    new TextContent("Summarize the document for me."),
+                    new BinaryContent(new Uri("https://arxiv.org/pdf/1805.04770"))
+                ]),
+        };
+
+        // Act
+        var executionSettings = new MistralAIPromptExecutionSettings {DocumentPageLimit = 64, DocumentImageLimit = 8};
+        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Equal("The document titled \"Born-Again Neural Networks\" explores the concept of Knowledge Distillation (KD) in the context of neural networks, focusing on the idea of training student networks that have the same architecture as their teacher networks. The authors propose a method called Born-Again Networks (BANs), where a student network is trained to mimic the output distribution of a teacher network, leading to improved performance.\n\n### Key Points:\n\n1. **Knowledge Distillation (KD)**:\n   - KD involves transferring knowledge from a high-capacity teacher model to a more compact student model.\n   - The goal is to achieve high performance in the student model without sacrificing too much accuracy.\n\n2. **Born-Again Networks (BANs)**:\n   - BANs are student networks trained to match the output distribution of their teacher networks.\n   - The authors found that BANs can outperform their teachers significantly, both in computer vision and language modeling tasks.\n   - Experiments with DenseNets on CIFAR-10 and CIFAR-100 datasets show state-of-the-art performance.\n\n3. **Distillation Objectives**:\n   - **Confidence-Weighted by Teacher Max (CWTM)**: Weights each example in the student's loss function by the confidence of the teacher model.\n   - **Dark Knowledge with Permuted Predictions (DKPP)**: Permutes the non-argmax outputs of the teacher's predicted distribution to explore the contribution of dark knowledge.\n\n4. **Experiments and Results**:\n   - BANs were applied to DenseNets, ResNets, and LSTM-based sequence models, consistently showing lower validation errors than their teachers.\n   - The authors also explored the transfer of knowledge from DenseNet teachers to ResNet students and vice versa, demonstrating that weak masters can still improve student performance.\n\n5. **Discussion**:\n   - The authors draw parallels to Marvin Minsky's \"Sequence of Teaching Selves,\" suggesting that the concept of training new models under the guidance of older models can be applied to artificial neural networks.\n   - The work highlights the potential of KD in improving model performance without the need for model compression.\n\n### Conclusion:\nThe document presents a novel approach to KD, demonstrating that training student networks to mimic their teacher networks can lead to significant performance improvements. The experiments and results support the effectiveness of BANs in various neural network architectures and tasks.", response[0].Content);
+        Assert.Equal("mistral-small-latest", response[0].ModelId);
+        Assert.Equal(AuthorRole.Assistant, response[0].Role);
+        Assert.NotNull(response[0].Metadata);
+        Assert.Equal(7, response[0].Metadata?.Count);
+        Assert.NotNull(response[0].Metadata?["Usage"]);
+    }
+
     public sealed class WeatherPlugin
     {
         [KernelFunction]
