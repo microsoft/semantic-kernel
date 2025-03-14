@@ -28,4 +28,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Gets included multiple times, causing CS1685 on RuntimeHelpers (and not really needed in this project) -->
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+  </ItemGroup>
 </Project>

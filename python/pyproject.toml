@@ -37,7 +37,7 @@ dependencies = [
     "openai ~= 1.61",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
-    "websockets >= 13, < 15",
+    "websockets >= 13, < 16",
     "aiortc>=1.9.0",
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
@@ -48,6 +48,8 @@ dependencies = [
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
     "scipy>=1.15.1",
+    "websockets >= 13, < 15",
+    "aiortc>=1.9.0",
 ]
 
 ### Optional dependencies
@@ -57,7 +59,7 @@ autogen = [
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
-    "azure-ai-projects == 1.0.0b5",
+    "azure-ai-projects >= 1.0.0b7",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
     "azure-identity ~= 1.13",
@@ -67,7 +69,7 @@ chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform == 1.82.0",
+    "google-cloud-aiplatform == 1.83.0",
     "google-generativeai ~= 0.8"
 ]
 faiss = [
@@ -102,7 +104,7 @@ anthropic = [
     "anthropic ~= 0.32"
 ]
 pinecone = [
-    "pinecone-client ~= 5.0"
+    "pinecone[asyncio, grpc] ~= 6.0"
 ]
 postgres = [
     "psycopg[binary,pool] ~= 3.2"
@@ -134,7 +136,7 @@ dapr = [
     "flask-dapr>=1.14.0"
 ]
 realtime = [
-    "websockets >= 13, < 15",
+    "websockets >= 13, < 16",
     "aiortc>=1.9.0",
 ]
 

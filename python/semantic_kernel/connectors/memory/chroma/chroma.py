@@ -35,6 +35,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
 
+TKey = TypeVar("TKey", bound="str")
 TModel = TypeVar("TModel")
 
 DISTANCE_FUNCTION_MAP = {
@@ -46,9 +47,9 @@ DISTANCE_FUNCTION_MAP = {
 
 @experimental
 class ChromaCollection(
-    VectorSearchBase[str, TModel],
+    VectorSearchBase[TKey, TModel],
     VectorizedSearchMixin[TModel],
-    Generic[TModel],
+    Generic[TKey, TModel],
 ):
     """Chroma vector store collection."""
 

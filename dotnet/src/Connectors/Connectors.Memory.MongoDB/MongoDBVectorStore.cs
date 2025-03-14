@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public sealed class MongoDBVectorStore : IVectorStore
+public class MongoDBVectorStore : IVectorStore
 {
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -37,13 +37,15 @@ public sealed class MongoDBVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
+#pragma warning disable CS0618 // IMongoDBVectorStoreRecordCollectionFactoryß is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(this._mongoDatabase, name, vectorStoreRecordDefinition);
         }
+#pragma warning restore CS0618
 
         if (typeof(TKey) != typeof(string))
         {
@@ -59,7 +61,7 @@ public sealed class MongoDBVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var cursor = await this._mongoDatabase
             .ListCollectionNamesAsync(cancellationToken: cancellationToken)

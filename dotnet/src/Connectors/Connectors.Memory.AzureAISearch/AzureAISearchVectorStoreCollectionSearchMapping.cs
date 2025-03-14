@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </summary>
 internal static class AzureAISearchVectorStoreCollectionSearchMapping
 {
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Build an OData filter string from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
@@ -19,10 +20,10 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <returns>The OData filter string.</returns>
     /// <exception cref="InvalidOperationException">Thrown when a provided filter value is not supported.</exception>
-    public static string BuildFilterString(VectorSearchFilter? basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
+    public static string BuildLegacyFilterString(VectorSearchFilter basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         var filterString = string.Empty;
-        if (basicVectorSearchFilter?.FilterClauses is not null)
+        if (basicVectorSearchFilter.FilterClauses is not null)
         {
             // Map Equality clauses.
             var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualToFilterClause>().Select(x =>
@@ -60,6 +61,7 @@ internal static class AzureAISearchVectorStoreCollectionSearchMapping
 
         return filterString;
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Gets the name of the name under which the property with the given name is stored.

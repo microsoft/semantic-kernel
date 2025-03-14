@@ -3,7 +3,7 @@
 import asyncio
 import sys
 from collections.abc import Sequence
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -54,6 +54,7 @@ class AzureCosmosDBNoSQLCollection(
     VectorSearchBase[TKey, TModel],
     VectorizedSearchMixin[TModel],
     VectorTextSearchMixin[TModel],
+    Generic[TKey, TModel],
 ):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 

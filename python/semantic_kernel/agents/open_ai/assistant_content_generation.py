@@ -476,3 +476,20 @@ def generate_streaming_annotation_content(
         start_index=annotation.start_index,
         end_index=annotation.end_index,
     )
+
+
+@experimental
+def generate_function_call_streaming_content(
+    agent_name: str,
+    fccs: list[FunctionCallContent],
+) -> StreamingChatMessageContent:
+    """Generate function call content.
+
+    Args:
+        agent_name: The agent name.
+        fccs: The function call contents.
+
+    Returns:
+        StreamingChatMessageContent: The chat message content containing the function call content as the items.
+    """
+    return StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, name=agent_name, items=fccs)  # type: ignore
