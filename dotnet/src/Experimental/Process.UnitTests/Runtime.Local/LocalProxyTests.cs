@@ -37,24 +37,32 @@ public class LocalProxyTests
         Kernel kernel = new();
 
         // Act
-        LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient);
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        {
+            // Assert
+            var runningProcessId = await processContext.GetProcessIdAsync();
 
-        // Assert
-        Assert.NotNull(mockProxyClient);
-        Assert.Equal(1, mockProxyClient.InitializationCounter);
-        Assert.Single(mockProxyClient.CloudEvents);
-        Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-        Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
+            Assert.NotNull(mockProxyClient);
+            Assert.Equal(1, mockProxyClient.InitializationCounter);
+            Assert.Equal(0, mockProxyClient.UninitializationCounter);
+            Assert.Single(mockProxyClient.CloudEvents);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
 
-        // Act
-        await processContext.SendEventAsync(new() { Id = this._startProcessEvent, Data = null });
+            // Act
+            await processContext.SendEventAsync(new() { Id = this._startProcessEvent, Data = null });
 
-        // Assert
-        Assert.NotNull(mockProxyClient);
-        Assert.Equal(1, mockProxyClient.InitializationCounter);
-        Assert.Equal(2, mockProxyClient.CloudEvents.Count);
-        Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-        Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+            // Assert
+            Assert.NotNull(mockProxyClient);
+            Assert.Equal(1, mockProxyClient.InitializationCounter);
+            Assert.Equal(0, mockProxyClient.UninitializationCounter);
+            Assert.Equal(2, mockProxyClient.CloudEvents.Count);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+        }
+        Assert.Equal(1, mockProxyClient.UninitializationCounter);
     }
 
     /// <summary>
@@ -77,8 +85,8 @@ public class LocalProxyTests
     }
 
     /// <summary>
-    /// Validates the <see cref="LocalProxy"/> result as the first step in the process
-    /// and with a step as the map operation.
+    /// Validates the <see cref="LocalProxy"/> emits different topics from
+    /// different steps
     /// </summary>
     [Fact]
     public async Task ProcessWithCyclesAndProxyWithTwoTopicsAsync()
@@ -86,7 +94,138 @@ public class LocalProxyTests
         // Arrange
         CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
-        ProcessBuilder process = new(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
+        ProcessBuilder process = this.GetSampleProcessWithProxyEmittingTwoTopics(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        {
+            // Assert
+            var runningProcessId = await processContext.GetProcessIdAsync();
+
+            Assert.NotNull(mockProxyClient);
+            Assert.True(0 < mockProxyClient.InitializationCounter);
+            Assert.Equal(0, mockProxyClient.UninitializationCounter);
+            Assert.Equal(3, mockProxyClient.CloudEvents.Count);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+        }
+
+        // Assert
+        Assert.Equal(1, mockProxyClient.UninitializationCounter);
+    }
+
+    /// <summary>
+    /// Validates the <see cref="LocalProxy"/> emits different topics from
+    /// different steps from a nested process
+    /// </summary>
+    [Fact]
+    public async Task ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync()
+    {
+        // Arrange
+        CommonSteps.CountStep.Index = 0;
+        var mockProxyClient = new MockCloudEventClient();
+        ProcessBuilder process = new(nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync));
+        var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner-{nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync)}"));
+
+        process
+            .OnInputEvent(this._startProcessEvent)
+            .SendEventTo(innerProcess.WhereInputEventIs(this._startProcessEvent));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        {
+            // Assert
+            var runningProcessId = await processContext.GetProcessIdAsync();
+
+            Assert.NotNull(mockProxyClient);
+            Assert.True(0 < mockProxyClient.InitializationCounter);
+            Assert.Equal(0, mockProxyClient.UninitializationCounter);
+            Assert.Equal(3, mockProxyClient.CloudEvents.Count);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+        }
+
+        // Assert
+        Assert.Equal(1, mockProxyClient.UninitializationCounter);
+    }
+
+    /// <summary>
+    /// Validates the <see cref="LocalProxy"/> emits different topics from
+    /// different steps from a deep nested process
+    /// </summary>
+    [Fact]
+    public async Task ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync()
+    {
+        // Arrange
+        CommonSteps.CountStep.Index = 0;
+        var mockProxyClient = new MockCloudEventClient();
+        ProcessBuilder process = new(nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync));
+        var innerProcess = process.AddStepFromProcess(
+            this.GetNestedProcess(
+                processName: $"Inner1-{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}",
+                internalProcess: this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner2-{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}"),
+                inputEventName: this._startProcessEvent));
+
+        process
+            .OnInputEvent(this._startProcessEvent)
+            .SendEventTo(innerProcess.WhereInputEventIs(this._startProcessEvent));
+
+        KernelProcess processInstance = process.Build();
+        Kernel kernel = new();
+
+        // Act
+        await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
+        {
+            // Assert
+            var runningProcessId = await processContext.GetProcessIdAsync();
+
+            Assert.NotNull(mockProxyClient);
+            Assert.True(0 < mockProxyClient.InitializationCounter);
+            Assert.Equal(0, mockProxyClient.UninitializationCounter);
+            Assert.Equal(3, mockProxyClient.CloudEvents.Count);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+        }
+
+        // Assert
+        Assert.Equal(1, mockProxyClient.UninitializationCounter);
+    }
+
+    private ProcessBuilder GetNestedProcess(string processName, ProcessBuilder internalProcess, string inputEventName)
+    {
+        ProcessBuilder process = new(processName);
+        var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner-{processName}"));
+
+        process
+            .OnInputEvent(inputEventName)
+            .SendEventTo(innerProcess.WhereInputEventIs(inputEventName));
+
+        return process;
+    }
+
+    private ProcessBuilder GetSampleProcessWithProxyEmittingTwoTopics(string processName)
+    {
+        ProcessBuilder process = new(processName);
 
         var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
         var evenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>();
@@ -110,22 +249,7 @@ public class LocalProxyTests
             .OnEvent(CommonSteps.EvenNumberDetectorStep.OutputEvents.EvenNumber)
             .EmitExternalEvent(proxyStep, this._topic2);
 
-        KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
-
-        // Act
-        LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient);
-
-        // Assert
-        Assert.NotNull(mockProxyClient);
-        Assert.True(0 < mockProxyClient.InitializationCounter);
-        Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-        Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-        Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-        Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-        Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-        Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-        Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+        return process;
     }
 
     private async Task<LocalKernelProcessContext> RunProcessAsync(Kernel kernel, KernelProcess process, object? input, string inputEvent, IExternalKernelProcessMessageChannel? externalMessageChannel)
