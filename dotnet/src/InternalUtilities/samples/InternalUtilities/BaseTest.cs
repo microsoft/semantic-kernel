@@ -3,10 +3,13 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 public abstract class BaseTest : TextWriter
 {
@@ -76,6 +79,37 @@ public abstract class BaseTest : TextWriter
                 TestConfiguration.AzureOpenAI.Endpoint,
                 new AzureCliCredential());
         }
+    }
+
+    protected IChatClient AddChatClientToKernel(IKernelBuilder builder)
+    {
+        IChatClient chatClient;
+        if (this.UseOpenAIConfig)
+        {
+            chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
+                new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey),
+                TestConfiguration.OpenAI.ChatModelId);
+        }
+        else if (!string.IsNullOrEmpty(this.ApiKey))
+        {
+            chatClient = new AzureOpenAIChatCompletionService(
+                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    apiKey: TestConfiguration.AzureOpenAI.ApiKey,
+                    endpoint: TestConfiguration.AzureOpenAI.Endpoint)
+                .AsChatClient();
+        }
+        else
+        {
+            chatClient = new AzureOpenAIChatCompletionService(
+                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    endpoint: TestConfiguration.AzureOpenAI.Endpoint,
+                    credentials: new AzureCliCredential())
+                .AsChatClient();
+        }
+
+        builder.Services.AddTransient<IChatClient>((sp) => chatClient!);
+
+        return chatClient;
     }
 
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)

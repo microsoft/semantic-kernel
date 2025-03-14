@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.Extensions.AI;
 
-namespace Microsoft.Extensions.AI;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 internal static class ChatMessageExtensions
 {

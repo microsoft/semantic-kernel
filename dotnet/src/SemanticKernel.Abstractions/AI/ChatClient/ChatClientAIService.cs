@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Allow <see cref="IChatClient"/> to be used as an <see cref="IAIService"/> in a <see cref="IAIServiceSelector"/>
