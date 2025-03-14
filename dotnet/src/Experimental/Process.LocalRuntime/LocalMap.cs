@@ -98,7 +98,7 @@ internal sealed class LocalMap : LocalStep
         {
             foreach (var operation in mapOperations)
             {
-                operation.ProcessContext.Dispose();
+                await operation.ProcessContext.DisposeAsync().ConfigureAwait(false);
             }
         }
     }

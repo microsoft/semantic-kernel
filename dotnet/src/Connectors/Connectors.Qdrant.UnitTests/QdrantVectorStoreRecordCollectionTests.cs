@@ -510,10 +510,7 @@ public class QdrantVectorStoreRecordCollectionTests
         var model = CreateModel(UlongTestRecordKey1, true);
 
         // Act
-        await sut.UpsertAsync(
-            model,
-            null,
-            this._testCancellationToken);
+        await sut.UpsertAsync(model, this._testCancellationToken);
 
         // Assert
         mapperMock
@@ -548,6 +545,7 @@ public class QdrantVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
     }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
     [MemberData(nameof(TestOptions))]
     public async Task CanSearchWithVectorAndFilterAsync<TKey>(bool useDefinition, bool hasNamedVectors, TKey testRecordKey)
@@ -563,7 +561,7 @@ public class QdrantVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
-            new() { IncludeVectors = true, Filter = filter, Top = 5, Skip = 2 },
+            new() { IncludeVectors = true, OldFilter = filter, Top = 5, Skip = 2 },
             this._testCancellationToken);
 
         // Assert.
@@ -596,6 +594,7 @@ public class QdrantVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector!.Value.ToArray());
         Assert.Equal(0.5f, results.First().Score);
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     private void SetupRetrieveMock(List<RetrievedPoint> retrievedPoints)
     {
