@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 

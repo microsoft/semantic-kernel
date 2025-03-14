@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 

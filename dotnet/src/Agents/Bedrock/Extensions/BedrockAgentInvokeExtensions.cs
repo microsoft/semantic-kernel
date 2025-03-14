@@ -13,7 +13,7 @@ using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
-namespace Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
 /// Extensions associated with the status of a <see cref="BedrockAgent"/>.

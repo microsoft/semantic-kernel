@@ -11,7 +11,6 @@ using Amazon.BedrockAgentRuntime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
