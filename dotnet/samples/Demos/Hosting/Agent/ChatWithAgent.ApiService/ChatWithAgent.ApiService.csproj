@@ -11,7 +11,9 @@
     <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
     <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.InMemory" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+    <PackageReference Include="PdfPig" />
   </ItemGroup>
 
   <ItemGroup>

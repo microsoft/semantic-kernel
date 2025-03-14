@@ -43,7 +43,9 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
                 chatResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
                     name: config.AzureOpenAIChat.DeploymentName,
                     modelName: config.AzureOpenAIChat.ModelName,
-                    modelVersion: config.AzureOpenAIChat.ModelVersion)
+                    modelVersion: config.AzureOpenAIChat.ModelVersion,
+                    skuName: config.AzureOpenAIChat.SkuName,
+                    skuCapacity: config.AzureOpenAIChat.SkuCapacity)
                 );
             }
 
@@ -53,7 +55,9 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
                 embeddingsResource = azureOpenAI.AddDeployment(new AzureOpenAIDeployment(
                     name: config.AzureOpenAIEmbeddings.DeploymentName,
                     modelName: config.AzureOpenAIEmbeddings.ModelName,
-                    modelVersion: config.AzureOpenAIEmbeddings.ModelVersion)
+                    modelVersion: config.AzureOpenAIEmbeddings.ModelVersion,
+                    skuName: config.AzureOpenAIEmbeddings.SkuName,
+                    skuCapacity: config.AzureOpenAIEmbeddings.SkuCapacity)
                 );
             }
         }
