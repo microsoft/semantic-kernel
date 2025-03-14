@@ -205,6 +205,7 @@ public static class Program
     /// <typeparam name="TKey">The type of the data model key.</typeparam>
     private static void AddAgent<TKey>(WebApplicationBuilder builder)
     {
+        // Switch to the new declarative agent format once it's available.
         PromptTemplateConfig templateConfig = new()
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
