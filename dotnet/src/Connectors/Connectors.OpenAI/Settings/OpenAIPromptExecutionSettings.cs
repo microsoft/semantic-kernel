@@ -364,6 +364,23 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Enables the web search feature when specified. If set to null, the option is ignored during serialization.
+    /// </summary>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("web_search_options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? WebSearchOptions
+    {
+        get => this._webSearchOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._webSearchOptions = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -455,6 +472,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             Logprobs = this.Logprobs,
             TopLogprobs = this.TopLogprobs,
             Store = this.Store,
+            WebSearchOptions = this.WebSearchOptions,
             Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
             ReasoningEffort = this.ReasoningEffort
         };
@@ -479,6 +497,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private bool? _logprobs;
     private int? _topLogprobs;
     private bool? _store;
+    private object? _webSearchOptions;
     private IDictionary<string, string>? _metadata;
 
     #endregion
