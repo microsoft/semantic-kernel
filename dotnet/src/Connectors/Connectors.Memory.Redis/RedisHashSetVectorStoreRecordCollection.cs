@@ -195,9 +195,25 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public virtual async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("FT.DROPINDEX", () => this._database.FT().DropIndexAsync(this._collectionName));
+        try
+        {
+            await this.RunOperationAsync("FT.DROPINDEX",
+                () => this._database.FT().DropIndexAsync(this._collectionName)).ConfigureAwait(false);
+        }
+        catch (VectorStoreOperationException ex) when (ex.InnerException is RedisServerException)
+        {
+            // The RedisServerException does not expose any reliable way of checking if the index does not exist.
+            // It just sets the message to "Unknown index name".
+            // We catch the exception and ignore it, but only after checking that the index does not exist.
+            if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -425,7 +441,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (RedisConnectionException ex)
+        catch (RedisException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {

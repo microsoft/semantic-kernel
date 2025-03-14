@@ -2,7 +2,7 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace CosmosNoSQLIntegrationTests.Support;
+namespace CosmosMongoDBIntegrationTests.Support;
 
 #pragma warning disable CA1810 // Initialize all static fields when those fields are declared
 

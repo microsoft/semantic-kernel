@@ -43,6 +43,7 @@ public class WeaviateVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
+    /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {

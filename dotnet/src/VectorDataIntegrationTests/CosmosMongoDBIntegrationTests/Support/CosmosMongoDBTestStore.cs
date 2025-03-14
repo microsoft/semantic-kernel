@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using CosmosNoSQLIntegrationTests.Support;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 using MongoDB.Driver;
 using VectorDataSpecificationTests.Support;
 
-namespace MongoDBIntegrationTests.Support;
+namespace CosmosMongoDBIntegrationTests.Support;
 
 public sealed class CosmosMongoDBTestStore : TestStore
 {

@@ -10,14 +10,18 @@ namespace RedisIntegrationTests.Support;
 
 internal sealed class RedisTestStore : TestStore
 {
-    public static RedisTestStore Instance { get; } = new();
+    public static RedisTestStore JsonInstance { get; } = new(RedisStorageType.Json);
+    public static RedisTestStore HashSetInstance { get; } = new(RedisStorageType.HashSet);
 
     private readonly RedisContainer _container = new RedisBuilder()
         .WithImage("redis/redis-stack")
         .Build();
 
+    private readonly RedisStorageType _storageType;
     private IDatabase? _database;
     private RedisVectorStore? _defaultVectorStore;
+
+    private RedisTestStore(RedisStorageType storageType) => this._storageType = storageType;
 
     public IDatabase Database => this._database ?? throw new InvalidOperationException("Not initialized");
 
@@ -26,16 +30,12 @@ internal sealed class RedisTestStore : TestStore
     public RedisVectorStore GetVectorStore(RedisVectorStoreOptions options)
         => new(this.Database, options);
 
-    private RedisTestStore()
-    {
-    }
-
     protected override async Task StartAsync()
     {
         await this._container.StartAsync();
         var redis = await ConnectionMultiplexer.ConnectAsync($"{this._container.Hostname}:{this._container.GetMappedPublicPort(6379)},connectTimeout=60000,connectRetry=5");
         this._database = redis.GetDatabase();
-        this._defaultVectorStore = new(this._database);
+        this._defaultVectorStore = new(this._database, new() { StorageType = this._storageType });
     }
 
     protected override Task StopAsync()
