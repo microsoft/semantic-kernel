@@ -32,7 +32,7 @@ public class PostgresVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
-    /// <param name="postgresDbClient">An instance of <see cref="IPostgresDbClient"/>.</param>
+    /// <param name="postgresDbClient">An instance of <see cref="IPostgresVectorStoreDbClient"/>.</param>
     /// <param name="options">Optional configuration options for this class</param>
     internal PostgresVectorStore(IPostgresVectorStoreDbClient postgresDbClient, PostgresVectorStoreOptions? options = default)
     {
