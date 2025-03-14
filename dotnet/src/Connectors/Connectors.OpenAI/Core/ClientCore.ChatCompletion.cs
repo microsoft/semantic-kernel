@@ -403,6 +403,7 @@ internal partial class ClientCore
 
             // Process non-function tool calls.
             this.ProcessNonFunctionToolCalls(toolCalls, chatHistory);
+            yield return new OpenAIStreamingChatMessageContent(AuthorRole.Tool, string.Empty, completionsFinishReason: ChatFinishReason.FunctionCall);
         }
     }
 
