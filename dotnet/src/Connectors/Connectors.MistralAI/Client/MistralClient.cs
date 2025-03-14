@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -797,9 +797,16 @@ internal sealed class MistralClient
                     content.Add(new ImageUrlChunk(imageContent.DataUri));
                 }
             }
-            else if(item is DocumentContent documentContent)
+            else if (item is BinaryContent binaryContent)
             {
-                content.Add(new DocumentUrlChunk(documentContent.Link!));
+                if (binaryContent.Uri is not null)
+                {
+                    content.Add(new DocumentUrlChunk(binaryContent.Uri.ToString()));
+                }
+                else
+                {
+                    throw new ArgumentException("Document should be be send as `url` not as `base64` or `array of byte`");
+                }
             }
             else
             {
