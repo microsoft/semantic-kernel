@@ -52,6 +52,13 @@ public sealed class RestApiOperationResponse
     public IDictionary<string, IEnumerable<string>>? Headers { get; set; }
 
     /// <summary>
+    /// Gets a dictionary for ambient data associated with the response.
+    /// </summary>
+    [Experimental("SKEXP0040")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, object?>? Data { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
     /// <param name="content">The content of the response.</param>

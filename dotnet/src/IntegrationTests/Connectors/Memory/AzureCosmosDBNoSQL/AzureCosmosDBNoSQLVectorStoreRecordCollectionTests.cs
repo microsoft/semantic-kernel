@@ -13,6 +13,8 @@ using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.AzureCosmosDBNoSQL;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 /// <summary>
 /// Integration tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/> class.
 /// </summary>
@@ -341,7 +343,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
         {
-            Filter = filter,
+            OldFilter = filter,
             Top = 4,
         });
 

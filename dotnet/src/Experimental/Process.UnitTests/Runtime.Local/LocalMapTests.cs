@@ -38,7 +38,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -68,7 +68,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -99,7 +99,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -130,7 +130,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -166,7 +166,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -200,7 +200,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -238,7 +238,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -315,7 +315,7 @@ public class LocalMapTests
         Kernel kernel = new();
 
         // Act
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
@@ -363,7 +363,7 @@ public class LocalMapTests
             [1, 2, 3, 4, 5],
             [1, 2, 3, 4, 5],
         ];
-        using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, input, "Start");
+        await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, input, "Start");
 
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
