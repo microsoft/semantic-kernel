@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary.
 using System.Net.Http;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Microsoft.Extensions.VectorData;
@@ -29,6 +31,9 @@ internal sealed class PineconeTestStore : TestStore
     public Pinecone.PineconeClient Client => this._client ?? throw new InvalidOperationException("Not initialized");
 
     public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
+
+    // Pinecone does not support distance functions other than PGA which is always enabled.
+    public override string DefaultIndexKind => "";
 
     private PineconeTestStore()
     {
