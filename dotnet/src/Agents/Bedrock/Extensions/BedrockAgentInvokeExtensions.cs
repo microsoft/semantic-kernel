@@ -214,7 +214,7 @@ internal static class BedrockAgentInvokeExtensions
                                 Function = functionResult.FunctionName,
                                 ResponseBody = new Dictionary<string, ContentBody>
                                 {
-                                    { "TEXT", new ContentBody() { Body = functionResult.Result as string } }
+                                    { "TEXT", new ContentBody() { Body = FunctionCallsProcessor.ProcessFunctionResult(functionResult.Result ?? string.Empty) } }
                                 }
                             }
                         };
