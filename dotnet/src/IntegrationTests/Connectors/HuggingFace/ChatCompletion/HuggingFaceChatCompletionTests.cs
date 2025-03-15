@@ -16,7 +16,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.ChatCompletion;
 /// <remarks>
 /// Instructions for setting up a Text Generation Inference (TGI) endpoint, see: https://huggingface.co/blog/tgi-messages-api
 /// </remarks>
-public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : HuggingFaceTestsBase(output)
 {
     [Fact(Skip = "This test is for manual verification.")]
     public async Task GetChatMessageContentsAsync()
@@ -27,7 +27,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
             new ChatMessageContent(AuthorRole.System, "Use C# 12 features."),
             new ChatMessageContent(AuthorRole.User, "Write a C# Hello world?")
         };
-        var huggingFaceRemote = this.RemoteChatCompletionService;
+        var huggingFaceRemote = this.CreateChatCompletionService();
 
         // Act
         var response = await huggingFaceRemote.GetChatMessageContentsAsync(chatHistory, new HuggingFacePromptExecutionSettings() { MaxNewTokens = 50 });
@@ -47,7 +47,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
             new ChatMessageContent(AuthorRole.System, "Use C# 12 features."),
             new ChatMessageContent(AuthorRole.User, "Write a C# Hello world?")
         };
-        var huggingFaceRemote = this.RemoteChatCompletionService;
+        var huggingFaceRemote = this.CreateChatCompletionService();
 
         // Act
         var response = new StringBuilder();
@@ -68,7 +68,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
     public async Task InvokeKernelFunctionAsync()
     {
         // Arrange
-        Kernel kernel = this.BuildKernelWithRemoteChatCompletionService();
+        Kernel kernel = this.CreateKernelWithChatCompletion();
 
         var kernelFunction = kernel.CreateFunctionFromPrompt("<message role=\"user\">Write a C# Hello world</message>", new HuggingFacePromptExecutionSettings
         {
@@ -87,7 +87,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
     public async Task InvokeKernelFunctionStreamingAsync()
     {
         // Arrange
-        Kernel kernel = this.BuildKernelWithRemoteChatCompletionService();
+        Kernel kernel = this.CreateKernelWithChatCompletion();
 
         var kernelFunction = kernel.CreateFunctionFromPrompt("<message role=\"user\">Write a C# Hello world</message>", new HuggingFacePromptExecutionSettings
         {
@@ -109,3 +109,4 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
         Assert.True(response.ToString().Length > 0);
     }
 }
+

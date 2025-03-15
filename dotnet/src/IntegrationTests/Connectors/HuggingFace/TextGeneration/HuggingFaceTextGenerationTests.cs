@@ -13,16 +13,15 @@ namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.TextGeneration;
 /// <summary>
 /// Integration tests for <see cref="HuggingFaceTextGenerationService"/>.
 /// </summary>
-public sealed class HuggingFaceTextGenerationTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class HuggingFaceTextGenerationTests(ITestOutputHelper output) : HuggingFaceTestsBase(output)
 {
-    private const string Endpoint = "http://localhost:5000/completions";
     private const string Input = "This is test";
 
     [Fact(Skip = "This test is for manual verification.")]
     public async Task HuggingFaceRemoteTextGenerationAsync()
     {
         // Arrange
-        var huggingFaceRemote = this.RemoteTextGenerationService;
+        var huggingFaceRemote = this.CreateTextGenerationService();
 
         // Act
         var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input, new HuggingFacePromptExecutionSettings() { MaxNewTokens = 50 });
@@ -36,7 +35,7 @@ public sealed class HuggingFaceTextGenerationTests(ITestOutputHelper output) : T
     public async Task HuggingFaceLocalTextGenerationAsync()
     {
         // Arrange
-        var huggingFaceLocal = this.GetLocalTextGenerationService(new Uri(Endpoint));
+        var huggingFaceLocal = this.CreateTextGenerationService(new Uri(this.Config.TextGenerationEndpoint));
 
         // Act
         var localResponse = await huggingFaceLocal.GetTextContentAsync(Input, new HuggingFacePromptExecutionSettings() { MaxNewTokens = 50 });
@@ -51,8 +50,8 @@ public sealed class HuggingFaceTextGenerationTests(ITestOutputHelper output) : T
     {
         // Arrange
         using var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("https://api-inference.huggingface.co/models");
-        var huggingFaceRemote = this.GetRemoteTextGenerationServiceWithCustomHttpClient(httpClient);
+        httpClient.BaseAddress = new Uri(this.Config.TextGenerationEndpoint);
+        var huggingFaceRemote = this.CreateTextGenerationService(httpClient: httpClient);
 
         // Act
         var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input, new HuggingFacePromptExecutionSettings() { MaxNewTokens = 50 });

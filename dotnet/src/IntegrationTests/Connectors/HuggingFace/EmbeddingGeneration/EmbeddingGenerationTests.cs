@@ -7,16 +7,16 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace.EmbeddingGeneration;
 
-public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBase(output)
+public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : HuggingFaceTestsBase(output)
 {
     private const string FirstInput = "LLM is Large Language Model.";
     private const string SecondInput = "Semantic Kernel is an SDK that integrates Large Language Models (LLMs).";
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]//(Skip = "This test is for manual verification.")]
     public async Task EmbeddingGenerationWithSingleValueInputAsync()
     {
         // Arrange
-        var sut = this.RemoteTextEmbeddingService;
+        var sut = this.CreateEmbeddingService();
 
         // Act
         var response = await sut.GenerateEmbeddingAsync(FirstInput);
@@ -26,11 +26,11 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBa
         Assert.Equal(384, response.Length);
     }
 
-    [Fact(Skip = "This test is for manual verification.")]
+    [Fact]//(Skip = "This test is for manual verification.")]
     public async Task EmbeddingGenerationWithMultipleValuesInputAsync()
     {
         // Arrange
-        var sut = this.RemoteTextEmbeddingService;
+        var sut = this.CreateEmbeddingService();
 
         // Act
         var response = await sut.GenerateEmbeddingsAsync([FirstInput, SecondInput]);
