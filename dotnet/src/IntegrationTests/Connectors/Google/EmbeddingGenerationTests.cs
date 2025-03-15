@@ -12,9 +12,9 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBa
 {
     private const string Input = "LLM is Large Language Model.";
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    [RetryTheory(Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.VertexAI)]
     public async Task EmbeddingGenerationAsync(ServiceType serviceType)
     {
         // Arrange
@@ -28,9 +28,8 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBa
         Assert.Equal(768, response.Length);
     }
 
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "Not implemented yet in VertexAI. This test is for manual verification.")]
+    [RetryTheory(Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.GoogleAI)]
     public async Task EmbeddingGenerationWithCustomDimensionsAsync(ServiceType serviceType)
     {
         // Arrange
