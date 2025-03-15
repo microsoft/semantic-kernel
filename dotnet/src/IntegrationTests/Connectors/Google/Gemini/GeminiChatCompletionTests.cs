@@ -148,21 +148,21 @@ public sealed class GeminiChatCompletionTests(ITestOutputHelper output) : TestsB
 
         // Setup initial cached content
         var cachedContentJson = File.ReadAllText(Path.Combine("Resources", "gemini_cached_content.json"))
-            .Replace("{{project}}", this.VertexAIGetProjectId())
-            .Replace("{{location}}", this.VertexAIGetLocation())
-            .Replace("{{model}}", this.VertexAIGetGeminiModel());
+            .Replace("{{project}}", this.VertexAI.ProjectId!)
+            .Replace("{{location}}", this.VertexAI.Location!)
+            .Replace("{{model}}", this.VertexAI.Gemini.ModelId!);
 
         var cachedContentName = string.Empty;
 
         using (var httpClient = new HttpClient()
         {
-            DefaultRequestHeaders = { Authorization = new("Bearer", this.VertexAIGetBearerKey()) }
+            DefaultRequestHeaders = { Authorization = new("Bearer", this.VertexAI.BearerKey) }
         })
         {
             using (var content = new StringContent(cachedContentJson, Encoding.UTF8, "application/json"))
             {
                 using (var httpResponse = await httpClient.PostAsync(
-                new Uri($"https://{this.VertexAIGetLocation()}-aiplatform.googleapis.com/v1beta1/projects/{this.VertexAIGetProjectId()}/locations/{this.VertexAIGetLocation()}/cachedContents"),
+                new Uri($"https://{this.VertexAI.Location}-aiplatform.googleapis.com/v1beta1/projects/{this.VertexAI.ProjectId!}/locations/{this.VertexAI.Location}/cachedContents"),
                 content))
                 {
                     httpResponse.EnsureSuccessStatusCode();

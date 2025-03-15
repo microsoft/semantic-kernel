@@ -24,6 +24,7 @@
     <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="Dapr.AspNetCore" Version="1.14.0" />
     <PackageVersion Include="FastBertTokenizer" Version="1.0.28" />
+    <PackageVersion Include="Google.Apis.Auth" Version="1.69.0" />
     <PackageVersion Include="mcpdotnet" Version="1.0.1.3" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
@@ -142,9 +143,9 @@
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
     <PackageVersion Include="Testcontainers" Version="4.1.0" />
     <PackageVersion Include="Testcontainers.Milvus" Version="4.1.0" />
-    <PackageVersion Include="Testcontainers.MongoDB" Version="4.1.0"/>
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0"/>
-    <PackageVersion Include="Testcontainers.Redis" Version="4.1.0"/>
+    <PackageVersion Include="Testcontainers.MongoDB" Version="4.1.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.1.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageVersion Include="Qdrant.Client" Version="1.12.0" />
     <!-- Symbols -->

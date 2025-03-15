@@ -10,13 +10,14 @@ namespace SemanticKernel.IntegrationTests.Connectors.Google;
 
 public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBase(output)
 {
-    [RetryTheory]
-    [InlineData(ServiceType.GoogleAI, Skip = "This test is for manual verification.")]
-    [InlineData(ServiceType.VertexAI, Skip = "This test is for manual verification.")]
+    private const string Input = "LLM is Large Language Model.";
+
+    [RetryTheory(Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.GoogleAI)]
+    [InlineData(ServiceType.VertexAI)]
     public async Task EmbeddingGenerationAsync(ServiceType serviceType)
     {
         // Arrange
-        const string Input = "LLM is Large Language Model.";
         var sut = this.GetEmbeddingService(serviceType);
 
         // Act
@@ -25,5 +26,31 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBa
         // Assert
         this.Output.WriteLine($"Count of returned embeddings: {response.Length}");
         Assert.Equal(768, response.Length);
+    }
+
+    [RetryTheory(Skip = "This test is for manual verification.")]
+    [InlineData(ServiceType.GoogleAI)]
+    public async Task EmbeddingGenerationWithCustomDimensionsAsync(ServiceType serviceType)
+    {
+        // Arrange
+        var defaultService = this.GetEmbeddingService(serviceType);
+        var defaultResponse = await defaultService.GenerateEmbeddingAsync(Input);
+        int defaultDimensions = defaultResponse.Length;
+
+        // Insure custom dimensions are different from default
+        int customDimensions = defaultDimensions == 512 ? 256 : 512;
+
+        var sut = this.GetEmbeddingServiceWithDimensions(serviceType, customDimensions);
+
+        // Act
+        var response = await sut.GenerateEmbeddingAsync(Input);
+
+        // Assert
+        this.Output.WriteLine($"Default dimensions: {defaultDimensions}");
+        this.Output.WriteLine($"Custom dimensions: {customDimensions}");
+        this.Output.WriteLine($"Returned dimensions: {response.Length}");
+
+        Assert.Equal(customDimensions, response.Length);
+        Assert.NotEqual(defaultDimensions, response.Length);
     }
 }
