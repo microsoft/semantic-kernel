@@ -58,7 +58,13 @@
     "Endpoint": ""
   },
   "HuggingFace": {
-    "ApiKey": ""
+    "EmbeddingModelId": "sentence-transformers/all-MiniLM-L6-v2",
+    "TextGenerationModelId": "microsoft/phi-2",
+    "ChatCompletionModelId": "tgi",
+    "ApiKey": "",
+    "TextGenerationEndpoint": "http://localhost:8080/",
+    "EmbeddingEndpoint": "https://api-inference.huggingface.co/",
+    "ChatCompletionEndpoint": "http://localhost:8080/"
   },
   "GoogleAI": {
     "EmbeddingModelId": "embedding-001",

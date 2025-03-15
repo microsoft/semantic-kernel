@@ -105,7 +105,7 @@ public sealed class HuggingFaceEmbeddingGenerationTests : IDisposable
     {
         //Arrange
         var sut = new HuggingFaceTextEmbeddingGenerationService("fake-model", new Uri("https://fake-random-test-host/fake-path"), httpClient: this._httpClient);
-        var data = new List<string>() { "test_string_1" };
+        List<string> data = ["test_string_1", "test_string_2"];
 
         //Act
         await sut.GenerateEmbeddingsAsync(data);
