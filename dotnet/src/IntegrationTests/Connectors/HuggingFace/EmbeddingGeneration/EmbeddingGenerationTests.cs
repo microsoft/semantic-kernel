@@ -12,7 +12,7 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : Hugging
     private const string FirstInput = "LLM is Large Language Model.";
     private const string SecondInput = "Semantic Kernel is an SDK that integrates Large Language Models (LLMs).";
 
-    [Fact]//(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task EmbeddingGenerationWithSingleValueInputAsync()
     {
         // Arrange
@@ -26,7 +26,7 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : Hugging
         Assert.Equal(384, response.Length);
     }
 
-    [Fact]//(Skip = "This test is for manual verification.")]
+    [Fact(Skip = "This test is for manual verification.")]
     public async Task EmbeddingGenerationWithMultipleValuesInputAsync()
     {
         // Arrange
