@@ -22,7 +22,7 @@ public sealed class HuggingFaceTextGenerationTests(ITestOutputHelper output) : T
     public async Task HuggingFaceRemoteTextGenerationAsync()
     {
         // Arrange
-        var huggingFaceRemote = this.GetRemoteTextGenerationService();
+        var huggingFaceRemote = this.RemoteTextGenerationService;
 
         // Act
         var remoteResponse = await huggingFaceRemote.GetTextContentAsync(Input, new HuggingFacePromptExecutionSettings() { MaxNewTokens = 50 });

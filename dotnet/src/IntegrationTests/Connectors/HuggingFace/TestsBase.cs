@@ -12,61 +12,72 @@ using Xunit.Abstractions;
 
 namespace SemanticKernel.IntegrationTests.Connectors.HuggingFace;
 
-public abstract class TestsBase(ITestOutputHelper output)
-
+public abstract class TestsBase
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
-        .AddUserSecrets<HuggingFace.TestsBase>()
+        .AddUserSecrets<TestsBase>()
         .AddEnvironmentVariables()
         .Build();
 
-    protected ITestOutputHelper Output { get; } = output;
+    protected ITestOutputHelper Output { get; }
 
-    protected IChatCompletionService GetRemoteChatCompletionService() =>
+    private readonly string _huggingFaceApiKey;
+    private readonly string _huggingFaceChatCompletionModel;
+    private readonly string _huggingFaceTextGenerationModel;
+    private readonly string _huggingFaceEmbeddingModel;
+    private readonly Uri _huggingFaceRemoteEndpoint;
+    private readonly Uri _huggingFaceRemoteChatCompletionDeploymentEndpoint;
+
+    protected TestsBase(ITestOutputHelper output)
+    {
+        this.Output = output;
+
+        this._huggingFaceApiKey = this._configuration.GetSection("HuggingFace:ApiKey").Get<string>()!;
+        this._huggingFaceChatCompletionModel = this._configuration.GetSection("HuggingFace:ChatCompletionModelId").Get<string>()!;
+        this._huggingFaceTextGenerationModel = this._configuration.GetSection("HuggingFace:TextGenerationModelId").Get<string>()!;
+        this._huggingFaceEmbeddingModel = this._configuration.GetSection("HuggingFace:EmbeddingModelId").Get<string>()!;
+        this._huggingFaceRemoteEndpoint = new Uri(this._configuration.GetSection("HuggingFace:Endpoint").Get<string>()!);
+        this._huggingFaceRemoteChatCompletionDeploymentEndpoint = new Uri(this._configuration.GetSection("HuggingFace:ChatCompletionDeploymentEndpoint").Get<string>()!);
+    }
+
+    protected IChatCompletionService RemoteChatCompletionService =>
         new HuggingFaceChatCompletionService(
-            model: this.HuggingFaceGetChatCompletionModel(),
-            endpoint: this.HuggingFaceGetRemoteChatCompletionDeploymentEndpoint(),
-            apiKey: this.HuggingFaceGetApiKey());
+            model: this._huggingFaceChatCompletionModel,
+            endpoint: this._huggingFaceRemoteChatCompletionDeploymentEndpoint,
+            apiKey: this._huggingFaceApiKey);
 
     protected ITextGenerationService GetLocalTextGenerationService(Uri endpoint) =>
         new HuggingFaceTextGenerationService(
-            model: this.HuggingFaceGetTextGenerationModel(),
+            model: this._huggingFaceTextGenerationModel,
             endpoint: endpoint,
-            apiKey: this.HuggingFaceGetApiKey());
+            apiKey: this._huggingFaceApiKey);
 
-    protected ITextGenerationService GetRemoteTextGenerationService() =>
+    protected ITextGenerationService RemoteTextGenerationService =>
         new HuggingFaceTextGenerationService(
-            model: this.HuggingFaceGetTextGenerationModel(),
-            endpoint: this.HuggingFaceGetRemoteEndpoint(),
-            apiKey: this.HuggingFaceGetApiKey());
+            model: this._huggingFaceTextGenerationModel,
+            endpoint: this._huggingFaceRemoteEndpoint,
+            apiKey: this._huggingFaceApiKey);
 
     protected ITextGenerationService GetRemoteTextGenerationServiceWithCustomHttpClient(HttpClient httpClient) =>
         new HuggingFaceTextGenerationService(
-            model: this.HuggingFaceGetTextGenerationModel(),
-            endpoint: this.HuggingFaceGetRemoteEndpoint(),
-            apiKey: this.HuggingFaceGetApiKey(),
+            model: this._huggingFaceTextGenerationModel,
+            endpoint: this._huggingFaceRemoteEndpoint,
+            apiKey: this._huggingFaceApiKey,
             httpClient: httpClient);
 
-    protected ITextEmbeddingGenerationService GetRemoteTextEmbeddingService() =>
+    protected ITextEmbeddingGenerationService RemoteTextEmbeddingService =>
         new HuggingFaceTextEmbeddingGenerationService(
-            model: this.HuggingFaceGetEmbeddingModel(),
-            endpoint: this.HuggingFaceGetRemoteEndpoint(),
-            apiKey: this.HuggingFaceGetApiKey());
+            model: this._huggingFaceEmbeddingModel,
+            endpoint: this._huggingFaceRemoteEndpoint,
+            apiKey: this._huggingFaceApiKey);
 
     protected Kernel BuildKernelWithRemoteChatCompletionService() =>
         Kernel.CreateBuilder()
         .AddHuggingFaceChatCompletion(
-            model: this.HuggingFaceGetChatCompletionModel(),
-            endpoint: this.HuggingFaceGetRemoteChatCompletionDeploymentEndpoint(),
-            apiKey: this.HuggingFaceGetApiKey())
+            model: this._huggingFaceChatCompletionModel,
+            endpoint: this._huggingFaceRemoteChatCompletionDeploymentEndpoint,
+            apiKey: this._huggingFaceApiKey)
         .Build();
-
-    private string HuggingFaceGetApiKey() => this._configuration.GetSection("HuggingFace:ApiKey").Get<string>()!;
-    private string HuggingFaceGetChatCompletionModel() => this._configuration.GetSection("HuggingFace:ChatCompletionModelId").Get<string>()!;
-    private string HuggingFaceGetTextGenerationModel() => this._configuration.GetSection("HuggingFace:TextGenerationModelId").Get<string>()!;
-    private string HuggingFaceGetEmbeddingModel() => this._configuration.GetSection("HuggingFace:EmbeddingModelId").Get<string>()!;
-    private Uri HuggingFaceGetRemoteEndpoint() => new(this._configuration.GetSection("HuggingFace:Endpoint").Get<string>()!);
-    private Uri HuggingFaceGetRemoteChatCompletionDeploymentEndpoint() => new(this._configuration.GetSection("HuggingFace:ChatCompletionDeploymentEndpoint").Get<string>()!);
 }

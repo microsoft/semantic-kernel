@@ -27,7 +27,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
             new ChatMessageContent(AuthorRole.System, "Use C# 12 features."),
             new ChatMessageContent(AuthorRole.User, "Write a C# Hello world?")
         };
-        var huggingFaceRemote = this.GetRemoteChatCompletionService();
+        var huggingFaceRemote = this.RemoteChatCompletionService;
 
         // Act
         var response = await huggingFaceRemote.GetChatMessageContentsAsync(chatHistory, new HuggingFacePromptExecutionSettings() { MaxNewTokens = 50 });
@@ -47,7 +47,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
             new ChatMessageContent(AuthorRole.System, "Use C# 12 features."),
             new ChatMessageContent(AuthorRole.User, "Write a C# Hello world?")
         };
-        var huggingFaceRemote = this.GetRemoteChatCompletionService();
+        var huggingFaceRemote = this.RemoteChatCompletionService;
 
         // Act
         var response = new StringBuilder();
@@ -100,7 +100,7 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : T
         {
             if (update.ToString() is { Length: > 0 })
             {
-                response.Append(update.ToString());
+                response.Append(update);
             }
         }
 

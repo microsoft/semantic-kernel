@@ -16,7 +16,7 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBa
     public async Task EmbeddingGenerationWithSingleValueInputAsync()
     {
         // Arrange
-        var sut = this.GetRemoteTextEmbeddingService();
+        var sut = this.RemoteTextEmbeddingService;
 
         // Act
         var response = await sut.GenerateEmbeddingAsync(FirstInput);
@@ -30,7 +30,7 @@ public sealed class EmbeddingGenerationTests(ITestOutputHelper output) : TestsBa
     public async Task EmbeddingGenerationWithMultipleValuesInputAsync()
     {
         // Arrange
-        var sut = this.GetRemoteTextEmbeddingService();
+        var sut = this.RemoteTextEmbeddingService;
 
         // Act
         var response = await sut.GenerateEmbeddingsAsync([FirstInput, SecondInput]);
