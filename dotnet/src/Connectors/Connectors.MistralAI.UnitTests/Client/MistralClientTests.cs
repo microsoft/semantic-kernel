@@ -635,7 +635,7 @@ public sealed class MistralClientTests : MistralTestBase
             Role = AuthorRole.User,
             Items =
             [
-                new BinaryContent(data:new byte[] { 1, 2, 3 }, mimeType:"application/pdf")
+                new BinaryContent(data: new byte[] { 1, 2, 3 }, mimeType: "application/pdf")
             ],
         };
 
