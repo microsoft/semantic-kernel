@@ -94,7 +94,7 @@ async def test_agent_thread_actions_invoke(ai_project_client, ai_agent_definitio
                 created_at=int(datetime.now(timezone.utc).timestamp()),
                 completed_at=int(datetime.now(timezone.utc).timestamp()),
                 status="completed",
-                assistant_id="assistant123",
+                agent_id="agent123",
                 step_details=RunStepMessageCreationDetails(
                     message_creation=RunStepMessageCreationReference(
                         message_id="msg123",
@@ -113,7 +113,7 @@ async def test_agent_thread_actions_invoke(ai_project_client, ai_agent_definitio
         created_at=int(datetime.now(timezone.utc).timestamp()),
         completed_at=int(datetime.now(timezone.utc).timestamp()),
         status="completed",
-        assistant_id="assistant123",
+        agent_id="agent123",
         role="assistant",
         content=[MessageTextContent(text=MessageTextDetails(value="some message", annotations=[]))],
     )
@@ -180,7 +180,7 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         created_at=int(datetime.now(timezone.utc).timestamp()),
         completed_at=int(datetime.now(timezone.utc).timestamp()),
         status="completed",
-        assistant_id="assistant123",
+        agent_id="agent123",
         step_details=RunStepToolCallDetails(
             tool_calls=[
                 RunStepCodeInterpreterToolCall(
@@ -209,7 +209,7 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         created_at=int(datetime.now(timezone.utc).timestamp()),
         completed_at=int(datetime.now(timezone.utc).timestamp()),
         status="completed",
-        assistant_id="assistant123",
+        agent_id="agent123",
         step_details=RunStepMessageCreationDetails(
             message_creation=RunStepMessageCreationReference(message_id="msg123")
         ),
@@ -225,7 +225,7 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
         created_at=int(datetime.now(timezone.utc).timestamp()),
         completed_at=int(datetime.now(timezone.utc).timestamp()),
         status="completed",
-        assistant_id="assistant123",
+        agent_id="agent123",
         role="assistant",
         content=[MessageTextContent(text=MessageTextDetails(value="some message", annotations=[]))],
     )

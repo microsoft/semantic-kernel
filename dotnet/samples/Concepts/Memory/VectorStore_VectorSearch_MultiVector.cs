@@ -58,7 +58,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
             searchVector, new()
             {
                 Top = 1,
-                VectorPropertyName = nameof(Product.DescriptionEmbedding)
+                VectorProperty = r => r.DescriptionEmbedding
             });
         var resultRecords = await searchResult.Results.ToListAsync();
 
@@ -75,7 +75,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
             new()
             {
                 Top = 1,
-                VectorPropertyName = nameof(Product.FeatureListEmbedding)
+                VectorProperty = r => r.FeatureListEmbedding
             });
         resultRecords = await searchResult.Results.ToListAsync();
 

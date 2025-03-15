@@ -8,14 +8,13 @@ from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents.annotation_content import AnnotationContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
-###################################################################
-# The following sample demonstrates how to create a simple,       #
-# Azure AI agent that uses the code interpreter tool to answer    #
-# a coding question.                                              #
-###################################################################
+"""
+The following sample demonstrates how to create a simple,
+Azure AI agent that uses the code interpreter tool to answer
+a coding question.
+"""
 
 
 async def main() -> None:
@@ -66,7 +65,7 @@ async def main() -> None:
                 # Add the user input as a chat message
                 await agent.add_chat_message(
                     thread_id=thread.id,
-                    message=ChatMessageContent(role=AuthorRole.USER, content=user_input),
+                    message=user_input,
                 )
                 print(f"# User: '{user_input}'")
                 # Invoke the agent for the specified thread

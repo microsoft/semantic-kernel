@@ -5,6 +5,7 @@ using Amazon.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Amazon.Core;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.TextGeneration;
 using Moq;
 using Xunit;
@@ -56,6 +57,27 @@ public class BedrockServiceCollectionExtensionTests
         var textGenerationService = serviceProvider.GetService<ITextGenerationService>();
         Assert.NotNull(textGenerationService);
         Assert.IsType<BedrockTextGenerationService>(textGenerationService);
+    }
+
+    /// <summary>
+    /// Ensures that IServiceCollection.AddBedrockTextEmbeddingGenerationService registers the <see cref="ITextEmbeddingGenerationService"/> with the correct implementation.
+    /// </summary>
+    [Fact]
+    public void AddBedrockTextEmbeddingServiceRegistersCorrectService()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var modelId = "amazon.titan-embed-text-v2:0";
+        var bedrockRuntime = new Mock<IAmazonBedrockRuntime>().Object;
+
+        // Act
+        services.AddBedrockTextEmbeddingGenerationService(modelId, bedrockRuntime);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var textEmbeddingService = serviceProvider.GetService<ITextEmbeddingGenerationService>();
+        Assert.NotNull(textEmbeddingService);
+        Assert.IsType<BedrockTextEmbeddingGenerationService>(textEmbeddingService);
     }
 
     [Fact]
