@@ -169,22 +169,22 @@ public static class ChatCompletionServiceExtensions
 
                 case Microsoft.SemanticKernel.ImageContent ic:
                     aiContent =
-                        ic.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ic.DataUri, ic.MimeType ?? "image/*") :
-                        ic.Uri is not null ? new Microsoft.Extensions.AI.DataContent(ic.Uri, ic.MimeType ?? "image/*") :
+                        ic.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ic.DataUri, ic.MimeType) :
+                        ic.Uri is not null ? new Microsoft.Extensions.AI.UriContent(ic.Uri, ic.MimeType ?? "image/*") :
                         null;
                     break;
 
                 case Microsoft.SemanticKernel.AudioContent ac:
                     aiContent =
-                        ac.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ac.DataUri, ac.MimeType ?? "audio/*") :
-                        ac.Uri is not null ? new Microsoft.Extensions.AI.DataContent(ac.Uri, ac.MimeType ?? "audio/*") :
+                        ac.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(ac.DataUri, ac.MimeType) :
+                        ac.Uri is not null ? new Microsoft.Extensions.AI.UriContent(ac.Uri, ac.MimeType ?? "audio/*") :
                         null;
                     break;
 
                 case Microsoft.SemanticKernel.BinaryContent bc:
                     aiContent =
                         bc.DataUri is not null ? new Microsoft.Extensions.AI.DataContent(bc.DataUri, bc.MimeType) :
-                        bc.Uri is not null ? new Microsoft.Extensions.AI.DataContent(bc.Uri, bc.MimeType) :
+                        bc.Uri is not null ? new Microsoft.Extensions.AI.UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream") :
                         null;
                     break;
 
@@ -224,39 +224,19 @@ public static class ChatCompletionServiceExtensions
 
         foreach (AIContent content in message.Contents)
         {
-            KernelContent? resultContent = null;
-            switch (content)
+            KernelContent? resultContent = content switch
             {
-                case Microsoft.Extensions.AI.TextContent tc:
-                    resultContent = new Microsoft.SemanticKernel.TextContent(tc.Text);
-                    break;
-
-                case Microsoft.Extensions.AI.DataContent dc when dc.MediaTypeStartsWith("image/"):
-                    resultContent = dc.Data is not null ?
-                        new Microsoft.SemanticKernel.ImageContent(dc.Uri) :
-                        new Microsoft.SemanticKernel.ImageContent(new Uri(dc.Uri));
-                    break;
-
-                case Microsoft.Extensions.AI.DataContent dc when dc.MediaTypeStartsWith("audio/"):
-                    resultContent = dc.Data is not null ?
-                        new Microsoft.SemanticKernel.AudioContent(dc.Uri) :
-                        new Microsoft.SemanticKernel.AudioContent(new Uri(dc.Uri));
-                    break;
-
-                case Microsoft.Extensions.AI.DataContent dc:
-                    resultContent = dc.Data is not null ?
-                        new Microsoft.SemanticKernel.BinaryContent(dc.Uri) :
-                        new Microsoft.SemanticKernel.BinaryContent(new Uri(dc.Uri));
-                    break;
-
-                case Microsoft.Extensions.AI.FunctionCallContent fcc:
-                    resultContent = new Microsoft.SemanticKernel.FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null);
-                    break;
-
-                case Microsoft.Extensions.AI.FunctionResultContent frc:
-                    resultContent = new Microsoft.SemanticKernel.FunctionResultContent(callId: frc.CallId, result: frc.Result);
-                    break;
-            }
+                Microsoft.Extensions.AI.TextContent tc => new Microsoft.SemanticKernel.TextContent(tc.Text),
+                Microsoft.Extensions.AI.DataContent dc when dc.HasTopLevelMediaType("image") => new Microsoft.SemanticKernel.ImageContent(dc.Uri),
+                Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("image") => new Microsoft.SemanticKernel.ImageContent(uc.Uri),
+                Microsoft.Extensions.AI.DataContent dc when dc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(dc.Uri),
+                Microsoft.Extensions.AI.UriContent uc when uc.HasTopLevelMediaType("audio") => new Microsoft.SemanticKernel.AudioContent(uc.Uri),
+                Microsoft.Extensions.AI.DataContent dc => new Microsoft.SemanticKernel.BinaryContent(dc.Uri),
+                Microsoft.Extensions.AI.UriContent uc => new Microsoft.SemanticKernel.BinaryContent(uc.Uri),
+                Microsoft.Extensions.AI.FunctionCallContent fcc => new Microsoft.SemanticKernel.FunctionCallContent(fcc.Name, null, fcc.CallId, fcc.Arguments is not null ? new(fcc.Arguments) : null),
+                Microsoft.Extensions.AI.FunctionResultContent frc => new Microsoft.SemanticKernel.FunctionResultContent(callId: frc.CallId, result: frc.Result),
+                _ => null
+            };
 
             if (resultContent is not null)
             {

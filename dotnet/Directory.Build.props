@@ -35,6 +35,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Add CLSCompliant=false to all projects by default. Projects can override. -->
     <AssemblyAttribute Include="System.CLSCompliantAttribute">
       <_Parameter1>false</_Parameter1>
