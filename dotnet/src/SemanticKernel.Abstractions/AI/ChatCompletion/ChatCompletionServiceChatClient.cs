@@ -39,17 +39,31 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     {
         Verify.NotNull(messages);
 
+        ChatHistory chatHistory = new(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+        int preCount = chatHistory.Count;
+
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            chatHistory,
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
 
-        return new(ChatCompletionServiceExtensions.ToChatMessage(response))
+        ChatResponse chatResponse = new()
         {
             ModelId = response.ModelId,
             RawRepresentation = response.InnerContent,
         };
+
+        // Add all messages that were added to the history.
+        // Then add the result message.
+        for (int i = preCount; i < chatHistory.Count; i++)
+        {
+            chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(chatHistory[i]));
+        }
+
+        chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(response));
+
+        return chatResponse;
     }
 
     /// <inheritdoc />

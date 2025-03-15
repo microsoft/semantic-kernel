@@ -32,7 +32,7 @@ internal static class DataUriParser
     private static bool IsBase64String(string? value)
     {
         // The quickest test. If the value is null or is equal to 0 it is not base64
-        // Base64 string's length is always divisible by four, i.e. 8, 16, 20 etc.
+        // Base64 string's length is always divisible by four, i.e. 8, 16, 20 etc. 
         // If it is not you can return false. Quite effective
         // Further, if it meets the above criteria, then test for spaces.
         // If it contains spaces, it is not base64
@@ -79,6 +79,7 @@ internal static class DataUriParser
             throw new UriFormatException("Invalid data uri format. The data URI must start with 'data:'.");
         }
 
+        var model = new DataUri();
         int currentIndex = Scheme.Length;
         int dataIndex = dataUri.IndexOf(',', currentIndex);
 
@@ -88,30 +89,20 @@ internal static class DataUriParser
         }
 
         string metadata = dataUri.Substring(currentIndex, dataIndex - currentIndex);
+        model.Data = dataUri.Substring(dataIndex + 1);
 
         // Split the metadata into components
         var metadataParts = metadata.Split(';');
-        string mimeType;
-        if (metadataParts.Length > 0 && !string.IsNullOrWhiteSpace(metadataParts[0]))
+        if (metadataParts.Length > 0)
         {
-            if (!metadataParts[0].Contains("/"))
+            if (!string.IsNullOrWhiteSpace(metadataParts[0]) && !metadataParts[0].Contains("/"))
             {
                 throw new UriFormatException("Invalid data uri format. When provided, the MIME type must have \"type/subtype\" format.");
             }
 
             // First part is the MIME type
-            mimeType = metadataParts[0];
+            model.MimeType = metadataParts[0];
         }
-        else
-        {
-            // By RFC 2397, the default MIME type if not provided is text/plain;charset=US-ASCII
-            mimeType = "text/plain";
-        }
-
-        var model = new DataUri(mimeType)
-        {
-            Data = dataUri.Substring(dataIndex + 1)
-        };
 
         for (int i = 1; i < metadataParts.Length; i++)
         {
@@ -144,18 +135,24 @@ internal static class DataUriParser
             throw new UriFormatException("Invalid data uri format. The data is not a valid Base64 string.");
         }
 
+        if (string.IsNullOrEmpty(model.MimeType))
+        {
+            // By RFC 2397, the default MIME type if not provided is text/plain;charset=US-ASCII
+            model.MimeType = "text/plain";
+        }
+
         return model;
     }
 
     /// <summary>
     /// Represents the data URI parts.
     /// </summary>
-    internal sealed class DataUri(string mimeType)
+    internal sealed class DataUri
     {
         /// <summary>
         /// The mime type of the data.
         /// </summary>
-        internal string MimeType { get; set; } = mimeType;
+        internal string? MimeType { get; set; }
 
         /// <summary>
         /// The optional parameters of the data.

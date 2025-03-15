@@ -252,7 +252,10 @@ internal sealed class GeminiRequest
     }
 
     private static string GetMimeTypeFromImageContent(ImageContent imageContent)
-        => imageContent.MimeType;
+    {
+        return imageContent.MimeType
+               ?? throw new InvalidOperationException("Image content MimeType is empty.");
+    }
 
     private static GeminiPart CreateGeminiPartFromAudio(AudioContent audioContent)
     {
@@ -285,7 +288,10 @@ internal sealed class GeminiRequest
     }
 
     private static string GetMimeTypeFromAudioContent(AudioContent audioContent)
-        => audioContent.MimeType;
+    {
+        return audioContent.MimeType
+               ?? throw new InvalidOperationException("Audio content MimeType is empty.");
+    }
 
     private static void AddConfiguration(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
