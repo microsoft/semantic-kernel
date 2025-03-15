@@ -40,9 +40,9 @@ TKey = TypeVar("TKey", str, int)
 
 @experimental
 class QdrantCollection(
-    VectorSearchBase[str | int, TModel],
+    VectorSearchBase[TKey, TModel],
     VectorizedSearchMixin[TModel],
-    Generic[TModel],
+    Generic[TKey, TModel],
 ):
     """A QdrantCollection is a memory collection that uses Qdrant as the backend."""
 
