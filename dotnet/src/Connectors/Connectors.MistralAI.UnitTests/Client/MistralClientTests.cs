@@ -206,6 +206,8 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.NotNull(request);
         var chatRequest = JsonSerializer.Deserialize<ChatCompletionRequest>(request);
         Assert.NotNull(chatRequest);
+        Assert.Null(chatRequest.DocumentPageLimit);
+        Assert.Null(chatRequest.DocumentImageLimit);
         Assert.Equal("auto", chatRequest.ToolChoice);
         Assert.NotNull(chatRequest.Tools);
         Assert.Single(chatRequest.Tools);
@@ -623,7 +625,7 @@ public sealed class MistralClientTests : MistralTestBase
     }
 
     [Fact]
-    public void ValidateToMistralChatMessagesWithArrayOfByteBinaryContent()
+    public void ToMistralChatMessagesWithArrayOfByteBinaryContentShouldThrow()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -633,17 +635,17 @@ public sealed class MistralClientTests : MistralTestBase
             Role = AuthorRole.User,
             Items =
             [
-                new BinaryContent(data:new byte[] { 1, 2, 3 },mimeType:"application/pdf")
+                new BinaryContent(data:new byte[] { 1, 2, 3 }, mimeType:"application/pdf")
             ],
         };
 
         // Act
         // Assert
-        Assert.Throws<ArgumentException>(() => client.ToMistralChatMessages(chatMessage, default));
+        Assert.Throws<NotSupportedException>(() => client.ToMistralChatMessages(chatMessage, default));
     }
 
     [Fact]
-    public void ValidateToMistralChatMessagesWithBase64BinaryContent()
+    public void ToMistralChatMessagesWithBase64BinaryContentShouldThrow()
     {
         // Arrange
         using var httpClient = new HttpClient();
@@ -659,7 +661,7 @@ public sealed class MistralClientTests : MistralTestBase
 
         // Act
         // Assert
-        Assert.Throws<ArgumentException>(() => client.ToMistralChatMessages(chatMessage, default));
+        Assert.Throws<NotSupportedException>(() => client.ToMistralChatMessages(chatMessage, default));
     }
 
     [Fact]
@@ -695,7 +697,7 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.IsType<DocumentUrlChunk>(content);
         Assert.NotNull(content);
         Assert.Equal("https://arxiv.org/pdf/1805.04770", content.DocumentUrl);
-        Assert.Equal("document_url",content.Type);
+        Assert.Equal("document_url", content.Type);
     }
 
     [Fact]
@@ -715,7 +717,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act
-        var executionSettings = new MistralAIPromptExecutionSettings {DocumentPageLimit = 64, DocumentImageLimit = 8};
+        var executionSettings = new MistralAIPromptExecutionSettings { DocumentPageLimit = 64, DocumentImageLimit = 8 };
         await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
         var request = this.DelegatingHandler!.RequestContent;
 
@@ -727,11 +729,13 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Single(chatRequest.Messages);
         Assert.Equal("user", chatRequest.Messages[0].Role);
         Assert.NotNull(chatRequest.Messages[0].Content);
+        Assert.Equal(64, chatRequest.DocumentPageLimit);
+        Assert.Equal(8, chatRequest.DocumentImageLimit);
 
         // Assert
         var content = JsonSerializer.Serialize(chatRequest.Messages[0].Content);
-        string json = "[{\"text\":\"Summarize the document for me.\",\"type\":\"text\"},{\"document_url\":\"https://arxiv.org/pdf/1805.04770\",\"type\":\"document_url\"}]";
-        Assert.Equal(json,content);
+        string json = """[{"text":"Summarize the document for me.","type":"text"},{"document_url":"https://arxiv.org/pdf/1805.04770","type":"document_url"}]""";
+        Assert.Equal(json, content);
     }
 
     [Fact]
@@ -751,7 +755,7 @@ public sealed class MistralClientTests : MistralTestBase
         };
 
         // Act
-        var executionSettings = new MistralAIPromptExecutionSettings {DocumentPageLimit = 64, DocumentImageLimit = 8};
+        var executionSettings = new MistralAIPromptExecutionSettings { DocumentPageLimit = 64, DocumentImageLimit = 8 };
         var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
 
         // Assert
@@ -763,6 +767,8 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.NotNull(response[0].Metadata);
         Assert.Equal(7, response[0].Metadata?.Count);
         Assert.NotNull(response[0].Metadata?["Usage"]);
+        Assert.NotNull(response[0].InnerContent);
+        Assert.IsType<MistralChatChoice>(response[0].InnerContent);
     }
 
     public sealed class WeatherPlugin
