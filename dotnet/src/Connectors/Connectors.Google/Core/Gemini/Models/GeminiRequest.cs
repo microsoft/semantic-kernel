@@ -309,7 +309,7 @@ internal sealed class GeminiRequest
         };
     }
 
-    private static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)
+    public static JsonElement? GetResponseSchemaConfig(object? responseSchemaSettings)
     {
         if (responseSchemaSettings is null)
         {
