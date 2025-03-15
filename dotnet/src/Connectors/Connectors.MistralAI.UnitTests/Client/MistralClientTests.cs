@@ -655,7 +655,7 @@ public sealed class MistralClientTests : MistralTestBase
             Role = AuthorRole.User,
             Items =
             [
-                new BinaryContent(dataUri:"data:application/pdf:base64,sdfghjyswedfghjjhertgiutdgbg")
+                new BinaryContent(dataUri: "data:application/pdf:base64,sdfghjyswedfghjjhertgiutdgbg")
             ],
         };
 
