@@ -47,8 +47,8 @@
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Bcl.Numerics" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.12.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
     <PackageVersion Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.67.2" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
@@ -150,7 +150,7 @@
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->
-    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers">
       <PrivateAssets>all</PrivateAssets>
