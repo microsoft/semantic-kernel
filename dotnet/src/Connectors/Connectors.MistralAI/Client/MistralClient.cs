@@ -698,6 +698,8 @@ internal sealed class MistralClient
             FrequencyPenalty = executionSettings.FrequencyPenalty,
             PresencePenalty = executionSettings.PresencePenalty,
             Stop = executionSettings.Stop,
+            DocumentImageLimit = executionSettings.DocumentImageLimit,
+            DocumentPageLimit = executionSettings.DocumentPageLimit
         };
 
         executionSettings.ToolCallBehavior?.ConfigureRequest(kernel, request);
@@ -737,10 +739,12 @@ internal sealed class MistralClient
                 };
                 toolCalls.Add(callRequest.Id, toolCall);
             }
+
             if (toolCalls.Count > 0)
             {
                 message.ToolCalls = [.. toolCalls.Values];
             }
+
             return [message];
         }
 
@@ -764,12 +768,9 @@ internal sealed class MistralClient
                     ToolCallId = resultContent.CallId
                 });
             }
-            if (messages is not null)
-            {
-                return messages;
-            }
 
-            throw new NotSupportedException("No function result provided in the tool message.");
+            return messages
+                ?? throw new NotSupportedException("No function result provided in the tool message.");
         }
 
         if (chatMessage.Items.Count == 1 && chatMessage.Items[0] is TextContent text)
@@ -783,22 +784,31 @@ internal sealed class MistralClient
             if (item is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
             {
                 content.Add(new TextChunk(textContent.Text!));
+                continue;
             }
-            else if (item is ImageContent imageContent)
+
+            if (item is ImageContent imageContent)
             {
                 if (imageContent.Uri is not null)
                 {
                     content.Add(new ImageUrlChunk(imageContent.Uri.ToString()));
+                    continue;
                 }
-                else if (imageContent.DataUri is not null)
+
+                if (imageContent.DataUri is not null)
                 {
                     content.Add(new ImageUrlChunk(imageContent.DataUri));
+                    continue;
                 }
             }
-            else
+
+            if (item is BinaryContent binaryContent && binaryContent.Uri is not null)
             {
-                throw new NotSupportedException("Invalid message content, only text and image url are supported.");
+                content.Add(new DocumentUrlChunk(binaryContent.Uri.ToString()));
+                continue;
             }
+
+            throw new NotSupportedException("Invalid message content, only text, image url and document url are supported.");
         }
 
         return [new MistralChatMessage(chatMessage.Role.ToString(), content)];

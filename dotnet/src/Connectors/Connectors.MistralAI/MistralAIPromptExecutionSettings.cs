@@ -240,6 +240,38 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Limit Image OCR in document
+    /// </summary>
+    [JsonPropertyName("document_image_limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DocumentImageLimit
+    {
+        get => this._documentImageLimit;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._documentImageLimit = value;
+        }
+    }
+
+    /// <summary>
+    /// Limit Pages upto which OCR will be done
+    /// </summary>
+    [JsonPropertyName("document_page_limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DocumentPageLimit
+    {
+        get => this._documentPageLimit;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._documentPageLimit = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -313,6 +345,8 @@ public sealed class MistralAIPromptExecutionSettings : PromptExecutionSettings
     private double? _presencePenalty;
     private double? _frequencyPenalty;
     private IList<string>? _stop;
+    private int? _documentImageLimit;
+    private int? _documentPageLimit;
 
     #endregion
 }

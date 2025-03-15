@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Connectors.MistralAI.Client;
 
 [JsonDerivedType(typeof(TextChunk))]
 [JsonDerivedType(typeof(ImageUrlChunk))]
+[JsonDerivedType(typeof(DocumentUrlChunk))]
 internal abstract class ContentChunk(ContentChunkType type)
 {
     [JsonPropertyName("type")]

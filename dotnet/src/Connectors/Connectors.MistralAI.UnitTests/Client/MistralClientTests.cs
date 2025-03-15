@@ -206,6 +206,8 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.NotNull(request);
         var chatRequest = JsonSerializer.Deserialize<ChatCompletionRequest>(request);
         Assert.NotNull(chatRequest);
+        Assert.Null(chatRequest.DocumentPageLimit);
+        Assert.Null(chatRequest.DocumentImageLimit);
         Assert.Equal("auto", chatRequest.ToolChoice);
         Assert.NotNull(chatRequest.Tools);
         Assert.Single(chatRequest.Tools);
@@ -620,6 +622,153 @@ public sealed class MistralClientTests : MistralTestBase
         Assert.Equal(settings.SafePrompt, clonedMistralAISettings.SafePrompt);
         Assert.Equal(settings.RandomSeed, clonedMistralAISettings.RandomSeed);
         Assert.Equal(settings.ResponseFormat, clonedMistralAISettings.ResponseFormat);
+    }
+
+    [Fact]
+    public void ToMistralChatMessagesWithArrayOfByteBinaryContentShouldThrow()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+            [
+                new BinaryContent(data: new byte[] { 1, 2, 3 }, mimeType: "application/pdf")
+            ],
+        };
+
+        // Act
+        // Assert
+        Assert.Throws<NotSupportedException>(() => client.ToMistralChatMessages(chatMessage, default));
+    }
+
+    [Fact]
+    public void ToMistralChatMessagesWithBase64BinaryContentShouldThrow()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+            [
+                new BinaryContent(dataUri: "data:application/pdf:base64,sdfghjyswedfghjjhertgiutdgbg")
+            ],
+        };
+
+        // Act
+        // Assert
+        Assert.Throws<NotSupportedException>(() => client.ToMistralChatMessages(chatMessage, default));
+    }
+
+    [Fact]
+    public void ValidateToMistralChatMessagesWithUrlBinaryContent()
+    {
+        // Arrange
+        using var httpClient = new HttpClient();
+        var client = new MistralClient("mistral-large-latest", httpClient, "key");
+        var chatMessage = new ChatMessageContent()
+        {
+            Role = AuthorRole.User,
+            Items =
+            [
+                new BinaryContent(new Uri("https://arxiv.org/pdf/1805.04770"))
+            ],
+        };
+
+        // Act
+        var message = client.ToMistralChatMessages(chatMessage, default);
+        var contents = message[0].Content as List<ContentChunk>;
+        var content = contents![0] as DocumentUrlChunk;
+
+        // Assert
+        Assert.NotNull(message);
+        Assert.Single(message);
+        Assert.IsType<MistralChatMessage>(message[0]);
+        Assert.Equal("user", message[0].Role);
+
+        Assert.IsType<List<ContentChunk>>(message[0].Content);
+        Assert.NotNull(contents);
+        Assert.Single(contents);
+
+        Assert.IsType<DocumentUrlChunk>(content);
+        Assert.NotNull(content);
+        Assert.Equal("https://arxiv.org/pdf/1805.04770", content.DocumentUrl);
+        Assert.Equal("document_url", content.Type);
+    }
+
+    [Fact]
+    public async Task ValidateToMistralChatMessagesWithDocumentRequestAsync()
+    {
+        // Arrange
+        var client = this.CreateMistralClient("mistral-small-latest", "https://api.mistral.ai/v1/chat/completions", "chat_completions_response_with_document.json");
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(
+                AuthorRole.User,
+                [
+                    new TextContent("Summarize the document for me."),
+                    new BinaryContent(new Uri("https://arxiv.org/pdf/1805.04770"))
+                ]),
+        };
+
+        // Act
+        var executionSettings = new MistralAIPromptExecutionSettings { DocumentPageLimit = 64, DocumentImageLimit = 8 };
+        await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
+        var request = this.DelegatingHandler!.RequestContent;
+
+        // Assert
+        Assert.NotNull(request);
+        var chatRequest = JsonSerializer.Deserialize<ChatCompletionRequest>(request);
+        Assert.NotNull(chatRequest);
+        Assert.Equal("mistral-small-latest", chatRequest.Model);
+        Assert.Single(chatRequest.Messages);
+        Assert.Equal("user", chatRequest.Messages[0].Role);
+        Assert.NotNull(chatRequest.Messages[0].Content);
+        Assert.Equal(64, chatRequest.DocumentPageLimit);
+        Assert.Equal(8, chatRequest.DocumentImageLimit);
+
+        // Assert
+        var content = JsonSerializer.Serialize(chatRequest.Messages[0].Content);
+        string json = """[{"text":"Summarize the document for me.","type":"text"},{"document_url":"https://arxiv.org/pdf/1805.04770","type":"document_url"}]""";
+        Assert.Equal(json, content);
+    }
+
+    [Fact]
+    public async Task ValidateToMistralChatMessagesWithDocumentResponseAsync()
+    {
+        // Arrange
+        var client = this.CreateMistralClient("mistral-small-latest", "https://api.mistral.ai/v1/chat/completions", "chat_completions_response_with_document.json");
+
+        var chatHistory = new ChatHistory
+        {
+            new ChatMessageContent(
+                AuthorRole.User,
+                [
+                    new TextContent("Summarize the document for me."),
+                    new BinaryContent(new Uri("https://arxiv.org/pdf/1805.04770"))
+                ]),
+        };
+
+        // Act
+        var executionSettings = new MistralAIPromptExecutionSettings { DocumentPageLimit = 64, DocumentImageLimit = 8 };
+        var response = await client.GetChatMessageContentsAsync(chatHistory, default, executionSettings);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Single(response);
+        Assert.Contains("The document titled \"Born-Again Neural Networks\"", response[0].Content);
+        Assert.Equal("mistral-small-latest", response[0].ModelId);
+        Assert.Equal(AuthorRole.Assistant, response[0].Role);
+        Assert.NotNull(response[0].Metadata);
+        Assert.Equal(7, response[0].Metadata?.Count);
+        Assert.NotNull(response[0].Metadata?["Usage"]);
+        Assert.NotNull(response[0].InnerContent);
+        Assert.IsType<MistralChatChoice>(response[0].InnerContent);
     }
 
     public sealed class WeatherPlugin

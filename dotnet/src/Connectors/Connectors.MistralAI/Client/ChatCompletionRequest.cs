@@ -60,6 +60,14 @@ internal sealed class ChatCompletionRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? Stop { get; set; }
 
+    [JsonPropertyName("document_image_limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DocumentImageLimit { get; set; }
+
+    [JsonPropertyName("document_page_limit")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? DocumentPageLimit { get; set; }
+
     /// <summary>
     /// Construct an instance of <see cref="ChatCompletionRequest"/>.
     /// </summary>
