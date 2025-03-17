@@ -50,6 +50,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
         Assert.NotNull(collection);
     }
 
+#pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -78,6 +79,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()

@@ -2,7 +2,7 @@
 
 import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -30,19 +30,21 @@ from semantic_kernel.exceptions import VectorSearchExecutionException, VectorSto
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.list_handler import empty_generator
 
-KEY_TYPES = str | int | float
-
+TKey = TypeVar("TKey", bound=str | int | float)
 TModel = TypeVar("TModel")
 
 IN_MEMORY_SCORE_KEY = "in_memory_search_score"
 
 
 class InMemoryVectorCollection(
-    VectorSearchBase[KEY_TYPES, TModel], VectorTextSearchMixin[TModel], VectorizedSearchMixin[TModel]
+    VectorSearchBase[TKey, TModel],
+    VectorTextSearchMixin[TModel],
+    VectorizedSearchMixin[TModel],
+    Generic[TKey, TModel],
 ):
     """In Memory Collection."""
 
-    inner_storage: dict[KEY_TYPES, dict] = Field(default_factory=dict)
+    inner_storage: dict[TKey, dict] = Field(default_factory=dict)
     supported_key_types: ClassVar[list[str] | None] = ["str", "int", "float"]
 
     def __init__(
@@ -50,12 +52,14 @@ class InMemoryVectorCollection(
         collection_name: str,
         data_model_type: type[TModel],
         data_model_definition: VectorStoreRecordDefinition | None = None,
+        **kwargs: Any,
     ):
         """Create a In Memory Collection."""
         super().__init__(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
+            **kwargs,
         )
 
     def _validate_data_model(self):
@@ -65,16 +69,16 @@ class InMemoryVectorCollection(
             raise VectorStoreModelValidationError(f"Field name '{IN_MEMORY_SCORE_KEY}' is reserved for internal use.")
 
     @override
-    async def _inner_delete(self, keys: Sequence[KEY_TYPES], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         for key in keys:
             self.inner_storage.pop(key, None)
 
     @override
-    async def _inner_get(self, keys: Sequence[KEY_TYPES], **kwargs: Any) -> Any | OneOrMany[TModel] | None:
+    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> Any | OneOrMany[TModel] | None:
         return [self.inner_storage[key] for key in keys if key in self.inner_storage]
 
     @override
-    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[KEY_TYPES]:
+    async def _inner_upsert(self, records: Sequence[Any], **kwargs: Any) -> Sequence[TKey]:
         updated_keys = []
         for record in records:
             key = record[self._key_field_name] if isinstance(record, Mapping) else getattr(record, self._key_field_name)
@@ -125,7 +129,7 @@ class InMemoryVectorCollection(
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         """Inner search method."""
-        return_records: dict[KEY_TYPES, float] = {}
+        return_records: dict[TKey, float] = {}
         for key, record in self._get_filtered_records(options).items():
             if self._should_add_text_search(search_text, record):
                 return_records[key] = 1.0
@@ -144,10 +148,8 @@ class InMemoryVectorCollection(
         options: VectorSearchOptions,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        return_records: dict[KEY_TYPES, float] = {}
-        if not options.vector_field_name:
-            raise ValueError("Vector field name must be provided in options for vector search.")
-        field = options.vector_field_name
+        return_records: dict[TKey, float] = {}
+        field = options.vector_field_name or self.data_model_definition.vector_field_names[0]
         assert isinstance(self.data_model_definition.fields.get(field), VectorStoreRecordVectorField)  # nosec
         distance_metric = (
             self.data_model_definition.fields.get(field).distance_function  # type: ignore
@@ -180,7 +182,7 @@ class InMemoryVectorCollection(
         return KernelSearchResults(results=empty_generator())
 
     async def _generate_return_list(
-        self, return_records: dict[KEY_TYPES, float], options: VectorSearchOptions | None
+        self, return_records: dict[TKey, float], options: VectorSearchOptions | None
     ) -> AsyncIterable[dict]:
         top = 3 if not options else options.top
         skip = 0 if not options else options.skip
@@ -194,7 +196,7 @@ class InMemoryVectorCollection(
                 if returned >= top:
                     break
 
-    def _get_filtered_records(self, options: VectorSearchOptions | None) -> dict[KEY_TYPES, dict]:
+    def _get_filtered_records(self, options: VectorSearchOptions | None) -> dict[TKey, dict]:
         if options and options.filter:
             for filter in options.filter.filters:
                 return {key: record for key, record in self.inner_storage.items() if self._apply_filter(record, filter)}

@@ -20,6 +20,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Connectors.Memory.Common\SqlFilterTranslator.cs" Link="SqlFilterTranslator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Npgsql" />
     <PackageReference Include="Pgvector" />

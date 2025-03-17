@@ -4,7 +4,7 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.SqlServer</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
     <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
@@ -19,11 +19,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Connectors.Memory.Common\SqlFilterTranslator.cs" Link="SqlFilterTranslator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SqlServerIntegrationTests" />
   </ItemGroup>
 
 </Project>

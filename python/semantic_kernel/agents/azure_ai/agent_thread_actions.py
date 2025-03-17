@@ -162,7 +162,7 @@ class AgentThreadActions:
         run_options = {k: v for k, v in run_options.items() if v is not None}
 
         run: ThreadRun = await agent.client.agents.create_run(
-            assistant_id=agent.id,
+            agent_id=agent.id,
             thread_id=thread_id,
             instructions=merged_instructions or agent.instructions,
             tools=tools,
@@ -388,7 +388,7 @@ class AgentThreadActions:
         run_options = {k: v for k, v in run_options.items() if v is not None}
 
         stream: AsyncAgentRunStream = await agent.client.agents.create_stream(
-            assistant_id=agent.id,
+            agent_id=agent.id,
             thread_id=thread_id,
             instructions=merged_instructions or agent.instructions,
             tools=tools,
@@ -663,12 +663,12 @@ class AgentThreadActions:
                 last_id = message.id
                 assistant_name: str | None = None
 
-                if message.assistant_id and message.assistant_id.strip() and message.assistant_id not in agent_names:
-                    assistant = await client.agents.get_agent(message.assistant_id)
+                if message.agent_id and message.agent_id.strip() and message.agent_id not in agent_names:
+                    assistant = await client.agents.get_agent(message.agent_id)
                     if assistant.name and assistant.name.strip():
                         agent_names[assistant.id] = assistant.name
 
-                assistant_name = agent_names.get(message.assistant_id) or message.assistant_id
+                assistant_name = agent_names.get(message.agent_id) or message.agent_id
 
                 content = generate_message_content(assistant_name, message)
 

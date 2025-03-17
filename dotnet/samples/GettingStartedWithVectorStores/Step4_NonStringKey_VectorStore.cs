@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED_FOR_NOW // TODO: See note in MappingVectorStoreRecordCollection
+
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client;
 
 namespace GettingStartedWithVectorStores;
+
 
 /// <summary>
 /// Example that shows that you can switch between different vector stores with the same code, in this case
@@ -124,15 +127,15 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
 
         /// <inheritdoc />
-        public Task DeleteAsync(TPublicKey key, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(TPublicKey key, CancellationToken cancellationToken = default)
         {
-            return this._collection.DeleteAsync(this._publicToInternalKeyMapper(key), options, cancellationToken);
+            return this._collection.DeleteAsync(this._publicToInternalKeyMapper(key), cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task DeleteBatchAsync(IEnumerable<TPublicKey> keys, DeleteRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public Task DeleteBatchAsync(IEnumerable<TPublicKey> keys, CancellationToken cancellationToken = default)
         {
-            return this._collection.DeleteBatchAsync(keys.Select(this._publicToInternalKeyMapper), options, cancellationToken);
+            return this._collection.DeleteBatchAsync(keys.Select(this._publicToInternalKeyMapper), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -161,18 +164,18 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
 
         /// <inheritdoc />
-        public async Task<TPublicKey> UpsertAsync(TPublicRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public async Task<TPublicKey> UpsertAsync(TPublicRecord record, CancellationToken cancellationToken = default)
         {
             var internalRecord = this._publicToInternalRecordMapper(record);
-            var internalKey = await this._collection.UpsertAsync(internalRecord, options, cancellationToken).ConfigureAwait(false);
+            var internalKey = await this._collection.UpsertAsync(internalRecord, cancellationToken).ConfigureAwait(false);
             return this._internalToPublicKeyMapper(internalKey);
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<TPublicKey> UpsertBatchAsync(IEnumerable<TPublicRecord> records, UpsertRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<TPublicKey> UpsertBatchAsync(IEnumerable<TPublicRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var internalRecords = records.Select(this._publicToInternalRecordMapper);
-            var internalKeys = this._collection.UpsertBatchAsync(internalRecords, options, cancellationToken);
+            var internalKeys = this._collection.UpsertBatchAsync(internalRecords, cancellationToken);
             await foreach (var internalKey in internalKeys.ConfigureAwait(false))
             {
                 yield return this._internalToPublicKeyMapper(internalKey);
@@ -193,3 +196,5 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
     }
 }
+
+#endif

@@ -10,17 +10,14 @@ namespace Microsoft.SemanticKernel;
 public sealed class KernelProcessStepContext
 {
     private readonly IKernelProcessMessageChannel _stepMessageChannel;
-    private readonly IExternalKernelProcessMessageChannel? _externalMessageChannel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepContext"/> class.
     /// </summary>
     /// <param name="channel">An instance of <see cref="IKernelProcessMessageChannel"/>.</param>
-    /// <param name="externalMessageChannel">An instance of <see cref="IExternalKernelProcessMessageChannel"/></param>
-    public KernelProcessStepContext(IKernelProcessMessageChannel channel, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    public KernelProcessStepContext(IKernelProcessMessageChannel channel)
     {
         this._stepMessageChannel = channel;
-        this._externalMessageChannel = externalMessageChannel;
     }
 
     /// <summary>
@@ -54,22 +51,5 @@ public sealed class KernelProcessStepContext
                 Data = data,
                 Visibility = visibility
             });
-    }
-
-    /// <summary>
-    /// Emit an external event to through a <see cref="IExternalKernelProcessMessageChannel"/>
-    /// component if connected from within the SK process
-    /// </summary>
-    /// <param name="processEventData">data containing event details</param>
-    /// <returns></returns>
-    /// <exception cref="KernelException"></exception>
-    public async Task EmitExternalEventAsync(KernelProcessProxyMessage processEventData)
-    {
-        if (this._externalMessageChannel == null)
-        {
-            throw new KernelException($"External message channel not configured for step with topic {processEventData.ExternalTopicName}");
-        }
-
-        await this._externalMessageChannel.EmitExternalEventAsync(processEventData.ExternalTopicName, processEventData).ConfigureAwait(false);
     }
 }
