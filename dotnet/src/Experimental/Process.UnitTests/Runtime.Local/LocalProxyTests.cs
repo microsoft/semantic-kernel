@@ -2,8 +2,8 @@
 using System;
 using System.Threading.Tasks;
 using SemanticKernel.Process.TestsShared.CloudEvents;
-using SemanticKernel.Process.TestsShared.Setup;
 using SemanticKernel.Process.TestsShared.Services;
+using SemanticKernel.Process.TestsShared.Setup;
 using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
