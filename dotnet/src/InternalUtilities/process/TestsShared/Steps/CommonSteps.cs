@@ -16,15 +16,20 @@ public static class CommonSteps
     /// <summary>
     /// The step that counts how many times it has been invoked.
     /// </summary>
-    public sealed class CountStep : KernelProcessStep
+    public  class CountStep : KernelProcessStep
     {
         public const string CountFunction = nameof(Count);
 
-        [KernelFunction]
-        public string Count(Kernel kernel)
+        private readonly ICounterService _counter;
+        public CountStep(ICounterService counterService)
         {
-            var counter = kernel.GetRequiredService<ICounterService>();
-            int count = counter.IncreateCount();
+            this._counter = counterService;
+        }
+
+        [KernelFunction]
+        public string Count()
+        {
+            int count = this._counter.IncreaseCount();
 
             return count.ToString();
         }

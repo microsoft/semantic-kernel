@@ -10,7 +10,7 @@ internal sealed class CounterService : ICounterService
         return this._counter;
     }
 
-    public int IncreateCount()
+    public int IncreaseCount()
     {
         this._counter++;
         return this._counter;

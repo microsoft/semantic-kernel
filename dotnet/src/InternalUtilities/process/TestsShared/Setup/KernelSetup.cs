@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Process.TestsShared.Services;
 
-namespace SemanticKernel.Process.TestsShared.Kernels;
+namespace SemanticKernel.Process.TestsShared.Setup;
 
 internal static class KernelSetup
 {
