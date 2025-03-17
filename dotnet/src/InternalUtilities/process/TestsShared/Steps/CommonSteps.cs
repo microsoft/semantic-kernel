@@ -16,7 +16,7 @@ public static class CommonSteps
     /// <summary>
     /// The step that counts how many times it has been invoked.
     /// </summary>
-    public  class CountStep : KernelProcessStep
+    public sealed class CountStep : KernelProcessStep
     {
         public const string CountFunction = nameof(Count);
 
