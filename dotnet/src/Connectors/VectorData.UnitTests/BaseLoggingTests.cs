@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace VectorData.UnitTests;
