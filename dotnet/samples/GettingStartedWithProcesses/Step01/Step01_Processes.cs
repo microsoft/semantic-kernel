@@ -77,7 +77,7 @@ public class Step01_Processes(ITestOutputHelper output) : BaseTest(output, redir
         Console.WriteLine($"Diagram generated at: {generatedImagePath}");
 
         // Start the process with an initial external event
-        using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
+        await using var runningProcess = await kernelProcess.StartAsync(kernel, new KernelProcessEvent() { Id = ChatBotEvents.StartProcess, Data = null });
     }
 
     /// <summary>
