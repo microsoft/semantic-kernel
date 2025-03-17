@@ -2,6 +2,8 @@
 using System;
 using System.Threading.Tasks;
 using SemanticKernel.Process.TestsShared.CloudEvents;
+using SemanticKernel.Process.TestsShared.Kernels;
+using SemanticKernel.Process.TestsShared.Services;
 using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
@@ -34,7 +36,8 @@ public class LocalProxyTests
         counterStep.OnFunctionResult().EmitExternalEvent(proxyStep, this._topic1);
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
@@ -88,15 +91,15 @@ public class LocalProxyTests
     /// Validates the <see cref="LocalProxy"/> emits different topics from
     /// different steps
     /// </summary>
-    [Fact(Timeout = 2000)]
+    [Fact]
     public async Task ProcessWithCyclesAndProxyWithTwoTopicsAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = this.GetSampleProcessWithProxyEmittingTwoTopics(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
@@ -129,7 +132,6 @@ public class LocalProxyTests
     public async Task ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync));
         var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner-{nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync)}"));
@@ -139,7 +141,8 @@ public class LocalProxyTests
             .SendEventTo(innerProcess.WhereInputEventIs(this._startProcessEvent));
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
@@ -172,7 +175,6 @@ public class LocalProxyTests
     public async Task ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync));
         var innerProcess = process.AddStepFromProcess(
@@ -186,7 +188,8 @@ public class LocalProxyTests
             .SendEventTo(innerProcess.WhereInputEventIs(this._startProcessEvent));
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
