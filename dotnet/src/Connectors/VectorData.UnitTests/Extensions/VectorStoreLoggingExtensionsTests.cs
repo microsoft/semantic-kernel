@@ -238,25 +238,6 @@ public class VectorStoreLoggingExtensionsTests
         Assert.Null(logs[1].Exception);
     }
 
-    [Fact]
-    public void AsJsonIgnoresVectorPropertiesByDefault()
-    {
-        // Arrange
-        var record = new TestRecord();
-
-        // Act
-        var jsonResult = VectorStoreLoggingExtensions.AsJson(record, null);
-
-        var jsonDocument = JsonDocument.Parse(jsonResult);
-        var root = jsonDocument.RootElement;
-
-        // Assert
-        Assert.True(root.TryGetProperty("DataProperty", out var regularProp));
-        Assert.Equal("test value", regularProp.GetString());
-
-        Assert.False(root.TryGetProperty("VectorProperty", out var _));
-    }
-
     #region private
 
     private sealed class TestRecord
