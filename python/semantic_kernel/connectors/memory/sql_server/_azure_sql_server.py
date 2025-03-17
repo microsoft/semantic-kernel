@@ -1,23 +1,23 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 import json
 import logging
 import re
 import struct
 import sys
-from collections.abc import AsyncGenerator, Sequence
+from collections.abc import Sequence
 from itertools import chain
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, ClassVar, Final, Generic, TypeVar
 
 import pyodbc
 from azure.identity.aio import DefaultAzureCredential
-from pydantic import SecretStr, ValidationError
+from pydantic import SecretStr, ValidationError, field_validator
+from pyodbc import Row
 
-from semantic_kernel.connectors.memory.postgres.utils import (
-    convert_row_to_dict,
-)
-from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.connectors.memory.sql_server.sql_command_builder import SqlCommand, StringBuilder
+from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
+from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
+from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
 from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
@@ -27,6 +27,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
+from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
 from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
@@ -50,7 +51,7 @@ TModel = TypeVar("TModel")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-
+SCORE_FIELD_NAME: Final[str] = "_vector_distance_value"
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE_DISTANCE: "cosine",
     DistanceFunction.EUCLIDEAN_DISTANCE: "euclidean",
@@ -58,11 +59,12 @@ DISTANCE_FUNCTION_MAP = {
 }
 
 
-def python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> str | None:
+def _python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> str | None:
     """Convert a string representation of a Python type to a SQL data type.
 
     Args:
         python_type_str: The string representation of the Python type (e.g., "int", "List[str]").
+        is_key: Whether the type is a key field.
 
     Returns:
         Corresponding SQL data type as a string, if found. If the type is not found, return None.
@@ -88,7 +90,7 @@ def python_type_to_sql(python_type_str: str | None, is_key: bool = False) -> str
     if match:
         # Extract the inner type of the list and convert it to a SQL array type
         element_type_str = match.group(1)
-        sql_element_type = python_type_to_sql(element_type_str)
+        sql_element_type = _python_type_to_sql(element_type_str)
         return f"{sql_element_type}[]"
 
     # Handle basic types
@@ -107,25 +109,30 @@ def _build_create_table_query(
     if_not_exists: bool = False,
 ) -> str:
     """Build the CREATE TABLE query based on the data model."""
-    query_builder = []
+    query_builder = StringBuilder()
     if if_not_exists:
-        query_builder.append(f"IF OBJECT_ID(N'{schema}.{table}', N'U') IS NULL\n")
-    query_builder.append("BEGIN\n")
-    query_builder.append(f"CREATE TABLE {schema}.{table} (\n")
-    # add the key field
-    query_builder.append(f'"{key_field.name}" {python_type_to_sql(key_field.property_type, is_key=True)} NOT NULL,\n')
-    # add the data fields
-    [query_builder.append(f'"{field.name}" {python_type_to_sql(field.property_type)} NULL,\n') for field in data_fields]
-    # add the vector fields
-    for field in vector_fields:
-        if field.dimensions is None:
-            raise ValueError(f"Vector dimensions are not defined for field '{field.name}'")
-        query_builder.append(f'"{field.name}" VECTOR({field.dimensions}) NULL,\n')
-    # set the primary key
-    query_builder.append(f'PRIMARY KEY ("{key_field.name}")\n')
-    query_builder.append(");\n")
-    query_builder.append("END\n")
-    return f"{(' ').join(query_builder)}"
+        query_builder.append_with_newline(f"IF OBJECT_ID(N'{schema}.{table}', N'U') IS NULL")
+    with query_builder.in_logical_group():
+        query_builder.append(f"CREATE TABLE {schema}.{table}")
+        with query_builder.in_parenthesis(start="\n", end=";"):
+            # add the key field
+            query_builder.append_with_newline(
+                f'"{key_field.name}" {_python_type_to_sql(key_field.property_type, is_key=True)} NOT NULL,'
+            )
+            # add the data fields
+            [
+                query_builder.append_with_newline(f'"{field.name}" {_python_type_to_sql(field.property_type)} NULL,')
+                for field in data_fields
+            ]
+            # add the vector fields
+            for field in vector_fields:
+                if field.dimensions is None:
+                    raise ValueError(f"Vector dimensions are not defined for field '{field.name}'")
+                query_builder.append_with_newline(f'"{field.name}" VECTOR({field.dimensions}) NULL,')
+            # set the primary key
+            with query_builder.in_parenthesis("PRIMARY KEY", "\n"):
+                query_builder.append(key_field.name)
+    return str(query_builder)
 
 
 def _build_delete_table_query(
@@ -162,114 +169,255 @@ def _build_select_table_names_query(
     return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' "
 
 
-def _add_value(value: Any | None, field: VectorStoreRecordField) -> str:
+def _convert_value(value: Any | None, field: VectorStoreRecordField | None = None) -> str:
     """Add a value to the query builder."""
     if value is None:
         return "NULL"
-    if isinstance(field, VectorStoreRecordVectorField):
-        return f"CAST('{json.dumps(value)}' AS VECTOR({field.dimensions})),"
+    if field and isinstance(field, VectorStoreRecordVectorField):
+        return f"CAST('{json.dumps(value)}' AS VECTOR({field.dimensions}))"
     match value:
         case str():
-            return f"'{value}',"
+            return f"'{value}'"
         case bool():
-            return "1," if value else "0,"
+            return "1" if value else "0"
         case int() | float():
-            return f"'{value!s}',"
-        case list() | dict():
-            return f"'{json.dumps(value)}',"
+            return f"'{value!s}'"
+        case list():
+            return f"'{json.dumps(value)}'"
+        case dict():
+            return f"{json.dumps(value)}"
         case bytes():
-            return f"CONVERT(VARBINARY(MAX), '{value.hex()}'),"
+            return f"CONVERT(VARBINARY(MAX), '{value.hex()}')"
         case _:
             raise VectorStoreOperationException(f"Unsupported type: {type(value)}")
 
 
-def _record_to_sql_string(
-    record: dict[str, Any],
-    key_field: VectorStoreRecordKeyField,
-    data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField],
-) -> str:
-    """Convert a record to a SQL string."""
-    output = []
-    # add the key field
-    output.append(_add_value(record[key_field.name], key_field))
-    # add the data and vector fields
-    for field in chain(data_fields, vector_fields):
-        if field.name in record:
-            output.append(_add_value(record[field.name], field))
-        else:
-            output.append("NULL,")
-    # remove the last comma
-    output[-1] = output[-1][:-1]
-    # add the closing parenthesis
-    output.append("),\n")
-    return "".join(output)
+def _add_cast_check(value: str, field: VectorStoreRecordField) -> str:
+    """Add a cast check to the value."""
+    if isinstance(value, bytes):
+        return f"CONVERT(VARBINARY(MAX), {value})"
+    return value
+
+
+def _cast_value(value: Any) -> str:
+    """Add a cast check to the value."""
+    match value:
+        case str():
+            return value
+        case bool():
+            return "1" if value else "0"
+        case int() | float():
+            return f"{value!s}"
+        case list():
+            return f"{json.dumps(value)}"
+        case dict():
+            return f"{json.dumps(value)}"
+        case bytes():
+            return f"{value.hex()}"
+        case _:
+            raise VectorStoreOperationException(f"Unsupported type: {type(value)}")
 
 
 def _add_field_names(
-    query_builder: list[str],
+    query_builder: StringBuilder,
     key_field: VectorStoreRecordKeyField,
     data_fields: list[VectorStoreRecordDataField],
-    vector_fields: list[VectorStoreRecordVectorField],
+    vector_fields: list[VectorStoreRecordVectorField] | None,
     prefix: str = "",
-) -> list[str]:
+) -> StringBuilder:
     """Add a field name to the query builder."""
-    # add the column names
-    query_builder.append(f"{prefix}{key_field.name},")
-    # add the data fields
-    [query_builder.append(f"{prefix}{field.name},") for field in data_fields]
-    # add the vector fields
-    [query_builder.append(f"{prefix}{field.name},") for field in vector_fields]
-    # remove the last comma
-    query_builder[-1] = query_builder[-1][:-1]
+    # add the data and vector fields
+    query_builder.append_list(
+        [f"{prefix}{field.name}" for field in chain([key_field], data_fields, vector_fields or [])], end=""
+    )
     return query_builder
 
 
-def _build_merge_table_query(
+def _add_records_as_parameters(
+    command: SqlCommand,
+    records: Sequence[dict[str, Any]],
+    key_field: VectorStoreRecordKeyField,
+    data_fields: list[VectorStoreRecordDataField],
+    vector_fields: list[VectorStoreRecordVectorField],
+):
+    """Add records as parameters to the command."""
+    for record in records:
+        tup = [_cast_value(record.get(field.name)) for field in chain([key_field], data_fields, vector_fields)]
+        command.add_parameter(tup)
+    return command
+
+
+def _build_merge_query(
     schema: str,
     table: str,
     key_field: VectorStoreRecordKeyField,
     data_fields: list[VectorStoreRecordDataField],
     vector_fields: list[VectorStoreRecordVectorField],
     records: Sequence[dict[str, Any]],
-) -> str:
+) -> SqlCommand:
     """Build the MERGE TABLE query based on the data model."""
-    query_builder = []
-    query_builder.append(f"DECLARE @InsertedKeys TABLE (KeyColumn {python_type_to_sql(key_field.property_type)});\n")
-    query_builder.append(f"MERGE INTO {schema}.{table} AS t\n")
-    query_builder.append("USING (VALUES\n")
-    # add the values from the records
-    [query_builder.append(_record_to_sql_string(record, key_field, data_fields, vector_fields)) for record in records]
-    # remove the last comma and newline
-    query_builder[-1] = query_builder[-1][:-2]
-    query_builder.append(") AS s (")
-    _add_field_names(query_builder, key_field, data_fields, vector_fields)
-    # add the closing parenthesis
-    query_builder.append(")\n")
+    command = SqlCommand()
+    # Declare a temp table to store the keys that are updated
+    command.command.append_with_newline(
+        f"DECLARE @UpsertedKeys TABLE (KeyColumn {_python_type_to_sql(key_field.property_type)});"
+    )
+    # start the MERGE statement
+    command.command.append_with_newline(f"MERGE INTO {schema}.{table} AS t")
+    # add the USING  VALUES clause
+    with command.command.in_parenthesis("USING "):
+        command.command.append_with_newline("VALUES")
+        # add the placeholders for the fields
+        with command.command.in_parenthesis():
+            command.command.append_list([
+                _add_cast_check("?", field) for field in chain([key_field], data_fields, vector_fields)
+            ])
+        # add the records as parameters
+        _add_records_as_parameters(command, records, key_field, data_fields, vector_fields)
+    # with the table column names
+    with command.command.in_parenthesis("AS s "):
+        _add_field_names(command.command, key_field, data_fields, vector_fields)
     # add the ON clause
-    query_builder.append(f"ON (t.{key_field.name} = s.{key_field.name})\n")
-    query_builder.append("WHEN MATCHED THEN\n")
-    query_builder.append("UPDATE SET ")
-    # add the data fields
-    for field in chain(data_fields, vector_fields):
-        query_builder.append(f"t.{field.name} = s.{field.name},")
-    # remove the last comma
-    query_builder[-1] = query_builder[-1][:-1]
-    query_builder.append("\n")
-    query_builder.append("WHEN NOT MATCHED THEN\n")
-    query_builder.append("INSERT (")
-    # add the field names
-    _add_field_names(query_builder, key_field, data_fields, vector_fields)
+    with command.command.in_parenthesis("ON ", "\n"):
+        command.command.append(f"t.{key_field.name} = s.{key_field.name}")
+    # Set the Matched clause
+    command.command.append_with_newline("WHEN MATCHED THEN")
+    command.command.append("UPDATE SET ")
+    command.command.append_list([f"t.{field.name} = s.{field.name}" for field in chain(data_fields, vector_fields)])
+    # Set the Not Matched clause
+    command.command.append_with_newline("WHEN NOT MATCHED THEN")
+    with command.command.in_parenthesis("INSERT"):
+        _add_field_names(command.command, key_field, data_fields, vector_fields)
     # add the closing parenthesis
-    query_builder.append(")\n")
-    query_builder.append("VALUES (")
-    # add the field names
-    _add_field_names(query_builder, key_field, data_fields, vector_fields, prefix="s.")
+    with command.command.in_parenthesis("VALUES"):
+        _add_field_names(command.command, key_field, data_fields, vector_fields, prefix="s.")
     # add the closing parenthesis
-    query_builder.append(")\n")
-    query_builder.append(f"OUTPUT inserted.{key_field.name} INTO @InsertedKeys (KeyColumn);\n")
-    query_builder.append("SELECT KeyColumn FROM @InsertedKeys;\n")
-    return f"{(' ').join(query_builder)}"
+    command.command.append_with_newline(f"OUTPUT inserted.{key_field.name} INTO @UpsertedKeys (KeyColumn);")
+    command.command.append_with_newline("SELECT KeyColumn FROM @UpsertedKeys;")
+    return command
+
+
+def _build_select_query(
+    schema: str,
+    table: str,
+    key_field: VectorStoreRecordKeyField,
+    data_fields: list[VectorStoreRecordDataField],
+    vector_fields: list[VectorStoreRecordVectorField],
+    keys: Sequence[TKey],
+    include_vectors: bool = True,
+) -> str:
+    """Build the SELECT query based on the data model."""
+    query_builder = StringBuilder()
+    # start the SELECT statement
+    query_builder.append_with_newline("SELECT ")
+    # add the data and vector fields
+    if include_vectors:
+        _add_field_names(query_builder, key_field, data_fields, vector_fields)
+    else:
+        _add_field_names(query_builder, key_field, data_fields, None)
+    # add the FROM clause
+    query_builder.append_with_newline(f" FROM {schema}.{table}")
+    # add the WHERE clause
+    if keys:
+        query_builder.append_with_newline(f"WHERE {key_field.name} IN ")
+        with query_builder.in_parenthesis():
+            # add the keys
+            query_builder.append_list([_convert_value(key) for key in keys], sep=", ", end="")
+    query_builder.append(";")
+    return str(query_builder)
+
+
+def _build_delete_query(
+    schema: str,
+    table: str,
+    key_field: VectorStoreRecordKeyField,
+    keys: Sequence[TKey],
+) -> str:
+    """Build the DELETE query based on the data model."""
+    query_builder = StringBuilder()
+    # start the DELETE statement
+    query_builder.append_with_newline(f"DELETE FROM {schema}.{table}")
+    # add the WHERE clause
+    query_builder.append_with_newline(f"WHERE {key_field.name} IN ")
+    with query_builder.in_parenthesis():
+        # add the keys
+        query_builder.append_list([_convert_value(key) for key in keys], sep=", ", end="")
+    query_builder.append(";")
+    return str(query_builder)
+
+
+def _build_search_query(
+    schema: str,
+    table: str,
+    key_field: VectorStoreRecordKeyField,
+    data_fields: list[VectorStoreRecordDataField],
+    vector_fields: list[VectorStoreRecordVectorField],
+    vector: list[float],
+    options: VectorSearchOptions,
+) -> SqlCommand:
+    """Build the SELECT query based on the data model."""
+    command = SqlCommand()
+    # start the SELECT statement
+    command.command.append("SELECT ")
+    # add the data and vector fields
+    _add_field_names(
+        command.command, key_field, data_fields, vector_fields
+    ) if options and options.include_vectors else _add_field_names(command.command, key_field, data_fields, None)
+    # add the vector search clause
+    if options.vector_field_name:
+        vector_field = next(
+            (field for field in vector_fields if field.name == options.vector_field_name),
+            None,
+        )
+        if not vector_field:
+            raise VectorStoreOperationException(
+                f"Vector field '{options.vector_field_name}' not found in the data model."
+            )
+        if vector_field.distance_function:
+            distance_function = DISTANCE_FUNCTION_MAP.get(vector_field.distance_function)
+            if not distance_function:
+                raise VectorStoreOperationException(
+                    f"Distance function '{vector_field.distance_function}' not supported."
+                )
+
+            # add the ORDER BY clause
+            asc: bool = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
+        else:
+            distance_function = "cosine"
+            asc: bool = True
+
+        command.command.append_with_newline(
+            f", VECTOR_DISTANCE('{distance_function}', {vector_field.name}, CAST(? AS VECTOR({vector_field.dimensions}))) as {SCORE_FIELD_NAME}"  # noqa: E501
+        )
+        command.add_parameter(_cast_value(vector))
+    # add the FROM clause
+    command.command.append_with_newline(f" FROM {schema}.{table}")
+    # add the WHERE clause
+    if options.filter:
+        filter_clause = _build_filter(options.filter)
+        if filter_clause:
+            command.command.append_with_newline(filter_clause)
+    # add the ORDER BY clause
+    command.command.append_with_newline(f"ORDER BY {SCORE_FIELD_NAME} {'ASC' if asc else 'DESC'}")
+    command.command.append(f"OFFSET {options.skip} ROWS FETCH NEXT {options.top} ROWS ONLY")
+    command.command.append(";")
+    return command
+
+
+def _build_filter(filters: VectorSearchFilter) -> str | None:
+    """Build the filter query based on the data model."""
+    query_builder = StringBuilder()
+    if not filters.filters:
+        return None
+    query_builder.append("WHERE ")
+    for filter in filters.filters:
+        match filter:
+            case EqualTo():
+                query_builder.append_with_newline(f"{filter.field_name} = '{_cast_value(filter.value)}' AND")
+            case AnyTagsEqualTo():
+                query_builder.append_with_newline(f"'{_cast_value(filter.value)}' IN {filter.field_name} AND")
+    # remove the last AND
+    query_builder.remove_last(4)
+    return str(query_builder)
 
 
 class AzureSqlSettings(KernelBaseSettings):
@@ -296,6 +444,19 @@ class AzureSqlSettings(KernelBaseSettings):
 
     connection_string: SecretStr
 
+    @field_validator("connection_string", mode="before")
+    @classmethod
+    def validate_connection_string(cls, value: str) -> str:
+        """Validate the connection string.
+
+        The LongAsMax=yes option is added to the connection string if it is not present.
+        This is needed to supply vectors as query parameters.
+
+        """
+        if "LongAsMax=yes" not in value:
+            return f"{value};LongAsMax=yes"
+        return value
+
 
 async def get_mssql_connection(settings: AzureSqlSettings) -> pyodbc.Connection:
     """Get a connection to the Azure SQL database."""
@@ -303,15 +464,16 @@ async def get_mssql_connection(settings: AzureSqlSettings) -> pyodbc.Connection:
     if any(s in mssql_connection_string.lower() for s in ["uid"]):
         attrs_before = None
     else:
-        credential = DefaultAzureCredential(exclude_interactive_browser_credential=False)
-        token_bytes = (await credential.get_token("https://database.windows.net/.default")).token.encode("UTF-16-LE")
-        token_struct = struct.pack(f"<I{len(token_bytes)}s", len(token_bytes), token_bytes)
-        SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
-        attrs_before = {SQL_COPT_SS_ACCESS_TOKEN: token_struct}
+        async with DefaultAzureCredential(exclude_interactive_browser_credential=False) as credential:
+            # Get the access token
+            token_bytes = (await credential.get_token("https://database.windows.net/.default")).token.encode(
+                "UTF-16-LE"
+            )
+            token_struct = struct.pack(f"<I{len(token_bytes)}s", len(token_bytes), token_bytes)
+            SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
+            attrs_before = {SQL_COPT_SS_ACCESS_TOKEN: token_struct}
 
-    conn = pyodbc.connect(mssql_connection_string, attrs_before=attrs_before)
-
-    return conn
+    return pyodbc.connect(mssql_connection_string, attrs_before=attrs_before)
 
 
 @experimental
@@ -345,7 +507,7 @@ class AzureSqlCollection(
             data_model_type: The type of the data model.
             data_model_definition: The data model definition.
             connection_string: The connection string to the database.
-            connection: The connection pool.
+            connection: The connection, make sure to set the `LongAsMax=yes` option on the construction string used.
             env_file_path: Use the environment settings file as a fallback to environment variables.
             env_file_encoding: The encoding of the environment settings file.
             **kwargs: Additional arguments.
@@ -409,26 +571,46 @@ class AzureSqlCollection(
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
         if not records:
             return []
-        schema, table = self._get_schema_and_table()
+        command = _build_merge_query(
+            *self._get_schema_and_table(),
+            self.data_model_definition.key_field,
+            [
+                field
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField)
+            ],
+            self.data_model_definition.vector_fields,
+            records,
+        )
+        # Execute the merge query
+        result = self._execute_merge_query(command)
+        # Extract the keys from the result
+        keys = [row[0] for row in result]
+        if not keys:
+            raise VectorStoreOperationException("No keys were returned from the merge query.")
+        # Return the keys
+        return keys
+
+    def _execute_merge_query(self, command: SqlCommand | str) -> list[Row]:
         with self.connection.cursor() as cur:
-            cur.execute(
-                _build_merge_table_query(
-                    schema,
-                    table,
-                    self.data_model_definition.key_field,
-                    [
-                        field
-                        for field in self.data_model_definition.fields.values()
-                        if isinstance(field, VectorStoreRecordDataField)
-                    ],
-                    self.data_model_definition.vector_fields,
-                    records,
-                )
-            )
-            inserted_keys = cur.fetchall()
-            if not inserted_keys:
-                return []
-            return [key[0] for key in inserted_keys]
+            if isinstance(command, str):
+                cur.execute(command)
+            elif isinstance(command, SqlCommand) and command.is_execute_many:
+                cur.executemany(*command.to_execute())
+            else:
+                cur.execute(*command.to_execute())
+            try:
+                return cur.fetchall()
+            except pyodbc.ProgrammingError:
+                # No rows were returned
+                pass
+            while cur.nextset():
+                try:
+                    return cur.fetchall()
+                except pyodbc.ProgrammingError:
+                    # No keys were returned
+                    continue
+        return []
 
     @override
     async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[dict[str, Any]] | None:
@@ -443,22 +625,37 @@ class AzureSqlCollection(
         """
         if self.connection is None:
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
-
-        # fields = [(field.name, field) for field in self.data_model_definition.fields.values()]
-        # async with self.connection.connection() as conn, conn.cursor() as cur:
-        #     await cur.execute(
-        #         sql.SQL("SELECT {select_list} FROM {schema}.{table} WHERE {key_name} IN ({keys})").format(
-        #             select_list=sql.SQL(", ").join(sql.Identifier(name) for (name, _) in fields),
-        #             schema=sql.Identifier(self.db_schema),
-        #             table=sql.Identifier(self.collection_name),
-        #             key_name=sql.Identifier(self.data_model_definition.key_field.name),
-        #             keys=sql.SQL(", ").join(sql.Literal(key) for key in keys),
-        #         )
-        #     )
-        #     rows = await cur.fetchall()
-        #     if not rows:
-        #         return None
-        #     return [convert_row_to_dict(row, fields) for row in rows]
+        if not keys:
+            return None
+        include_vectors = kwargs.get("include_vectors", True)
+        query = _build_select_query(
+            *self._get_schema_and_table(),
+            self.data_model_definition.key_field,
+            [
+                field
+                for field in self.data_model_definition.fields.values()
+                if isinstance(field, VectorStoreRecordDataField)
+            ],
+            self.data_model_definition.vector_fields,
+            keys,
+            include_vectors,
+        )
+        with self.connection.cursor() as cur:
+            cur.execute(query)
+            try:
+                col_names = [desc[0] for desc in cur.description]
+                rows = cur.fetchall()
+                records = [{col: row.__getattribute__(col) for col in col_names} for row in rows] if rows else None
+                if not records:
+                    return None
+                for field in self.data_model_definition.vector_field_names:
+                    for record in records:
+                        if field in record:
+                            record[field] = json.loads(record[field])
+                return records
+            except pyodbc.ProgrammingError:
+                # No rows were returned
+                return None
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
@@ -471,25 +668,15 @@ class AzureSqlCollection(
         if self.connection is None:
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
 
-        # async with (
-        #     self.connection.connection() as conn,
-        #     conn.transaction(),
-        #     conn.cursor() as cur,
-        # ):
-        #     # Split the keys into batches
-        #     max_rows_per_transaction = self._settings.max_rows_per_transaction
-        #     for i in range(0, len(keys), max_rows_per_transaction):
-        #         key_batch = keys[i : i + max_rows_per_transaction]
-
-        #         # Execute the DELETE statement for each batch
-        #         await cur.execute(
-        #             sql.SQL("DELETE FROM {schema}.{table} WHERE {name} IN ({keys})").format(
-        #                 schema=sql.Identifier(self.db_schema),
-        #                 table=sql.Identifier(self.collection_name),
-        #                 name=sql.Identifier(self.data_model_definition.key_field.name),
-        #                 keys=sql.SQL(", ").join(sql.Literal(key) for key in key_batch),
-        #             )
-        #         )
+        if not keys:
+            return
+        query = _build_delete_query(
+            *self._get_schema_and_table(),
+            self.data_model_definition.key_field,
+            keys,
+        )
+        with self.connection.cursor() as cur:
+            cur.execute(query)
 
     @override
     def _serialize_dicts_to_store_models(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Sequence[Any]:
@@ -598,162 +785,39 @@ class AzureSqlCollection(
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
 
         if vector is not None:
-            query, params, return_fields = self._construct_vector_query(vector, options, **kwargs)
+            query = _build_search_query(
+                *self._get_schema_and_table(),
+                self.data_model_definition.key_field,
+                [
+                    field
+                    for field in self.data_model_definition.fields.values()
+                    if isinstance(field, VectorStoreRecordDataField)
+                ],
+                self.data_model_definition.vector_fields,
+                vector,
+                options,
+            )
         elif search_text:
             raise VectorSearchExecutionException("Text search not supported.")
         elif vectorizable_text:
             raise VectorSearchExecutionException("Vectorizable text search not supported.")
 
-        if options.include_total_count:
-            async with self.connection.connection() as conn, conn.cursor() as cur:
-                await cur.execute(query, params)
-                # Fetch all results to get total count.
-                rows = await cur.fetchall()
-                row_dicts = [convert_row_to_dict(row, return_fields) for row in rows]
-                return KernelSearchResults(
-                    results=self._get_vector_search_results_from_results(row_dicts, options), total_count=len(row_dicts)
-                )
-        else:
-            # Use an asynchronous generator to fetch and yield results
-            connection = self.connection
-
-            async def fetch_results() -> AsyncGenerator[dict[str, Any], None]:
-                async with connection.connection() as conn, conn.cursor() as cur:
-                    await cur.execute(query, params)
-                    async for row in cur:
-                        yield convert_row_to_dict(row, return_fields)
-
+        with self.connection.cursor() as cur:
+            cur.execute(*query.to_execute())
+            # Fetch all results to get total count.
+            num_rows = cur.rowcount
+            col_names = [desc[0] for desc in cur.description]
+            rows = cur.fetchall()
+            records = [{col: row.__getattribute__(col) for col in col_names} for row in rows] if rows else None
+            if not records:
+                return None
+            for field in self.data_model_definition.vector_field_names:
+                for record in records:
+                    if field in record:
+                        record[field] = json.loads(record[field])
             return KernelSearchResults(
-                results=self._get_vector_search_results_from_results(fetch_results(), options),
-                total_count=None,
+                results=self._get_vector_search_results_from_results(records, options), total_count=num_rows
             )
-
-    # def _construct_vector_query(
-    #     self,
-    #     vector: list[float | int],
-    #     options: VectorSearchOptions,
-    #     **kwargs: Any,
-    # ) -> tuple[sql.Composed, list[Any], list[tuple[str, VectorStoreRecordField | None]]]:
-    #     """Construct a vector search query.
-
-    #     Args:
-    #         vector: The vector to search for.
-    #         options: The search options.
-    #         **kwargs: Additional arguments.
-
-    #     Returns:
-    #         The query, parameters, and the fields representing the columns in the result.
-    #     """
-    #     # Get the vector field we will be searching against,
-    #     # defaulting to the first vector field if not specified
-    #     vector_fields = self.data_model_definition.vector_fields
-    #     if not vector_fields:
-    #         raise VectorSearchExecutionException("No vector fields defined.")
-    #     if options.vector_field_name:
-    #         vector_field = next((f for f in vector_fields if f.name == options.vector_field_name), None)
-    #         if not vector_field:
-    #             raise VectorSearchExecutionException(f"Vector field '{options.vector_field_name}' not found.")
-    #     else:
-    #         vector_field = vector_fields[0]
-
-    #     # Default to cosine distance if not set
-    #     distance_function = vector_field.distance_function or DistanceFunction.COSINE_DISTANCE
-    #     ops_str = get_vector_distance_ops_str(distance_function)
-
-    #     # Select all fields except all vector fields if include_vectors is False
-    #     select_list = self.data_model_definition.get_field_names(include_vector_fields=options.include_vectors)
-
-    #     where_clause = self._build_where_clauses_from_filter(options.filter)
-
-    #     query = sql.SQL("SELECT {select_list}, {vec_col} {dist_op} %s as {dist_col} FROM {schema}.{table}").format(
-    #         select_list=sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
-    #         vec_col=sql.Identifier(vector_field.name),
-    #         dist_op=sql.SQL(ops_str),
-    #         dist_col=sql.Identifier(self._distance_column_name),
-    #         schema=sql.Identifier(self.db_schema),
-    #         table=sql.Identifier(self.collection_name),
-    #     )
-
-    #     if where_clause:
-    #         query += where_clause
-
-    #     query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(
-    #         dist_col=sql.Identifier(self._distance_column_name),
-    #         limit=sql.Literal(options.top),
-    #     )
-
-    #     if options.skip:
-    #         query += sql.SQL(" OFFSET {offset}").format(offset=sql.Literal(options.skip))
-
-    #     # For cosine similarity, we need to take 1 - cosine distance.
-    #     # However, we can't use an expression in the ORDER BY clause or else the index won't be used.
-    #     # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
-    #     if distance_function == DistanceFunction.COSINE_SIMILARITY:
-    #         query = sql.SQL(
-    #             "SELECT subquery.*, 1 - subquery.{subquery_dist_col} AS {dist_col} FROM ({subquery}) AS subquery"
-    #         ).format(
-    #             subquery_dist_col=sql.Identifier(self._distance_column_name),
-    #             dist_col=sql.Identifier(self._distance_column_name),
-    #             subquery=query,
-    #         )
-
-    #     # For inner product, we need to take -1 * inner product.
-    #     # However, we can't use an expression in the ORDER BY clause or else the index won't be used.
-    #     # Instead we'll wrap the query in a subquery and modify the distance in the outer query.
-    #     if distance_function == DistanceFunction.DOT_PROD:
-    #         query = sql.SQL(
-    #             "SELECT subquery.*, -1 * subquery.{subquery_dist_col} AS {dist_col} FROM ({subquery}) AS subquery"
-    #         ).format(
-    #             subquery_dist_col=sql.Identifier(self._distance_column_name),
-    #             dist_col=sql.Identifier(self._distance_column_name),
-    #             subquery=query,
-    #         )
-
-    #     # Convert the vector to a string for the query
-    #     params = ["[" + ",".join([str(float(v)) for v in vector]) + "]"]
-
-    #     return (
-    #         query,
-    #         params,
-    #         [
-    #             *((name, f) for (name, f) in self.data_model_definition.fields.items() if name in select_list),
-    #             (self._distance_column_name, None),
-    #         ],
-    #     )
-
-    # def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | None) -> sql.Composed | None:
-    #     """Build the WHERE clause for the search query from the filter in the search options.
-
-    #     Args:
-    #         filters: The filters.
-
-    #     Returns:
-    #         The WHERE clause.
-    #     """
-    #     if not filters or not filters.filters:
-    #         return None
-
-    #     where_clauses = []
-    #     for filter in filters.filters:
-    #         match filter:
-    #             case EqualTo():
-    #                 where_clauses.append(
-    #                     sql.SQL("{field} = {value}").format(
-    #                         field=sql.Identifier(filter.field_name),
-    #                         value=sql.Literal(filter.value),
-    #                     )
-    #                 )
-    #             case AnyTagsEqualTo():
-    #                 where_clauses.append(
-    #                     sql.SQL("{field} @> ARRAY[{value}::TEXT").format(
-    #                         field=sql.Identifier(filter.field_name),
-    #                         value=sql.Literal(filter.value),
-    #                     )
-    #                 )
-    #             case _:
-    #                 raise ValueError(f"Unsupported filter: {filter}")
-
-    #     return sql.SQL("WHERE {clause}").format(clause=sql.SQL(" AND ").join(where_clauses))
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:
@@ -761,6 +825,6 @@ class AzureSqlCollection(
 
     @override
     def _get_score_from_result(self, result: Any) -> float | None:
-        return result.pop("score", None)
+        return result.pop(SCORE_FIELD_NAME, None)
 
     # endregion
