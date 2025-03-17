@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Any, AsyncIterable
+from typing import Any
+from collections.abc import AsyncIterable
 import sys
 
 if sys.version_info >= (3, 12):

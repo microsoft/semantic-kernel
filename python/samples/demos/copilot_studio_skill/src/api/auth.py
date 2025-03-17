@@ -1,6 +1,6 @@
 # See https://github.com/microsoft/BotBuilder-Samples/blob/main/samples/python/80.skills-simple-bot-to-bot/echo-skill-bot/authentication/allowed_callers_claims_validator.py
-from typing import Awaitable, Callable, Dict, List
-
+from typing import Dict, List
+from collections.abc import Awaitable, Callable
 from botframework.connector.auth import JwtTokenValidation, SkillValidation
 
 from config import Config
@@ -26,8 +26,8 @@ class AllowedCallersClaimsValidator:
         self._allowed_callers = frozenset(caller_list)
 
     @property
-    def claims_validator(self) -> Callable[[List[Dict]], Awaitable]:
-        async def allow_callers_claims_validator(claims: Dict[str, object]):
+    def claims_validator(self) -> Callable[[list[dict]], Awaitable]:
+        async def allow_callers_claims_validator(claims: dict[str, object]):
             # if allowed_callers is None we allow all calls
             if "*" not in self._allowed_callers and SkillValidation.is_skill_claim(
                 claims

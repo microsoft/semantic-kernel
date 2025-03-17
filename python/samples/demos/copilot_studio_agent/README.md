@@ -1,7 +1,3 @@
-> [!TIP]
-> This scenario describes how to call a Microsoft Copilot Studio Agent from Semantic Kernel (SK=>MCS).
-> If you are looking at how to extend the capabilities of Microsoft Copilot Studio with a custom API running in Azure with the help of the Semantic Kernel (MCS=>SK), please refer to [this other scenario](../copilot_studio_skill/README.md).
-
 # Copilot Studio Agents interaction
 
 This is a simple example of how to interact with Copilot Studio Agents as they were first-party agents in Semantic Kernel.

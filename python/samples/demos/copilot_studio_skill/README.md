@@ -1,7 +1,3 @@
-> [!TIP]
-> This scenario describes how to extend the capabilities of Microsoft Copilot Studio with a custom API running in Azure with the help of the Semantic Kernel (MCS=>SK).
-> If you are looking at calling a Microsoft Copilot Studio Agent from Semantic Kernel (SK=>MCS), please refer to [this other scenario](../copilot_studio-agent/README.md).
-
 # Extend Copilot Studio with Semantic Kernel
 
 This template demonstrates how to build a [Copilot Studio Skill](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configuration-add-skills#troubleshoot-errors-during-skill-registration) that allows to extend agent capabilities with a custom API running in Azure with the help of the Semantic Kernel.
