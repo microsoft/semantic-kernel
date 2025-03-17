@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
+
 namespace SemanticKernel.Process.TestsShared.Services;
 
 internal sealed class CounterService : ICounterService
@@ -12,7 +14,7 @@ internal sealed class CounterService : ICounterService
 
     public int IncreaseCount()
     {
-        this._counter++;
+        Interlocked.Increment(ref this._counter);
         return this._counter;
     }
 }
