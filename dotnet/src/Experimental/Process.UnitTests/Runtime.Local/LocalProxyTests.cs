@@ -88,7 +88,7 @@ public class LocalProxyTests
     /// Validates the <see cref="LocalProxy"/> emits different topics from
     /// different steps
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 2000)]
     public async Task ProcessWithCyclesAndProxyWithTwoTopicsAsync()
     {
         // Arrange
