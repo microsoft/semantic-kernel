@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -39,7 +38,7 @@ public class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<TRecord>
     /// <inheritdoc/>
     public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(HybridSearchAsync),
             () => this._innerSearch.HybridSearchAsync(vector, keywords, options, cancellationToken));

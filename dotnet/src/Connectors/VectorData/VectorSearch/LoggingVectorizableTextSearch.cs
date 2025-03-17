@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -38,7 +37,7 @@ public class LoggingVectorizableTextSearch<TRecord> : IVectorizableTextSearch<TR
     /// <inheritdoc/>
     public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(VectorizableTextSearchAsync),
             () => this._innerSearch.VectorizableTextSearchAsync(searchText, options, cancellationToken));

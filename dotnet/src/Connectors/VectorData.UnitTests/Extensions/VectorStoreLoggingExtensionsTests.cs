@@ -3,15 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.Extensions.VectorData;
 using Xunit;
 
-namespace SemanticKernel.UnitTests.Utilities;
+namespace VectorData.UnitTests;
 
-public class LoggingExtensionsTests
+public class VectorStoreLoggingExtensionsTests
 {
     [Fact]
     public async Task RunWithLoggingVoidLogsSuccess()
@@ -21,7 +22,7 @@ public class LoggingExtensionsTests
         static Task Operation() => Task.CompletedTask;
 
         // Act
-        await LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation);
+        await VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation);
 
         // Assert
         var logs = logger.Logs;
@@ -43,7 +44,7 @@ public class LoggingExtensionsTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation));
+            VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation));
 
         Assert.Equal("Test error", exception.Message);
 
@@ -68,7 +69,7 @@ public class LoggingExtensionsTests
 
         // Act & Assert
         await Assert.ThrowsAsync<TaskCanceledException>(() =>
-            LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation));
+            VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation));
 
         var logs = logger.Logs;
         Assert.Equal(2, logs.Count);
@@ -88,7 +89,7 @@ public class LoggingExtensionsTests
         static Task<int> Operation() => Task.FromResult(42);
 
         // Act
-        var result = await LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation);
+        var result = await VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation);
 
         // Assert
         Assert.Equal(42, result);
@@ -113,7 +114,7 @@ public class LoggingExtensionsTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation));
+            VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation));
 
         Assert.Equal("Test error", exception.Message);
 
@@ -141,7 +142,7 @@ public class LoggingExtensionsTests
 
         // Act
         var results = new List<int>();
-        await foreach (var item in LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation, default))
+        await foreach (var item in VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation, default))
         {
             results.Add(item);
         }
@@ -176,7 +177,7 @@ public class LoggingExtensionsTests
         var results = new List<int>();
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            await foreach (var item in LoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation, default))
+            await foreach (var item in VectorStoreLoggingExtensions.RunWithLoggingAsync(logger, "TestOperation", Operation, default))
             {
                 results.Add(item);
             }
@@ -214,7 +215,7 @@ public class LoggingExtensionsTests
         var results = new List<int>();
         var exception = await Assert.ThrowsAsync<TaskCanceledException>(async () =>
         {
-            await foreach (var item in LoggingExtensions.RunWithLoggingAsync(
+            await foreach (var item in VectorStoreLoggingExtensions.RunWithLoggingAsync(
                 logger,
                 "TestOperation",
                 () => Operation(cts.Token),
@@ -236,4 +237,36 @@ public class LoggingExtensionsTests
         Assert.Equal("TestOperation canceled.", logs[1].Message);
         Assert.Null(logs[1].Exception);
     }
+
+    [Fact]
+    public void AsJsonIgnoresVectorPropertiesByDefault()
+    {
+        // Arrange
+        var record = new TestRecord();
+
+        // Act
+        var jsonResult = VectorStoreLoggingExtensions.AsJson(record, null);
+
+        var jsonDocument = JsonDocument.Parse(jsonResult);
+        var root = jsonDocument.RootElement;
+
+        // Assert
+        Assert.True(root.TryGetProperty("DataProperty", out var regularProp));
+        Assert.Equal("test value", regularProp.GetString());
+
+        Assert.False(root.TryGetProperty("VectorProperty", out var _));
+    }
+
+    #region private
+
+    private sealed class TestRecord
+    {
+        [VectorStoreRecordData]
+        public string DataProperty { get; set; } = "test value";
+
+        [VectorStoreRecordVector]
+        public ReadOnlyMemory<float> VectorProperty { get; set; } = new float[] { 1.0f, 2.0f, 3.0f };
+    }
+
+    #endregion
 }

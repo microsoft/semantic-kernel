@@ -50,7 +50,6 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Diagnostics/ExperimentalAttribute.cs" />
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/LoggingExtensions.cs" Link="Diagnostics/LoggingExtensions.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Diagnostics/Verify.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Diagnostics/NullableAttributes.cs" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Diagnostics/CompilerServicesAttributes.cs" />
@@ -60,5 +59,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="VectorData.UnitTests" />
   </ItemGroup>
 </Project>

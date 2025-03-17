@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -12,10 +13,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.Diagnostics;
+namespace Microsoft.Extensions.VectorData;
 
-[ExcludeFromCodeCoverage]
-internal static partial class LoggingExtensions
+internal static partial class VectorStoreLoggingExtensions
 {
     internal static async Task RunWithLoggingAsync(
         ILogger logger,
@@ -131,7 +131,7 @@ internal static partial class LoggingExtensions
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     internal static string AsJson<T>(T value, JsonSerializerOptions? options)
     {
-        options ??= GetDefaultOptions();
+        options ??= GetDefaultOptions(typeof(T));
 
         if (options is not null)
         {
@@ -156,13 +156,13 @@ internal static partial class LoggingExtensions
 
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]
-    private static JsonSerializerOptions? GetDefaultOptions()
+    private static JsonSerializerOptions? GetDefaultOptions(Type vectorStoreRecordType)
     {
         if (s_jsonSerializerOptions is null && JsonSerializer.IsReflectionEnabledByDefault)
         {
             JsonSerializerOptions options = new()
             {
-                TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
+                TypeInfoResolver = new DefaultJsonTypeInfoResolver() { Modifiers = { IgnoreVectorProperties } },
                 Converters = { new JsonStringEnumConverter() },
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -173,6 +173,33 @@ internal static partial class LoggingExtensions
         }
 
         return s_jsonSerializerOptions;
+
+        // Local function to ignore vector properties in type serialization.
+        void IgnoreVectorProperties(JsonTypeInfo typeInfo)
+        {
+            // Only apply to the vector store record type
+            if (typeInfo.Type != vectorStoreRecordType)
+            {
+                return;
+            }
+
+            var vectorProperties = vectorStoreRecordType
+                .GetProperties()
+                .Where(l => l.GetCustomAttributes(typeof(VectorStoreRecordVectorAttribute), false).Length > 0)
+                .Select(l => l.Name)
+                .ToArray();
+
+            var uniqueVectorProperties = new HashSet<string>(vectorProperties);
+
+            foreach (var property in typeInfo.Properties)
+            {
+                if (vectorProperties.Contains(property.Name))
+                {
+                    // Set ShouldSerialize to false to ignore vector property
+                    property.ShouldSerialize = static (obj, value) => false;
+                }
+            }
+        }
     }
 
     [LoggerMessage(LogLevel.Debug, "{OperationName} invoked.")]

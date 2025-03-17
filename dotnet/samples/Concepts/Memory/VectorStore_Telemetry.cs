@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -30,35 +29,10 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         // Manually construct an InMemory vector store with enabled logging.
         var vectorStore = new InMemoryVectorStore()
             .AsBuilder()
-            .UseLogging(this.LoggerFactory, vectorStore =>
-            {
-                // Configure custom JSON serializer options for logging data.
-                vectorStore.JsonSerializerOptions = new JsonSerializerOptions
-                {
-                    TypeInfoResolver = new DefaultJsonTypeInfoResolver
-                    {
-                        Modifiers = { GlossaryModifier }
-                    }
-                };
-            })
+            .UseLogging(this.LoggerFactory)
             .Build();
 
         await RunExampleAsync(textEmbeddingGenerationService, vectorStore);
-
-        // Output:
-        // CreateCollectionIfNotExistsAsync invoked.
-        // CreateCollectionIfNotExistsAsync completed.
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // VectorizedSearchAsync invoked.
-        // VectorizedSearchAsync completed.
-
-        // Search string: What is an Application Programming Interface
-        // Result: Application Programming Interface. A set of rules and specifications that allow software components to communicate and exchange data.
     }
 
     [Fact]
@@ -78,15 +52,39 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         // Register InMemoryVectorStore with enabled logging.
         serviceCollection
             .AddVectorStore(s => s.GetRequiredService<InMemoryVectorStore>())
-            .UseLogging(this.LoggerFactory, vectorStore =>
+            .UseLogging(this.LoggerFactory);
+
+        var services = serviceCollection.BuildServiceProvider();
+
+        var vectorStore = services.GetRequiredService<IVectorStore>();
+        var textEmbeddingGenerationService = services.GetRequiredService<ITextEmbeddingGenerationService>();
+
+        await RunExampleAsync(textEmbeddingGenerationService, vectorStore);
+    }
+
+    [Fact]
+    public async Task LoggingWithCustomSerializationAsync()
+    {
+        var serviceCollection = new ServiceCollection();
+
+        // Add an embedding generation service.
+        serviceCollection.AddAzureOpenAITextEmbeddingGeneration(
+            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
+            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
+            new AzureCliCredential());
+
+        // Add InMemory vector store
+        serviceCollection.AddInMemoryVectorStore();
+
+        // Register InMemoryVectorStore with enabled logging.
+        serviceCollection
+            .AddVectorStore(s => s.GetRequiredService<InMemoryVectorStore>())
+            .UseLogging(this.LoggerFactory, configure =>
             {
                 // Configure custom JSON serializer options for logging data.
-                vectorStore.JsonSerializerOptions = new JsonSerializerOptions
+                configure.JsonSerializerOptions = new JsonSerializerOptions
                 {
-                    TypeInfoResolver = new DefaultJsonTypeInfoResolver
-                    {
-                        Modifiers = { GlossaryModifier }
-                    }
+                    WriteIndented = false
                 };
             });
 
@@ -96,21 +94,6 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         var textEmbeddingGenerationService = services.GetRequiredService<ITextEmbeddingGenerationService>();
 
         await RunExampleAsync(textEmbeddingGenerationService, vectorStore);
-
-        // Output:
-        // CreateCollectionIfNotExistsAsync invoked.
-        // CreateCollectionIfNotExistsAsync completed.
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // VectorizedSearchAsync invoked.
-        // VectorizedSearchAsync completed.
-
-        // Search string: What is an Application Programming Interface
-        // Result: Application Programming Interface. A set of rules and specifications that allow software components to communicate and exchange data.
     }
 
     private async Task RunExampleAsync(
@@ -119,7 +102,11 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<ulong, Glossary>("skglossary");
-        await collection.CreateCollectionIfNotExistsAsync();
+
+        if (!await collection.CollectionExistsAsync())
+        {
+            await collection.CreateCollectionAsync();
+        }
 
         // Create glossary entries and generate embeddings for them.
         var glossaryEntries = CreateGlossaryEntries().ToList();
@@ -142,6 +129,31 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
         Console.WriteLine();
+
+        // Output:
+        // CollectionExistsAsync invoked.
+        // CollectionExistsAsync completed.
+        // Collection 'skglossary' exists: False
+        // Creating a collection 'skglossary'
+        // CreateCollectionAsync invoked.
+        // CreateCollectionAsync completed.
+        // Upserting a record in 'skglossary': {"Key":1,"Category":"External Definitions"...
+        // UpsertAsync invoked.
+        // UpsertAsync completed.
+        // Upserted record in 'skglossary' with key: 1
+        // Upserting a record in 'skglossary': {"Key":2,"Category":"Core Definitions"...
+        // UpsertAsync invoked.
+        // UpsertAsync completed.
+        // Upserted record in 'skglossary' with key: 2
+        // Upserting a record in 'skglossary': {"Key":3,"Category":"External Definitions"...
+        // UpsertAsync invoked.
+        // UpsertAsync completed.
+        // Upserted record in 'skglossary' with key: 3
+        // VectorizedSearchAsync invoked.
+        // VectorizedSearchAsync completed.
+
+        // Search string: What is an Application Programming Interface
+        // Result: Application Programming Interface. A set of rules and specifications that allow software components to communicate and exchange data.
     }
 
     /// <summary>
@@ -198,24 +210,5 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
             Term = "RAG",
             Definition = "Retrieval Augmented Generation - a term that refers to the process of retrieving additional data to provide as context to an LLM to use when generating a response (completion) to a user’s question (prompt)."
         };
-    }
-
-    private static void GlossaryModifier(JsonTypeInfo typeInfo)
-    {
-        // Only apply to the Glossary class
-        if (typeInfo.Type != typeof(Glossary))
-        {
-            return;
-        }
-
-        // Find the DefinitionEmbedding property and configure it to be ignored
-        foreach (var property in typeInfo.Properties)
-        {
-            if (property.Name.Equals("DefinitionEmbedding", StringComparison.OrdinalIgnoreCase))
-            {
-                // Set ShouldSerialize to false to ignore this property
-                property.ShouldSerialize = static (obj, value) => false;
-            }
-        }
     }
 }

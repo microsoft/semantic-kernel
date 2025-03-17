@@ -10,7 +10,7 @@ using Xunit;
 
 namespace VectorData.UnitTests;
 
-public class LoggingVectorizedSearchTests
+public class LoggingVectorizedSearchTests : BaseLoggingTests
 {
     [Fact]
     public void ConstructorThrowsOnNullInnerSearch()
@@ -37,7 +37,7 @@ public class LoggingVectorizedSearchTests
     {
         // Arrange
         var innerSearch = new Mock<IVectorizedSearch<string>>();
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var vector = new float[] { 1.0f };
         var options = new VectorSearchOptions<string>();
         var searchResults = new[] { new VectorSearchResult<string>("result", 0.9f) }.ToAsyncEnumerable();
@@ -52,5 +52,8 @@ public class LoggingVectorizedSearchTests
         // Assert
         Assert.Same(results, actualResults);
         innerSearch.Verify(s => s.VectorizedSearchAsync(vector, options, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizedSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizedSearchAsync completed.");
     }
 }

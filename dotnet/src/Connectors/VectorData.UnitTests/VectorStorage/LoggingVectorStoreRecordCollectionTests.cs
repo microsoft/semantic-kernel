@@ -10,7 +10,7 @@ using Xunit;
 
 namespace VectorData.UnitTests;
 
-public class LoggingVectorStoreRecordCollectionTests
+public class LoggingVectorStoreRecordCollectionTests : BaseLoggingTests
 {
     [Fact]
     public void ConstructorThrowsOnNullInnerCollection()
@@ -36,8 +36,7 @@ public class LoggingVectorStoreRecordCollectionTests
     public void CollectionNameReturnsInnerCollectionName()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
-        innerCollection.Setup(c => c.CollectionName).Returns("test");
+        var innerCollection = GetMockCollection();
         var logger = new Mock<ILogger>().Object;
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
@@ -45,17 +44,17 @@ public class LoggingVectorStoreRecordCollectionTests
         var name = decorator.CollectionName;
 
         // Assert
-        Assert.Equal("test", name);
+        Assert.Equal("test-collection", name);
         innerCollection.Verify(c => c.CollectionName, Times.Once());
     }
 
     [Fact]
-    public async Task CollectionExistsDelegatesToInnerCollectionAsync()
+    public async Task CollectionExistsDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         innerCollection.Setup(c => c.CollectionExistsAsync(default)).ReturnsAsync(true);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -64,15 +63,19 @@ public class LoggingVectorStoreRecordCollectionTests
         // Assert
         Assert.True(exists);
         innerCollection.Verify(c => c.CollectionExistsAsync(default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Collection 'test-collection' exists: True");
+        AssertLog(logger.Logs, LogLevel.Debug, "CollectionExistsAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "CollectionExistsAsync completed.");
     }
 
     [Fact]
-    public async Task CreateCollectionDelegatesToInnerCollectionAsync()
+    public async Task CreateCollectionDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         innerCollection.Setup(c => c.CreateCollectionAsync(default)).Returns(Task.CompletedTask);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -80,15 +83,19 @@ public class LoggingVectorStoreRecordCollectionTests
 
         // Assert
         innerCollection.Verify(c => c.CreateCollectionAsync(default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Creating a collection 'test-collection'");
+        AssertLog(logger.Logs, LogLevel.Debug, "CreateCollectionAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "CreateCollectionAsync completed.");
     }
 
     [Fact]
-    public async Task CreateCollectionIfNotExistsDelegatesToInnerCollectionAsync()
+    public async Task CreateCollectionIfNotExistsDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         innerCollection.Setup(c => c.CreateCollectionIfNotExistsAsync(default)).Returns(Task.CompletedTask);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -96,15 +103,18 @@ public class LoggingVectorStoreRecordCollectionTests
 
         // Assert
         innerCollection.Verify(c => c.CreateCollectionIfNotExistsAsync(default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "CreateCollectionIfNotExistsAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "CreateCollectionIfNotExistsAsync completed.");
     }
 
     [Fact]
-    public async Task DeleteDelegatesToInnerCollectionAsync()
+    public async Task DeleteDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         innerCollection.Setup(c => c.DeleteAsync("key", default)).Returns(Task.CompletedTask);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -112,16 +122,20 @@ public class LoggingVectorStoreRecordCollectionTests
 
         // Assert
         innerCollection.Verify(c => c.DeleteAsync("key", default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Deleting a record from 'test-collection' with key");
+        AssertLog(logger.Logs, LogLevel.Debug, "DeleteAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "DeleteAsync completed.");
     }
 
     [Fact]
-    public async Task DeleteBatchDelegatesToInnerCollectionAsync()
+    public async Task DeleteBatchDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         var keys = new[] { "key1", "key2" };
         innerCollection.Setup(c => c.DeleteBatchAsync(keys, default)).Returns(Task.CompletedTask);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -129,15 +143,19 @@ public class LoggingVectorStoreRecordCollectionTests
 
         // Assert
         innerCollection.Verify(c => c.DeleteBatchAsync(keys, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Deleting records from 'test-collection' with keys");
+        AssertLog(logger.Logs, LogLevel.Debug, "DeleteBatchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "DeleteBatchAsync completed.");
     }
 
     [Fact]
-    public async Task DeleteCollectionDelegatesToInnerCollectionAsync()
+    public async Task DeleteCollectionDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         innerCollection.Setup(c => c.DeleteCollectionAsync(default)).Returns(Task.CompletedTask);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -145,17 +163,19 @@ public class LoggingVectorStoreRecordCollectionTests
 
         // Assert
         innerCollection.Verify(c => c.DeleteCollectionAsync(default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "DeleteCollectionAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "DeleteCollectionAsync completed.");
     }
 
     [Fact]
-    public async Task GetDelegatesToInnerCollectionAsync()
+    public async Task GetDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         var record = new object();
         innerCollection.Setup(c => c.GetAsync("key", null, default)).ReturnsAsync(record);
-
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -164,17 +184,22 @@ public class LoggingVectorStoreRecordCollectionTests
         // Assert
         Assert.Same(record, result);
         innerCollection.Verify(c => c.GetAsync("key", null, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Getting a record from 'test-collection' with key");
+        AssertLog(logger.Logs, LogLevel.Trace, "Retrieved record from 'test-collection'");
+        AssertLog(logger.Logs, LogLevel.Debug, "GetAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "GetAsync completed.");
     }
 
     [Fact]
-    public async Task GetBatchDelegatesToInnerCollectionAsync()
+    public async Task GetBatchDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         var keys = new[] { "key1", "key2" };
         var records = new[] { new object(), new object() };
         innerCollection.Setup(c => c.GetBatchAsync(keys, null, default)).Returns(records.ToAsyncEnumerable());
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -183,16 +208,24 @@ public class LoggingVectorStoreRecordCollectionTests
         // Assert
         Assert.Equal(records, result);
         innerCollection.Verify(c => c.GetBatchAsync(keys, null, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "GetBatchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "GetBatchAsync completed.");
+
+        foreach (var record in records)
+        {
+            AssertLog(logger.Logs, LogLevel.Trace, "Retrieved record from 'test-collection'");
+        }
     }
 
     [Fact]
-    public async Task UpsertDelegatesToInnerCollectionAsync()
+    public async Task UpsertDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         var record = new object();
         innerCollection.Setup(c => c.UpsertAsync(record, default)).ReturnsAsync("key");
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -201,17 +234,22 @@ public class LoggingVectorStoreRecordCollectionTests
         // Assert
         Assert.Equal("key", key);
         innerCollection.Verify(c => c.UpsertAsync(record, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Upserting a record in 'test-collection'");
+        AssertLog(logger.Logs, LogLevel.Trace, "Upserted record in 'test-collection' with key");
+        AssertLog(logger.Logs, LogLevel.Debug, "UpsertAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "UpsertAsync completed.");
     }
 
     [Fact]
-    public async Task UpsertBatchDelegatesToInnerCollectionAsync()
+    public async Task UpsertBatchDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         var records = new[] { new object(), new object() };
         var keys = new[] { "key1", "key2" };
         innerCollection.Setup(c => c.UpsertBatchAsync(records, default)).Returns(keys.ToAsyncEnumerable());
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -220,19 +258,28 @@ public class LoggingVectorStoreRecordCollectionTests
         // Assert
         Assert.Equal(keys, result);
         innerCollection.Verify(c => c.UpsertBatchAsync(records, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Upserting records in 'test-collection'");
+        AssertLog(logger.Logs, LogLevel.Debug, "UpsertBatchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "UpsertBatchAsync completed.");
+
+        foreach (var key in keys)
+        {
+            AssertLog(logger.Logs, LogLevel.Trace, "Upserted record in 'test-collection' with key");
+        }
     }
 
     [Fact]
-    public async Task VectorizedSearchDelegatesToInnerCollectionAsync()
+    public async Task VectorizedSearchDelegatesToInnerCollectionAndLogsAsync()
     {
         // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
+        var innerCollection = GetMockCollection();
         var vector = new float[] { 1.0f };
         var options = new VectorSearchOptions<object>();
         var searchResults = new[] { new VectorSearchResult<object>("result", 0.9f) }.ToAsyncEnumerable();
-        var results = new VectorSearchResults<object>(searchResults);
+        var results = new VectorSearchResults<object>(searchResults) { TotalCount = 1 };
         innerCollection.Setup(c => c.VectorizedSearchAsync(vector, options, default)).ReturnsAsync(results);
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
@@ -241,5 +288,22 @@ public class LoggingVectorStoreRecordCollectionTests
         // Assert
         Assert.Same(results, actualResults);
         innerCollection.Verify(c => c.VectorizedSearchAsync(vector, options, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Found 1 record(s) in 'test-collection' using vector search.");
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizedSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizedSearchAsync completed.");
     }
+
+    #region private
+
+    private static Mock<IVectorStoreRecordCollection<string, object>> GetMockCollection()
+    {
+        var collection = new Mock<IVectorStoreRecordCollection<string, object>>();
+
+        collection.Setup(c => c.CollectionName).Returns("test-collection");
+
+        return collection;
+    }
+
+    #endregion
 }

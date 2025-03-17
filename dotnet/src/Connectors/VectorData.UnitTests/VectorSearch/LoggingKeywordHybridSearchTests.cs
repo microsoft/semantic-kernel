@@ -11,7 +11,7 @@ using Xunit;
 
 namespace VectorData.UnitTests;
 
-public class LoggingKeywordHybridSearchTests
+public class LoggingKeywordHybridSearchTests : BaseLoggingTests
 {
     [Fact]
     public void ConstructorThrowsOnNullInnerSearch()
@@ -38,7 +38,7 @@ public class LoggingKeywordHybridSearchTests
     {
         // Arrange
         var innerSearch = new Mock<IKeywordHybridSearch<string>>();
-        var logger = new Mock<ILogger>().Object;
+        var logger = new FakeLogger();
         var vector = new float[] { 1.0f };
         var keywords = new List<string> { "test" };
         var options = new HybridSearchOptions<string>();
@@ -56,5 +56,8 @@ public class LoggingKeywordHybridSearchTests
         // Assert
         Assert.Same(results, actualResults);
         innerSearch.Verify(s => s.HybridSearchAsync(vector, keywords, options, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync completed.");
     }
 }
