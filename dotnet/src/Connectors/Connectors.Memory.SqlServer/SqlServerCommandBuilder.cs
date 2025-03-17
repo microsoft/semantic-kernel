@@ -508,30 +508,27 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-    private static string Map(VectorStoreRecordProperty property)
+    private static string Map(VectorStoreRecordProperty property) => property.PropertyType switch
     {
-        return property.PropertyType switch
-        {
-            Type t when t == typeof(byte) => "TINYINT",
-            Type t when t == typeof(short) => "SMALLINT",
-            Type t when t == typeof(int) => "INT",
-            Type t when t == typeof(long) => "BIGINT",
-            Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
-            Type t when t == typeof(string) && property is VectorStoreRecordKeyProperty => "NVARCHAR(4000)",
-            Type t when t == typeof(string) && property is VectorStoreRecordDataProperty { IsFilterable: true } => "NVARCHAR(4000)",
-            Type t when t == typeof(string) => "NVARCHAR(MAX)",
-            Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
-            Type t when t == typeof(bool) => "BIT",
-            Type t when t == typeof(DateTime) => "DATETIME2",
+        Type t when t == typeof(byte) => "TINYINT",
+        Type t when t == typeof(short) => "SMALLINT",
+        Type t when t == typeof(int) => "INT",
+        Type t when t == typeof(long) => "BIGINT",
+        Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
+        Type t when t == typeof(string) && property is VectorStoreRecordKeyProperty => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is VectorStoreRecordDataProperty { IsFilterable: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) => "NVARCHAR(MAX)",
+        Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
+        Type t when t == typeof(bool) => "BIT",
+        Type t when t == typeof(DateTime) => "DATETIME2",
 #if NET
-            Type t when t == typeof(TimeOnly) => "TIME",
+        Type t when t == typeof(TimeOnly) => "TIME",
 #endif
-            Type t when t == typeof(decimal) => "DECIMAL",
-            Type t when t == typeof(double) => "FLOAT",
-            Type t when t == typeof(float) => "REAL",
-            _ => throw new NotSupportedException($"Type {property.PropertyType} is not supported.")
-        };
-    }
+        Type t when t == typeof(decimal) => "DECIMAL",
+        Type t when t == typeof(double) => "FLOAT",
+        Type t when t == typeof(float) => "REAL",
+        _ => throw new NotSupportedException($"Type {property.PropertyType} is not supported.")
+    };
 
     // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
     private static (string distanceMetric, string sorting) MapDistanceFunction(string name) => name switch
