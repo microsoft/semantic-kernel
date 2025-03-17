@@ -1,4 +1,7 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -34,30 +37,18 @@ class Config:
 
     def validate(self):
         if not self.HOST or not self.PORT:
-            raise Exception(
-                "Missing required configuration. HOST and PORT must be set."
-            )
+            raise Exception("Missing required configuration. HOST and PORT must be set.")
         if not self.APP_ID or not self.APP_PASSWORD or not self.APP_TENANTID:
-            raise Exception(
-                "Missing required configuration. APP_ID, APP_PASSWORD, and APP_TENANT_ID must be set."
-            )
+            raise Exception("Missing required configuration. APP_ID, APP_PASSWORD, and APP_TENANT_ID must be set.")
         if not self.AZURE_OPENAI_MODEL or not self.AZURE_OPENAI_ENDPOINT:
-            raise Exception(
-                "Missing required configuration. AZURE_OPENAI_MODEL_DEPLOYMENT_NAME and AZURE_OPENAI_ENDPOINT must be set."
-            )
+            raise Exception("Missing required configuration. AZURE_OPENAI_MODEL and AZURE_OPENAI_ENDPOINT must be set.")
         if not self.AZURE_OPENAI_API_VERSION:
-            raise Exception(
-                "Missing required configuration. AZURE_OPENAI_API_VERSION must be set."
-            )
+            raise Exception("Missing required configuration. AZURE_OPENAI_API_VERSION must be set.")
 
         if not self.TEAMS_APP_ID or not self.TEAMS_APP_NAME:
-            raise Exception(
-                "Missing required configuration. TEAMS_APP_ID and TEAMS_APP_NAME must be set."
-            )
+            raise Exception("Missing required configuration. TEAMS_APP_ID and TEAMS_APP_NAME must be set.")
         if not self.ALLOWED_CALLERS:
-            raise Exception(
-                "Missing required configuration. ALLOWED_CALLERS must be set."
-            )
+            raise Exception("Missing required configuration. ALLOWED_CALLERS must be set.")
 
 
 config = Config()

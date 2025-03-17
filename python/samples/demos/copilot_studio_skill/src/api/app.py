@@ -1,7 +1,10 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
+import os
+
 from aiohttp import web
 from aiohttp.web import Request, Response
-import os
 from bot import bot
 from config import config
 
@@ -27,16 +30,13 @@ async def messages(req: Request):
 async def copilot_manifest(req: Request):
     # load manifest from file and interpolate with env vars
     with open("copilot-studio.manifest.json") as f:
-
         manifest = f.read()
 
         # Get container app current ingress fqdn
         # See https://learn.microsoft.com/en-us/azure/container-apps/environment-variables?tabs=portal
         fqdn = f"https://{os.getenv('CONTAINER_APP_NAME')}.{os.getenv('CONTAINER_APP_ENV_DNS_SUFFIX')}/api/messages"
 
-        manifest = manifest.replace("__botEndpoint", fqdn).replace(
-            "__botAppId", config.APP_ID
-        )
+        manifest = manifest.replace("__botEndpoint", fqdn).replace("__botAppId", config.APP_ID)
 
     return Response(
         text=manifest,

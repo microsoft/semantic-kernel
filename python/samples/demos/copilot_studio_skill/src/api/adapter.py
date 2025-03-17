@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import sys
 import traceback
 
@@ -34,17 +36,11 @@ class AdapterWithErrorHandler(CloudAdapter):
         try:
             # Send a message to the user.
             error_message_text = "The skill encountered an error or bug."
-            error_message = MessageFactory.text(
-                error_message_text, error_message_text, InputHints.ignoring_input
-            )
+            error_message = MessageFactory.text(error_message_text, error_message_text, InputHints.ignoring_input)
             await turn_context.send_activity(error_message)
 
-            error_message_text = (
-                "To continue to run this bot, please fix the bot source code."
-            )
-            error_message = MessageFactory.text(
-                error_message_text, error_message_text, InputHints.ignoring_input
-            )
+            error_message_text = "To continue to run this bot, please fix the bot source code."
+            error_message = MessageFactory.text(error_message_text, error_message_text, InputHints.ignoring_input)
             await turn_context.send_activity(error_message)
 
             # Send a trace activity, which will be displayed in Bot Framework Emulator.

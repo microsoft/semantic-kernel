@@ -1,8 +1,12 @@
-import chainlit as cl
-from dotenv import load_dotenv
-import os
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
+import os
+
+import chainlit as cl
 from direct_line_agent import DirectLineAgent
+from dotenv import load_dotenv
+
 from semantic_kernel.contents.chat_history import ChatHistory
 
 load_dotenv(override=True)

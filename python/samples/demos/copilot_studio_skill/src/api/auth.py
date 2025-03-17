@@ -1,20 +1,18 @@
-# See https://github.com/microsoft/BotBuilder-Samples/blob/main/samples/python/80.skills-simple-bot-to-bot/echo-skill-bot/authentication/allowed_callers_claims_validator.py
-from typing import Dict, List
-from collections.abc import Awaitable, Callable
-from botframework.connector.auth import JwtTokenValidation, SkillValidation
+# Copyright (c) Microsoft. All rights reserved.
 
+# See https://github.com/microsoft/BotBuilder-Samples/blob/main/samples/python/80.skills-simple-bot-to-bot/echo-skill-bot/authentication/allowed_callers_claims_validator.py
+from collections.abc import Awaitable, Callable
+
+from botframework.connector.auth import JwtTokenValidation, SkillValidation
 from config import Config
 
 
 class AllowedCallersClaimsValidator:
-
     config_key = "ALLOWED_CALLERS"
 
     def __init__(self, config: Config):
         if not config:
-            raise TypeError(
-                "AllowedCallersClaimsValidator: config object cannot be None."
-            )
+            raise TypeError("AllowedCallersClaimsValidator: config object cannot be None.")
 
         # ALLOWED_CALLERS is the setting in config.py file
         # that consists of the list of parent bot ids that are allowed to access the skill
@@ -29,9 +27,7 @@ class AllowedCallersClaimsValidator:
     def claims_validator(self) -> Callable[[list[dict]], Awaitable]:
         async def allow_callers_claims_validator(claims: dict[str, object]):
             # if allowed_callers is None we allow all calls
-            if "*" not in self._allowed_callers and SkillValidation.is_skill_claim(
-                claims
-            ):
+            if "*" not in self._allowed_callers and SkillValidation.is_skill_claim(claims):
                 # Check that the appId claim in the skill request is in the list of skills configured for this bot.
                 app_id = JwtTokenValidation.get_app_id_from_claims(claims)
                 if app_id not in self._allowed_callers:

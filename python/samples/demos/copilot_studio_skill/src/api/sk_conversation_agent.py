@@ -1,17 +1,17 @@
+# Copyright (c) Microsoft. All rights reserved.
+
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from config import config
+from openai import AsyncAzureOpenAI
+
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import (
     FunctionChoiceBehavior,
 )
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-from openai import AsyncAzureOpenAI
-from config import config
-
 
 credential = DefaultAzureCredential()
-token_provider = get_bearer_token_provider(
-    credential, "https://cognitiveservices.azure.com/.default"
-)
+token_provider = get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default")
 
 
 def create_client() -> AsyncAzureOpenAI:

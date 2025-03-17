@@ -1,23 +1,25 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import asyncio
 import logging
-from typing import Any
-from collections.abc import AsyncIterable
 import sys
+from collections.abc import AsyncIterable
+from typing import Any
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 import aiohttp
-from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
-    trace_agent_get_response,
-    trace_agent_invocation,
-)
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
+from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
+    trace_agent_get_response,
+    trace_agent_invocation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,19 +60,11 @@ class DirectLineAgent(Agent):
                         data = await resp.json()
                         self.directline_token = data.get("token")
                         if not self.directline_token:
-                            logger.error(
-                                "Token generation response missing token: %s", data
-                            )
-                            raise AgentInvokeException(
-                                "No token received from token generation."
-                            )
+                            logger.error("Token generation response missing token: %s", data)
+                            raise AgentInvokeException("No token received from token generation.")
                     else:
-                        logger.error(
-                            "Token generation endpoint error status: %s", resp.status
-                        )
-                        raise AgentInvokeException(
-                            "Failed to generate token using bot_secret."
-                        )
+                        logger.error("Token generation endpoint error status: %s", resp.status)
+                        raise AgentInvokeException("Failed to generate token using bot_secret.")
             else:
                 async with self.session.get(self.token_endpoint) as resp:
                     if resp.status == 200:
@@ -81,14 +75,10 @@ class DirectLineAgent(Agent):
                             raise AgentInvokeException("No token received.")
                     else:
                         logger.error("Token endpoint error status: %s", resp.status)
-                        raise AgentInvokeException(
-                            "Failed to fetch token from token endpoint."
-                        )
+                        raise AgentInvokeException("Failed to fetch token from token endpoint.")
         except Exception as ex:
             logger.exception("Exception fetching token: %s", ex)
-            raise AgentInvokeException(
-                "Exception occurred while fetching token."
-            ) from ex
+            raise AgentInvokeException("Exception occurred while fetching token.") from ex
 
     @trace_agent_get_response
     @override
@@ -129,9 +119,7 @@ class DirectLineAgent(Agent):
         payload = self._build_payload(history, arguments, **kwargs)
         response_data = await self._send_message(payload)
         if response_data is None or "activities" not in response_data:
-            raise AgentInvokeException(
-                f"Invalid response from DirectLine Bot.\n{response_data}"
-            )
+            raise AgentInvokeException(f"Invalid response from DirectLine Bot.\n{response_data}")
 
         logger.debug("DirectLine Bot response: %s", response_data)
 
@@ -139,10 +127,7 @@ class DirectLineAgent(Agent):
         # than ChatMessageContent. We need to convert them and
         # remove unsupported activities.
         for activity in response_data["activities"]:
-            if (
-                activity.get("type") != "message"
-                or activity.get("from", {}).get("role") == "user"
-            ):
+            if activity.get("type") != "message" or activity.get("from", {}).get("role") == "user":
                 continue
             role = activity.get("from", {}).get("role", "assistant")
             if role == "bot":
@@ -199,24 +184,16 @@ class DirectLineAgent(Agent):
             start_conv_url = f"{self.bot_endpoint}/conversations"
             async with self.session.post(start_conv_url, headers=headers) as resp:
                 if resp.status not in (200, 201):
-                    logger.error(
-                        "Failed to start conversation. Status: %s", resp.status
-                    )
+                    logger.error("Failed to start conversation. Status: %s", resp.status)
                     raise AgentInvokeException("Failed to start conversation.")
                 conv_data = await resp.json()
                 self.conversation_id = conv_data.get("conversationId")
                 if not self.conversation_id:
-                    raise AgentInvokeException(
-                        "Conversation ID not found in start response."
-                    )
+                    raise AgentInvokeException("Conversation ID not found in start response.")
 
         # Step 3: Post the message payload.
-        activities_url = (
-            f"{self.bot_endpoint}/conversations/{self.conversation_id}/activities"
-        )
-        async with self.session.post(
-            activities_url, json=payload, headers=headers
-        ) as resp:
+        activities_url = f"{self.bot_endpoint}/conversations/{self.conversation_id}/activities"
+        async with self.session.post(activities_url, json=payload, headers=headers) as resp:
             if resp.status != 200:
                 logger.error("Failed to post activity. Status: %s", resp.status)
                 raise AgentInvokeException("Failed to post activity.")
@@ -227,19 +204,14 @@ class DirectLineAgent(Agent):
         collected_data = None
         watermark = None
         while not finished:
-            url = (
-                activities_url
-                if watermark is None
-                else f"{activities_url}?watermark={watermark}"
-            )
+            url = activities_url if watermark is None else f"{activities_url}?watermark={watermark}"
             async with self.session.get(url, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     watermark = data.get("watermark", watermark)
                     activities = data.get("activities", [])
                     if any(
-                        activity.get("type") == "event"
-                        and activity.get("name") == "DynamicPlanFinished"
+                        activity.get("type") == "event" and activity.get("name") == "DynamicPlanFinished"
                         for activity in activities
                     ):
                         collected_data = data
@@ -257,7 +229,7 @@ class DirectLineAgent(Agent):
         """
         await self.session.close()
 
-    # TODO not implemented yet, maybe use websockets for this?
+    # NOTE not implemented yet, possibly use websockets
     @trace_agent_invocation
     @override
     async def invoke_stream(self, *args, **kwargs):
