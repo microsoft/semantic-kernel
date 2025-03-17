@@ -24,7 +24,9 @@
   
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.AI" />
-    <PackageReference Include="OllamaSharp" />
+    <PackageReference Include="OllamaSharp">
+      <ExcludeAssets>analyzers</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

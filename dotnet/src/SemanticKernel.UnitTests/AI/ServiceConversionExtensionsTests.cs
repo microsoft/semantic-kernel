@@ -155,11 +155,11 @@ public class ServiceConversionExtensionsTests
             new(ChatRole.System,
             [
                 new Microsoft.Extensions.AI.TextContent("some text"),
-                new Microsoft.Extensions.AI.DataContent("http://imageurl", mediaType: "image/jpeg"),
+                new Microsoft.Extensions.AI.UriContent("http://imageurl", mediaType: "image/jpeg"),
             ]),
             new(ChatRole.User,
             [
-                new Microsoft.Extensions.AI.DataContent("http://audiourl", mediaType: "audio/mpeg"),
+                new Microsoft.Extensions.AI.UriContent("http://audiourl", mediaType: "audio/mpeg"),
                 new Microsoft.Extensions.AI.TextContent("some other text"),
             ]),
             new(ChatRole.Assistant,
@@ -184,7 +184,7 @@ public class ServiceConversionExtensionsTests
         });
 
         Assert.NotNull(result);
-        Assert.Equal("the result", result.Message.Text);
+        Assert.Equal("the result", result.Text);
 
         Assert.NotNull(actualChatHistory);
         Assert.Equal(4, actualChatHistory.Count);
@@ -378,11 +378,11 @@ public class ServiceConversionExtensionsTests
             new(ChatRole.System,
             [
                 new Microsoft.Extensions.AI.TextContent("some text"),
-                new Microsoft.Extensions.AI.DataContent("http://imageurl", "image/jpeg"),
+                new Microsoft.Extensions.AI.UriContent("http://imageurl", "image/jpeg"),
             ]),
             new(ChatRole.User,
             [
-                new Microsoft.Extensions.AI.DataContent("http://audiourl", "audio/mpeg"),
+                new Microsoft.Extensions.AI.UriContent("http://audiourl", "audio/mpeg"),
                 new Microsoft.Extensions.AI.TextContent("some other text"),
             ]),
             new(ChatRole.Assistant,
@@ -453,7 +453,7 @@ public class ServiceConversionExtensionsTests
     [Fact]
     public async Task AsChatCompletionServiceNonStreamingContentConvertedAsExpected()
     {
-        IList<ChatMessage>? actualChatHistory = null;
+        List<ChatMessage>? actualChatHistory = null;
         ChatOptions? actualOptions = null;
 
         using IChatClient client = new TestChatClient()
@@ -461,9 +461,9 @@ public class ServiceConversionExtensionsTests
             CompleteAsyncDelegate = async (messages, options, cancellationToken) =>
             {
                 await Task.Yield();
-                actualChatHistory = messages;
+                actualChatHistory = messages.ToList();
                 actualOptions = options;
-                return new Microsoft.Extensions.AI.ChatResponse(new ChatMessage() { Text = "the result" });
+                return new Microsoft.Extensions.AI.ChatResponse(new ChatMessage(ChatRole.User, "the result"));
             },
         };
 
@@ -517,8 +517,8 @@ public class ServiceConversionExtensionsTests
         Assert.Single(actualChatHistory[3].Contents);
 
         Assert.Equal("some text", Assert.IsType<Microsoft.Extensions.AI.TextContent>(actualChatHistory[0].Contents[0]).Text);
-        Assert.Equal("http://imageurl/", Assert.IsType<Microsoft.Extensions.AI.DataContent>(actualChatHistory[0].Contents[1]).Uri?.ToString());
-        Assert.Equal("http://audiourl/", Assert.IsType<Microsoft.Extensions.AI.DataContent>(actualChatHistory[1].Contents[0]).Uri?.ToString());
+        Assert.Equal("http://imageurl/", Assert.IsType<Microsoft.Extensions.AI.UriContent>(actualChatHistory[0].Contents[1]).Uri?.ToString());
+        Assert.Equal("http://audiourl/", Assert.IsType<Microsoft.Extensions.AI.UriContent>(actualChatHistory[1].Contents[0]).Uri?.ToString());
         Assert.Equal("some other text", Assert.IsType<Microsoft.Extensions.AI.TextContent>(actualChatHistory[1].Contents[1]).Text);
 
         var fcc = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(actualChatHistory[2].Contents[0]);
@@ -544,18 +544,18 @@ public class ServiceConversionExtensionsTests
     [Fact]
     public async Task AsChatCompletionServiceStreamingContentConvertedAsExpected()
     {
-        IList<ChatMessage>? actualChatHistory = null;
+        List<ChatMessage>? actualChatHistory = null;
         ChatOptions? actualOptions = null;
 
         using IChatClient client = new TestChatClient()
         {
             CompleteStreamingAsyncDelegate = (messages, options, cancellationToken) =>
             {
-                actualChatHistory = messages;
+                actualChatHistory = messages.ToList();
                 actualOptions = options;
                 return new List<ChatResponseUpdate>()
                 {
-                    new() { Role = ChatRole.Assistant, Text = "the result" }
+                    new(ChatRole.Assistant, "the result")
                 }.ToAsyncEnumerable();
             },
         };
@@ -611,8 +611,8 @@ public class ServiceConversionExtensionsTests
         Assert.Single(actualChatHistory[3].Contents);
 
         Assert.Equal("some text", Assert.IsType<Microsoft.Extensions.AI.TextContent>(actualChatHistory[0].Contents[0]).Text);
-        Assert.Equal("http://imageurl/", Assert.IsType<Microsoft.Extensions.AI.DataContent>(actualChatHistory[0].Contents[1]).Uri?.ToString());
-        Assert.Equal("http://audiourl/", Assert.IsType<Microsoft.Extensions.AI.DataContent>(actualChatHistory[1].Contents[0]).Uri?.ToString());
+        Assert.Equal("http://imageurl/", Assert.IsType<Microsoft.Extensions.AI.UriContent>(actualChatHistory[0].Contents[1]).Uri?.ToString());
+        Assert.Equal("http://audiourl/", Assert.IsType<Microsoft.Extensions.AI.UriContent>(actualChatHistory[1].Contents[0]).Uri?.ToString());
         Assert.Equal("some other text", Assert.IsType<Microsoft.Extensions.AI.TextContent>(actualChatHistory[1].Contents[1]).Text);
 
         var fcc = Assert.IsType<Microsoft.Extensions.AI.FunctionCallContent>(actualChatHistory[2].Contents[0]);
@@ -662,21 +662,21 @@ public class ServiceConversionExtensionsTests
     {
         public ChatClientMetadata Metadata { get; set; } = new();
 
-        public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, Task<Microsoft.Extensions.AI.ChatResponse>>? CompleteAsyncDelegate { get; set; }
+        public Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, Task<Microsoft.Extensions.AI.ChatResponse>>? CompleteAsyncDelegate { get; set; }
 
-        public Func<IList<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? CompleteStreamingAsyncDelegate { get; set; }
+        public Func<IEnumerable<ChatMessage>, ChatOptions?, CancellationToken, IAsyncEnumerable<ChatResponseUpdate>>? CompleteStreamingAsyncDelegate { get; set; }
 
-        public Task<Microsoft.Extensions.AI.ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<Microsoft.Extensions.AI.ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         {
             return this.CompleteAsyncDelegate != null
-                ? this.CompleteAsyncDelegate(chatMessages, options, cancellationToken)
+                ? this.CompleteAsyncDelegate(messages, options, cancellationToken)
                 : throw new NotImplementedException();
         }
 
-        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
         {
             return this.CompleteStreamingAsyncDelegate != null
-                ? this.CompleteStreamingAsyncDelegate(chatMessages, options, cancellationToken)
+                ? this.CompleteStreamingAsyncDelegate(messages, options, cancellationToken)
                 : throw new NotImplementedException();
         }
 
