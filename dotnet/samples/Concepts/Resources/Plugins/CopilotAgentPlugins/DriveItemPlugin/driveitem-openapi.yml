@@ -108,33 +108,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/microsoft.graph.driveItem"
-    patch:
-      tags:
-        - me.drive
-      summary: Update the navigation property items in me
-      operationId: me_drive_UpdateItems
-      requestBody:
-        description: New navigation property values
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/microsoft.graph.driveItem"
-        required: true
-      responses:
-        2XX:
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/microsoft.graph.driveItem"
-    parameters:
-      - name: driveItem-id
-        in: path
-        description: The unique identifier of driveItem
-        required: true
-        style: simple
-        schema:
-          type: string
   "/me/drive/search(q='{q}')":
     get:
       tags:

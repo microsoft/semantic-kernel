@@ -12,16 +12,13 @@
         "text": "Get items from drives"
       },
       {
-        "text": "Update the navigation property items in drives"
-      },
-      {
         "text": "Get items from me"
       },
       {
         "text": "Update the navigation property items in me"
       },
       {
-        "text": "Invoke function search"
+        "text": "Invoke function search."
       },
       {
         "text": "Get children from me"
@@ -35,10 +32,6 @@
     {
       "name": "drives_GetItems",
       "description": "Get items from drives"
-    },
-    {
-      "name": "drives_UpdateItems",
-      "description": "Update the navigation property items in drives"
     },
     {
       "name": "me_drive_GetItems",
@@ -72,7 +65,6 @@
       },
       "run_for_functions": [
         "drives_GetItems",
-        "drives_UpdateItems",
         "me_drive_GetItems",
         "me_drive_UpdateItems",
         "me_drive_search",
