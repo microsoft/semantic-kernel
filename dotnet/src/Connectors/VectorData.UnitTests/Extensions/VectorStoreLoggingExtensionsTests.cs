@@ -239,6 +239,7 @@ public class VectorStoreLoggingExtensionsTests
 
     #region private
 
+#pragma warning disable CA1812
     private sealed class TestRecord
     {
         [VectorStoreRecordData]
@@ -247,6 +248,6 @@ public class VectorStoreLoggingExtensionsTests
         [VectorStoreRecordVector]
         public ReadOnlyMemory<float> VectorProperty { get; set; } = new float[] { 1.0f, 2.0f, 3.0f };
     }
-
+#pragma warning restore CA1812
     #endregion
 }
