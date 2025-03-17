@@ -9,14 +9,56 @@
   "capabilities": {
     "conversation_starters": [
       {
-        "text": "Get content for the navigation property items from"
+        "text": "Get items from drives"
+      },
+      {
+        "text": "Update the navigation property items in drives"
+      },
+      {
+        "text": "Get items from me"
+      },
+      {
+        "text": "Update the navigation property items in me"
+      },
+      {
+        "text": "Invoke function search"
+      },
+      {
+        "text": "Get children from me"
+      },
+      {
+        "text": "Get drives from me"
       }
     ]
   },
   "functions": [
     {
-      "name": "drives_GetItemsContent",
-      "description": "The content stream, if the item represents a file."
+      "name": "drives_GetItems",
+      "description": "Get items from drives"
+    },
+    {
+      "name": "drives_UpdateItems",
+      "description": "Update the navigation property items in drives"
+    },
+    {
+      "name": "me_drive_GetItems",
+      "description": "Get items from me"
+    },
+    {
+      "name": "me_drive_root_ListChildren",
+      "description": "Get children from me"
+    },
+    {
+      "name": "me_drive_search",
+      "description": "Invoke function search"
+    },
+    {
+      "name": "me_drive_UpdateItems",
+      "description": "Update the navigation property items in me"
+    },
+    {
+      "name": "me_ListDrives",
+      "description": "Get drives from me"
     }
   ],
   "runtimes": [
@@ -29,7 +71,13 @@
         "url": "driveitem-openapi.yml"
       },
       "run_for_functions": [
-        "drives_GetItemsContent"
+        "drives_GetItems",
+        "drives_UpdateItems",
+        "me_drive_GetItems",
+        "me_drive_UpdateItems",
+        "me_drive_search",
+        "me_drive_root_ListChildren",
+        "me_ListDrives"
       ]
     }
   ]

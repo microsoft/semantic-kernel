@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.4
 info:
   title: OData Service for namespace microsoft.graph - Subset
   description: This OData service is located at https://graph.microsoft.com/v1.0
@@ -6,29 +6,127 @@ info:
 servers:
   - url: https://graph.microsoft.com/v1.0
 paths:
-  "/me/drive/root/children/{driveItem-id}/content":
+  "/drives/{drive-id}/items/{driveItem-id}":
     get:
       tags:
         - drives.driveItem
-      summary: Get content for the navigation property items from drives
-      description: "The content stream, if the item represents a file."
-      operationId: drives_GetItemsContent
+      summary: Get items from drives
+      operationId: drives_GetItems
       parameters:
-        - name: $format
+        - name: $select
           in: query
-          description: Format of the content
+          description: Select properties to be returned
           style: form
           explode: false
           schema:
-            type: string
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
       responses:
         2XX:
-          description: Retrieved media content
+          description: Retrieved navigation property
           content:
-            application/octet-stream:
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: "#/components/schemas/microsoft.graph.driveItem"
+    patch:
+      tags:
+        - drives.driveItem
+      summary: Update the navigation property items in drives
+      operationId: drives_UpdateItems
+      requestBody:
+        description: New navigation property values
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/microsoft.graph.driveItem"
+        required: true
+      responses:
+        2XX:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/microsoft.graph.driveItem"
+    parameters:
+      - name: drive-id
+        in: path
+        description: The unique identifier of drive
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: driveItem-id
+        in: path
+        description: The unique identifier of driveItem
+        required: true
+        style: simple
+        schema:
+          type: string
+  "/me/drive/items/{driveItem-id}":
+    get:
+      tags:
+        - me.drive
+      summary: Get items from me
+      operationId: me_drive_GetItems
+      parameters:
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          description: Retrieved navigation property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/microsoft.graph.driveItem"
+    patch:
+      tags:
+        - me.drive
+      summary: Update the navigation property items in me
+      operationId: me_drive_UpdateItems
+      requestBody:
+        description: New navigation property values
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/microsoft.graph.driveItem"
+        required: true
+      responses:
+        2XX:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/microsoft.graph.driveItem"
     parameters:
       - name: driveItem-id
         in: path
@@ -37,4 +135,1365 @@ paths:
         style: simple
         schema:
           type: string
-components: {}
+  "/me/drive/search(q='{q}')":
+    get:
+      tags:
+        - me.drive
+      summary: Invoke function search
+      operationId: me_drive_search
+      parameters:
+        - $ref: "#/components/parameters/top"
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/filter"
+        - $ref: "#/components/parameters/count"
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $orderby
+          in: query
+          description: Order items by property values
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          description: Success
+          content:
+            application/json:
+              schema:
+                title: Base collection pagination and count responses
+                type: object
+                properties:
+                  "@odata.count":
+                    type: integer
+                    format: int64
+                    nullable: true
+                  "@odata.nextLink":
+                    type: string
+                    nullable: true
+                  value:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/microsoft.graph.driveItem"
+      x-ms-pageable:
+        nextLinkName: "@odata.nextLink"
+        operationName: listMore
+        itemName: value
+    parameters:
+      - name: q
+        in: path
+        description: "Usage: q='{q}'"
+        required: true
+        style: simple
+        schema:
+          type: string
+          nullable: true
+  /me/drive/root/children:
+    get:
+      tags:
+        - me.drive
+      summary: Get children from me
+      operationId: me_drive_root_ListChildren
+      parameters:
+        - $ref: "#/components/parameters/top"
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/filter"
+        - $ref: "#/components/parameters/count"
+        - name: $orderby
+          in: query
+          description: Order items by property values
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          $ref: "#/components/responses/microsoft.graph.driveItemCollectionResponse"
+      x-ms-pageable:
+        nextLinkName: "@odata.nextLink"
+        operationName: listMore
+        itemName: value
+  /me/drives:
+    get:
+      tags:
+        - me.drive
+      summary: Get drives from me
+      operationId: me_ListDrives
+      parameters:
+        - $ref: "#/components/parameters/top"
+        - $ref: "#/components/parameters/skip"
+        - $ref: "#/components/parameters/search"
+        - $ref: "#/components/parameters/filter"
+        - $ref: "#/components/parameters/count"
+        - name: $orderby
+          in: query
+          description: Order items by property values
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          $ref: "#/components/responses/microsoft.graph.driveCollectionResponse"
+      x-ms-pageable:
+        nextLinkName: "@odata.nextLink"
+        operationName: listMore
+        itemName: value
+components:
+  schemas:
+    microsoft.graph.driveItem:
+      title: driveItem
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        id:
+          type: string
+        "@odata.type":
+          type: string
+        createdBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        createdDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+        description:
+          type: string
+          nullable: true
+        eTag:
+          type: string
+          nullable: true
+        lastModifiedBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        lastModifiedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+        name:
+          type: string
+          nullable: true
+        parentReference:
+          $ref: "#/components/schemas/microsoft.graph.itemReference"
+        webUrl:
+          type: string
+          nullable: true
+        createdByUser:
+          $ref: "#/components/schemas/microsoft.graph.user"
+        lastModifiedByUser:
+          $ref: "#/components/schemas/microsoft.graph.user"
+        audio:
+          $ref: "#/components/schemas/microsoft.graph.audio"
+        bundle:
+          $ref: "#/components/schemas/microsoft.graph.bundle"
+        content:
+          type: string
+          format: base64url
+          nullable: true
+        cTag:
+          type: string
+          nullable: true
+        deleted:
+          $ref: "#/components/schemas/microsoft.graph.deleted"
+        file:
+          $ref: "#/components/schemas/microsoft.graph.file"
+        fileSystemInfo:
+          $ref: "#/components/schemas/microsoft.graph.fileSystemInfo"
+        folder:
+          $ref: "#/components/schemas/microsoft.graph.folder"
+        image:
+          $ref: "#/components/schemas/microsoft.graph.image"
+        location:
+          $ref: "#/components/schemas/microsoft.graph.geoCoordinates"
+        malware:
+          $ref: "#/components/schemas/microsoft.graph.malware"
+        package:
+          $ref: "#/components/schemas/microsoft.graph.package"
+        pendingOperations:
+          $ref: "#/components/schemas/microsoft.graph.pendingOperations"
+        photo:
+          $ref: "#/components/schemas/microsoft.graph.photo"
+        publication:
+          $ref: "#/components/schemas/microsoft.graph.publicationFacet"
+        remoteItem:
+          $ref: "#/components/schemas/microsoft.graph.remoteItem"
+        root:
+          $ref: "#/components/schemas/microsoft.graph.root"
+        searchResult:
+          $ref: "#/components/schemas/microsoft.graph.searchResult"
+        shared:
+          $ref: "#/components/schemas/microsoft.graph.shared"
+        sharepointIds:
+          $ref: "#/components/schemas/microsoft.graph.sharepointIds"
+        size:
+          type: number
+          format: int64
+          nullable: true
+        specialFolder:
+          $ref: "#/components/schemas/microsoft.graph.specialFolder"
+        video:
+          $ref: "#/components/schemas/microsoft.graph.video"
+        webDavUrl:
+          type: string
+          nullable: true
+        analytics:
+          $ref: "#/components/schemas/microsoft.graph.itemAnalytics"
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItem"
+        listItem:
+          $ref: "#/components/schemas/microsoft.graph.listItem"
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.permission"
+        retentionLabel:
+          $ref: "#/components/schemas/microsoft.graph.itemRetentionLabel"
+        subscriptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.subscription"
+        thumbnails:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.thumbnailSet"
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItemVersion"
+        workbook:
+          $ref: "#/components/schemas/microsoft.graph.workbook"
+    microsoft.graph.identitySet:
+      title: identitySet
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        application:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        device:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        user:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        "@odata.type":
+          type: string
+      discriminator:
+        propertyName: "@odata.type"
+        mapping:
+          "#microsoft.graph.chatMessageFromIdentitySet": "#/components/schemas/microsoft.graph.chatMessageFromIdentitySet"
+          "#microsoft.graph.chatMessageMentionedIdentitySet": "#/components/schemas/microsoft.graph.chatMessageMentionedIdentitySet"
+          "#microsoft.graph.chatMessageReactionIdentitySet": "#/components/schemas/microsoft.graph.chatMessageReactionIdentitySet"
+          "#microsoft.graph.sharePointIdentitySet": "#/components/schemas/microsoft.graph.sharePointIdentitySet"
+    microsoft.graph.itemReference:
+      title: itemReference
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        driveId:
+          type: string
+          nullable: true
+        driveType:
+          type: string
+          nullable: true
+        id:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        path:
+          type: string
+          nullable: true
+        shareId:
+          type: string
+          nullable: true
+        sharepointIds:
+          $ref: "#/components/schemas/microsoft.graph.sharepointIds"
+        siteId:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.user: {}
+    microsoft.graph.audio:
+      title: audio
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        album:
+          type: string
+          nullable: true
+        albumArtist:
+          type: string
+          nullable: true
+        artist:
+          type: string
+          nullable: true
+        bitrate:
+          type: number
+          format: int64
+          nullable: true
+        composers:
+          type: string
+          nullable: true
+        copyright:
+          type: string
+          nullable: true
+        disc:
+          maximum: 32767
+          minimum: -32768
+          type: number
+          format: int16
+          nullable: true
+        discCount:
+          maximum: 32767
+          minimum: -32768
+          type: number
+          format: int16
+          nullable: true
+        duration:
+          type: number
+          format: int64
+          nullable: true
+        genre:
+          type: string
+          nullable: true
+        hasDrm:
+          type: boolean
+          nullable: true
+        isVariableBitrate:
+          type: boolean
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        track:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        trackCount:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        year:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.bundle:
+      title: bundle
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        album:
+          $ref: "#/components/schemas/microsoft.graph.album"
+        childCount:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.deleted:
+      title: deleted
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        state:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.file:
+      title: file
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        hashes:
+          $ref: "#/components/schemas/microsoft.graph.hashes"
+        mimeType:
+          type: string
+          nullable: true
+        processingMetadata:
+          type: boolean
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.fileSystemInfo:
+      title: fileSystemInfo
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        createdDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        lastAccessedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        lastModifiedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.folder:
+      title: folder
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        childCount:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        view:
+          $ref: "#/components/schemas/microsoft.graph.folderView"
+        "@odata.type":
+          type: string
+    microsoft.graph.image:
+      title: image
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        height:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        width:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.geoCoordinates:
+      title: geoCoordinates
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        altitude:
+          type: number
+          format: double
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.malware:
+      title: malware
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.package:
+      title: package
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.pendingOperations:
+      title: pendingOperations
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        pendingContentUpdate:
+          $ref: "#/components/schemas/microsoft.graph.pendingContentUpdate"
+        "@odata.type":
+          type: string
+    microsoft.graph.photo:
+      title: photo
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        cameraMake:
+          type: string
+          nullable: true
+        cameraModel:
+          type: string
+          nullable: true
+        exposureDenominator:
+          type: number
+          format: double
+          nullable: true
+        exposureNumerator:
+          type: number
+          format: double
+          nullable: true
+        fNumber:
+          type: number
+          format: double
+          nullable: true
+        focalLength:
+          type: number
+          format: double
+          nullable: true
+        iso:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        orientation:
+          maximum: 32767
+          minimum: -32768
+          type: number
+          format: int16
+          nullable: true
+        takenDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.publicationFacet:
+      title: publicationFacet
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        checkedOutBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        level:
+          type: string
+          nullable: true
+        versionId:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.remoteItem:
+      title: remoteItem
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        createdBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        createdDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        file:
+          $ref: "#/components/schemas/microsoft.graph.file"
+        fileSystemInfo:
+          $ref: "#/components/schemas/microsoft.graph.fileSystemInfo"
+        folder:
+          $ref: "#/components/schemas/microsoft.graph.folder"
+        id:
+          type: string
+          nullable: true
+        image:
+          $ref: "#/components/schemas/microsoft.graph.image"
+        lastModifiedBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        lastModifiedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        package:
+          $ref: "#/components/schemas/microsoft.graph.package"
+        parentReference:
+          $ref: "#/components/schemas/microsoft.graph.itemReference"
+        shared:
+          $ref: "#/components/schemas/microsoft.graph.shared"
+        sharepointIds:
+          $ref: "#/components/schemas/microsoft.graph.sharepointIds"
+        size:
+          type: number
+          format: int64
+          nullable: true
+        specialFolder:
+          $ref: "#/components/schemas/microsoft.graph.specialFolder"
+        video:
+          $ref: "#/components/schemas/microsoft.graph.video"
+        webDavUrl:
+          type: string
+          nullable: true
+        webUrl:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.root:
+      title: root
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        "@odata.type":
+          type: string
+    microsoft.graph.searchResult:
+      title: searchResult
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        onClickTelemetryUrl:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.shared:
+      title: shared
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        owner:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        scope:
+          type: string
+          nullable: true
+        sharedBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        sharedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.sharepointIds:
+      title: sharepointIds
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        listId:
+          type: string
+          nullable: true
+        listItemId:
+          type: string
+          nullable: true
+        listItemUniqueId:
+          type: string
+          nullable: true
+        siteId:
+          type: string
+          nullable: true
+        siteUrl:
+          type: string
+          nullable: true
+        tenantId:
+          type: string
+          nullable: true
+        webId:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.specialFolder:
+      title: specialFolder
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.video:
+      title: video
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        audioBitsPerSample:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        audioChannels:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        audioFormat:
+          type: string
+          nullable: true
+        audioSamplesPerSecond:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        bitrate:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        duration:
+          type: number
+          format: int64
+          nullable: true
+        fourCC:
+          type: string
+          nullable: true
+        frameRate:
+          type: number
+          format: double
+          nullable: true
+        height:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        width:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.itemAnalytics: {}
+    microsoft.graph.listItem: {}
+    microsoft.graph.permission:
+      title: permission
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        id:
+          type: string
+        "@odata.type":
+          type: string
+        expirationDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        grantedTo:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        grantedToIdentities:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.identitySet"
+        grantedToIdentitiesV2:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.sharePointIdentitySet"
+        grantedToV2:
+          $ref: "#/components/schemas/microsoft.graph.sharePointIdentitySet"
+        hasPassword:
+          type: boolean
+          nullable: true
+        inheritedFrom:
+          $ref: "#/components/schemas/microsoft.graph.itemReference"
+        invitation:
+          $ref: "#/components/schemas/microsoft.graph.sharingInvitation"
+        link:
+          $ref: "#/components/schemas/microsoft.graph.sharingLink"
+        roles:
+          type: array
+          items:
+            type: string
+            nullable: true
+        shareId:
+          type: string
+          nullable: true
+    microsoft.graph.itemRetentionLabel: {}
+    microsoft.graph.subscription:
+      title: subscription
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        id:
+          type: string
+        "@odata.type":
+          type: string
+        applicationId:
+          type: string
+          nullable: true
+        changeType:
+          type: string
+        clientState:
+          type: string
+          nullable: true
+        creatorId:
+          type: string
+          nullable: true
+        encryptionCertificate:
+          type: string
+          nullable: true
+        encryptionCertificateId:
+          type: string
+          nullable: true
+        expirationDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+        includeResourceData:
+          type: boolean
+          nullable: true
+        latestSupportedTlsVersion:
+          type: string
+          nullable: true
+        lifecycleNotificationUrl:
+          type: string
+          nullable: true
+        notificationQueryOptions:
+          type: string
+          nullable: true
+        notificationUrl:
+          type: string
+        notificationUrlAppId:
+          type: string
+          nullable: true
+        resource:
+          type: string
+    microsoft.graph.thumbnailSet:
+      title: thumbnailSet
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        id:
+          type: string
+        "@odata.type":
+          type: string
+        large:
+          $ref: "#/components/schemas/microsoft.graph.thumbnail"
+        medium:
+          $ref: "#/components/schemas/microsoft.graph.thumbnail"
+        small:
+          $ref: "#/components/schemas/microsoft.graph.thumbnail"
+        source:
+          $ref: "#/components/schemas/microsoft.graph.thumbnail"
+    microsoft.graph.driveItemVersion:
+      title: driveItemVersion
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        id:
+          type: string
+        "@odata.type":
+          type: string
+        lastModifiedBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        lastModifiedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        publication:
+          $ref: "#/components/schemas/microsoft.graph.publicationFacet"
+        content:
+          type: string
+          format: base64url
+          nullable: true
+        size:
+          type: number
+          format: int64
+          nullable: true
+    microsoft.graph.workbook: {}
+    microsoft.graph.driveItemCollectionResponse:
+      title: Base collection pagination and count responses
+      type: object
+      properties:
+        "@odata.count":
+          type: integer
+          format: int64
+          nullable: true
+        "@odata.nextLink":
+          type: string
+          nullable: true
+        value:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItem"
+    microsoft.graph.driveCollectionResponse:
+      title: Base collection pagination and count responses
+      type: object
+      properties:
+        "@odata.count":
+          type: integer
+          format: int64
+          nullable: true
+        "@odata.nextLink":
+          type: string
+          nullable: true
+        value:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.drive"
+    microsoft.graph.identity:
+      title: identity
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        displayName:
+          type: string
+          nullable: true
+        id:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+      discriminator:
+        propertyName: "@odata.type"
+        mapping:
+          "#microsoft.graph.sharePointIdentity": "#/components/schemas/microsoft.graph.sharePointIdentity"
+          "#microsoft.graph.teamworkConversationIdentity": "#/components/schemas/microsoft.graph.teamworkConversationIdentity"
+          "#microsoft.graph.teamworkUserIdentity": "#/components/schemas/microsoft.graph.teamworkUserIdentity"
+          "#microsoft.graph.userIdentity": "#/components/schemas/microsoft.graph.userIdentity"
+    microsoft.graph.album:
+      title: album
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        coverImageItemId:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.hashes:
+      title: hashes
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        crc32Hash:
+          type: string
+          nullable: true
+        quickXorHash:
+          type: string
+          nullable: true
+        sha1Hash:
+          type: string
+          nullable: true
+        sha256Hash:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.folderView:
+      title: folderView
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        sortBy:
+          type: string
+          nullable: true
+        sortOrder:
+          type: string
+          nullable: true
+        viewType:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.pendingContentUpdate:
+      title: pendingContentUpdate
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        queuedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.sharePointIdentitySet:
+      title: sharePointIdentitySet
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        application:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        device:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        user:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        "@odata.type":
+          type: string
+        group:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        siteGroup:
+          $ref: "#/components/schemas/microsoft.graph.sharePointIdentity"
+        siteUser:
+          $ref: "#/components/schemas/microsoft.graph.sharePointIdentity"
+    microsoft.graph.sharingInvitation:
+      title: sharingInvitation
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        email:
+          type: string
+          nullable: true
+        invitedBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        redeemedBy:
+          type: string
+          nullable: true
+        signInRequired:
+          type: boolean
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.sharingLink:
+      title: sharingLink
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        application:
+          $ref: "#/components/schemas/microsoft.graph.identity"
+        preventsDownload:
+          type: boolean
+          nullable: true
+        scope:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        webHtml:
+          type: string
+          nullable: true
+        webUrl:
+          type: string
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.thumbnail:
+      title: thumbnail
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        content:
+          type: string
+          format: base64url
+          nullable: true
+        height:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        sourceItemId:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        width:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          format: int32
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.drive:
+      title: drive
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        id:
+          type: string
+        "@odata.type":
+          type: string
+        createdBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        createdDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+        description:
+          type: string
+          nullable: true
+        eTag:
+          type: string
+          nullable: true
+        lastModifiedBy:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        lastModifiedDateTime:
+          pattern: "^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$"
+          type: string
+          format: date-time
+        name:
+          type: string
+          nullable: true
+        parentReference:
+          $ref: "#/components/schemas/microsoft.graph.itemReference"
+        webUrl:
+          type: string
+          nullable: true
+        createdByUser:
+          $ref: "#/components/schemas/microsoft.graph.user"
+        lastModifiedByUser:
+          $ref: "#/components/schemas/microsoft.graph.user"
+        driveType:
+          type: string
+          nullable: true
+        owner:
+          $ref: "#/components/schemas/microsoft.graph.identitySet"
+        quota:
+          $ref: "#/components/schemas/microsoft.graph.quota"
+        sharePointIds:
+          $ref: "#/components/schemas/microsoft.graph.sharepointIds"
+        system:
+          $ref: "#/components/schemas/microsoft.graph.systemFacet"
+        bundles:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItem"
+        following:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItem"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItem"
+        list:
+          $ref: "#/components/schemas/microsoft.graph.list"
+        root:
+          $ref: "#/components/schemas/microsoft.graph.driveItem"
+        special:
+          type: array
+          items:
+            $ref: "#/components/schemas/microsoft.graph.driveItem"
+    microsoft.graph.sharePointIdentity: {}
+    microsoft.graph.quota:
+      title: quota
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        deleted:
+          type: number
+          format: int64
+          nullable: true
+        remaining:
+          type: number
+          format: int64
+          nullable: true
+        state:
+          type: string
+          nullable: true
+        storagePlanInformation:
+          $ref: "#/components/schemas/microsoft.graph.storagePlanInformation"
+        total:
+          type: number
+          format: int64
+          nullable: true
+        used:
+          type: number
+          format: int64
+          nullable: true
+        "@odata.type":
+          type: string
+    microsoft.graph.systemFacet:
+      title: systemFacet
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        "@odata.type":
+          type: string
+    microsoft.graph.list: {}
+    microsoft.graph.storagePlanInformation:
+      title: storagePlanInformation
+      required:
+        - "@odata.type"
+      type: object
+      properties:
+        upgradeAvailable:
+          type: boolean
+          nullable: true
+        "@odata.type":
+          type: string
+  responses:
+    microsoft.graph.driveItemCollectionResponse:
+      description: Retrieved collection
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/microsoft.graph.driveItemCollectionResponse"
+    microsoft.graph.driveCollectionResponse:
+      description: Retrieved collection
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/microsoft.graph.driveCollectionResponse"
+  parameters:
+    top:
+      name: $top
+      in: query
+      description: Show only the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+      example: 50
+    skip:
+      name: $skip
+      in: query
+      description: Skip the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+    search:
+      name: $search
+      in: query
+      description: Search items by search phrases
+      style: form
+      explode: false
+      schema:
+        type: string
+    filter:
+      name: $filter
+      in: query
+      description: Filter items by property values
+      style: form
+      explode: false
+      schema:
+        type: string
+    count:
+      name: $count
+      in: query
+      description: Include count of items
+      style: form
+      explode: false
+      schema:
+        type: boolean
