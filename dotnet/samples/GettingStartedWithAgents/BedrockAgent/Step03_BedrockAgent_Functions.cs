@@ -114,10 +114,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
         // Create a new BedrockAgent instance with the agent model and the client
         // so that we can interact with the agent using Semantic Kernel contents.
-        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient)
-        {
-            Kernel = kernel,
-        };
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient);
         // Create the kernel function action group and prepare the agent for interaction
         await bedrockAgent.CreateKernelFunctionActionGroupAsync();
 
