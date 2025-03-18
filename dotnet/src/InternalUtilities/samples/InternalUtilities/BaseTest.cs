@@ -51,10 +51,21 @@ public abstract class BaseTest : TextWriter
     protected bool UseBingSearch => TestConfiguration.Bing.ApiKey is not null;
 
     protected Kernel CreateKernelWithChatCompletion()
+        => this.CreateKernelWithChatCompletion(useChatClient: false, out _);
+
+    protected Kernel CreateKernelWithChatCompletion(bool useChatClient, out IChatClient? chatClient)
     {
         var builder = Kernel.CreateBuilder();
 
-        AddChatCompletionToKernel(builder);
+        if (useChatClient)
+        {
+            chatClient = AddChatClientToKernel(builder);
+        }
+        else
+        {
+            chatClient = null;
+            AddChatCompletionToKernel(builder);
+        }
 
         return builder.Build();
     }
