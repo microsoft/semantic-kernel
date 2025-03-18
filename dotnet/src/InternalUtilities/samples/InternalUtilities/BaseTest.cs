@@ -86,9 +86,11 @@ public abstract class BaseTest : TextWriter
         IChatClient chatClient;
         if (this.UseOpenAIConfig)
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
             chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
                 new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey),
                 TestConfiguration.OpenAI.ChatModelId);
+#pragma warning restore CA2000 // Dispose objects before losing scope
         }
         else if (!string.IsNullOrEmpty(this.ApiKey))
         {
@@ -108,7 +110,7 @@ public abstract class BaseTest : TextWriter
         }
 
         builder.Services.AddTransient<IChatClient>((sp) => chatClient!);
-        var functionCallingChatClient = new Microsoft.SemanticKernel.ChatCompletion.FunctionInvokingChatClient(chatClient);
+        var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient);
         return functionCallingChatClient;
     }
 
