@@ -7,7 +7,6 @@ using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Moq;
 using Xunit;
 

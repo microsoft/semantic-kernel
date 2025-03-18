@@ -121,6 +121,15 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.Current)
             .Returns(indexes);
 
+        var mockCursor = new Mock<IAsyncCursor<string>>();
+        mockCursor
+            .Setup(l => l.MoveNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        mockCursor
+            .Setup(l => l.Current)
+            .Returns([]);
+
         var mockMongoIndexManager = new Mock<IMongoIndexManager<BsonDocument>>();
 
         mockMongoIndexManager
@@ -131,6 +140,10 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.Indexes)
             .Returns(mockMongoIndexManager.Object);
 
+        this._mockMongoDatabase
+            .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockCursor.Object);
+
         var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotelModel>(this._mockMongoDatabase.Object, CollectionName);
 
         // Act
@@ -140,7 +153,11 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         this._mockMongoDatabase.Verify(l => l.CreateCollectionAsync(
             CollectionName,
             It.IsAny<CreateCollectionOptions>(),
-            It.IsAny<CancellationToken>()), Times.Once());
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        this._mockMongoDatabase.Verify(l => l.ListCollectionNamesAsync(
+            It.IsAny<ListCollectionNamesOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
 
         this._mockMongoDatabase.Verify(l => l.RunCommandAsync<BsonDocument>(
             It.Is<BsonDocumentCommand<BsonDocument>>(command =>
@@ -151,9 +168,8 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             It.IsAny<CancellationToken>()), Times.Exactly(actualIndexCreations));
     }
 
-    [Theory]
-    [MemberData(nameof(CreateCollectionIfNotExistsData))]
-    public async Task CreateCollectionIfNotExistsInvokesValidMethodsAsync(List<string> collections, int actualCollectionCreations)
+    [Fact]
+    public async Task CreateCollectionIfNotExistsInvokesValidMethodsAsync()
     {
         // Arrange
         const string CollectionName = "collection";
@@ -165,7 +181,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
 
         mockCursor
             .Setup(l => l.Current)
-            .Returns(collections);
+            .Returns([]);
 
         this._mockMongoDatabase
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
@@ -202,7 +218,11 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         this._mockMongoDatabase.Verify(l => l.CreateCollectionAsync(
             CollectionName,
             It.IsAny<CreateCollectionOptions>(),
-            It.IsAny<CancellationToken>()), Times.Exactly(actualCollectionCreations));
+            It.IsAny<CancellationToken>()), Times.Exactly(1));
+
+        this._mockMongoDatabase.Verify(l => l.ListCollectionNamesAsync(
+            It.IsAny<ListCollectionNamesOptions>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

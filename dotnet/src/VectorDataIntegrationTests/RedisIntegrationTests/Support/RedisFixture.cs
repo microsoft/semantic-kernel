@@ -6,5 +6,5 @@ namespace RedisIntegrationTests.Support;
 
 public class RedisFixture : VectorStoreFixture
 {
-    public override TestStore TestStore => RedisTestStore.Instance;
+    public override TestStore TestStore => RedisTestStore.JsonInstance;
 }
