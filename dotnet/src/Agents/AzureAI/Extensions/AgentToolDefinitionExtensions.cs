@@ -196,30 +196,5 @@ internal static class AgentToolDefinitionExtensions
         throw new ArgumentException($"The configuration key '{key}' is required.");
     }
 
-    private static T? GetConfiguration<T>(this AgentToolDefinition agentToolDefinition, string key)
-    {
-        Verify.NotNull(agentToolDefinition);
-        Verify.NotNull(key);
-
-        if (agentToolDefinition.Configuration?.TryGetValue(key, out var value) ?? false)
-        {
-            if (value == null)
-            {
-                return default;
-            }
-
-            try
-            {
-                return (T?)Convert.ChangeType(value, typeof(T));
-            }
-            catch (InvalidCastException)
-            {
-                throw new InvalidCastException($"The configuration key '{key}' value must be of type '{typeof(T?)}' but is '{value.GetType()}'.");
-            }
-        }
-
-        return default;
-    }
-
     private static readonly BinaryData s_noParams = BinaryData.FromObjectAsJson(new { type = "object", properties = new { } });
 }

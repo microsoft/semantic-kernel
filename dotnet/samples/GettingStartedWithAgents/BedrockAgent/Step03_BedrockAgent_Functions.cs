@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -126,7 +125,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
 
     private sealed class WeatherPlugin
     {
-        [KernelFunction, Description("Provides realtime weather information.")]
+        [KernelFunction, Description("Provides real-time weather information.")]
         public string Current([Description("The location to get the weather for.")] string location)
         {
             return $"The current weather in {location} is 72 degrees.";

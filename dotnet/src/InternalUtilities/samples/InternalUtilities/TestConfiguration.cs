@@ -330,5 +330,6 @@ public sealed class TestConfiguration
     {
         public string AgentResourceRoleArn { get; set; }
         public string FoundationModel { get; set; }
+        public string KnowledgeBaseId { get; set; }
     }
 }

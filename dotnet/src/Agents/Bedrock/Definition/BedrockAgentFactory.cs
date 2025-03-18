@@ -39,24 +39,34 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
 
         if (agentDefinition.Type?.Equals(BedrockAgentType, System.StringComparison.Ordinal) ?? false)
         {
+            // create the agent
             var agentResourceRoleArn = GetAgentResourceRoleArn(agentDefinition);
             var agentClient = new AmazonBedrockAgentClient();
             var runtimeClient = new AmazonBedrockAgentRuntimeClient();
             var agentModel = await agentClient.CreateAndPrepareAgentAsync(
-                    new()
-                    {
-                        FoundationModel = agentDefinition.Model!.Id,
-                        AgentName = agentDefinition.Name,
-                        Description = agentDefinition.Description ?? string.Empty,
-                        Instruction = agentDefinition.Instructions ?? string.Empty,
-                        AgentResourceRoleArn = agentResourceRoleArn,
-                    },
-                    cancellationToken
-                ).ConfigureAwait(false);
-            return new BedrockAgent(agentModel, agentClient, runtimeClient)
+                new()
+                {
+                    FoundationModel = agentDefinition.Model!.Id,
+                    AgentName = agentDefinition.Name,
+                    Description = agentDefinition.Description ?? string.Empty,
+                    Instruction = agentDefinition.Instructions ?? string.Empty,
+                    AgentResourceRoleArn = agentResourceRoleArn,
+                },
+                cancellationToken
+            ).ConfigureAwait(false);
+
+            var agent = new BedrockAgent(agentModel, agentClient, runtimeClient)
             {
                 Kernel = kernel
             };
+
+            // create tools from the definition
+            await agentDefinition.CreateToolsAsync(agent, cancellationToken).ConfigureAwait(false);
+
+            // wait for the agent to be prepared
+            //await agentClient.PrepareAgentAndWaitAsync(agentModel, cancellationToken).ConfigureAwait(false);
+
+            return agent;
         }
 
         return null;
@@ -67,5 +77,6 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
     {
         return agentDefinition.Model?.Configuration?.ExtensionData.TryGetValue(AgentResourceRoleArn, out var value) ?? false ? value as string : null;
     }
+
     #endregion
 }
