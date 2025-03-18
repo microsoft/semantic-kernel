@@ -385,7 +385,7 @@ def _build_search_query(
                 raise VectorStoreOperationException(
                     f"Distance function '{vector_field.distance_function}' not supported."
                 )
-            asc: bool = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
+            asc = DISTANCE_FUNCTION_DIRECTION_HELPER[vector_field.distance_function](0, 1)
         else:
             distance_function = "cosine"
 
