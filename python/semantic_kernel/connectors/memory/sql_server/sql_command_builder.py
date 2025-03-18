@@ -1,48 +1,51 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from collections.abc import MutableSequence, Sequence
+from collections.abc import Sequence
 from contextlib import contextmanager
 from io import StringIO
 from typing import Any
 
 from semantic_kernel.connectors.memory import logger
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
 
-class StringBuilder:
+class QueryBuilder:
     """A class that helps you build strings for SQL queries."""
 
-    def __init__(self):
+    def __init__(self, initial_string: "QueryBuilder | str | None" = None):
         """Initialize the StringBuilder with an empty StringIO object."""
         self._file_str = StringIO()
+        if initial_string:
+            self._file_str.write(str(initial_string))
 
-    def append(self, string: str):
+    def append(self, string: str, suffix: str = ""):
         """Append a string to the StringBuilder."""
         self._file_str.write(string)
+        if suffix:
+            self._file_str.write(suffix)
 
     def append_list(self, strings: Sequence[str], sep: str = ", ", end: str = "\n"):
         """Append a list of strings to the StringBuilder with a separator and an end string."""
         for string in strings[:-1]:
-            self._file_str.write(string)
-            self._file_str.write(sep)
-        self._file_str.write(strings[-1])
-        self._file_str.write(end)
-
-    def append_with_newline(self, string: str):
-        """Append a string to the StringBuilder followed by a newline."""
-        self._file_str.write(string)
-        self._file_str.write("\n")
-
-    def append_newline(self) -> None:
-        """Append a newline to the StringBuilder."""
-        self._file_str.write("\n")
+            self.append(string, suffix=sep)
+        self.append(strings[-1], suffix=end)
 
     def append_table_name(
         self, schema: str, table_name: str, prefix: str = "", suffix: str = "", newline: bool = False
     ) -> None:
-        """Append a table name to the StringBuilder with schema."""
-        self.append(f"{prefix} [{schema}].[{table_name}] {suffix}")
-        if newline:
-            self.append_newline()
+        """Append a table name to the StringBuilder with schema.
+
+        This includes square brackets around the schema and table name.
+        And spaces around the table name.
+
+        Args:
+            schema: The schema name.
+            table_name: The table name.
+            prefix: Optional prefix to add before the table name.
+            suffix: Optional suffix to add after the table name.
+            newline: Whether to add a newline after the table name or suffix.
+        """
+        self.append(f"{prefix} [{schema}].[{table_name}] {suffix}", suffix="\n" if newline else "")
 
     def remove_last(self, number_of_chars: int):
         """Remove the last number_of_chars from the StringBuilder."""
@@ -52,18 +55,24 @@ class StringBuilder:
             self._file_str.truncate()
 
     @contextmanager
-    def in_parenthesis(self, start: str = "", end: str = ""):
-        """Context manager to add parentheses around a block of strings."""
-        self.append(f"{start} (" if start else "(")
+    def in_parenthesis(self, prefix: str = "", suffix: str = ""):
+        """Context manager to add parentheses around a block of strings.
+
+        Args:
+            prefix: Optional prefix to add before the opening parenthesis.
+            suffix: Optional suffix to add after the closing parenthesis.
+
+        """
+        self.append(f"{prefix} (" if prefix else "(")
         yield
-        self.append(f") {end}" if end else ")")
+        self.append(f") {suffix}" if suffix else ")")
 
     @contextmanager
     def in_logical_group(self):
         """Create a logical group with BEGIN and END."""
-        self.append_with_newline("BEGIN")
+        self.append("BEGIN", suffix="\n")
         yield
-        self.append_with_newline("END")
+        self.append("END", suffix="\n")
 
     def __str__(self):
         """Return the string representation of the StringBuilder."""
@@ -75,28 +84,53 @@ class SqlCommand:
 
     def __init__(
         self,
-        query: StringBuilder | str | None = None,
-        parameters: MutableSequence[str | tuple[str, ...]] | None = None,
+        query: QueryBuilder | str | None = None,
+        execute_many: bool = False,
     ):
-        """Initialize the SqlCommand with a command string."""
-        if not query:
-            self.query = StringBuilder()
-        elif isinstance(query, str):
-            self.query = StringBuilder()
-            self.query.append(query)
-        else:
-            self.query = query
-        self.parameters: MutableSequence[str | tuple[str, ...]] = parameters or []
+        """Initialize the SqlCommand.
 
-    def add_parameter(self, value: str | tuple[str, ...] | Sequence[str]) -> None:
-        """Add a parameter to the SqlCommand."""
-        match value:
-            case str() | tuple():
-                self.parameters.append(value)
-            case Sequence():
-                self.parameters.append(tuple(value))
-            case _:
-                raise TypeError(f"Unsupported parameter type: {type(value)}")
+        This only allows for creation of the query string, use the add_parameter
+        and add_parameters methods to add parameters to the command.
+
+        Args:
+            query: The SQL command string or QueryBuilder object.
+            execute_many: Whether to execute the command many times.
+                If True, the parameters will be added to each of the many_parameters contents.
+                If False, the parameters will be added to the parameters list.
+
+        """
+        self.query = QueryBuilder(query)
+        self.parameters: list[str] = []
+        self.many_parameters: list[tuple[str, ...]] = []
+        self.execute_many: bool = execute_many
+
+    def add_parameter(self, value: str) -> None:
+        """Add a parameter to the SqlCommand.
+
+        This adds a single value to the parameters.
+        If the command is set to execute many, it will add the parameters
+        to each of the the many_parameters contents.
+        """
+        if self.execute_many:
+            for i in range(len(self.many_parameters)):
+                self.many_parameters[i] += (value,)
+        else:
+            if (len(self.parameters) + 1) > 2100:
+                raise VectorStoreOperationException("The maximum number of parameters is 2100.")
+            self.parameters.append(value)
+
+    def add_parameters(self, values: Sequence[str] | tuple[str, ...]) -> None:
+        """Add multiple parameters to the SqlCommand.
+
+        If the command is set to execute many, it will add a single new tuple to the many_parameters attribute.
+        If the command is not set to execute many, it will add the values to the parameters list.
+        """
+        if self.execute_many:
+            self.many_parameters.append(tuple(values))
+        else:
+            if (len(self.parameters) + len(values)) > 2100:
+                raise VectorStoreOperationException("The maximum number of parameters is 2100.")
+            self.parameters.extend(values)
 
     def __str__(self):
         """Return the string representation of the SqlCommand."""
@@ -104,19 +138,8 @@ class SqlCommand:
             logger.debug("This command has parameters.")
         return str(self.query)
 
-    @property
-    def is_execute_many(self) -> bool:
-        """Check if the command is for executemany.
-
-        This means that the first parameter is an iterable and there are at least 2 parameters.
-        """
-        return len(self.parameters) > 1 and not isinstance(self.parameters[0], str)
-
     def to_execute(self) -> tuple[str, tuple[Any, ...]]:
-        """Return the command and parameters for execute many.
-
-        If there is only one parameter, it will be returned as a single value.
-        """
-        if self.is_execute_many and len(self.parameters) == 1:
-            return str(self.query), tuple(self.parameters[0])
+        """Return the command and parameters for execute or execute many."""
+        if self.execute_many:
+            return str(self.query), tuple(self.many_parameters)
         return str(self.query), tuple(self.parameters)
