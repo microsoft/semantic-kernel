@@ -42,6 +42,4 @@ public static class AgentToolDefinitionExtensions
 
         return default;
     }
-
-
 }

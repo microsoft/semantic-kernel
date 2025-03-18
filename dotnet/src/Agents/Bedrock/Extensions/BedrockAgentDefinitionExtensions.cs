@@ -13,15 +13,8 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 internal static class BedrockAgentDefinitionExtensions
 {
     private const string CodeInterpreterType = "code_interpreter";
-    private const string FileSearchType = "file_search";
+    private const string KnowledgeBaseType = "knowledge_base";
     private const string FunctionType = "function";
-
-    private static readonly string[] s_validToolTypes = new string[]
-    {
-        CodeInterpreterType,
-        FileSearchType,
-        FunctionType,
-    };
 
     internal static async Task CreateToolsAsync(this AgentDefinition agentDefinition, BedrockAgent agent, CancellationToken cancellationToken)
     {
@@ -42,22 +35,19 @@ internal static class BedrockAgentDefinitionExtensions
             await agent.CreateKernelFunctionActionGroupAsync(functionSchema, cancellationToken).ConfigureAwait(false);
         }
 
-        /*
-        foreach (var tool in agentDefinition.Tools)
+        var knowledgeBases = agentDefinition.GetToolDefinitions(KnowledgeBaseType);
+        if (knowledgeBases is not null)
         {
-            switch (tool.Type)
+            foreach (var knowledgeBase in knowledgeBases)
             {
-                case CodeInterpreterType:
-                    await agent.CreateCodeInterpreterActionGroupAsync(cancellationToken).ConfigureAwait(false);
-                    break;
-                case FunctionType:
-                    await agent.CreateFunctionActionGroupAsync(cancellationToken).ConfigureAwait(false);
-                    break;
-                default:
-                    throw new NotSupportedException($"Unable to create Bedrock tool because of unsupported tool type: {tool.Type}, supported tool types are: {string.Join(",", s_validToolTypes)}");
+                if (knowledgeBase.Configuration?.TryGetValue("knowledge_base_id", out var value) ?? false && value is not null && value is string)
+                {
+                    var knowledgeBaseId = value as string;
+                    var description = knowledgeBase.Description ?? string.Empty;
+                    await agent.AssociateAgentKnowledgeBaseAsync(knowledgeBaseId!, description, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
-        */
     }
 
     internal static FunctionSchema? GetFunctionSchema(this AgentDefinition agentDefinition)
@@ -85,10 +75,6 @@ internal static class BedrockAgentDefinitionExtensions
             });
         }
 
-        return new FunctionSchema
-        {
-            Functions = functions,
-        };
+        return functions.Count == 0 ? null : new FunctionSchema { Functions = functions };
     }
-
 }
