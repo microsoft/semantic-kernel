@@ -109,4 +109,3 @@ public sealed class HuggingFaceChatCompletionTests(ITestOutputHelper output) : H
         Assert.True(response.ToString().Length > 0);
     }
 }
-
