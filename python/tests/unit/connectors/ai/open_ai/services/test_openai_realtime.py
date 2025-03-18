@@ -654,3 +654,158 @@ async def _stream_to_webrtc(client: OpenAIRealtimeWebRTC):
         async for parsed_msg in client._parse_event(msg):
             await client._receive_buffer.put(parsed_msg)
             await asyncio.sleep(0)
+
+
+# @pytest.fixture
+# async def openai_realtime_base():
+#     kernel_mock = AsyncMock(Kernel)
+#     obj = OpenAIRealtimeWebRTC(audio_track=AsyncMock(), client=AsyncMock(), ai_model_id="gpt-3", kernel=kernel_mock)
+#     return obj
+
+
+# @pytest.fixture
+# async def prepare_event():
+#     def _prepare_event(event_type, **kwargs):
+#         return RealtimeEvent(service_event=kwargs, service_type=event_type)
+
+#     return _prepare_event
+
+
+# @pytest.mark.asyncio
+# async def test_initialization(openai_realtime_base):
+#     """Test to verify proper creation and defaults settings initialization of OpenAIRealtimeWebRTC."""
+#     assert openai_realtime_base.SUPPORTS_FUNCTION_CALLING is True
+#     assert openai_realtime_base.kernel is not None
+
+
+# @pytest.mark.asyncio
+# async def test_send_method(openai_realtime_base):
+#     """Test to ensure send method delegates to _send method correctly."""
+
+#     # Mock _send method
+#     openai_realtime_base._send = AsyncMock()
+
+#     # Create a RealtimeTextEvent
+#     text_event = RealtimeTextEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, text=TextContent(text="Hello"))
+
+#     # Call the send method
+#     await openai_realtime_base.send(text_event)
+
+#     # Assert _send was called correctly
+#     openai_realtime_base._send.assert_awaited_once_with(
+#         RealtimeTextEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, text=TextContent(text="Hello"))
+#     )
+
+
+# @pytest.mark.asyncio
+# async def test_update_session_with_no_kernel(prepare_event):
+#     """Test update_session without kernel argument provided and with PromptExecutionSettings."""
+
+#     # Mocks
+#     mock_settings = Mock(spec=PromptExecutionSettings)
+
+#     # Setup OpenAIRealtimeWebRTC instance
+#     base = OpenAIRealtimeWebRTC(audio_track=AsyncMock(), client=AsyncMock(), ai_model_id="gpt-3")
+
+#     # Call update_session
+#     await base.update_session(settings=mock_settings, create_response=True)
+
+#     # Assertions
+#     assert base.kernel is None
+#     assert base._current_settings is mock_settings
+
+
+# @pytest.mark.asyncio
+# @patch("semantic_kernel.connectors.ai.function_calling_utils.prepare_settings_for_function_calling")
+# async def test_update_session_with_kernel(mocked_prepare, openai_realtime_base, prepare_event):
+#     """Test update_session updates with kernel and PromptExecutionSettings."""
+
+#     # Mocks
+#     mock_settings = PromptExecutionSettings(service_id="test")
+
+#     # Call update_session
+#     await openai_realtime_base.update_session(settings=mock_settings, kernel=openai_realtime_base.kernel)
+
+#     # Ensure kernel-related processes are executed
+#     mocked_prepare.assert_called_once_with(
+#         mock_settings,
+#         openai_realtime_base.get_prompt_execution_settings_class(),
+#         openai_realtime_base._update_function_choice_settings_callback(),
+#         kernel=openai_realtime_base.kernel,
+#     )
+
+
+# @pytest.mark.asyncio
+# async def test_handle_audio_transcript_delta(openai_realtime_base, prepare_event):
+#     """Test to ensure audio transcript delta is handled correctly."""
+
+#     # Mock asyncio.Queue to check data passed to buffer
+#     openai_realtime_base._receive_buffer = AsyncMock()
+
+#     # Prepare a sample audio transcript event
+#     sample_event = prepare_event(ListenEvents.RESPONSE_AUDIO_TRANSCRIPT_DELTA.value, delta="text")
+
+#     async for event in openai_realtime_base._parse_event(sample_event):
+#         assert isinstance(event, RealtimeTextEvent)
+
+#     # Check if item put in the buffer
+#     openai_realtime_base._receive_buffer.put.assert_awaited()
+
+
+# @pytest.mark.asyncio
+# async def test_parse_function_call_arguments_done(openai_realtime_base):
+#     """Test parsing and execution of function call arguments done."""
+
+#     # Prepare mock data
+#     call_event = ResponseFunctionCallArgumentsDoneEvent(
+#         type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE.value,
+#         call_id="sample-id",
+#         item_id="1234",
+#         arguments='{"param": "value"}',
+#     )
+
+#     # Create chat history mock
+#     mock_chat_history = AsyncMock(ChatHistory)
+#     openai_realtime_base.kernel.invoke_function_call = AsyncMock()
+
+#     # Call the function
+#     async for event in openai_realtime_base._parse_function_call_arguments_done(call_event):
+#         pass
+
+#     # Ensure correct method is called in kernel
+#     openai_realtime_base.kernel.invoke_function_call.assert_called_with(
+#         FunctionCallContent(id="1234", plugin_name="", function_name="sample-id", arguments='{"param": "value"}'),
+#         mock_chat_history,
+#     )
+
+
+# @pytest.mark.asyncio
+# async def test_handle_unknown_event_type(openai_realtime_base, prepare_event):
+#     """Test handling of an unknown/unexpected event type."""
+
+#     # Prepare a sample unknown event
+#     unknown_event = prepare_event("unknown:event")
+
+#     # Mock put method
+#     openai_realtime_base._receive_buffer.put = AsyncMock()
+
+#     async for event in openai_realtime_base._parse_event(unknown_event):
+#         # The event should still be added to the buffer
+#         openai_realtime_base._receive_buffer.put.assert_awaited_with(event)
+
+
+# @pytest.mark.asyncio
+# async def test_close_session(openai_realtime_base):
+#     """Test session close functionality."""
+#     # Mock close method of peer connection and data channel
+#     if openai_realtime_base.peer_connection:
+#         openai_realtime_base.peer_connection.close = AsyncMock()
+#     if openai_realtime_base.data_channel:
+#         openai_realtime_base.data_channel.close = AsyncMock()
+
+#     # Call close_session and verify
+#     await openai_realtime_base.close_session()
+#     if openai_realtime_base.peer_connection:
+#         openai_realtime_base.peer_connection.close.assert_awaited_once()
+#     if openai_realtime_base.data_channel:
+#         openai_realtime_base.data_channel.close.assert_awaited_once()
