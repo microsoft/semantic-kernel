@@ -16,7 +16,7 @@ This way, you can create any amount of agents in Copilot Studio and interact wit
 
 The implementation is quite simple, since Copilot Studio can publish agents over DirectLine API, which we can use in Semantic Kernel to define a new subclass of `Agent` named [`DirectLineAgent`](src/direct_line_agent.py).
 
-Additional, we do enforce [authentication to the DirectLine API](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configure-web-security).
+Additionally, we do enforce [authentication to the DirectLine API](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configure-web-security).
 
 ## Usage
 
