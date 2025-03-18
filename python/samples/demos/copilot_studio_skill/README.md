@@ -28,8 +28,8 @@ However, in some cases you may need to extend the default agent capabilities by 
 1. Clone this repository to your local machine.
 
 ```bash
-git clone https://github.com/Azure-Samples/semantic-kernel-advanced-usage
-cd semantic-kernel-advanced-usage/templates/copilot_studio_skill
+git clone https://github.com/microsoft/semantic-kernel
+cd semantic-kernel/python/samples/demos/copilot_studio_skill
 ```
 
 2. Create a App Registration in Azure Entra ID, with a client secret.
