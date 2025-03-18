@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using SemanticKernel.Process.TestsShared.Services;
@@ -87,7 +88,4 @@ public static class CommonSteps
             return message;
         }
     }
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
 }
