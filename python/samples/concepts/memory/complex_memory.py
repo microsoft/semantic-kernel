@@ -152,7 +152,7 @@ DataModel = get_data_model("array", index_kind, distance_function)
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
 # so that settings for unused collections do not cause validation errors.
-collections: dict[str, Callable[[], VectorStoreRecordCollection[str, DataModel]]] = {
+collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "ai_search": lambda: AzureAISearchCollection[str, DataModel](
         data_model_type=DataModel,
     ),
