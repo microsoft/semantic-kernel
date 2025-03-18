@@ -8,6 +8,8 @@ from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Mapping, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
+from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
+
 if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
@@ -531,10 +533,17 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
             return self._serialize_vectors(record.model_dump())
 
         store_model = {}
-        for field_name in self.data_model_definition.field_names:
-            value = record[field_name] if isinstance(record, Mapping) else getattr(record, field_name)
-            if func := getattr(self.data_model_definition.fields[field_name], "serialize_function", None):
-                value = func(value)
+        for field_name, field in self.data_model_definition.fields.items():
+            if isinstance(field, VectorStoreRecordVectorField) and not field.local_embedding:
+                logger.info(f"Vector field {field_name} is not local, skipping serialization.")
+                continue
+            value = record.get(field_name, None) if isinstance(record, Mapping) else getattr(record, field_name)
+            if isinstance(field, VectorStoreRecordVectorField):
+                if (func := getattr(field, "serialize_function", None)) and value is not None:
+                    value = func(value)
+            elif value is None:
+                # if the field is not a vector field, then it should have a value.
+                raise VectorStoreModelSerializationException(f"Field {field_name} is None, cannot serialize.")
             store_model[field_name] = value
         return store_model
 
@@ -627,12 +636,16 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
                 record = self._deserialize_vector(record)
             return self.data_model_type.model_validate(record)  # type: ignore
         data_model_dict: dict[str, Any] = {}
-        for field_name in self.data_model_definition.fields:
-            if not include_vectors and field_name in self.data_model_definition.vector_field_names:
-                continue
-            value = record[field_name]
-            if func := getattr(self.data_model_definition.fields[field_name], "deserialize_function", None):
-                value = func(value)
+        for field_name, field in self.data_model_definition.fields.items():
+            value = record.get(field_name, None)
+            if isinstance(field, VectorStoreRecordVectorField):
+                if not include_vectors or not field.local_embedding:
+                    continue
+                if field.deserialize_function and value is not None:
+                    value = field.deserialize_function(value)
+            elif value is None:
+                # if the field is not a vector field, then it should have a value.
+                raise VectorStoreModelDeserializationException(f"Field {field_name} is None, cannot deserialize.")
             data_model_dict[field_name] = value
         if self.data_model_type is dict:
             return data_model_dict  # type: ignore
@@ -641,7 +654,10 @@ class VectorStoreRecordCollection(KernelBaseModel, Generic[TKey, TModel]):
     def _deserialize_vector(self, record: dict[str, Any]) -> dict[str, Any]:
         for field in self.data_model_definition.vector_fields:
             if field.deserialize_function:
-                record[field.name or ""] = field.deserialize_function(record[field.name or ""])
+                if not field.local_embedding:
+                    logger.info(f"Vector field {field.name} is not local, skipping deserialization.")
+                    continue
+                record[field.name] = field.deserialize_function(record[field.name])
         return record
 
     # region Internal Functions

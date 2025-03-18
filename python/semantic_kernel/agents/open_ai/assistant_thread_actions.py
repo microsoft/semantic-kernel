@@ -17,11 +17,11 @@ from openai.types.beta.threads.runs import (
     ToolCallsStepDetails,
 )
 
-from semantic_kernel.agents.azure_ai.agent_content_generation import generate_function_call_streaming_content
 from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_code_interpreter_content,
     generate_final_streaming_message_content,
     generate_function_call_content,
+    generate_function_call_streaming_content,
     generate_function_result_content,
     generate_message_content,
     generate_streaming_code_interpreter_content,

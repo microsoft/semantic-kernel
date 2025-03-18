@@ -10,6 +10,8 @@ using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+
 [Collection("PostgresVectorStoreCollection")]
 public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStoreFixture fixture)
 {
@@ -407,7 +409,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             IncludeVectors = false,
             Top = 5,
-            Filter = new([
+            OldFilter = new([
                 new EqualToFilterClause("HotelRating", 2.5f)
             ])
         });
@@ -440,7 +442,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         {
             IncludeVectors = false,
             Top = 5,
-            Filter = new([
+            OldFilter = new([
                 new AnyTagEqualToFilterClause("Tags", "tag2")
             ])
         });
