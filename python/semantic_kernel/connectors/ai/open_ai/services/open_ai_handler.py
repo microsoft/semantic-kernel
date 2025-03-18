@@ -10,6 +10,7 @@ from openai.types import Completion, CreateEmbeddingResponse
 from openai.types.audio import Transcription
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.images_response import ImagesResponse
+from openai.types.responses.response import Response
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.open_ai import (
@@ -17,12 +18,14 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
+    OpenAIResponseExecutionSettings,
     OpenAITextToAudioExecutionSettings,
     OpenAITextToImageExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.ai.response_usage import ResponseUsage
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
@@ -40,6 +43,7 @@ RESPONSE_TYPE = Union[
     ImagesResponse,
     Transcription,
     _legacy_response.HttpxBinaryResponseContent,
+    Response,
 ]
 
 
@@ -51,12 +55,16 @@ class OpenAIHandler(KernelBaseModel, ABC):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
+    response_usage: ResponseUsage | None = None
 
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the OpenAI API."""
         if self.ai_model_type == OpenAIModelTypes.TEXT or self.ai_model_type == OpenAIModelTypes.CHAT:
             assert isinstance(settings, OpenAIPromptExecutionSettings)  # nosec
             return await self._send_completion_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.RESPONSE:
+            assert isinstance(settings, OpenAIResponseExecutionSettings)  # nosec
+            return await self._send_response_request(settings)
         if self.ai_model_type == OpenAIModelTypes.EMBEDDING:
             assert isinstance(settings, OpenAIEmbeddingPromptExecutionSettings)  # nosec
             return await self._send_embedding_request(settings)
@@ -71,6 +79,19 @@ class OpenAIHandler(KernelBaseModel, ABC):
             return await self._send_text_to_audio_request(settings)
 
         raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
+
+    async def _send_response_request(self, settings: OpenAIResponseExecutionSettings) -> Response:
+        """Send a request to the OpenAI response endpoint."""
+        try:
+            settings_dict = settings.prepare_settings_dict()
+            response = await self.client.responses.create(**settings_dict)
+            self.store_response_usage(response)
+            return response
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to generate response",
+                ex,
+            ) from ex
 
     async def _send_completion_request(
         self,
@@ -196,3 +217,50 @@ class OpenAIHandler(KernelBaseModel, ABC):
             self.total_tokens += response.usage.total_tokens
             if hasattr(response.usage, "completion_tokens"):
                 self.completion_tokens += response.usage.completion_tokens
+
+    def store_response_usage(self, response: Response) -> None:
+        """Retrieve and aggregate usage data from the response object.
+
+        Tracking attributes (`prompt_tokens`, `completion_tokens`, `total_tokens`) and
+        instantiate or update the `response_usage` model with the same data.
+        """
+        # 1. Ensure the response has a usage attribute and it's not empty.
+        usage_data = getattr(response, "usage", None)
+        if not usage_data:
+            return  # No usage info to store
+
+        # 2. Convert to dict if needed; handle both dict-like and Pydantic model usage structures.
+        if not isinstance(usage_data, dict):
+            # If `response.usage` is already a pydantic model, we can use `.dict()`.
+            usage_data = usage_data.dict()
+
+        # 3. Parse the raw usage data into our strongly-typed `ResponseUsage` model.
+        usage_obj = ResponseUsage(**usage_data)
+
+        # 4. Either set or update the handler's `response_usage`.
+        if self.response_usage is None:
+            self.response_usage = usage_obj
+        else:
+            # If you already have a `response_usage`, you could aggregate further
+            # or overwrite, depending on your desired logic. Below is an example of
+            # adding the token counts together if you wish to accumulate usage over time.
+            self.response_usage.input_tokens += usage_obj.input_tokens
+            self.response_usage.output_tokens += usage_obj.output_tokens
+            self.response_usage.total_tokens += usage_obj.total_tokens
+            self.response_usage.input_tokens_details.cached_tokens += usage_obj.input_tokens_details.cached_tokens
+            self.response_usage.output_tokens_details.reasoning_tokens += (
+                usage_obj.output_tokens_details.reasoning_tokens
+            )
+
+        # 5. Update the overarching usage counters in the handler.
+        self.prompt_tokens += usage_obj.input_tokens
+        self.completion_tokens += usage_obj.output_tokens
+        self.total_tokens += usage_obj.total_tokens
+
+        # 6. (Optional) Log the stored usage data with relevant details for traceability.
+        logger.info(
+            f"OpenAI usage stored. "
+            f"Prompt tokens: {self.prompt_tokens}, "
+            f"Completion tokens: {self.completion_tokens}, "
+            f"Total tokens: {self.total_tokens}"
+        )

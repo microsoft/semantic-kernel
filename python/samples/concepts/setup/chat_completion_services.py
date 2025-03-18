@@ -18,6 +18,7 @@ class Services(str, Enum):
     """
 
     OPENAI = "openai"
+    OPENAI_RESPONSE = "openai_response"
     AZURE_OPENAI = "azure_openai"
     AZURE_AI_INFERENCE = "azure_ai_inference"
     ANTHROPIC = "anthropic"
@@ -48,6 +49,9 @@ def get_chat_completion_service_and_request_settings(
     # Use lambdas or functions to delay instantiation
     chat_services = {
         Services.OPENAI: lambda: get_openai_chat_completion_service_and_request_settings(
+            instruction_role=instruction_role
+        ),
+        Services.OPENAI_RESPONSE: lambda: get_openai_response_service_and_request_settings(
             instruction_role=instruction_role
         ),
         Services.AZURE_OPENAI: lambda: get_azure_openai_chat_completion_service_and_request_settings(
@@ -97,6 +101,36 @@ def get_openai_chat_completion_service_and_request_settings(
     chat_service = OpenAIChatCompletion(service_id=service_id, instruction_role=instruction_role)
     request_settings = OpenAIChatPromptExecutionSettings(
         service_id=service_id, max_tokens=2000, temperature=0.7, top_p=0.8
+    )
+
+    return chat_service, request_settings
+
+
+def get_openai_response_service_and_request_settings(
+    instruction_role: str | None = None,
+) -> tuple["ChatCompletionClientBase", "PromptExecutionSettings"]:
+    """Return OpenAI chat completion service and request settings.
+
+    Args:
+        instruction_role (str | None): The role to use for 'instruction' messages, for example,
+            'developer' or 'system'. (Optional)
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel-python
+    """
+    from semantic_kernel.connectors.ai.open_ai import OpenAIResponse, OpenAIResponseExecutionSettings
+
+    chat_service = OpenAIResponse(service_id=service_id, instruction_role=instruction_role)
+    request_settings = OpenAIResponseExecutionSettings(
+        service_id=service_id, max_output_tokens=2000, temperature=0.7, top_p=0.8
     )
 
     return chat_service, request_settings
