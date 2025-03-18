@@ -35,4 +35,5 @@
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Connectors.OpenAI\Connectors.OpenAI.csproj" />
   </ItemGroup>
+
 </Project>

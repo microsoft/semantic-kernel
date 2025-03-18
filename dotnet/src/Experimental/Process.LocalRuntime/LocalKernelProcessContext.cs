@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
 
@@ -8,7 +7,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides context and actions on a process that is running locally.
 /// </summary>
-public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposable
+public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAsyncDisposable
 {
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
@@ -53,7 +52,10 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, IDisposabl
     /// <summary>
     /// Disposes of the resources used by the process.
     /// </summary>
-    public void Dispose() => this._localProcess.Dispose();
+    public async ValueTask DisposeAsync()
+    {
+        await this._localProcess.DisposeAsync().ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
     public override Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()

@@ -12,6 +12,8 @@ from azure.ai.projects.models import (
     MessageDeltaTextFileCitationAnnotationObject,
     MessageDeltaTextFilePathAnnotation,
     MessageDeltaTextFilePathAnnotationObject,
+    MessageDeltaTextUrlCitationAnnotation,
+    MessageDeltaTextUrlCitationDetails,
     MessageImageFileContent,
     MessageImageFileDetails,
     MessageTextContent,
@@ -20,6 +22,8 @@ from azure.ai.projects.models import (
     MessageTextFileCitationDetails,
     MessageTextFilePathAnnotation,
     MessageTextFilePathDetails,
+    MessageTextUrlCitationAnnotation,
+    MessageTextUrlCitationDetails,
     RunStep,
     RunStepDeltaFunction,
     RunStepDeltaFunctionToolCall,
@@ -90,18 +94,25 @@ def test_generate_message_content_text_and_image():
                     start_index=1,
                     end_index=10,
                 ),
+                MessageTextUrlCitationAnnotation(
+                    text="text",
+                    url_citation=MessageTextUrlCitationDetails(title="some title", url="http://example.com"),
+                    start_index=1,
+                    end_index=10,
+                ),
             ],
         )
     )
 
     thread_msg.content = [image, text]
-    step = RunStep(id="step_id", run_id="run_id", thread_id="thread_id", assistant_id="assistant_id")
+    step = RunStep(id="step_id", run_id="run_id", thread_id="thread_id", agent_id="assistant_id")
     out = generate_message_content("assistant", thread_msg, step)
-    assert len(out.items) == 4
+    assert len(out.items) == 5
     assert isinstance(out.items[0], FileReferenceContent)
     assert isinstance(out.items[1], TextContent)
     assert isinstance(out.items[2], AnnotationContent)
     assert isinstance(out.items[3], AnnotationContent)
+    assert isinstance(out.items[4], AnnotationContent)
 
     assert out.items[0].file_id == "test_file_id"
 
@@ -116,6 +127,11 @@ def test_generate_message_content_text_and_image():
     assert out.items[3].quote == "text again"
     assert out.items[3].start_index == 1
     assert out.items[3].end_index == 10
+
+    assert out.items[4].url == "http://example.com"
+    assert out.items[4].quote == "text"
+    assert out.items[4].start_index == 1
+    assert out.items[4].end_index == 10
 
     assert out.metadata["step_id"] == "step_id"
     assert out.role == AuthorRole.USER
@@ -171,6 +187,15 @@ def test_generate_streaming_message_content_text_annotations():
                     end_index=9,
                     text="some text",
                 ),
+                MessageDeltaTextUrlCitationAnnotation(
+                    index=0,
+                    url_citation=MessageDeltaTextUrlCitationDetails(
+                        title="some title",
+                        url="http://example.com",
+                    ),
+                    start_index=0,
+                    end_index=9,
+                ),
             ],
         ),
     )
@@ -183,7 +208,7 @@ def test_generate_streaming_message_content_text_annotations():
     out = generate_streaming_message_content("assistant", delta)
     assert out is not None
     assert out.content == "some text"
-    assert len(out.items) == 4
+    assert len(out.items) == 5
     assert out.items[0].file_id == "image_file"
     assert isinstance(out.items[0], StreamingFileReferenceContent)
     assert isinstance(out.items[1], StreamingTextContent)
@@ -199,6 +224,12 @@ def test_generate_streaming_message_content_text_annotations():
     assert out.items[3].quote == "some text"
     assert out.items[3].start_index == 0
     assert out.items[3].end_index == 9
+
+    assert isinstance(out.items[4], StreamingAnnotationContent)
+    assert out.items[4].url == "http://example.com"
+    assert out.items[4].quote == "some title"
+    assert out.items[4].start_index == 0
+    assert out.items[4].end_index == 9
 
 
 def test_generate_streaming_function_content_with_function():

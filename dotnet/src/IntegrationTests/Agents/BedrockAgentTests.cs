@@ -7,10 +7,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
+using Amazon.BedrockAgentRuntime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -29,6 +29,8 @@ public sealed class BedrockAgentTests : IDisposable
 
     private readonly AmazonBedrockAgentClient _client = new();
 
+    private readonly AmazonBedrockAgentRuntimeClient _runtimeClient = new();
+
     /// <summary>
     /// Integration test for invoking a <see cref="BedrockAgent"/>.
     /// </summary>
@@ -37,7 +39,7 @@ public sealed class BedrockAgentTests : IDisposable
     public async Task InvokeTestAsync(string input)
     {
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient);
 
         try
         {
@@ -45,7 +47,7 @@ public sealed class BedrockAgentTests : IDisposable
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -57,7 +59,7 @@ public sealed class BedrockAgentTests : IDisposable
     public async Task InvokeStreamingTestAsync(string input)
     {
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient);
 
         try
         {
@@ -65,7 +67,7 @@ public sealed class BedrockAgentTests : IDisposable
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -82,7 +84,7 @@ Dolphin  2")]
     public async Task InvokeWithCodeInterpreterTestAsync(string input)
     {
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client);
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient);
         await bedrockAgent.CreateCodeInterpreterActionGroupAsync();
 
         try
@@ -100,7 +102,7 @@ Dolphin  2")]
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -115,7 +117,7 @@ Dolphin  2")]
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
 
         var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
-        var bedrockAgent = new BedrockAgent(agentModel, this._client)
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient)
         {
             Kernel = kernel,
         };
@@ -127,7 +129,34 @@ Dolphin  2")]
         }
         finally
         {
-            await this._client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+        }
+    }
+
+    /// <summary>
+    /// Integration test for invoking a <see cref="BedrockAgent"/> with Kernel functions that return complex types.
+    /// </summary>
+    [Theory(Skip = "This test is for manual verification.")]
+    [InlineData("What is the special soup and how much does it cost?", "Clam Chowder")]
+    public async Task InvokeWithKernelFunctionTestComplexTypesAsync(string input, string expected)
+    {
+        Kernel kernel = new();
+        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<MenuPlugin>());
+
+        var agentModel = await this._client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest());
+        var bedrockAgent = new BedrockAgent(agentModel, this._client, this._runtimeClient)
+        {
+            Kernel = kernel,
+        };
+        await bedrockAgent.CreateKernelFunctionActionGroupAsync();
+
+        try
+        {
+            await this.ExecuteAgentAsync(bedrockAgent, input, expected);
+        }
+        finally
+        {
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
         }
     }
 
@@ -217,6 +246,7 @@ Dolphin  2")]
     public void Dispose()
     {
         this._client.Dispose();
+        this._runtimeClient.Dispose();
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
@@ -232,6 +262,60 @@ Dolphin  2")]
         public string Forecast([Description("The location to get the weather for.")] string location)
         {
             return $"The forecast for {location} is 75 degrees tomorrow.";
+        }
+    }
+
+    private sealed class MenuPlugin
+    {
+        [KernelFunction, Description("Provides a list of specials from the menu.")]
+        public MenuItem[] GetSpecials()
+        {
+            return [.. s_menuItems.Where(i => i.IsSpecial)];
+        }
+
+        [KernelFunction, Description("Provides the price of the requested menu item.")]
+        public float? GetItemPrice([Description("The name of the menu item.")] string menuItem)
+        {
+            return s_menuItems.FirstOrDefault(i => i.Name.Equals(menuItem, StringComparison.OrdinalIgnoreCase))?.Price;
+        }
+
+        private static readonly MenuItem[] s_menuItems =
+        [
+            new()
+            {
+                Category = "Soup",
+                Name = "Clam Chowder",
+                Price = 4.95f,
+                IsSpecial = true,
+            },
+            new()
+            {
+                Category = "Soup",
+                Name = "Tomato Soup",
+                Price = 4.95f,
+                IsSpecial = false,
+            },
+            new()
+            {
+                Category = "Salad",
+                Name = "Cobb Salad",
+                Price = 9.99f,
+            },
+            new()
+            {
+                Category = "Drink",
+                Name = "Chai Tea",
+                Price = 2.95f,
+                IsSpecial = true,
+            },
+        ];
+
+        public sealed class MenuItem
+        {
+            public required string Category { get; init; }
+            public required string Name { get; init; }
+            public float Price { get; init; }
+            public bool IsSpecial { get; init; }
         }
     }
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes
