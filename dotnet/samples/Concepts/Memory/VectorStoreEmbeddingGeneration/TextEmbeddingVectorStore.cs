@@ -41,7 +41,7 @@ public class TextEmbeddingVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual object? GetService(Type serviceType, object? serviceKey = null)
+    public object? GetService(Type serviceType, object? serviceKey = null)
     {
         ArgumentNullException.ThrowIfNull(serviceType);
 

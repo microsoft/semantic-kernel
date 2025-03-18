@@ -16,6 +16,8 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+#pragma warning disable SKEXP0020 // Metadata classes are experimental
+
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Weaviate as the underlying storage.
 /// </summary>
@@ -24,8 +26,14 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Weaviate";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
+    /// <summary>Metadata about vectorized search.</summary>
+    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
+
+    /// <summary>Metadata about keyword hybrid search.</summary>
+    private readonly KeywordHybridSearchMetadata _keywordHybridSearchMetadata;
 
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
@@ -154,6 +162,15 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         // Assign mapper.
         this._mapper = this.InitializeMapper();
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreName = "weaviate",
+            CollectionName = collectionName
+        };
+
+        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
+        this._keywordHybridSearchMetadata = KeywordHybridSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -270,7 +287,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
@@ -312,7 +329,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var responses = await this.RunOperationAsync(OperationName, async () =>
         {
             var jsonObjects = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -395,6 +412,21 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
+            serviceType == typeof(KeywordHybridSearchMetadata) ? this._keywordHybridSearchMetadata :
+            serviceType == typeof(HttpClient) ? this._httpClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     #region private
 
     private async Task<VectorSearchResults<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, CancellationToken cancellationToken)
@@ -409,7 +441,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -420,7 +452,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this.CollectionName,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -483,7 +515,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

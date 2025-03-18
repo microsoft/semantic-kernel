@@ -67,7 +67,8 @@ public class PostgresVectorStore : IVectorStore
         const string OperationName = "ListCollectionNames";
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
-            OperationName
+            OperationName,
+            vectorStoreName: this._metadata.VectorStoreName
         );
     }
 

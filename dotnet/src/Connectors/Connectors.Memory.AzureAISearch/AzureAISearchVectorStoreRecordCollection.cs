@@ -18,6 +18,8 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
+#pragma warning disable SKEXP0020 // Metadata classes are experimental
+
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure AI Search as the underlying storage.
 /// </summary>
@@ -29,8 +31,17 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureAISearch";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
+    /// <summary>Metadata about vectorized search.</summary>
+    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
+
+    /// <summary>Metadata about vectorizable text search.</summary>
+    private readonly VectorizableTextSearchMetadata _vectorizableTextSearchMetadata;
+
+    /// <summary>Metadata about keyword hybrid search.</summary>
+    private readonly KeywordHybridSearchMetadata _keywordHybridSearchMetadata;
 
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
@@ -141,6 +152,17 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             this._mapper = new AzureAISearchGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, JsonObject>;
         }
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreName = "azure.aisearch",
+            DatabaseName = searchIndexClient.ServiceName,
+            CollectionName = collectionName
+        };
+
+        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
+        this._vectorizableTextSearchMetadata = VectorizableTextSearchMetadata.From(this._collectionMetadata);
+        this._keywordHybridSearchMetadata = KeywordHybridSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -162,8 +184,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
-                CollectionName = this._collectionName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                CollectionName = this._collectionMetadata.CollectionName,
                 OperationName = "GetIndex"
             };
         }
@@ -488,6 +510,23 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, internalOptions.IncludeVectors, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
+            serviceType == typeof(VectorizableTextSearchMetadata) ? this._vectorizableTextSearchMetadata :
+            serviceType == typeof(KeywordHybridSearchMetadata) ? this._keywordHybridSearchMetadata :
+            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
+            serviceType == typeof(SearchClient) ? this._searchClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     /// <summary>
     /// Get the document with the given key and map it to the data model using the configured mapper type.
     /// </summary>
@@ -517,7 +556,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this._collectionName,
                 OperationName,
                 () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
@@ -580,7 +619,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         if (this._mapper is not null)
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this._collectionName,
                 OperationName,
                 () => records.Select(this._mapper!.MapFromDataToStorageModel));
@@ -608,7 +647,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         await foreach (var result in results.ConfigureAwait(false))
         {
             var document = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this._collectionName,
                 operationName,
                 () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
@@ -688,8 +727,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
-                CollectionName = this._collectionName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                CollectionName = this._collectionMetadata.CollectionName,
                 OperationName = operationName
             };
         }
@@ -697,8 +736,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
-                CollectionName = this._collectionName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                CollectionName = this._collectionMetadata.CollectionName,
                 OperationName = operationName
             };
         }

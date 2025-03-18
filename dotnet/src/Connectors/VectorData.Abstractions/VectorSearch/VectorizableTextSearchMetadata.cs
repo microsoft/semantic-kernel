@@ -25,4 +25,18 @@ public class VectorizableTextSearchMetadata
     /// The name of a collection (table, container) within the database.
     /// </summary>
     public string? CollectionName { get; init; }
+
+    /// <summary>
+    /// Initializes an instance of <see cref="VectorizableTextSearchMetadata"/> from <see cref="VectorStoreRecordCollectionMetadata"/>.
+    /// </summary>
+    /// <param name="collectionMetadata">Instance of <see cref="VectorStoreRecordCollectionMetadata"/>.</param>
+    public static VectorizableTextSearchMetadata From(VectorStoreRecordCollectionMetadata collectionMetadata)
+    {
+        return new()
+        {
+            VectorStoreName = collectionMetadata.VectorStoreName,
+            DatabaseName = collectionMetadata.DatabaseName,
+            CollectionName = collectionMetadata.CollectionName
+        };
+    }
 }

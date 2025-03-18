@@ -12,6 +12,8 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
+#pragma warning disable SKEXP0020 // Metadata classes are experimental
+
 /// <summary>
 /// Service for storing and retrieving vector records, that uses an in memory dictionary as the underlying storage.
 /// </summary>
@@ -22,6 +24,12 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
+    /// <summary>Metadata about vectorized search.</summary>
+    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
+
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
@@ -81,6 +89,14 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Assign resolvers.
         this._vectorResolver = CreateVectorResolver(this._options.VectorResolver, this._vectorProperties);
         this._keyResolver = CreateKeyResolver(this._options.KeyResolver, this._propertyReader.KeyProperty);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreName = "inmemory",
+            CollectionName = collectionName
+        };
+
+        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <summary>
@@ -276,6 +292,20 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Build the response.
         var vectorSearchResultList = resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
         return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
+            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <summary>

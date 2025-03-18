@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// <summary>
     /// Gets the name of the collection.
     /// </summary>
+    [Obsolete("Use GetService(typeof(VectorStoreRecordCollectionMetadata)) to get an information about vector store record collection.")]
     string CollectionName { get; }
 
     /// <summary>

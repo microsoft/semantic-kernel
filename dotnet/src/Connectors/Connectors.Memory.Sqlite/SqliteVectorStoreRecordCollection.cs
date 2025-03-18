@@ -11,6 +11,8 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
+#pragma warning disable SKEXP0020 // Metadata classes are experimental
+
 /// <summary>
 /// Service for storing and retrieving vector records, that uses SQLite as the underlying storage.
 /// </summary>
@@ -21,8 +23,11 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "SQLite";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
+    /// <summary>Metadata about vectorized search.</summary>
+    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
 
     /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
     private readonly DbConnection _connection;
@@ -112,6 +117,15 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         this._mapper = this.InitializeMapper();
 
         this._commandBuilder = new SqliteVectorStoreCollectionCommandBuilder(this._connection);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreName = "sqlite",
+            DatabaseName = connection.Database,
+            CollectionName = collectionName
+        };
+
+        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -300,6 +314,20 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     #endregion
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
+            serviceType == typeof(DbConnection) ? this._connection :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
 
     #region private
 
@@ -501,7 +529,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            this._collectionMetadata.VectorStoreName!,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -524,7 +552,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            this._collectionMetadata.VectorStoreName!,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -651,7 +679,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            this._collectionMetadata.VectorStoreName!,
             this.CollectionName,
             operationName,
             () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -667,7 +695,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

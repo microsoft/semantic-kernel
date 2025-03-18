@@ -11,6 +11,8 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
+#pragma warning disable SKEXP0020 // Metadata classes are experimental
+
 /// <summary>
 /// Represents a collection of vector store records in a Postgres database.
 /// </summary>
@@ -23,6 +25,12 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 {
     /// <inheritdoc />
     public string CollectionName { get; }
+
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
+    /// <summary>Metadata about vectorized search.</summary>
+    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
 
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
@@ -102,6 +110,17 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._propertyReader);
         }
+
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(client.DataSource.ConnectionString);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreName = "postgresql",
+            DatabaseName = connectionStringBuilder.Database,
+            CollectionName = collectionName
+        };
+
+        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc/>
@@ -146,7 +165,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            PostgresConstants.DatabaseName,
+            this._collectionMetadata.VectorStoreName!,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -173,7 +192,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            PostgresConstants.DatabaseName,
+            this._collectionMetadata.VectorStoreName!,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -207,7 +226,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
             if (row is null) { return default; }
             return VectorStoreErrorHandler.RunModelConversion(
-                PostgresConstants.DatabaseName,
+                this._collectionMetadata.VectorStoreName!,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
@@ -227,14 +246,15 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken)
                 .SelectAsync(row =>
                     VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.DatabaseName,
+                        this._collectionMetadata.VectorStoreName!,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors })),
                     cancellationToken
                 ),
             OperationName,
-            this.CollectionName
+            this.CollectionName,
+            this._collectionMetadata.VectorStoreName
         );
     }
 
@@ -303,7 +323,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             .SelectAsync(result =>
                 {
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.DatabaseName,
+                        this._collectionMetadata.VectorStoreName!,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(
@@ -315,6 +335,20 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
             return Task.FromResult(new VectorSearchResults<TRecord>(results));
         });
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
+            serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
@@ -332,7 +366,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = PostgresConstants.DatabaseName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -349,7 +383,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = PostgresConstants.DatabaseName,
+                VectorStoreType = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

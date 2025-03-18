@@ -114,7 +114,7 @@ public class QdrantVectorStore : IVectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(QdrantClient) ? this._qdrantClient :
+            serviceType == typeof(QdrantClient) ? this._qdrantClient.QdrantClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }
