@@ -10,6 +10,8 @@ using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Class for accessing the list of collections in a Qdrant vector store.
 /// </summary>
@@ -18,8 +20,8 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </remarks>
 public class QdrantVectorStore : IVectorStore
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Qdrant";
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
@@ -48,6 +50,11 @@ public class QdrantVectorStore : IVectorStore
 
         this._qdrantClient = qdrantClient;
         this._options = options ?? new QdrantVectorStoreOptions();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "qdrant"
+        };
     }
 
     /// <inheritdoc />
@@ -88,7 +95,7 @@ public class QdrantVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = this._metadata.VectorStoreName,
                 OperationName = "ListCollections"
             };
         }
@@ -97,5 +104,18 @@ public class QdrantVectorStore : IVectorStore
         {
             yield return collection;
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(QdrantClient) ? this._qdrantClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

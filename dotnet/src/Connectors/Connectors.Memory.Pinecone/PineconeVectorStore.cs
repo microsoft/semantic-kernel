@@ -11,6 +11,8 @@ using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Class for accessing the list of collections in a Pinecone vector store.
 /// </summary>
@@ -19,11 +21,13 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </remarks>
 public class PineconeVectorStore : IVectorStore
 {
-    private const string DatabaseName = "Pinecone";
     private const string ListCollectionsName = "ListCollections";
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreOptions _options;
+
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStore"/> class.
@@ -36,6 +40,11 @@ public class PineconeVectorStore : IVectorStore
 
         this._pineconeClient = pineconeClient;
         this._options = options ?? new PineconeVectorStoreOptions();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "pinecone"
+        };
     }
 
     /// <inheritdoc />
@@ -73,7 +82,7 @@ public class PineconeVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = this._metadata.VectorStoreName,
                 OperationName = ListCollectionsName
             };
         }
@@ -82,5 +91,18 @@ public class PineconeVectorStore : IVectorStore
         {
             yield return collection.Name;
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

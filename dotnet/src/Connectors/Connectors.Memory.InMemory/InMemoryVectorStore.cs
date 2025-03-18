@@ -9,11 +9,16 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Service for storing and retrieving vector records, and managing vector record collections, that uses an in memory dictionary as the underlying storage.
 /// </summary>
 public sealed class InMemoryVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary>Internal storage for the record collection.</summary>
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
 
@@ -26,6 +31,11 @@ public sealed class InMemoryVectorStore : IVectorStore
     public InMemoryVectorStore()
     {
         this._internalCollection = new();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "inmemory"
+        };
     }
 
     /// <summary>
@@ -35,6 +45,11 @@ public sealed class InMemoryVectorStore : IVectorStore
     internal InMemoryVectorStore(ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection)
     {
         this._internalCollection = internalCollection;
+
+        this._metadata = new()
+        {
+            VectorStoreName = "inmemory"
+        };
     }
 
     /// <inheritdoc />
@@ -58,5 +73,18 @@ public sealed class InMemoryVectorStore : IVectorStore
     public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return this._internalCollection.Keys.ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollection :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

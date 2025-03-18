@@ -11,6 +11,8 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Class for accessing the list of collections in a Azure AI Search vector store.
 /// </summary>
@@ -19,8 +21,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// </remarks>
 public class AzureAISearchVectorStore : IVectorStore
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureAISearch";
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -39,6 +41,12 @@ public class AzureAISearchVectorStore : IVectorStore
 
         this._searchIndexClient = searchIndexClient;
         this._options = options ?? new AzureAISearchVectorStoreOptions();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "azure.aisearch",
+            DatabaseName = searchIndexClient.ServiceName
+        };
     }
 
     /// <inheritdoc />
@@ -75,12 +83,25 @@ public class AzureAISearchVectorStore : IVectorStore
         var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
         var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
 
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata).ConfigureAwait(false);
         while (nextResult.more)
         {
             yield return nextResult.name;
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata).ConfigureAwait(false);
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <summary>
@@ -89,8 +110,11 @@ public class AzureAISearchVectorStore : IVectorStore
     /// around a yield return.
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
+    /// <param name="metadata">Metadata about vector store.</param>
     /// <returns>A value indicating whether there are more results and the current string if true.</returns>
-    private static async Task<(string name, bool more)> GetNextIndexNameAsync(ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
+    private static async Task<(string name, bool more)> GetNextIndexNameAsync(
+        ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator,
+        VectorStoreMetadata metadata)
     {
         const string OperationName = "GetIndexNames";
 
@@ -103,7 +127,7 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = metadata.VectorStoreName,
                 OperationName = OperationName
             };
         }
@@ -111,7 +135,7 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = metadata.VectorStoreName,
                 OperationName = OperationName
             };
         }

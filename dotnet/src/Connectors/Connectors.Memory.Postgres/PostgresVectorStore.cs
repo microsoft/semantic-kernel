@@ -8,6 +8,8 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
@@ -16,6 +18,9 @@ public class PostgresVectorStore : IVectorStore
     private readonly IPostgresVectorStoreDbClient _postgresClient;
     private readonly NpgsqlDataSource? _dataSource;
     private readonly PostgresVectorStoreOptions _options;
+
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
@@ -27,6 +32,14 @@ public class PostgresVectorStore : IVectorStore
         this._dataSource = dataSource;
         this._options = options ?? new PostgresVectorStoreOptions();
         this._postgresClient = new PostgresVectorStoreDbClient(this._dataSource, this._options.Schema);
+
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(dataSource.ConnectionString);
+
+        this._metadata = new()
+        {
+            VectorStoreName = "postgresql",
+            DatabaseName = connectionStringBuilder.Database
+        };
     }
 
     /// <summary>
@@ -38,6 +51,14 @@ public class PostgresVectorStore : IVectorStore
     {
         this._postgresClient = postgresDbClient;
         this._options = options ?? new PostgresVectorStoreOptions();
+
+        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(postgresDbClient.DataSource.ConnectionString);
+
+        this._metadata = new()
+        {
+            VectorStoreName = "postgresql",
+            DatabaseName = connectionStringBuilder.Database
+        };
     }
 
     /// <inheritdoc />
@@ -73,5 +94,18 @@ public class PostgresVectorStore : IVectorStore
         );
 
         return recordCollection as IVectorStoreRecordCollection<TKey, TRecord> ?? throw new InvalidOperationException("Failed to cast record collection.");
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(NpgsqlDataSource) ? this._dataSource :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

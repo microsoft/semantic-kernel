@@ -10,6 +10,8 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Class for accessing the list of collections in a SQLite vector store.
 /// </summary>
@@ -18,6 +20,9 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </remarks>
 public class SqliteVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
     private readonly DbConnection _connection;
 
@@ -37,6 +42,12 @@ public class SqliteVectorStore : IVectorStore
 
         this._connection = connection;
         this._options = options ?? new();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "sqlite",
+            DatabaseName = connection.Database
+        };
     }
 
     /// <inheritdoc />
@@ -88,5 +99,18 @@ public class SqliteVectorStore : IVectorStore
             var ordinal = reader.GetOrdinal(TablePropertyName);
             yield return reader.GetString(ordinal);
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(DbConnection) ? this._connection :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

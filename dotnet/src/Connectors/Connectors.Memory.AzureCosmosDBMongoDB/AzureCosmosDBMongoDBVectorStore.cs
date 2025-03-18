@@ -9,6 +9,8 @@ using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Class for accessing the list of collections in a Azure CosmosDB MongoDB vector store.
 /// </summary>
@@ -17,6 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// </remarks>
 public class AzureCosmosDBMongoDBVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
 
@@ -34,6 +39,12 @@ public class AzureCosmosDBMongoDBVectorStore : IVectorStore
 
         this._mongoDatabase = mongoDatabase;
         this._options = options ?? new();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "azure.cosmosdbmongodb",
+            DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName
+        };
     }
 
     /// <inheritdoc />
@@ -74,5 +85,18 @@ public class AzureCosmosDBMongoDBVectorStore : IVectorStore
                 yield return name;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(IMongoDatabase) ? this._mongoDatabase :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

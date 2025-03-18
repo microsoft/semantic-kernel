@@ -11,6 +11,8 @@ using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
+
 /// <summary>
 /// Class for accessing the list of collections in a Weaviate vector store.
 /// </summary>
@@ -19,6 +21,9 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 public class WeaviateVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
@@ -40,6 +45,11 @@ public class WeaviateVectorStore : IVectorStore
 
         this._httpClient = httpClient;
         this._options = options ?? new();
+
+        this._metadata = new()
+        {
+            VectorStoreName = "weaviate"
+        };
     }
 
     /// <inheritdoc />
@@ -91,5 +101,18 @@ public class WeaviateVectorStore : IVectorStore
                 yield return collection.CollectionName;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(HttpClient) ? this._httpClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }
