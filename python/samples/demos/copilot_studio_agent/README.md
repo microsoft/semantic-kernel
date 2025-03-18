@@ -33,7 +33,7 @@ Additionally, we do enforce [authentication to the DirectLine API](https://learn
 
 Once you're done with the above steps, you can use the following code to interact with the Copilot Studio Agent:
 
-1. Copy the `.env.example` file to `.env` and set the `BOT_SECRET` environment variable to the secret value
+1. Copy the `.env.sample` file to `.env` and set the `BOT_SECRET` environment variable to the secret value
 2. Run the following code:
 
 ```bash

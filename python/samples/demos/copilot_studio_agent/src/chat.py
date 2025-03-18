@@ -20,7 +20,7 @@ agent = DirectLineAgent(
     name="copilot_studio",
     description="copilot_studio",
     bot_secret=os.getenv("BOT_SECRET"),
-    bot_endpoint="https://europe.directline.botframework.com/v3/directline",
+    bot_endpoint=os.getenv("BOT_ENDPOINT"),
 )
 
 

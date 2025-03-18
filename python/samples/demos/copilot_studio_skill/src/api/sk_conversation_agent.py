@@ -5,9 +5,6 @@ from config import config
 from openai import AsyncAzureOpenAI
 
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.connectors.ai.function_choice_behavior import (
-    FunctionChoiceBehavior,
-)
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 credential = DefaultAzureCredential()
@@ -33,7 +30,6 @@ def create_service(service_id: str = "default"):
 
 agent = ChatCompletionAgent(
     service=create_service(),
-    function_choice_behavior=FunctionChoiceBehavior.Auto(),
     name="ChatAgent",
     instructions="You invent jokes to have a fun conversation with the user.",
 )
