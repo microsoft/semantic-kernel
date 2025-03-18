@@ -36,9 +36,7 @@ async def copilot_manifest(req: Request):
         # See https://learn.microsoft.com/en-us/azure/container-apps/environment-variables?tabs=portal
         fqdn = f"https://{os.getenv('CONTAINER_APP_NAME')}.{os.getenv('CONTAINER_APP_ENV_DNS_SUFFIX')}/api/messages"
 
-        manifest = manifest.replace("__botEndpoint", fqdn).replace(
-            "__botAppId", config.APP_ID
-        )
+        manifest = manifest.replace("__botEndpoint", fqdn).replace("__botAppId", config.APP_ID)
 
     return Response(
         text=manifest,
