@@ -27,7 +27,7 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessWithProxyWithSingleTopicCalledTwiceAsync));
         var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
@@ -75,7 +75,7 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessWithProxyFailsToCreateDueMissingTopicRegistration));
         var proxyStep = process.AddProxyStep([this._topic1]);
 
         process.OnInputEvent(this._startProcessEvent).SendEventTo(new(counterStep));
@@ -92,9 +92,8 @@ public class LocalProxyTests
     public async Task ProcessWithCyclesAndProxyWithTwoTopicsAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
-        ProcessBuilder process = this.GetSampleProcessWithProxyEmittingTwoTopics(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
+        ProcessBuilder process = this.GetSampleProcessWithProxyEmittingTwoTopics(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync), counterName: nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
         KernelProcess processInstance = process.Build();
         Kernel kernel = new();
 
@@ -129,10 +128,10 @@ public class LocalProxyTests
     public async Task ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync));
-        var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner-{nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync)}"));
+        var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics(
+            $"Inner-{nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync)}", counterName: nameof(ProcessWithProxyIn2LevelsNestedProcessEmitsTwoTopicsAsync)));
 
         process
             .OnInputEvent(this._startProcessEvent)
@@ -172,14 +171,16 @@ public class LocalProxyTests
     public async Task ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = new(nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync));
         var innerProcess = process.AddStepFromProcess(
             this.GetNestedProcess(
                 processName: $"Inner1-{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}",
-                internalProcess: this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner2-{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}"),
-                inputEventName: this._startProcessEvent));
+                internalProcess: this.GetSampleProcessWithProxyEmittingTwoTopics(
+                    $"Inner2-{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}",
+                    $"Inner2_{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}"),
+                inputEventName: this._startProcessEvent,
+                counterName: $"Inner1_{nameof(ProcessWithProxyIn4LevelsNestedProcessEmitsTwoTopicsAsync)}"));
 
         process
             .OnInputEvent(this._startProcessEvent)
@@ -211,10 +212,10 @@ public class LocalProxyTests
         Assert.Equal(1, mockProxyClient.UninitializationCounter);
     }
 
-    private ProcessBuilder GetNestedProcess(string processName, ProcessBuilder internalProcess, string inputEventName)
+    private ProcessBuilder GetNestedProcess(string processName, ProcessBuilder internalProcess, string inputEventName, string counterName)
     {
         ProcessBuilder process = new(processName);
-        var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner-{processName}"));
+        var innerProcess = process.AddStepFromProcess(this.GetSampleProcessWithProxyEmittingTwoTopics($"Inner-{processName}", counterName));
 
         process
             .OnInputEvent(inputEventName)
@@ -223,11 +224,11 @@ public class LocalProxyTests
         return process;
     }
 
-    private ProcessBuilder GetSampleProcessWithProxyEmittingTwoTopics(string processName)
+    private ProcessBuilder GetSampleProcessWithProxyEmittingTwoTopics(string processName, string counterName)
     {
         ProcessBuilder process = new(processName);
 
-        var counterStep = process.AddStepFromType<CommonSteps.CountStep>();
+        var counterStep = process.AddStepFromType<CommonSteps.CountStep>(name: counterName);
         var evenNumberStep = process.AddStepFromType<CommonSteps.EvenNumberDetectorStep>();
         var proxyStep = process.AddProxyStep([this._topic1, this._topic2]);
 
