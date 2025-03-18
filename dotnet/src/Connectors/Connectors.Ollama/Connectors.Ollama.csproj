@@ -27,6 +27,7 @@
     <PackageReference Include="OllamaSharp">
       <ExcludeAssets>analyzers</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
   </ItemGroup>
 
   <ItemGroup>
