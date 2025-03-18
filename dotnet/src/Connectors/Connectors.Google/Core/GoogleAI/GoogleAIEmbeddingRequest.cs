@@ -47,7 +47,7 @@ internal sealed class GoogleAIEmbeddingRequest
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? TaskType { get; set; } // todo: enum
 
-        [JsonPropertyName("output_dimensionality")]
+        [JsonPropertyName("outputDimensionality")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Dimensions { get; set; }
     }

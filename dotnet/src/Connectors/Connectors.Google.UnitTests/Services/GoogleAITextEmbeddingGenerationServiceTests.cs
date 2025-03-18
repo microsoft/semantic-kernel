@@ -118,7 +118,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);
         var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
-        Assert.DoesNotContain("output_dimensionality", requestBody);
+        Assert.DoesNotContain("outputDimensionality", requestBody);
     }
 
     [Theory]
@@ -140,7 +140,7 @@ public sealed class GoogleAITextEmbeddingGenerationServiceTests : IDisposable
         // Assert
         Assert.NotNull(this._messageHandlerStub.RequestContent);
         var requestBody = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent);
-        Assert.Contains($"\"output_dimensionality\":{dimensions}", requestBody);
+        Assert.Contains($"\"outputDimensionality\":{dimensions}", requestBody);
     }
 
     public void Dispose()

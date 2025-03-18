@@ -11,7 +11,7 @@ public sealed class GoogleAIEmbeddingRequestTests
     // Arrange
     private static readonly string[] s_data = ["text1", "text2"];
     private const string ModelId = "modelId";
-    private const string DimensionalityJsonPropertyName = "\"output_dimensionality\"";
+    private const string DimensionalityJsonPropertyName = "\"outputDimensionality\"";
     private const int Dimensions = 512;
 
     [Fact]
