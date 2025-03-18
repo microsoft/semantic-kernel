@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Threading;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
@@ -20,15 +20,39 @@ public static class CommonSteps
     {
         public const string CountFunction = nameof(Count);
 
-#pragma warning disable CA2211
-        // workaround for unit testing evaluation purposes
-        public static int Index = 0;
-#pragma warning restore CA2211
+        private string _name = null!;
+        private static readonly Dictionary<string, long> s_counters = new();
+
+        public override ValueTask ActivateAsync(KernelProcessStepState state)
+        {
+            this._name = state.Name;
+            return default;
+        }
+
         [KernelFunction]
         public string Count()
         {
-            Interlocked.Increment(ref Index);
-            return Index.ToString();
+            lock (s_counters)
+            {
+                if (s_counters.TryGetValue(this._name, out var counter))
+                {
+                    s_counters[this._name] = counter + 1;
+                }
+                else
+                {
+                    s_counters[this._name] = 1;
+                }
+
+                return s_counters[this._name].ToString();
+            }
+        }
+
+        public static long GetCount(string name)
+        {
+            lock (s_counters)
+            {
+                return s_counters[name];
+            }
         }
     }
 
