@@ -130,7 +130,7 @@ public class SqlServerCommandBuilderTests
         BEGIN
         CREATE TABLE [schema].[table] (
         [id] BIGINT NOT NULL,
-        [simpleName] NVARCHAR(255),
+        [simpleName] NVARCHAR(MAX),
         [with space] INT,
         [embedding] VECTOR(10),
         PRIMARY KEY ([id])
