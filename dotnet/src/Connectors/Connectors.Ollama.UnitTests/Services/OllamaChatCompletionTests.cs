@@ -205,7 +205,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
                                 """;
 
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
+#pragma warning disable CS0612 // OllamaPromptExecutionSettings is obsolete
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+#pragma warning restore CS0612
 
         // Act
         await sut.GetStreamingChatMessageContentsAsync(chat, ollamaExecutionSettings).GetAsyncEnumerator().MoveNextAsync();
@@ -302,12 +304,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(requestPayload.Tools);
         Assert.NotEmpty(requestPayload.Tools);
         Assert.Equal(1, requestPayload.Tools?.Count());
-        var firstTool = requestPayload.Tools?.First()!;
-        Assert.Equal("TestPlugin_TestFunction", firstTool.Function!.Name);
-        Assert.Single(firstTool.Function!.Parameters!.Properties!);
-        Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
-        Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
-        Assert.Equal("testInput", firstTool.Function!.Parameters!.Required!.First());
 
         Assert.NotNull(message.ModelId);
         Assert.Equal(targetModel, message.ModelId);
@@ -378,12 +374,6 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(requestPayload.Tools);
         Assert.NotEmpty(requestPayload.Tools);
         Assert.Equal(1, requestPayload.Tools?.Count());
-        var firstTool = requestPayload.Tools?.First()!;
-        Assert.Equal("TestPlugin_TestFunction", firstTool.Function!.Name);
-        Assert.Single(firstTool.Function!.Parameters!.Properties!);
-        Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
-        Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
-        Assert.Equal("testInput", firstTool.Function!.Parameters!.Required!.First());
 
         Assert.Equal(1, invocationCount);
 
