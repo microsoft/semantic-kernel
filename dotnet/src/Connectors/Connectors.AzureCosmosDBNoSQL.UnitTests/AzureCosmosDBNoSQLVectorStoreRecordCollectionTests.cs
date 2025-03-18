@@ -612,7 +612,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             this._mockDatabase.Object,
             "collection");
 
-        var searchOptions = new VectorSearchOptions { VectorPropertyName = "non-existent-property" };
+        var searchOptions = new VectorSearchOptions<AzureCosmosDBNoSQLHotel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>

@@ -34,23 +34,14 @@ public static class PineconeFactory
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and points in a Pinecone store.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreatePineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
-    {
-        // Create a vector store that uses our custom factory for creating collections
-        // so that the collection can be configured to be compatible with Langchain.
-        return new PineconeVectorStore(
-            pineconeClient,
-            new()
-            {
-                VectorStoreCollectionFactory = new PineconeVectorStoreRecordCollectionFactory()
-            });
-    }
+        => new PineconeLangchainInteropVectorStore(pineconeClient);
 
-    /// <summary>
-    /// Factory that is used to inject the appropriate <see cref="VectorStoreRecordDefinition"/> for Langchain interoperability.
-    /// </summary>
-    private sealed class PineconeVectorStoreRecordCollectionFactory : IPineconeVectorStoreRecordCollectionFactory
+    private sealed class PineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
+        : PineconeVectorStore(pineconeClient)
     {
-        public IVectorStoreRecordCollection<TKey, TRecord> CreateVectorStoreRecordCollection<TKey, TRecord>(Sdk.PineconeClient pineconeClient, string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition) where TKey : notnull
+        private readonly Sdk.PineconeClient _pineconeClient = pineconeClient;
+
+        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -61,7 +52,7 @@ public static class PineconeFactory
             // the schema used by Langchain so that the default mapper can use the storage names
             // in it, to map to the storage scheme.
             return (new PineconeVectorStoreRecordCollection<TRecord>(
-                pineconeClient,
+                _pineconeClient,
                 name,
                 new()
                 {
