@@ -11,6 +11,6 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Weaviate;
 public sealed class WeaviateVectorStoreTests(WeaviateVectorStoreFixture fixture)
     : BaseVectorStoreTests<Guid, WeaviateHotel>(new WeaviateVectorStore(fixture.HttpClient!))
 {
-    // Weaviate requires each collection name to start with upercase ASCII letter.
+    // Weaviate requires each collection name to start with uppercase ASCII letter.
     protected override IEnumerable<string> CollectionNames => ["Listcollectionnames1", "Listcollectionnames2", "Listcollectionnames3"];
 }
