@@ -20,17 +20,6 @@ public sealed class SqlServerVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
     /// </summary>
-    /// <param name="connection">Database connection.</param>
-    /// <param name="options">Optional configuration options.</param>
-    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-    public SqlServerVectorStore(SqlConnection connection, SqlServerVectorStoreOptions? options = null)
-        : this(connection?.ConnectionString ?? throw new ArgumentNullException(nameof(connection)), options)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
-    /// </summary>
     /// <param name="connectionString">The connection string.</param>
     /// <param name="options">Optional configuration options.</param>
     public SqlServerVectorStore(string connectionString, SqlServerVectorStoreOptions? options = null)

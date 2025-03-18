@@ -30,21 +30,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
-    /// <param name="connection">Database connection.</param>
-    /// <param name="name">The name of the collection.</param>
-    /// <param name="options">Optional configuration options.</param>
-    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-    public SqlServerVectorStoreRecordCollection(
-        SqlConnection connection,
-        string name,
-        SqlServerVectorStoreRecordCollectionOptions<TRecord>? options = null)
-        : this(connection?.ConnectionString ?? throw new ArgumentNullException(nameof(connection)), name, options)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
-    /// </summary>
     /// <param name="connectionString">Database connection string.</param>
     /// <param name="name">The name of the collection.</param>
     /// <param name="options">Optional configuration options.</param>
