@@ -10,10 +10,10 @@
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
 
   <PropertyGroup>
-    <PackageVersion>9.0.0-preview.1.25078.1</PackageVersion>
+    <PackageVersion>9.0.0-preview.1.25161.1</PackageVersion>
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
-    <PackageValidationBaselineVersion>9.0.0-preview.1.24518.1</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>9.0.0-preview.1.25078.1</PackageValidationBaselineVersion>
     <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.

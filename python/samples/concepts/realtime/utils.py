@@ -16,8 +16,7 @@ from pydantic import BaseModel, ConfigDict, PrivateAttr
 from sounddevice import InputStream, OutputStream
 
 from semantic_kernel.connectors.ai.realtime_client_base import RealtimeClientBase
-from semantic_kernel.contents import AudioContent
-from semantic_kernel.contents.realtime_events import RealtimeAudioEvent
+from semantic_kernel.contents import AudioContent, RealtimeAudioEvent
 
 logger = logging.getLogger(__name__)
 

@@ -38,7 +38,9 @@ FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE = {
 # The separator used in the fully qualified name of the function instead of the default "-" separator.
 # This is required since Gemini doesn't work well with "-" in the function name.
 # https://ai.google.dev/gemini-api/docs/function-calling#function_declarations
-GEMINI_FUNCTION_NAME_SEPARATOR = "_"
+# Using double underscore to avoid situations where the function name already contains a single underscore.
+# For example, we may incorrect split a function name with a single score when the function doesn't have a plugin name.
+GEMINI_FUNCTION_NAME_SEPARATOR = "__"
 
 
 def format_gemini_function_name_to_kernel_function_fully_qualified_name(gemini_function_name: str) -> str:

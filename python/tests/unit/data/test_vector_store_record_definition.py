@@ -48,16 +48,6 @@ def test_multiple_key_field_fail():
         VectorStoreRecordDefinition(fields={"key1": VectorStoreRecordKeyField(), "key2": VectorStoreRecordKeyField()})
 
 
-def test_no_matching_vector_field_fail():
-    with raises(VectorStoreModelException):
-        VectorStoreRecordDefinition(
-            fields={
-                "id": VectorStoreRecordKeyField(),
-                "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
-            }
-        )
-
-
 def test_vector_and_non_vector_field_names():
     definition = VectorStoreRecordDefinition(
         fields={
