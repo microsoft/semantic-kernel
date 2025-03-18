@@ -473,7 +473,8 @@ internal static partial class AIFunctionFactory
 #else
                 await JsonSerializer.SerializeAsync(stream, result, returnTypeInfo, cancellationToken).ConfigureAwait(false);
                 stream.Position = 0;
-                return await JsonSerializer.DeserializeAsync<JsonElement>(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+                var serializerOptions = _defaultOptions.SerializerOptions ?? AIJsonUtilities.DefaultOptions;
+                return await JsonSerializer.DeserializeAsync(stream, serializerOptions.GetTypeInfo(typeof(JsonElement)), cancellationToken).ConfigureAwait(false);
 #endif
             }
 

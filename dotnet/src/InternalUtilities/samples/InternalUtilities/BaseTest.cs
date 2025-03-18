@@ -108,8 +108,8 @@ public abstract class BaseTest : TextWriter
         }
 
         builder.Services.AddTransient<IChatClient>((sp) => chatClient!);
-
-        return chatClient;
+        var functionCallingChatClient = new Microsoft.SemanticKernel.ChatCompletion.FunctionInvokingChatClient(chatClient);
+        return functionCallingChatClient;
     }
 
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)

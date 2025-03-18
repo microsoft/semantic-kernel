@@ -14,13 +14,13 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 // https://raw.githubusercontent.com/dotnet/extensions/main/src/Shared/EmptyCollections/EmptyReadOnlyList.cs
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
-public sealed class InternalFunctionInvocationContext
+public sealed class KernelFunctionInvocationContext
 {
     /// <summary>
     /// A nop function used to allow <see cref="Function"/> to be non-nullable. Default instances of
-    /// <see cref="InternalFunctionInvocationContext"/> start with this as the target function.
+    /// <see cref="KernelFunctionInvocationContext"/> start with this as the target function.
     /// </summary>
-    private static readonly AIFunction s_nopFunction = AIFunctionFactory.Create(() => { }, nameof(InternalFunctionInvocationContext));
+    private static readonly AIFunction s_nopFunction = AIFunctionFactory.Create(() => { }, nameof(KernelFunctionInvocationContext));
 
     /// <summary>The chat contents associated with the operation that initiated this function call request.</summary>
     private IList<ChatMessage> _chatMessages = Array.Empty<ChatMessage>();
@@ -31,8 +31,8 @@ public sealed class InternalFunctionInvocationContext
     /// <summary>The function call content information associated with this invocation.</summary>
     private Microsoft.Extensions.AI.FunctionCallContent _callContent = new(string.Empty, s_nopFunction.Name, EmptyReadOnlyDictionary<string, object?>.Instance);
 
-    /// <summary>Initializes a new instance of the <see cref="InternalFunctionInvocationContext"/> class.</summary>
-    internal InternalFunctionInvocationContext()
+    /// <summary>Initializes a new instance of the <see cref="KernelFunctionInvocationContext"/> class.</summary>
+    internal KernelFunctionInvocationContext()
     {
     }
 
@@ -59,7 +59,7 @@ public sealed class InternalFunctionInvocationContext
 
     /// <summary>Gets or sets the number of this iteration with the underlying client.</summary>
     /// <remarks>
-    /// The initial request to the client that passes along the chat contents provided to the <see cref="FunctionInvokingChatClient"/>
+    /// The initial request to the client that passes along the chat contents provided to the <see cref="KernelFunctionInvokingChatClient"/>
     /// is iteration 1. If the client responds with a function call request, the next request to the client is iteration 2, and so on.
     /// </remarks>
     public int Iteration { get; set; }

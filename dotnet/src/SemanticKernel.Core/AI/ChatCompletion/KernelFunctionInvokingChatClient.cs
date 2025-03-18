@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
 
@@ -40,10 +39,10 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
-public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
+public sealed partial class KernelFunctionInvokingChatClient : DelegatingChatClient
 {
-    /// <summary>The <see cref="InternalFunctionInvocationContext"/> for the current function invocation.</summary>
-    private static readonly AsyncLocal<InternalFunctionInvocationContext?> s_currentContext = new();
+    /// <summary>The <see cref="KernelFunctionInvocationContext"/> for the current function invocation.</summary>
+    private static readonly AsyncLocal<KernelFunctionInvocationContext?> s_currentContext = new();
 
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
@@ -56,11 +55,11 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
     private int? _maximumIterationsPerRequest;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FunctionInvokingChatClient"/> class.
+    /// Initializes a new instance of the <see cref="KernelFunctionInvokingChatClient"/> class.
     /// </summary>
     /// <param name="innerClient">The underlying <see cref="IChatClient"/>, or the next instance in a chain of clients.</param>
     /// <param name="logger">An <see cref="ILogger"/> to use for logging information about function invocation.</param>
-    public FunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
+    public KernelFunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
         : base(innerClient)
     {
         this._logger = logger ?? NullLogger.Instance;
@@ -68,12 +67,12 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="InternalFunctionInvocationContext"/> for the current function invocation.
+    /// Gets or sets the <see cref="KernelFunctionInvocationContext"/> for the current function invocation.
     /// </summary>
     /// <remarks>
     /// This value flows across async calls.
     /// </remarks>
-    public static InternalFunctionInvocationContext? CurrentContext
+    public static KernelFunctionInvocationContext? CurrentContext
     {
         get => s_currentContext.Value;
         set => s_currentContext.Value = value;
@@ -154,7 +153,7 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
     /// <remarks>
     /// <para>
     /// When the inner <see cref="IChatClient"/> returns <see cref="FunctionCallContent"/> to the
-    /// <see cref="FunctionInvokingChatClient"/>, the <see cref="FunctionInvokingChatClient"/> adds
+    /// <see cref="KernelFunctionInvokingChatClient"/>, the <see cref="KernelFunctionInvokingChatClient"/> adds
     /// those messages to the list of messages, along with <see cref="FunctionResultContent"/> instances
     /// it creates with the results of invoking the requested functions. The resulting augmented
     /// list of messages is then passed to the inner client in order to send the results back.
@@ -184,7 +183,7 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </value>
     /// <remarks>
     /// <para>
-    /// Each request to this <see cref="FunctionInvokingChatClient"/> might end up making
+    /// Each request to this <see cref="KernelFunctionInvokingChatClient"/> might end up making
     /// multiple requests to the inner client. Each time the inner client responds with
     /// a function call request, this client might perform that invocation and send the results
     /// back to the inner client in a new request. This property limits the number of times
@@ -217,7 +216,7 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = this._activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        using Activity? activity = this._activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
 
         ChatResponse? response = null;
         UsageDetails? totalUsage = null;
@@ -331,7 +330,7 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = this._activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        using Activity? activity = this._activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
 
         List<Microsoft.Extensions.AI.FunctionCallContent> functionCallContents = [];
         int? choice;
@@ -565,7 +564,7 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
             return new(ContinueMode.Continue, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
-        InternalFunctionInvocationContext context = new()
+        KernelFunctionInvocationContext context = new()
         {
             ChatMessages = chatMessages,
             CallContent = callContent,
@@ -666,7 +665,7 @@ public sealed partial class FunctionInvokingChatClient : DelegatingChatClient
     /// </param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
-    internal async Task<object?> InvokeFunctionAsync(InternalFunctionInvocationContext context, CancellationToken cancellationToken)
+    internal async Task<object?> InvokeFunctionAsync(KernelFunctionInvocationContext context, CancellationToken cancellationToken)
     {
         Verify.NotNull(context);
 
