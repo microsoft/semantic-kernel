@@ -261,8 +261,7 @@ public class LocalMapTests
             .SendEventTo(new ProcessFunctionTargetBuilder(mapStep));
 
         // CountStep is not part of the map operation, rather it has been defined on the "outer" process.
-        CommonSteps.CountStep.Index = 0; // Reset static state (test hack)
-        ProcessStepBuilder countStep = process.AddStepFromType<CommonSteps.CountStep>();
+        ProcessStepBuilder countStep = process.AddStepFromType<CommonSteps.CountStep>(name: nameof(ProcessMapResultWithTargetInvalidAsync));
         mapStep.MapOperation
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
@@ -287,7 +286,6 @@ public class LocalMapTests
     public async Task ProcessMapResultWithTargetExtraAsync()
     {
         // Arrange
-        CommonSteps.CountStep.Index = 0;
         ProcessBuilder process = new(nameof(ProcessMapResultProcessOperationAsync));
 
         ProcessBuilder mapProcess = new("MapOperation");
@@ -296,7 +294,8 @@ public class LocalMapTests
             .OnInputEvent("Anything")
             .SendEventTo(new ProcessFunctionTargetBuilder(computeStep));
 
-        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CommonSteps.CountStep>();
+        const string CounterName = nameof(ProcessMapResultWithTargetExtraAsync);
+        ProcessStepBuilder countStep = mapProcess.AddStepFromType<CommonSteps.CountStep>(name: CounterName);
         computeStep
             .OnEvent(ComputeStep.SquareEventId)
             .SendEventTo(new ProcessFunctionTargetBuilder(countStep));
@@ -320,7 +319,7 @@ public class LocalMapTests
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
         Assert.Equal(55L, unionState.SquareResult);
-        Assert.Equal(5, CommonSteps.CountStep.Index);
+        Assert.Equal(5, CommonSteps.CountStep.GetCount(CounterName));
     }
 
     /// <summary>
