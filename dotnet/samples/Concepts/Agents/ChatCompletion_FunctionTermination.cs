@@ -83,7 +83,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         AgentGroupChat chat = new();
 
         // Respond to user input, invoking functions where appropriate.
-        await InvokeAgentAsync("Hello");
+        // await InvokeAgentAsync("Hello");
         await InvokeAgentAsync("What is the special soup?");
         await InvokeAgentAsync("What is the special drink?");
         await InvokeAgentAsync("Thank you");

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.ClientModel;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Azure.AI.OpenAI;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -83,35 +85,35 @@ public abstract class BaseTest : TextWriter
 
     protected IChatClient AddChatClientToKernel(IKernelBuilder builder)
     {
+#pragma warning disable CA2000 // Dispose objects before losing scope
         IChatClient chatClient;
         if (this.UseOpenAIConfig)
         {
-#pragma warning disable CA2000 // Dispose objects before losing scope
             chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
                 new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey),
                 TestConfiguration.OpenAI.ChatModelId);
-#pragma warning restore CA2000 // Dispose objects before losing scope
         }
         else if (!string.IsNullOrEmpty(this.ApiKey))
         {
-            chatClient = new AzureOpenAIChatCompletionService(
-                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                    apiKey: TestConfiguration.AzureOpenAI.ApiKey,
-                    endpoint: TestConfiguration.AzureOpenAI.Endpoint)
-                .AsChatClient();
+            chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
+                openAIClient: new AzureOpenAIClient(
+                    endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                    credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey)),
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId);
         }
         else
         {
-            chatClient = new AzureOpenAIChatCompletionService(
-                    deploymentName: TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                    endpoint: TestConfiguration.AzureOpenAI.Endpoint,
-                    credentials: new AzureCliCredential())
-                .AsChatClient();
+            chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
+                openAIClient: new AzureOpenAIClient(
+                    endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                    credential: new AzureCliCredential()),
+                modelId: TestConfiguration.AzureOpenAI.ChatModelId);
         }
 
         var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient!);
         builder.Services.AddTransient<IChatClient>((sp) => functionCallingChatClient);
         return functionCallingChatClient;
+#pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
     protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
