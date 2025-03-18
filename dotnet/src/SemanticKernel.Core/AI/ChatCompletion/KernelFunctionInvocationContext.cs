@@ -40,21 +40,33 @@ public sealed class KernelFunctionInvocationContext
     public Microsoft.Extensions.AI.FunctionCallContent CallContent
     {
         get => _callContent;
-        set => Verify.NotNull(value);
+        set
+        {
+            Verify.NotNull(value);
+            _callContent = value;
+        }
     }
 
     /// <summary>Gets or sets the chat contents associated with the operation that initiated this function call request.</summary>
     public IList<ChatMessage> ChatMessages
     {
         get => _chatMessages;
-        set => Verify.NotNull(value);
+        set
+        {
+            Verify.NotNull(value);
+            _chatMessages = value;
+        }
     }
 
     /// <summary>Gets or sets the AI function to be invoked.</summary>
     public AIFunction Function
     {
         get => _function;
-        set => Verify.NotNull(value);
+        set
+        {
+            Verify.NotNull(value);
+            _function = value;
+        }
     }
 
     /// <summary>Gets or sets the number of this iteration with the underlying client.</summary>

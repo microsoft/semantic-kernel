@@ -109,8 +109,8 @@ public abstract class BaseTest : TextWriter
                 .AsChatClient();
         }
 
-        builder.Services.AddTransient<IChatClient>((sp) => chatClient!);
-        var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient);
+        var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient!);
+        builder.Services.AddTransient<IChatClient>((sp) => functionCallingChatClient);
         return functionCallingChatClient;
     }
 

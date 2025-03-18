@@ -36,7 +36,7 @@ internal static class StreamingChatMessageContentExtensions
                     aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
                         fcc.CallId ?? string.Empty,
                         fcc.Name ?? string.Empty,
-                        fcc.Arguments is not null ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
+                        !string.IsNullOrWhiteSpace(fcc.Arguments) ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
                     break;
             }
 
