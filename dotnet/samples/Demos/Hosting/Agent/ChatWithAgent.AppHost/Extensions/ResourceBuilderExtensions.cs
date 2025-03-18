@@ -91,4 +91,24 @@ public static class ResourceBuilderExtensions
 
         return builder;
     }
+
+    /// <summary>
+    /// Adds connection string of source resource to a destination resource.
+    /// </summary>
+    /// <typeparam name="T">The type of the destination resource.</typeparam>
+    /// <param name="builder">The destination resource.</param>
+    /// <param name="resource">The source resource with the connection string.</param>
+    /// <returns>The updated resource builder.</returns>
+    public static IResourceBuilder<T> WithReferences<T>(this IResourceBuilder<T> builder, IResourceBuilder<IResourceWithConnectionString>? resource) where T : IResourceWithEnvironment
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(resource);
+
+        if (resource is not null)
+        {
+            builder.WithReference(resource);
+        }
+
+        return builder;
+    }
 }

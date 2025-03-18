@@ -5,6 +5,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.5" />
@@ -30,6 +32,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.SemanticKernel.Abstractions" Version="1.41.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.41.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" Version="1.41.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.41.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.InMemory" Version="1.41.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.41.0" />

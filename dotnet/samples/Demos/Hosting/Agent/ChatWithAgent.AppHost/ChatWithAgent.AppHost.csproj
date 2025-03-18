@@ -21,6 +21,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" />
     <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" />
+    <PackageReference Include="Aspire.Hosting.Azure.Search" />
   </ItemGroup>
 
 </Project>

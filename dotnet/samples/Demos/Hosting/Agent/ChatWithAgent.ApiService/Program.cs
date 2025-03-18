@@ -143,6 +143,17 @@ public static class Program
         // Add Vector Store
         switch (config.Host.Rag.VectorStoreType)
         {
+            case AzureAISearchConfig.ConfigSectionName:
+            {
+                builder.AddAzureSearchClient(
+                    connectionName: AzureAISearchConfig.ConnectionStringName,
+                    configureSettings: (settings) => settings.Credential = builder.Environment.IsProduction()
+                        ? new DefaultAzureCredential()
+                        : new AzureCliCredential()
+                );
+                builder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(config.Host.Rag.CollectionName);
+                break;
+            }
             case "InMemory":
             {
                 builder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(config.Host.Rag.CollectionName);
@@ -155,15 +166,16 @@ public static class Program
         // Register all the other required services.
         switch (config.Host.Rag.VectorStoreType)
         {
+            case AzureAISearchConfig.ConfigSectionName:
             case "InMemory":
-                AddRagServicesa<string>(builder, config.Host.Rag);
+                AddRagServices<string>(builder, config.Host.Rag);
                 AddAgent<string>(builder);
                 break;
             default:
                 throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
         }
 
-        static void AddRagServicesa<TKey>(WebApplicationBuilder builder, RagConfig ragConfig) where TKey : notnull
+        static void AddRagServices<TKey>(WebApplicationBuilder builder, RagConfig ragConfig) where TKey : notnull
         {
             // Add a text search implementation that uses the registered vector store record collection for search.
             builder.Services.AddVectorStoreTextSearch<TextSnippet<TKey>>();
