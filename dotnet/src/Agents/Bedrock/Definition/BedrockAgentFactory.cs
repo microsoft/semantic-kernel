@@ -43,7 +43,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
             var agentResourceRoleArn = GetAgentResourceRoleArn(agentDefinition);
             var agentClient = new AmazonBedrockAgentClient();
             var runtimeClient = new AmazonBedrockAgentRuntimeClient();
-            var agentModel = await agentClient.CreateAndPrepareAgentAsync(
+            var agentModel = await agentClient.CreateAgentAndWaitAsync(
                 new()
                 {
                     FoundationModel = agentDefinition.Model!.Id,
@@ -64,7 +64,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
             await agentDefinition.CreateToolsAsync(agent, cancellationToken).ConfigureAwait(false);
 
             // wait for the agent to be prepared
-            //await agentClient.PrepareAgentAndWaitAsync(agentModel, cancellationToken).ConfigureAwait(false);
+            await agentClient.PrepareAgentAndWaitAsync(agentModel, cancellationToken).ConfigureAwait(false);
 
             return agent;
         }
