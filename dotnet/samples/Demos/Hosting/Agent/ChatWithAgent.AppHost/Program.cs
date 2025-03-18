@@ -11,10 +11,14 @@ var hostConfig = new HostConfig(builder.Configuration);
 // Add Api Service AI upstream dependencies
 var aiServices = AddAIServices(builder, hostConfig);
 
+// Add Vector Store
+var vectorStore = AddVectorStore(builder, hostConfig);
+
 // Add Api Service
 var apiService = builder.AddProject<Projects.ChatWithAgent_ApiService>("apiservice")
     .WithEnvironment(hostConfig)  // Add some host configuration as environment variables so that the Api Service can access them
-    .WithReferences(aiServices);
+    .WithReferences(aiServices)
+    .WithReferences(vectorStore);
 
 // Add Web Frontend
 builder.AddProject<Projects.ChatWithAgent_Web>("webfrontend")
@@ -85,4 +89,25 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
     }
 
     return [chatResource, embeddingsResource];
+}
+
+static IResourceBuilder<IResourceWithConnectionString>? AddVectorStore(IDistributedApplicationBuilder builder, HostConfig config)
+{
+    switch (config.Rag.VectorStoreType)
+    {
+        case AzureAISearchConfig.ConfigSectionName:
+        {
+            return builder.ExecutionContext.IsPublishMode ?
+                builder.AddAzureSearch(AzureAISearchConfig.ConnectionStringName) :
+                builder.AddConnectionString(AzureAISearchConfig.ConnectionStringName);
+        }
+        case "InMemory":
+        {
+            return null;
+        }
+        default:
+        {
+            throw new NotSupportedException($"Vector Store type '{config.Rag.VectorStoreType}' is not supported.");
+        }
+    }
 }

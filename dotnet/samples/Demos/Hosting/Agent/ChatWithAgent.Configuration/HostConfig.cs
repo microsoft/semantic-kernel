@@ -16,6 +16,11 @@ public sealed class HostConfig
     public const string AIServicesSectionName = "AIServices";
 
     /// <summary>
+    /// The Vector stores section name.
+    /// </summary>
+    public const string VectorStoresSectionName = "VectorStores";
+
+    /// <summary>
     /// The name of the connection string of Azure OpenAI service.
     /// </summary>
     public const string AzureOpenAIConnectionStringName = "AzureOpenAI";
@@ -34,6 +39,8 @@ public sealed class HostConfig
     private readonly OpenAIChatConfig _openAIChatConfig = new();
 
     private readonly OpenAIEmbeddingsConfig _openAIEmbeddingsConfig = new();
+
+    private readonly AzureAISearchConfig _azureAISearchConfig = new();
 
     private readonly RagConfig _ragConfig = new();
 
@@ -55,6 +62,9 @@ public sealed class HostConfig
         configurationManager
             .GetSection($"{AIServicesSectionName}:{OpenAIEmbeddingsConfig.ConfigSectionName}")
             .Bind(this._openAIEmbeddingsConfig);
+        configurationManager
+            .GetSection($"{VectorStoresSectionName}:{AzureAISearchConfig.ConfigSectionName}")
+            .Bind(this._azureAISearchConfig);
         configurationManager
             .GetSection($"{AIServicesSectionName}:{RagConfig.ConfigSectionName}")
             .Bind(this._ragConfig);
@@ -89,6 +99,11 @@ public sealed class HostConfig
     /// The OpenAI embeddings service configuration.
     /// </summary>
     public OpenAIEmbeddingsConfig OpenAIEmbeddings => this._openAIEmbeddingsConfig;
+
+    /// <summary>
+    /// The Azure AI search configuration.
+    /// </summary>
+    public AzureAISearchConfig AzureAISearch => this._azureAISearchConfig;
 
     /// <summary>
     /// The RAG configuration.
