@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -43,17 +44,19 @@ public static class OpenAIChatHistoryExtensions
         Dictionary<string, object?>? metadata = null;
         AuthorRole? streamedRole = null;
         string? streamedName = null;
+        int lastMessageCount = chatHistory.Count;
 
         await foreach (var chatMessage in streamingMessageContents.ConfigureAwait(false))
         {
             metadata ??= (Dictionary<string, object?>?)chatMessage.Metadata;
 
-            if(chatMessage.FinishReason == ChatFinishReason.FunctionCall)
+            if (chatHistory.Count > lastMessageCount && chatHistory.Last().Role == AuthorRole.Tool)
             {
                 contentBuilder?.Clear();
                 toolCallIdsByIndex?.Clear();
                 functionNamesByIndex?.Clear();
                 functionArgumentBuildersByIndex?.Clear();
+                lastMessageCount = chatHistory.Count;
             }
 
             if (chatMessage.Content is { Length: > 0 } contentUpdate)
