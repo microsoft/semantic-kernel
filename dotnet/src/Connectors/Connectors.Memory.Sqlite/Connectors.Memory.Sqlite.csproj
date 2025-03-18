@@ -19,6 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Connectors.Memory.Common\SqlFilterTranslator.cs" Link="SqlFilterTranslator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="System.Numerics.Tensors" />
   </ItemGroup>

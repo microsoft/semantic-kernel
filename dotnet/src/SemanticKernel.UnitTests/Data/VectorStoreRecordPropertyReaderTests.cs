@@ -430,6 +430,180 @@ public class VectorStoreRecordPropertyReaderTests
         Assert.Equal("json_data2", sut.GetJsonPropertyName("Data2"));
     }
 
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleReturnsRequestedVectorAndThrowsForInvalidVector(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+        var validVector = new VectorSearchOptions<MultiPropsModel>() { VectorProperty = r => r.Vector2 };
+        var invalidVector = new VectorSearchOptions<MultiPropsModel>() { VectorProperty = r => r.Data2 };
+
+        // Act & Assert.
+        Assert.Equal("Vector2", sut.GetVectorPropertyOrSingle(validVector).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(invalidVector));
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleThrowsForMultipleVectors(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle<MultiPropsModel>(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetVectorPropertyOrSingleThrowsForNoVectors(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle<NoVectorModel>(null));
+    }
+
+    [Fact]
+    public void GetVectorPropertyOrSingleReturnsRequestedGenericDataModelVectorWhenUsingConst()
+    {
+        const string TheConst = "FloatVector";
+        VectorStoreRecordPropertyReader sut = CreateReaderForGenericModel(TheConst);
+        VectorSearchOptions<VectorStoreGenericDataModel<string>> expectedConst = new()
+        {
+            VectorProperty = r => r.Vectors[TheConst]
+        };
+        VectorSearchOptions<VectorStoreGenericDataModel<string>> wrongConst = new()
+        {
+            VectorProperty = r => r.Vectors["Different"]
+        };
+
+        Assert.Equal(TheConst, sut.GetVectorPropertyOrSingle(expectedConst).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(wrongConst));
+    }
+
+    [Fact]
+    public void GetVectorPropertyOrSingleReturnsRequestedGenericDataModelVectorWhenUsingVariable()
+    {
+        string theVariable = "FloatVector";
+        string theWrongVariable = "Different";
+        VectorStoreRecordPropertyReader sut = CreateReaderForGenericModel(theVariable);
+        VectorSearchOptions<VectorStoreGenericDataModel<string>> expectedVariable = new()
+        {
+            VectorProperty = r => r.Vectors[theVariable]
+        };
+        VectorSearchOptions<VectorStoreGenericDataModel<string>> wrongVariable = new()
+        {
+            VectorProperty = r => r.Vectors[theWrongVariable]
+        };
+
+        Assert.Equal(theVariable, sut.GetVectorPropertyOrSingle(expectedVariable).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(wrongVariable));
+    }
+
+    [Theory]
+    [InlineData("FloatVector", "Different")]
+    // it's a Theory just for the need of testing a method expected being captured by the lambda property selector
+    public void GetVectorPropertyOrSingleReturnsRequestedGenericDataModelVectorWhenUsingArgument(string expected, string wrong)
+    {
+        VectorStoreRecordPropertyReader sut = CreateReaderForGenericModel(expected);
+        VectorSearchOptions<VectorStoreGenericDataModel<string>> expectedArgument = new()
+        {
+            VectorProperty = r => r.Vectors[expected]
+        };
+        VectorSearchOptions<VectorStoreGenericDataModel<string>> wrongArgument = new()
+        {
+            VectorProperty = r => r.Vectors[wrong]
+        };
+
+        Assert.Equal("FloatVector", sut.GetVectorPropertyOrSingle(expectedArgument).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetVectorPropertyOrSingle(wrongArgument));
+    }
+
+    private static VectorStoreRecordPropertyReader CreateReaderForGenericModel(string vectorPropertyName)
+    {
+        VectorStoreGenericDataModel<string> genericRecord = new("key")
+        {
+            Data =
+            {
+                ["Text"] = "data"
+            },
+            Vectors =
+            {
+                [vectorPropertyName] = new ReadOnlyMemory<float>([-1, -1, -1, -1])
+            }
+        };
+        VectorStoreRecordDefinition definition = new()
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                new VectorStoreRecordDataProperty("Text", typeof(string)),
+                new VectorStoreRecordVectorProperty(vectorPropertyName, typeof(ReadOnlyMemory<float>)),
+            ]
+        };
+
+        return new(genericRecord.GetType(), definition, null);
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyReturnsRequestedPropOrOnlyTextDataPropAndThrowsForInvalidProp(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => r.Data1).DataModelPropertyName);
+        Assert.Equal("Data1", sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(null).DataModelPropertyName);
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => r.Vector1));
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => "DoesNotExist"));
+    }
+
+    [Theory]
+    [MemberData(nameof(NoVectorsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyThrowsForNoTextDataProps(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<NoVectorModel>(null));
+    }
+
+    [Theory]
+    [MemberData(nameof(MultiPropsTypeAndDefinitionCombos))]
+    public void GetFullTextDataPropertyOrOnlyThrowsForNonFullTextSearchProp(Type type, VectorStoreRecordDefinition? definition)
+    {
+        // Arrange.
+        var sut = new VectorStoreRecordPropertyReader(type, definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<MultiPropsModel>(r => r.Data2));
+    }
+
+    [Fact]
+    public void GetFullTextDataPropertyOrOnlyThrowsForMultipleMatchingProps()
+    {
+        // Arrange.
+        var properties = new List<VectorStoreRecordProperty>
+        {
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsFullTextSearchable = true }
+        };
+        var definition = new VectorStoreRecordDefinition
+        {
+            Properties = properties
+        };
+        var sut = new VectorStoreRecordPropertyReader(typeof(object), definition, null);
+
+        // Act & Assert.
+        Assert.Throws<InvalidOperationException>(() => sut.GetFullTextDataPropertyOrSingle<object>(null));
+    }
+
     public static IEnumerable<object?[]> NoKeyTypeAndDefinitionCombos()
     {
         yield return new object?[] { typeof(NoKeyModel), s_noKeyDefinition };

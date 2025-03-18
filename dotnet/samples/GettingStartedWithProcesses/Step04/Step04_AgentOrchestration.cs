@@ -65,7 +65,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
         Kernel kernel = SetupKernel(history);
 
         // Execute process
-        using LocalKernelProcessContext localProcess =
+        await using LocalKernelProcessContext localProcess =
             await process.StartAsync(
                 kernel,
                 new KernelProcessEvent()
