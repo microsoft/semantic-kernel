@@ -18,7 +18,10 @@ namespace PineconeIntegrationTests.Support;
 internal sealed class PineconeTestStore : TestStore
 {
     // Values taken from https://docs.pinecone.io/guides/operations/local-development
-    private const string Image = "ghcr.io/pinecone-io/pinecone-local:v0.7.0";
+    // v0.7.0 works with 2.1 client
+    // v1.0.0 works with 3.0 client
+    // We use hardcoded version to avoid breaking changes.
+    private const string Image = "ghcr.io/pinecone-io/pinecone-local:v1.0.0.rc0";
     private const ushort FirstPort = 5080;
     private const int IndexServiceCount = 10;
 
