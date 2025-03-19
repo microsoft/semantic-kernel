@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// A MongoDB memory record.
 /// </summary>
-[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBMemoryStore")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 internal sealed class AzureCosmosDBMongoDBMemoryRecord
 {
     /// <summary>

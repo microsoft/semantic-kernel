@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Weaviate connector.
 /// </summary>
-[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqliteVectorStore")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and WeaviateVectorStore")]
 public static class WeaviateMemoryBuilderExtensions
 {
     /// <summary>

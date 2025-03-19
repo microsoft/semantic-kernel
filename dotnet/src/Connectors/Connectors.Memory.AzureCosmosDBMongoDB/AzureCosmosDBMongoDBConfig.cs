@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <remarks>
 /// Initialize the <see cref="AzureCosmosDBMongoDBConfig"/> with default values.
 /// </remarks>
-[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBMemoryStore")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 public class AzureCosmosDBMongoDBConfig(int dimensions)
 {
     private const string DefaultIndexName = "default_index";

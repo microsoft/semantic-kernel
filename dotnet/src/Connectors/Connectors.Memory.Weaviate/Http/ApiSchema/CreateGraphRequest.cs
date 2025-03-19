@@ -8,7 +8,7 @@ using System.Net.Http;
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 // ReSharper disable once ClassCannotBeInstantiated
-[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqliteVectorStore")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and WeaviateVectorStore")]
 internal sealed class CreateGraphRequest
 {
 #pragma warning disable CS8618

@@ -6,6 +6,8 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
+#pragma warning disable SKEXP0001
+
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Postgres connector.
 /// </summary>

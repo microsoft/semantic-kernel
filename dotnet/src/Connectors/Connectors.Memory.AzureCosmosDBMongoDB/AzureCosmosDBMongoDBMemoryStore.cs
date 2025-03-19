@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// An implementation of <see cref="IMemoryStore"/> backed by a Azure CosmosDB Mongo vCore database.
 /// Get more details about Azure Cosmos Mongo vCore vector search  https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search
 /// </summary>
-[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBMemoryStore")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 public class AzureCosmosDBMongoDBMemoryStore : IMemoryStore, IDisposable
 {
     private readonly MongoClient _mongoClient;

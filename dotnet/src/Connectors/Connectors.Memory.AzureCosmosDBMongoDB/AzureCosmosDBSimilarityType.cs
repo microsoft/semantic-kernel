@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Similarity metric to use with the index. Possible options are COS (cosine distance), L2 (Euclidean distance), and IP (inner product).
 /// </summary>
-[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBMemoryStore")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 public enum AzureCosmosDBSimilarityType
 {
     /// <summary>
@@ -33,7 +33,7 @@ public enum AzureCosmosDBSimilarityType
     Euclidean
 }
 
-[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBMemoryStore")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 internal static class AzureCosmosDBSimilarityTypeExtensions
 {
     public static string GetCustomName(this AzureCosmosDBSimilarityType type)
