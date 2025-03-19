@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from ollama import AsyncClient, ChatResponse, Message
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -228,3 +231,71 @@ async def test_streaming_chat_completion_wrong_return_type(
             OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
         ):
             pass
+
+
+@pytest.fixture
+async def ollama_chat_completion(model_id):
+    with patch(
+        "ollama.AsyncClient",
+        spec=AsyncClient,
+    ) as mock_client:
+        mock_client.return_value = AsyncMock(spec=AsyncClient)
+        yield OllamaChatCompletion(client=mock_client, ai_model_id=model_id)
+
+
+def test_initialization_failure():
+    """Test initialization with missing chat model id raises an error."""
+    with patch(
+        "semantic_kernel.connectors.ai.ollama.ollama_settings.OllamaSettings.create",
+        side_effect=ServiceInitializationError,
+    ) as mock_create:
+        with pytest.raises(ServiceInitializationError):
+            OllamaChatCompletion(ai_model_id=None)
+
+        mock_create.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_service_url_returns_default_value_without_client(
+    model_id,
+):
+    """Test the service_url method returns default value when client has no base_url."""
+    chat_service = OllamaChatCompletion(ai_model_id=model_id, client=None)
+    assert chat_service.service_url() == "http://127.0.0.1:11434"
+
+
+@pytest.mark.asyncio
+async def test_get_prompt_execution_settings_class(ollama_chat_completion):
+    """Test getting the correct prompt execution settings class."""
+    assert ollama_chat_completion.get_prompt_execution_settings_class() is OllamaChatPromptExecutionSettings
+
+
+@pytest.mark.asyncio
+async def test_inner_get_chat_message_contents_valid(ollama_chat_completion):
+    """Test _inner_get_chat_message_contents with valid response."""
+    valid_message = Message(content="Valid content", role="user")
+    valid_response = ChatResponse(message=valid_message)
+    ollama_chat_completion.client.chat = AsyncMock(return_value=valid_response)
+
+    chat_history = ChatHistory(messages=[])
+    settings = OllamaChatPromptExecutionSettings()
+
+    result = await ollama_chat_completion._inner_get_chat_message_contents(chat_history, settings)
+
+    assert len(result) == 1
+    assert isinstance(result[0], ChatMessageContent)
+    assert result[0].items[0].text == "Valid content"
+
+
+@pytest.mark.asyncio
+async def test_inner_get_chat_message_contents_invalid_response(ollama_chat_completion):
+    """Test _inner_get_chat_message_contents raises error on invalid response types."""
+    invalid_response = MagicMock()
+    invalid_response.message.content = None
+    ollama_chat_completion.client.chat.return_value = invalid_response
+
+    chat_history = ChatHistory(messages=[])
+    settings = OllamaChatPromptExecutionSettings()
+
+    with pytest.raises(ServiceInvalidResponseError):
+        await ollama_chat_completion._inner_get_chat_message_contents(chat_history, settings)
