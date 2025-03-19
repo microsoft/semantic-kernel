@@ -11,6 +11,7 @@ internal sealed class TavilyImageResult
     /// The image url.
     /// </summary>
     [JsonPropertyName("url")]
+    [JsonRequired]
     public string Url { get; set; }
 
     /// <summary>
