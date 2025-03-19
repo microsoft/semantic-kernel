@@ -11,7 +11,7 @@ namespace PineconeIntegrationTests.Filter;
 public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
     : BasicFilterTests<string>(fixture), IClassFixture<PineconeBasicFilterTests.Fixture>
 {
-    // Specialized MongoDB syntax for NOT over Contains ($nin)
+    // Specialized Pinecone syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
         => this.TestFilterAsync(r => !new[] { 8, 10 }.Contains(r.Int));
@@ -35,7 +35,7 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
 
     #region Not
 
-    // MongoDB currently doesn't support NOT in vector search pre-filters
+    // Pinecone currently doesn't support NOT in vector search pre-filters
     // (https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter)
     public override Task Not_over_And()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Not_over_And());
@@ -51,7 +51,7 @@ public class PineconeBasicFilterTests(PineconeBasicFilterTests.Fixture fixture)
     public override Task Contains_over_field_string_List()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Contains_over_field_string_List());
 
-    // AnyTagEqualTo not (currently) supported on SQLite
+    // AnyTagEqualTo not (currently) supported on Pinecone
     [Obsolete("Legacy filter support")]
     public override Task Legacy_AnyTagEqualTo_array()
         => Assert.ThrowsAsync<NotSupportedException>(() => base.Legacy_AnyTagEqualTo_array());
