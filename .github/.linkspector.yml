@@ -7,9 +7,13 @@ ignorePatterns:
   - pattern: "./issues"
   - pattern: "./discussions"
   - pattern: "./pulls"
-  - pattern: ".*localhost.*"
   - pattern: "https:\/\/platform.openai.com"
   - pattern: "https:\/\/outlook.office.com/bookings"
+  # Folders which include links to localhost, since it's not ignored with regular expressions
+  - pattern: "/python/samples/demos/telemetry/"
+  - pattern: "/python/samples/demos/process_with_dapr/"
+  - pattern: "/dotnet/samples/Demos/ProcessWithDapr/"
+  - pattern: "/dotnet/samples/Demos/CopilotAgentPlugins/"
 baseUrl: https://github.com/microsoft/semantic-kernel/
 aliveStatusCodes: 
   - 200
