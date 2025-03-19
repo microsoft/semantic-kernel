@@ -22,11 +22,6 @@ param openAIName string
 @description('Name of the Azure Resource Group where the OpenAI resource is located')
 param openAIResourceGroupName string
 
-@description('Name for Teams App registration')
-param teamsAppName string = 'sk-copilot'
-@description('ID for Teams App registration, if not provided, a new one will be created')
-param teamsAppId string = newGuid()
-
 @description('Azure Bot app ID')
 param botAppId string
 @description('Azure Bot app password')
@@ -114,8 +109,6 @@ module aca './aca.bicep' = {
     botAppId: botAppId
     botPassword: botPassword
     botTenantId: botTenantId
-    teamAppName: teamsAppName
-    teamsAppId: teamsAppId
   }
 }
 
