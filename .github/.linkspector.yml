@@ -7,9 +7,9 @@ ignorePatterns:
   - pattern: "./issues"
   - pattern: "./discussions"
   - pattern: "./pulls"
-  - pattern: "^http://localhost"
-  - pattern: "^https://localhost"
-  - pattern: "^https://platform.openai.com"
+  - pattern: "^http://localhost.*"
+  - pattern: "^https://localhost.*"
+  - pattern: "^https://platform.openai.com.*"
   - pattern: "^https://outlook.office.com/bookings"
 baseUrl: https://github.com/microsoft/semantic-kernel/
 aliveStatusCodes: 
