@@ -25,32 +25,6 @@ builder.Services.AddHttpClient<AgentCompletionsApiClient>(client =>
         client.BaseAddress = new("https+http://apiservice");
     });
 
-builder.Services
-    .AddHttpClient<FilesApiClient>(client =>
-    {
-        // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
-        // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.
-        client.BaseAddress = new("https+http://apiservice");
-    })
-    .ClearResilienceHandlers()
-    .AddStandardResilienceHandler(options =>
-    {
-        // Uploading a big file can take a long time so we set the timeouts to 3 minutes.
-        options.AttemptTimeout = new HttpTimeoutStrategyOptions
-        {
-            Timeout = TimeSpan.FromSeconds(180)
-        };
-        options.TotalRequestTimeout = new HttpTimeoutStrategyOptions
-        {
-            Timeout = TimeSpan.FromSeconds(180)
-        };
-        options.CircuitBreaker = new HttpCircuitBreakerStrategyOptions
-        {
-            // The duration should be least double of an attempt timeout
-            SamplingDuration = TimeSpan.FromSeconds(360)
-        };
-    });
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

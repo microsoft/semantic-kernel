@@ -18,7 +18,7 @@ var vectorStore = AddVectorStore(builder, hostConfig);
 var apiService = builder.AddProject<Projects.ChatWithAgent_ApiService>("apiservice")
     .WithEnvironment(hostConfig)  // Add some host configuration as environment variables so that the Api Service can access them
     .WithReferences(aiServices)
-    .WithReferences(vectorStore);
+    .WithReference(vectorStore);
 
 // Add Web Frontend
 builder.AddProject<Projects.ChatWithAgent_Web>("webfrontend")
@@ -91,7 +91,7 @@ static List<IResourceBuilder<IResourceWithConnectionString>> AddAIServices(IDist
     return [chatResource, embeddingsResource];
 }
 
-static IResourceBuilder<IResourceWithConnectionString>? AddVectorStore(IDistributedApplicationBuilder builder, HostConfig config)
+static IResourceBuilder<IResourceWithConnectionString> AddVectorStore(IDistributedApplicationBuilder builder, HostConfig config)
 {
     switch (config.Rag.VectorStoreType)
     {
@@ -100,10 +100,6 @@ static IResourceBuilder<IResourceWithConnectionString>? AddVectorStore(IDistribu
             return builder.ExecutionContext.IsPublishMode ?
                 builder.AddAzureSearch(AzureAISearchConfig.ConnectionStringName) :
                 builder.AddConnectionString(AzureAISearchConfig.ConnectionStringName);
-        }
-        case "InMemory":
-        {
-            return null;
         }
         default:
         {

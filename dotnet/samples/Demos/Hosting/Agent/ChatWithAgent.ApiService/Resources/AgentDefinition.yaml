@@ -5,6 +5,7 @@ template: |
       {{#each this}}  
       Name: {{Name}}
       Value: {{Value}}
+      Link: {{Link}}
       -----------------
       {{/each}}
   {{/with}}

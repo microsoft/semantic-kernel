@@ -5,7 +5,6 @@
 @rendermode InteractiveServer
 
 @inject AgentCompletionsApiClient AgentCompletionsApi
-@inject FilesApiClient FileApi;
 
 <PageTitle>Chat</PageTitle>
 
@@ -21,26 +20,14 @@
         </div>
     </div>
     <div class="chat-input">
-        <textarea @bind="userMessage" @bind:event="oninput" @onkeydown="HandleKeyDown" placeholder="@(GetPlaceholderText())" disabled="@(fileUploadState != FileUploadState.Uploaded)"></textarea>
+        <textarea @bind="userMessage" @bind:event="oninput" @onkeydown="HandleKeyDown" placeholder="Enter your query"></textarea>
         <div class="chat-button-container">
-            @if (fileUploadState == FileUploadState.InProgress)
-            {
-                <div class="spinner"></div>
-            }
-            else
-            {
-                <label title="Upload a PDF file">
-                    <img src="images/paperclip.svg" class="clip-icon @(fileUploadState == FileUploadState.Uploaded ? "" : "zoom")" />
-                    <InputFile type="file" OnChange="UploadFiles" accept=".pdf" hidden/>
-                </label>
-            }
-            <button class="btn btn-primary" @onclick="SendMessage" disabled="@(fileUploadState != FileUploadState.Uploaded || string.IsNullOrWhiteSpace(userMessage))">Send</button>
+            <button class="btn btn-primary" @onclick="SendMessage" disabled="@(string.IsNullOrWhiteSpace(userMessage))">Send</button>
         </div>
     </div>
 </div>
 
 @code {
-    private FileUploadState fileUploadState = FileUploadState.NotUploaded;
     private List<Message> messages = new();
     private string userMessage = string.Empty;
 
@@ -80,36 +67,6 @@
         {
             await SendMessage();
         }
-    }
-
-    private async Task UploadFiles(InputFileChangeEventArgs e)
-    {
-        try
-        {
-            fileUploadState = FileUploadState.InProgress;
-            await FileApi.UploadFilesAsync(e.GetMultipleFiles());
-        }
-        finally
-        {
-            fileUploadState = FileUploadState.Uploaded;
-        }
-    }
-
-    private string GetPlaceholderText()
-    {
-        return fileUploadState switch
-        {
-            FileUploadState.InProgress => "File is being uploaded, please wait...",
-            FileUploadState.Uploaded => "File has been uploaded, now enter your query.",
-            _ => "Upload a PDF file"
-        };
-    }
-
-    private enum FileUploadState
-    {
-        NotUploaded,
-        InProgress,
-        Uploaded
     }
 
     private class Message
