@@ -257,7 +257,7 @@ class SqlCommand:
         return str(self.query), tuple(self.parameters)
 
 
-async def _get_mssql_connection(settings: SqlSettings) -> Connection:
+async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
     """Get a connection to the SQL Server database, optionally with Entra Auth."""
     import pyodbc
 
