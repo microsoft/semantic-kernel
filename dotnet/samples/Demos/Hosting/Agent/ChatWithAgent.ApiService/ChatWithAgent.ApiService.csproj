@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
     <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" />
-    <PackageReference Include="PdfPig" />
   </ItemGroup>
 
   <ItemGroup>
