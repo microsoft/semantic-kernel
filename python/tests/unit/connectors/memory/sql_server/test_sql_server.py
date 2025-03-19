@@ -4,6 +4,18 @@ import json
 
 from pytest import mark
 
+from semantic_kernel.connectors.memory.sql_server import (
+    QueryBuilder,
+    SqlCommand,
+    SqlServerStore,
+    _build_create_table_query,
+    _build_delete_query,
+    _build_delete_table_query,
+    _build_merge_query,
+    _build_search_query,
+    _build_select_query,
+    _build_select_table_names_query,
+)
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -13,29 +25,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 
-try:
-    from semantic_kernel.connectors.memory.sql_server import (
-        QueryBuilder,
-        SqlCommand,
-        SqlServerStore,
-        _build_create_table_query,
-        _build_delete_query,
-        _build_delete_table_query,
-        _build_merge_query,
-        _build_search_query,
-        _build_select_query,
-        _build_select_table_names_query,
-    )
 
-    skip_tests = False
-except ImportError:
-    skip_tests = True
-
-
-@mark.skipif(
-    skip_tests,
-    reason="PyODBC is not available. Please install the required dependencies.",
-)
 class TestQueryBuilder:
     def test_query_builder_append(self):
         qb = QueryBuilder()
@@ -87,10 +77,6 @@ class TestQueryBuilder:
         assert lines[2] == "END"
 
 
-@mark.skipif(
-    skip_tests,
-    reason="PyODBC is not available. Please install the required dependencies.",
-)
 class TestSqlCommand:
     def test_sql_command_initial_query(self):
         cmd = SqlCommand("SELECT 1")
@@ -139,10 +125,6 @@ class TestSqlCommand:
         )
 
 
-@mark.skipif(
-    skip_tests,
-    reason="PyODBC is not available. Please install the required dependencies.",
-)
 class TestQueryBuildFunctions:
     def test_build_create_table_query(self):
         schema = "dbo"
@@ -274,10 +256,6 @@ class TestQueryBuildFunctions:
         )
 
 
-@mark.skipif(
-    skip_tests,
-    reason="PyODBC is not available. Please install the required dependencies.",
-)
 class TestSqlServerStore:
     def test_create_store(self, sql_server_unit_test_env):
         store = SqlServerStore()
