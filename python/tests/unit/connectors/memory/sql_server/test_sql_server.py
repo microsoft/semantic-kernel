@@ -2,12 +2,9 @@
 
 import json
 
-from pytest import mark
+from pytest import mark, skip
 
 from semantic_kernel.connectors.memory.sql_server import (
-    QueryBuilder,
-    SqlCommand,
-    SqlServerStore,
     _build_create_table_query,
     _build_delete_query,
     _build_delete_table_query,
@@ -24,6 +21,11 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 )
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+
+try:
+    from semantic_kernel.connectors.memory.sql_server import QueryBuilder, SqlCommand, SqlServerStore
+except ImportError:
+    skip(reason="pyodbc is not installed. Please install it to run SQL Server tests.")  # pragma: no cover
 
 
 def test_query_builder_append():
