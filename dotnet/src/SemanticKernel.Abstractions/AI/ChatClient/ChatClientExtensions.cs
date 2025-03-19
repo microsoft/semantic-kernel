@@ -27,7 +27,7 @@ public static class ChatClientExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatOptions = executionSettings.ToChatOptions(kernel);
+        var chatOptions = executionSettings?.ToChatOptions(kernel);
 
         // Try to parse the text as a chat history
         if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))

@@ -293,8 +293,8 @@ public class KernelTests
         // Arrange
         var customRawItem = new MEAI.ChatOptions();
         var mockChatClient = this.SetupStreamingChatClientMock(
-            new MEAI.ChatResponseUpdate() { Text = "chunk1", RawRepresentation = customRawItem },
-            new MEAI.ChatResponseUpdate() { Text = "chunk2", RawRepresentation = customRawItem });
+            new MEAI.ChatResponseUpdate(role: MEAI.ChatRole.Assistant, content: "chunk1") { RawRepresentation = customRawItem },
+            new MEAI.ChatResponseUpdate(role: null, content: "chunk2") { RawRepresentation = customRawItem });
         IKernelBuilder builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<MEAI.IChatClient>(mockChatClient.Object);
         Kernel kernel = builder.Build();

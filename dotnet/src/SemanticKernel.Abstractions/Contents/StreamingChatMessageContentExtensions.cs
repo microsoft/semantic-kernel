@@ -17,7 +17,6 @@ internal static class StreamingChatMessageContentExtensions
         {
             AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
             AuthorName = content.AuthorName,
-            ChoiceIndex = content.ChoiceIndex,
             ModelId = content.ModelId,
             RawRepresentation = content.InnerContent,
             Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,

@@ -47,14 +47,14 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     }
 
     /// <inheritdoc />
-    public Task<ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-        => this._chatClient.GetResponseAsync(chatMessages, options, cancellationToken);
+    public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        => this._chatClient.GetResponseAsync(messages, options, cancellationToken);
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
         => this._chatClient.GetService(serviceType, serviceKey);
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-        => this._chatClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
+    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+        => this._chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
 }

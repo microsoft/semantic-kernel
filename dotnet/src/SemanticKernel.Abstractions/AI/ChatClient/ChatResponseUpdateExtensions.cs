@@ -18,7 +18,6 @@ internal static class ChatResponseUpdateExtensions
             null)
         {
             InnerContent = update.RawRepresentation,
-            ChoiceIndex = update.ChoiceIndex,
             Metadata = update.AdditionalProperties,
             ModelId = update.ModelId
         };

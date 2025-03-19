@@ -374,10 +374,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
                 if (typeof(TResult) == typeof(byte[]))
                 {
-                    DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent && dataContent.Data.HasValue);
+                    DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent);
                     if (dataContent is not null)
                     {
-                        yield return (TResult)(object)dataContent.Data!.Value.ToArray();
+                        yield return (TResult)(object)dataContent.Data.ToArray();
                         continue;
                     }
                 }
@@ -812,7 +812,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             kernel,
             cancellationToken).ConfigureAwait(false);
 
-        if (chatResponse.Choices is { Count: 0 })
+        if (chatResponse.Messages is { Count: 0 })
         {
             return new FunctionResult(this, chatResponse)
             {

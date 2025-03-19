@@ -129,12 +129,13 @@ public sealed class FunctionResult
                 throw new InvalidCastException($"Cannot cast a response with no choices to {typeof(T)}");
             }
 
+            var firstMessage = messageContentList[0];
             if (typeof(T) == typeof(ChatResponse))
             {
-                return (T)(object)new ChatResponse(messageContentList.Select(m => m.ToChatMessage()).ToList());
+                // Ignore multiple choices when converting to Microsoft.Extensions.AI.ChatResponse
+                return (T)(object)new ChatResponse(firstMessage.ToChatMessage());
             }
 
-            var firstMessage = messageContentList[0];
             if (typeof(T) == typeof(ChatMessage))
             {
                 return (T)(object)firstMessage.ToChatMessage();
@@ -144,12 +145,12 @@ public sealed class FunctionResult
         if (this.Value is Microsoft.Extensions.AI.ChatResponse chatResponse)
         {
             // If no choices are present, return default
-            if (chatResponse.Choices.Count == 0)
+            if (chatResponse.Messages.Count == 0)
             {
-                throw new InvalidCastException($"Cannot cast a response with no choices to {typeof(T)}");
+                throw new InvalidCastException($"Cannot cast a response with no messages to {typeof(T)}");
             }
 
-            var chatMessage = chatResponse.Message;
+            var chatMessage = chatResponse.Messages.Last();
             if (typeof(T) == typeof(string))
             {
                 return (T?)(object?)chatMessage.ToString();
