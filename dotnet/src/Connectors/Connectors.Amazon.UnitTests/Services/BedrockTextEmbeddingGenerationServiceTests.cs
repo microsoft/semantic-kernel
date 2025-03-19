@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
@@ -63,5 +66,25 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
         // Assert
         Assert.Throws<KernelException>(() =>
             kernel.GetRequiredService<ITextEmbeddingGenerationService>());
+    }
+
+    /// <summary>
+    /// Checks that an invalid BedrockRuntime object will throw an exception.
+    /// </summary>
+    [Fact]
+    public async Task ShouldThrowExceptionForNullBedrockRuntimeAsync()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v2:0";
+        List<string> prompts = new() { "King", "Queen", "Prince" };
+        IAmazonBedrockRuntime? nullBedrockRuntime = null;
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        {
+            var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
+            var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+            await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
+        }).ConfigureAwait(true);
     }
 }
