@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
-internal class TavilySearchRequest
+internal sealed class TavilySearchRequest
 {
     /// <summary>
     /// The search query to execute with Tavily.
