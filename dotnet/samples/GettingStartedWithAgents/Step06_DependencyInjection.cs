@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.AI.OpenAI;
+using System.ClientModel;
 using Azure.Identity;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -26,25 +29,66 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         }
         """;
 
-    [Fact]
-    public async Task UseDependencyInjectionToCreateAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseDependencyInjectionToCreateAgentAsync(bool useChatClient)
     {
         ServiceCollection serviceContainer = new();
 
         serviceContainer.AddLogging(c => c.AddConsole().SetMinimumLevel(LogLevel.Information));
 
-        if (this.UseOpenAIConfig)
+        if (useChatClient)
         {
-            serviceContainer.AddOpenAIChatCompletion(
-                TestConfiguration.OpenAI.ChatModelId,
-                TestConfiguration.OpenAI.ApiKey);
+            IChatClient chatClient;
+            if (this.UseOpenAIConfig)
+            {
+                chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
+                    new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey),
+                    TestConfiguration.OpenAI.ChatModelId);
+            }
+            else if (!string.IsNullOrEmpty(this.ApiKey))
+            {
+                chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
+                    openAIClient: new AzureOpenAIClient(
+                        endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                        credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey)),
+                    modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+            }
+            else
+            {
+                chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
+                    openAIClient: new AzureOpenAIClient(
+                        endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
+                        credential: new AzureCliCredential()),
+                    modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+            }
+
+            var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient!);
+            serviceContainer.AddTransient<IChatClient>((sp) => functionCallingChatClient);
         }
         else
         {
-            serviceContainer.AddAzureOpenAIChatCompletion(
-                TestConfiguration.AzureOpenAI.ChatDeploymentName,
-                TestConfiguration.AzureOpenAI.Endpoint,
-                new AzureCliCredential());
+            if (this.UseOpenAIConfig)
+            {
+                serviceContainer.AddOpenAIChatCompletion(
+                    TestConfiguration.OpenAI.ChatModelId,
+                    TestConfiguration.OpenAI.ApiKey);
+            }
+            else if (!string.IsNullOrEmpty(this.ApiKey))
+            {
+                serviceContainer.AddAzureOpenAIChatCompletion(
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    TestConfiguration.AzureOpenAI.ApiKey);
+            }
+            else
+            {
+                serviceContainer.AddAzureOpenAIChatCompletion(
+                    TestConfiguration.AzureOpenAI.ChatDeploymentName,
+                    TestConfiguration.AzureOpenAI.Endpoint,
+                    new AzureCliCredential());
+            }
         }
 
         // Transient Kernel as each agent may customize its Kernel instance with plug-ins.
