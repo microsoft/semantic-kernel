@@ -86,4 +86,3 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
         }
     }
 }
-

@@ -104,4 +104,3 @@ public class ChatCompletion_Serialization(ITestOutputHelper output) : BaseAgents
             "$9.99";
     }
 }
-

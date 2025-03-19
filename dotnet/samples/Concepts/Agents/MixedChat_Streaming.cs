@@ -125,4 +125,3 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
             => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 }
-

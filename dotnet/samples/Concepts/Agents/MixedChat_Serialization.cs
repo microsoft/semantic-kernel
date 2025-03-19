@@ -132,4 +132,3 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
         }
     }
 }
-
