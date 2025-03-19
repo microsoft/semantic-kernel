@@ -32,6 +32,10 @@ except ImportError:
     skip_tests = True
 
 
+@mark.skipif(
+    skip_tests,
+    reason="PyODBC is not available. Please install the required dependencies.",
+)
 class TestQueryBuilder:
     def test_query_builder_append(self):
         qb = QueryBuilder()
@@ -83,6 +87,10 @@ class TestQueryBuilder:
         assert lines[2] == "END"
 
 
+@mark.skipif(
+    skip_tests,
+    reason="PyODBC is not available. Please install the required dependencies.",
+)
 class TestSqlCommand:
     def test_sql_command_initial_query(self):
         cmd = SqlCommand("SELECT 1")
@@ -131,6 +139,10 @@ class TestSqlCommand:
         )
 
 
+@mark.skipif(
+    skip_tests,
+    reason="PyODBC is not available. Please install the required dependencies.",
+)
 class TestQueryBuildFunctions:
     def test_build_create_table_query(self):
         schema = "dbo"
