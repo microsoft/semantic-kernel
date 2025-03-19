@@ -43,28 +43,6 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     }
 
     [Fact]
-    public async Task BedrockAgentWithKernelAsync()
-    {
-        var text =
-            $"""
-            type: bedrock_agent
-            name: AnotherStoryAgent
-            description: Store Telling Agent
-            instructions: Tell a story suitable for children about the topic provided by the user.
-            model:
-              id: {TestConfiguration.BedrockAgent.FoundationModel}
-              configuration:
-                type: bedrock
-                agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
-            """;
-        BedrockAgentFactory factory = new();
-
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as BedrockAgent;
-
-        await InvokeAgentAsync(agent!, "Cats and Dogs");
-    }
-
-    [Fact]
     public async Task BedrockAgentWithCodeInterpreterAsync()
     {
         var text =

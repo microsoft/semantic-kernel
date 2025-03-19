@@ -34,6 +34,8 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Name);
+        Verify.NotNull(agentDefinition.Description);
+        Verify.NotNull(agentDefinition.Instructions);
         Verify.NotNull(agentDefinition.Model);
         Verify.NotNull(agentDefinition.Model.Id);
 
@@ -48,8 +50,8 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
                 {
                     FoundationModel = agentDefinition.Model!.Id,
                     AgentName = agentDefinition.Name,
-                    Description = agentDefinition.Description ?? string.Empty,
-                    Instruction = agentDefinition.Instructions ?? string.Empty,
+                    Description = agentDefinition.Description,
+                    Instruction = agentDefinition.Instructions,
                     AgentResourceRoleArn = agentResourceRoleArn,
                 },
                 cancellationToken

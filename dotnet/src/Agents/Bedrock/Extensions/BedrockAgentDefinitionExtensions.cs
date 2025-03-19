@@ -65,7 +65,7 @@ internal static class BedrockAgentDefinitionExtensions
             {
                 Name = functionTool.Name,
                 Description = functionTool.Description,
-                Parameters = functionTool.CreateParameterSpec(),
+                Parameters = functionTool.CreateParameterDetails(),
                 // This field controls whether user confirmation is required to invoke the function.
                 // If this is set to "ENABLED", the user will be prompted to confirm the function invocation.
                 // Only after the user confirms, the function call request will be issued by the agent.

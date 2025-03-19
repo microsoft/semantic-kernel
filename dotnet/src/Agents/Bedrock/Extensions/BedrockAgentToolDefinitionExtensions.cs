@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// </summary>
 internal static class BedrockAgentToolDefinitionExtensions
 {
-    internal static Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> CreateParameterSpec(
+    internal static Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> CreateParameterDetails(
         this AgentToolDefinition agentToolDefinition)
     {
         Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> parameterSpec = [];
