@@ -400,7 +400,7 @@ def test_serialize_data_model_to_dict_fail_mapping(DictVectorStoreRecordCollecti
         data_model_definition=data_model_definition,
     )
     record = {"content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    with raises(KeyError):
+    with raises(VectorStoreModelSerializationException):
         vector_store_record_collection._serialize_data_model_to_dict(record)
 
 
@@ -502,7 +502,7 @@ def test_deserialize_dict_data_model_fail(DictVectorStoreRecordCollection, data_
         data_model_type=dict,
         data_model_definition=data_model_definition,
     )
-    with raises(KeyError):
+    with raises(VectorStoreModelDeserializationException):
         vector_store_record_collection._deserialize_dict_to_data_model({
             "content": "test_content",
             "vector": [1.0, 2.0, 3.0],

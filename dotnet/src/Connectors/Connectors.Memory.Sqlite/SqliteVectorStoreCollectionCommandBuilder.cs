@@ -74,7 +74,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     public static DbCommand BuildDropTableCommand(SqliteConnection connection, string tableName)
     {
-        string query = $"DROP TABLE [{tableName}];";
+        string query = $"DROP TABLE IF EXISTS [{tableName}];";
 
         var command = connection.CreateCommand();
 

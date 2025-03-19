@@ -15,8 +15,13 @@ class PineconeSettings(KernelBaseSettings):
     Args:
     - api_key: SecretStr - Pinecone API key
         (Env var PINECONE_API_KEY)
+    - namespace: str - Pinecone namespace (optional, default is "")
+    - embed_model: str - Embedding model (optional, default is None)
+        (Env var PINECONE_EMBED_MODEL)
     """
 
     env_prefix: ClassVar[str] = "PINECONE_"
 
     api_key: SecretStr
+    namespace: str = ""
+    embed_model: str | None = None

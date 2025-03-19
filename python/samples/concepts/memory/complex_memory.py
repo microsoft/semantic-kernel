@@ -25,6 +25,7 @@ from semantic_kernel.connectors.memory.azure_cosmos_db import (
 from semantic_kernel.connectors.memory.chroma import ChromaCollection
 from semantic_kernel.connectors.memory.faiss import FaissCollection
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
+from semantic_kernel.connectors.memory.pinecone import PineconeCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
@@ -40,11 +41,11 @@ from semantic_kernel.data import (
     VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
-    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
     VectorTextSearchMixin,
     vectorstoremodel,
 )
+from semantic_kernel.data.record_definition.vector_store_record_utils import VectorStoreRecordUtils
 
 # This is a rather complex sample, showing how to use the vector store
 # with a number of different collections.
@@ -152,28 +153,31 @@ DataModel = get_data_model("array", index_kind, distance_function)
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
 # so that settings for unused collections do not cause validation errors.
-collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
-    "ai_search": lambda: AzureAISearchCollection[DataModel](
+collections: dict[str, Callable[[], VectorStoreRecordCollection[str, DataModel]]] = {
+    "ai_search": lambda: AzureAISearchCollection[str, DataModel](
         data_model_type=DataModel,
     ),
     "postgres": lambda: PostgresCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
-    "redis_json": lambda: RedisJsonCollection[DataModel](
+    "redis_json": lambda: RedisJsonCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "redis_hash": lambda: RedisHashsetCollection[DataModel](
+    "redis_hash": lambda: RedisHashsetCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
         prefix_collection_name_to_key_names=True,
     ),
-    "qdrant": lambda: QdrantCollection[DataModel](
-        data_model_type=DataModel, collection_name=collection_name, prefer_grpc=True, named_vectors=False
+    "qdrant": lambda: QdrantCollection[str, DataModel](
+        data_model_type=DataModel,
+        collection_name=collection_name,
+        prefer_grpc=True,
+        named_vectors=False,
     ),
-    "in_memory": lambda: InMemoryVectorCollection[DataModel](
+    "in_memory": lambda: InMemoryVectorCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
@@ -181,21 +185,39 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
-    "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection(
+    "azure_cosmos_nosql": lambda: AzureCosmosDBNoSQLCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
         create_database=True,
     ),
-    "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection(
+    "azure_cosmos_mongodb": lambda: AzureCosmosDBforMongoDBCollection[str, DataModel](
         data_model_type=DataModel,
         collection_name=collection_name,
     ),
-    "chroma": lambda: ChromaCollection(data_model_type=DataModel, collection_name=collection_name),
     "faiss": lambda: FaissCollection[str, DataModel](
+        data_model_type=DataModel,
+        collection_name=collection_name,
+    ),
+    "chroma": lambda: ChromaCollection[str, DataModel](
+        data_model_type=DataModel,
+        collection_name=collection_name,
+    ),
+    "pinecone": lambda: PineconeCollection[str, DataModel](
         collection_name=collection_name,
         data_model_type=DataModel,
     ),
 }
+
+
+async def cleanup(record_collection):
+    print("-" * 30)
+    delete = input("Do you want to delete the collection? (y/n): ")
+    if delete.lower() != "y":
+        print("Skipping deletion.")
+        return
+    print_with_color("Deleting collection!", Colors.CBLUE)
+    await record_collection.delete_collection()
+    print_with_color("Done!", Colors.CGREY)
 
 
 async def main(collection: str, use_azure_openai: bool):
@@ -207,7 +229,10 @@ async def main(collection: str, use_azure_openai: bool):
     kernel.add_service(embedder)
     async with collections[collection]() as record_collection:
         print_with_color(f"Creating {collection} collection!", Colors.CGREY)
-        await record_collection.create_collection_if_not_exists()
+        # cleanup any existing collection
+        await record_collection.delete_collection()
+        # create a new collection
+        await record_collection.create_collection()
 
         record1 = DataModel(
             content="Semantic Kernel is awesome",
@@ -232,7 +257,7 @@ async def main(collection: str, use_azure_openai: bool):
         records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
             [record1, record2, record3], data_model_type=DataModel
         )
-
+        records = [record1, record2, record3]
         keys = await record_collection.upsert_batch(records)
         print(f"    Upserted {keys=}")
         print_with_color("Getting records!", Colors.CBLUE)
@@ -247,47 +272,67 @@ async def main(collection: str, use_azure_openai: bool):
             filter=VectorSearchFilter.equal_to("tag", "general"),
         )
         print("-" * 30)
-        print_with_color("Searching for 'python', with filter 'tag == general'", Colors.CBLUE)
+        print_with_color("Now we can start searching.", Colors.CBLUE)
+        print_with_color("  For each type of search, enter a search term, for instance `python`.", Colors.CBLUE)
+        print_with_color("  Enter exit to exit, and skip or nothing to skip this search.", Colors.CBLUE)
         if isinstance(record_collection, VectorTextSearchMixin):
-            print("-" * 30)
-            print_with_color("Using text search", Colors.CBLUE)
-            search_results = await record_collection.text_search("python", options)
-            if search_results.total_count == 0:
-                print("\nNothing found...\n")
-            else:
-                [print_record(result) async for result in search_results.results]
+            search_text = input("Enter search text for text search: ")
+            if search_text.lower() == "exit":
+                await cleanup(record_collection)
+                return
+            if not search_text or search_text.lower() != "skip":
+                print_with_color(f"Searching for '{search_text}', with filter 'tag == general'", Colors.CBLUE)
+                print("-" * 30)
+                print_with_color("Using text search", Colors.CBLUE)
+                search_results = await record_collection.text_search(search_text, options)
+                if search_results.total_count == 0:
+                    print("\nNothing found...\n")
+                else:
+                    [print_record(result) async for result in search_results.results]
         if isinstance(record_collection, VectorizedSearchMixin):
-            print("-" * 30)
-            print_with_color(
-                f"Using vectorized search, for {distance_function.value}, "
-                f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better"  # noqa: E501
-                f"",
-                Colors.CBLUE,
-            )
-            search_results = await record_collection.vectorized_search(
-                vector=(await embedder.generate_raw_embeddings(["python"]))[0],
-                options=options,
-            )
-            if search_results.total_count == 0:
-                print("\nNothing found...\n")
-            else:
-                [print_record(result) async for result in search_results.results]
+            search_text = input("Enter search text for vector search: ")
+            if search_text.lower() == "exit":
+                await cleanup(record_collection)
+                return
+            if not search_text or search_text.lower() != "skip":
+                vector = (await embedder.generate_raw_embeddings([search_text]))[0]
+                print_with_color(f"Vector of search text (first five): {vector[:5]}", Colors.CBLUE)
+                print("-" * 30)
+                print_with_color(
+                    f"Using vectorized search, for {distance_function.value}, "
+                    f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better"  # noqa: E501
+                    f"",
+                    Colors.CBLUE,
+                )
+                search_results = await record_collection.vectorized_search(
+                    vector=vector,
+                    options=options,
+                )
+                if search_results.total_count == 0:
+                    print("\nNothing found...\n")
+                else:
+                    [print_record(result) async for result in search_results.results]
         if isinstance(record_collection, VectorizableTextSearchMixin):
-            print("-" * 30)
-            print_with_color(
-                f"Using vectorized search, for {distance_function.value}, "
-                f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
-                Colors.CBLUE,
-            )
-            search_results = await record_collection.vectorizable_text_search("python", options)
-            if search_results.total_count == 0:
-                print("\nNothing found...\n")
-            else:
-                [print_record(result) async for result in search_results.results]
-        print("-" * 30)
-        print_with_color("Deleting collection!", Colors.CBLUE)
-        await record_collection.delete_collection()
-        print_with_color("Done!", Colors.CGREY)
+            search_text = input("Enter search text for vectorizable text search: ")
+            if search_text.lower() == "exit":
+                await cleanup(record_collection)
+                return
+            if not search_text or search_text.lower() != "skip":
+                print("-" * 30)
+                print_with_color(
+                    f"Using vectorizable text search, for {distance_function.value}, "
+                    f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
+                    Colors.CBLUE,
+                )
+                try:
+                    search_results = await record_collection.vectorizable_text_search(search_text, options)
+                    if search_results.total_count == 0:
+                        print("\nNothing found...\n")
+                    else:
+                        [print_record(result) async for result in search_results.results]
+                except Exception as e:
+                    print(f"Error: {e}")
+        await cleanup(record_collection)
 
 
 if __name__ == "__main__":

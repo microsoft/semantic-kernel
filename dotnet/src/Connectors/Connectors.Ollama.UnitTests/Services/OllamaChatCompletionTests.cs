@@ -205,7 +205,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
                                 """;
 
         var executionSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(jsonSettings);
+#pragma warning disable CS0612 // OllamaPromptExecutionSettings is obsolete
         var ollamaExecutionSettings = OllamaPromptExecutionSettings.FromExecutionSettings(executionSettings);
+#pragma warning restore CS0612
 
         // Act
         await sut.GetStreamingChatMessageContentsAsync(chat, ollamaExecutionSettings).GetAsyncEnumerator().MoveNextAsync();
@@ -302,8 +304,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(requestPayload.Tools);
         Assert.NotEmpty(requestPayload.Tools);
         Assert.Equal(1, requestPayload.Tools?.Count());
-        var firstTool = requestPayload.Tools?.First()!;
-        Assert.Equal("TestPlugin-TestFunction", firstTool.Function!.Name);
+
+        var firstTool = JsonSerializer.Deserialize<Tool>((requestPayload.Tools?.Cast<JsonElement>().First()!).Value);
+        Assert.Equal("TestPlugin_TestFunction", firstTool!.Function!.Name);
         Assert.Single(firstTool.Function!.Parameters!.Properties!);
         Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
         Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
@@ -378,8 +381,9 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(requestPayload.Tools);
         Assert.NotEmpty(requestPayload.Tools);
         Assert.Equal(1, requestPayload.Tools?.Count());
-        var firstTool = requestPayload.Tools?.First()!;
-        Assert.Equal("TestPlugin-TestFunction", firstTool.Function!.Name);
+
+        var firstTool = JsonSerializer.Deserialize<Tool>((requestPayload.Tools?.Cast<JsonElement>().First()!).Value);
+        Assert.Equal("TestPlugin_TestFunction", firstTool!.Function!.Name);
         Assert.Single(firstTool.Function!.Parameters!.Properties!);
         Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
         Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
@@ -572,31 +576,31 @@ public sealed class OllamaChatCompletionTests : IDisposable
 
         var getCurrentWeatherFunctionCall = result.Items[0] as FunctionCallContent;
         Assert.NotNull(getCurrentWeatherFunctionCall);
-        Assert.Equal("MyPlugin-GetCurrentWeather", getCurrentWeatherFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin_GetCurrentWeather", getCurrentWeatherFunctionCall.FunctionName);
         Assert.NotNull(getCurrentWeatherFunctionCall.Id);
         Assert.Equal("Boston, MA", getCurrentWeatherFunctionCall.Arguments?["location"]?.ToString());
 
         var functionWithExceptionFunctionCall = result.Items[1] as FunctionCallContent;
         Assert.NotNull(functionWithExceptionFunctionCall);
-        Assert.Equal("MyPlugin-FunctionWithException", functionWithExceptionFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin_FunctionWithException", functionWithExceptionFunctionCall.FunctionName);
         Assert.NotNull(functionWithExceptionFunctionCall.Id);
         Assert.Equal("value", functionWithExceptionFunctionCall.Arguments?["argument"]?.ToString());
 
         var nonExistentFunctionCall = result.Items[2] as FunctionCallContent;
         Assert.NotNull(nonExistentFunctionCall);
-        Assert.Equal("MyPlugin-NonExistentFunction", nonExistentFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin_NonExistentFunction", nonExistentFunctionCall.FunctionName);
         Assert.NotNull(nonExistentFunctionCall.Id);
         Assert.Equal("value", nonExistentFunctionCall.Arguments?["argument"]?.ToString());
 
         var nullArgumentsFunctionCall = result.Items[3] as FunctionCallContent;
         Assert.NotNull(nullArgumentsFunctionCall);
-        Assert.Equal("MyPlugin-InvalidArguments", nullArgumentsFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin_InvalidArguments", nullArgumentsFunctionCall.FunctionName);
         Assert.NotNull(nullArgumentsFunctionCall.Id);
         Assert.Null(nullArgumentsFunctionCall.Arguments);
 
         var intArgumentsFunctionCall = result.Items[4] as FunctionCallContent;
         Assert.NotNull(intArgumentsFunctionCall);
-        Assert.Equal("MyPlugin-IntArguments", intArgumentsFunctionCall.FunctionName);
+        Assert.Equal("MyPlugin_IntArguments", intArgumentsFunctionCall.FunctionName);
         Assert.NotNull(intArgumentsFunctionCall.Id);
         Assert.Equal("36", intArgumentsFunctionCall.Arguments?["age"]?.ToString());
     }

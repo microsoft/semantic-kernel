@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
@@ -51,7 +52,8 @@ public static class KernelFunctionPrompty
     {
         Verify.NotNullOrWhiteSpace(promptyTemplate);
 
-        PromptyCore.Prompty prompty = PromptyCore.Prompty.Load(promptyTemplate, []);
+        Dictionary<string, object> globalConfig = [];
+        PromptyCore.Prompty prompty = PromptyCore.Prompty.Load(promptyTemplate, globalConfig);
 
         var promptTemplateConfig = new PromptTemplateConfig
         {

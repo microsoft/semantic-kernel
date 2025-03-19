@@ -54,20 +54,24 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
-        var currentSize = messageList.Count;
-
         var completion = await this._chatClient.GetResponseAsync(
-            messageList,
+            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
 
-        chatHistory.AddRange(
-            messageList
-                .Skip(currentSize)
-                .Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+        if (completion.Messages.Count > 0)
+        {
+            // Add all but the last message into the chat history.
+            for (int i = 0; i < completion.Messages.Count - 1; i++)
+            {
+                chatHistory.Add(ChatCompletionServiceExtensions.ToChatMessageContent(completion.Messages[i], completion));
+            }
 
-        return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
+            // Return the last message as the result.
+            return [ChatCompletionServiceExtensions.ToChatMessageContent(completion.Messages[completion.Messages.Count - 1], completion)];
+        }
+
+        return [];
     }
 
     /// <inheritdoc/>
@@ -76,13 +80,23 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
+        List<AIContent> fcContents = [];
+        ChatRole? role = null;
+
         await foreach (var update in this._chatClient.GetStreamingResponseAsync(
             ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false))
         {
+            role ??= update.Role;
+
+            fcContents.AddRange(update.Contents.Where(c => c is Microsoft.Extensions.AI.FunctionCallContent or Microsoft.Extensions.AI.FunctionResultContent));
+
             yield return ToStreamingChatMessageContent(update);
         }
+
+        // Add function call content/results to chat history, as other IChatCompletionService streaming implementations do.
+        chatHistory.Add(ChatCompletionServiceExtensions.ToChatMessageContent(new ChatMessage(role ?? ChatRole.Assistant, fcContents)));
     }
 
     /// <summary>Converts a pair of <see cref="PromptExecutionSettings"/> and <see cref="Kernel"/> to a <see cref="ChatOptions"/>.</summary>
@@ -283,7 +297,6 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             null)
         {
             InnerContent = update.RawRepresentation,
-            ChoiceIndex = update.ChoiceIndex,
             Metadata = update.AdditionalProperties,
             ModelId = update.ModelId
         };
