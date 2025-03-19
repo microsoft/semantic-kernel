@@ -23,7 +23,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task TruncatedAgentReductionAsync(bool useChatClient)
+    public async Task TruncatedAgentReduction(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent = CreateTruncatingAgent(10, 10, useChatClient, out var chatClient);
@@ -40,7 +40,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task SummarizedAgentReductionAsync(bool useChatClient)
+    public async Task SummarizedAgentReduction(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent = CreateSummarizingAgent(10, 10, useChatClient, out var chatClient);
@@ -57,7 +57,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task TruncatedChatReductionAsync(bool useChatClient)
+    public async Task TruncatedChatReduction(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent = CreateTruncatingAgent(10, 10, useChatClient, out var chatClient);
@@ -74,7 +74,7 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task SummarizedChatReductionAsync(bool useChatClient)
+    public async Task SummarizedChatReduction(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent = CreateSummarizingAgent(10, 10, useChatClient, out var chatClient);
