@@ -2,37 +2,37 @@
 
 import asyncio
 import logging
-from collections.abc import AsyncIterable, Iterable, Sequence
+from collections.abc import AsyncIterable
+from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
 from openai.types.responses import ResponseFunctionToolCall
-from openai.types.responses.computer_tool import ComputerTool
-from openai.types.responses.file_search_tool import FileSearchTool
 from openai.types.responses.response import Response
+from openai.types.responses.response_content_part_added_event import ResponseContentPartAddedEvent
+from openai.types.responses.response_created_event import ResponseCreatedEvent
+from openai.types.responses.response_error_event import ResponseErrorEvent
 from openai.types.responses.response_function_call_arguments_delta_event import ResponseFunctionCallArgumentsDeltaEvent
+from openai.types.responses.response_output_item import ResponseOutputItem
+from openai.types.responses.response_output_item_added_event import ResponseOutputItemAddedEvent
+from openai.types.responses.response_output_item_done_event import ResponseOutputItemDoneEvent
 from openai.types.responses.response_output_message import ResponseOutputMessage
 from openai.types.responses.response_output_text import ResponseOutputText
-from openai.types.responses.web_search_tool import WebSearchTool
+from openai.types.responses.response_stream_event import ResponseStreamEvent
+from openai.types.responses.response_text_delta_event import ResponseTextDeltaEvent
 
-from semantic_kernel.agents.open_ai.assistant_content_generation import (
-    generate_final_streaming_message_content,
-    generate_function_call_streaming_content,
-    generate_streaming_code_interpreter_content,
-    generate_streaming_function_content,
-    generate_streaming_message_content,
-    get_function_call_contents,
-)
-from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_response_function_call_format,
     merge_function_results,
-    merge_streaming_function_results,
 )
 from semantic_kernel.contents.annotation_content import AnnotationContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.function_result_content import FunctionResultContent
+from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.response_function_result_content import ResponseFunctionResultContent
 from semantic_kernel.contents.response_message_content import ResponseMessageContent
+from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.status import Status
@@ -51,7 +51,6 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="ResponseAgentThreadActions")
@@ -66,11 +65,6 @@ class ResponseAgentThreadActions:
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
     error_message_states: ClassVar[list[str]] = ["failed", "incomplete"]
 
-    tool_metadata: ClassVar[dict[str, Sequence[Any]]] = {
-        "file_search": [{"type": "file_search"}],
-        "web_search": [{"type": "web_search_preview"}],
-    }
-
     # region Invocation Methods
 
     @classmethod
@@ -81,9 +75,15 @@ class ResponseAgentThreadActions:
         *,
         # Run-level parameters:
         arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
         function_choice_behavior: "FunctionChoiceBehavior | None" = None,
+        include: list[
+            Literal[
+                "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
+            ]
+        ]
+        | None = None,
         instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
         max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
@@ -104,6 +104,7 @@ class ResponseAgentThreadActions:
             arguments: The kernel arguments.
             kernel: The kernel.
             function_choice_behavior: The function choice behavior.
+            include: Additional output data to include in the response.
             instructions_override: The instructions override.
             max_output_tokens: The maximum completion tokens.
             metadata: The metadata.
@@ -134,6 +135,7 @@ class ResponseAgentThreadActions:
         # form response options
         response_options = cls._generate_options(
             agent=agent,
+            include=include,
             max_output_tokens=max_output_tokens,
             metadata=metadata,
             model=model,
@@ -148,13 +150,20 @@ class ResponseAgentThreadActions:
         response_options = {k: v for k, v in response_options.items() if v is not None}
 
         for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
-            response: Response = await agent.client.responses.create(
-                input=cls._prepare_chat_history_for_request(chat_history),
-                instructions=merged_instructions or agent.instructions,
-                tools=tools,  # type: ignore
-                **response_options,
+            response: Response = await cls._get_response(
+                agent=agent,
+                chat_history=chat_history,
+                merged_instructions=merged_instructions,
+                tools=tools,
+                response_options=response_options,
             )
-            assert response is not None  # nosec
+            # response: Response = await agent.client.responses.create(
+            #     input=cls._prepare_chat_history_for_request(chat_history),
+            #     instructions=merged_instructions or agent.instructions,
+            #     tools=tools,  # type: ignore
+            #     **response_options,
+            # )
+            # assert response is not None  # nosec
 
             while response.status != "completed":
                 # handle a timeout here...
@@ -208,8 +217,35 @@ class ResponseAgentThreadActions:
         else:
             pass
             # Do a final call, without function calling when the max has been reached.
-            # self._reset_function_choice_settings(settings)
-            # return await self._inner_get_chat_message_contents(chat_history, settings)
+            function_choice_behavior = FunctionChoiceBehavior.NoneInvoke()
+            response: Response = await cls._get_response(
+                agent=agent,
+                chat_history=chat_history,
+                merged_instructions=merged_instructions,
+                tools=tools,
+                response_options=response_options,
+            )
+            yield True, cls._create_response_message_content(agent, response)
+
+    @classmethod
+    async def _get_response(
+        cls: type[_T],
+        agent: "OpenAIResponseAgent",
+        chat_history: "ChatHistory",
+        merged_instructions: str | None = None,
+        tools: Any | None = None,
+        response_options: dict | None = None,
+        stream: bool = False,
+    ) -> None:
+        response: Response = await agent.client.responses.create(
+            input=cls._prepare_chat_history_for_request(chat_history),
+            instructions=merged_instructions or agent.instructions,
+            tools=tools,  # type: ignore
+            stream=stream,
+            **response_options,
+        )
+        assert response is not None  # nosec
+        return response
 
     @classmethod
     async def invoke_stream(
@@ -217,11 +253,17 @@ class ResponseAgentThreadActions:
         agent: "OpenAIResponseAgent",
         chat_history: "ChatHistory",
         *,
-        arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
         # Run-level parameters:
+        arguments: KernelArguments | None = None,
         function_choice_behavior: "FunctionChoiceBehavior | None" = None,
+        include: list[
+            Literal[
+                "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
+            ]
+        ]
+        | None = None,
         instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
         max_output_tokens: int | None = None,
         messages: list["ChatMessageContent"] | None = None,
         metadata: dict[str, str] | None = None,
@@ -234,15 +276,17 @@ class ResponseAgentThreadActions:
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingChatMessageContent"]:
+    ) -> AsyncIterable["StreamingResponseMessageContent"]:
         """Invoke the assistant.
 
         Args:
             agent: The assistant agent.
+            chat_history: The Chat History to use for input.
             thread_id: The thread ID.
             arguments: The kernel arguments.
             kernel: The kernel.
             function_choice_behavior: The function choice behavior.
+            include: Additional output data to include in the response.
             instructions_override: The instructions override.
             max_output_tokens: The maximum completion tokens.
             messages: The messages to include in the request.
@@ -263,7 +307,7 @@ class ResponseAgentThreadActions:
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
 
-        tools = cls._get_tools(agent=agent, kernel=kernel)  # type: ignore
+        tools = cls._get_tools(agent=agent, kernel=kernel, function_choice_behavior=function_choice_behavior)  # type: ignore
 
         base_instructions = await agent.format_instructions(kernel=kernel, arguments=arguments)
 
@@ -274,6 +318,7 @@ class ResponseAgentThreadActions:
         # form response options
         response_options = cls._generate_options(
             agent=agent,
+            include=include,
             max_output_tokens=max_output_tokens,
             metadata=metadata,
             model=model,
@@ -287,131 +332,190 @@ class ResponseAgentThreadActions:
 
         response_options = {k: v for k, v in response_options.items() if v is not None}
 
-        stream = await agent.client.responses.create(
-            input=cls._prepare_chat_history_for_request(chat_history),
-            instructions=merged_instructions or agent.instructions,
-            tools=tools,  # type: ignore
-            stream=True,
-            **response_options,
-        )
+        for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
+            response: Response = await cls._get_response(
+                agent=agent,
+                chat_history=chat_history,
+                merged_instructions=merged_instructions,
+                tools=tools,
+                response_options=response_options,
+                stream=True,
+            )
 
-        function_steps: dict[str, "FunctionCallContent"] = {}
-        active_messages: dict[str, RunStep] = {}
+            all_messages: list[StreamingResponseMessageContent] = []
+            function_call_returned = False
 
-        while True:
-            async with stream as response_stream:
+            async with response as response_stream:
                 async for event in response_stream:
-                    if event.event == "thread.run.created":
-                        run = event.data
-                        logger.info(f"Assistant run created with ID: {run.id}")
-                    elif event.event == "thread.run.in_progress":
-                        run = event.data
-                        logger.info(f"Assistant run in progress with ID: {run.id}")
-                    elif event.event == "thread.message.delta":
-                        content = generate_streaming_message_content(agent.name, event.data)
-                        yield content
-                    elif event.event == "thread.run.step.completed":
-                        step_completed = cast(RunStep, event.data)
-                        logger.info(f"Run step completed with ID: {event.data.id}")
-                        if isinstance(step_completed.step_details, MessageCreationStepDetails):
-                            message_id = step_completed.step_details.message_creation.message_id
-                            if message_id not in active_messages:
-                                active_messages[message_id] = event.data
-                    elif event.event == "thread.run.step.delta":
-                        run_step_event: RunStepDeltaEvent = event.data
-                        details = run_step_event.delta.step_details
-                        if not details:
-                            continue
-                        step_details = event.data.delta.step_details
-                        if isinstance(details, ToolCallDeltaObject) and details.tool_calls:
-                            for tool_call in details.tool_calls:
-                                tool_content = None
-                                if tool_call.type == "function":
-                                    tool_content = generate_streaming_function_content(agent.name, step_details)
-                                elif tool_call.type == "code_interpreter":
-                                    tool_content = generate_streaming_code_interpreter_content(agent.name, step_details)
-                                if tool_content:
-                                    yield tool_content
-                    elif event.event == "thread.run.requires_action":
-                        run = event.data
-                        function_action_result = await cls._handle_streaming_requires_action(
-                            agent.name, kernel, run, function_steps
-                        )
-                        if function_action_result is None:
-                            raise AgentInvokeException(
-                                f"Function call required but no function steps found for agent `{agent.name}` "
-                                f"thread: {thread_id}."
+                    event = cast(ResponseStreamEvent, event)
+                    match event:
+                        case ResponseCreatedEvent():
+                            logger.debug(f"Agent response created with ID: {event.response.id}")
+                        case ResponseOutputItemAddedEvent():
+                            function_calls = cls._get_tool_calls_from_output([event.item])
+                            if function_calls:
+                                function_call_returned = True
+                            msg = cls._build_streaming_msg(
+                                agent=agent,
+                                metadata=metadata,
+                                event=event,
+                                items=function_calls,
+                                choice_index=request_index,
                             )
-                        if function_action_result.function_result_streaming_content:
-                            # Yield the function result content to the caller
-                            yield function_action_result.function_result_streaming_content
+                            all_messages.append(msg)
+                        case ResponseFunctionCallArgumentsDeltaEvent():
+                            function_call = FunctionCallContent(
+                                id=event.item_id,
+                                index=getattr(event, "index", None),
+                                arguments=event.delta,
+                            )
+                            msg = cls._build_streaming_msg(
+                                agent=agent,
+                                metadata=metadata,
+                                event=event,
+                                items=[function_call],
+                                choice_index=request_index,
+                            )
+                            all_messages.append(msg)
+                        case ResponseTextDeltaEvent():
+                            text_content = StreamingTextContent(
+                                text=event.delta,
+                                choice_index=request_index,
+                            )
+                            msg = cls._build_streaming_msg(
+                                agent=agent,
+                                metadata=metadata,
+                                event=event,
+                                items=[text_content],
+                                choice_index=request_index,
+                            )
+                            yield msg
+                        case ResponseOutputItemDoneEvent():
+                            msg = cls._create_output_item_done(agent, event.item)
                             if messages is not None:
-                                # Add the function result content to the messages list, if it exists
-                                messages.append(function_action_result.function_result_streaming_content)
-                        if function_action_result.function_call_streaming_content:
-                            if messages is not None:
-                                messages.append(function_action_result.function_call_streaming_content)
-                            stream = agent.client.beta.threads.runs.submit_tool_outputs_stream(
-                                run_id=run.id,
-                                thread_id=thread_id,
-                                tool_outputs=function_action_result.tool_outputs,  # type: ignore
+                                messages.append(msg)
+                        case ResponseErrorEvent():
+                            logger.error(
+                                f"Error in agent invoke_stream: {event.message} "
+                                f"(code: {event.code if event.code else 'unknown'})"
                             )
                             break
-                    elif event.event == "thread.run.completed":
-                        run = event.data
-                        logger.info(f"Run completed with ID: {run.id}")
-                        if len(active_messages) > 0:
-                            for id in active_messages:
-                                step: RunStep = active_messages[id]
-                                message = await cls._retrieve_message(
-                                    agent=agent,
-                                    thread_id=thread_id,
-                                    message_id=id,  # type: ignore
-                                )
 
-                                if message and message.content:
-                                    content = generate_final_streaming_message_content(agent.name, message, step)
-                                    if messages is not None:
-                                        messages.append(content)
-                        return
-                    elif event.event == "thread.run.failed":
-                        run = event.data  # type: ignore
-                        error_message = ""
-                        if run.last_error and run.last_error.message:
-                            error_message = run.last_error.message
-                        raise AgentInvokeException(
-                            f"Run failed with status: `{run.status}` for agent `{agent.name}` and thread `{thread_id}` "
-                            f"with error: {error_message}"
-                        )
-                else:
-                    # If the inner loop completes without encountering a 'break', exit the outer loop
-                    break
+            if not function_call_returned:
+                return
 
-    @classmethod
-    async def _handle_streaming_requires_action(
-        cls: type[_T],
-        agent_name: str,
-        kernel: "Kernel",
-        run: "Run",
-        function_steps: dict[str, "FunctionCallContent"],
-        **kwargs: Any,
-    ) -> FunctionActionResult | None:
-        """Handle the requires action event for a streaming run."""
-        fccs = get_function_call_contents(run, function_steps)
-        if fccs:
-            function_call_streaming_content = generate_function_call_streaming_content(agent_name=agent_name, fccs=fccs)
-            from semantic_kernel.contents.chat_history import ChatHistory
+            full_completion: StreamingResponseMessageContent = reduce(lambda x, y: x + y, all_messages)
+            function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
+            chat_history.add_message(message=full_completion)
 
-            chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-            _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
-            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
-            tool_outputs = cls._format_tool_outputs(fccs, chat_history)
-            return FunctionActionResult(
-                function_call_streaming_content, function_result_streaming_content, tool_outputs
+            fc_count = len(function_calls)
+            logger.info(f"processing {fc_count} tool calls in parallel.")
+
+            # This function either updates the chat history with the function call results
+            # or returns the context, with terminate set to True in which case the loop will
+            # break and the function calls are returned.
+            results = await asyncio.gather(
+                *[
+                    kernel.invoke_function_call(
+                        function_call=function_call,
+                        chat_history=chat_history,
+                        arguments=kwargs.get("arguments"),
+                        is_streaming=True,
+                        execution_settings=None,
+                        function_call_count=fc_count,
+                        request_index=request_index,
+                        function_behavior=function_choice_behavior,
+                        is_response_api=True,
+                    )
+                    for function_call in function_calls
+                ],
             )
-        return None
+
+            # Merge and yield the function results, regardless of the termination status
+            # Include the ai_model_id so we can later add two streaming messages together
+            # Some settings may not have an ai_model_id, so we need to check for it
+            function_result_messages = cls._merge_streaming_function_results(
+                messages=chat_history.messages[-len(results) :],
+                name=agent.name,
+                ai_model_id=agent.ai_model_id,  # type: ignore
+                function_invoke_attempt=request_index,
+            )
+            if cls._yield_function_result_messages(function_result_messages):
+                yield function_result_messages[0]
+
+            if any(result.terminate for result in results if result is not None):
+                break
 
     # endregion
+
+    # region Helper Methods
+
+    @classmethod
+    def _build_streaming_msg(
+        cls: type[_T],
+        *,
+        agent: "OpenAIResponseAgent",
+        metadata: dict[str, str] | None,
+        event: ResponseStreamEvent,
+        items: list[Any],
+        choice_index: int,
+        role: str = "assistant",
+    ) -> StreamingResponseMessageContent:
+        """Helper to create StreamingResponseMessageContent."""
+        return StreamingResponseMessageContent(
+            inner_content=event,
+            ai_model_id=agent.ai_model_id,
+            metadata=metadata,
+            role=AuthorRole(role),
+            items=items,
+            choice_index=choice_index,
+            name=agent.name,
+        )
+
+    @classmethod
+    def _yield_function_result_messages(cls: type[_T], function_result_messages: list) -> bool:
+        """Determine if the function result messages should be yielded.
+
+        If there are messages and if the first message has items, then yield the messages.
+        """
+        return len(function_result_messages) > 0 and len(function_result_messages[0].items) > 0
+
+    @classmethod
+    def _merge_streaming_function_results(
+        cls: type[_T],
+        messages: list["ResponseMessageContent | StreamingResponseMessageContent"],
+        name: str,
+        ai_model_id: str | None = None,
+        function_invoke_attempt: int | None = None,
+    ) -> list["StreamingResponseMessageContent"]:
+        """Combine multiple streaming function result content types to one streaming chat message content type.
+
+        This method combines the FunctionResultContent items from separate StreamingChatMessageContent messages,
+        and is used in the event that the `context.terminate = True` condition is met.
+
+        Args:
+            messages: The list of streaming chat message content types.
+            name: The name of the agent.
+            ai_model_id: The AI model ID.
+            function_invoke_attempt: The function invoke attempt.
+
+        Returns:
+            The combined streaming chat message content type.
+        """
+        items: list[Any] = []
+        for message in messages:
+            items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
+
+        return [
+            StreamingResponseMessageContent(
+                role=AuthorRole.TOOL,
+                name=name,
+                items=items,
+                choice_index=0,
+                ai_model_id=ai_model_id,
+                function_invoke_attempt=function_invoke_attempt,
+            )
+        ]
 
     @classmethod
     def _prepare_chat_history_for_request(
@@ -420,42 +524,82 @@ class ResponseAgentThreadActions:
         role_key: str = "role",
         content_key: str = "content",
     ) -> Any:
-        """Prepare the chat history for a request into new Responses format."""
-        # if self.instruction_role == "developer" and message.to_dict(role_key=role_key)[role_key] == "system"
-        result = []
+        """Prepare the chat history for a request.
+
+        We must skip any items of type
+        AnnotationContent, StreamingAnnotationContent, FileReferenceContent,
+        or StreamingFileReferenceContent, and always map the role to either user,
+        assistant, or developer.
+        """
+        response_inputs = []
         for message in chat_history.messages:
-            if isinstance(message, (AnnotationContent, FileReferenceContent)):
+            allowed_items = [
+                i
+                for i in message.items
+                if not isinstance(
+                    i,
+                    (
+                        AnnotationContent,
+                        StreamingAnnotationContent,
+                    ),
+                )
+            ]
+
+            if not allowed_items:
                 continue
-            d = message.to_dict(role_key=role_key, content_key=content_key)
-            r = d.get(role_key)
-            if r == "assistant" and any(isinstance(i, FunctionCallContent) for i in message.items):
-                for item in message.items:
-                    if isinstance(item, FunctionCallContent):
+
+            filtered_msg = ResponseMessageContent(role=message.role, items=allowed_items)
+            original_role = message.role
+            if original_role == AuthorRole.TOOL:
+                original_role = AuthorRole.ASSISTANT
+            contents: list[dict[str, Any]] = []
+
+            for content in filtered_msg.items:
+                match content:
+                    case TextContent() | StreamingTextContent():
+                        final_text = content.text
+                        if not isinstance(final_text, str):
+                            if isinstance(final_text, (list, tuple)):
+                                final_text = " ".join(map(str, final_text))
+                            else:
+                                final_text = str(final_text)
+                        text_type = "input_text" if original_role == AuthorRole.USER else "output_text"
+                        contents.append({"type": text_type, "text": final_text})
+                        response_inputs.append({"role": original_role, "content": contents})
+                    case ImageContent():
+                        image_url = ""
+                        if content.data_uri:
+                            image_url = content.data_uri
+                        elif content.uri:
+                            image_url = str(content.uri)
+
+                        if not image_url:
+                            ValueError("ImageContent must have either a data_uri or uri set to be used in the request.")
+
+                        contents.append({"type": "input_image", "image_url": image_url})
+                        response_inputs.append({"role": original_role, "content": contents})
+                    case FunctionCallContent():
                         fc_dict = {
                             "type": "function_call",
-                            "id": item.id,
-                            "call_id": item.call_id,
-                            "name": item.name,
-                            "arguments": item.arguments,
+                            "id": content.id,
+                            "call_id": content.call_id,
+                            "name": content.name,
+                            "arguments": content.arguments,
                         }
-                        result.append(fc_dict)
-            elif r == "tool" and any(isinstance(i, ResponseFunctionResultContent) for i in message.items):
-                for item in message.items:
-                    if isinstance(item, ResponseFunctionResultContent):
-                        fco_dict = {
+                        response_inputs.append(fc_dict)
+                    case ResponseFunctionResultContent():
+                        rfrc_dict = {
                             "type": "function_call_output",
-                            "output": str(item.result),
-                            "call_id": item.id or "",
+                            "output": str(content.result),
+                            "call_id": content.id or "",
                         }
-                        result.append(fco_dict)
-            else:
-                d.pop("tool_calls", None)
-                result.append(d)
-        return result
+                        response_inputs.append(rfrc_dict)
+
+        return response_inputs
 
     @classmethod
     def _get_tool_calls_from_output(
-        cls: type[_T], output: ResponseFunctionToolCall | ResponseFunctionCallArgumentsDeltaEvent
+        cls: type[_T], output: list[ResponseFunctionToolCall | ResponseFunctionCallArgumentsDeltaEvent]
     ) -> list[FunctionCallContent]:
         """Get tool calls from a response output."""
         function_calls: list[FunctionCallContent] = []
@@ -491,15 +635,30 @@ class ResponseAgentThreadActions:
     ) -> "ResponseMessageContent":
         """Create a chat message content object from a choice."""
         metadata = cls._get_metadata_from_response(response)
-
-        # Collect all items (tool calls, text content, annotations) into a single list
-        # items = []
-        # for output in response.output:
-        #    items.extend(cls._collect_items_from_output(output))
         items = cls._collect_items_from_output(response.output)
+        role_str = response.output[0].role if (response.output and hasattr(response.output[0], "role")) else "assistant"
+        return ResponseMessageContent(
+            inner_content=response,
+            ai_model_id=agent.ai_model_id,
+            metadata=metadata,
+            role=AuthorRole(role_str),
+            items=items,
+            status=Status(response.status),
+        )
+
+    @classmethod
+    def _create_output_item_done(
+        cls: type[_T], agent: "OpenAIResponseAgent", response: ResponseOutputItem
+    ) -> "ResponseMessageContent":
+        """Create a chat message content object from a choice."""
+        metadata = {}
+        items = []
+        match response:
+            case ResponseOutputMessage():
+                items.extend(cls._collect_items_from_output([response]))
 
         # Determine role (if none is found, default to 'assistant')
-        role_str = response.output[0].role if (response.output and hasattr(response.output[0], "role")) else "assistant"
+        role_str = response.role if (response and hasattr(response, "role")) else "assistant"
 
         return ResponseMessageContent(
             inner_content=response,
@@ -508,6 +667,33 @@ class ResponseAgentThreadActions:
             role=AuthorRole(role_str),
             items=items,
             status=Status(response.status),
+        )
+
+    @classmethod
+    def _create_streaming_response_message_content(
+        cls: type[_T],
+        agent: "OpenAIResponseAgent",
+        response_content_part: ResponseContentPartAddedEvent,
+    ) -> "StreamingResponseMessageContent":
+        """Create a streaming chat message content object from a choice."""
+        # metadata = cls._get_metadata_from_response(response)
+        metadata = {}
+        from semantic_kernel.contents.streaming_response_message_content import (
+            StreamingResponseMessageContent,
+        )
+
+        items = []
+        if isinstance(response_content_part.part, ResponseOutputText):
+            items.extend(cls._collect_text_and_annotations([response_content_part.part]))
+        # TODO handle refusal
+        return StreamingResponseMessageContent(
+            inner_content=response_content_part.part,
+            name=agent.name,
+            ai_model_id=agent.ai_model_id,
+            metadata=metadata,
+            role=AuthorRole("assistant"),
+            items=items,
+            choice_index=0,
         )
 
     @classmethod
@@ -550,8 +736,6 @@ class ResponseAgentThreadActions:
         cls: type[_T], fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
     ) -> list[dict[str, str]]:
         """Format the tool outputs for submission."""
-        from semantic_kernel.contents.function_result_content import FunctionResultContent
-
         tool_call_lookup = {
             tool_call.id: tool_call
             for message in chat_history.messages
@@ -608,19 +792,6 @@ class ResponseAgentThreadActions:
         }
 
     @classmethod
-    def _get_metadata(cls: type[_T], message: "ChatMessageContent") -> dict[str, str]:
-        """Get the metadata for an agent message."""
-        return {k: str(v) if v is not None else "" for k, v in (message.metadata or {}).items()}
-
-    @classmethod
-    def _get_tool_definition(cls: type[_T], tools: list[Any]) -> Iterable[Any]:
-        if not tools:
-            return
-        for tool in tools:
-            if tool_definition := cls.tool_metadata.get(tool):
-                yield from tool_definition
-
-    @classmethod
     def _get_tools(
         cls: type[_T],
         agent: "OpenAIResponseAgent",
@@ -634,13 +805,8 @@ class ResponseAgentThreadActions:
         """
         tools: list[Any] = []
 
-        for tool in agent.tools:
-            if isinstance(tool, FileSearchTool):
-                tools.append({"type": "file_search"})
-            elif isinstance(tool, WebSearchTool):
-                tools.append({"type": "web_search_preview"})
-            elif isinstance(tool, ComputerTool):
-                tools.append({"type": "computer_use_preview"})  # TODO handle this case
+        if agent.tools:
+            tools.extend(agent.tools)
 
         # TODO(evmattso): make sure to respect filters on FCB
         if kernel.plugins:
@@ -648,3 +814,5 @@ class ResponseAgentThreadActions:
             tools.extend([kernel_function_metadata_to_response_function_call_format(f) for f in funcs])
 
         return tools
+
+    # endregion

@@ -14,12 +14,11 @@ else:
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
-from openai.types.beta.file_search_tool_param import FileSearchToolParam
-from openai.types.responses.file_search_tool_param import (
-    FileSearchToolParam,
-)
+from openai.types.responses.file_search_tool_param import FileSearchToolParam
 from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
+from openai.types.shared_params.comparison_filter import ComparisonFilter
+from openai.types.shared_params.compound_filter import CompoundFilter
 from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
@@ -52,11 +51,10 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semanti
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
-    from openai.types.beta.assistant_tool_param import AssistantToolParam
     from openai.types.responses.response_text_config_param import ResponseTextConfigParam
 
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -176,6 +174,7 @@ class OpenAIResponseAgent(Agent):
     function_choice_behavior: FunctionChoiceBehavior | None = Field(
         default_factory=lambda: FunctionChoiceBehavior.Auto()
     )
+    instruction_role: str = Field(default="developer")
     metadata: dict[str, str] | None = Field(default_factory=dict)
     temperature: float | None = Field(default=None)
     top_p: float | None = Field(default=None)
@@ -194,6 +193,7 @@ class OpenAIResponseAgent(Agent):
         description: str | None = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
         id: str | None = None,
+        instruction_role: str | None = None,
         instructions: str | None = None,
         kernel: "Kernel | None" = None,
         metadata: dict[str, str] | None = None,
@@ -209,12 +209,14 @@ class OpenAIResponseAgent(Agent):
         """Initialize an OpenAI Response Agent.
 
         Args:
+            ai_model_id: The AI model ID.
             client: The OpenAI client.
             arguments: The arguments to pass to the function.
             description: The description of the agent.
             function_choice_behavior: The function choice behavior to determine how and which plugins are
                 advertised to the model.
             id: The ID of the agent.
+            instruction_role: The role of the agent, either developer or system.
             instructions: The instructions for the agent.
             kernel: The Kernel instance.
             name: The name of the agent.
@@ -222,6 +224,9 @@ class OpenAIResponseAgent(Agent):
                 the plugins take precedence and are added to the kernel by default.
             polling_options: The polling options.
             prompt_template_config: The prompt template configuration.
+            temperature: The temperature for the agent.
+            tools: The tools to use with the agent.
+            top_p: The top p value for the agent.
             kwargs: Additional keyword arguments.
         """
         args: dict[str, Any] = {
@@ -241,6 +246,8 @@ class OpenAIResponseAgent(Agent):
             args["instructions"] = instructions
         if kernel is not None:
             args["kernel"] = kernel
+        if instruction_role is not None:
+            args["instruction_role"] = instruction_role
         if instructions and prompt_template_config and instructions != prompt_template_config.template:
             logger.info(
                 f"Both `instructions` ({instructions}) and `prompt_template_config` "
@@ -336,17 +343,57 @@ class OpenAIResponseAgent(Agent):
 
     @staticmethod
     def configure_file_search_tool(
-        vector_store_ids: str | list[str], **kwargs: Any
-    ) -> tuple[list[FileSearchToolParam], ToolResources]:
-        """Generate tool + tool_resources for the file_search."""
+        vector_store_ids: str | list[str],
+        filters: ComparisonFilter | CompoundFilter | None = None,
+        max_num_results: int | None = None,
+        score_threshold: float | None = None,
+        ranker: Literal["auto", "default_2024_11_15"] | None = None,
+    ) -> FileSearchToolParam:
+        """Generate the file search tool param.
+
+        Args:
+            vector_store_ids: Single or list of vector store IDs.
+            filters: A filter to apply based on file attributes.
+                - ComparisonFilter: A single filter.
+                - CompoundFilter: A compound filter.
+            max_num_results: Optional override for maximum results (1 to 50).
+            score_threshold: Floating point threshold between 0 and 1.
+            ranker: The ranker to use ('auto' or 'default_2024_08_21').
+            kwargs: Any extra arguments needed by ToolResourcesFileSearch.
+
+        Returns:
+            A FileSearchToolParam dictionary with any passed-in parameters.
+        """
         if isinstance(vector_store_ids, str):
             vector_store_ids = [vector_store_ids]
 
+        # Base tool definition
         tool: FileSearchToolParam = {
             "type": "file_search",
+            "vector_store_ids": vector_store_ids,
         }
-        resources: ToolResources = {"file_search": ToolResourcesFileSearch(vector_store_ids=vector_store_ids, **kwargs)}  # type: ignore
-        return [tool], resources
+
+        file_search_config = {}
+
+        if filters is not None:
+            file_search_config["filters"] = filters
+
+        # Only set overrides if provided
+        if max_num_results is not None:
+            file_search_config["max_num_results"] = max_num_results
+
+        if score_threshold is not None or ranker is not None:
+            file_search_config["ranking_options"] = {}
+            if score_threshold is not None:
+                file_search_config["ranking_options"]["score_threshold"] = score_threshold
+            if ranker is not None:
+                file_search_config["ranking_options"]["ranker"] = ranker
+
+        # Include file_search in the tool if any config was provided
+        if file_search_config:
+            tool["file_search"] = file_search_config
+
+        return tool
 
     @staticmethod
     def configure_web_search_tool(
@@ -478,19 +525,26 @@ class OpenAIResponseAgent(Agent):
     async def get_response(
         self,
         *,
+        # Run-level parameters:
         chat_history: "ChatHistory",
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
-        # Run-level parameters:
+        include: list[
+            Literal[
+                "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
+            ]
+        ]
+        | None = None,
+        instruction_role: str | None = None,
         instructions_override: str | None = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
-        max_completion_tokens: int | None = None,
+        max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         text: "ResponseTextConfigParam | None" = None,
-        tools: "list[AssistantToolParam] | None" = None,
+        tools: "list[ToolParam] | None" = None,
         temperature: float | None = None,
         top_p: float | None = None,
         truncation: str | None = None,
@@ -502,15 +556,18 @@ class OpenAIResponseAgent(Agent):
             chat_history: The Chat History for the agent.
             arguments: The kernel arguments.
             kernel: The kernel.
+            include: Additional output data to include in the response.
+            instruction_role: The instruction role, either developer or system.
             instructions_override: The instructions override.
+            function_choice_behavior: The function choice behavior.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
-            max_completion_tokens: The maximum completion tokens.
+            max_output_tokens: The maximum completion tokens.
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
-            reasoning_effort: The reasoning effort.
+            reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
             temperature: The temperature.
@@ -519,7 +576,7 @@ class OpenAIResponseAgent(Agent):
             kwargs: Additional keyword arguments.
 
         Returns:
-            ChatMessageContent: The response from the agent.
+            ResponseMessageContent: The response from the agent.
         """
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -530,8 +587,10 @@ class OpenAIResponseAgent(Agent):
         arguments = self._merge_arguments(arguments)
 
         response_level_params = {
+            "include": include,
+            "instruction_role": instruction_role,
             "instructions_override": instructions_override,
-            "max_completion_tokens": max_completion_tokens,
+            "max_output_tokens": max_output_tokens,
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
@@ -567,20 +626,26 @@ class OpenAIResponseAgent(Agent):
     async def invoke(
         self,
         *,
+        # Run-level parameters:
         chat_history: "ChatHistory",
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
-        # Run-level parameters:
         function_choice_behavior: FunctionChoiceBehavior | None = None,
+        include: list[
+            Literal[
+                "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
+            ]
+        ]
+        | None = None,
         instructions_override: str | None = None,
-        max_completion_tokens: int | None = None,
+        max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
         text: "ResponseTextConfigParam | None" = None,
-        tools: "list[AssistantToolParam] | None" = None,
+        tools: "list[ToolParam] | None" = None,
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
@@ -591,16 +656,18 @@ class OpenAIResponseAgent(Agent):
             chat_history: The Chat History for the agent.
             arguments: The kernel arguments.
             kernel: The kernel.
+            include: Additional output data to include in the response.
             instructions_override: The instructions override.
+            function_choice_behavior: The function choice behavior.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
-            max_completion_tokens: The maximum completion tokens.
+            max_output_tokens: The maximum completion tokens.
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
-            model: The model.
+            model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
             reasoning: The reasoning effort.
-            response_format: The response format.
+            text: The response format.
             tools: The tools.
             temperature: The temperature.
             top_p: The top p.
@@ -619,8 +686,9 @@ class OpenAIResponseAgent(Agent):
         arguments = self._merge_arguments(arguments)
 
         response_level_params = {
+            "include": include,
             "instructions_override": instructions_override,
-            "max_completion_tokens": max_completion_tokens,
+            "max_output_tokens": max_output_tokens,
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
@@ -651,14 +719,19 @@ class OpenAIResponseAgent(Agent):
     async def invoke_stream(
         self,
         *,
+        # Run-level parameters:
         chat_history: "ChatHistory",
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
-        # Run-level parameters:
         function_choice_behavior: FunctionChoiceBehavior | None = None,
+        include: list[
+            Literal[
+                "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
+            ]
+        ]
+        | None = None,
         instructions_override: str | None = None,
-        max_completion_tokens: int | None = None,
-        max_prompt_tokens: int | None = None,
+        max_output_tokens: int | None = None,
         messages: list[ChatMessageContent] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
@@ -666,28 +739,30 @@ class OpenAIResponseAgent(Agent):
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
         text: "ResponseTextConfigParam | None" = None,
-        tools: "list[AssistantToolParam] | None" = None,
+        tools: "list[ToolParam] | None" = None,
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingChatMessageContent"]:
+    ) -> AsyncIterable["StreamingResponseMessageContent"]:
         """Invoke the agent.
 
         Args:
-            thread_id: The ID of the thread.
+            chat_history: The Chat History for the agent.
             arguments: The kernel arguments.
             kernel: The kernel.
+            include: Additional output data to include in the response.
             instructions_override: The instructions override.
+            function_choice_behavior: The function choice behavior.
+            include: Additional output data to include in the model response.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
-            max_completion_tokens: The maximum completion tokens.
-            max_prompt_tokens: The maximum prompt tokens.
-            messages: The messages that act as a receiver for completed messages.
+            max_output_tokens: The maximum completion tokens.
+            messages: The messages to aggregate from agent responses.
             metadata: The metadata.
-            model: The model.
+            model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
-            reasoning_effort: The reasoning effort.
-            reasoning: The response format.
+            reasoning: The reasoning effort.
+            text: The response format.
             tools: The tools.
             temperature: The temperature.
             top_p: The top p.
@@ -706,9 +781,9 @@ class OpenAIResponseAgent(Agent):
         arguments = self._merge_arguments(arguments)
 
         response_level_params = {
+            "include": include,
             "instructions_override": instructions_override,
-            "max_completion_tokens": max_completion_tokens,
-            "max_prompt_tokens": max_prompt_tokens,
+            "max_output_tokens": max_output_tokens,
             "metadata": metadata,
             "model": model,
             "parallel_tool_calls": parallel_tool_calls,
