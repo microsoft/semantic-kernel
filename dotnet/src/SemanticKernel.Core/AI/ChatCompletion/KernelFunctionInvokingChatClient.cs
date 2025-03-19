@@ -390,7 +390,7 @@ public sealed partial class KernelFunctionInvokingChatClient : DelegatingChatCli
         else if (lastIterationHadThreadId)
         {
             // In the very rare case where the inner client returned a response with a thread ID but then
-            // returned a subsequent response without one, we want to reconstitue the full history. To do that,
+            // returned a subsequent response without one, we want to reconstitute the full history. To do that,
             // we can populate the history with the original chat messages and then all of the response
             // messages up until this point, which includes the most recent ones.
             augmentedHistory ??= [];

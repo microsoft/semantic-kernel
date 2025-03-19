@@ -10,8 +10,8 @@ using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
-// Original source from
-// https://raw.githubusercontent.com/dotnet/extensions/main/src/Shared/EmptyCollections/EmptyReadOnlyList.cs
+// Slight modified source from
+// https://raw.githubusercontent.com/dotnet/extensions/refs/heads/main/src/Libraries/Microsoft.Extensions.AI/ChatCompletion/FunctionInvocationContext.cs
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
 public sealed class KernelFunctionInvocationContext
