@@ -196,6 +196,6 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
     // The order of records in the received array is not guaranteed
     // to match the order of keys in the requested keys array.
-    private SimpleModel<TKey> GetRecord(SimpleModel<TKey>[] received, TKey key)
+    protected SimpleModel<TKey> GetRecord(SimpleModel<TKey>[] received, TKey key)
         => received.Single(r => r.Id!.Equals(key));
 }
