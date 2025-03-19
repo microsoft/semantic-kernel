@@ -323,6 +323,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         request_index: int | None = None,
         is_streaming: bool = False,
         function_behavior: "FunctionChoiceBehavior | None" = None,
+        is_response_api: bool = False,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
         args_cloned = copy(arguments) if arguments else KernelArguments()
@@ -402,11 +403,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         )
         await stack(invocation_context)
 
-        from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-            OpenAIResponseExecutionSettings,
-        )
-
-        if isinstance(execution_settings, OpenAIResponseExecutionSettings):
+        if is_response_api:
             frc = ResponseFunctionResultContent.from_function_call_content_and_result(
                 function_call_content=function_call,
                 result=invocation_context.function_result,

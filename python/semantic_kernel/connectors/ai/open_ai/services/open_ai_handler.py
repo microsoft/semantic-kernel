@@ -18,7 +18,6 @@ from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
-    OpenAIResponseExecutionSettings,
     OpenAITextToAudioExecutionSettings,
     OpenAITextToImageExecutionSettings,
 )
@@ -62,9 +61,6 @@ class OpenAIHandler(KernelBaseModel, ABC):
         if self.ai_model_type == OpenAIModelTypes.TEXT or self.ai_model_type == OpenAIModelTypes.CHAT:
             assert isinstance(settings, OpenAIPromptExecutionSettings)  # nosec
             return await self._send_completion_request(settings)
-        if self.ai_model_type == OpenAIModelTypes.RESPONSE:
-            assert isinstance(settings, OpenAIResponseExecutionSettings)  # nosec
-            return await self._send_response_request(settings)
         if self.ai_model_type == OpenAIModelTypes.EMBEDDING:
             assert isinstance(settings, OpenAIEmbeddingPromptExecutionSettings)  # nosec
             return await self._send_embedding_request(settings)
@@ -79,19 +75,6 @@ class OpenAIHandler(KernelBaseModel, ABC):
             return await self._send_text_to_audio_request(settings)
 
         raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
-
-    async def _send_response_request(self, settings: OpenAIResponseExecutionSettings) -> Response:
-        """Send a request to the OpenAI response endpoint."""
-        try:
-            settings_dict = settings.prepare_settings_dict()
-            response = await self.client.responses.create(**settings_dict)
-            self.store_response_usage(response)
-            return response
-        except Exception as ex:
-            raise ServiceResponseException(
-                f"{type(self)} service failed to generate response",
-                ex,
-            ) from ex
 
     async def _send_completion_request(
         self,

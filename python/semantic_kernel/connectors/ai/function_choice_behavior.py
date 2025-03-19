@@ -94,18 +94,13 @@ class FunctionChoiceBehavior(KernelBaseModel):
         settings: "PromptExecutionSettings",
     ) -> None:
         """Configure the function choice behavior."""
-        from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-            OpenAIResponseExecutionSettings,
-        )
-
         if not self.enable_kernel_functions:
             return
 
         config = self.get_config(kernel)
 
         if config:
-            is_response = isinstance(settings, OpenAIResponseExecutionSettings)
-            update_settings_callback(config, settings, self.type_, is_response)
+            update_settings_callback(config, settings, self.type_)
 
     def get_config(self, kernel: "Kernel") -> "FunctionCallChoiceConfiguration":
         """Get the function call choice configuration based on the type."""

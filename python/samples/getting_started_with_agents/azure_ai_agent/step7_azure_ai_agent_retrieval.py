@@ -5,6 +5,7 @@ import asyncio
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent
+from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 
 """
 The following sample demonstrates how to use an already existing
@@ -28,14 +29,19 @@ async def main() -> None:
         # 1. Retrieve the agent definition based on the `assistant_id`
         # Replace the "your-assistant-id" with the actual assistant ID
         # you want to use.
-        agent_definition = await client.agents.get_agent(
-            assistant_id="your-assistant-id",
+        agent_definition = await client.agents.create_agent(model="gpt-4o-mini")
+
+        agent_settings = AzureAIAgentSettings(
+            model_config={"protected_namespaces": ("settings_",)},
+            # model_deployment_name=deployment_name  # Using the model name from .env file
+            azure_openai_chat_deployment_name="test",  # Using the model name from .env file
         )
 
         # 2. Create a Semantic Kernel agent for the Azure AI agent
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
+            agent_settings=agent_settings,
         )
 
         # 3. Create a new thread on the Azure AI agent service

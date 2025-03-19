@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import ServiceInvalidExecutionSettingsError
-from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -145,90 +144,6 @@ class OpenAIChatPromptExecutionSettings(OpenAIPromptExecutionSettings):
             )
 
         return values
-
-
-class OpenAIResponseReasoning(KernelBaseModel):
-    """Reasoning settings for the OpenAI response."""
-
-    effort: Annotated[
-        Literal["low", "medium", "high"] | None,
-        Field(
-            description="Adjusts reasoning effort (low/medium/high). Lower values reduce response time and token usage."
-        ),
-    ] = None
-    generate_summary: Annotated[
-        Literal["concise", "detailed"] | None,
-        Field(description="A summary of the reasoning performed by the model."),
-    ] = None
-
-
-class OpenAIResponseExecutionSettings(PromptExecutionSettings):
-    """Specific settings for the text completion endpoint."""
-
-    ai_model_id: Annotated[str | None, Field(serialization_alias="model")] = None
-    include: Annotated[
-        list[
-            Literal[
-                "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
-            ]
-        ]
-        | None,
-        Field(description="The list of fields to include in the response."),
-    ] = None
-    messages: Annotated[
-        list[dict[str, Any]] | None,
-        Field(description="Do not set this manually. It is set by the service.", serialization_alias="input"),
-    ] = None
-    instructions: Annotated[
-        str | None,
-        Field(
-            description=(
-                "Provide the model high-level instructions on how it should behave while generating a "
-                "response, including tone, goals, and examples of correct responses."
-            )
-        ),
-    ] = None
-    max_output_tokens: Annotated[
-        int | None,
-        Field(gt=0, description="An upper bound for the number of tokens that can be generated for a response."),
-    ] = None
-    metadata: dict[str, Any] | None = None
-    parallel_tool_calls: bool | None = None
-    previous_response_id: str | None = None
-    reasoning: OpenAIResponseReasoning | None = None
-    response_format: (
-        dict[Literal["type"], Literal["text", "json_object"]] | dict[str, Any] | type[BaseModel] | type | None
-    ) = None
-    store: bool | None = None
-    stream: bool = False
-    structured_json_response: Annotated[
-        bool, Field(description="Do not set this manually. It is set by the service.")
-    ] = False
-    temperature: Annotated[
-        float | None, Field(ge=0.0, le=2.0, description="Sampling temperature to use, between 0 and 2.")
-    ] = None
-    tools: Annotated[
-        list[dict[str, Any]] | None,
-        Field(
-            description="Do not set this manually. It is set by the service based "
-            "on the function choice configuration.",
-        ),
-    ] = None
-    tool_choice: Annotated[
-        str | None,
-        Field(
-            description="Do not set this manually. It is set by the service based "
-            "on the function choice configuration.",
-        ),
-    ] = None
-    top_p: Annotated[float | None, Field(ge=0.0, le=1.0, description="Nucleus sampling probability threshold.")] = None
-    truncation: Literal["auto", "disabled"] | None = None
-    user: Annotated[
-        str | None,
-        Field(
-            description="A unique identifier representing the end-user, which can help OpenAI to monitor and detect abuse."  # noqa: E501
-        ),
-    ] = None
 
 
 class OpenAIEmbeddingPromptExecutionSettings(PromptExecutionSettings):

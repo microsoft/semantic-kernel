@@ -26,9 +26,6 @@ from typing_extensions import deprecated
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIResponseExecutionSettings,
-)
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -68,7 +65,7 @@ class OpenAIResponseBase(OpenAIHandler, ChatCompletionClientBase):
     # Override from AIServiceClientBase
     @override
     def get_prompt_execution_settings_class(self) -> type["PromptExecutionSettings"]:
-        return OpenAIResponseExecutionSettings
+        pass
 
     # Override from AIServiceClientBase
     @override
@@ -82,9 +79,9 @@ class OpenAIResponseBase(OpenAIHandler, ChatCompletionClientBase):
         chat_history: "ChatHistory",
         settings: "PromptExecutionSettings",
     ) -> list["ResponseMessageContent"]:
-        if not isinstance(settings, OpenAIResponseExecutionSettings):
+        if not isinstance(settings, PromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OpenAIResponseExecutionSettings)  # nosec
+        assert isinstance(settings, PromptExecutionSettings)  # nosec
 
         settings.stream = False
         settings.messages = self._prepare_chat_history_for_request(chat_history)
@@ -103,9 +100,9 @@ class OpenAIResponseBase(OpenAIHandler, ChatCompletionClientBase):
         settings: "PromptExecutionSettings",
         function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
-        if not isinstance(settings, OpenAIResponseExecutionSettings):
+        if not isinstance(settings, PromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
-        assert isinstance(settings, OpenAIResponseExecutionSettings)  # nosec
+        assert isinstance(settings, PromptExecutionSettings)  # nosec
 
         settings.stream = True
         settings.stream_options = {"include_usage": True}
@@ -144,7 +141,7 @@ class OpenAIResponseBase(OpenAIHandler, ChatCompletionClientBase):
 
     @override
     def _verify_function_choice_settings(self, settings: "PromptExecutionSettings") -> None:
-        if not isinstance(settings, OpenAIResponseExecutionSettings):
+        if not isinstance(settings, PromptExecutionSettings):
             raise ServiceInvalidExecutionSettingsError("The settings must be an OpenAIResponseExecutionSettings.")
 
     @override

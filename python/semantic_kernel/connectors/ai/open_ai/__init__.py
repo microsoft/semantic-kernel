@@ -20,7 +20,6 @@ from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_pro
     OpenAIChatPromptExecutionSettings,
     OpenAIEmbeddingPromptExecutionSettings,
     OpenAIPromptExecutionSettings,
-    OpenAIResponseExecutionSettings,
     OpenAITextPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_realtime_execution_settings import (
@@ -49,7 +48,6 @@ from semantic_kernel.connectors.ai.open_ai.services.open_ai_realtime import (
     OpenAIRealtimeWebRTC,
     OpenAIRealtimeWebsocket,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_response import OpenAIResponse
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_completion import OpenAITextCompletion
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_to_audio import OpenAITextToAudio
@@ -90,8 +88,6 @@ __all__ = [
     "OpenAIRealtimeExecutionSettings",
     "OpenAIRealtimeWebRTC",
     "OpenAIRealtimeWebsocket",
-    "OpenAIResponse",
-    "OpenAIResponseExecutionSettings",
     "OpenAISettings",
     "OpenAITextCompletion",
     "OpenAITextEmbedding",
