@@ -85,7 +85,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as BedrockAgent;
 
-        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that are less then the value of 101?");
     }
 
     [Fact]
