@@ -54,7 +54,9 @@ def test_message_converters_system(mock_system_message_content: ChatMessageConte
 
     # Assert
     assert result["role"] == "system", "Expected role to be 'system' on the returned message."
-    assert result["content"] == "This is a system message.", "Expected content to match the system message content."
+    assert result["content"] == mock_system_message_content.content, (
+        "Expected content to match the system message content."
+    )
 
 
 def test_message_converters_user_no_images(mock_chat_message_content: ChatMessageContent) -> None:
@@ -65,7 +67,7 @@ def test_message_converters_user_no_images(mock_chat_message_content: ChatMessag
 
     # Assert
     assert result["role"] == "user", "Expected role to be 'user' on the returned message."
-    assert result["content"] == "Hello, I am a user message.", "Expected content to match the user message content."
+    assert result["content"] == mock_chat_message_content.content, "Expected content to match the user message content."
     # Ensure that no 'images' field is added
     assert "images" not in result, "No images should be present if no ImageContent is added."
 
@@ -83,7 +85,7 @@ def test_message_converters_user_with_images() -> None:
 
     # Assert
     assert result["role"] == "user"
-    assert result["content"] == "User with images"
+    assert result["content"] == content.content
     assert "images" in result, "Images field expected when ImageContent is present."
     assert len(result["images"]) == 2, "Two images should be in the 'images' field."
     assert result["images"] == [b"some_base64_data", b"other_base64_data"], (
@@ -115,7 +117,7 @@ def test_message_converters_assistant_basic(mock_assistant_message_content: Chat
 
     # Assert
     assert result["role"] == "assistant", "Assistant role expected."
-    assert result["content"] == "This is an assistant message.", "Content mismatch for assistant message."
+    assert result["content"] == mock_assistant_message_content.content
     assert "images" not in result, "No images included, so should not have an 'images' field."
     assert "tool_calls" not in result, "No FunctionCallContent, so 'tool_calls' field shouldn't be present."
 
@@ -132,26 +134,9 @@ def test_message_converters_assistant_with_image() -> None:
 
     # Assert
     assert result["role"] == "assistant"
-    assert result["content"] == "Assistant image message"
+    assert result["content"] == content.content
     assert "images" in result, "Images should be included for assistant messages with ImageContent."
     assert result["images"] == [b"assistant_base64_data"], "Expected matching base64 data in images."
-
-
-# TODO check: this test should potentially raise?
-#             the condition maybe should not nit image_item.data instead of image_item.data is None
-# def test_message_converters_assistant_with_image_missing_data() -> None:
-#     """Test assistant message image with no data should raise ValueError."""
-#     # Arrange
-#     bad_image = ImageContent(data=None)
-#     content = ChatMessageContent(role=AuthorRole.ASSISTANT, items=[bad_image])
-
-#     converter = MESSAGE_CONVERTERS[AuthorRole.ASSISTANT]
-
-#     # Act / Assert
-#     with pytest.raises(ValueError) as exc_info:
-#         converter(content)
-
-#     assert "Image must be encoded as base64." in str(exc_info.value), "Expected ValueError due to missing image data."
 
 
 def test_message_converters_assistant_with_tool_calls() -> None:
@@ -170,7 +155,7 @@ def test_message_converters_assistant_with_tool_calls() -> None:
 
     # Assert
     assert result["role"] == "assistant"
-    assert result["content"] == "Assistant with tools"
+    assert result["content"] == content.content
     assert "tool_calls" in result, "tool_calls field should be present for assistant messages with FunctionCallContent."
     assert len(result["tool_calls"]) == 2, "Expected two tool calls in the result."
     assert result["tool_calls"][0]["function"]["name"] == "foo", "First tool call function name mismatched."
@@ -194,7 +179,7 @@ def test_message_converters_tool_with_result() -> None:
     # Assert
     assert result["role"] == "tool", "Expected role to be 'tool' for a tool message."
     # The code takes the first FunctionResultContent's result as the content
-    assert result["content"] == "some result", "Expected content to match the function result."
+    assert result["content"] == fr_content.result, "Expected content to match the function result."
 
 
 def test_message_converters_tool_missing_function_result_content(mock_tool_message_content: ChatMessageContent) -> None:
