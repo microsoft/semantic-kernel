@@ -304,8 +304,14 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
         if (this.Logger.IsEnabled(LogLevel.Trace))
         {
+            // JsonSerializer can't serialize Type. Get schema JsonElement
+            if (geminiExecutionSettings.ResponseSchema is Type)
+            {
+                geminiExecutionSettings.ResponseSchema = GeminiRequest.GetResponseSchemaConfig(geminiExecutionSettings.ResponseSchema);
+            }
+
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(chatHistory, JsonOptionsCache.ChatHistory),
                 JsonSerializer.Serialize(geminiExecutionSettings));
         }
 

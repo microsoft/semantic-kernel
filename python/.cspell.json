@@ -36,6 +36,7 @@
         "dotenv",
         "endregion",
         "entra",
+        "faiss",
         "genai",
         "generativeai",
         "hnsw",

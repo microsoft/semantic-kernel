@@ -8,10 +8,12 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Microsoft.SemanticKernel.Http;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini.Clients;
@@ -423,8 +425,12 @@ public sealed class GeminiChatGenerationTests : IDisposable
     [Fact]
     public async Task ItCreatesPostRequestWithResponseSchemaPropertyAsync()
     {
+        // Get a mock logger that will return true for IsEnabled(LogLevel.Trace)
+        var mockLogger = new Mock<ILogger<GeminiChatGenerationTests>>();
+        mockLogger.Setup(x => x.IsEnabled(LogLevel.Trace)).Returns(true);
+
         // Arrange
-        var client = this.CreateChatCompletionClient();
+        var client = this.CreateChatCompletionClient(logger: mockLogger.Object);
         var chatHistory = CreateSampleChatHistory();
         var settings = new GeminiPromptExecutionSettings { ResponseMimeType = "application/json", ResponseSchema = typeof(List<int>) };
 
@@ -504,7 +510,8 @@ public sealed class GeminiChatGenerationTests : IDisposable
     private GeminiChatCompletionClient CreateChatCompletionClient(
         string modelId = "fake-model",
         string? bearerKey = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        ILogger? logger = null)
     {
         if (bearerKey is not null)
         {
@@ -514,14 +521,16 @@ public sealed class GeminiChatGenerationTests : IDisposable
                 apiVersion: VertexAIVersion.V1,
                 bearerTokenProvider: () => new ValueTask<string>(bearerKey),
                 location: "fake-location",
-                projectId: "fake-project-id");
+                projectId: "fake-project-id",
+                logger: logger);
         }
 
         return new GeminiChatCompletionClient(
             httpClient: httpClient ?? this._httpClient,
             modelId: modelId,
             apiVersion: GoogleAIVersion.V1,
-            apiKey: "fake-key");
+            apiKey: "fake-key",
+            logger: logger);
     }
 
     public void Dispose()

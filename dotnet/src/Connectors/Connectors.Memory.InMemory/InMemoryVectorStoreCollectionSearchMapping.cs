@@ -88,6 +88,7 @@ internal static class InMemoryVectorStoreCollectionSearchMapping
         }
     }
 
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Filter the provided records using the provided filter definition.
     /// </summary>
@@ -95,15 +96,15 @@ internal static class InMemoryVectorStoreCollectionSearchMapping
     /// <param name="records">The records to filter.</param>
     /// <returns>The filtered records.</returns>
     /// <exception cref="InvalidOperationException">Thrown when an unsupported filter clause is encountered.</exception>
-    public static IEnumerable<object> FilterRecords(VectorSearchFilter? filter, IEnumerable<object> records)
+    public static IEnumerable<TRecord> FilterRecords<TRecord>(VectorSearchFilter filter, IEnumerable<TRecord> records)
     {
-        if (filter == null)
-        {
-            return records;
-        }
-
         return records.Where(record =>
         {
+            if (record is null)
+            {
+                return false;
+            }
+
             var result = true;
 
             // Run each filter clause against the record, and AND the results together.
@@ -197,6 +198,7 @@ internal static class InMemoryVectorStoreCollectionSearchMapping
 
         return false;
     }
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     /// <summary>
     /// Get the property info for the provided property name on the record.
