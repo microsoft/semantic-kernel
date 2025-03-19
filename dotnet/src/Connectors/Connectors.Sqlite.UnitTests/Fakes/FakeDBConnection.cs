@@ -12,7 +12,7 @@ internal sealed class FakeDBConnection(DbCommand command) : DbConnection
 {
     public override string ConnectionString { get; set; }
 
-    public override string Database => throw new NotImplementedException();
+    public override string Database => "TestDatabase";
 
     public override string DataSource => throw new NotImplementedException();
 
