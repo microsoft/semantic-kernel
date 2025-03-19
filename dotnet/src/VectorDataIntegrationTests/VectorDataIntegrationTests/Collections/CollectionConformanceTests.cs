@@ -93,6 +93,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
             Assert.NotNull(collectionMetadata);
             Assert.NotNull(collectionMetadata.VectorStoreName);
+            Assert.NotNull(collectionMetadata.DatabaseName);
             Assert.NotNull(collectionMetadata.CollectionName);
 
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
@@ -117,7 +118,10 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
             var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
 #pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-            Assert.NotNull(collectionMetadata?.CollectionName);
+            Assert.NotNull(collectionMetadata);
+            Assert.NotNull(collectionMetadata.VectorStoreName);
+            Assert.NotNull(collectionMetadata.DatabaseName);
+            Assert.NotNull(collectionMetadata.CollectionName);
 
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
 
@@ -143,7 +147,10 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
             var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
 #pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-            Assert.NotNull(collectionMetadata?.CollectionName);
+            Assert.NotNull(collectionMetadata);
+            Assert.NotNull(collectionMetadata.VectorStoreName);
+            Assert.NotNull(collectionMetadata.DatabaseName);
+            Assert.NotNull(collectionMetadata.CollectionName);
 
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
 

@@ -83,11 +83,11 @@ public class AzureAISearchVectorStore : IVectorStore
         var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
         var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
 
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata).ConfigureAwait(false);
+        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata.VectorStoreName).ConfigureAwait(false);
         while (nextResult.more)
         {
             yield return nextResult.name;
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata).ConfigureAwait(false);
+            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata.VectorStoreName).ConfigureAwait(false);
         }
     }
 
@@ -110,11 +110,11 @@ public class AzureAISearchVectorStore : IVectorStore
     /// around a yield return.
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
-    /// <param name="metadata">Metadata about vector store.</param>
+    /// <param name="vectorStoreName">The vector store name.</param>
     /// <returns>A value indicating whether there are more results and the current string if true.</returns>
     private static async Task<(string name, bool more)> GetNextIndexNameAsync(
         ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator,
-        VectorStoreMetadata metadata)
+        string? vectorStoreName)
     {
         const string OperationName = "GetIndexNames";
 
@@ -127,7 +127,7 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = metadata.VectorStoreName,
+                VectorStoreType = vectorStoreName,
                 OperationName = OperationName
             };
         }
@@ -135,7 +135,7 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = metadata.VectorStoreName,
+                VectorStoreType = vectorStoreName,
                 OperationName = OperationName
             };
         }
