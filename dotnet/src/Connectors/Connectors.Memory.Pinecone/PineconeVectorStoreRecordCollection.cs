@@ -97,10 +97,10 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
         var vectorProperty = this._propertyReader.VectorProperty!;
 
-        if (!string.IsNullOrEmpty(vectorProperty.IndexKind) && !string.CompareOrdinal(vectorProperty.IndexKind, "PGA"))
+        if (!string.IsNullOrEmpty(vectorProperty.IndexKind) || vectorProperty.IndexKind != "PGA")
         {
             throw new InvalidOperationException(
-                $"IndexKind of '{vectorProperty.IndexKind}' for property '{vectorProperty.PropertyName}' is not supported. Pinecone only supports 'PGA' (Pinecone Graph Algorithm), which is always enabled.");
+                $"IndexKind of '{vectorProperty.IndexKind}' for property '{vectorProperty.DataModelPropertyName}' is not supported. Pinecone only supports 'PGA' (Pinecone Graph Algorithm), which is always enabled.");
         }
 
         CreateIndexRequest request = new()
