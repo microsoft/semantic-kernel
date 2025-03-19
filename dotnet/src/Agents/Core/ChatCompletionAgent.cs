@@ -58,6 +58,49 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public AuthorRole InstructionsRole { get; init; } = AuthorRole.System;
 
     /// <inheritdoc/>
+    public async Task<IAgentInvokeResponseAsyncEnumerable<ChatMessageContent>> InvokeAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        string? additionalInstructions = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(message);
+
+        if (thread == null)
+        {
+            thread = new ChatHistoryAgentThread();
+        }
+
+        if (thread is not ChatHistoryAgentThread chatHistoryAgentThread)
+        {
+            throw new KernelException($"{nameof(ChatCompletionAgent)} currently only supports agent threads of type {nameof(ChatHistoryAgentThread)}.");
+        }
+
+        if (!thread.IsActive)
+        {
+            await thread.StartThreadAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // Notify the thread that a new message is availble and get the updated chat history.
+        await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
+        var chatHistory = await chatHistoryAgentThread.RetrieveCurrentChatHistoryAsync(cancellationToken).ConfigureAwait(false);
+
+        // Invoke Chat Completion with the updated chat history.
+        string agentName = this.GetDisplayName();
+        var invokeResults = this.InternalInvokeAsync(agentName, chatHistory, arguments, kernel, additionalInstructions, cancellationToken);
+
+        // Notify the thread of any new messages returned by chat completion.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await thread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+        }
+
+        return new AgentInvokeResponseAsyncEnumerable<ChatMessageContent>(invokeResults, thread);
+    }
+
+    /// <inheritdoc/>
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -68,7 +111,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeAsync(agentName, history, arguments, kernel, cancellationToken),
+            () => this.InternalInvokeAsync(agentName, history, arguments, kernel, null, cancellationToken),
             cancellationToken);
     }
 
@@ -83,7 +126,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, cancellationToken),
+            () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, null, cancellationToken),
             cancellationToken);
     }
 
@@ -114,6 +157,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         IReadOnlyList<ChatMessageContent> history,
         KernelArguments? arguments,
         Kernel kernel,
+        string? additionalInstructions,
         CancellationToken cancellationToken)
     {
         ChatHistory chat = [];
@@ -123,6 +167,11 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (!string.IsNullOrWhiteSpace(instructions))
         {
             chat.Add(new ChatMessageContent(this.InstructionsRole, instructions) { AuthorName = this.Name });
+        }
+
+        if (!string.IsNullOrWhiteSpace(additionalInstructions))
+        {
+            chat.Add(new ChatMessageContent(AuthorRole.System, additionalInstructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);
@@ -135,6 +184,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
+        string? additionalInstructions = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
@@ -142,7 +192,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -182,6 +232,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
+        string? additionalInstructions = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
@@ -189,7 +240,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 

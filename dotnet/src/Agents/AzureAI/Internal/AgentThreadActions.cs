@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+using AAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -45,7 +46,7 @@ internal static class AgentThreadActions
     /// <returns>The thread identifier</returns>
     public static async Task<string> CreateThreadAsync(AgentsClient client, CancellationToken cancellationToken = default)
     {
-        AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        AAIP.AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }

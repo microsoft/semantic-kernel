@@ -360,6 +360,53 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return this.IsDeleted;
     }
 
+    /// <inheritdoc/>
+    public async Task<IAgentInvokeResponseAsyncEnumerable<ChatMessageContent>> InvokeAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        string? additionalInstructions = null,
+        CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(message);
+
+        if (thread is null)
+        {
+            thread = new OpenAIAssistantAgentThread(this.Client);
+        }
+
+        if (thread is not OpenAIAssistantAgentThread)
+        {
+            throw new KernelException($"{nameof(OpenAIAssistantAgent)} currently only supports agent threads of type {nameof(OpenAIAssistantAgentThread)}.");
+        }
+
+        if (!thread.IsActive)
+        {
+            await thread.StartThreadAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // Notify the thread that a new message is availble.
+        await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
+
+        // Create options that include the additional instructions.
+        var options = string.IsNullOrWhiteSpace(additionalInstructions) ? null : new RunCreationOptions()
+        {
+            AdditionalInstructions = additionalInstructions,
+        };
+
+        // Invoke the Agent with the thread that we already added our message to.
+        var invokeResults = this.InvokeAsync(thread.ThreadId!, options, arguments, kernel, cancellationToken);
+
+        // Notify the thread of any new messages returned by the agent.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await thread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+        }
+
+        return new AgentInvokeResponseAsyncEnumerable<ChatMessageContent>(invokeResults, thread);
+    }
+
     /// <summary>
     /// Invokes the assistant on the specified thread.
     /// </summary>
