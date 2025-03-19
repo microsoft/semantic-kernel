@@ -134,6 +134,9 @@ realtime = [
     "websockets >= 13, < 15",
     "aiortc>=1.9.0",
 ]
+gaudi = [
+    "optimum-habana==1.14.1",
+]
 
 [tool.uv]
 prerelease = "if-necessary-or-explicit"
