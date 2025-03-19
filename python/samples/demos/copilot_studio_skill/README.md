@@ -1,6 +1,6 @@
 # Extend Copilot Studio with Semantic Kernel
 
-This template demonstrates how to build a [Copilot Studio Skill](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configuration-add-skills#troubleshoot-errors-during-skill-registration) that allows to extend agent capabilities with a custom API running in Azure with the help of the Semantic Kernel.
+This template demonstrates how to build a [Copilot Studio Skill](https://learn.microsoft.com/en-us/microsoft-copilot-studio/advanced-use-skills) that allows to extend agent capabilities with a custom API running in Azure with the help of the Semantic Kernel.
 
 ![Copilot Studio using the Semantic Kernel skill within a topic](image.png)
 
