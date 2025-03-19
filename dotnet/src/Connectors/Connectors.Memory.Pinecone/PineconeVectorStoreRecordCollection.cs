@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -336,10 +337,14 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         options ??= s_defaultVectorSearchOptions;
 
-#pragma warning disable CS0618 // FilterClause is obsolete
-        var filter = PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(
-            options.OldFilter?.FilterClauses,
-            this._propertyReader.StoragePropertyNamesMap);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+        var filter = options switch
+        {
+            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
+            { OldFilter: VectorSearchFilter legacyFilter } => PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(options.OldFilter?.FilterClauses, this._propertyReader.StoragePropertyNamesMap),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new PineconeFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            _ => null
+        };
 #pragma warning restore CS0618
 
         Sdk.QueryRequest request = new()

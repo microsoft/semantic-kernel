@@ -46,14 +46,14 @@ internal static class PineconeVectorStoreCollectionSearchMapping
                     bool boolValue => (MetadataValue)boolValue,
                     float floatValue => (MetadataValue)floatValue,
                     double doubleValue => (MetadataValue)doubleValue,
-                    _ => throw new InvalidOperationException($"Unsupported filter value type '{equalToFilterClause.Value.GetType().Name}'.")
+                    _ => throw new NotSupportedException($"Unsupported filter value type '{equalToFilterClause.Value.GetType().Name}'.")
                 };
 
                 metadataMap.Add(storagePropertyName, metadataValue);
             }
             else
             {
-                throw new InvalidOperationException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
+                throw new NotSupportedException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
             }
         }
 
