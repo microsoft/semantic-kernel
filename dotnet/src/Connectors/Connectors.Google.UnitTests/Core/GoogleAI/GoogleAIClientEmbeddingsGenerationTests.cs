@@ -142,14 +142,61 @@ public sealed class GoogleAIClientEmbeddingsGenerationTests : IDisposable
         Assert.Equal(expectedVersion, header);
     }
 
+    [Fact]
+    public async Task ShouldIncludeDimensionsInAllRequestsAsync()
+    {
+        // Arrange
+        const int Dimensions = 512;
+        var client = this.CreateEmbeddingsClient(dimensions: Dimensions);
+        var dataToEmbed = new List<string>()
+        {
+            "First text to embed",
+            "Second text to embed",
+            "Third text to embed"
+        };
+
+        // Act
+        await client.GenerateEmbeddingsAsync(dataToEmbed);
+
+        // Assert
+        var request = JsonSerializer.Deserialize<GoogleAIEmbeddingRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.Equal(dataToEmbed.Count, request.Requests.Count);
+        Assert.All(request.Requests, item => Assert.Equal(Dimensions, item.Dimensions));
+    }
+
+    [Fact]
+    public async Task ShouldNotIncludeDimensionsInAllRequestsWhenNotProvidedAsync()
+    {
+        // Arrange
+        var client = this.CreateEmbeddingsClient();
+        var dataToEmbed = new List<string>()
+        {
+            "First text to embed",
+            "Second text to embed",
+            "Third text to embed"
+        };
+
+        // Act
+        await client.GenerateEmbeddingsAsync(dataToEmbed);
+
+        // Assert
+        var request = JsonSerializer.Deserialize<GoogleAIEmbeddingRequest>(this._messageHandlerStub.RequestContent);
+        Assert.NotNull(request);
+        Assert.Equal(dataToEmbed.Count, request.Requests.Count);
+        Assert.All(request.Requests, item => Assert.Null(item.Dimensions));
+    }
+
     private GoogleAIEmbeddingClient CreateEmbeddingsClient(
-        string modelId = "fake-model")
+        string modelId = "fake-model",
+        int? dimensions = null)
     {
         var client = new GoogleAIEmbeddingClient(
             httpClient: this._httpClient,
             modelId: modelId,
             apiVersion: GoogleAIVersion.V1,
-            apiKey: "fake-key");
+            apiKey: "fake-key",
+            dimensions: dimensions);
         return client;
     }
 
