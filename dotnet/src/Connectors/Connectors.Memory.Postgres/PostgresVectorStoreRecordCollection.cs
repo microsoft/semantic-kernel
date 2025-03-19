@@ -111,12 +111,10 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._propertyReader);
         }
 
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(client.DataSource.ConnectionString);
-
         this._collectionMetadata = new()
         {
             VectorStoreName = "postgresql",
-            DatabaseName = connectionStringBuilder.Database,
+            DatabaseName = this._client.DatabaseName,
             CollectionName = collectionName
         };
 

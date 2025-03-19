@@ -33,12 +33,10 @@ public class PostgresVectorStore : IVectorStore
         this._options = options ?? new PostgresVectorStoreOptions();
         this._postgresClient = new PostgresVectorStoreDbClient(this._dataSource, this._options.Schema);
 
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(dataSource.ConnectionString);
-
         this._metadata = new()
         {
             VectorStoreName = "postgresql",
-            DatabaseName = connectionStringBuilder.Database
+            DatabaseName = this._postgresClient.DatabaseName
         };
     }
 
@@ -52,12 +50,10 @@ public class PostgresVectorStore : IVectorStore
         this._postgresClient = postgresDbClient;
         this._options = options ?? new PostgresVectorStoreOptions();
 
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder(postgresDbClient.DataSource.ConnectionString);
-
         this._metadata = new()
         {
             VectorStoreName = "postgresql",
-            DatabaseName = connectionStringBuilder.Database
+            DatabaseName = this._postgresClient.DatabaseName
         };
     }
 
