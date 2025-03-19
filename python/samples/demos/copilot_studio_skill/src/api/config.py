@@ -33,18 +33,12 @@ class Config:
 
     def validate(self):
         if not self.HOST or not self.PORT:
-            raise Exception(
-                "Missing required configuration. HOST and PORT must be set."
-            )
+            raise Exception("Missing required configuration. HOST and PORT must be set.")
         if not self.APP_ID or not self.APP_PASSWORD or not self.APP_TENANTID:
-            raise Exception(
-                "Missing required configuration. APP_ID, APP_PASSWORD, and APP_TENANT_ID must be set."
-            )
+            raise Exception("Missing required configuration. APP_ID, APP_PASSWORD, and APP_TENANT_ID must be set.")
 
         if not self.ALLOWED_CALLERS:
-            raise Exception(
-                "Missing required configuration. ALLOWED_CALLERS must be set."
-            )
+            raise Exception("Missing required configuration. ALLOWED_CALLERS must be set.")
 
 
 config = Config()
