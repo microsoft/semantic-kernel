@@ -56,6 +56,7 @@ public static class GoogleAIKernelBuilderExtensions
     /// <param name="apiVersion">The version of the Google API.</param>
     /// <param name="serviceId">The optional service ID.</param>
     /// <param name="httpClient">The optional custom HttpClient.</param>
+    /// <param name="dimensions">The optional number of dimensions that the model should use. If not specified, the default number of dimensions will be used.</param>
     /// <returns>The updated kernel builder.</returns>
     public static IKernelBuilder AddGoogleAIEmbeddingGeneration(
         this IKernelBuilder builder,
@@ -63,7 +64,8 @@ public static class GoogleAIKernelBuilderExtensions
         string apiKey,
         GoogleAIVersion apiVersion = GoogleAIVersion.V1_Beta, // todo: change beta to stable when stable version will be available
         string? serviceId = null,
-        HttpClient? httpClient = null)
+        HttpClient? httpClient = null,
+        int? dimensions = null)
     {
         Verify.NotNull(builder);
         Verify.NotNull(modelId);
@@ -75,7 +77,8 @@ public static class GoogleAIKernelBuilderExtensions
                 apiKey: apiKey,
                 apiVersion: apiVersion,
                 httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                loggerFactory: serviceProvider.GetService<ILoggerFactory>()));
+                loggerFactory: serviceProvider.GetService<ILoggerFactory>(),
+                dimensions: dimensions));
         return builder;
     }
 }

@@ -116,8 +116,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics"
 		src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs
 		src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs
 		src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs = src\InternalUtilities\src\Diagnostics\UnconditionalSuppressMessageAttribute.cs
-		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 		src\InternalUtilities\src\Diagnostics\UnreachableException.cs = src\InternalUtilities\src\Diagnostics\UnreachableException.cs
+		src\InternalUtilities\src\Diagnostics\Verify.cs = src\InternalUtilities\src\Diagnostics\Verify.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{B00AD427-0047-4850-BEF9-BA8237EA9D8B}"
@@ -138,10 +138,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "System", "System", "{3CDE10
 	ProjectSection(SolutionItems) = preProject
 		src\InternalUtilities\src\System\EnvExtensions.cs = src\InternalUtilities\src\System\EnvExtensions.cs
 		src\InternalUtilities\src\System\IListExtensions.cs = src\InternalUtilities\src\System\IListExtensions.cs
+		src\InternalUtilities\src\System\IndexRange.cs = src\InternalUtilities\src\System\IndexRange.cs
 		src\InternalUtilities\src\System\InternalTypeConverter.cs = src\InternalUtilities\src\System\InternalTypeConverter.cs
 		src\InternalUtilities\src\System\NonNullCollection.cs = src\InternalUtilities\src\System\NonNullCollection.cs
 		src\InternalUtilities\src\System\TypeConverterFactory.cs = src\InternalUtilities\src\System\TypeConverterFactory.cs
-		src\InternalUtilities\src\System\IndexRange.cs = src\InternalUtilities\src\System\IndexRange.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Type", "Type", "{E85EA4D0-BB7E-4DFD-882F-A76EB8C0B8FF}"
@@ -224,12 +224,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenApi.Extension
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-AE5F-4080-8790-13EB16323CEF}"
 	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Text\ExceptionJsonConverter.cs = src\InternalUtilities\src\Text\ExceptionJsonConverter.cs
 		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
 		src\InternalUtilities\src\Text\SseData.cs = src\InternalUtilities\src\Text\SseData.cs
 		src\InternalUtilities\src\Text\SseJsonParser.cs = src\InternalUtilities\src\Text\SseJsonParser.cs
 		src\InternalUtilities\src\Text\SseLine.cs = src\InternalUtilities\src\Text\SseLine.cs
 		src\InternalUtilities\src\Text\SseReader.cs = src\InternalUtilities\src\Text\SseReader.cs
-		src\InternalUtilities\src\Text\ExceptionJsonConverter.cs = src\InternalUtilities\src\Text\ExceptionJsonConverter.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linq", "Linq", "{607DD6FA-FA0D-45E6-80BA-22A373609E89}"
@@ -273,11 +273,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{5D4C0700
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LearnResources", "samples\LearnResources\LearnResources.csproj", "{B04C26BC-A933-4A53-BE17-7875EB12E012}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateChatGptPlugin", "samples\Demos\CreateChatGptPlugin\Solution\CreateChatGptPlugin.csproj", "{E6204E79-EFBF-499E-9743-85199310A455}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeAutomation", "samples\Demos\HomeAutomation\HomeAutomation.csproj", "{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuggingFaceImageToText", "samples\Demos\HuggingFaceImageToText\HuggingFaceImageToText.csproj", "{E12E15F2-6819-46EA-8892-73E3D60BE76F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TelemetryWithAppInsights", "samples\Demos\TelemetryWithAppInsights\TelemetryWithAppInsights.csproj", "{5C813F83-9FD8-462A-9B38-865CA01C384C}"
 EndProject
@@ -435,10 +431,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAIRealtime", "samples\Demos\OpenAIRealtime\OpenAIRealtime.csproj", "{6154129E-7A35-44A5-998E-B7001B5EDE14}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CreateChatGpt", "CreateChatGpt", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sk-chatgpt-azure-function", "samples\Demos\CreateChatGptPlugin\MathPlugin\azure-function\sk-chatgpt-azure-function.csproj", "{2EB6E4C2-606D-B638-2E08-49EA2061C428}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kernel-functions-generator", "samples\Demos\CreateChatGptPlugin\MathPlugin\kernel-functions-generator\kernel-functions-generator.csproj", "{78785CB1-66CF-4895-D7E5-A440DD84BE86}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VectorDataIntegrationTests", "VectorDataIntegrationTests", "{4F381919-F1BE-47D8-8558-3187ED04A84F}"
 EndProject
@@ -830,24 +822,12 @@ Global
 		{B04C26BC-A933-4A53-BE17-7875EB12E012}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{B04C26BC-A933-4A53-BE17-7875EB12E012}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B04C26BC-A933-4A53-BE17-7875EB12E012}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6204E79-EFBF-499E-9743-85199310A455}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6204E79-EFBF-499E-9743-85199310A455}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6204E79-EFBF-499E-9743-85199310A455}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6204E79-EFBF-499E-9743-85199310A455}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{E6204E79-EFBF-499E-9743-85199310A455}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6204E79-EFBF-499E-9743-85199310A455}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C813F83-9FD8-462A-9B38-865CA01C384C}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -1214,18 +1194,6 @@ Global
 		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6154129E-7A35-44A5-998E-B7001B5EDE14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86}.Release|Any CPU.Build.0 = Release|Any CPU
 		{27D33AB3-4DFF-48BC-8D76-FB2CDF90B707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{27D33AB3-4DFF-48BC-8D76-FB2CDF90B707}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27D33AB3-4DFF-48BC-8D76-FB2CDF90B707}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
@@ -1469,9 +1437,7 @@ Global
 		{644A2F10-324D-429E-A1A3-887EAE64207F} = {6823CD5E-2ABE-41EB-B865-F86EC13F0CF9}
 		{5D4C0700-BBB5-418F-A7B2-F392B9A18263} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{B04C26BC-A933-4A53-BE17-7875EB12E012} = {FA3720F1-C99A-49B2-9577-A940257098BF}
-		{E6204E79-EFBF-499E-9743-85199310A455} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{CBEEF941-AEC6-42A4-A567-B5641CEFBB87} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
-		{E12E15F2-6819-46EA-8892-73E3D60BE76F} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{5C813F83-9FD8-462A-9B38-865CA01C384C} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{D5E4C960-53B3-4C35-99C1-1BA97AECC489} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{1D98CF16-5156-40F0-91F0-76294B153DB3} = {FA3720F1-C99A-49B2-9577-A940257098BF}
@@ -1540,8 +1506,6 @@ Global
 		{481A680F-476A-4627-83DE-2F56C484525E} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{6154129E-7A35-44A5-998E-B7001B5EDE14} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
 		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {5D4C0700-BBB5-418F-A7B2-F392B9A18263}
-		{2EB6E4C2-606D-B638-2E08-49EA2061C428} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{78785CB1-66CF-4895-D7E5-A440DD84BE86} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{4F381919-F1BE-47D8-8558-3187ED04A84F} = {831DDCA2-7D2C-4C31-80DB-6BDB3E1F7AE0}
 		{27D33AB3-4DFF-48BC-8D76-FB2CDF90B707} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 		{B29A972F-A774-4140-AECF-6B577C476627} = {4F381919-F1BE-47D8-8558-3187ED04A84F}

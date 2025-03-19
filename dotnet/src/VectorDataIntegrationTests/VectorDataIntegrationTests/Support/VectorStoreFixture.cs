@@ -13,6 +13,8 @@ public abstract class VectorStoreFixture : IAsyncLifetime
     public virtual string DefaultDistanceFunction => this.TestStore.DefaultDistanceFunction;
     public virtual string DefaultIndexKind => this.TestStore.DefaultIndexKind;
 
+    public virtual string GetUniqueCollectionName() => Guid.NewGuid().ToString();
+
     public virtual Task InitializeAsync()
         => this.TestStore.ReferenceCountingStartAsync();
 
@@ -20,5 +22,5 @@ public abstract class VectorStoreFixture : IAsyncLifetime
         => this.TestStore.ReferenceCountingStopAsync();
 
     public virtual TKey GenerateNextKey<TKey>()
-        => this.TestStore.GenerateKey<TKey>(this._nextKeyValue++);
+        => this.TestStore.GenerateKey<TKey>(Interlocked.Increment(ref this._nextKeyValue));
 }
