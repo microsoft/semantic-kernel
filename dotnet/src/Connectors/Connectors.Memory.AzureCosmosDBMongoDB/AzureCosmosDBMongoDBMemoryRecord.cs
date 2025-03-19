@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson;
@@ -10,10 +9,12 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
+#pragma warning disable SKEXP0001 // IMemoryStore is experimental (but we're obsoleting)
+
 /// <summary>
 /// A MongoDB memory record.
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being phased out, use Microsoft.Extensions.VectorData and AzureMongoDBMongoDBVectorStore")]
 internal sealed class AzureCosmosDBMongoDBMemoryRecord
 {
     /// <summary>
