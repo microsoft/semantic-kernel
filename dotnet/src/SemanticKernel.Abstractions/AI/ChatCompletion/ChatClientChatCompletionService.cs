@@ -94,7 +94,19 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
             yield return update.ToStreamingChatMessageContent();
         }
 
-        // Add function call content/results to chat history, as other IChatCompletionService streaming implementations do.
-        chatHistory.Add(new ChatMessage(role ?? ChatRole.Assistant, fcContents).ToChatMessageContent());
+        // Message tools and function calls should be individual messages in the history.
+        foreach (var fcc in fcContents)
+        {
+            if (fcc is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
+            {
+                chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
+                continue;
+            }
+
+            if (fcc is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+            {
+                chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
+            }
+        }
     }
 }

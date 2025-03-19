@@ -15,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 #pragma warning disable CA2213 // Disposable fields should be disposed
+#pragma warning disable IDE0009 // Use explicit 'this.' qualifier
+#pragma warning disable IDE1006 // Missing prefix: 's_'
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -315,7 +317,7 @@ public sealed partial class KernelFunctionInvokingChatClient : DelegatingChatCli
                 break;
             }
 
-            // Reconsistitue a response from the response updates.
+            // Reconstitute a response from the response updates.
             var response = updates.ToChatResponse();
             (responseMessages ??= []).AddRange(response.Messages);
 
@@ -327,7 +329,7 @@ public sealed partial class KernelFunctionInvokingChatClient : DelegatingChatCli
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
             // Stream any generated function results. This mirrors what's done for GetResponseAsync, where the returned messages
-            // includes all activitys, including generated function results.
+            // includes all activities, including generated function results.
             string toolResponseId = Guid.NewGuid().ToString("N");
             foreach (var message in modeAndMessages.MessagesAdded)
             {
