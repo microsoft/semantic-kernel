@@ -4,15 +4,6 @@ import json
 
 from pytest import mark, skip
 
-from semantic_kernel.connectors.memory.sql_server import (
-    _build_create_table_query,
-    _build_delete_query,
-    _build_delete_table_query,
-    _build_merge_query,
-    _build_search_query,
-    _build_select_query,
-    _build_select_table_names_query,
-)
 from semantic_kernel.data.const import DistanceFunction
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
@@ -23,9 +14,22 @@ from semantic_kernel.data.vector_search.vector_search_filter import VectorSearch
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
 
 try:
-    from semantic_kernel.connectors.memory.sql_server import QueryBuilder, SqlCommand, SqlServerStore
+    from semantic_kernel.connectors.memory.sql_server import (
+        QueryBuilder,
+        SqlCommand,
+        SqlServerStore,
+        _build_create_table_query,
+        _build_delete_query,
+        _build_delete_table_query,
+        _build_merge_query,
+        _build_search_query,
+        _build_select_query,
+        _build_select_table_names_query,
+    )
 except ImportError:
-    skip(reason="pyodbc is not installed. Please install it to run SQL Server tests.")  # pragma: no cover
+    skip(
+        reason="pyodbc or underlying drivers are not installed. Please install it to run SQL Server tests."
+    )  # pragma: no cover
 
 
 def test_query_builder_append():

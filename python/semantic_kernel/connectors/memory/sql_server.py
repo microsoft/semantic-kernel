@@ -12,6 +12,7 @@ from io import StringIO
 from itertools import chain
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
+import pyodbc
 from azure.identity.aio import DefaultAzureCredential
 from pydantic import SecretStr, ValidationError, field_validator
 
@@ -47,12 +48,6 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self  # pragma: no cover
 
-try:
-    import pyodbc
-except ImportError as e:
-    raise ImportError(
-        "pyodbc is not installed. Please install it using 'pip install pyodbc' or 'pip install semantic-kernel[sql]'."
-    ) from e
 
 logger = logging.getLogger(__name__)
 
