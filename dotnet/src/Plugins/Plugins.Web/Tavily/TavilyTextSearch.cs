@@ -46,7 +46,7 @@ public sealed class TavilyTextSearch : ITextSearch
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse<TavilySearchResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -57,7 +57,7 @@ public sealed class TavilyTextSearch : ITextSearch
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse<TavilySearchResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -68,7 +68,7 @@ public sealed class TavilyTextSearch : ITextSearch
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
-        TavilySearchResponse<TavilySearchResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = null;
 
@@ -104,7 +104,7 @@ public sealed class TavilyTextSearch : ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<TavilySearchResponse<TavilySearchResult>?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
+    private async Task<TavilySearchResponse?> ExecuteSearchAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
         using HttpResponseMessage response = await this.SendGetRequestAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
@@ -115,7 +115,7 @@ public sealed class TavilyTextSearch : ITextSearch
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        return JsonSerializer.Deserialize<TavilySearchResponse<TavilySearchResult>>(json);
+        return JsonSerializer.Deserialize<TavilySearchResponse>(json);
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ public sealed class TavilyTextSearch : ITextSearch
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<object> GetSearchResultsAsync(TavilySearchResponse<TavilySearchResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<object> GetSearchResultsAsync(TavilySearchResponse? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null || searchResponse.Results is null)
         {
@@ -182,7 +182,7 @@ public sealed class TavilyTextSearch : ITextSearch
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<TextSearchResult> GetResultsAsTextSearchResultAsync(TavilySearchResponse<TavilySearchResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<TextSearchResult> GetResultsAsTextSearchResultAsync(TavilySearchResponse? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null || searchResponse.Results is null)
         {
@@ -201,7 +201,7 @@ public sealed class TavilyTextSearch : ITextSearch
     /// </summary>
     /// <param name="searchResponse">Response containing the web pages matching the query.</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async IAsyncEnumerable<string> GetResultsAsStringAsync(TavilySearchResponse<TavilySearchResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<string> GetResultsAsStringAsync(TavilySearchResponse? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         if (searchResponse is null || searchResponse.Results is null)
         {
@@ -225,7 +225,7 @@ public sealed class TavilyTextSearch : ITextSearch
     /// Return the results metadata.
     /// </summary>
     /// <param name="searchResponse">Response containing the documents matching the query.</param>
-    private static Dictionary<string, object?>? GetResultsMetadata(TavilySearchResponse<TavilySearchResult>? searchResponse)
+    private static Dictionary<string, object?>? GetResultsMetadata(TavilySearchResponse? searchResponse)
     {
         return new Dictionary<string, object?>()
         {

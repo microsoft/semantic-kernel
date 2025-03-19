@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
-internal sealed class TavilyImage
+internal sealed class TavilyImageResult
 {
     /// <summary>
     /// The image url.
@@ -21,12 +21,12 @@ internal sealed class TavilyImage
     public string Description { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TavilyImage" /> class.
+    /// Initializes a new instance of the <see cref="TavilyImageResult" /> class.
     /// </summary>
     /// <param name="url">The url to the image</param>
     /// <param name="description">The description of the image</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public TavilyImage(string url, string description)
+    public TavilyImageResult(string url, string description)
     {
         this.Url = url ?? throw new ArgumentNullException(nameof(url));
         this.Description = description ?? throw new ArgumentNullException(nameof(description));

@@ -11,7 +11,7 @@ internal class TavilySearchRequest
     /// The search query to execute with Tavily.
     /// </summary>
     [JsonPropertyName("query")]
-    [System.Text.Json.Serialization.JsonRequired]
+    [JsonRequired]
     public string Query { get; set; }
 
     /// <summary>

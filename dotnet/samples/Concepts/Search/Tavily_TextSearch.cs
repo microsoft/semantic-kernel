@@ -123,7 +123,6 @@ public class Tavily_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-
     /// <summary>
     /// Show how to create a <see cref="TavilyTextSearch"/> with a custom mapper and use it to perform a text search.
     /// </summary>
