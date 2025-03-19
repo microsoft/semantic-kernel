@@ -271,7 +271,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
             whereClause += extraWhereFilter;
 
             Debug.Assert(extraParameters is not null, "extraParameters must be provided when extraWhereFilter is provided.");
-            foreach (var p in extraParameters)
+            foreach (var p in extraParameters!)
             {
                 command.Parameters.Add(new SqliteParameter(p.Key, p.Value));
             }
