@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
+from unittest.mock import MagicMock
 
-from pytest import mark
+from pytest import fixture, mark
 
 from semantic_kernel.connectors.memory.sql_server import (
     QueryBuilder,
     SqlCommand,
+    SqlServerCollection,
     SqlServerStore,
     _build_create_table_query,
     _build_delete_query,
@@ -256,6 +258,13 @@ class TestQueryBuildFunctions:
         )
 
 
+@fixture
+async def mock_connection(*args, **kwargs):
+    from pyodbc import Connection
+
+    return MagicMock(spec=Connection)
+
+
 class TestSqlServerStore:
     def test_create_store(self, sql_server_unit_test_env):
         store = SqlServerStore()
@@ -263,7 +272,86 @@ class TestSqlServerStore:
         assert store.settings is not None
         assert store.settings.connection_string is not None
 
-    def test_create_collection(self, sql_server_unit_test_env, data_model_definition):
+    def test_get_collection(self, sql_server_unit_test_env, data_model_definition):
         store = SqlServerStore()
         collection = store.get_collection("test", data_model_type=dict, data_model_definition=data_model_definition)
         assert collection is not None
+
+    async def test_list_collection_names(self, sql_server_unit_test_env, mock_connection):
+        async with SqlServerStore(connection=mock_connection) as store:
+            mock_connection.cursor.return_value.__enter__.return_value.fetchall.return_value = [
+                ["Test1"],
+                ["Test2"],
+            ]
+            collection_names = await store.list_collection_names()
+            assert collection_names == ["Test1", "Test2"]
+
+
+class TestSqlServerCollection:
+    async def test_create_collection(self, sql_server_unit_test_env, data_model_definition):
+        collection = SqlServerCollection(
+            collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
+        )
+        assert collection is not None
+        assert collection.collection_name == "test"
+        assert collection.settings is not None
+        assert collection.settings.connection_string is not None
+
+    async def test_upsert(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+        data_model_definition,
+    ):
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            connection=mock_connection,
+        )
+        record = {"id": "1", "content": "test", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]}
+        mock_connection.cursor.return_value.__enter__.return_value.nextset.side_effect = [True, False]
+        mock_connection.cursor.return_value.__enter__.return_value.fetchall.return_value = [
+            ["1"],
+        ]
+        await collection.upsert(record)
+        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+            (
+                "DECLARE @UpsertedKeys TABLE (KeyColumn nvarchar(255));\nMERGE INTO [dbo].[test] AS t\nUSING ( VALUES"
+                "  (?, ?, ?) ) AS s (id, content, vector)  ON (t.id = s.id) \nWHEN MATCHED THEN\nUPDATE SET t.content"
+                " = s.content, t.vector = s.vector\nWHEN NOT MATCHED THEN\nINSERT (id, content, vector)  VALUES (s.id, "
+                "s.content, s.vector)  \nOUTPUT inserted.id INTO @UpsertedKeys (KeyColumn);\nSELECT KeyColumn "
+                "FROM @UpsertedKeys;\n"
+            ),
+            ("1", "test", json.dumps([0.1, 0.2, 0.3, 0.4, 0.5])),
+        )
+
+    async def test_get(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+        data_model_definition,
+    ):
+        from typing import NamedTuple
+
+        class MockRow(NamedTuple):
+            id: str
+            content: str
+            vector: list[float]
+
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            connection=mock_connection,
+        )
+        key = "1"
+
+        row = MockRow("1", "test", [0.1, 0.2, 0.3, 0.4, 0.5])
+        mock_connection.cursor.return_value.__enter__.return_value.description = [["id"], ["content"], ["vector"]]
+
+        mock_connection.cursor.return_value.__enter__.return_value.next.side_effect = [row]
+        await collection.get(key)
+        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+            "SELECT\nid, content, vector FROM [dbo].[test] \nWHERE id IN\n (?) ;", ("1",)
+        )

@@ -867,7 +867,8 @@ def _build_merge_query(
     command = SqlCommand()
     # Declare a temp table to store the keys that are updated
     command.query.append(
-        f"DECLARE @UpsertedKeys TABLE (KeyColumn {_python_type_to_sql(key_field.property_type, is_key=True)});\n"
+        "DECLARE @UpsertedKeys TABLE (KeyColumn "
+        f"{_python_type_to_sql(key_field.property_type or 'str', is_key=True)});\n"
     )
     # start the MERGE statement
     command.query.append_table_name(schema, table, prefix="MERGE INTO", suffix="AS t", newline=True)
