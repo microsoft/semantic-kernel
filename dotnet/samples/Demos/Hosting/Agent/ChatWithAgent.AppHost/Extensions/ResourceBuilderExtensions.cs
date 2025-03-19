@@ -47,8 +47,6 @@ public static class ResourceBuilderExtensions
         builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.AIEmbeddingService)}", config.Rag.AIEmbeddingService);
         builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.VectorStoreType)}", config.Rag.VectorStoreType);
         builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.CollectionName)}", config.Rag.CollectionName);
-        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchSize)}", config.Rag.PdfBatchSize.ToString());
-        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchLoadingDelayMilliseconds)}", config.Rag.PdfBatchLoadingDelayMilliseconds.ToString());
 
         switch (config.Rag.AIEmbeddingService)
         {
