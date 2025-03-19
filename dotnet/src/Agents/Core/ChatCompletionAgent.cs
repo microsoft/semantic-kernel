@@ -83,7 +83,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             await thread.StartThreadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        // Notify the thread that a new message is availble and get the updated chat history.
+        // Notify the thread that a new message is available and get the updated chat history.
         await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
         var chatHistory = await chatHistoryAgentThread.RetrieveCurrentChatHistoryAsync(cancellationToken).ConfigureAwait(false);
 

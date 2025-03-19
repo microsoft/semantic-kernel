@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
@@ -168,7 +166,7 @@ public sealed partial class AzureAIAgent : KernelAgent
             await thread.StartThreadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        // Notify the thread that a new message is availble.
+        // Notify the thread that a new message is available.
         await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
 
         // Create options that include the additional instructions.

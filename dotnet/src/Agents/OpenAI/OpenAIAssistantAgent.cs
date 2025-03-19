@@ -386,7 +386,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             await thread.StartThreadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        // Notify the thread that a new message is availble.
+        // Notify the thread that a new message is available.
         await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
 
         // Create options that include the additional instructions.

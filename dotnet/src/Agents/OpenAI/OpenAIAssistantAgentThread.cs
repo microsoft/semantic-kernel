@@ -57,11 +57,11 @@ public class OpenAIAssistantAgentThread : AgentThread
             throw new InvalidOperationException("You cannot start this thread, since the thread is already active.");
         }
 
-        var assitantThreadResponse = await this._client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        this._threadId = assitantThreadResponse.Value.Id;
+        var assistantThreadResponse = await this._client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        this._threadId = assistantThreadResponse.Value.Id;
         this._isActive = true;
 
-        return assitantThreadResponse.Value.Id;
+        return assistantThreadResponse.Value.Id;
     }
 
     /// <inheritdoc />
