@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="PostgresDbClient"/> class.
+/// Initializes a new instance of the <see cref="PostgresVectorStoreDbClient"/> class.
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
