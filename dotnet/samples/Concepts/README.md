@@ -21,17 +21,8 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 ### Agents - Different ways of using [`Agents`](./Agents/README.md)
 
 - [ComplexChat_NestedShopper](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/ComplexChat_NestedShopper.cs)
-- [Legacy_AgentAuthoring](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_AgentAuthoring.cs)
-- [Legacy_AgentCharts](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_AgentCharts.cs)
-- [Legacy_AgentCollaboration](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_AgentCollaboration.cs)
-- [Legacy_AgentDelegation](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_AgentDelegation.cs)
-- [Legacy_AgentTools](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_AgentTools.cs)
-- [Legacy_Agents](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_Agents.cs)
-- [Legacy_ChatCompletionAgent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/Legacy_ChatCompletionAgent.cs)
 - [MixedChat_Agents](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/MixedChat_Agents.cs)
 - [OpenAIAssistant_ChartMaker](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/OpenAIAssistant_ChartMaker.cs)
-- [OpenAIAssistant_CodeInterpreter](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/OpenAIAssistant_CodeInterpreter.cs)
-- [OpenAIAssistant_Retrieval](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Agents/OpenAIAssistant_Retrieval.cs)
 
 ### AudioToText - Different ways of using [`AudioToText`](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/SemanticKernel.Abstractions/AI/AudioToText/IAudioToTextService.cs) services to extract text from audio
 
@@ -78,7 +69,7 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 - [MistralAI_ChatPrompt](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MistralAI_ChatPrompt.cs)
 - [MistralAI_FunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MistralAI_FunctionCalling.cs)
 - [MistralAI_StreamingFunctionCalling](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MistralAI_StreamingFunctionCalling.cs)
-- [MultipleProviders_ChatHistoryReducer](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MuiltipleProviders_ChatHistoryReducer.cs)
+- [MultipleProviders_ChatHistoryReducer](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/MultipleProviders_ChatHistoryReducer.cs)
 - [Ollama_ChatCompletion](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Ollama_ChatCompletion.cs)
 - [Ollama_ChatCompletionStreaming](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Ollama_ChatCompletionStreaming.cs)
 - [Onnx_ChatCompletion](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/ChatCompletion/Onnx_ChatCompletion.cs)
@@ -106,9 +97,8 @@ dotnet test -l "console;verbosity=detailed" --filter "FullyQualifiedName=ChatCom
 
 - [AutoFunctionInvocationFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/AutoFunctionInvocationFiltering.cs)
 - [FunctionInvocationFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/FunctionInvocationFiltering.cs)
-- [Legacy_KernelHooks](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/Legacy_KernelHooks.cs)
 - [MaxTokensWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/MaxTokensWithFilters.cs)
-- [PIIDetectionWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PIIDetectionWithFilters.cs)
+- [PIIDetection](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PIIDetection.cs)
 - [PromptRenderFiltering](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/PromptRenderFiltering.cs)
 - [RetryWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/RetryWithFilters.cs)
 - [TelemetryWithFilters](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/Concepts/Filtering/TelemetryWithFilters.cs)
