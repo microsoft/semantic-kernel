@@ -23,7 +23,7 @@ public sealed class KernelFunctionInvocationContext
     private static readonly AIFunction s_nopFunction = AIFunctionFactory.Create(() => { }, nameof(KernelFunctionInvocationContext));
 
     /// <summary>The chat contents associated with the operation that initiated this function call request.</summary>
-    private IList<ChatMessage> _chatMessages = Array.Empty<ChatMessage>();
+    private IList<ChatMessage> _messages = Array.Empty<ChatMessage>();
 
     /// <summary>The AI function to be invoked.</summary>
     private AIFunction _function = s_nopFunction;
@@ -48,15 +48,18 @@ public sealed class KernelFunctionInvocationContext
     }
 
     /// <summary>Gets or sets the chat contents associated with the operation that initiated this function call request.</summary>
-    public IList<ChatMessage> ChatMessages
+    public IList<ChatMessage> Messages
     {
-        get => _chatMessages;
+        get => _messages;
         set
         {
             Verify.NotNull(value);
-            _chatMessages = value;
+            _messages = value;
         }
     }
+
+    /// <summary>Gets or sets the chat options associated with the operation that initiated this function call request.</summary>
+    public ChatOptions? Options { get; set; }
 
     /// <summary>Gets or sets the AI function to be invoked.</summary>
     public AIFunction Function
