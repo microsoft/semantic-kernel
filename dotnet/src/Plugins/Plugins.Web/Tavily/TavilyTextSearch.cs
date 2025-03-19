@@ -164,17 +164,6 @@ public sealed class TavilyTextSearch : ITextSearch
             yield return result;
             await Task.Yield();
         }
-
-        if (searchResponse.Images is not null)
-        {
-            /*
-            foreach (var result in searchResponse.Images)
-            {
-                yield return result;
-                await Task.Yield();
-            }
-            */
-        }
     }
 
     /// <summary>
