@@ -19,10 +19,7 @@ public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : Bas
         Agent definition = await this.AgentsClient.CreateAgentAsync(
             TestConfiguration.AzureAI.ChatModelId,
             tools: [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.AgentsClient)
-        {
-            Kernel = new Kernel(),
-        };
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
         AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);

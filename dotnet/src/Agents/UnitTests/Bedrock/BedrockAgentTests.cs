@@ -157,11 +157,8 @@ public class BedrockAgentTests
 
         // Act
         Kernel kernel = new();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
-        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object)
-        {
-            Kernel = kernel,
-        };
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object);
+        bedrockAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
 
         // Assert
         this.VerifyAgent(bedrockAgent);

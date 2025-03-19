@@ -6,5 +6,5 @@ namespace RedisIntegrationTests.Support;
 
 public class RedisSimpleModelFixture : SimpleModelFixture<string>
 {
-    public override TestStore TestStore => RedisTestStore.Instance;
+    public override TestStore TestStore => RedisTestStore.JsonInstance;
 }

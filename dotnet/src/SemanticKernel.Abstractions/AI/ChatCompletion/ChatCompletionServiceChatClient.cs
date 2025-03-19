@@ -35,27 +35,41 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public async Task<Extensions.AI.ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Extensions.AI.ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chatMessages);
+        Verify.NotNull(messages);
+
+        ChatHistory chatHistory = new(messages.Select(m => m.ToChatMessageContent()));
+        int preCount = chatHistory.Count;
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(chatMessages.Select(m => m.ToChatMessageContent())),
+            chatHistory,
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
 
-        return new(response.ToChatMessage())
+        ChatResponse chatResponse = new()
         {
             ModelId = response.ModelId,
             RawRepresentation = response.InnerContent,
         };
+
+        // Add all messages that were added to the history.
+        // Then add the result message.
+        for (int i = preCount; i < chatHistory.Count; i++)
+        {
+            chatResponse.Messages.Add(chatHistory[i].ToChatMessage());
+        }
+
+        chatResponse.Messages.Add(response.ToChatMessage());
+
+        return chatResponse;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chatMessages);
+        Verify.NotNull(messages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
             new ChatHistory(chatMessages.Select(m => m.ToChatMessageContent())),
@@ -190,5 +204,46 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         }
 
         return settings;
+    }
+
+    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
+    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
+    private static ChatResponseUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
+    {
+        ChatResponseUpdate update = new()
+        {
+            AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
+            AuthorName = content.AuthorName,
+            ModelId = content.ModelId,
+            RawRepresentation = content,
+            Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
+        };
+
+        foreach (var item in content.Items)
+        {
+            AIContent? aiContent = null;
+            switch (item)
+            {
+                case Microsoft.SemanticKernel.StreamingTextContent tc:
+                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                    break;
+
+                case Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent fcc:
+                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
+                        fcc.CallId ?? string.Empty,
+                        fcc.Name ?? string.Empty,
+                        fcc.Arguments is not null ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
+                    break;
+            }
+
+            if (aiContent is not null)
+            {
+                aiContent.RawRepresentation = content;
+
+                update.Contents.Add(aiContent);
+            }
+        }
+
+        return update;
     }
 }
