@@ -12,7 +12,6 @@ from io import StringIO
 from itertools import chain
 from typing import Any, ClassVar, Final, Generic, TypeVar
 
-import pyodbc
 from azure.identity.aio import DefaultAzureCredential
 from pydantic import SecretStr, ValidationError, field_validator
 
@@ -47,6 +46,13 @@ if sys.version_info >= (3, 11):
     from typing import Self  # pragma: no cover
 else:
     from typing_extensions import Self  # pragma: no cover
+
+try:
+    import pyodbc
+except ImportError as e:
+    raise ImportError(
+        "pyodbc is not installed. Please install it using 'pip install pyodbc' or 'pip install semantic-kernel[sql]'."
+    ) from e
 
 logger = logging.getLogger(__name__)
 
@@ -255,7 +261,7 @@ class SqlCommand:
 
 
 async def _get_mssql_connection(settings: SqlSettings) -> pyodbc.Connection:
-    """Get a connection to the SQL Server database optionally with Entra Auth."""
+    """Get a connection to the SQL Server database, optionally with Entra Auth."""
     mssql_connection_string = settings.connection_string.get_secret_value()
     if any(s in mssql_connection_string.lower() for s in ["uid"]):
         attrs_before = None
