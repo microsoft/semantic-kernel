@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
+
+#pragma warning disable CA1812 // Instantiated by reflection
 internal sealed class TavilySearchResponse
 {
     /// <summary>
@@ -69,3 +71,4 @@ internal sealed class TavilySearchResponse
         this.Images = images;
     }
 }
+#pragma warning restore CA1812 // Instantiated by reflection
