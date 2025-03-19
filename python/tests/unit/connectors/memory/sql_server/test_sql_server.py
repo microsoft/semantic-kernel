@@ -28,7 +28,8 @@ try:
     )
 except ImportError:
     skip(
-        reason="pyodbc or underlying drivers are not installed. Please install it to run SQL Server tests."
+        reason="pyodbc or underlying drivers are not installed. Please install it to run SQL Server tests.",
+        allow_module_level=True,
     )  # pragma: no cover
 
 
