@@ -131,7 +131,7 @@ class ChromaCollection(
                 f"Failed to delete collection {self.collection_name} with error: {e}"
             ) from e
 
-    async def _validate_data_model(self):
+    def _validate_data_model(self):
         super()._validate_data_model()
         if len(self.data_model_definition.vector_fields) > 1:
             raise VectorStoreModelValidationError(
