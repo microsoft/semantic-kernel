@@ -228,7 +228,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             }
 
         # Add Guardrails
-        if os.getenv("ENABLE_GUARDRAILS", False) == "True":
+        if os.getenv("BEDROCK_GUARDRAIL_ID", "") and os.getenv("BEDROCK_GUARDRAIL_VERSION", ""):
             prepared_settings["guardrailConfig"] = {
                 "guardrailIdentifier": os.getenv("BEDROCK_GUARDRAIL_ID"),
                 "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION")
