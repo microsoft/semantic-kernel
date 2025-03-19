@@ -23,7 +23,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task InvokeAgentWithInstructionsTemplateAsync(bool useChatClient)
+    public async Task InvokeAgentWithInstructionsTemplate(bool useChatClient)
     {
         // Instruction based template always processed by KernelPromptTemplateFactory
         ChatCompletionAgent agent =
@@ -49,7 +49,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task InvokeAgentWithKernelTemplateAsync(bool useChatClient)
+    public async Task InvokeAgentWithKernelTemplate(bool useChatClient)
     {
         // Default factory is KernelPromptTemplateFactory
         await InvokeChatCompletionAgentWithTemplateAsync(
@@ -65,7 +65,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task InvokeAgentWithHandlebarsTemplateAsync(bool useChatClient)
+    public async Task InvokeAgentWithHandlebarsTemplate(bool useChatClient)
     {
         await InvokeChatCompletionAgentWithTemplateAsync(
             """
@@ -80,7 +80,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task InvokeAgentWithLiquidTemplateAsync(bool useChatClient)
+    public async Task InvokeAgentWithLiquidTemplate(bool useChatClient)
     {
         await InvokeChatCompletionAgentWithTemplateAsync(
             """

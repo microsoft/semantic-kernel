@@ -31,7 +31,7 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task SerializeAndRestoreAgentGroupChatAsync(bool useChatClient)
+    public async Task SerializeAndRestoreAgentGroupChat(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentTranslator =
@@ -132,3 +132,4 @@ public class MixedChat_Serialization(ITestOutputHelper output) : BaseAssistantTe
         }
     }
 }
+

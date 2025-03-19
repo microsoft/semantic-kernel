@@ -100,3 +100,4 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
             => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 }
+

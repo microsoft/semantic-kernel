@@ -21,7 +21,7 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task ResetChatAsync(bool useChatClient)
+    public async Task ResetChat(bool useChatClient)
     {
         // Define the assistant
         Assistant assistant =
@@ -86,3 +86,4 @@ public class MixedChat_Reset(ITestOutputHelper output) : BaseAssistantTest(outpu
         }
     }
 }
+

@@ -37,7 +37,7 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task UseStreamingAgentChatAsync(bool useChatClient)
+    public async Task UseStreamingAgentChat(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -125,3 +125,4 @@ public class MixedChat_Streaming(ITestOutputHelper output) : BaseAssistantTest(o
             => Task.FromResult(history[history.Count - 1].Content?.Contains("approve", StringComparison.OrdinalIgnoreCase) ?? false);
     }
 }
+

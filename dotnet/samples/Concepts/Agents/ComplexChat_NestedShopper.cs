@@ -95,7 +95,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task NestedChatWithAggregatorAgentAsync(bool useChatClient)
+    public async Task NestedChatWithAggregatorAgent(bool useChatClient)
     {
         Console.WriteLine($"! {Model}");
 
