@@ -72,7 +72,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         Assert.Contains("Saturn", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
         Assert.Contains("Uranus", result.GetValue<string>(), StringComparison.InvariantCultureIgnoreCase);
         var chatResponse = Assert.IsType<ChatResponse>(result.GetValue<ChatResponse>());
-        Assert.Contains("Saturn", chatResponse.Message.Text, StringComparison.InvariantCultureIgnoreCase);
+        Assert.Contains("Saturn", chatResponse.Text, StringComparison.InvariantCultureIgnoreCase);
         var chatMessage = Assert.IsType<Microsoft.Extensions.AI.ChatMessage>(result.GetValue<Microsoft.Extensions.AI.ChatMessage>());
         Assert.Contains("Uranus", chatMessage.Text, StringComparison.InvariantCultureIgnoreCase);
         var chatMessageContent = Assert.IsType<Microsoft.SemanticKernel.ChatMessageContent>(result.GetValue<Microsoft.SemanticKernel.ChatMessageContent>());

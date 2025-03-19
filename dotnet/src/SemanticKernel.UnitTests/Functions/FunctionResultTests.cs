@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -165,8 +166,8 @@ public class FunctionResultTests
 
         // Act and Assert
         var message = target.GetValue<ChatMessageContent>()!;
-        Assert.Equal(valueType.Message.Text, message.Content);
-        Assert.Same(valueType.Message.RawRepresentation, message.InnerContent);
+        Assert.Equal(valueType.Messages.Last().Text, message.Content);
+        Assert.Same(valueType.Messages.Last().RawRepresentation, message.InnerContent);
     }
 
     [Fact]
@@ -194,8 +195,8 @@ public class FunctionResultTests
 
         // Act and Assert
 
-        Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatResponse>()!.Message.Text);
-        Assert.Same(valueType.InnerContent, target.GetValue<MEAI.ChatResponse>()!.Message.RawRepresentation);
+        Assert.Equal(valueType.Content, target.GetValue<MEAI.ChatResponse>()!.Text);
+        Assert.Same(valueType.InnerContent, target.GetValue<MEAI.ChatResponse>()!.Messages[0].RawRepresentation);
     }
 
     [Theory]
@@ -218,12 +219,26 @@ public class FunctionResultTests
         // Act and Assert
         // Ensure returns the ChatResponse for no choices as well
         var result = target.GetValue<MEAI.ChatResponse>()!;
+        Assert.NotNull(result);
+
         for (int i = 0; i < listSize; i++)
         {
-            Assert.Equal(multipleChoiceResponse[i].Content, result.Choices[i].Text);
-            Assert.Same(multipleChoiceResponse[i].InnerContent, result.Choices[i].RawRepresentation);
+            // Ensure the other choices are not added as messages, only the first choice is considered
+            Assert.Single(result.Messages);
+
+            if (i == 0)
+            {
+                // The first choice is converted to a message
+                Assert.Equal(multipleChoiceResponse[i].Content, result.Messages.Last().Text);
+                Assert.Same(multipleChoiceResponse[i].InnerContent, result.Messages.Last().RawRepresentation);
+            }
+            else
+            {
+                // Any following choices messages are ignored and should not match the result message
+                Assert.NotEqual(multipleChoiceResponse[i].Content, result.Text);
+                Assert.NotSame(multipleChoiceResponse[i].InnerContent, result.Messages.Last().RawRepresentation);
+            }
         }
-        Assert.Equal(multipleChoiceResponse.Count, result.Choices.Count);
 
         if (listSize > 0)
         {
@@ -270,22 +285,22 @@ public class FunctionResultTests
 
         // Act and Assert
         Assert.Same(valueType, target.GetValue<MEAI.ChatResponse>());
-        Assert.Same(valueType.Message, target.GetValue<MEAI.ChatMessage>());
-        Assert.Same(valueType.Message.Contents[0], target.GetValue<MEAI.TextContent>());
-        Assert.Same(valueType.Message.Contents[0], target.GetValue<MEAI.AIContent>());
+        Assert.Same(valueType.Messages[0], target.GetValue<MEAI.ChatMessage>());
+        Assert.Same(valueType.Messages[0].Contents[0], target.GetValue<MEAI.TextContent>());
+        Assert.Same(valueType.Messages[0].Contents[0], target.GetValue<MEAI.AIContent>());
 
         // Check the the content list is returned
-        Assert.Same(valueType.Message.Contents, target.GetValue<IList<MEAI.AIContent>>()!);
-        Assert.Same(valueType.Message.Contents[0], target.GetValue<IList<MEAI.AIContent>>()![0]);
+        Assert.Same(valueType.Messages[0].Contents, target.GetValue<IList<MEAI.AIContent>>()!);
+        Assert.Same(valueType.Messages[0].Contents[0], target.GetValue<IList<MEAI.AIContent>>()![0]);
         Assert.IsType<MEAI.TextContent>(target.GetValue<IList<MEAI.AIContent>>()![0]);
 
         // Check the raw representations are returned
         Assert.Same(valueType.RawRepresentation, target.GetValue<OpenAI.Chat.ChatCompletion>()!);
-        Assert.Same(valueType.Message.RawRepresentation, target.GetValue<OpenAI.Chat.ChatMessageContent>()!);
+        Assert.Same(valueType.Messages[0].RawRepresentation, target.GetValue<OpenAI.Chat.ChatMessageContent>()!);
     }
 
     [Fact]
-    public void GetValueThrowsForEmptyChoicesToMEAITypes()
+    public void GetValueThrowsForEmptyMessagesToMEAITypes()
     {
         // Arrange
         string expectedValue = Guid.NewGuid().ToString();
@@ -293,15 +308,15 @@ public class FunctionResultTests
         FunctionResult target = new(s_nopFunction, valueType);
 
         // Act and Assert
-        Assert.Empty(target.GetValue<MEAI.ChatResponse>()!.Choices);
+        Assert.Empty(target.GetValue<MEAI.ChatResponse>()!.Messages);
 
         var exception = Assert.Throws<InvalidCastException>(target.GetValue<MEAI.ChatMessage>);
-        Assert.Contains("no choices", exception.Message);
+        Assert.Contains("no messages", exception.Message);
 
         exception = Assert.Throws<InvalidCastException>(target.GetValue<MEAI.TextContent>);
-        Assert.Contains("no choices", exception.Message);
+        Assert.Contains("no messages", exception.Message);
 
         exception = Assert.Throws<InvalidCastException>(target.GetValue<MEAI.AIContent>);
-        Assert.Contains("no choices", exception.Message);
+        Assert.Contains("no messages", exception.Message);
     }
 }

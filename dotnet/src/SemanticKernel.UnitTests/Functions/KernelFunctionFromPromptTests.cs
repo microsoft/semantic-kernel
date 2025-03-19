@@ -424,12 +424,15 @@ public class KernelFunctionFromPromptTests
     }
 
     [Fact]
-    public async Task InvokeAsyncReturnsTheConnectorChatResultChoicesWhenInServiceIsOnlyChatClientAsync()
+    public async Task InvokeAsyncReturnsTheConnectorChatResultMessagesWhenInServiceIsOnlyChatClientAsync()
     {
+        var firstMessageContent = "something 1";
+        var lastMessageContent = "something 2";
+
         var customTestType = new CustomTestType();
         var fakeChatResponse = new MEAI.ChatResponse([
-            new MEAI.ChatMessage(MEAI.ChatRole.User, "something 1") { RawRepresentation = customTestType },
-            new MEAI.ChatMessage(MEAI.ChatRole.Assistant, "something 2")
+            new MEAI.ChatMessage(MEAI.ChatRole.User, firstMessageContent),
+            new MEAI.ChatMessage(MEAI.ChatRole.Assistant, lastMessageContent) { RawRepresentation = customTestType }
         ]);
 
         Mock<MEAI.IChatClient> mockChatClient = new();
@@ -447,23 +450,23 @@ public class KernelFunctionFromPromptTests
 
         var response = result.GetValue<MEAI.ChatResponse>();
         Assert.NotNull(response);
-        Assert.Collection(response.Choices,
+        Assert.Collection(response.Messages,
             item1 =>
             {
-                Assert.Equal("something 1", item1.Text); Assert.Equal(MEAI.ChatRole.User, item1.Role);
+                Assert.Equal(firstMessageContent, item1.Text); Assert.Equal(MEAI.ChatRole.User, item1.Role);
             },
             item2 =>
             {
-                Assert.Equal("something 2", item2.Text); Assert.Equal(MEAI.ChatRole.Assistant, item2.Role);
+                Assert.Equal(lastMessageContent, item2.Text); Assert.Equal(MEAI.ChatRole.Assistant, item2.Role);
             });
 
-        // Other specific types will be checked against the first choice
-        Assert.Equal("something 1", result.GetValue<string>());
-        Assert.Equal("something 1", result.GetValue<MEAI.ChatMessage>()!.Text);
-        Assert.Equal(MEAI.ChatRole.User, result.GetValue<MEAI.ChatMessage>()!.Role);
+        // Other specific types will be checked against the first choice and last message
+        Assert.Equal(lastMessageContent, result.GetValue<string>());
+        Assert.Equal(lastMessageContent, result.GetValue<MEAI.ChatMessage>()!.Text);
+        Assert.Equal(MEAI.ChatRole.Assistant, result.GetValue<MEAI.ChatMessage>()!.Role);
         Assert.Same(customTestType, result.GetValue<CustomTestType>()!);
-        Assert.Equal("something 1", result.GetValue<MEAI.TextContent>()!.ToString());
-        Assert.Equal("something 1", result.GetValue<MEAI.AIContent>()!.ToString());
+        Assert.Equal(lastMessageContent, result.GetValue<MEAI.TextContent>()!.ToString());
+        Assert.Equal(lastMessageContent, result.GetValue<MEAI.AIContent>()!.ToString());
     }
 
     [Fact]
@@ -1077,15 +1080,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can "
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?"
-                }]
+                new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can "),
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?")
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1111,15 +1108,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can "
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?"
-                }]
+                new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can "),
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?")
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1144,15 +1135,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can "
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?"
-                }]
+                new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can "),
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?")
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1178,17 +1163,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can ",
-                    RawRepresentation = rawRepresentation
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?",
-                    RawRepresentation = rawRepresentation
-                }]
+                new MEAI.ChatResponseUpdate(role: MEAI.ChatRole.Assistant, content: "Hi! How can ") { RawRepresentation = rawRepresentation },
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?") { RawRepresentation = rawRepresentation }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1214,17 +1191,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can ",
-                    RawRepresentation = rawRepresentation
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?",
-                    RawRepresentation = rawRepresentation
-                }]
+                new MEAI.ChatResponseUpdate(role: MEAI.ChatRole.Assistant, content: "Hi! How can ") { RawRepresentation = rawRepresentation },
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?") { RawRepresentation = rawRepresentation }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1250,17 +1219,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can ",
-                    RawRepresentation = rawRepresentation
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?",
-                    RawRepresentation = rawRepresentation
-                }]
+                new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can ") { RawRepresentation = rawRepresentation },
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?")  { RawRepresentation = rawRepresentation }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1291,17 +1252,9 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can ",
-                    RawRepresentation = rawRepresentation
-                },
-                new MEAI.ChatResponseUpdate
-                {
-                    Text = "I assist you today?",
-                    RawRepresentation = rawRepresentation
-                }]
+                new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can ") { RawRepresentation = rawRepresentation },
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?")  { RawRepresentation = rawRepresentation }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1334,14 +1287,9 @@ public class KernelFunctionFromPromptTests
         var fakeService = new FakeChatCompletionService()
         {
             GetStreamingChatMessageContentsResult = [
-                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
-                {
-                    InnerContent = innerContent
-                },
-                new StreamingChatMessageContent(null, "I assist you today?")
-                {
-                    InnerContent = innerContent
-                }]
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ") { InnerContent = innerContent },
+                new StreamingChatMessageContent(null, "I assist you today?") { InnerContent = innerContent }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1373,14 +1321,9 @@ public class KernelFunctionFromPromptTests
         var fakeService = new FakeChatCompletionService()
         {
             GetStreamingChatMessageContentsResult = [
-                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
-                {
-                    InnerContent = innerContent
-                },
-                new StreamingChatMessageContent(null, "I assist you today?")
-                {
-                    InnerContent = innerContent
-                }]
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ") { InnerContent = innerContent },
+                new StreamingChatMessageContent(null, "I assist you today?") { InnerContent = innerContent }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1410,14 +1353,9 @@ public class KernelFunctionFromPromptTests
         var fakeService = new FakeChatCompletionService()
         {
             GetStreamingChatMessageContentsResult = [
-                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
-                {
-                    InnerContent = innerContent
-                },
-                new StreamingChatMessageContent(null, "I assist you today?")
-                {
-                    InnerContent = innerContent
-                }]
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ") { InnerContent = innerContent },
+                new StreamingChatMessageContent(null, "I assist you today?") { InnerContent = innerContent }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1447,14 +1385,9 @@ public class KernelFunctionFromPromptTests
         var fakeService = new FakeChatCompletionService()
         {
             GetStreamingChatMessageContentsResult = [
-                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
-                {
-                    InnerContent = innerContent
-                },
-                new StreamingChatMessageContent(null, "I assist you today?")
-                {
-                    InnerContent = innerContent
-                }]
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ") { InnerContent = innerContent },
+                new StreamingChatMessageContent(null, "I assist you today?") { InnerContent = innerContent }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1484,14 +1417,9 @@ public class KernelFunctionFromPromptTests
         var fakeService = new FakeChatCompletionService()
         {
             GetStreamingChatMessageContentsResult = [
-                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ")
-                {
-                    InnerContent = innerContent
-                },
-                new StreamingChatMessageContent(null, "I assist you today?")
-                {
-                    InnerContent = innerContent
-                }]
+                new StreamingChatMessageContent(AuthorRole.Assistant, "Hi! How can ") { InnerContent = innerContent },
+                new StreamingChatMessageContent(null, "I assist you today?") { InnerContent = innerContent }
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1544,11 +1472,8 @@ public class KernelFunctionFromPromptTests
         using var fakeService = new FakeChatClient()
         {
             GetStreamingResponseResult = [
-                new MEAI.ChatResponseUpdate
-                {
-                    Role = MEAI.ChatRole.Assistant,
-                    Text = "Hi! How can ",
-                }]
+                new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can ")
+            ]
         };
 
         IKernelBuilder builder = Kernel.CreateBuilder();
@@ -1662,16 +1587,16 @@ public class KernelFunctionFromPromptTests
 
     private sealed class FakeChatClient : MEAI.IChatClient
     {
-        public IList<MEAI.ChatMessage>? ChatMessages { get; private set; }
-        public IList<MEAI.ChatResponseUpdate>? GetStreamingResponseResult { get; set; }
+        public List<MEAI.ChatMessage>? ChatMessages { get; private set; }
+        public List<MEAI.ChatResponseUpdate>? GetStreamingResponseResult { get; set; }
 
         public void Dispose()
         {
         }
 
-        public Task<MEAI.ChatResponse> GetResponseAsync(IList<MEAI.ChatMessage> chatMessages, MEAI.ChatOptions? options = null, CancellationToken cancellationToken = default)
+        public Task<MEAI.ChatResponse> GetResponseAsync(IEnumerable<MEAI.ChatMessage> messages, MEAI.ChatOptions? options = null, CancellationToken cancellationToken = default)
         {
-            this.ChatMessages = chatMessages;
+            this.ChatMessages = messages.ToList();
             return Task.FromResult(new MEAI.ChatResponse(new MEAI.ChatMessage(MEAI.ChatRole.Assistant, "Something")));
         }
 
@@ -1682,12 +1607,12 @@ public class KernelFunctionFromPromptTests
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerable<MEAI.ChatResponseUpdate> GetStreamingResponseAsync(
-            IList<MEAI.ChatMessage> chatMessages,
+            IEnumerable<MEAI.ChatMessage> messages,
             MEAI.ChatOptions? options = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            this.ChatMessages = chatMessages;
-            foreach (var item in this.GetStreamingResponseResult ?? [new MEAI.ChatResponseUpdate { Role = MEAI.ChatRole.Assistant, Text = "Something" }])
+            this.ChatMessages = messages.ToList();
+            foreach (var item in this.GetStreamingResponseResult ?? [new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Something")])
             {
                 yield return item;
             }
