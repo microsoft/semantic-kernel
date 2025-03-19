@@ -44,7 +44,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     public PineconeVectorStoreRecordCollection(Sdk.PineconeClient pineconeClient, string collectionName, PineconeVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         Verify.NotNull(pineconeClient);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        VerifyCollectionName(collectionName);
+
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.VectorCustomMapper is not null, PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes);
         VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
@@ -441,4 +442,18 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             null => CreateIndexRequestMetric.Cosine,
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' is not supported.")
         };
+
+    private static void VerifyCollectionName(string collectionName)
+    {
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        // Based on https://docs.pinecone.io/troubleshooting/restrictions-on-index-names
+        foreach (char character in collectionName)
+        {
+            if (!((character is >= 'a' and <= 'z') || character is '-' || (character is >= '0' and <= '9')))
+            {
+                throw new ArgumentException("Collection name must contain only ASCII lowercase letters, digits and dashes.", nameof(collectionName));
+            }
+        }
+    }
 }
