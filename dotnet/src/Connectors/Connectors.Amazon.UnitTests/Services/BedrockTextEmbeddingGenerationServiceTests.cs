@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -79,12 +80,22 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
         List<string> prompts = new() { "King", "Queen", "Prince" };
         IAmazonBedrockRuntime? nullBedrockRuntime = null;
 
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        // Ensure that the environment cannot grab the runtime from the container when a null runtime is provided
+        var runtime = new ServiceCollection()
+            .TryAddAWSService<IAmazonBedrockRuntime>()
+            .BuildServiceProvider()
+            .GetService<IAmazonBedrockRuntime>();
+
+        // If the runtime is null, it means that the environment is not set up for it and an exception should be thrown
+        if (runtime is null)
         {
-            var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
-            var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-            await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
-        }).ConfigureAwait(true);
+            // Act & Assert
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
+                var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+                await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
+            }).ConfigureAwait(true);
+        }
     }
 }
