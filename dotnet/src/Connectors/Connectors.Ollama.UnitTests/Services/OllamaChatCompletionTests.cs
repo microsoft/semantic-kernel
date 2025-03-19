@@ -305,6 +305,13 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotEmpty(requestPayload.Tools);
         Assert.Equal(1, requestPayload.Tools?.Count());
 
+        var firstTool = JsonSerializer.Deserialize<Tool>((requestPayload.Tools?.Cast<JsonElement>().First()!).Value);
+        Assert.Equal("TestPlugin_TestFunction", firstTool!.Function!.Name);
+        Assert.Single(firstTool.Function!.Parameters!.Properties!);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
+        Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Required!.First());
+
         Assert.NotNull(message.ModelId);
         Assert.Equal(targetModel, message.ModelId);
         Assert.NotNull(message.InnerContent);
@@ -374,6 +381,13 @@ public sealed class OllamaChatCompletionTests : IDisposable
         Assert.NotNull(requestPayload.Tools);
         Assert.NotEmpty(requestPayload.Tools);
         Assert.Equal(1, requestPayload.Tools?.Count());
+
+        var firstTool = JsonSerializer.Deserialize<Tool>((requestPayload.Tools?.Cast<JsonElement>().First()!).Value);
+        Assert.Equal("TestPlugin_TestFunction", firstTool!.Function!.Name);
+        Assert.Single(firstTool.Function!.Parameters!.Properties!);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Properties!.First().Key);
+        Assert.Equal("string", firstTool.Function!.Parameters!.Properties!.First().Value.Type);
+        Assert.Equal("testInput", firstTool.Function!.Parameters!.Required!.First());
 
         Assert.Equal(1, invocationCount);
 
