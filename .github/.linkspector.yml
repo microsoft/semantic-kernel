@@ -10,7 +10,7 @@ ignorePatterns:
   - pattern: "^http://localhost.*"
   - pattern: "^https://localhost.*"
   - pattern: "^https://platform.openai.com.*"
-  - pattern: "^https://outlook.office.com/bookings"
+  - pattern: "^https://outlook.office.com/bookings.*"
 baseUrl: https://github.com/microsoft/semantic-kernel/
 aliveStatusCodes: 
   - 200
