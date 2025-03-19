@@ -149,7 +149,7 @@ def test_build_create_table_query():
     cmd_str = str(cmd.query)
     assert (
         cmd_str
-        == 'BEGIN\nCREATE TABLE [dbo].[Test] \n ("[id]" nvarchar(255) NOT NULL,\n"name" nvarchar(max) NULL,\n"age" '
+        == 'BEGIN\nCREATE TABLE [dbo].[Test] \n ("id" nvarchar(255) NOT NULL,\n"name" nvarchar(max) NULL,\n"age" '
         'int NULL,\n"embedding" VECTOR(1536) NULL,\nPRIMARY KEY (id) \n) ;\nEND\n'
     )
 
