@@ -5,6 +5,9 @@ from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import os
+
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -201,7 +204,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         Settings are prepared based on the syntax shown here:
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/converse.html
 
-        Note that Guardrails are not supported.
+        Note that Guardrails are not supported by Semantic Kernel but have been patched in this fork.
         """
         prepared_settings = {
             "modelId": self.ai_model_id,
@@ -222,6 +225,13 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
             prepared_settings["toolConfig"] = {
                 "tools": settings.tools,
                 "toolChoice": settings.tool_choice,
+            }
+
+        # Add Guardrails
+        if os.getenv("ENABLE_GUARDRAILS", False) == "True":
+            prepared_settings["guardrailConfig"] = {
+                "guardrailIdentifier": os.getenv("BEDROCK_GUARDRAIL_ID"),
+                "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION")
             }
 
         return prepared_settings
