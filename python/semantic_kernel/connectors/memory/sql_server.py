@@ -48,7 +48,7 @@ else:
     from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
-    from pyodbc import Connection, ProgrammingError
+    from pyodbc import Connection, ProgrammingError, Row
 
 
 logger = logging.getLogger(__name__)
@@ -227,7 +227,7 @@ class SqlCommand:
             for i in range(len(self.many_parameters)):
                 self.many_parameters[i] += (value,)
         else:
-            if (len(self.parameters) + 1) > 2100:
+            if (len(self.parameters) + 1) > SQL_PARAMETER_MAX_COUNT:
                 raise VectorStoreOperationException("The maximum number of parameters is 2100.")
             self.parameters.append(value)
 
@@ -386,6 +386,7 @@ class SqlServerCollection(
             self.data_model_definition.vector_fields,
             records,
         )
+        results: list["Row"] = []
         # Execute the merge query
         with self.connection.cursor() as cur:
             cur.execute(*command.to_execute())
