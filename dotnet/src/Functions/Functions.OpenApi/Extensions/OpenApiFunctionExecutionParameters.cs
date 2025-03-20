@@ -47,7 +47,6 @@ public class OpenApiFunctionExecutionParameters
     /// To support more complex payloads, it should be disabled and the payload should be provided via the 'payload' argument.
     /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
-    [Experimental("SKEXP0040")]
     public bool EnableDynamicPayload { get; set; }
 
     /// <summary>
@@ -58,7 +57,6 @@ public class OpenApiFunctionExecutionParameters
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
     /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
-    [Experimental("SKEXP0040")]
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
@@ -84,7 +82,6 @@ public class OpenApiFunctionExecutionParameters
     /// changing response content, adjusting the schema, or providing a completely new response.
     /// If a custom factory is not supplied, the internal factory will be used by default.
     /// </summary>
-    [Experimental("SKEXP0040")]
     public RestApiOperationResponseFactory? RestApiOperationResponseFactory { get; set; }
 
     /// <summary>

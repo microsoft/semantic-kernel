@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using SemanticKernel.Process.TestsShared.Services;
 
 namespace SemanticKernel.Process.TestsShared.Steps;
 
@@ -20,15 +20,18 @@ public static class CommonSteps
     {
         public const string CountFunction = nameof(Count);
 
-#pragma warning disable CA2211
-        // workaround for unit testing evaluation purposes
-        public static int Index = 0;
-#pragma warning restore CA2211
+        private readonly ICounterService _counter;
+        public CountStep(ICounterService counterService)
+        {
+            this._counter = counterService;
+        }
+
         [KernelFunction]
         public string Count()
         {
-            Interlocked.Increment(ref Index);
-            return Index.ToString();
+            int count = this._counter.IncreaseCount();
+
+            return count.ToString();
         }
     }
 
@@ -84,7 +87,4 @@ public static class CommonSteps
             return message;
         }
     }
-
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
-
 }

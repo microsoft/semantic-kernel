@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// TODO: Reimplement these as integration tests, #10464
+
+#if DISABLED
+
 using System;
 using System.Data.Common;
 using System.Linq;
@@ -104,3 +108,5 @@ public sealed class SqliteVectorStoreTests
         Assert.Contains("collection2", collections);
     }
 }
+
+#endif

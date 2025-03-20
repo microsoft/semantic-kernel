@@ -34,12 +34,11 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(schema, tableName);
         sb.AppendLine(" (");
         string keyColumnName = GetColumnName(keyProperty);
-        var keyMapping = Map(keyProperty.PropertyType);
-        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, keyMapping.sqlName);
+        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, Map(keyProperty));
         sb.AppendLine();
         for (int i = 0; i < dataProperties.Count; i++)
         {
-            sb.AppendFormat("[{0}] {1},", GetColumnName(dataProperties[i]), Map(dataProperties[i].PropertyType).sqlName);
+            sb.AppendFormat("[{0}] {1},", GetColumnName(dataProperties[i]), Map(dataProperties[i]));
             sb.AppendLine();
         }
         for (int i = 0; i < vectorProperties.Count; i++)
@@ -168,7 +167,7 @@ internal static class SqlServerCommandBuilder
 
         StringBuilder sb = new(200);
         // The DECLARE statement creates a table variable to store the keys of the inserted rows.
-        sb.AppendFormat("DECLARE @InsertedKeys TABLE (KeyColumn {0});", Map(keyProperty.PropertyType).sqlName);
+        sb.AppendFormat("DECLARE @InsertedKeys TABLE (KeyColumn {0});", Map(keyProperty));
         sb.AppendLine();
         // The MERGE statement performs the upsert operation and outputs the keys of the inserted rows into the table variable.
         sb.Append("MERGE INTO ");
@@ -417,7 +416,7 @@ internal static class SqlServerCommandBuilder
         if (!string.IsNullOrEmpty(schema))
         {
             sb.Append(schema);
-            sb.Replace("]", "]]", index, schema.Length); // replace the ] for schema
+            sb.Replace("]", "]]", index, schema!.Length); // replace the ] for schema
             sb.Append("].[");
             index = sb.Length;
         }
@@ -509,28 +508,27 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-    private static (string sqlName, string? autoGenerate) Map(Type type)
+    private static string Map(VectorStoreRecordProperty property) => property.PropertyType switch
     {
-        return type switch
-        {
-            Type t when t == typeof(byte) => ("TINYINT", null),
-            Type t when t == typeof(short) => ("SMALLINT", null),
-            Type t when t == typeof(int) => ("INT", "IDENTITY(1,1)"),
-            Type t when t == typeof(long) => ("BIGINT", "IDENTITY(1,1)"),
-            Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", "DEFAULT NEWSEQUENTIALID()"),
-            Type t when t == typeof(string) => ("NVARCHAR(255)", null),
-            Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", null),
-            Type t when t == typeof(bool) => ("BIT", null),
-            Type t when t == typeof(DateTime) => ("DATETIME2", null),
+        Type t when t == typeof(byte) => "TINYINT",
+        Type t when t == typeof(short) => "SMALLINT",
+        Type t when t == typeof(int) => "INT",
+        Type t when t == typeof(long) => "BIGINT",
+        Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
+        Type t when t == typeof(string) && property is VectorStoreRecordKeyProperty => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is VectorStoreRecordDataProperty { IsFilterable: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) => "NVARCHAR(MAX)",
+        Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
+        Type t when t == typeof(bool) => "BIT",
+        Type t when t == typeof(DateTime) => "DATETIME2",
 #if NET
-            Type t when t == typeof(TimeOnly) => ("TIME", null),
+        Type t when t == typeof(TimeOnly) => "TIME",
 #endif
-            Type t when t == typeof(decimal) => ("DECIMAL", null),
-            Type t when t == typeof(double) => ("FLOAT", null),
-            Type t when t == typeof(float) => ("REAL", null),
-            _ => throw new NotSupportedException($"Type {type} is not supported.")
-        };
-    }
+        Type t when t == typeof(decimal) => "DECIMAL",
+        Type t when t == typeof(double) => "FLOAT",
+        Type t when t == typeof(float) => "REAL",
+        _ => throw new NotSupportedException($"Type {property.PropertyType} is not supported.")
+    };
 
     // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
     private static (string distanceMetric, string sorting) MapDistanceFunction(string name) => name switch

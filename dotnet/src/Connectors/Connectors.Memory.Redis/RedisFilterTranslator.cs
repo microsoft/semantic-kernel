@@ -110,10 +110,10 @@ internal class RedisFilterTranslator
                     {
                         ExpressionType.Equal when constantValue is int or long or float or double => $" == {constantValue}",
                         ExpressionType.Equal when constantValue is string stringValue
-#if NETSTANDARD2_0
-                            => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",
-#else
+#if NET8_0_OR_GREATER
                             => $$""":{"{{stringValue.Replace("\"", "\\\"", StringComparison.Ordinal)}}"}""",
+#else
+                            => $$""":{"{{stringValue.Replace("\"", "\"\"")}}"}""",
 #endif
                         ExpressionType.Equal when constantValue is null => throw new NotSupportedException("Null value type not supported"), // TODO
 

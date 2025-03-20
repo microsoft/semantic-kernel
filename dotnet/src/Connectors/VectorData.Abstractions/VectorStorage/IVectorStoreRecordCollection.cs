@@ -11,6 +11,9 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The record data model to use for adding, updating, and retrieving data from the store.</typeparam>
+/// <remarks>
+/// <para>Unless otherwise documented, implementations of this interface can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
+/// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix

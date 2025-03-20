@@ -166,7 +166,7 @@ internal sealed class FallbackChatClient : IChatClient
     public ChatClientMetadata Metadata => new();
 
     /// <inheritdoc/>
-    public async Task<Microsoft.Extensions.AI.ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Microsoft.Extensions.AI.ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         for (int i = 0; i < this._chatClients.Count; i++)
         {
@@ -174,7 +174,7 @@ internal sealed class FallbackChatClient : IChatClient
 
             try
             {
-                return await chatClient.GetResponseAsync(chatMessages, options, cancellationToken).ConfigureAwait(false);
+                return await chatClient.GetResponseAsync(messages, options, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -192,13 +192,13 @@ internal sealed class FallbackChatClient : IChatClient
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         for (int i = 0; i < this._chatClients.Count; i++)
         {
             var chatClient = this._chatClients.ElementAt(i);
 
-            IAsyncEnumerable<ChatResponseUpdate> completionStream = chatClient.GetStreamingResponseAsync(chatMessages, options, cancellationToken);
+            IAsyncEnumerable<ChatResponseUpdate> completionStream = chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
 
             ConfiguredCancelableAsyncEnumerable<ChatResponseUpdate>.Enumerator enumerator = completionStream.ConfigureAwait(false).GetAsyncEnumerator();
 

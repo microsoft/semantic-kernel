@@ -159,8 +159,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         {
             Mapper = mapper
         };
-        using SqlConnection connection = new(SqlServerTestEnvironment.ConnectionString);
-        SqlServerVectorStoreRecordCollection<string, TestModel> collection = new(connection, collectionName, options);
+        SqlServerVectorStoreRecordCollection<string, TestModel> collection = new(SqlServerTestEnvironment.ConnectionString!, collectionName, options);
 
         try
         {

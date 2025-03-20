@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 using VectorDataSpecificationTests.Support;
 
 namespace SqlServerIntegrationTests.Support;
 
-public sealed class SqlServerTestStore : TestStore, IDisposable
+public sealed class SqlServerTestStore : TestStore
 {
     public static readonly SqlServerTestStore Instance = new();
 
@@ -18,20 +17,15 @@ public sealed class SqlServerTestStore : TestStore, IDisposable
 
     private SqlServerVectorStore? _connectedStore;
 
-    protected override async Task StartAsync()
+    protected override Task StartAsync()
     {
         if (string.IsNullOrWhiteSpace(SqlServerTestEnvironment.ConnectionString))
         {
             throw new InvalidOperationException("Connection string is not configured, set the SqlServer:ConnectionString environment variable");
         }
 
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        SqlConnection connection = new(SqlServerTestEnvironment.ConnectionString);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-        await connection.OpenAsync();
+        this._connectedStore = new(SqlServerTestEnvironment.ConnectionString);
 
-        this._connectedStore = new(connection);
+        return Task.CompletedTask;
     }
-
-    public void Dispose() => this._connectedStore?.Dispose();
 }

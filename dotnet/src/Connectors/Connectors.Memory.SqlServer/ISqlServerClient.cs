@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// Interface for client managing SQL Server or Azure SQL database operations.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqlServerVectorStore")]
 internal interface ISqlServerClient
 {
     /// <summary>

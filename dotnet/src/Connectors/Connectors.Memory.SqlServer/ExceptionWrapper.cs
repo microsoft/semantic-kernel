@@ -33,6 +33,12 @@ internal static class ExceptionWrapper
         }
         catch (Exception ex)
         {
+#if NET
+            await connection.DisposeAsync().ConfigureAwait(false);
+#else
+            connection.Dispose();
+#endif
+
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = operationName,
