@@ -139,7 +139,7 @@ public static class Program
     /// <param name="config">The host configuration.</param>
     private static void AddVectorStore(WebApplicationBuilder builder, HostConfig config)
     {
-        // Don't add vector store if no collection name is provided. Allows for the first run experience when the collection is no yet created.
+        // Don't add vector store if no collection name is provided. Allows for a basic experience where no data has been uploaded to the vector store yet.
         if (string.IsNullOrWhiteSpace(config.Rag.CollectionName))
         {
             return;
@@ -172,7 +172,7 @@ public static class Program
     /// <param name="config">The host configuration.</param>
     private static void AddAgent(WebApplicationBuilder builder, HostConfig config)
     {
-        // Register agent without RAG if no collection name is provided. Allows for the first run experience when the collection is no yet created.
+        // Register agent without RAG if no collection name is provided. Allows for a basic experience where no data has been uploaded to the vector store yet.
         if (string.IsNullOrEmpty(config.Rag.CollectionName))
         {
             PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read("AgentDefinition.yaml"));
