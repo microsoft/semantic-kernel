@@ -149,7 +149,7 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
     /// </summary>
     [Fact]
     public async Task VerifyChatClientAgentInvocationAsync()
@@ -231,7 +231,7 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
-    /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/> using IChatClient.
+    /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
     /// </summary>
     [Fact]
     public async Task VerifyChatClientAgentStreamingAsync()
@@ -300,7 +300,7 @@ public class ChatCompletionAgentTests
     }
 
     /// <summary>
-    /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatClient"/>.
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/> using <see cref="IChatClient"/>.
     /// </summary>
     [Fact]
     public void VerifyChatClientSelection()
