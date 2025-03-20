@@ -28,4 +28,13 @@
     <ProjectReference Include="..\VectorDataIntegrationTests\VectorDataIntegrationTests.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="testsettings.json" Condition="Exists('testsettings.json')">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="testsettings.development.json" Condition="Exists('testsettings.development.json')">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
