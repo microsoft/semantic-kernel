@@ -1,20 +1,14 @@
 ## About
 
-Contains abstractions for accessing Vector Databases and Vector Indexes.
+Contains utilities for accessing Vector Databases and Vector Indexes.
 
 ## Key Features
 
-- Interfaces for Vector Database implementation. Vector Database implementations are provided separately in other packages, for example  `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
+- Telemetry for any Vector Database implementation. Vector Database implementations are provided separately in other packages, for example  `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
 
 ## How to Use
 
 This package is typically used with an implementation of the vector database abstractions such as `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
-
-## Main Types
-
-The main types provided by this library are:
-
-- `Microsoft.Extensions.VectorData.IVectorStore`
 
 ## Additional Documentation
 
@@ -22,9 +16,9 @@ The main types provided by this library are:
 
 ## Related Packages
 
-Vector Database utilities:
+Vector Database abstractions:
 
-- `Microsoft.Extensions.VectorData`
+- `Microsoft.Extensions.VectorData.Abstractions`
 
 Vector Database implementations:
 
@@ -43,4 +37,4 @@ Vector Database implementations:
 
 ## Feedback & Contributing
 
-Microsoft.Extensions.VectorData.Abstractions is released as open source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/microsoft/semantic-kernel).
+Microsoft.Extensions.VectorData is released as open source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/microsoft/semantic-kernel).
