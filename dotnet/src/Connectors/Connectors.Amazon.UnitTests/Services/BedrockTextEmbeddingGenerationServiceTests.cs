@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.Extensions.DependencyInjection;
