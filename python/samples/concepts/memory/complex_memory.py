@@ -347,5 +347,4 @@ if __name__ == "__main__":
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     args = parser.parse_args()
-    args.collection = "sql_server"
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))
