@@ -197,8 +197,49 @@ internal static partial class Verify
         throw new ArgumentOutOfRangeException(paramName, actualValue, message);
 
     private static readonly HashSet<string> s_invalidLocationCharacters = [
+
+/* Unmerged change from project 'Connectors.Google(netstandard2.0)'
+Before:
         "://", "..", "\\", "/", "@", "?", "#", "[", "]", "&", ":",
         "<", ">", "'", "\"", "+", "|", "="
+After:
+        "://",
+        "..",
+        "\\",
+        "/",
+        "@",
+        "?",
+        "#",
+        "[",
+        "]",
+        "&",
+        ":",
+        "<",
+        ">",
+        "'",
+        "\"",
+        "+",
+        "|",
+        "="
+*/
+        "://",
+        "..",
+        "\\",
+        "/",
+        "@",
+        "?",
+        "#",
+        "[",
+        "]",
+        "&",
+        ":",
+        "<",
+        ">",
+        "'",
+        "\"",
+        "+",
+        "|",
+        "="
     ];
 
     /// <summary>
