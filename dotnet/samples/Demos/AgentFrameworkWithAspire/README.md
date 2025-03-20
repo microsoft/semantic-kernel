@@ -6,7 +6,7 @@ This folder contains a set of Aspire projects that demonstrate how to host a cha
 
 ### Initialize the project
 
-1. Open a terminal and navigate to the `Hosting\Agent` directory.
+1. Open a terminal and navigate to the `AgentFrameworkWithAspire` directory.
 2. Initialize the project by running the `azd init` command. **azd** will inspect the directory structure and determine the type of the app.
 3. Select the `Use code in the current directory` option when **azd** prompts you with two app initialization options.
 4. Select the `Confirm and continue initializing my app` option to confirm that **azd** found the correct `ChatWithAgent.AppHost` project.
