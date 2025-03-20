@@ -177,21 +177,65 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNull(keys);
 
         using SqlConnection connection = new(this._connectionString);
-        using SqlCommand? command = SqlServerCommandBuilder.DeleteMany(
-            connection,
-            this._options.Schema,
-            this.CollectionName,
-            this._propertyReader.KeyProperty,
-            keys);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        if (command is null)
+        using SqlTransaction transaction = connection.BeginTransaction();
+        int taken = 0;
+
+        try
         {
-            return; // keys is empty, there is nothing to delete
-        }
+            while (true)
+            {
+#if NET
+                SqlCommand command = new("", connection, transaction);
+                await using (command.ConfigureAwait(false))
+#else
+                using (SqlCommand command = new("", connection, transaction))
+#endif
+                {
+                    if (!SqlServerCommandBuilder.DeleteMany(
+                        command,
+                        this._options.Schema,
+                        this.CollectionName,
+                        this._propertyReader.KeyProperty,
+                        keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount)))
+                    {
+                        break; // keys is empty, there is nothing to delete
+                    }
 
-        await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteNonQueryAsync(ct),
-            cancellationToken, "DeleteBatch", this.CollectionName).ConfigureAwait(false);
+                    checked
+                    {
+                        taken += command.Parameters.Count;
+                    }
+
+                    await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (taken > 0)
+            {
+#if NET
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+#else
+                transaction.Commit();
+#endif
+            }
+        }
+        catch (Exception ex)
+        {
+#if NET
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+#else
+            transaction.Rollback();
+#endif
+
+            throw new VectorStoreOperationException(ex.Message, ex)
+            {
+                OperationName = "DeleteBatch",
+                VectorStoreType = ExceptionWrapper.VectorStoreType,
+                CollectionName = this.CollectionName
+            };
+        }
     }
 
     /// <inheritdoc/>
@@ -235,30 +279,44 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         bool includeVectors = options?.IncludeVectors is true;
 
         using SqlConnection connection = new(this._connectionString);
-        using SqlCommand? command = SqlServerCommandBuilder.SelectMany(
-            connection,
-            this._options.Schema,
-            this.CollectionName,
-            this._propertyReader.KeyProperty,
-            this._propertyReader.Properties,
-            keys,
-            includeVectors);
+        using SqlCommand command = connection.CreateCommand();
+        int taken = 0;
 
-        if (command is null)
+        do
         {
-            yield break; // keys is empty
-        }
+            if (command.Parameters.Count > 0)
+            {
+                command.Parameters.Clear(); // We reuse the same command for the next batch.
+            }
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-            cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false);
+            if (!SqlServerCommandBuilder.SelectMany(
+                command,
+                this._options.Schema,
+                this.CollectionName,
+                this._propertyReader.KeyProperty,
+                this._propertyReader.Properties,
+                keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount),
+                includeVectors))
+            {
+                yield break; // keys is empty
+            }
 
-        while (await ExceptionWrapper.WrapReadAsync(reader, cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false))
-        {
-            yield return this._mapper.MapFromStorageToDataModel(
-                new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
-                new() { IncludeVectors = includeVectors });
-        }
+            checked
+            {
+                taken += command.Parameters.Count;
+            }
+
+            using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+                static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+                cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false);
+
+            while (await ExceptionWrapper.WrapReadAsync(reader, cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false))
+            {
+                yield return this._mapper.MapFromStorageToDataModel(
+                    new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
+                    new() { IncludeVectors = includeVectors });
+            }
+        } while (command.Parameters.Count == SqlServerConstants.MaxParameterCount);
     }
 
     /// <inheritdoc/>
@@ -291,26 +349,84 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNull(records);
 
         using SqlConnection connection = new(this._connectionString);
-        using SqlCommand? command = SqlServerCommandBuilder.MergeIntoMany(
-            connection,
-            this._options.Schema,
-            this.CollectionName,
-            this._propertyReader.KeyProperty,
-            this._propertyReader.Properties,
-            records.Select(record => this._mapper.MapFromDataToStorageModel(record)));
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        if (command is null)
+        using SqlTransaction transaction = connection.BeginTransaction();
+        int parametersPerRecord = this._propertyReader.Properties.Count;
+        int taken = 0;
+
+        try
         {
-            yield break; // records is empty
+            while (true)
+            {
+#if NET
+                SqlCommand command = new("", connection, transaction);
+                await using (command.ConfigureAwait(false))
+#else
+                using (SqlCommand command = new("", connection, transaction))
+#endif
+                {
+                    if (!SqlServerCommandBuilder.MergeIntoMany(
+                        command,
+                        this._options.Schema,
+                        this.CollectionName,
+                        this._propertyReader.KeyProperty,
+                        this._propertyReader.Properties,
+                        records.Skip(taken)
+                               .Take(SqlServerConstants.MaxParameterCount / parametersPerRecord)
+                               .Select(this._mapper.MapFromDataToStorageModel)))
+                    {
+                        break; // records is empty
+                    }
+
+                    checked
+                    {
+                        taken += (command.Parameters.Count / parametersPerRecord);
+                    }
+
+                    await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (taken > 0)
+            {
+#if NET
+                await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+#else
+                transaction.Commit();
+#endif
+            }
+        }
+        catch (Exception ex)
+        {
+#if NET
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+#else
+            transaction.Rollback();
+#endif
+
+            throw new VectorStoreOperationException(ex.Message, ex)
+            {
+                OperationName = "UpsertBatch",
+                VectorStoreType = ExceptionWrapper.VectorStoreType,
+                CollectionName = this.CollectionName
+            };
         }
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
-            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-            cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false);
-
-        while (await ExceptionWrapper.WrapReadAsync(reader, cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false))
+        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<TKey>))
         {
-            yield return reader.GetFieldValue<TKey>(0);
+            foreach (var record in records)
+            {
+                yield return ((VectorStoreGenericDataModel<TKey>)(object)record!).Key;
+            }
+        }
+        else
+        {
+            var keyProperty = this._propertyReader.KeyPropertyInfo;
+            foreach (var record in records)
+            {
+                yield return (TKey)keyProperty.GetValue(record)!;
+            }
         }
     }
 

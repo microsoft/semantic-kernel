@@ -25,11 +25,11 @@ async def main() -> None:
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
-        # 1. Retrieve the agent definition based on the `assistant_id`
-        # Replace the "your-assistant-id" with the actual assistant ID
+        # 1. Retrieve the agent definition based on the `agent_id`
+        # Replace the "your-agent-id" with the actual agent ID
         # you want to use.
         agent_definition = await client.agents.get_agent(
-            assistant_id="your-assistant-id",
+            agent_id="your-agent-id",
         )
 
         # 2. Create a Semantic Kernel agent for the Azure AI agent
@@ -52,7 +52,7 @@ async def main() -> None:
         finally:
             # 6. Cleanup: Delete the thread and agent
             await client.agents.delete_thread(thread.id)
-            # Do not clean up the assistant so it can be used again
+            # Do not clean up the agent so it can be used again
 
         """
         Sample Output:
