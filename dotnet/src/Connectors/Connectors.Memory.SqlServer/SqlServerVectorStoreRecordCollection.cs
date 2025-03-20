@@ -11,6 +11,8 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
+#pragma warning disable SKEXP0020 // Metadata classes are experimental
+
 /// <summary>
 /// An implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
@@ -19,6 +21,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711
     : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
     private static readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> s_defaultOptions = new();
 
@@ -88,6 +93,15 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
             this._mapper = new RecordMapper<TRecord>(propertyReader);
         }
+
+        var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = "microsoft.sql_server",
+            DatabaseName = connectionStringBuilder.InitialCatalog,
+            CollectionName = name
+        };
     }
 
     /// <inheritdoc/>
@@ -472,6 +486,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 var results = this.ReadVectorSearchResultsAsync(connection, cmd, searchOptions.IncludeVectors, ct);
                 return Task.FromResult(new VectorSearchResults<TRecord>(results));
             }, cancellationToken, "VectorizedSearch", this.CollectionName).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadVectorSearchResultsAsync(

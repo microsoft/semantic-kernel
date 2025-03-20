@@ -33,23 +33,6 @@ public class LoggingVectorStoreRecordCollectionTests
     }
 
     [Fact]
-    public void CollectionNameReturnsInnerCollectionName()
-    {
-        // Arrange
-        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
-        innerCollection.Setup(c => c.CollectionName).Returns("test");
-        var logger = new Mock<ILogger>().Object;
-        var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
-
-        // Act
-        var name = decorator.CollectionName;
-
-        // Assert
-        Assert.Equal("test", name);
-        innerCollection.Verify(c => c.CollectionName, Times.Once());
-    }
-
-    [Fact]
     public async Task CollectionExistsDelegatesToInnerCollectionAsync()
     {
         // Arrange
