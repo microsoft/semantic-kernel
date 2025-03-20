@@ -43,7 +43,7 @@ public class PineconeVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "pinecone"
+            VectorStoreSystemName = "pinecone"
         };
     }
 
@@ -82,7 +82,7 @@ public class PineconeVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._metadata.VectorStoreName,
+                VectorStoreType = this._metadata.VectorStoreSystemName,
                 OperationName = ListCollectionsName
             };
         }

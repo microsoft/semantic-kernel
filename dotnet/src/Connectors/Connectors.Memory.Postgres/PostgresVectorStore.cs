@@ -35,7 +35,7 @@ public class PostgresVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "postgresql",
+            VectorStoreSystemName = "postgresql",
             DatabaseName = this._postgresClient.DatabaseName
         };
     }
@@ -52,7 +52,7 @@ public class PostgresVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "postgresql",
+            VectorStoreSystemName = "postgresql",
             DatabaseName = this._postgresClient.DatabaseName
         };
     }
@@ -64,7 +64,7 @@ public class PostgresVectorStore : IVectorStore
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
             OperationName,
-            vectorStoreName: this._metadata.VectorStoreName
+            vectorStoreSystemName: this._metadata.VectorStoreSystemName
         );
     }
 

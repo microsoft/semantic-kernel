@@ -92,7 +92,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "inmemory",
+            VectorStoreSystemName = "inmemory",
             CollectionName = collectionName
         };
 

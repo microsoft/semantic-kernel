@@ -42,7 +42,7 @@ public class AzureCosmosDBMongoDBVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "azure.cosmosdbmongodb",
+            VectorStoreSystemName = "azure.cosmosdbmongodb",
             DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName
         };
     }

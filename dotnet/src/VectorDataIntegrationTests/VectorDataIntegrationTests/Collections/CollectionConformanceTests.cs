@@ -92,7 +92,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 #pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             Assert.NotNull(collectionMetadata);
-            Assert.NotNull(collectionMetadata.VectorStoreName);
+            Assert.NotNull(collectionMetadata.VectorStoreSystemName);
             Assert.NotNull(collectionMetadata.DatabaseName);
             Assert.NotNull(collectionMetadata.CollectionName);
 
@@ -119,7 +119,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 #pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             Assert.NotNull(collectionMetadata);
-            Assert.NotNull(collectionMetadata.VectorStoreName);
+            Assert.NotNull(collectionMetadata.VectorStoreSystemName);
             Assert.NotNull(collectionMetadata.DatabaseName);
             Assert.NotNull(collectionMetadata.CollectionName);
 
@@ -148,7 +148,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 #pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             Assert.NotNull(collectionMetadata);
-            Assert.NotNull(collectionMetadata.VectorStoreName);
+            Assert.NotNull(collectionMetadata.VectorStoreSystemName);
             Assert.NotNull(collectionMetadata.DatabaseName);
             Assert.NotNull(collectionMetadata.CollectionName);
 

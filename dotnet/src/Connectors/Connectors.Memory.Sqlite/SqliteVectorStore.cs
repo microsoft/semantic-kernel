@@ -45,7 +45,7 @@ public class SqliteVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "sqlite",
+            VectorStoreSystemName = "sqlite",
             DatabaseName = connection.Database
         };
     }

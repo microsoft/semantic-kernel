@@ -120,7 +120,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "sqlite",
+            VectorStoreSystemName = "sqlite",
             DatabaseName = connection.Database,
             CollectionName = collectionName
         };
@@ -529,7 +529,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -552,7 +552,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -679,7 +679,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             operationName,
             () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -695,7 +695,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

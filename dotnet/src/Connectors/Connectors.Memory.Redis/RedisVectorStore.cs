@@ -43,7 +43,7 @@ public class RedisVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "redis",
+            VectorStoreSystemName = "redis",
             DatabaseName = database.Database.ToString()
         };
     }
@@ -90,7 +90,7 @@ public class RedisVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._metadata.VectorStoreName,
+                VectorStoreType = this._metadata.VectorStoreSystemName,
                 OperationName = OperationName
             };
         }

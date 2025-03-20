@@ -34,7 +34,7 @@ public sealed class InMemoryVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "inmemory"
+            VectorStoreSystemName = "inmemory"
         };
     }
 
@@ -48,7 +48,7 @@ public sealed class InMemoryVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "inmemory"
+            VectorStoreSystemName = "inmemory"
         };
     }
 

@@ -139,7 +139,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "qdrant",
+            VectorStoreSystemName = "qdrant",
             CollectionName = collectionName
         };
 
@@ -369,7 +369,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -388,7 +388,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -407,7 +407,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -430,7 +430,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -488,7 +488,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             }
 
             yield return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
@@ -549,7 +549,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 "Query"));
 
@@ -641,7 +641,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 "Query"));
 
@@ -679,7 +679,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -703,7 +703,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

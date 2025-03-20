@@ -97,7 +97,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "pinecone",
+            VectorStoreSystemName = "pinecone",
             CollectionName = collectionName
         };
 
@@ -180,7 +180,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             () => index.Fetch(keys, indexNamespace, cancellationToken)).ConfigureAwait(false);
 
         var records = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             GetOperationName,
             () => results.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
@@ -223,7 +223,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
 
         var vector = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             UpsertOperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -245,7 +245,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var index = await this.GetIndexAsync(this.CollectionName, cancellationToken).ConfigureAwait(false);
 
         var vectors = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             UpsertOperationName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -303,7 +303,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         // Map the results.
         var records = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this.CollectionName,
             QueryOperationName,
             () =>
@@ -352,7 +352,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -369,7 +369,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

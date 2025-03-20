@@ -42,7 +42,7 @@ public class MongoDBVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "mongodb",
+            VectorStoreSystemName = "mongodb",
             DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName
         };
     }

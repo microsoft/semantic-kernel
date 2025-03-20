@@ -101,7 +101,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "microsoft.sql_server",
+            VectorStoreSystemName = "microsoft.sql_server",
             DatabaseName = connectionStringBuilder.InitialCatalog,
             CollectionName = name
         };

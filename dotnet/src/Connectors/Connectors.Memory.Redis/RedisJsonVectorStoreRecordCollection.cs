@@ -131,7 +131,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "redis",
+            VectorStoreSystemName = "redis",
             DatabaseName = database.Database.ToString(),
             CollectionName = collectionName
         };
@@ -158,7 +158,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = "FT.INFO"
             };
@@ -247,7 +247,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
         // Convert to the caller's data model.
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             "GET",
             () =>
@@ -296,7 +296,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
             // Convert to the caller's data model.
             yield return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 "MGET",
                 () =>
@@ -340,7 +340,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
         // Map.
         var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             "SET",
                 () =>
@@ -374,7 +374,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         foreach (var record in records)
         {
             var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 "MSET",
                 () =>
@@ -430,7 +430,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             var redisResultString = result["json"].ToString();
             var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 "FT.SEARCH",
                 () =>
@@ -514,7 +514,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -538,7 +538,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

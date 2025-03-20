@@ -149,7 +149,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "redis",
+            VectorStoreSystemName = "redis",
             DatabaseName = database.Database.ToString(),
             CollectionName = collectionName
         };
@@ -176,7 +176,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = "FT.INFO"
             };
@@ -265,7 +265,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
 
         // Convert to the caller's data model.
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             operationName,
             () =>
@@ -323,7 +323,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
 
         // Map.
         var redisHashSetRecord = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreName!,
+            this._collectionMetadata.VectorStoreSystemName!,
             this._collectionName,
             "HSET",
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -391,7 +391,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
 
             // Convert to the caller's data model.
             var dataModel = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 "FT.SEARCH",
                 () =>
@@ -473,7 +473,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -496,7 +496,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

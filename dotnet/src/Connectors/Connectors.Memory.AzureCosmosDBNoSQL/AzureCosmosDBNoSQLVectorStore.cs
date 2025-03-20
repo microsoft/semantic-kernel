@@ -42,7 +42,7 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "azure.cosmosdbnosql",
+            VectorStoreSystemName = "azure.cosmosdbnosql",
             DatabaseName = database.Id
         };
     }

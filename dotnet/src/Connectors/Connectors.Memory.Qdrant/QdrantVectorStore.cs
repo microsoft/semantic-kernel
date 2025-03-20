@@ -53,7 +53,7 @@ public class QdrantVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "qdrant"
+            VectorStoreSystemName = "qdrant"
         };
     }
 
@@ -95,7 +95,7 @@ public class QdrantVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._metadata.VectorStoreName,
+                VectorStoreType = this._metadata.VectorStoreSystemName,
                 OperationName = "ListCollections"
             };
         }

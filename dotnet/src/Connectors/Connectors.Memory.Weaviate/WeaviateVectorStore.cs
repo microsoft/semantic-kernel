@@ -48,7 +48,7 @@ public class WeaviateVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "weaviate"
+            VectorStoreSystemName = "weaviate"
         };
     }
 

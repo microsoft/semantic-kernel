@@ -42,7 +42,7 @@ public sealed class SqlServerVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreName = "microsoft.sql_server",
+            VectorStoreSystemName = "microsoft.sql_server",
             DatabaseName = connectionStringBuilder.InitialCatalog
         };
     }

@@ -10,11 +10,11 @@ public class KeywordHybridSearchMetadata
 {
     /// <summary>The name of the vector store.</summary>
     /// <remarks>
-    /// Where possible, this maps to the appropriate name defined in the
-    /// OpenTelemetry Semantic Conventions for database calls and systems.
-    /// <see href="https://opentelemetry.io/docs/specs/semconv/database/"/>.
+    /// Where possible, this maps to the "db.system.name" attribute defined in the
+    /// OpenTelemetry Semantic Conventions for database calls and systems, see <see href="https://opentelemetry.io/docs/specs/semconv/database/"/>.
+    /// Example: redis, sqlite, mysql.
     /// </remarks>
-    public string? VectorStoreName { get; init; }
+    public string? VectorStoreSystemName { get; init; }
 
     /// <summary>
     /// The name of the database.
@@ -34,7 +34,7 @@ public class KeywordHybridSearchMetadata
     {
         return new()
         {
-            VectorStoreName = collectionMetadata.VectorStoreName,
+            VectorStoreSystemName = collectionMetadata.VectorStoreSystemName,
             DatabaseName = collectionMetadata.DatabaseName,
             CollectionName = collectionMetadata.CollectionName
         };

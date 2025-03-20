@@ -155,7 +155,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "azure.aisearch",
+            VectorStoreSystemName = "azure.aisearch",
             DatabaseName = searchIndexClient.ServiceName,
             CollectionName = collectionName
         };
@@ -184,7 +184,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionMetadata.CollectionName,
                 OperationName = "GetIndex"
             };
@@ -556,7 +556,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 OperationName,
                 () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
@@ -619,7 +619,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         if (this._mapper is not null)
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 OperationName,
                 () => records.Select(this._mapper!.MapFromDataToStorageModel));
@@ -647,7 +647,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         await foreach (var result in results.ConfigureAwait(false))
         {
             var document = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this._collectionName,
                 operationName,
                 () => this._options.JsonObjectCustomMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
@@ -727,7 +727,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionMetadata.CollectionName,
                 OperationName = operationName
             };
@@ -736,7 +736,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this._collectionMetadata.CollectionName,
                 OperationName = operationName
             };

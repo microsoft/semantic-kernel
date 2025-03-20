@@ -175,7 +175,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreName = "azure.cosmosdbnosql",
+            VectorStoreSystemName = "azure.cosmosdbnosql",
             DatabaseName = database.Id,
             CollectionName = collectionName
         };
@@ -501,7 +501,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreName,
+                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -688,7 +688,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
         {
             yield return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
@@ -704,7 +704,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertItem";
 
         var jsonObject = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record));
@@ -784,7 +784,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             jsonObject.Remove(scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreName!,
+                this._collectionMetadata.VectorStoreSystemName!,
                 this.CollectionName,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
