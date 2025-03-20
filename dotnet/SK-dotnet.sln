@@ -496,6 +496,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerIntegrationTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorData", "src\Connectors\VectorData\VectorData.csproj", "{8A40AE00-4A7D-4ED0-A9DA-BB7A98EFABD3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PineconeIntegrationTests", "src\VectorDataIntegrationTests\PineconeIntegrationTests\PineconeIntegrationTests.csproj", "{E9A74E0C-BC02-4DDD-A487-89847EDF8026}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1355,6 +1357,12 @@ Global
 		{8A40AE00-4A7D-4ED0-A9DA-BB7A98EFABD3}.Publish|Any CPU.Build.0 = Publish|Any CPU
 		{8A40AE00-4A7D-4ED0-A9DA-BB7A98EFABD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A40AE00-4A7D-4ED0-A9DA-BB7A98EFABD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026}.Publish|Any CPU.ActiveCfg = Release|Any CPU
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026}.Publish|Any CPU.Build.0 = Release|Any CPU
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1540,6 +1548,7 @@ Global
 		{A5E6193C-8431-4C6E-B674-682CB41EAA0C} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 		{8A40AE00-4A7D-4ED0-A9DA-BB7A98EFABD3} = {24503383-A8C4-4255-9998-28D70FE8E99A}
 		{A5E6193C-8431-4C6E-B674-682CB41EAA0C} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
+		{E9A74E0C-BC02-4DDD-A487-89847EDF8026} = {4F381919-F1BE-47D8-8558-3187ED04A84F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
