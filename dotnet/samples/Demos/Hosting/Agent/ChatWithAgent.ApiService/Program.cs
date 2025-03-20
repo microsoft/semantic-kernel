@@ -11,13 +11,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Data;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace ChatWithAgent.ApiService;
@@ -154,11 +150,6 @@ public static class Program
                 builder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(config.Host.Rag.CollectionName);
                 break;
             }
-            case "InMemory":
-            {
-                builder.Services.AddInMemoryVectorStoreRecordCollection<string, TextSnippet<string>>(config.Host.Rag.CollectionName);
-                break;
-            }
             default:
                 throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
         }
@@ -167,37 +158,11 @@ public static class Program
         switch (config.Host.Rag.VectorStoreType)
         {
             case AzureAISearchConfig.ConfigSectionName:
-            case "InMemory":
-                AddRagServices<string>(builder, config.Host.Rag);
+                builder.Services.AddVectorStoreTextSearch<TextSnippet<string>>();
                 AddAgent<string>(builder);
                 break;
             default:
                 throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
-        }
-
-        static void AddRagServices<TKey>(WebApplicationBuilder builder, RagConfig ragConfig) where TKey : notnull
-        {
-            // Add a text search implementation that uses the registered vector store record collection for search.
-            builder.Services.AddVectorStoreTextSearch<TextSnippet<TKey>>();
-
-            builder.Services.AddSingleton<UniqueKeyGenerator<string>>(new UniqueKeyGenerator<string>(() => Guid.NewGuid().ToString()));
-            builder.Services.AddSingleton<IDataLoader, PdfLoader<TKey>>((sp) =>
-            {
-                UniqueKeyGenerator<TKey> uniqueKeyGenerator = sp.GetRequiredService<UniqueKeyGenerator<TKey>>();
-                IVectorStoreRecordCollection<TKey, TextSnippet<TKey>> vectorStoreRecordCollection = sp.GetRequiredService<IVectorStoreRecordCollection<TKey, TextSnippet<TKey>>>();
-                IChatCompletionService chatCompletionService = sp.GetRequiredService<IChatCompletionService>();
-                ITextEmbeddingGenerationService textEmbeddingGenerationService = sp.GetRequiredService<ITextEmbeddingGenerationService>();
-                ILoggerFactory loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-
-                return new PdfLoader<TKey>(
-                    uniqueKeyGenerator,
-                    vectorStoreRecordCollection,
-                    textEmbeddingGenerationService,
-                    chatCompletionService,
-                    loggerFactory.CreateLogger<PdfLoader<TKey>>(),
-                    ragConfig.PdfBatchSize,
-                    ragConfig.PdfBatchLoadingDelayMilliseconds);
-            });
         }
     }
 

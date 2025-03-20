@@ -47,8 +47,6 @@ public static class ResourceBuilderExtensions
         builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.AIEmbeddingService)}", config.Rag.AIEmbeddingService);
         builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.VectorStoreType)}", config.Rag.VectorStoreType);
         builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.CollectionName)}", config.Rag.CollectionName);
-        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchSize)}", config.Rag.PdfBatchSize.ToString());
-        builder.WithEnvironment($"{nameof(config.Rag)}__{nameof(config.Rag.PdfBatchLoadingDelayMilliseconds)}", config.Rag.PdfBatchLoadingDelayMilliseconds.ToString());
 
         switch (config.Rag.AIEmbeddingService)
         {
@@ -85,26 +83,6 @@ public static class ResourceBuilderExtensions
         ArgumentNullException.ThrowIfNull(resources);
 
         foreach (var resource in resources)
-        {
-            builder.WithReference(resource);
-        }
-
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds connection string of source resource to a destination resource.
-    /// </summary>
-    /// <typeparam name="T">The type of the destination resource.</typeparam>
-    /// <param name="builder">The destination resource.</param>
-    /// <param name="resource">The source resource with the connection string.</param>
-    /// <returns>The updated resource builder.</returns>
-    public static IResourceBuilder<T> WithReferences<T>(this IResourceBuilder<T> builder, IResourceBuilder<IResourceWithConnectionString>? resource) where T : IResourceWithEnvironment
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(resource);
-
-        if (resource is not null)
         {
             builder.WithReference(resource);
         }

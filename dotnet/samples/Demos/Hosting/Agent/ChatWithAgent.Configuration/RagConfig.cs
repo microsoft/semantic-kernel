@@ -31,16 +31,4 @@ public sealed class RagConfig
     /// </summary>
     [Required]
     public string CollectionName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Pdf batch size.
-    /// </summary>
-    [Required]
-    public int PdfBatchSize { get; set; } = 2;
-
-    /// <summary>
-    /// Delay between pdf batch loading in milliseconds.
-    /// </summary>
-    [Required]
-    public int PdfBatchLoadingDelayMilliseconds { get; set; } = 0;
 }
