@@ -23,8 +23,8 @@ public class SqliteVectorStore : IVectorStore
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
-    /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
-    private readonly DbConnection _connection;
+    /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
+    private readonly string _connectionString;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly SqliteVectorStoreOptions _options;
@@ -32,23 +32,34 @@ public class SqliteVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
     /// </summary>
-    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="connectionString">The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public SqliteVectorStore(
-        DbConnection connection,
-        SqliteVectorStoreOptions? options = default)
+    public SqliteVectorStore(string connectionString, SqliteVectorStoreOptions? options = default)
     {
-        Verify.NotNull(connection);
+        Verify.NotNull(connectionString);
 
-        this._connection = connection;
+        this._connectionString = connectionString;
         this._options = options ?? new();
+
+        var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
 
         this._metadata = new()
         {
             VectorStoreSystemName = "sqlite",
-            DatabaseName = connection.Database
+            DatabaseName = connectionStringBuilder.DataSource
         };
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
+    /// </summary>
+    /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    [Obsolete("Use the constructor that accepts a connection string instead.", error: true)]
+    public SqliteVectorStore(
+        DbConnection connection,
+        SqliteVectorStoreOptions? options = default)
+        => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
     /// <inheritdoc />
     public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
@@ -58,7 +69,7 @@ public class SqliteVectorStore : IVectorStore
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
-                this._connection,
+                this._connectionString,
                 name,
                 vectorStoreRecordDefinition);
         }
@@ -70,7 +81,7 @@ public class SqliteVectorStore : IVectorStore
         }
 
         var recordCollection = new SqliteVectorStoreRecordCollection<TRecord>(
-            this._connection,
+            this._connectionString,
             name,
             new()
             {
@@ -88,7 +99,9 @@ public class SqliteVectorStore : IVectorStore
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
 
-        using var command = this._connection.CreateCommand();
+        using var connection = new SqliteConnection(this._connectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
 
         command.CommandText = Query;
 
@@ -109,7 +122,6 @@ public class SqliteVectorStore : IVectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(DbConnection) ? this._connection :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

@@ -1,0 +1,4 @@
+chainlit>=2.0.1
+python-dotenv>=1.0.1
+aiohttp>=3.10.5
+semantic-kernel>=1.22.0

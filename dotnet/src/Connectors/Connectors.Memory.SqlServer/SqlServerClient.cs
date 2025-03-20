@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// Implementation of database client managing SQL Server or Azure SQL database operations.
 /// </summary>
 [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqlServerVectorStore")]
 internal sealed class SqlServerClient : ISqlServerClient
 {
     private readonly SqlConnection _connection;

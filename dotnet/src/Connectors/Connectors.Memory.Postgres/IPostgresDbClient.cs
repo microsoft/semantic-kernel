@@ -2,17 +2,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
+#pragma warning disable SKEXP0020
+
 /// <summary>
 /// Interface for client managing postgres database operations for <see cref="PostgresMemoryStore"/>.
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PostgresVectorStore")]
 public interface IPostgresDbClient
 {
     /// <summary>

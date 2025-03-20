@@ -26,7 +26,7 @@ public class PineconeServiceCollectionExtensionsTests
     public void AddVectorStoreRegistersClass()
     {
         // Arrange.
-        using var client = new Sdk.PineconeClient("fake api key");
+        var client = new Sdk.PineconeClient("fake api key");
         this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
 
         // Act.
@@ -49,7 +49,7 @@ public class PineconeServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange.
-        using var client = new Sdk.PineconeClient("fake api key");
+        var client = new Sdk.PineconeClient("fake api key");
         this._serviceCollection.AddSingleton<Sdk.PineconeClient>(client);
 
         // Act.

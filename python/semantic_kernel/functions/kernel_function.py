@@ -92,9 +92,11 @@ class KernelFunction(KernelBaseModel):
 
     metadata: KernelFunctionMetadata
 
-    invocation_duration_histogram: metrics.Histogram = Field(default_factory=_create_function_duration_histogram)
+    invocation_duration_histogram: metrics.Histogram = Field(
+        default_factory=_create_function_duration_histogram, exclude=True
+    )
     streaming_duration_histogram: metrics.Histogram = Field(
-        default_factory=_create_function_streaming_duration_histogram
+        default_factory=_create_function_streaming_duration_histogram, exclude=True
     )
 
     @classmethod

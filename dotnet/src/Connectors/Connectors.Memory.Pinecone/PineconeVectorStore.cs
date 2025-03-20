@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Grpc.Core;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 using Sdk = Pinecone;
@@ -72,13 +71,13 @@ public class PineconeVectorStore : IVectorStore
     /// <inheritdoc />
     public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IndexDetails[] collections;
+        IndexList indexList;
 
         try
         {
-            collections = await this._pineconeClient.ListIndexes(cancellationToken).ConfigureAwait(false);
+            indexList = await this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (RpcException ex)
+        catch (PineconeApiException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
@@ -87,9 +86,12 @@ public class PineconeVectorStore : IVectorStore
             };
         }
 
-        foreach (var collection in collections)
+        if (indexList.Indexes is not null)
         {
-            yield return collection.Name;
+            foreach (var index in indexList.Indexes)
+            {
+                yield return index.Name;
+            }
         }
     }
 

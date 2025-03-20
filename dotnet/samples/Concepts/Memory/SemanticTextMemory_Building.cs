@@ -14,6 +14,7 @@ namespace Memory;
  * Semantic Memory allows to store your data like traditional DBs,
  * adding the ability to query it using natural language.
  */
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class SemanticTextMemory_Building(ITestOutputHelper output) : BaseTest(output)
 {
     private const string MemoryCollectionName = "SKGitHub";

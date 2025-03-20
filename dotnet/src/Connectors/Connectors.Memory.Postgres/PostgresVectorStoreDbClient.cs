@@ -86,7 +86,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-#if !NETSTANDARD2_0
+#if NET8_0_OR_GREATER
             var transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             await using (transaction)
 #else
@@ -103,7 +103,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
                     await indexCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
 
-#if !NETSTANDARD2_0
+#if NET8_0_OR_GREATER
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 #else
                 transaction.Commit();
