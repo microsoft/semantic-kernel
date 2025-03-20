@@ -193,7 +193,7 @@ Use existing Azure resources, created during agent deployment, such as the Azure
 
 To configure the agent to use the vector store collection created in the previous step, insert its name into the `CollectionName` property in the `appsettings.json` file of the `ChatWithAgent.AppHost` project:
 
-``` json  
+```json  
 "Rag": {
     ... other properties ...
     "CollectionName": "<collection name>",
