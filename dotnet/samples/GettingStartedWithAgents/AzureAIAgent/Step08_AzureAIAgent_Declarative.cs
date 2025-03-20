@@ -78,7 +78,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
@@ -146,7 +145,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?", false);
     }
@@ -166,7 +164,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                 temperature: 0.4
             tools:
               - type: bing_grounding
-                description: Grounding with Bing Search service.
                 configuration:
                   tool_connections:
                     - {TestConfiguration.AzureAI.BingConnectionId}
@@ -177,7 +174,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?", false);
     }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -45,6 +46,18 @@ public static class AgentDefinitionExtensions
         Verify.NotNull(agentDefinition);
         Verify.NotNull(toolType);
         return agentDefinition.Tools?.FirstOrDefault(tool => tool.Type == toolType);
+    }
+
+    /// <summary>
+    /// Get all of the tool definitions of the specified type.
+    /// </summary>
+    /// <param name="agentDefinition">Agent definition to retrieve the tools from.</param>
+    /// <param name="toolType">Tool type</param>
+    public static IEnumerable<AgentToolDefinition>? GetToolDefinitions(this AgentDefinition agentDefinition, string toolType)
+    {
+        Verify.NotNull(agentDefinition);
+        Verify.NotNull(toolType);
+        return agentDefinition.Tools?.Where(tool => tool.Type == toolType);
     }
 
     /// <summary>
