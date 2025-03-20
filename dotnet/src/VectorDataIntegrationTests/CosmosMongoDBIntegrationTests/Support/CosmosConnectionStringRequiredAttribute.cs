@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using CosmosNoSQLIntegrationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 
-namespace CosmosIntegrationTests.Support;
+namespace CosmosMongoDBIntegrationTests.Support;
 
 /// <summary>
 /// Checks whether the sqlite_vec extension is properly installed, and skips the test(s) otherwise.

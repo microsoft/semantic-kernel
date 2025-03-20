@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
