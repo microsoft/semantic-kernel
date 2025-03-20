@@ -15,6 +15,7 @@ internal static class BedrockAgentDefinitionExtensions
     private const string CodeInterpreterType = "code_interpreter";
     private const string KnowledgeBaseType = "knowledge_base";
     private const string FunctionType = "function";
+    private const string KnowledgeBaseId = "knowledge_base_id";
 
     internal static async Task CreateToolsAsync(this AgentDefinition agentDefinition, BedrockAgent agent, CancellationToken cancellationToken)
     {
@@ -40,7 +41,7 @@ internal static class BedrockAgentDefinitionExtensions
         {
             foreach (var knowledgeBase in knowledgeBases)
             {
-                if (knowledgeBase.Configuration?.TryGetValue("knowledge_base_id", out var value) ?? false && value is not null && value is string)
+                if (knowledgeBase.Configuration?.TryGetValue(KnowledgeBaseId, out var value) ?? false && value is not null && value is string)
                 {
                     var knowledgeBaseId = value as string;
                     var description = knowledgeBase.Description ?? string.Empty;
