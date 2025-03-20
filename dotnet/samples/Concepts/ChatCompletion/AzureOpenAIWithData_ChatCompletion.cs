@@ -236,7 +236,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Returns a collection of <see cref="ChatCitation"/>.
     /// </summary>
-    private static IReadOnlyList<ChatCitation> GetCitations(ChatMessageContent chatMessageContent)
+    private static IList<ChatCitation> GetCitations(ChatMessageContent chatMessageContent)
     {
         var message = chatMessageContent.InnerContent as OpenAI.Chat.ChatCompletion;
         var messageContext = message.GetMessageContext();
@@ -247,7 +247,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Returns a collection of <see cref="ChatCitation"/>.
     /// </summary>
-    private static IReadOnlyList<ChatCitation>? GetCitations(StreamingChatMessageContent streamingContent)
+    private static IList<ChatCitation>? GetCitations(StreamingChatMessageContent streamingContent)
     {
         var message = streamingContent.InnerContent as OpenAI.Chat.StreamingChatCompletionUpdate;
         var messageContext = message?.GetMessageContext();
@@ -258,7 +258,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     /// <summary>
     /// Outputs a collection of <see cref="ChatCitation"/>.
     /// </summary>
-    private void OutputCitations(IReadOnlyList<ChatCitation>? citations)
+    private void OutputCitations(IList<ChatCitation>? citations)
     {
         if (citations is not null)
         {
