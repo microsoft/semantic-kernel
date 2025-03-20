@@ -15,7 +15,7 @@
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0-preview.5" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.2" />
-    <PackageVersion Include="Azure.AI.OpenAI" Version="[2.2.0-beta.1]" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="[2.2.0-beta.4]" />
     <PackageVersion Include="Azure.AI.Projects" Version="[1.0.0-beta.3]" />
     <PackageVersion Include="Azure.Identity" Version="1.13.2" />
     <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.3.0" />
@@ -57,7 +57,7 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
     <PackageVersion Include="OllamaSharp" Version="5.1.7" />
-    <PackageVersion Include="OpenAI" Version="[2.2.0-beta.1]" />
+    <PackageVersion Include="OpenAI" Version="[2.2.0-beta.4]" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
@@ -65,7 +65,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
     <PackageVersion Include="PdfPig" Version="0.1.10" />
-    <PackageVersion Include="Pinecone.NET" Version="2.1.1" />
+    <PackageVersion Include="Pinecone.Client" Version="3.0.0" />
     <PackageVersion Include="Prompty.Core" Version="0.0.23-alpha" />
     <PackageVersion Include="PuppeteerSharp" Version="20.0.5" />
     <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />

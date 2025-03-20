@@ -105,7 +105,7 @@ def test_generate_message_content_text_and_image():
     )
 
     thread_msg.content = [image, text]
-    step = RunStep(id="step_id", run_id="run_id", thread_id="thread_id", agent_id="assistant_id")
+    step = RunStep(id="step_id", run_id="run_id", thread_id="thread_id", agent_id="agent_id")
     out = generate_message_content("assistant", thread_msg, step)
     assert len(out.items) == 5
     assert isinstance(out.items[0], FileReferenceContent)

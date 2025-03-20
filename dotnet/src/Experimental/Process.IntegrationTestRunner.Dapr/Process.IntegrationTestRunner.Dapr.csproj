@@ -32,7 +32,6 @@
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Pinecone.NET" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
