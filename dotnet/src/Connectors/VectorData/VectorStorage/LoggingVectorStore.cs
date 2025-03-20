@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -49,5 +50,15 @@ public class LoggingVectorStore : IVectorStore
             nameof(ListCollectionNamesAsync),
             () => this._innerStore.ListCollectionNamesAsync(cancellationToken),
             cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._innerStore.GetService(serviceType, serviceKey);
     }
 }

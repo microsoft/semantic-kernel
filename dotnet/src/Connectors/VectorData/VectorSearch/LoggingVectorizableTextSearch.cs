@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,5 +43,15 @@ public class LoggingVectorizableTextSearch<TRecord> : IVectorizableTextSearch<TR
             this._logger,
             nameof(VectorizableTextSearchAsync),
             () => this._innerSearch.VectorizableTextSearchAsync(searchText, options, cancellationToken));
+    }
+
+    /// <inheritdoc/>
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._innerSearch.GetService(serviceType, serviceKey);
     }
 }
