@@ -3,16 +3,21 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
+// Slight modified source from
+// https://raw.githubusercontent.com/dotnet/extensions/refs/heads/main/src/Libraries/Microsoft.Extensions.AI/Functions/AIFunctionFactoryOptions.cs
+
 /// <summary>
 /// Represents options that can be provided when creating an <see cref="AIFunction"/> from a method.
 /// </summary>
-public sealed class AIFunctionFactoryOptions
+[ExcludeFromCodeCoverage]
+internal sealed class AIFunctionFactoryOptions
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AIFunctionFactoryOptions"/> class.

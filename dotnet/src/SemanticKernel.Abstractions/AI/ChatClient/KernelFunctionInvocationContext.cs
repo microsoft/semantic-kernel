@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 
 #pragma warning disable IDE0009 // Use explicit 'this.' qualifier
@@ -14,7 +15,8 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 // https://raw.githubusercontent.com/dotnet/extensions/refs/heads/main/src/Libraries/Microsoft.Extensions.AI/ChatCompletion/FunctionInvocationContext.cs
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
-public sealed class KernelFunctionInvocationContext
+[ExcludeFromCodeCoverage]
+internal sealed class KernelFunctionInvocationContext
 {
     /// <summary>
     /// A nop function used to allow <see cref="Function"/> to be non-nullable. Default instances of

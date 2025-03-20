@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,7 +24,11 @@ using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
+// Slight modified source from
+// https://raw.githubusercontent.com/dotnet/extensions/refs/heads/main/src/Libraries/Microsoft.Extensions.AI/Functions/AIFunctionFactory.cs
+
 /// <summary>Provides factory methods for creating commonly used implementations of <see cref="AIFunction"/>.</summary>
+[ExcludeFromCodeCoverage]
 internal static partial class AIFunctionFactory
 {
     /// <summary>Holds the default options instance used when creating function.</summary>

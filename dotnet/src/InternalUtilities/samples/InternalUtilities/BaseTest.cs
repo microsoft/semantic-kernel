@@ -120,7 +120,7 @@ public abstract class BaseTest : TextWriter
                 modelId: TestConfiguration.AzureOpenAI.ChatModelId);
         }
 
-        var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient!);
+        var functionCallingChatClient = chatClient!.AsKernelFunctionInvokingChatClient();
         builder.Services.AddTransient<IChatClient>((sp) => functionCallingChatClient);
         return functionCallingChatClient;
 #pragma warning restore CA2000 // Dispose objects before losing scope

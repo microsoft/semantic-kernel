@@ -64,7 +64,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
                     modelId: TestConfiguration.AzureOpenAI.ChatModelId);
             }
 
-            var functionCallingChatClient = new KernelFunctionInvokingChatClient(chatClient!);
+            var functionCallingChatClient = chatClient!.AsKernelFunctionInvokingChatClient();
             serviceContainer.AddTransient<IChatClient>((sp) => functionCallingChatClient);
         }
         else

@@ -19,6 +19,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
+// Slight modified source from
+// https://raw.githubusercontent.com/dotnet/extensions/refs/heads/main/src/Libraries/Microsoft.Extensions.AI/ChatCompletion/FunctionInvokingChatClient.cs
+
 /// <summary>
 /// A delegating chat client that invokes functions defined on <see cref="ChatOptions"/>.
 /// Include this in a chat pipeline to resolve function calls automatically.
@@ -41,7 +44,8 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
-public sealed partial class KernelFunctionInvokingChatClient : DelegatingChatClient
+[ExcludeFromCodeCoverage]
+internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatClient
 {
     /// <summary>The <see cref="KernelFunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<KernelFunctionInvocationContext?> _currentContext = new();
