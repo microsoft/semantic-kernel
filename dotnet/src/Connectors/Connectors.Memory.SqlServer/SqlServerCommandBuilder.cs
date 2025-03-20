@@ -155,16 +155,14 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand? MergeIntoMany(
-        SqlConnection connection,
+    internal static bool MergeIntoMany(
+        SqlCommand command,
         string? schema,
         string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IEnumerable<IDictionary<string, object?>> records)
     {
-        SqlCommand command = connection.CreateCommand();
-
         StringBuilder sb = new(200);
         // The DECLARE statement creates a table variable to store the keys of the inserted rows.
         sb.AppendFormat("DECLARE @InsertedKeys TABLE (KeyColumn {0});", Map(keyProperty));
@@ -190,7 +188,7 @@ internal static class SqlServerCommandBuilder
 
         if (rowIndex == 0)
         {
-            return null; // there is nothing to do!
+            return false; // there is nothing to do!
         }
 
         sb.Length -= (1 + Environment.NewLine.Length); // remove the last comma and newline
@@ -225,7 +223,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("SELECT KeyColumn FROM @InsertedKeys;");
 
         command.CommandText = sb.ToString();
-        return command;
+        return true;
     }
 
     internal static SqlCommand DeleteSingle(
@@ -246,12 +244,10 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand? DeleteMany<TKey>(
-        SqlConnection connection, string? schema, string tableName,
+    internal static bool DeleteMany<TKey>(
+        SqlCommand command, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty, IEnumerable<TKey> keys)
     {
-        SqlCommand command = connection.CreateCommand();
-
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
@@ -261,11 +257,11 @@ internal static class SqlServerCommandBuilder
 
         if (emptyKeys)
         {
-            return null; // there is nothing to do!
+            return false;
         }
 
         command.CommandText = sb.ToString();
-        return command;
+        return true;
     }
 
     internal static SqlCommand SelectSingle(
@@ -293,15 +289,13 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand? SelectMany<TKey>(
-        SqlConnection connection, string? schema, string tableName,
+    internal static bool SelectMany<TKey>(
+        SqlCommand command, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IEnumerable<TKey> keys,
         bool includeVectors)
     {
-        SqlCommand command = connection.CreateCommand();
-
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
         sb.AppendColumnNames(properties, includeVectors: includeVectors);
@@ -315,11 +309,11 @@ internal static class SqlServerCommandBuilder
 
         if (emptyKeys)
         {
-            return null; // there is nothing to do!
+            return false; // there is nothing to do!
         }
 
         command.CommandText = sb.ToString();
-        return command;
+        return true;
     }
 
     internal static SqlCommand SelectVector<TRecord>(

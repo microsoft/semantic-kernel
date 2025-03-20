@@ -348,9 +348,8 @@ internal sealed class Program
             {
                 var toolDefinition = metadata.ToOpenAIFunction().ToFunctionDefinition(false);
 
-                yield return new ConversationFunctionTool()
+                yield return new ConversationFunctionTool(name: toolDefinition.FunctionName)
                 {
-                    Name = toolDefinition.FunctionName,
                     Description = toolDefinition.FunctionDescription,
                     Parameters = toolDefinition.FunctionParameters
                 };

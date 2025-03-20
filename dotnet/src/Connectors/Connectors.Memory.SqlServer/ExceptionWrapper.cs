@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class ExceptionWrapper
 {
-    private const string VectorStoreType = "SqlServer";
+    internal const string VectorStoreType = "SqlServer";
 
     internal static async Task<T> WrapAsync<T>(
         SqlConnection connection,
