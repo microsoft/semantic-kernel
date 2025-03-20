@@ -34,15 +34,6 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
-    /// <summary>Metadata about vectorizable text search.</summary>
-    private readonly VectorizableTextSearchMetadata _vectorizableTextSearchMetadata;
-
-    /// <summary>Metadata about keyword hybrid search.</summary>
-    private readonly KeywordHybridSearchMetadata _keywordHybridSearchMetadata;
-
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
@@ -159,10 +150,6 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             DatabaseName = searchIndexClient.ServiceName,
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
-        this._vectorizableTextSearchMetadata = VectorizableTextSearchMetadata.From(this._collectionMetadata);
-        this._keywordHybridSearchMetadata = KeywordHybridSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -518,9 +505,6 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
-            serviceType == typeof(VectorizableTextSearchMetadata) ? this._vectorizableTextSearchMetadata :
-            serviceType == typeof(KeywordHybridSearchMetadata) ? this._keywordHybridSearchMetadata :
             serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
             serviceType == typeof(SearchClient) ? this._searchClient :
             serviceType.IsInstanceOfType(this) ? this :

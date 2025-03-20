@@ -24,9 +24,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
     private static readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> s_defaultOptions = new();
 
@@ -105,8 +102,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             DatabaseName = connectionStringBuilder.InitialCatalog,
             CollectionName = name
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc/>
@@ -501,7 +496,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

@@ -29,12 +29,6 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
-    /// <summary>Metadata about keyword hybrid search.</summary>
-    private readonly KeywordHybridSearchMetadata _keywordHybridSearchMetadata;
-
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
 
@@ -110,9 +104,6 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
             DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName,
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
-        this._keywordHybridSearchMetadata = KeywordHybridSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -399,8 +390,6 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
-            serviceType == typeof(KeywordHybridSearchMetadata) ? this._keywordHybridSearchMetadata :
             serviceType == typeof(IMongoDatabase) ? this._mongoDatabase :
             serviceType == typeof(IMongoCollection<BsonDocument>) ? this._mongoCollection :
             serviceType.IsInstanceOfType(this) ? this :

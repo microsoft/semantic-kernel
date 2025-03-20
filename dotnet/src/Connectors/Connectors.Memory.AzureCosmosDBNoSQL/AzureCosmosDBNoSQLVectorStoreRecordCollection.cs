@@ -33,12 +33,6 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
-    /// <summary>Metadata about keyword hybrid search.</summary>
-    private readonly KeywordHybridSearchMetadata _keywordHybridSearchMetadata;
-
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
@@ -179,9 +173,6 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             DatabaseName = database.Id,
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
-        this._keywordHybridSearchMetadata = KeywordHybridSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -468,8 +459,6 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
-            serviceType == typeof(KeywordHybridSearchMetadata) ? this._keywordHybridSearchMetadata :
             serviceType == typeof(Database) ? this._database :
             serviceType.IsInstanceOfType(this) ? this :
             null;

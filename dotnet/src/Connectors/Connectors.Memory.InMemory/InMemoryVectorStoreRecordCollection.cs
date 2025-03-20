@@ -27,9 +27,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
     [
@@ -95,8 +92,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             VectorStoreSystemName = "inmemory",
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <summary>
@@ -302,7 +297,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
             serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
             serviceType.IsInstanceOfType(this) ? this :
             null;

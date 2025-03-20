@@ -28,9 +28,6 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordPropertyReader _propertyReader;
@@ -90,8 +87,6 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             VectorStoreSystemName = "pinecone",
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -409,7 +404,6 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
             serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;

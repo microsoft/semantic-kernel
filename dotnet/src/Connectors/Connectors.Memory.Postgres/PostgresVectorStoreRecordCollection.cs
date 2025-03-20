@@ -29,9 +29,6 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
 
@@ -117,8 +114,6 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             DatabaseName = this._client.DatabaseName,
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc/>
@@ -343,7 +338,6 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
             serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
             serviceType.IsInstanceOfType(this) ? this :
             null;

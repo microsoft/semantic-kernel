@@ -27,9 +27,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
     /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
     private readonly string _connectionString;
 
@@ -126,8 +123,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             DatabaseName = connectionStringBuilder.DataSource,
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -362,7 +357,6 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

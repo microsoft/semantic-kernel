@@ -29,12 +29,6 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
-    /// <summary>Metadata about vectorized search.</summary>
-    private readonly VectorizedSearchMetadata _vectorizedSearchMetadata;
-
-    /// <summary>Metadata about keyword hybrid search.</summary>
-    private readonly KeywordHybridSearchMetadata _keywordHybridSearchMetadata;
-
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes =
     [
@@ -168,9 +162,6 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             VectorStoreSystemName = "weaviate",
             CollectionName = collectionName
         };
-
-        this._vectorizedSearchMetadata = VectorizedSearchMetadata.From(this._collectionMetadata);
-        this._keywordHybridSearchMetadata = KeywordHybridSearchMetadata.From(this._collectionMetadata);
     }
 
     /// <inheritdoc />
@@ -420,8 +411,6 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(VectorizedSearchMetadata) ? this._vectorizedSearchMetadata :
-            serviceType == typeof(KeywordHybridSearchMetadata) ? this._keywordHybridSearchMetadata :
             serviceType == typeof(HttpClient) ? this._httpClient :
             serviceType.IsInstanceOfType(this) ? this :
             null;
