@@ -20,8 +20,8 @@ internal static class KernelExtensions
     /// <summary>
     /// Return the <see cref="AIProjectClient"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
-    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AzureAIClientProvider"/>.</param>
-    /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="AzureAIClientProvider"/>.</param>
+    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AIProjectClient"/>.</param>
+    /// <param name="agentDefinition">Agent definition which will be used to provide configuration for the <see cref="AIProjectClient"/>.</param>
     public static AIProjectClient GetAIProjectClient(this Kernel kernel, AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
