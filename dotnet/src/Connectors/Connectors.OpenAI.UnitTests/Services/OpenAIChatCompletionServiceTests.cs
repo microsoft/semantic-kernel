@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1659,6 +1660,45 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         Assert.Equal(string.Empty, assistantMessageContent);
     }
+
+    [Theory]
+    [MemberData(nameof(WebSearchOptionsData))]
+    public async Task ItCreatesCorrectWebSearchOptionsAsync(object webSearchOptions, string expectedJson)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            WebSearchOptions = webSearchOptions
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.True(optionsJson.TryGetProperty("web_search_options", out var property));
+        Assert.Equal(JsonValueKind.Object, property.ValueKind);
+        Assert.Equal(expectedJson, property.GetRawText());
+    }
+
+    public static TheoryData<object, string> WebSearchOptionsData => new()
+    {
+        { new ChatWebSearchOptions(), "{}" },
+        { JsonSerializer.Deserialize<JsonElement>("{}"), "{}" },
+        { "{}", "{}" },
+        { """{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}""",
+          """{"user_location":{"type":"approximate","approximate":{"country":"GB","region":"London","city":"London"}}}""" },
+        { JsonSerializer.Deserialize<JsonElement>("""{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}"""),
+          """{"user_location":{"type":"approximate","approximate":{"country":"GB","region":"London","city":"London"}}}""" },
+        { ModelReaderWriter.Read<ChatWebSearchOptions>(BinaryData.FromString("""{"user_location":{"type":"approximate","approximate":{"country":"GB","city":"London","region":"London"}}}"""))!,
+          """{"user_location":{"type":"approximate","approximate":{"country":"GB","region":"London","city":"London"}}}""" },
+    };
 
     public void Dispose()
     {
