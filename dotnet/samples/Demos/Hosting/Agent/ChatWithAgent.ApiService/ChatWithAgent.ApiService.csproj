@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\AgentDefinition.yaml" />
+    <EmbeddedResource Include="Resources\AgentWithRagDefinition.yaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +20,7 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
     <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" />
+    <PackageReference Include="Microsoft.SemanticKernel.Yaml" />
   </ItemGroup>
 
   <ItemGroup>

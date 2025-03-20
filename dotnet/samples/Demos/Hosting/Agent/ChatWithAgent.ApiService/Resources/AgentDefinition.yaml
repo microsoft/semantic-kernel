@@ -1,23 +1,9 @@
 ﻿name: AnalysisMaster
-template: |
-  Please use this information to answer the question
-  {{#with (SearchPlugin-GetTextSearchResults question)}}  
-      {{#each this}}  
-      Name: {{Name}}
-      Value: {{Value}}
-      Link: {{Link}}
-      -----------------
-      {{/each}}
-  {{/with}}
-  Include citations to the relevant information where it is referenced in the response.
+template: Perform comprehensive analysis and provide accurate insights and recommendations on the topics and data sets provided.
 template_format: handlebars
 description: |
   A highly capable agent designed to perform comprehensive analysis on various data sets and topics.
   It utilizes advanced algorithms and methodologies to provide accurate insights and recommendations.
-input_variables:
-  - name: question
-    description: The question to be answered.
-    is_required: true
 execution_settings:
   default:
     temperature: 0

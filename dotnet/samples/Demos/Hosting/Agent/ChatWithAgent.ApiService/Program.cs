@@ -49,7 +49,10 @@ public static class Program
         AddAIServices(builder, config.Host);
 
         // Add Vector Store.
-        AddVectorStore(builder, config);
+        AddVectorStore(builder, config.Host);
+
+        // Add Agent.
+        AddAgent(builder, config.Host);
 
         var app = builder.Build();
 
@@ -133,11 +136,17 @@ public static class Program
     /// Adds the vector store to the service collection.
     /// </summary>
     /// <param name="builder">The web application builder.</param>
-    /// <param name="config">The RAG configuration.</param>
-    private static void AddVectorStore(WebApplicationBuilder builder, ServiceConfig config)
+    /// <param name="config">The host configuration.</param>
+    private static void AddVectorStore(WebApplicationBuilder builder, HostConfig config)
     {
+        // Don't add vector store if no collection name is provided. Allows for a basic experience where no data has been uploaded to the vector store yet.
+        if (string.IsNullOrWhiteSpace(config.Rag.CollectionName))
+        {
+            return;
+        }
+
         // Add Vector Store
-        switch (config.Host.Rag.VectorStoreType)
+        switch (config.Rag.VectorStoreType)
         {
             case AzureAISearchConfig.ConfigSectionName:
             {
@@ -147,22 +156,12 @@ public static class Program
                         ? new DefaultAzureCredential()
                         : new AzureCliCredential()
                 );
-                builder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(config.Host.Rag.CollectionName);
+                builder.Services.AddAzureAISearchVectorStoreRecordCollection<TextSnippet<string>>(config.Rag.CollectionName);
+                builder.Services.AddVectorStoreTextSearch<TextSnippet<string>>();
                 break;
             }
             default:
-                throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
-        }
-
-        // Register all the other required services.
-        switch (config.Host.Rag.VectorStoreType)
-        {
-            case AzureAISearchConfig.ConfigSectionName:
-                builder.Services.AddVectorStoreTextSearch<TextSnippet<string>>();
-                AddAgent<string>(builder);
-                break;
-            default:
-                throw new NotSupportedException($"Vector store type '{config.Host.Rag.VectorStoreType}' is not supported.");
+                throw new NotSupportedException($"Vector store type '{config.Rag.VectorStoreType}' is not supported.");
         }
     }
 
@@ -170,32 +169,55 @@ public static class Program
     /// Adds the chat completion agent to the service collection.
     /// </summary>
     /// <param name="builder">The web application builder.</param>
-    /// <typeparam name="TKey">The type of the data model key.</typeparam>
-    private static void AddAgent<TKey>(WebApplicationBuilder builder)
+    /// <param name="config">The host configuration.</param>
+    private static void AddAgent(WebApplicationBuilder builder, HostConfig config)
     {
-        // Switch to the new declarative agent format once it's available.
-        PromptTemplateConfig templateConfig = new()
+        // Register agent without RAG if no collection name is provided. Allows for a basic experience where no data has been uploaded to the vector store yet.
+        if (string.IsNullOrEmpty(config.Rag.CollectionName))
         {
-            TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            Template = EmbeddedResource.Read("AgentDefinition.yaml")
-        };
+            PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read("AgentDefinition.yaml"));
 
-        HandlebarsPromptTemplateFactory handlebarsPromptTemplateFactory = new();
-
-        // Add chat completion agent.
-        builder.Services.AddTransient<ChatCompletionAgent>((sp) =>
-        {
-            Kernel kernel = sp.GetRequiredService<Kernel>();
-            VectorStoreTextSearch<TextSnippet<TKey>> vectorStoreTextSearch = sp.GetRequiredService<VectorStoreTextSearch<TextSnippet<TKey>>>();
-
-            // Add a search plugin to the kernel which we will use in the template below
-            // to do a vector search for related information to the user query.
-            kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
-
-            return new ChatCompletionAgent(templateConfig, handlebarsPromptTemplateFactory)
+            builder.Services.AddTransient<ChatCompletionAgent>((sp) =>
             {
-                Kernel = kernel,
-            };
-        });
+                return new ChatCompletionAgent(templateConfig, new HandlebarsPromptTemplateFactory())
+                {
+                    Kernel = sp.GetRequiredService<Kernel>(),
+                };
+            });
+        }
+        else
+        {
+            // Register agent with RAG.
+            PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read("AgentWithRagDefinition.yaml"));
+
+            switch (config.Rag.VectorStoreType)
+            {
+                case AzureAISearchConfig.ConfigSectionName:
+                {
+                    AddAgentWithRag<string>(builder, templateConfig);
+                    break;
+                }
+                default:
+                    throw new NotSupportedException($"Vector store type '{config.Rag.VectorStoreType}' is not supported.");
+            }
+        }
+
+        static void AddAgentWithRag<TKey>(WebApplicationBuilder builder, PromptTemplateConfig templateConfig)
+        {
+            builder.Services.AddTransient<ChatCompletionAgent>((sp) =>
+            {
+                Kernel kernel = sp.GetRequiredService<Kernel>();
+                VectorStoreTextSearch<TextSnippet<TKey>> vectorStoreTextSearch = sp.GetRequiredService<VectorStoreTextSearch<TextSnippet<TKey>>>();
+
+                // Add a search plugin to the kernel which we will use in the agent template
+                // to do a vector search for related information to the user query.
+                kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+
+                return new ChatCompletionAgent(templateConfig, new HandlebarsPromptTemplateFactory())
+                {
+                    Kernel = kernel,
+                };
+            });
+        }
     }
 }
