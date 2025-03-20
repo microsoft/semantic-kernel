@@ -52,7 +52,13 @@ internal sealed class GetVectorsRequest
 
     public GetVectorsRequest WithPointId(string pointId)
     {
+#if NET462
+        var points = this.PointIds.ToList();
+        points.Add(pointId);
+        this.PointIds = points;
+#else
         this.PointIds = this.PointIds.Append(pointId);
+#endif
         return this;
     }
 
