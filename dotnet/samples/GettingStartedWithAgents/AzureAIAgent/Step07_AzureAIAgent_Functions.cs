@@ -34,10 +34,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        AzureAIAgent agent = new(definition, this.AgentsClient)
-        {
-            Kernel = new Kernel(),
-        };
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);

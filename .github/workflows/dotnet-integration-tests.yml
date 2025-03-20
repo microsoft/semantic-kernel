@@ -26,6 +26,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         with:
           clean: true
+          persist-credentials: false
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4

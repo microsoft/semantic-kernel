@@ -246,6 +246,8 @@ public sealed class TestConfiguration
         public string EmbeddingModelId { get; set; }
         public string Location { get; set; }
         public string ProjectId { get; set; }
+        public string? ClientId { get; set; }
+        public string? ClientSecret { get; set; }
         public GeminiConfig Gemini { get; set; }
 
         public class GeminiConfig

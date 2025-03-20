@@ -1,0 +1,22 @@
+{
+  "id": "cfa5bc963e1640ebbd6c25f9671e5398",
+  "object": "chat.completion",
+  "created": 1741974042,
+  "model": "mistral-small-latest",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "tool_calls": null,
+        "content": "The document titled \"Born-Again Neural Networks\" explores the concept of Knowledge Distillation."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12999,
+    "total_tokens": 13488,
+    "completion_tokens": 489
+  }
+}

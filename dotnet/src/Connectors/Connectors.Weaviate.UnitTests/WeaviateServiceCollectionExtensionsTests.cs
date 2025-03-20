@@ -43,7 +43,7 @@ public sealed class WeaviateServiceCollectionExtensionsTests
         this._serviceCollection.AddSingleton<HttpClient>(httpClient);
 
         // Act
-        this._serviceCollection.AddWeaviateVectorStoreRecordCollection<TestRecord>("testcollection");
+        this._serviceCollection.AddWeaviateVectorStoreRecordCollection<TestRecord>("Testcollection");
 
         // Assert
         this.AssertVectorStoreRecordCollectionCreated();
