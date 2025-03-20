@@ -15,6 +15,7 @@ namespace Memory;
 /// For example, the <a href="https://huggingface.co/cointegrated/LaBSE-en-ru">cointegrated/LaBSE-en-ru</a> model returns results as a 1 * 1 * 4 * 768 matrix, which is different from Hugging Face embedding generation service implementation.
 /// To address this, a custom <see cref="HttpClientHandler"/> can be used to modify the response before sending it back.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class HuggingFace_TextEmbeddingCustomHttpHandler(ITestOutputHelper output) : BaseTest(output)
 {
     public async Task RunInferenceApiEmbeddingCustomHttpHandlerAsync()

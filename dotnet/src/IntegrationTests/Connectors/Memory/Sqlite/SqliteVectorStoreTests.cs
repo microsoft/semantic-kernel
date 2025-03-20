@@ -17,7 +17,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 [Collection("SqliteVectorStoreCollection")]
 [DisableVectorStoreTests(Skip = "SQLite vector search extension is required")]
 public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
-    : BaseVectorStoreTests<string, SqliteHotel<string>>(new SqliteVectorStore(fixture.Connection!))
+    : BaseVectorStoreTests<string, SqliteHotel<string>>(new SqliteVectorStore(fixture.ConnectionString))
 {
     [VectorStoreFact]
     public async Task ItCanGetAListOfExistingCollectionNamesWhenRegisteredWithDIAsync()
@@ -25,7 +25,7 @@ public sealed class SqliteVectorStoreTests(SqliteVectorStoreFixture fixture)
         // Arrange
         var serviceCollection = new ServiceCollection();
 
-        serviceCollection.AddSqliteVectorStore(connectionString: "Data Source=:memory:");
+        serviceCollection.AddSqliteVectorStore(fixture.ConnectionString);
 
         var provider = serviceCollection.BuildServiceProvider();
 

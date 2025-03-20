@@ -20,6 +20,7 @@ using StackExchange.Redis;
 
 namespace Memory;
 
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class TextMemoryPlugin_MultipleMemoryStore(ITestOutputHelper output) : BaseTest(output)
 {
     private const string MemoryCollectionName = "aboutMe";

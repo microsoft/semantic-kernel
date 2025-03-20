@@ -9,7 +9,8 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines an interface for accessing the list of collections in a vector store.
 /// </summary>
 /// <remarks>
-/// This interface can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
+/// <para>This interface can be used with collections of any schema type, but requires you to provide schema information when getting a collection.</para>
+/// <para>Unless otherwise documented, implementations of this interface can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
 /// </remarks>
 public interface IVectorStore
 {

@@ -410,7 +410,7 @@ internal static class SqlServerCommandBuilder
         if (!string.IsNullOrEmpty(schema))
         {
             sb.Append(schema);
-            sb.Replace("]", "]]", index, schema.Length); // replace the ] for schema
+            sb.Replace("]", "]]", index, schema!.Length); // replace the ] for schema
             sb.Append("].[");
             index = sb.Length;
         }

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// Used to create a new index.
 /// See https://docs.pinecone.io/reference/create_index
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
 public class IndexDefinition
 {
     /// <summary>

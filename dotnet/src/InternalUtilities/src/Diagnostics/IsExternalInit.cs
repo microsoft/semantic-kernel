@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if !NET8_0_OR_GREATER
+
 namespace System.Runtime.CompilerServices;
 
 /// <summary>
@@ -7,3 +9,5 @@ namespace System.Runtime.CompilerServices;
 /// This class should not be used by developers in source code.
 /// </summary>
 internal static class IsExternalInit;
+
+#endif
