@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Azure AI Search <see cref="IVectorStore"/> instances on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("The IKernelBuilder extensions are being obsoleted, call the appropriate function on the Services property of your IKernelBuilder")]
 public static class AzureAISearchKernelBuilderExtensions
 {
     /// <summary>

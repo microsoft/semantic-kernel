@@ -4,6 +4,9 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateConstants
 {
+    /// <summary>The name of this database for telemetry purposes.</summary>
+    public const string DatabaseName = "Weaviate";
+
     /// <summary>Reserved key property name in Weaviate.</summary>
     internal const string ReservedKeyPropertyName = "id";
 
