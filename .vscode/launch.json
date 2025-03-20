@@ -8,7 +8,8 @@
       "preLaunchTask": "build (CopilotAgentPluginsDemoSample)",
       "program": "${workspaceFolder}/dotnet/samples/Demos/CopilotAgentPlugins/CopilotAgentPluginsDemoSample/bin/Debug/net8.0/CopilotAgentPluginsDemoSample.exe",
       "args": [
-        "demo"
+        "demo",
+        "--debug"
       ],
       "cwd": "${workspaceFolder}/dotnet/samples/Demos/CopilotAgentPlugins/CopilotAgentPluginsDemoSample",
       "stopAtEntry": false,

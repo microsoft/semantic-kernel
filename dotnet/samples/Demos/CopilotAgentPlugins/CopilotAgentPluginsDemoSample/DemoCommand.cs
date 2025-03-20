@@ -440,6 +440,51 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             "uniqueId",
             "uniqueIdType",
             "webLink",
+            "application",
+            "device",
+            "discriminator",
+            "parentReference",
+            "audio",
+            "bundle",
+            "deleted",
+            "hashes",
+            "processingMetadata",
+            "fileSystemInfo",
+            "view",
+            "pendingOperations",
+            "malware",
+            "package",
+            "exposureDenominator",
+            "exposureNumerator",
+            "fNumber",
+            "focalLength",
+            "iso",
+            "orientation",
+            "publication",
+            "remoteItem",
+            "sharepointIds",
+            "webDavUrl",
+            "audioBitsPerSample",
+            "audioChannels",
+            "audioFormat",
+            "audioSamplesPerSecond",
+            "bitrate",
+            "duration",
+            "fourCC",
+            "framerate",
+            "height",
+            "width",
+            "analytics",
+            "children",
+            "listItem",
+            "permissions",
+            "retentionLabel",
+            "subscriptions",
+            "thumbnails",
+            "versions",
+            "workbook",
+            "lastModifiedBy",
+            "shared",
         ],
         StringComparer.OrdinalIgnoreCase
     );
@@ -499,9 +544,19 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
 #pragma warning restore SKEXP0040
-        if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
-            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
+        string[] functionNames = {
+            "drives_GetItems",
+            "drives_UpdateItems",
+            "me_drive_GetItems",
+            "me_drive_UpdateItems",
+            "me_drive_search",
+            "me_drive_root_ListChildren",
+            "me_ListDrives",
+            "me_sendMail",
+            "me_calendar_CreateEvents"
+        };
+        bool isCapsFunction = functionNames.Any(str => context.Operation.Id.IndexOf(str, StringComparison.OrdinalIgnoreCase) >= 0);
+        if (isCapsFunction && "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;
