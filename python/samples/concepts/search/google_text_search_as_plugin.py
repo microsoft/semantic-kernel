@@ -5,15 +5,14 @@ from collections.abc import Coroutine
 from typing import Any
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.search.google import GoogleSearch
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
 
 # This sample shows how to setup Google Search as a plugin in the Semantic Kernel.

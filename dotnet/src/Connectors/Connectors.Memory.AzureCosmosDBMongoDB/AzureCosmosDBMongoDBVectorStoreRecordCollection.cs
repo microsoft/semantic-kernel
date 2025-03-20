@@ -102,20 +102,29 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     /// <inheritdoc />
     public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        await this.RunOperationAsync("CreateCollection",
-            () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+        // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
+        // To make sure that all the connectors are consistent, we throw when the collection exists.
+        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        {
+            throw new VectorStoreOperationException("Collection already exists.")
+            {
+                VectorStoreType = DatabaseName,
+                CollectionName = this.CollectionName,
+                OperationName = "CreateCollection"
+            };
+        }
 
-        await this.RunOperationAsync("CreateIndexes",
-            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+        await this.CreateCollectionIfNotExistsAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
-        {
-            await this.CreateCollectionAsync(cancellationToken).ConfigureAwait(false);
-        }
+        await this.RunOperationAsync("CreateCollection",
+            () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        await this.RunOperationAsync("CreateIndexes",
+            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
