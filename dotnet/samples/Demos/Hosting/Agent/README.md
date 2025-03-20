@@ -21,7 +21,7 @@ This folder contains a set of Aspire projects that demonstrate how to host a cha
 5. Copy the app endpoint URL from the output of the `azd up` command and paste it into a browser to see the app dashboard.
 6. Click on the web frontend app link on the dashboard to navigate to the app.
 
-Now you have the agent up and running on Azure. You can start chatting with it by selecting the `Chat` tab on the app.
+Now you have the agent up and running on Azure. You can interact with the agent by typing messages in the chat window.
  
 ### Next steps
 
@@ -178,9 +178,9 @@ The agent expects a vector store collection to have the following fields to be a
 | Field Name | Data Type | Description |  
 |------------|-----------|-------------|  
 | chunk_id   | string/guid | The document key. The data type may vary depending on the vector store. |
-| chunk      | string | Chunk from the document |  
-| title      | string | The document title or page title or page number |  
-| text_vector | float[] | Vector representation of the chunk |
+| chunk      | string | Chunk from the document. |  
+| title      | string | The document title or page title or page number. |  
+| text_vector | float[] | Vector representation of the chunk. |
 
 Each vector store has its own way for creating collections and filling them with documents. The following sections below describe how to do so for the supported vector stores.
 
