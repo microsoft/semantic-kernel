@@ -1687,6 +1687,37 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(expectedJson, property.GetRawText());
     }
 
+    [Theory]
+    [MemberData(nameof(WebSearchOptionsData))]
+    public async Task ItCreatesCorrectWebSearchOptionsStreamingAsync(object webSearchOptions, string expectedJson)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_streaming_test_response.txt");
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            WebSearchOptions = webSearchOptions
+        };
+
+        // Act
+        var asyncEnumerable = chatCompletion.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest, settings);
+        await asyncEnumerable.GetAsyncEnumerator().MoveNextAsync();
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.True(optionsJson.TryGetProperty("web_search_options", out var property));
+        Assert.Equal(JsonValueKind.Object, property.ValueKind);
+        Assert.Equal(expectedJson, property.GetRawText());
+    }
+
     public static TheoryData<object, string> WebSearchOptionsData => new()
     {
         { new ChatWebSearchOptions(), "{}" },
