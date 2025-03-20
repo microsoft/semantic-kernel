@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Azure.AI.OpenAI;
 using Azure.Core;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
@@ -60,7 +59,7 @@ internal static class KernelExtensions
                     return new AzureOpenAIClient(endpoint, configuration.GetApiKeyCredential(), clientOptions);
                 }
 
-                var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
+                var tokenCredential = kernel.Services.GetRequiredService<TokenCredential>();
                 return new AzureOpenAIClient(endpoint, tokenCredential, clientOptions);
             }
 
