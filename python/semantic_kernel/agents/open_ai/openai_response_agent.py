@@ -14,7 +14,7 @@ else:
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
-from openai.types.responses.file_search_tool_param import FileSearchToolParam
+from openai.types.responses.file_search_tool_param import FileSearchToolParam, RankingOptions
 from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
 from openai.types.shared_params.comparison_filter import ComparisonFilter
@@ -219,6 +219,7 @@ class OpenAIResponseAgent(Agent):
             instruction_role: The role of the agent, either developer or system.
             instructions: The instructions for the agent.
             kernel: The Kernel instance.
+            metadata: The metadata for the agent.
             name: The name of the agent.
             plugins: The plugins to add to the kernel. If both the plugins and the kernel are supplied,
                 the plugins take precedence and are added to the kernel by default.
@@ -341,13 +342,67 @@ class OpenAIResponseAgent(Agent):
 
     # region Tool Handling
 
+    # @staticmethod
+    # def configure_file_search_tool(
+    #     vector_store_ids: str | list[str],
+    #     filters: ComparisonFilter | CompoundFilter | None = None,
+    #     max_num_results: int | None = None,
+    #     score_threshold: float | None = None,
+    #     ranker: Literal["auto", "default_2024_11_15"] | None = None,
+    # ) -> FileSearchToolParam:
+    #     """Generate the file search tool param.
+
+    #     Args:
+    #         vector_store_ids: Single or list of vector store IDs.
+    #         filters: A filter to apply based on file attributes.
+    #             - ComparisonFilter: A single filter.
+    #             - CompoundFilter: A compound filter.
+    #         max_num_results: Optional override for maximum results (1 to 50).
+    #         score_threshold: Floating point threshold between 0 and 1.
+    #         ranker: The ranker to use ('auto' or 'default_2024_08_21').
+    #         kwargs: Any extra arguments needed by ToolResourcesFileSearch.
+
+    #     Returns:
+    #         A FileSearchToolParam dictionary with any passed-in parameters.
+    #     """
+    #     if isinstance(vector_store_ids, str):
+    #         vector_store_ids = [vector_store_ids]
+
+    #     # Base tool definition
+    #     tool: FileSearchToolParam = {
+    #         "type": "file_search",
+    #         "vector_store_ids": vector_store_ids,
+    #     }
+
+    #     file_search_config = {}
+
+    #     if filters is not None:
+    #         file_search_config["filters"] = filters
+
+    #     # Only set overrides if provided
+    #     if max_num_results is not None:
+    #         file_search_config["max_num_results"] = max_num_results
+
+    #     if score_threshold is not None or ranker is not None:
+    #         file_search_config["ranking_options"] = {}
+    #         if score_threshold is not None:
+    #             file_search_config["ranking_options"]["score_threshold"] = score_threshold  # type: ignore
+    #         if ranker is not None:
+    #             file_search_config["ranking_options"]["ranker"] = ranker  # type: ignore
+
+    #     # Include file_search in the tool if any config was provided
+    #     if file_search_config:
+    #         tool["file_search"] = file_search_config
+
+    #     return tool
+
     @staticmethod
     def configure_file_search_tool(
         vector_store_ids: str | list[str],
         filters: ComparisonFilter | CompoundFilter | None = None,
         max_num_results: int | None = None,
         score_threshold: float | None = None,
-        ranker: Literal["auto", "default_2024_11_15"] | None = None,
+        ranker: Literal["auto", "default-2024-11-15"] | None = None,
     ) -> FileSearchToolParam:
         """Generate the file search tool param.
 
@@ -367,31 +422,25 @@ class OpenAIResponseAgent(Agent):
         if isinstance(vector_store_ids, str):
             vector_store_ids = [vector_store_ids]
 
-        # Base tool definition
         tool: FileSearchToolParam = {
             "type": "file_search",
             "vector_store_ids": vector_store_ids,
         }
 
-        file_search_config = {}
-
         if filters is not None:
-            file_search_config["filters"] = filters
+            tool["filters"] = filters
 
-        # Only set overrides if provided
         if max_num_results is not None:
-            file_search_config["max_num_results"] = max_num_results
+            tool["max_num_results"] = max_num_results
 
-        if score_threshold is not None or ranker is not None:
-            file_search_config["ranking_options"] = {}
-            if score_threshold is not None:
-                file_search_config["ranking_options"]["score_threshold"] = score_threshold
-            if ranker is not None:
-                file_search_config["ranking_options"]["ranker"] = ranker
+        ranking_options: RankingOptions = {}
+        if score_threshold is not None:
+            ranking_options["score_threshold"] = score_threshold
+        if ranker is not None:
+            ranking_options["ranker"] = ranker
 
-        # Include file_search in the tool if any config was provided
-        if file_search_config:
-            tool["file_search"] = file_search_config
+        if ranking_options:
+            tool["ranking_options"] = ranking_options
 
         return tool
 

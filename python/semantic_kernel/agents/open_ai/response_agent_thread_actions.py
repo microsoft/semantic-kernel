@@ -6,6 +6,7 @@ from collections.abc import AsyncIterable
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
+from openai._streaming import AsyncStream
 from openai.types.responses import ResponseFunctionToolCall
 from openai.types.responses.response import Response
 from openai.types.responses.response_content_part_added_event import ResponseContentPartAddedEvent
@@ -28,7 +29,6 @@ from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.response_function_result_content import ResponseFunctionResultContent
 from semantic_kernel.contents.response_message_content import ResponseMessageContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
@@ -150,20 +150,13 @@ class ResponseAgentThreadActions:
         response_options = {k: v for k, v in response_options.items() if v is not None}
 
         for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
-            response: Response = await cls._get_response(
+            response = await cls._get_response(
                 agent=agent,
                 chat_history=chat_history,
                 merged_instructions=merged_instructions,
                 tools=tools,
                 response_options=response_options,
             )
-            # response: Response = await agent.client.responses.create(
-            #     input=cls._prepare_chat_history_for_request(chat_history),
-            #     instructions=merged_instructions or agent.instructions,
-            #     tools=tools,  # type: ignore
-            #     **response_options,
-            # )
-            # assert response is not None  # nosec
 
             while response.status != "completed":
                 # handle a timeout here...
@@ -218,7 +211,7 @@ class ResponseAgentThreadActions:
             pass
             # Do a final call, without function calling when the max has been reached.
             function_choice_behavior = FunctionChoiceBehavior.NoneInvoke()
-            response: Response = await cls._get_response(
+            response = await cls._get_response(
                 agent=agent,
                 chat_history=chat_history,
                 merged_instructions=merged_instructions,
@@ -236,7 +229,7 @@ class ResponseAgentThreadActions:
         tools: Any | None = None,
         response_options: dict | None = None,
         stream: bool = False,
-    ) -> None:
+    ) -> Response | AsyncStream[ResponseStreamEvent]:
         response: Response = await agent.client.responses.create(
             input=cls._prepare_chat_history_for_request(chat_history),
             instructions=merged_instructions or agent.instructions,
@@ -333,7 +326,7 @@ class ResponseAgentThreadActions:
         response_options = {k: v for k, v in response_options.items() if v is not None}
 
         for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
-            response: Response = await cls._get_response(
+            response: AsyncStream[ResponseStreamEvent] = await cls._get_response(
                 agent=agent,
                 chat_history=chat_history,
                 merged_instructions=merged_instructions,
@@ -521,8 +514,6 @@ class ResponseAgentThreadActions:
     def _prepare_chat_history_for_request(
         cls: type[_T],
         chat_history: "ChatHistory",
-        role_key: str = "role",
-        content_key: str = "content",
     ) -> Any:
         """Prepare the chat history for a request.
 
@@ -531,7 +522,7 @@ class ResponseAgentThreadActions:
         or StreamingFileReferenceContent, and always map the role to either user,
         assistant, or developer.
         """
-        response_inputs = []
+        response_inputs = []  # type: ignore
         for message in chat_history.messages:
             allowed_items = [
                 i
@@ -587,7 +578,7 @@ class ResponseAgentThreadActions:
                             "arguments": content.arguments,
                         }
                         response_inputs.append(fc_dict)
-                    case ResponseFunctionResultContent():
+                    case FunctionResultContent():
                         rfrc_dict = {
                             "type": "function_call_output",
                             "output": str(content.result),
@@ -598,14 +589,12 @@ class ResponseAgentThreadActions:
         return response_inputs
 
     @classmethod
-    def _get_tool_calls_from_output(
-        cls: type[_T], output: list[ResponseFunctionToolCall | ResponseFunctionCallArgumentsDeltaEvent]
-    ) -> list[FunctionCallContent]:
+    def _get_tool_calls_from_output(cls: type[_T], output: list[ResponseFunctionToolCall]) -> list[FunctionCallContent]:
         """Get tool calls from a response output."""
         function_calls: list[FunctionCallContent] = []
-        if not any(isinstance(i, (ResponseFunctionToolCall, ResponseFunctionCallArgumentsDeltaEvent)) for i in output):
+        if not any(isinstance(i, ResponseFunctionToolCall) for i in output):
             return []
-        for tool in cast(list[ResponseFunctionToolCall] | list[ResponseFunctionCallArgumentsDeltaEvent], output):
+        for tool in cast(list[ResponseFunctionToolCall], output):
             content = tool if isinstance(tool, ResponseFunctionToolCall) else tool.delta
             function_calls.append(
                 FunctionCallContent(

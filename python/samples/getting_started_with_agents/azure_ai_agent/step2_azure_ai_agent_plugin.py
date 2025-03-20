@@ -1,13 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Annotated
+from typing import Annotated, Any
 
 from azure.identity.aio import DefaultAzureCredential
+from pydantic import BaseModel
 
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
+from semantic_kernel.functions.kernel_arguments import KernelArguments
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
@@ -15,9 +17,21 @@ questions about a sample menu using a Semantic Kernel Plugin.
 """
 
 
+class RequestContext(BaseModel):
+    id: str
+    content: str
+    event: Any
+
+
 # Define a sample plugin for the sample
 class MenuPlugin:
     """A sample Menu Plugin used for the concept sample."""
+
+    @kernel_function(description="Provides the weather")
+    def get_weather(self, arguments: KernelArguments) -> Annotated[str, "Returns the weather."]:
+        """Provides the weather."""
+        rc = arguments.get("request_context")
+        return "The weather is sunny."
 
     @kernel_function(description="Provides a list of specials from the menu.")
     def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
@@ -36,7 +50,7 @@ class MenuPlugin:
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Hello",
+    "What's the weather in Seattle?",
     "What is the special soup?",
     "How much does that cost?",
     "Thank you",
@@ -77,7 +91,13 @@ async def main() -> None:
                 await agent.add_chat_message(thread_id=thread.id, message=user_input)
                 print(f"# User: {user_input}")
                 # 6. Invoke the agent for the specified thread for response
+                response = await agent.get_response(
+                    thread_id=thread.id,
+                    temperature=0.2,  # override the agent-level temperature setting with a run-time value
+                    arguments=KernelArguments(request_context=RequestContext(id="1", content=user_input, event=None)),
+                )
                 async for content in agent.invoke(
+                    arguments=KernelArguments(request_context=RequestContext(id="1", content=user_input, event=None)),
                     thread_id=thread.id,
                     temperature=0.2,  # override the agent-level temperature setting with a run-time value
                 ):

@@ -12,6 +12,7 @@ from pydantic import Field
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.const import (
     ANNOTATION_CONTENT_TAG,
     DISCRIMINATOR_FIELD,
@@ -19,7 +20,6 @@ from semantic_kernel.contents.const import (
     FUNCTION_CALL_CONTENT_TAG,
     FUNCTION_RESULT_CONTENT_TAG,
     IMAGE_CONTENT_TAG,
-    RESPONSE_FUNCTION_RESULT_CONTENT_TAG,
     RESPONSE_MESSAGE_CONTENT_TAG,
     STREAMING_ANNOTATION_CONTENT_TAG,
     STREAMING_FILE_REFERENCE_CONTENT_TAG,
@@ -31,7 +31,6 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.response_function_result_content import ResponseFunctionResultContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.text_content import TextContent
@@ -49,7 +48,6 @@ TAG_CONTENT_MAP = {
     IMAGE_CONTENT_TAG: ImageContent,
     STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
     STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
-    RESPONSE_FUNCTION_RESULT_CONTENT_TAG: ResponseFunctionResultContent,
 }
 
 CMC_ITEM_TYPES = Annotated[
@@ -60,7 +58,6 @@ CMC_ITEM_TYPES = Annotated[
     | FunctionResultContent
     | FunctionCallContent
     | FileReferenceContent
-    | ResponseFunctionResultContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
     | AudioContent,
@@ -71,7 +68,7 @@ CMC_ITEM_TYPES = Annotated[
 logger = logging.getLogger(__name__)
 
 
-class ResponseMessageContent(KernelContent):
+class ResponseMessageContent(ChatMessageContent):
     """This is the class for response message response content.
 
     All response completion services should return an instance of this class as response.
@@ -303,16 +300,12 @@ class ResponseMessageContent(KernelContent):
         ret: dict[str, Any] = {
             role_key: self.role.value,
         }
-        if self.role == AuthorRole.ASSISTANT and any(
-            isinstance(item, ResponseFunctionResultContent) for item in self.items
-        ):
-            ret["tool_calls"] = [
-                item.to_dict() for item in self.items if isinstance(item, ResponseFunctionResultContent)
-            ]
+        if self.role == AuthorRole.ASSISTANT and any(isinstance(item, FunctionResultContent) for item in self.items):
+            ret["tool_calls"] = [item.to_dict() for item in self.items if isinstance(item, FunctionResultContent)]
         else:
             ret[content_key] = self._parse_items()
         if self.role == AuthorRole.TOOL:
-            assert isinstance(self.items[0], ResponseFunctionResultContent)  # nosec
+            assert isinstance(self.items[0], FunctionResultContent)  # nosec
             ret["call_id"] = self.items[0].id or ""
         if self.role != AuthorRole.TOOL and self.name:
             ret["name"] = self.name
@@ -326,7 +319,7 @@ class ResponseMessageContent(KernelContent):
         """
         if len(self.items) == 1 and isinstance(self.items[0], TextContent):
             return self.items[0].text
-        if len(self.items) == 1 and isinstance(self.items[0], ResponseFunctionResultContent):
+        if len(self.items) == 1 and isinstance(self.items[0], FunctionResultContent):
             return str(self.items[0].result)
         return [item.to_dict() for item in self.items]
 

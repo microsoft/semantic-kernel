@@ -10,9 +10,9 @@ from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.response_function_result_content import ResponseFunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
+from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
     FunctionExecutionException,
@@ -403,18 +403,17 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         )
         await stack(invocation_context)
 
+        frc = FunctionResultContent.from_function_call_content_and_result(
+            function_call_content=function_call,
+            result=invocation_context.function_result,
+        )
+        is_streaming = any(
+            isinstance(message, (StreamingChatMessageContent, StreamingResponseMessageContent))
+            for message in chat_history.messages
+        )
         if is_response_api:
-            frc = ResponseFunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call,
-                result=invocation_context.function_result,
-            )
-            is_streaming = any(isinstance(message, StreamingChatMessageContent) for message in chat_history.messages)
-            message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
+            message = frc.to_streaming_response_message_content() if is_streaming else frc.to_response_message_content()
         else:
-            frc = FunctionResultContent.from_function_call_content_and_result(
-                function_call_content=function_call, result=invocation_context.function_result
-            )
-            is_streaming = any(isinstance(message, StreamingChatMessageContent) for message in chat_history.messages)
             message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
 
         chat_history.add_message(message=message)
