@@ -29,5 +29,5 @@ public sealed class RagConfig
     /// <summary>
     /// The name of the collection.
     /// </summary>
-    public string CollectionName { get; set; } = string.Empty;
+    public string? CollectionName { get; set; }
 }
