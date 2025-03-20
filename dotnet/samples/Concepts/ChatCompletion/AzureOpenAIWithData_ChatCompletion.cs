@@ -214,7 +214,7 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
 
         // Output
         // Ask: Can I have their emails?
-        // Response: Emily's email is emily@test.com and David's email is david@test.com.
+        // Response: Emily's email is emily@contoso.com and David's email is david@contoso.com.
         Console.WriteLine($"Ask: {ask}");
         Console.WriteLine($"Response: {modelResult?.Message}");
     }
@@ -389,8 +389,8 @@ public class AzureOpenAIWithData_ChatCompletion(ITestOutputHelper output) : Base
     {
         private readonly Dictionary<string, string> _emails = new()
         {
-            ["Emily"] = "emily@test.com",
-            ["David"] = "david@test.com",
+            ["Emily"] = "emily@contoso.com",
+            ["David"] = "david@contoso.com",
         };
 
         [KernelFunction]
