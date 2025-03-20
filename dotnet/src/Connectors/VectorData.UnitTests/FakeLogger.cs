@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace SemanticKernel.UnitTests.Utilities;
+namespace VectorData.UnitTests;
 
-public class FakeLogger : ILogger
+internal sealed class FakeLogger : ILogger
 {
     public List<(LogLevel Level, string Message, Exception? Exception)> Logs { get; } = new();
 

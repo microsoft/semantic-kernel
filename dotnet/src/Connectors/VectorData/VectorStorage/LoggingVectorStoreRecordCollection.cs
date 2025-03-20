@@ -2,11 +2,12 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 [Experimental("SKEXP0020")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
+public partial class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
@@ -23,6 +24,9 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
 
     /// <summary>The underlying <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</summary>
     private readonly IVectorStoreRecordCollection<TKey, TRecord> _innerCollection;
+
+    /// <summary>Gets or sets JSON serialization options to use when serializing logging data.</summary>
+    public JsonSerializerOptions? JsonSerializerOptions { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LoggingVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -42,18 +46,28 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     public string CollectionName => this._innerCollection.CollectionName;
 
     /// <inheritdoc/>
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        var collectionExists = await VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(CollectionExistsAsync),
-            () => this._innerCollection.CollectionExistsAsync(cancellationToken));
+            () => this._innerCollection.CollectionExistsAsync(cancellationToken))
+            .ConfigureAwait(false);
+
+        if (this._logger.IsEnabled(LogLevel.Debug))
+        {
+            this.LogCollectionExistsResult(this.CollectionName, collectionExists);
+        }
+
+        return collectionExists;
     }
 
     /// <inheritdoc/>
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        this.LogCollectionCreate(this.CollectionName);
+
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(CreateCollectionAsync),
             () => this._innerCollection.CreateCollectionAsync(cancellationToken));
@@ -62,7 +76,7 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     /// <inheritdoc/>
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(CreateCollectionIfNotExistsAsync),
             () => this._innerCollection.CreateCollectionIfNotExistsAsync(cancellationToken));
@@ -71,7 +85,12 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     /// <inheritdoc/>
     public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogDelete(this.CollectionName, VectorStoreLoggingExtensions.AsJson(key, this.JsonSerializerOptions));
+        }
+
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(DeleteAsync),
             () => this._innerCollection.DeleteAsync(key, cancellationToken));
@@ -80,7 +99,12 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     /// <inheritdoc/>
     public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogDeleteBatch(this.CollectionName, VectorStoreLoggingExtensions.AsJson(keys, this.JsonSerializerOptions));
+        }
+
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(DeleteBatchAsync),
             () => this._innerCollection.DeleteBatchAsync(keys, cancellationToken));
@@ -89,56 +113,152 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     /// <inheritdoc/>
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        return VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(DeleteCollectionAsync),
             () => this._innerCollection.DeleteCollectionAsync(cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogGet(this.CollectionName, VectorStoreLoggingExtensions.AsJson(key, this.JsonSerializerOptions));
+        }
+
+        var record = await VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(GetAsync),
-            () => this._innerCollection.GetAsync(key, options, cancellationToken));
+            () => this._innerCollection.GetAsync(key, options, cancellationToken))
+            .ConfigureAwait(false);
+
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogGetResult(this.CollectionName, VectorStoreLoggingExtensions.AsJson(record, this.JsonSerializerOptions));
+        }
+
+        return record;
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        var records = VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(GetBatchAsync),
             () => this._innerCollection.GetBatchAsync(keys, options, cancellationToken),
             cancellationToken);
+
+        await foreach (var record in records.ConfigureAwait(false))
+        {
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this.LogGetResult(this.CollectionName, VectorStoreLoggingExtensions.AsJson(record, this.JsonSerializerOptions));
+            }
+
+            yield return record;
+        }
     }
 
     /// <inheritdoc/>
-    public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogUpsert(this.CollectionName, VectorStoreLoggingExtensions.AsJson(record, this.JsonSerializerOptions));
+        }
+
+        var key = await VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(UpsertAsync),
-            () => this._innerCollection.UpsertAsync(record, cancellationToken));
+            () => this._innerCollection.UpsertAsync(record, cancellationToken))
+            .ConfigureAwait(false);
+
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogUpsertResult(this.CollectionName, VectorStoreLoggingExtensions.AsJson(key, this.JsonSerializerOptions));
+        }
+
+        return key;
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        if (this._logger.IsEnabled(LogLevel.Trace))
+        {
+            this.LogUpsertBatch(this.CollectionName, VectorStoreLoggingExtensions.AsJson(records, this.JsonSerializerOptions));
+        }
+
+        var keys = VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(UpsertBatchAsync),
             () => this._innerCollection.UpsertBatchAsync(records, cancellationToken),
             cancellationToken);
+
+        await foreach (var key in keys.ConfigureAwait(false))
+        {
+            if (this._logger.IsEnabled(LogLevel.Trace))
+            {
+                this.LogUpsertResult(this.CollectionName, VectorStoreLoggingExtensions.AsJson(key, this.JsonSerializerOptions));
+            }
+
+            yield return key;
+        }
     }
 
     /// <inheritdoc/>
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        return LoggingExtensions.RunWithLoggingAsync(
+        var results = await VectorStoreLoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(VectorizedSearchAsync),
-            () => this._innerCollection.VectorizedSearchAsync(vector, options, cancellationToken));
+            () => this._innerCollection.VectorizedSearchAsync(vector, options, cancellationToken))
+            .ConfigureAwait(false);
+
+        if (this._logger.IsEnabled(LogLevel.Trace) && results.TotalCount is not null)
+        {
+            this.LogVectorizedSearchTotalCount(this.CollectionName, results.TotalCount.Value);
+        }
+
+        return results;
     }
+
+    #region private
+
+    [LoggerMessage(LogLevel.Trace, "Collection '{CollectionName}' exists: {CollectionExists}")]
+    private partial void LogCollectionExistsResult(string collectionName, bool collectionExists);
+
+    [LoggerMessage(LogLevel.Trace, "Creating a collection '{CollectionName}'")]
+    private partial void LogCollectionCreate(string collectionName);
+
+    [LoggerMessage(LogLevel.Trace, "Deleting a record from '{CollectionName}' with key: {Key}")]
+    private partial void LogDelete(string collectionName, string key);
+
+    [LoggerMessage(LogLevel.Trace, "Deleting records from '{CollectionName}' with keys: {Keys}")]
+    private partial void LogDeleteBatch(string collectionName, string keys);
+
+    [LoggerMessage(LogLevel.Trace, "Getting a record from '{CollectionName}' with key: {Key}")]
+    private partial void LogGet(string collectionName, string key);
+
+    [LoggerMessage(LogLevel.Trace, "Getting records from '{CollectionName}' with keys: {Keys}")]
+    private partial void LogGetBatch(string collectionName, string keys);
+
+    [LoggerMessage(LogLevel.Trace, "Retrieved record from '{CollectionName}': {Record}")]
+    private partial void LogGetResult(string collectionName, string record);
+
+    [LoggerMessage(LogLevel.Trace, "Upserting a record in '{CollectionName}': {Record}")]
+    private partial void LogUpsert(string collectionName, string record);
+
+    [LoggerMessage(LogLevel.Trace, "Upserting records in '{CollectionName}': {Records}")]
+    private partial void LogUpsertBatch(string collectionName, string records);
+
+    [LoggerMessage(LogLevel.Trace, "Upserted record in '{CollectionName}' with key: {Key}")]
+    private partial void LogUpsertResult(string collectionName, string key);
+
+    [LoggerMessage(LogLevel.Trace, "Found {TotalCount} record(s) in '{CollectionName}' using vector search.")]
+    private partial void LogVectorizedSearchTotalCount(string collectionName, long totalCount);
+
+    #endregion
 }
