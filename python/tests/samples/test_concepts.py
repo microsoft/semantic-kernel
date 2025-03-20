@@ -46,7 +46,6 @@ from samples.concepts.prompt_templates.configuring_prompts import main as config
 from samples.concepts.prompt_templates.load_yaml_prompt import main as load_yaml_prompt
 from samples.concepts.prompt_templates.template_language import main as template_language
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
-from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
 from samples.concepts.text_completion.text_completion import main as text_completion
 from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent_simple import (
@@ -249,12 +248,6 @@ concepts = [
         marks=pytest.mark.skipif(os.getenv(MEMORY_CONCEPT_SAMPLE, None) is None, reason="Not running memory samples."),
     ),
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
-    param(
-        bing_search_plugin,
-        [],
-        id="bing_search_plugin",
-        marks=pytest.mark.skip(reason="Flaky test due to Azure OpenAI content policy"),
-    ),
     param(
         custom_service_selector,
         [],
