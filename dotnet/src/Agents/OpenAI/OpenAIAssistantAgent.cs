@@ -361,13 +361,13 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    public async Task<IAgentInvokeResponseAsyncEnumerable<ChatMessageContent>> InvokeAsync(
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
-        string? additionalInstructions = null,
-        CancellationToken cancellationToken = default)
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(message);
 
@@ -390,21 +390,23 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
 
         // Create options that include the additional instructions.
-        var options = string.IsNullOrWhiteSpace(additionalInstructions) ? null : new RunCreationOptions()
+        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
         {
-            AdditionalInstructions = additionalInstructions,
+            AdditionalInstructions = options?.AdditionalInstructions,
         };
 
         // Invoke the Agent with the thread that we already added our message to.
-        var invokeResults = this.InvokeAsync(thread.ThreadId!, options, arguments, kernel, cancellationToken);
+        var invokeResults = this.InvokeAsync(thread.ThreadId!, internalOptions, arguments, kernel, cancellationToken);
 
-        // Notify the thread of any new messages returned by the agent.
+        // Process messages in the background.
+        var processNewMessagesTask = ProcessNewMessagesAsync(thread, invokeResults, cancellationToken);
+
+        // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             await thread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, thread);
         }
-
-        return new AgentInvokeResponseAsyncEnumerable<ChatMessageContent>(invokeResults, thread);
     }
 
     /// <summary>
@@ -600,5 +602,16 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             VectorStoreId = string.IsNullOrWhiteSpace(vectorStoreId) ? null : vectorStoreId,
             ExecutionOptions = options,
         };
+    }
+
+    private static async Task<AgentThread> ProcessNewMessagesAsync(AgentThread thread, IAsyncEnumerable<ChatMessageContent> invokeResults, CancellationToken cancellationToken)
+    {
+        // Notify the thread of any new messages returned by the agent.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await thread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+        }
+
+        return thread;
     }
 }

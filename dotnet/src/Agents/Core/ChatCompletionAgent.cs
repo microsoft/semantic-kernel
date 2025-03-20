@@ -58,13 +58,13 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public AuthorRole InstructionsRole { get; init; } = AuthorRole.System;
 
     /// <inheritdoc/>
-    public async Task<IAgentInvokeResponseAsyncEnumerable<ChatMessageContent>> InvokeAsync(
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
-        string? additionalInstructions = null,
-        CancellationToken cancellationToken = default)
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(message);
 
@@ -89,15 +89,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         // Invoke Chat Completion with the updated chat history.
         string agentName = this.GetDisplayName();
-        var invokeResults = this.InternalInvokeAsync(agentName, chatHistory, arguments, kernel, additionalInstructions, cancellationToken);
+        var invokeResults = this.InternalInvokeAsync(agentName, chatHistory, arguments, kernel, options?.AdditionalInstructions, cancellationToken);
 
-        // Notify the thread of any new messages returned by chat completion.
+        // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             await thread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, thread);
         }
-
-        return new AgentInvokeResponseAsyncEnumerable<ChatMessageContent>(invokeResults, thread);
     }
 
     /// <inheritdoc/>

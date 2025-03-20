@@ -44,6 +44,27 @@ public abstract class Agent
     public ILoggerFactory? LoggerFactory { get; init; }
 
     /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="message">The message to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="options">Optional parameters for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public abstract IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
     /// </summary>
     protected ILogger Logger => this._logger ??= this.ActiveLoggerFactory.CreateLogger(this.GetType());
