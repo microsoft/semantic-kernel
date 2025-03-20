@@ -6,7 +6,7 @@ using Xunit;
 
 namespace SqlServerIntegrationTests.CRUD;
 
-public class SqlServerGenericDataModelConformanceTests(SqlServerFixture fixture)
-    : GenericDataModelConformanceTests<string>(fixture), IClassFixture<SqlServerFixture>
+public class SqlServerGenericDataModelConformanceTests(SqlServerGenericDataModelFixture fixture)
+    : GenericDataModelConformanceTests<string>(fixture), IClassFixture<SqlServerGenericDataModelFixture>
 {
 }

@@ -113,13 +113,19 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._internalCollections.ContainsKey(this._collectionName))
+        if (!this._internalCollections.ContainsKey(this._collectionName)
+            && this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>())
+            && this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord)))
         {
-            this._internalCollections.TryAdd(this._collectionName, new ConcurrentDictionary<object, object>());
-            this._internalCollectionTypes.TryAdd(this._collectionName, typeof(TRecord));
+            return Task.CompletedTask;
         }
 
-        return Task.CompletedTask;
+        return Task.FromException(new VectorStoreOperationException("Collection already exists.")
+        {
+            VectorStoreType = "InMemory",
+            CollectionName = this.CollectionName,
+            OperationName = "CreateCollection"
+        });
     }
 
     /// <inheritdoc />

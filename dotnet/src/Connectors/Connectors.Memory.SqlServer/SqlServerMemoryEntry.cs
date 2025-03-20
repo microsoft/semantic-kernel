@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// A SQL Server or Azure SQL memory entry.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqlServerVectorStore")]
 internal record struct SqlServerMemoryEntry
 {
     /// <summary>

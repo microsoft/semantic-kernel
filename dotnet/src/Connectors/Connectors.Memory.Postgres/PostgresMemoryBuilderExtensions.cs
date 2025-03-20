@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
+#pragma warning disable SKEXP0001
+
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Postgres connector.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PostgresVectorStore")]
 public static class PostgresMemoryBuilderExtensions
 {
     /// <summary>

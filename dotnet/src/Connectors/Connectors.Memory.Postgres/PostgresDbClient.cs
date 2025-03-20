@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations for <see cref="PostgresMemoryStore"/>.
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PostgresVectorStore")]
 public class PostgresDbClient : IPostgresDbClient
 {
     /// <summary>

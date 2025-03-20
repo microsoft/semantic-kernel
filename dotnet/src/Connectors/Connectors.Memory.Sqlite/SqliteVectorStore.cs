@@ -18,8 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </remarks>
 public class SqliteVectorStore : IVectorStore
 {
-    /// <summary><see cref="DbConnection"/> that will be used to manage the data in SQLite.</summary>
-    private readonly DbConnection _connection;
+    /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
+    private readonly string _connectionString;
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly SqliteVectorStoreOptions _options;
@@ -27,17 +27,26 @@ public class SqliteVectorStore : IVectorStore
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
     /// </summary>
+    /// <param name="connectionString">The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</param>
+    /// <param name="options">Optional configuration options for this class.</param>
+    public SqliteVectorStore(string connectionString, SqliteVectorStoreOptions? options = default)
+    {
+        Verify.NotNull(connectionString);
+
+        this._connectionString = connectionString;
+        this._options = options ?? new();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
+    /// </summary>
     /// <param name="connection"><see cref="SqliteConnection"/> that will be used to manage the data in SQLite.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    [Obsolete("Use the constructor that accepts a connection string instead.", error: true)]
     public SqliteVectorStore(
         DbConnection connection,
         SqliteVectorStoreOptions? options = default)
-    {
-        Verify.NotNull(connection);
-
-        this._connection = connection;
-        this._options = options ?? new();
-    }
+        => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
     /// <inheritdoc />
     public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
@@ -47,7 +56,7 @@ public class SqliteVectorStore : IVectorStore
         if (this._options.VectorStoreCollectionFactory is not null)
         {
             return this._options.VectorStoreCollectionFactory.CreateVectorStoreRecordCollection<TKey, TRecord>(
-                this._connection,
+                this._connectionString,
                 name,
                 vectorStoreRecordDefinition);
         }
@@ -59,7 +68,7 @@ public class SqliteVectorStore : IVectorStore
         }
 
         var recordCollection = new SqliteVectorStoreRecordCollection<TRecord>(
-            this._connection,
+            this._connectionString,
             name,
             new()
             {
@@ -77,7 +86,9 @@ public class SqliteVectorStore : IVectorStore
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
 
-        using var command = this._connection.CreateCommand();
+        using var connection = new SqliteConnection(this._connectionString);
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        using var command = connection.CreateCommand();
 
         command.CommandText = Query;
 

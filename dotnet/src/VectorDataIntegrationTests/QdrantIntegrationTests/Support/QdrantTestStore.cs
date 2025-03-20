@@ -12,9 +12,11 @@ namespace QdrantIntegrationTests.Support;
 
 internal sealed class QdrantTestStore : TestStore
 {
-    public static QdrantTestStore Instance { get; } = new();
+    public static QdrantTestStore NamedVectorsInstance { get; } = new(hasNamedVectors: true);
+    public static QdrantTestStore UnnamedVectorInstance { get; } = new(hasNamedVectors: false);
 
     private readonly QdrantContainer _container = new QdrantBuilder().Build();
+    private readonly bool _hasNamedVectors;
     private QdrantClient? _client;
     private QdrantVectorStore? _defaultVectorStore;
 
@@ -25,15 +27,13 @@ internal sealed class QdrantTestStore : TestStore
     public QdrantVectorStore GetVectorStore(QdrantVectorStoreOptions options)
         => new(this.Client, options);
 
-    private QdrantTestStore()
-    {
-    }
+    private QdrantTestStore(bool hasNamedVectors) => this._hasNamedVectors = hasNamedVectors;
 
     protected override async Task StartAsync()
     {
         await this._container.StartAsync();
         this._client = new QdrantClient(this._container.Hostname, this._container.GetMappedPublicPort(QdrantBuilder.QdrantGrpcPort));
-        this._defaultVectorStore = new(this._client);
+        this._defaultVectorStore = new(this._client, new() { HasNamedVectors = this._hasNamedVectors });
     }
 
     protected override Task StopAsync()

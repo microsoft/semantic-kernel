@@ -80,7 +80,7 @@ from either OpenAI or Azure OpenAI and to run one of the C#, Python, and Java co
 ### For C#:
 
 1. Go to the Quick start page [here](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp) and follow the steps to dive in.
-2. After Installing the SDK, we advise you follow the steps and code detailed to write your first console app.
+2. After installing the SDK, we advise you follow the steps and code detailed to write your first console app.
    ![dotnetmap](https://learn.microsoft.com/en-us/semantic-kernel/media/dotnetmap.png)
 
 ### For Python:
@@ -95,7 +95,7 @@ The Java code is in the [semantic-kernel-java](https://github.com/microsoft/sema
 [semantic-kernel-java build](https://github.com/microsoft/semantic-kernel-java/blob/main/BUILD.md) for instructions on
 how to build and run the Java code.
 
-Please file Java Semantic Kernel specific issues in
+Please file Java Semantic Kernel-specific issues in
 the [semantic-kernel-java](https://github.com/microsoft/semantic-kernel-java) repository.
 
 ## Learning how to use Semantic Kernel
@@ -125,7 +125,7 @@ The Semantic Kernel extension for Visual Studio Code makes it easy to design and
 
 ## Join the community
 
-We welcome your contributions and suggestions to SK community! One of the easiest
+We welcome your contributions and suggestions to the SK community! One of the easiest
 ways to participate is to engage in discussions in the GitHub repository.
 Bug reports and fixes are welcome!
 
@@ -151,7 +151,7 @@ To learn more and get started:
 
 This project has adopted the
 [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the
+For more information, see the
 [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
 or contact [opencode@microsoft.com](mailto:opencode@microsoft.com)
 with any additional questions or comments.

@@ -10,9 +10,12 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
+#pragma warning disable SKEXP0001
+
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqlServerVectorStore")]
 public class SqlServerMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "dbo";

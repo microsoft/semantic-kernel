@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -10,7 +10,7 @@ using Microsoft.Data.Sqlite;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqliteVectorStore")]
 internal struct DatabaseEntry
 {
     public string Key { get; set; }
@@ -22,7 +22,7 @@ internal struct DatabaseEntry
     public string? Timestamp { get; set; }
 }
 
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqliteVectorStore")]
 internal sealed class Database
 {
     private const string TableName = "SKMemoryTable";
