@@ -40,6 +40,14 @@ public sealed class OllamaChatCompletionTests : IDisposable
     }
 
     [Fact]
+    public void AddOllamaChatCompletionShouldWorkOnlyForModelId()
+    {
+        // Arrange
+        var kernel = Kernel.CreateBuilder().AddOllamaChatCompletion("model-id").Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+    }
+
+    [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange
