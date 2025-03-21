@@ -362,10 +362,11 @@ def data_model_definition(
 ) -> VectorStoreRecordDefinition:
     return VectorStoreRecordDefinition(
         fields={
-            "id": VectorStoreRecordKeyField(),
+            "id": VectorStoreRecordKeyField(property_type="str"),
             "content": VectorStoreRecordDataField(
                 has_embedding=True,
                 embedding_property_name="vector",
+                property_type="str",
             ),
             "vector": VectorStoreRecordVectorField(
                 dimensions=dimensions,

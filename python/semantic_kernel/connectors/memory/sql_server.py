@@ -33,7 +33,10 @@ from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearc
 from semantic_kernel.data.vector_storage.vector_store import VectorStore
 from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreOperationException
-from semantic_kernel.exceptions.vector_store_exceptions import VectorSearchExecutionException
+from semantic_kernel.exceptions.vector_store_exceptions import (
+    VectorSearchExecutionException,
+    VectorStoreInitializationException,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseSettings
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
@@ -48,7 +51,7 @@ else:
     from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
-    from pyodbc import Connection, ProgrammingError
+    from pyodbc import Connection
 
 
 logger = logging.getLogger(__name__)
@@ -276,9 +279,9 @@ class SqlServerCollection(
     """SQL collection implementation."""
 
     connection: Any | None = None
+    settings: SqlSettings | None = None
     supported_key_types: ClassVar[list[str] | None] = ["str", "int"]
     supported_vector_types: ClassVar[list[str] | None] = ["float"]
-    settings: SqlSettings | None = None
 
     def __init__(
         self,
@@ -313,7 +316,7 @@ class SqlServerCollection(
                     env_file_encoding=env_file_encoding,
                 )
             except ValidationError as e:
-                raise VectorStoreOperationException(
+                raise VectorStoreInitializationException(
                     "Invalid settings provided. Please check the connection string and database name."
                 ) from e
 
@@ -330,8 +333,9 @@ class SqlServerCollection(
     async def __aenter__(self) -> Self:
         # If the connection pool was not provided, create a new one.
         if not self.connection:
-            if not self.settings:
-                raise VectorStoreOperationException("No connection or settings provided.")
+            if not self.settings:  # pragma: no cover
+                # this should never happen, but just in case
+                raise VectorStoreInitializationException("No connection or settings provided.")
             self.connection = await _get_mssql_connection(self.settings)
         self.connection.__enter__()
         return self
@@ -384,10 +388,7 @@ class SqlServerCollection(
             with self.connection.cursor() as cur:
                 cur.execute(*command.to_execute())
                 while cur.nextset():
-                    try:
-                        keys.extend([row[0] for row in cur.fetchall()])
-                    except ProgrammingError:
-                        continue
+                    keys.extend([row[0] for row in cur.fetchall()])
         if not keys:
             raise VectorStoreOperationException("No keys were returned from the merge query.")
         return keys
@@ -514,8 +515,7 @@ class SqlServerCollection(
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
 
         with self.connection.cursor() as cursor:
-            schema, _ = self._get_schema_and_table()
-            cursor.execute(*_build_select_table_names_query(schema=schema).to_execute())
+            cursor.execute(*_build_select_table_name_query(*self._get_schema_and_table()).to_execute())
             row = cursor.fetchone()
             return bool(row)
 
@@ -526,9 +526,8 @@ class SqlServerCollection(
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
 
         with self.connection.cursor() as cur:
-            schema, table = self._get_schema_and_table()
-            cur.execute(*_build_delete_table_query(schema=schema, table=table).to_execute())
-            logger.info(f"SqlServer table '{self.collection_name}' deleted successfully.")
+            cur.execute(*_build_delete_table_query(*self._get_schema_and_table()).to_execute())
+            logger.debug(f"SqlServer table '{self.collection_name}' deleted successfully.")
 
     @override
     async def _inner_search(
@@ -629,8 +628,8 @@ class SqlServerStore(VectorStore):
                     env_file_encoding=env_file_encoding,
                 )
             except ValidationError as e:
-                raise VectorStoreOperationException(
-                    "Invalid settings provided. Please check the connection string and database name."
+                raise VectorStoreInitializationException(
+                    "Invalid settings provided. Please check the connection string."
                 ) from e
 
         super().__init__(settings=settings, connection=connection, managed_client=managed_client, **kwargs)
@@ -639,8 +638,9 @@ class SqlServerStore(VectorStore):
     async def __aenter__(self) -> Self:
         # If the connection was not provided, create a new one.
         if not self.connection:
-            if not self.settings:
-                raise VectorStoreOperationException("No connection or settings provided.")
+            if not self.settings:  # pragma: no cover
+                # this should never happen, but just in case
+                raise VectorStoreInitializationException("Settings must be provided to establish a connection.")
             self.connection = await _get_mssql_connection(self.settings)
         self.connection.__enter__()
         return self
@@ -826,6 +826,23 @@ def _build_select_table_names_query(
         command.add_parameter(schema)
     else:
         command.query.append("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';")
+    return command
+
+
+def _build_select_table_name_query(
+    schema: str,
+    table: str,
+) -> SqlCommand:
+    """Build the SELECT TABLE NAMES query based on the data model."""
+    command = SqlCommand(
+        "SELECT TABLE_NAME"
+        " FROM INFORMATION_SCHEMA.TABLES"
+        " WHERE TABLE_TYPE = 'BASE TABLE'"
+        " AND (@schema is NULL or TABLE_SCHEMA = ?)"
+        " AND TABLE_NAME = ?"
+    )
+    command.add_parameter(schema)
+    command.add_parameter(table)
     return command
 
 
