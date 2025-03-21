@@ -145,8 +145,6 @@ public sealed partial class AzureAIAgent : KernelAgent
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -168,8 +166,8 @@ public sealed partial class AzureAIAgent : KernelAgent
         var invokeResults = this.InvokeAsync(
             azureAIAgentThread.Id!,
             internalOptions,
-            this.MergeArguments(arguments),
-            kernel ?? this.Kernel,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -223,8 +221,6 @@ public sealed partial class AzureAIAgent : KernelAgent
     public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -247,8 +243,8 @@ public sealed partial class AzureAIAgent : KernelAgent
         var invokeResults = this.InvokeStreamingAsync(
             azureAIAgentThread.Id!,
             internalOptions,
-            this.MergeArguments(arguments),
-            kernel ?? this.Kernel,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
             newMessagesReceiver,
             cancellationToken);
 

@@ -364,8 +364,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -387,8 +385,8 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         var invokeResults = this.InvokeAsync(
             openAIAssistantAgentThread.Id!,
             internalOptions,
-            this.MergeArguments(arguments),
-            kernel ?? this.Kernel,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -460,8 +458,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -484,8 +480,8 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         var invokeResults = this.InvokeStreamingAsync(
             openAIAssistantAgentThread.Id!,
             internalOptions,
-            this.MergeArguments(arguments),
-            kernel ?? this.Kernel,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
             newMessagesReceiver,
             cancellationToken);
 

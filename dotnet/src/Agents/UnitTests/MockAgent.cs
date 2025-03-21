@@ -22,8 +22,6 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
     public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -46,8 +44,6 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {

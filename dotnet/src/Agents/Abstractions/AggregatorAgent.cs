@@ -48,8 +48,6 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -61,8 +59,6 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ChatMessageContent message,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
