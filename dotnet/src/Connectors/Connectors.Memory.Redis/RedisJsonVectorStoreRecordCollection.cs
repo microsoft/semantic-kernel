@@ -438,6 +438,12 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Prefix the key with the collection name if the option is set.
     /// </summary>

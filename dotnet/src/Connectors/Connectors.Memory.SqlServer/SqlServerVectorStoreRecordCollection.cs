@@ -504,4 +504,10 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection.Dispose();
         }
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

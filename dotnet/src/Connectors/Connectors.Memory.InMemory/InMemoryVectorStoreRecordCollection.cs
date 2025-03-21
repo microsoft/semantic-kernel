@@ -278,6 +278,12 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>

@@ -35,12 +35,15 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
         }
 
         await this.Collection.CreateCollectionAsync();
+        await this.CreateIndex();
         await this.SeedAsync();
     }
 
     public virtual IVectorStoreRecordCollection<TKey, TRecord> Collection { get; private set; } = null!;
 
     public List<TRecord> TestData => this._testData ??= this.BuildTestData();
+
+    protected virtual Task CreateIndex() => Task.CompletedTask;
 
     protected virtual async Task SeedAsync()
     {

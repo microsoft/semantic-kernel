@@ -358,7 +358,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         };
 
         Sdk.QueryResponse response = await this.RunIndexOperationAsync(
-            "Query",
+            "VectorizedSearch",
             indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         if (response.Matches is null)
@@ -374,7 +374,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var records = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            "Query",
+            "VectorizedSearch",
             () => skippedResults.Select(x => new VectorSearchResult<TRecord>(this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
             {
                 Id = x.Id,
@@ -385,6 +385,57 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             .ToAsyncEnumerable();
 
         return new(records);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        Sdk.QueryRequest request = new()
+        {
+            TopK = (uint)(options.Top + options.Skip),
+            Namespace = this._options.IndexNamespace,
+            IncludeValues = options.IncludeVectors,
+            IncludeMetadata = true,
+            // "Either 'vector' or 'ID' must be provided"
+            // Since we are doing a query, we don't have a vector to provide, so we fake one.
+            // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
+            Vector = new ReadOnlyMemory<float>(new float[this._propertyReader.VectorProperty!.Dimensions!.Value]),
+            Filter = new PineconeFilterTranslator().Translate(options.Filter, this._propertyReader.StoragePropertyNamesMap),
+        };
+
+        Sdk.QueryResponse response = await this.RunIndexOperationAsync(
+            "Query",
+            indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        if (response.Matches is null)
+        {
+            yield break;
+        }
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
+        var records = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            "VectorizedSearch",
+            () => response.Matches.Skip(options.Skip).Select(x => this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
+            {
+                Id = x.Id,
+                Values = x.Values ?? Array.Empty<float>(),
+                Metadata = x.Metadata,
+                SparseValues = x.SparseValues
+            }, mapperOptions)));
+
+        if (options.OrderBy is not null)
+        {
+            records = records.AsQueryable().OrderBy(options.OrderBy);
+        }
+
+        foreach (var record in records)
+        {
+            yield return record;
+        }
     }
 
     private async Task<T> RunIndexOperationAsync<T>(string operationName, Func<IndexClient, Task<T>> operation)

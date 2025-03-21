@@ -424,15 +424,68 @@ internal sealed class VectorStoreRecordPropertyReader
         return fullTextStringProperties[0];
     }
 
+    public VectorStoreRecordProperty? GetOrderByProperty<TRecord>(Expression<Func<TRecord, object?>>? expression)
+    {
+        if (expression is not null)
+        {
+            (PropertyInfo? property, string? dataModelPropertyName) = GetMatchingProperty(expression, data: true);
+
+            if (property is not null)
+            {
+                // Ordering by Key is a valid and supported scenario
+                if (property == this.KeyPropertyInfo)
+                {
+                    return this.KeyProperty;
+                }
+
+                if (!(typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>)))
+                {
+                    // DataPropertiesInfo is not available for VectorStoreGenericDataModel.
+                    for (int i = 0; i < this.DataPropertiesInfo.Count; i++)
+                    {
+                        if (this.DataPropertiesInfo[i] == property)
+                        {
+                            return this.DataProperties[i];
+                        }
+                    }
+                }
+
+                throw new InvalidOperationException($"The property {property.Name} of {typeof(TRecord).FullName} is not a Key or Data property.");
+            }
+
+            return this.DataProperties.FirstOrDefault(l => l.DataModelPropertyName.Equals(dataModelPropertyName, StringComparison.Ordinal))
+                ?? throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{dataModelPropertyName}'.");
+        }
+
+        return null;
+    }
+
     private static TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression,
         IReadOnlyList<PropertyInfo> propertyInfos, IReadOnlyList<TProperty> properties)
         where TProperty : VectorStoreRecordProperty
     {
         bool data = typeof(TProperty) == typeof(VectorStoreRecordDataProperty);
-        string expectedGenericModelPropertyName = data
-            ? nameof(VectorStoreGenericDataModel<object>.Data)
-            : nameof(VectorStoreGenericDataModel<object>.Vectors);
+        (PropertyInfo? property, string? dataModelPropertyName) = GetMatchingProperty(expression, data);
 
+        if (property is not null)
+        {
+            for (int i = 0; i < propertyInfos.Count; i++)
+            {
+                if (propertyInfos[i] == property)
+                {
+                    return properties[i];
+                }
+            }
+
+            throw new InvalidOperationException($"The property {property.Name} of {typeof(TRecord).FullName} is not a {(data ? "Data" : "Vector")} property.");
+        }
+
+        return properties.FirstOrDefault(l => l.DataModelPropertyName.Equals(dataModelPropertyName, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{dataModelPropertyName}'.");
+    }
+
+    private static (PropertyInfo? info, string? dataModelPropertyName) GetMatchingProperty<TRecord>(Expression<Func<TRecord, object?>> expression, bool data)
+    {
         MemberExpression? member = expression.Body as MemberExpression;
         // (TRecord r) => r.PropertyName is translated into
         // (TRecord r) => (object)r.PropertyName for properties that return struct like ReadOnlyMemory<float>.
@@ -447,15 +500,7 @@ internal sealed class VectorStoreRecordPropertyReader
             && member.Expression == expression.Parameters[0]
             && member.Member is PropertyInfo property)
         {
-            for (int i = 0; i < propertyInfos.Count; i++)
-            {
-                if (propertyInfos[i] == property)
-                {
-                    return properties[i];
-                }
-            }
-
-            throw new InvalidOperationException($"The property {property.Name} of {typeof(TRecord).FullName} is not a {(data ? "Data" : "Vector")} property.");
+            return (property, null);
         }
         // (VectorStoreGenericDataModel r) => r.Vectors["PropertyName"]
         else if (expression.Body is MethodCallExpression methodCall
@@ -466,7 +511,7 @@ internal sealed class VectorStoreRecordPropertyReader
             && expression.Type.GenericTypeArguments[0].GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>)
             // It's accessing VectorStoreGenericDataModel.Vectors (or Data)
             && methodCall.Object is MemberExpression memberAccess
-            && memberAccess.Member.Name == expectedGenericModelPropertyName
+            && memberAccess.Member.Name == (data ? "Data" : "Vectors")
             // and has a single argument
             && methodCall.Arguments.Count == 1)
         {
@@ -477,11 +522,10 @@ internal sealed class VectorStoreRecordPropertyReader
                 _ => throw new InvalidOperationException($"The value of the provided {(data ? "Additional" : "Vector")}Property option is not a valid expression.")
             };
 
-            return properties.FirstOrDefault(l => l.DataModelPropertyName.Equals(name, StringComparison.Ordinal))
-                ?? throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{name}'.");
+            return (null, name);
         }
 
-        throw new InvalidOperationException($"The value of the provided {(data ? "Additional" : "Vector")}Property option is not a valid expression.");
+        throw new InvalidOperationException("Provided expression is not valid.");
 
         static bool TryGetCapturedValue(Expression expression, out object? capturedValue)
         {

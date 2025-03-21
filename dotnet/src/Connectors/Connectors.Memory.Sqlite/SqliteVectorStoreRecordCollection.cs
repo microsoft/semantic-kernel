@@ -228,6 +228,12 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         return Task.FromResult(vectorSearchResults);
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
 
     /// <inheritdoc />

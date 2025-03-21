@@ -141,4 +141,14 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
             nameof(VectorizedSearchAsync),
             () => this._innerCollection.VectorizedSearchAsync(vector, options, cancellationToken));
     }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        return LoggingExtensions.RunWithLoggingAsync(
+            this._logger,
+            nameof(UpsertBatchAsync),
+            () => this._innerCollection.QueryAsync(options, cancellationToken),
+            cancellationToken);
+    }
 }

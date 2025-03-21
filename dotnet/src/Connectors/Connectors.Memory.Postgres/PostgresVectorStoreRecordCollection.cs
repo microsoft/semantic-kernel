@@ -317,6 +317,12 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         });
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
         return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken);
