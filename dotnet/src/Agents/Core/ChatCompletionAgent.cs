@@ -58,6 +58,46 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     public AuthorRole InstructionsRole { get; init; } = AuthorRole.System;
 
     /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(message);
+
+        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+            message,
+            thread,
+            () => new ChatHistoryAgentThread(),
+            cancellationToken).ConfigureAwait(false);
+
+        // Invoke Chat Completion with the updated chat history.
+        var chatHistory = new ChatHistory();
+        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            chatHistory.Add(existingMessage);
+        }
+        string agentName = this.GetDisplayName();
+        var invokeResults = this.InternalInvokeAsync(
+            agentName,
+            chatHistory,
+            this.MergeArguments(arguments),
+            kernel ?? this.Kernel,
+            options?.AdditionalInstructions,
+            cancellationToken);
+
+        // Notify the thread of new messages and return them to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await chatHistoryAgentThread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, chatHistoryAgentThread);
+        }
+    }
+
+    /// <inheritdoc/>
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -68,8 +108,47 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeAsync(agentName, history, arguments, kernel, cancellationToken),
+            () => this.InternalInvokeAsync(agentName, history, arguments, kernel, null, cancellationToken),
             cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(message);
+
+        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+            message,
+            thread,
+            () => new ChatHistoryAgentThread(),
+            cancellationToken).ConfigureAwait(false);
+
+        // Invoke Chat Completion with the updated chat history.
+        var chatHistory = new ChatHistory();
+        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            chatHistory.Add(existingMessage);
+        }
+        string agentName = this.GetDisplayName();
+        var invokeResults = this.InternalInvokeStreamingAsync(
+            agentName,
+            chatHistory,
+            (newMessage) => chatHistoryAgentThread.OnNewMessageAsync(newMessage),
+            this.MergeArguments(arguments),
+            kernel ?? this.Kernel,
+            options?.AdditionalInstructions,
+            cancellationToken);
+
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            yield return new(result, chatHistoryAgentThread);
+        }
     }
 
     /// <inheritdoc/>
@@ -83,7 +162,18 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         return ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, agentName, this.Description),
-            () => this.InternalInvokeStreamingAsync(agentName, history, arguments, kernel, cancellationToken),
+            () => this.InternalInvokeStreamingAsync(
+                agentName,
+                history,
+                (newMessage) =>
+                {
+                    history.Add(newMessage);
+                    return Task.CompletedTask;
+                },
+                arguments,
+                kernel,
+                null,
+                cancellationToken),
             cancellationToken);
     }
 
@@ -114,6 +204,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         IReadOnlyList<ChatMessageContent> history,
         KernelArguments? arguments,
         Kernel kernel,
+        string? additionalInstructions,
         CancellationToken cancellationToken)
     {
         ChatHistory chat = [];
@@ -123,6 +214,11 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         if (!string.IsNullOrWhiteSpace(instructions))
         {
             chat.Add(new ChatMessageContent(this.InstructionsRole, instructions) { AuthorName = this.Name });
+        }
+
+        if (!string.IsNullOrWhiteSpace(additionalInstructions))
+        {
+            chat.Add(new ChatMessageContent(AuthorRole.System, additionalInstructions) { AuthorName = this.Name });
         }
 
         chat.AddRange(history);
@@ -135,6 +231,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         ChatHistory history,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
+        string? additionalInstructions = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
@@ -142,7 +239,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -180,8 +277,10 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     private async IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync(
         string agentName,
         ChatHistory history,
+        Func<ChatMessageContent, Task> onNewMessage,
         KernelArguments? arguments = null,
         Kernel? kernel = null,
+        string? additionalInstructions = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
@@ -189,7 +288,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
-        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, cancellationToken).ConfigureAwait(false);
+        ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
         int messageCount = chat.Count;
 
@@ -226,12 +325,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
             message.AuthorName = this.Name;
 
+            await onNewMessage(message).ConfigureAwait(false);
             history.Add(message);
         }
 
         // Do not duplicate terminated function result to history
         if (role != AuthorRole.Tool)
         {
+            await onNewMessage(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name }).ConfigureAwait(false);
             history.Add(new(role ?? AuthorRole.Assistant, builder.ToString()) { AuthorName = this.Name });
         }
     }
