@@ -47,7 +47,7 @@ public class AzureAIAgentFixture : AgentFixture
 
     public override async Task DisposeAsync()
     {
-        if (this._thread!.IsActive)
+        if (this._thread!.Id is not null)
         {
             await this._agentsClient!.DeleteThreadAsync(this._thread!.Id);
         }

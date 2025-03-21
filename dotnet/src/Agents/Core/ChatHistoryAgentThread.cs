@@ -15,7 +15,6 @@ namespace Microsoft.SemanticKernel.Agents;
 public class ChatHistoryAgentThread : AgentThread
 {
     private readonly ChatHistory _chatHistory = new();
-    private bool _isActive = false;
     private string? _id = null;
 
     /// <summary>
@@ -34,41 +33,35 @@ public class ChatHistoryAgentThread : AgentThread
     {
         Verify.NotNull(chatHistory);
         this._chatHistory = chatHistory;
-        this._isActive = true;
         this._id = id ?? Guid.NewGuid().ToString("N");
     }
-
-    /// <inheritdoc />
-    public override bool IsActive => this._isActive;
 
     /// <inheritdoc />
     public override string? Id => this._id;
 
     /// <inheritdoc/>
-    public override Task<string> StartAsync(CancellationToken cancellationToken = default)
+    public override Task<string> CreateAsync(CancellationToken cancellationToken = default)
     {
-        if (this._isActive)
+        if (this._id is not null)
         {
-            throw new InvalidOperationException("You cannot start this thread, since the thread is already active.");
+            return Task.FromResult(this._id);
         }
 
         this._id = Guid.NewGuid().ToString("N");
-        this._isActive = true;
 
         return Task.FromResult(this._id);
     }
 
     /// <inheritdoc/>
-    public override Task EndAsync(CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._isActive)
+        if (this._id is null)
         {
-            throw new InvalidOperationException("This thread cannot be ended, since the thread is not currently active.");
+            throw new InvalidOperationException("This thread cannot be ended, since it has not been started.");
         }
 
         this._chatHistory.Clear();
         this._id = null;
-        this._isActive = false;
 
         return Task.CompletedTask;
     }
@@ -76,9 +69,9 @@ public class ChatHistoryAgentThread : AgentThread
     /// <inheritdoc/>
     public override Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        if (!this._isActive)
+        if (this._id is null)
         {
-            throw new InvalidOperationException("Messages cannot be added to this thread, since the thread is not currently active.");
+            throw new InvalidOperationException("Messages cannot be added to this thread, since the thread has not been started.");
         }
 
         this._chatHistory.Add(newMessage);
@@ -88,9 +81,9 @@ public class ChatHistoryAgentThread : AgentThread
     /// <inheritdoc />
     public IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._isActive)
+        if (this._id is null)
         {
-            throw new InvalidOperationException("The chat history for this thread cannot be retrieved, since the thread is not currently active.");
+            throw new InvalidOperationException("The messages for this thread cannot be retrieved, since the thread has not been started.");
         }
 
         return this._chatHistory.ToAsyncEnumerable();

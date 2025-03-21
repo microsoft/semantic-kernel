@@ -166,10 +166,7 @@ public abstract class Agent
             throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
         }
 
-        if (!thread.IsActive)
-        {
-            await thread.StartAsync(cancellationToken).ConfigureAwait(false);
-        }
+        await thread.CreateAsync(cancellationToken).ConfigureAwait(false);
 
         // Notify the thread that a new message is available.
         await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);

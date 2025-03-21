@@ -46,7 +46,7 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
     public override async Task DisposeAsync()
     {
-        if (this._thread!.IsActive)
+        if (this._thread!.Id is not null)
         {
             await this._assistantClient!.DeleteThreadAsync(this._thread!.Id);
         }

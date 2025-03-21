@@ -16,28 +16,23 @@ namespace Microsoft.SemanticKernel.Agents;
 public abstract class AgentThread
 {
     /// <summary>
-    /// Gets a value indicating whether the thread is currently active.
-    /// </summary>
-    public abstract bool IsActive { get; }
-
-    /// <summary>
     /// Gets the id of the current thread.
     /// </summary>
     public abstract string? Id { get; }
 
     /// <summary>
-    /// Starts the thread and returns the thread id.
+    /// Creates the thread and returns the thread id.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The id of the new thread.</returns>
-    public abstract Task<string> StartAsync(CancellationToken cancellationToken = default);
+    public abstract Task<string> CreateAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Ends the current thread.
+    /// Deletes the current thread.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the thread has been ended.</returns>
-    public abstract Task EndAsync(CancellationToken cancellationToken = default);
+    public abstract Task DeleteAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// This method is called when a new message has been contributed to the chat by any participant.
