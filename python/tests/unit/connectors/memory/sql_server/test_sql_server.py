@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from pytest import fixture, mark
+from pytest import fixture, mark, param, raises
 
 from semantic_kernel.connectors.memory.sql_server import (
     QueryBuilder,
@@ -26,6 +26,7 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 )
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 
 
 class TestQueryBuilder:
@@ -89,42 +90,19 @@ class TestSqlCommand:
         cmd.add_parameter("42")
         assert cmd.parameters[0] == "42"
 
-    def test_sql_command_add_many_parameter(self):
-        cmd = SqlCommand("SELECT * FROM Test WHERE name = ?", execute_many=True)
-        cmd.add_parameter("Alice")
-        assert cmd.many_parameters[0] == ("Alice",)
-        cmd.add_parameter("Bob")
-        assert cmd.many_parameters[0] == (
-            "Alice",
-            "Bob",
-        )
+    def test_sql_command_add_parameters(self):
+        cmd = SqlCommand("SELECT * FROM Test WHERE id = ?")
+        cmd.add_parameters(["42", "43"])
+        assert cmd.parameters[0] == "42"
+        assert cmd.parameters[1] == "43"
 
-    def test_sql_command_add_many_parameters(self):
-        cmd = SqlCommand("SELECT * FROM Test WHERE name = ?", execute_many=True)
-        cmd.add_parameters(("Alice",))
-        assert cmd.many_parameters[0] == ("Alice",)
-        cmd.add_parameter("Bob")
-        assert cmd.many_parameters[0] == (
-            "Alice",
-            "Bob",
-        )
-
-    def test_sql_command_add_many_parameters_twice(self):
-        cmd = SqlCommand("SELECT * FROM Test WHERE name = ?", execute_many=True)
-        cmd.add_parameters(("Alice",))
-        assert cmd.many_parameters[0] == ("Alice",)
-        cmd.add_parameters(("Bob",))
-        assert cmd.many_parameters[0] == ("Alice",)
-        assert cmd.many_parameters[1] == ("Bob",)
-        cmd.add_parameter("Charlie")
-        assert cmd.many_parameters[0] == (
-            "Alice",
-            "Charlie",
-        )
-        assert cmd.many_parameters[1] == (
-            "Bob",
-            "Charlie",
-        )
+    def test_parameter_limit(self):
+        cmd = SqlCommand()
+        cmd.add_parameters(["42"] * 2100)
+        with raises(VectorStoreOperationException):
+            cmd.add_parameter("43")
+        with raises(VectorStoreOperationException):
+            cmd.add_parameters(["43", "44"])
 
 
 class TestQueryBuildFunctions:
@@ -250,10 +228,12 @@ class TestQueryBuildFunctions:
         )
         cmd = _build_search_query(schema, table, key_field, data_fields, vector_fields, vector, options)
         assert cmd.parameters[0] == json.dumps(vector)
+        assert cmd.parameters[1] == "30"
+        assert cmd.parameters[2] == "test"
         str_cmd = str(cmd)
         assert (
             str_cmd == "SELECT id, name, age, VECTOR_DISTANCE('cosine', embedding, CAST(? AS VECTOR(5))) as "
-            "_vector_distance_value\n FROM [dbo].[Test] \nWHERE [age] = '30' AND\n'test' IN [name] \nORDER BY "
+            "_vector_distance_value\n FROM [dbo].[Test] \nWHERE [age] = ? AND\n? IN [name] \nORDER BY "
             "_vector_distance_value ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
         )
 
@@ -265,8 +245,62 @@ async def mock_connection(*args, **kwargs):
     return MagicMock(spec=Connection)
 
 
+@patch("pyodbc.connect")
+@mark.parametrize(
+    "connection_string",
+    [
+        param(
+            "Driver={ODBC Driver 18 for SQL Server};Server=localhost;Database=testdb;uid=testuserLongAsMax=yes;",
+            id="with uid",
+        ),
+        param(
+            "Driver={ODBC Driver 18 for SQL Server};Server=localhost;Database=testdb;LongAsMax=yes;", id="credential"
+        ),
+    ],
+)
+async def test_get_mssql_connection(patched_connection, connection_string):
+    from azure.identity.aio import DefaultAzureCredential
+
+    from semantic_kernel.connectors.memory.sql_server import SqlSettings, _get_mssql_connection
+
+    token = MagicMock()
+    token.token.return_value = "test_token"
+    token.token.encode.return_value = b"test_token"
+    credential = AsyncMock(spec=DefaultAzureCredential)
+    credential.__aenter__.return_value = credential
+    credential.get_token.return_value = token
+
+    settings = SqlSettings.create(connection_string=connection_string)
+    with patch("semantic_kernel.connectors.memory.sql_server.DefaultAzureCredential", return_value=credential):
+        connection = await _get_mssql_connection(settings)
+        assert connection is not None
+        assert isinstance(connection, MagicMock)
+        if "uid" in connection_string:
+            assert patched_connection.call_args.kwargs["attrs_before"] is None
+        else:
+            assert patched_connection.call_args.kwargs["attrs_before"] == {
+                1256: b"\n\x00\x00\x00test_token",
+            }
+
+
 class TestSqlServerStore:
     def test_create_store(self, sql_server_unit_test_env):
+        store = SqlServerStore()
+        assert store is not None
+        assert store.settings is not None
+        assert store.settings.connection_string is not None
+        assert "LongAsMax=yes;" in store.settings.connection_string.get_secret_value()
+
+    @mark.parametrize(
+        "override_env_param_dict",
+        [
+            {
+                "SQL_SERVER_CONNECTION_STRING": "Driver={ODBC Driver 18 for SQL Server};Server=localhost;Database=testdb;User Id=testuser;Password=example;LongAsMax=yes;"  # noqa: E501
+            }
+        ],
+        indirect=True,
+    )
+    def test_create_store_with_long_as_max(self, sql_server_unit_test_env):
         store = SqlServerStore()
         assert store is not None
         assert store.settings is not None

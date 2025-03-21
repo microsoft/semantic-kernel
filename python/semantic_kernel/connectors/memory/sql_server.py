@@ -48,7 +48,7 @@ else:
     from typing_extensions import Self  # pragma: no cover
 
 if TYPE_CHECKING:
-    from pyodbc import Connection, ProgrammingError, Row
+    from pyodbc import Connection, ProgrammingError
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,9 @@ logger = logging.getLogger(__name__)
 TKey = TypeVar("TKey", str, int)
 TModel = TypeVar("TModel")
 
+# maximum number of parameters for SQL Server
+# The actual limit is 2100, but we leave some space
+SQL_PARAMETER_SAFETY_MAX_COUNT: Final[int] = 2000
 SQL_PARAMETER_MAX_COUNT: Final[int] = 2100
 SCORE_FIELD_NAME: Final[str] = "_vector_distance_value"
 DISTANCE_FUNCTION_MAP = {
@@ -105,7 +108,9 @@ class SqlSettings(KernelBaseSettings):
 
         """
         if "LongAsMax=yes" not in value:
-            return f"{value};LongAsMax=yes"
+            if value.endswith(";"):
+                value = value[:-1]
+            return f"{value};LongAsMax=yes;"
         return value
 
 
@@ -193,7 +198,6 @@ class SqlCommand:
     def __init__(
         self,
         query: QueryBuilder | str | None = None,
-        execute_many: bool = False,
     ):
         """Initialize the SqlCommand.
 
@@ -202,15 +206,10 @@ class SqlCommand:
 
         Args:
             query: The SQL command string or QueryBuilder object.
-            execute_many: Whether to execute the command many times.
-                If True, the parameters will be added to each of the many_parameters contents.
-                If False, the parameters will be added to the parameters list.
 
         """
         self.query = QueryBuilder(query)
         self.parameters: list[str] = []
-        self.many_parameters: list[tuple[str, ...]] = []
-        self.execute_many: bool = execute_many
 
     def add_parameter(self, value: str) -> None:
         """Add a parameter to the SqlCommand.
@@ -220,16 +219,9 @@ class SqlCommand:
         to each of the the many_parameters contents.
         Or create a new tuple with the value if there are no many_parameters yet.
         """
-        if self.execute_many:
-            if not self.many_parameters:
-                self.many_parameters.append((value,))
-                return
-            for i in range(len(self.many_parameters)):
-                self.many_parameters[i] += (value,)
-        else:
-            if (len(self.parameters) + 1) > SQL_PARAMETER_MAX_COUNT:
-                raise VectorStoreOperationException("The maximum number of parameters is 2100.")
-            self.parameters.append(value)
+        if (len(self.parameters) + 1) > SQL_PARAMETER_MAX_COUNT:
+            raise VectorStoreOperationException("The maximum number of parameters is 2100.")
+        self.parameters.append(value)
 
     def add_parameters(self, values: Sequence[str] | tuple[str, ...]) -> None:
         """Add multiple parameters to the SqlCommand.
@@ -237,12 +229,9 @@ class SqlCommand:
         If the command is set to execute many, it will add a single new tuple to the many_parameters attribute.
         If the command is not set to execute many, it will add the values to the parameters list.
         """
-        if self.execute_many:
-            self.many_parameters.append(tuple(values))
-        else:
-            if (len(self.parameters) + len(values)) > SQL_PARAMETER_MAX_COUNT:
-                raise VectorStoreOperationException(f"The maximum number of parameters is {SQL_PARAMETER_MAX_COUNT}.")
-            self.parameters.extend(values)
+        if (len(self.parameters) + len(values)) > SQL_PARAMETER_MAX_COUNT:
+            raise VectorStoreOperationException(f"The maximum number of parameters is {SQL_PARAMETER_MAX_COUNT}.")
+        self.parameters.extend(values)
 
     def __str__(self):
         """Return the string representation of the SqlCommand."""
@@ -252,14 +241,12 @@ class SqlCommand:
 
     def to_execute(self) -> tuple[str, tuple[Any, ...]]:
         """Return the command and parameters for execute or execute many."""
-        if self.execute_many:
-            return str(self.query), tuple(self.many_parameters)
         return str(self.query), tuple(self.parameters)
 
 
 async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
     """Get a connection to the SQL Server database, optionally with Entra Auth."""
-    import pyodbc
+    from pyodbc import connect
 
     mssql_connection_string = settings.connection_string.get_secret_value()
     if any(s in mssql_connection_string.lower() for s in ["uid"]):
@@ -274,7 +261,7 @@ async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
             SQL_COPT_SS_ACCESS_TOKEN = 1256  # This connection option is defined by microsoft in msodbcsql.h
             attrs_before = {SQL_COPT_SS_ACCESS_TOKEN: token_struct}
 
-    return pyodbc.connect(mssql_connection_string, attrs_before=attrs_before)
+    return connect(mssql_connection_string, attrs_before=attrs_before)
 
 
 # region: SQL Server Collection
@@ -375,32 +362,34 @@ class SqlServerCollection(
             raise VectorStoreOperationException("connection is not available, use the collection as a context manager.")
         if not records:
             return []
-        command = _build_merge_query(
-            *self._get_schema_and_table(),
-            self.data_model_definition.key_field,
-            [
-                field
-                for field in self.data_model_definition.fields.values()
-                if isinstance(field, VectorStoreRecordDataField)
-            ],
-            self.data_model_definition.vector_fields,
-            records,
-        )
-        results: list["Row"] = []
-        # Execute the merge query
-        with self.connection.cursor() as cur:
-            cur.execute(*command.to_execute())
-            while cur.nextset():
-                try:
-                    results = cur.fetchall()
-                except ProgrammingError:
-                    # No keys were returned
-                    continue
-        # Extract the keys from the result
-        keys = [row[0] for row in results]
+        data_fields = [
+            field
+            for field in self.data_model_definition.fields.values()
+            if isinstance(field, VectorStoreRecordDataField)
+        ]
+        vector_fields = self.data_model_definition.vector_fields
+        schema, table = self._get_schema_and_table()
+        # Check how many parameters are likely to be passed
+        # to the command, if it exceeds the maximum, split the records
+        # into smaller chunks
+        max_records = SQL_PARAMETER_SAFETY_MAX_COUNT // len(self.data_model_definition.fields)
+        batches = []
+        for i in range(0, len(records), max_records):
+            batches.append(records[i : i + max_records])
+        keys = []
+        for batch in batches:
+            command = _build_merge_query(
+                schema, table, self.data_model_definition.key_field, data_fields, vector_fields, batch
+            )
+            with self.connection.cursor() as cur:
+                cur.execute(*command.to_execute())
+                while cur.nextset():
+                    try:
+                        keys.extend([row[0] for row in cur.fetchall()])
+                    except ProgrammingError:
+                        continue
         if not keys:
             raise VectorStoreOperationException("No keys were returned from the merge query.")
-        # Return the keys
         return keys
 
     @override
@@ -841,19 +830,30 @@ def _build_select_table_names_query(
 
 
 def _add_field_names(
-    query_builder: QueryBuilder,
+    command: SqlCommand,
     key_field: VectorStoreRecordKeyField,
     data_fields: list[VectorStoreRecordDataField],
     vector_fields: list[VectorStoreRecordVectorField] | None,
-    table_identifier: str = "",
+    table_identifier: str | None = None,
 ) -> None:
-    """Add the field names to the query builder."""
+    """Add the field names to the query builder.
+
+    Args:
+        command: The SqlCommand object to add the field names to.
+        key_field: The key field.
+        data_fields: The data fields.
+        vector_fields: The vector fields.
+        table_identifier: The table identifier to prefix the field names with, if not given,
+            the field name is used as is.
+            If passed, then it is used with a dot separating the table name and field name.
+
+    """
     fields = chain([key_field], data_fields, vector_fields or [])
     if table_identifier:
         strings = [f"{table_identifier}.{field.name}" for field in fields]
     else:
         strings = [field.name for field in fields]
-    query_builder.append_list(strings)
+    command.query.append_list(strings)
 
 
 def _build_merge_query(
@@ -891,7 +891,7 @@ def _build_merge_query(
         command.query.remove_last(2)  # remove the last comma and newline
     # with the table column names
     with command.query.in_parenthesis("AS s", " "):
-        _add_field_names(command.query, key_field, data_fields, vector_fields)
+        _add_field_names(command, key_field, data_fields, vector_fields)
     # add the ON clause
     with command.query.in_parenthesis("ON", "\n"):
         command.query.append(f"t.{key_field.name} = s.{key_field.name}")
@@ -904,10 +904,10 @@ def _build_merge_query(
     # Set the Not Matched clause
     command.query.append("WHEN NOT MATCHED THEN\n")
     with command.query.in_parenthesis("INSERT", " "):
-        _add_field_names(command.query, key_field, data_fields, vector_fields)
+        _add_field_names(command, key_field, data_fields, vector_fields)
     # add the closing parenthesis
     with command.query.in_parenthesis("VALUES", " \n"):
-        _add_field_names(command.query, key_field, data_fields, vector_fields, table_identifier="s")
+        _add_field_names(command, key_field, data_fields, vector_fields, table_identifier="s")
     # add the closing parenthesis
     command.query.append(f"OUTPUT inserted.{key_field.name} INTO @UpsertedKeys (KeyColumn);\n")
     command.query.append("SELECT KeyColumn FROM @UpsertedKeys;\n")
@@ -927,7 +927,7 @@ def _build_select_query(
     # start the SELECT statement
     command.query.append("SELECT\n")
     # add the data and vector fields
-    _add_field_names(command.query, key_field, data_fields, vector_fields)
+    _add_field_names(command, key_field, data_fields, vector_fields)
     # add the FROM clause
     command.query.append_table_name(schema, table, prefix=" FROM", newline=True)
     # add the WHERE clause
@@ -961,20 +961,22 @@ def _build_delete_query(
     return command
 
 
-def _build_filter(filters: VectorSearchFilter) -> str | None:
+def _build_filter(command: SqlCommand, filters: VectorSearchFilter):
     """Build the filter query based on the data model."""
     if not filters.filters:
-        return None
-    query_builder = QueryBuilder("WHERE ")
+        return
+    command.query.append("WHERE ")
     for filter in filters.filters:
         match filter:
             case EqualTo():
-                query_builder.append(f"[{filter.field_name}] = '{_cast_value(filter.value)}' AND\n")
+                command.query.append(f"[{filter.field_name}] = ? AND\n")
+                command.add_parameter(_cast_value(filter.value))
             case AnyTagsEqualTo():
-                query_builder.append(f"'{_cast_value(filter.value)}' IN [{filter.field_name}] AND\n")
+                command.query.append(f"? IN [{filter.field_name}] AND\n")
+                command.add_parameter(_cast_value(filter.value))
     # remove the last AND
-    query_builder.remove_last(4)
-    return str(query_builder)
+    command.query.remove_last(4)
+    command.query.append("\n")
 
 
 def _build_search_query(
@@ -990,7 +992,7 @@ def _build_search_query(
     # start the SELECT statement
     command = SqlCommand("SELECT ")
     # add the data and vector fields
-    _add_field_names(command.query, key_field, data_fields, vector_fields if options.include_vectors else None)
+    _add_field_names(command, key_field, data_fields, vector_fields if options.include_vectors else None)
     # add the vector search clause
     vector_field: VectorStoreRecordVectorField | None = None
     if options.vector_field_name:
@@ -1019,10 +1021,7 @@ def _build_search_query(
     # add the FROM clause
     command.query.append_table_name(schema, table, prefix=" FROM", newline=True)
     # add the WHERE clause
-    if options.filter:
-        filter_clause = _build_filter(options.filter)
-        if filter_clause:
-            command.query.append(filter_clause, suffix="\n")
+    _build_filter(command, options.filter)
     # add the ORDER BY clause
     command.query.append(f"ORDER BY {SCORE_FIELD_NAME} {'ASC' if asc else 'DESC'}\n")
     command.query.append(f"OFFSET {options.skip} ROWS FETCH NEXT {options.top} ROWS ONLY;")
