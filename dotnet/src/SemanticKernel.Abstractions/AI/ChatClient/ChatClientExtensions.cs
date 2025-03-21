@@ -66,4 +66,19 @@ public static class ChatClientExtensions
 
         return client.GetService<ChatClientMetadata>()?.ModelId;
     }
+
+    /// <summary>
+    /// Creates a new <see cref="KernelFunctionInvokingChatClient"/> that supports <see cref="Kernel"/> for function invocation with a <see cref="IChatClient"/>.
+    /// </summary>
+    /// <param name="client">Target chat client service.</param>
+    /// <returns>Function invoking chat client.</returns>
+    [Experimental("SKEXP0001")]
+    public static IChatClient AsKernelFunctionInvokingChatClient(this IChatClient client)
+    {
+        Verify.NotNull(client);
+
+        return client is KernelFunctionInvokingChatClient kernelFunctionInvocationClient
+            ? kernelFunctionInvocationClient
+            : new KernelFunctionInvokingChatClient(client);
+    }
 }

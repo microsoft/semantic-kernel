@@ -13,15 +13,17 @@ namespace Agents;
 /// </summary>
 public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithAgentInvocationAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithAgentInvocation(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
+                Kernel = CreateKernelWithFilter(useChatClient),
                 Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
@@ -60,15 +62,17 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithAgentChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithAgentChat(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
+                Kernel = CreateKernelWithFilter(useChatClient),
                 Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
@@ -101,15 +105,17 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocation(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
+                Kernel = CreateKernelWithFilter(useChatClient),
                 Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
@@ -164,15 +170,17 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChatAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChat(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
+                Kernel = CreateKernelWithFilter(useChatClient),
                 Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
@@ -228,11 +236,18 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    private Kernel CreateKernelWithFilter()
+    private Kernel CreateKernelWithFilter(bool useChatClient)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        base.AddChatCompletionToKernel(builder);
+        if (useChatClient)
+        {
+            base.AddChatClientToKernel(builder);
+        }
+        else
+        {
+            base.AddChatCompletionToKernel(builder);
+        }
 
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(new AutoInvocationFilter());
 
