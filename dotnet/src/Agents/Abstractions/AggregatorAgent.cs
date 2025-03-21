@@ -53,7 +53,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Need to determine the corrrect approach here.
+        // TODO: Need to determine the correct approach here.
         throw new NotImplementedException();
     }
 
@@ -66,7 +66,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Need to determine the corrrect approach here.
+        // TODO: Need to determine the correct approach here.
         throw new NotImplementedException();
     }
 
