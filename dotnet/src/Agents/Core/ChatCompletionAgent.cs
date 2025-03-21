@@ -59,15 +59,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(message);
+        Verify.NotNull(messages);
 
         var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
-            message,
+            messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
@@ -112,15 +112,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(message);
+        Verify.NotNull(messages);
 
         var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
-            message,
+            messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);

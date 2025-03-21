@@ -54,8 +54,28 @@ public abstract class Agent
     /// <remarks>
     /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
     /// </remarks>
-    public abstract IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public virtual IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ChatMessageContent message,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(new[] { message }, thread, options, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="messages">The messages to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameters for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public abstract IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default);
@@ -71,8 +91,28 @@ public abstract class Agent
     /// <remarks>
     /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
     /// </remarks>
-    public abstract IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+    public virtual IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ChatMessageContent message,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeStreamingAsync(new[] { message }, thread, options, cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="messages">The messages to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameters for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public abstract IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default);
@@ -135,14 +175,14 @@ public abstract class Agent
     /// Ensures that the thread exists, is of the expected type, and is active, plus adds the provided message to the thread.
     /// </summary>
     /// <typeparam name="TThreadType">The expected type of the thead.</typeparam>
-    /// <param name="message">The message to add to the thread once it is setup.</param>
+    /// <param name="messages">The messages to add to the thread once it is setup.</param>
     /// <param name="thread">The thread to create if it's null, validate it's type if not null, and start if it is not active.</param>
     /// <param name="constructThread">A callback to use to construct the thread if it's null.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An async task that completes once all update are complete.</returns>
     /// <exception cref="KernelException"></exception>
     protected async Task<TThreadType> EnsureThreadExistsWithMessageAsync<TThreadType>(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread,
         Func<TThreadType> constructThread,
         CancellationToken cancellationToken)
@@ -160,8 +200,11 @@ public abstract class Agent
 
         await thread.CreateAsync(cancellationToken).ConfigureAwait(false);
 
-        // Notify the thread that a new message is available.
-        await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
+        // Notify the thread that new messages are available.
+        foreach (var message in messages)
+        {
+            await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
+        }
 
         return concreteThreadType;
     }

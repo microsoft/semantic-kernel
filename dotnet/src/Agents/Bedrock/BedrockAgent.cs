@@ -75,7 +75,7 @@ public class BedrockAgent : KernelAgent
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -86,7 +86,7 @@ public class BedrockAgent : KernelAgent
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
