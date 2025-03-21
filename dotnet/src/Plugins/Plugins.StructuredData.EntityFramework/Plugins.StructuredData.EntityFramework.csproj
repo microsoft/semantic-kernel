@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Plugins.StructuredData.EntityFramework</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <!-- EntityFramework 6.5 is not compatible with .Net Standard 2.0, adding all frameworks strictly after 4.6.2 for compatibility -->
+    <TargetFrameworks>net8.0;net462;</TargetFrameworks>
+    <VersionSuffix>alpha</VersionSuffix>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Entity Framework Structured Data Plugin</Title>
+    <Description>Semantic Kernel Entity Framework 6.5 plugin for structured data access and manipulation using Entity Framework. Enables AI interactions with relational databases through Entity Framework contexts.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Schema/*.cs" Link="%(RecursiveDir)/InternalUtilities/Schema/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*.cs" Link="%(RecursiveDir)/InternalUtilities/Diagnostics/%(Filename)%(Extension)" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ModelDiagnostics.cs" Link="%(RecursiveDir)/InternalUtilities/Diagnostics/%(Filename)%(Extension)"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Plugins.UnitTests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Community.OData.Linq" />
+    <PackageReference Include="EntityFramework" />
+  </ItemGroup>
+
+</Project>
