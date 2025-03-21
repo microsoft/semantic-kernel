@@ -86,6 +86,19 @@ public class BedrockAgent : KernelAgent
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: Implement the InvokeStreamingAsync method for BedrockAgent.
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Invoke the Bedrock agent with the given message.
     /// </summary>

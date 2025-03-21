@@ -58,6 +58,19 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     }
 
     /// <inheritdoc/>
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: Need to determine the corrrect approach here.
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
     /// <remarks>
     /// Different <see cref="AggregatorAgent"/> instances will never share the same channel.
     /// </remarks>

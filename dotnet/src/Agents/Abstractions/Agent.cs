@@ -65,6 +65,27 @@ public abstract class Agent
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="message">The message to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="options">Optional parameters for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public abstract IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ChatMessageContent message,
+        AgentThread? thread = null,
+        KernelArguments? arguments = null,
+        Kernel? kernel = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
     /// </summary>
     protected ILogger Logger => this._logger ??= this.ActiveLoggerFactory.CreateLogger(this.GetType());
@@ -117,4 +138,43 @@ public abstract class Agent
     protected internal abstract Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken);
 
     private ILogger? _logger;
+
+    /// <summary>
+    /// Ensures that the thread exists, is of the expected type, and is active, plus adds the provided message to the thread.
+    /// </summary>
+    /// <typeparam name="TThreadType">The expected type of the thead.</typeparam>
+    /// <typeparam name="TAgentType">The type of the agent.</typeparam>
+    /// <param name="message">The message to add to the thread once it is setup.</param>
+    /// <param name="thread">The thread to create if it's null, validate it's type if not null, and start if it is not active.</param>
+    /// <param name="constructThread">A callback to use to construct the thread if it's null.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async task that completes once all update are complete.</returns>
+    /// <exception cref="KernelException"></exception>
+    protected async Task<TThreadType> EnsureThreadExistsWithMessageAsync<TThreadType>(
+        ChatMessageContent message,
+        AgentThread? thread,
+        Func<TThreadType> constructThread,
+        CancellationToken cancellationToken)
+        where TThreadType : AgentThread
+    {
+        if (thread is null)
+        {
+            thread = constructThread();
+        }
+
+        if (thread is not TThreadType concreteThreadType)
+        {
+            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
+        }
+
+        if (!thread.IsActive)
+        {
+            await thread.StartAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        // Notify the thread that a new message is available.
+        await thread.OnNewMessageAsync(message, cancellationToken).ConfigureAwait(false);
+
+        return concreteThreadType;
+    }
 }
