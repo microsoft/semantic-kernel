@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 using OllamaSharp;
 using OllamaSharp.Models;
@@ -22,6 +23,14 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
         this._messageHandlerStub = new();
         this._messageHandlerStub.ResponseToReturn.Content = new StringContent(File.ReadAllText("TestData/embeddings_test_response.json"));
         this._httpClient = new HttpClient(this._messageHandlerStub, false) { BaseAddress = new Uri("http://localhost:11434") };
+    }
+
+    [Fact]
+    public void AddOllamaTextEmbeddingGenerationShouldWorkOnlyForModelId()
+    {
+        // Arrange
+        var kernel = Kernel.CreateBuilder().AddOllamaTextEmbeddingGeneration("model-id").Build();
+        var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
     }
 
     [Fact]
