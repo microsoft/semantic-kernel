@@ -508,3 +508,20 @@ class TestSqlServerCollection:
             ),
             (),
         )
+
+    async def test_delete_collection(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+        data_model_definition,
+    ):
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            connection=mock_connection,
+        )
+        await collection.delete_collection()
+        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+            "DROP TABLE IF EXISTS [dbo].[test] ;", ()
+        )
