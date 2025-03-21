@@ -391,6 +391,10 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(options);
+        if (options.OrderBy is not null)
+        {
+            throw new NotSupportedException("OrderBy is not supported by the Pinecone connector.");
+        }
 
         Sdk.QueryRequest request = new()
         {
@@ -426,11 +430,6 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
                 Metadata = x.Metadata,
                 SparseValues = x.SparseValues
             }, mapperOptions)));
-
-        if (options.OrderBy is not null)
-        {
-            records = records.AsQueryable().OrderBy(options.OrderBy);
-        }
 
         foreach (var record in records)
         {
