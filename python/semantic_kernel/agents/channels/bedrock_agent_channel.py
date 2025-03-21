@@ -29,6 +29,8 @@ logger = logging.getLogger(__name__)
 class BedrockAgentChannel(AgentChannel, ChatHistory):
     """An AgentChannel for a BedrockAgent that is based on a ChatHistory.
 
+    The chat history will override the session state when invoking the agent.
+
     This channel allows Bedrock agents to interact with other types of agents in Semantic Kernel in an AgentGroupChat.
     However, since Bedrock agents require the chat history to alternate between user and agent messages, this channel
     will preprocess the chat history to ensure that it meets the requirements of the Bedrock agent. When an invalid
@@ -65,12 +67,12 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
         await self._ensure_last_message_is_user()
 
         async for response in agent.invoke(
-            thread=self.thread,
             input_text=self.messages[-1].content,
+            thread=self.thread,
             sessionState=await self._parse_chat_history_to_session_state(),
         ):
-            await self.thread.on_new_message(response.message)
             # All messages from Bedrock agents are user facing, i.e., function calls are not returned as messages
+            self.messages.append(response.message)
             yield True, response.message
 
     @override
@@ -103,13 +105,14 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
 
         full_message: list[StreamingChatMessageContent] = []
         async for response_chunk in agent.invoke_stream(
-            thread=self.thread,
             input_text=self.messages[-1].content,
+            thread=self.thread,
             sessionState=await self._parse_chat_history_to_session_state(),
         ):
             yield response_chunk.message
+            full_message.append(response_chunk.message)
 
-        await self.thread.on_new_message(
+        messages.append(
             ChatMessageContent(
                 role=AuthorRole.ASSISTANT,
                 content="".join([message.content for message in full_message]),
@@ -166,19 +169,17 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
 
     async def _ensure_history_alternates(self):
         """Ensure that the chat history alternates between user and agent messages."""
-        chat_history = await self.thread.retrieve_current_chat_history()
-        messages = chat_history.messages
-        if not messages or len(messages) == 1:
+        if not self.messages or len(self.messages) == 1:
             return
 
         current_index = 1
-        while current_index < len(messages):
-            if messages[current_index].role == messages[current_index - 1].role:
-                messages.insert(
+        while current_index < len(self.messages):
+            if self.messages[current_index].role == self.messages[current_index - 1].role:
+                self.messages.insert(
                     current_index,
                     ChatMessageContent(
                         role=AuthorRole.ASSISTANT
-                        if messages[current_index].role == AuthorRole.USER
+                        if self.messages[current_index].role == AuthorRole.USER
                         else AuthorRole.USER,
                         content=self.MESSAGE_PLACEHOLDER,
                     ),
@@ -187,29 +188,22 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
             else:
                 current_index += 1
 
-        self.thread.update_chat_history(messages)
-
     async def _ensure_last_message_is_user(self):
         """Ensure that the last message in the chat history is a user message."""
-        chat_history = await self.thread.retrieve_current_chat_history()
-        messages = chat_history.messages
-        if messages and messages[-1].role == AuthorRole.ASSISTANT:
-            messages.append(
+        if self.messages and self.messages[-1].role == AuthorRole.ASSISTANT:
+            self.messages.append(
                 ChatMessageContent(
                     role=AuthorRole.USER,
                     content=self.MESSAGE_PLACEHOLDER,
                 )
             )
-            self.thread.update_chat_history(messages)
 
     async def _parse_chat_history_to_session_state(self) -> dict[str, Any]:
         """Parse the chat history to a session state."""
         session_state: dict[str, Any] = {"conversationHistory": {"messages": []}}
-        chat_history = await self.thread.retrieve_current_chat_history()
-        messages = chat_history.messages
-        if len(messages) > 1:
+        if len(self.messages) > 1:
             # We don't take the last message as it needs to be sent separately in another parameter
-            for message in messages[:-1]:
+            for message in self.messages[:-1]:
                 if message.role not in [AuthorRole.USER, AuthorRole.ASSISTANT]:
                     logger.debug(f"Skipping message with unsupported role: {message}")
                     continue

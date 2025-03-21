@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import AsyncIterable
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
+import boto3
 import pytest
 
 from semantic_kernel.agents.agent import Agent, AgentResponseItem, AgentThread
@@ -15,11 +16,12 @@ from semantic_kernel.exceptions.agent_exceptions import AgentChatException
 
 
 @pytest.fixture
-def mock_channel():
+@patch.object(boto3, "client", return_value=Mock())
+def mock_channel(client):
     from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgentThread
 
     BedrockAgentChannel.model_rebuild()
-    thread = BedrockAgentThread()
+    thread = BedrockAgentThread(client, session_id="test_session_id")
 
     return BedrockAgentChannel(thread=thread)
 
@@ -167,9 +169,6 @@ async def test_invoke_raises_exception_if_no_history(mock_channel, mock_agent):
 
 async def test_invoke_inserts_placeholders_when_history_needs_to_alternate(mock_channel, mock_agent):
     """Test invoke ensures _ensure_history_alternates and _ensure_last_message_is_user are called."""
-
-    await mock_channel.thread.start()
-
     # Put messages in the channel such that the last message is an assistant's
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant 1"))
 
@@ -199,12 +198,10 @@ async def test_invoke_inserts_placeholders_when_history_needs_to_alternate(mock_
     agent_response = outputs[0][1]
     assert agent_response.content == "Mock Agent Response"
 
-    # Todo(evmattso): check why this is failing
-
-    # # The channel messages should now have 3 messages: the assistant, the user, and the new agent message
-    # assert len(mock_channel.messages) == 1
-    # assert mock_channel.messages[-1].role == AuthorRole.USER
-    # assert mock_channel.messages[-1].content == "Mock Agent Response"
+    # The channel messages should now have 3 messages: the assistant, the user, and the new agent message
+    assert len(mock_channel.messages) == 3
+    assert mock_channel.messages[-1].role == AuthorRole.ASSISTANT
+    assert mock_channel.messages[-1].content == "Mock Agent Response"
 
 
 async def test_invoke_stream_raises_error_for_non_bedrock_agent(mock_channel):
@@ -231,8 +228,6 @@ async def test_invoke_stream_raises_no_chat_history(mock_channel, mock_agent):
 async def test_invoke_stream_appends_response_message(mock_channel, mock_agent):
     """Test invoke_stream properly yields streaming content and appends an aggregated message at the end."""
     # Put a user message in the channel so it won't raise No chat history
-    await mock_channel.thread.start()
-
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.USER, content="Last user message"))
 
     async def mock_invoke_stream(
@@ -266,13 +261,11 @@ async def test_invoke_stream_appends_response_message(mock_channel, mock_agent):
     assert streamed_content[0].content == "Hello"
     assert streamed_content[1].content == " World"
 
-    # Todo(evmattso): check why this is failing
-
-    # # Then we expect the channel to append an aggregated ChatMessageContent with "Hello World"
-    # assert len(messages_param) == 2
-    # appended = messages_param[1]
-    # assert appended.role == AuthorRole.ASSISTANT
-    # assert appended.content == "Hello World"
+    # Then we expect the channel to append an aggregated ChatMessageContent with "Hello World"
+    assert len(messages_param) == 2
+    appended = messages_param[1]
+    assert appended.role == AuthorRole.ASSISTANT
+    assert appended.content == "Hello World"
 
 
 async def test_get_history(mock_channel, chat_history):

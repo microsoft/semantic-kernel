@@ -5,7 +5,6 @@ import os
 
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
 from semantic_kernel.contents.binary_content import BinaryContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 
 """
 This sample shows how to interact with a Bedrock agent that is capable of writing and executing code.
@@ -47,9 +46,8 @@ async def main():
         ):
             print(f"Response:\n{response.message}")
             thread = response.thread
-            assert isinstance(response, ChatMessageContent)  # nosec
             if not binary_item:
-                binary_item = next((item for item in response.items if isinstance(item, BinaryContent)), None)
+                binary_item = next((item for item in response.message.items if isinstance(item, BinaryContent)), None)
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()
