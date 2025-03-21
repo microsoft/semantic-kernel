@@ -7,7 +7,7 @@ using Plugins;
 namespace Agents;
 
 /// <summary>
-/// Tests for declarative agents which are defined through JSON manifest files.
+/// Sample showing how declarative agents can be defined through JSON manifest files.
 /// Demonstrates how to load and configure an agent from a declarative manifest that specifies:
 /// - The agent's identity (name, description, instructions)
 /// - The agent's available actions/plugins
