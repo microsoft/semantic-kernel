@@ -27,7 +27,6 @@ internal static class AgentDefinitionExtensions
     private const string OpenAI = "openai";
     private const string AzureOpenAI = "azure_openai";
 
-
     /// <summary>
     /// Create the <see cref="AssistantCreationOptions"/> which corresponds with the provided <see cref="AgentDefinition"/>.
     /// </summary>
@@ -166,7 +165,6 @@ internal static class AgentDefinitionExtensions
         var client = kernel.GetAllServices<OpenAIClient>().FirstOrDefault();
         return (OpenAIClient?)client ?? throw new InvalidOperationException("OpenAI client not found.");
     }
-
 
     #region private
     private const string Temperature = "temperature";
