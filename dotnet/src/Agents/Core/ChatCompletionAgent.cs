@@ -59,17 +59,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(message);
+        Verify.NotNull(messages);
 
         var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
-            message,
+            messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
@@ -84,8 +82,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         var invokeResults = this.InternalInvokeAsync(
             agentName,
             chatHistory,
-            this.MergeArguments(arguments),
-            kernel ?? this.Kernel,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
             options?.AdditionalInstructions,
             cancellationToken);
 
@@ -114,17 +112,15 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
-        ChatMessageContent message,
+        ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
-        KernelArguments? arguments = null,
-        Kernel? kernel = null,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(message);
+        Verify.NotNull(messages);
 
         var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
-            message,
+            messages,
             thread,
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
@@ -140,8 +136,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             agentName,
             chatHistory,
             (newMessage) => chatHistoryAgentThread.OnNewMessageAsync(newMessage),
-            this.MergeArguments(arguments),
-            kernel ?? this.Kernel,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
             options?.AdditionalInstructions,
             cancellationToken);
 

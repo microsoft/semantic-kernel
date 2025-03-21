@@ -11,7 +11,7 @@ using Xunit;
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
 /// <summary>
-/// Base test class for testing the <see cref="Agent.InvokeAsync"/> method of agents.
+/// Base test class for testing the <see cref="Agent.InvokeAsync(ChatMessageContent, AgentThread?, AgentInvokeOptions?, System.Threading.CancellationToken)"/> method of agents.
 /// Each agent type should have its own derived class.
 /// </summary>
 public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyncLifetime

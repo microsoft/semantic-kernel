@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -48,7 +49,13 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     {
         if (this._thread!.Id is not null)
         {
-            await this._assistantClient!.DeleteThreadAsync(this._thread!.Id);
+            try
+            {
+                await this._assistantClient!.DeleteThreadAsync(this._thread!.Id);
+            }
+            catch (ClientResultException ex) when (ex.Status == 404)
+            {
+            }
         }
 
         await this._assistantClient!.DeleteAssistantAsync(this._assistant!.Id);
