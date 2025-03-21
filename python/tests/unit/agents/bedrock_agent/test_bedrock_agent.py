@@ -9,7 +9,7 @@ from semantic_kernel.agents.bedrock.action_group_utils import (
     kernel_function_to_bedrock_function_schema,
     parse_function_result_contents,
 )
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
@@ -436,9 +436,17 @@ async def test_delete_agent_client_error(
 
 
 # Test case to verify the `get_response` method of BedrockAgent
+@pytest.mark.parametrize(
+    "thread",
+    [
+        None,
+        BedrockAgentThread(None, session_id="test_session_id"),
+    ],
+)
 @patch.object(boto3, "client", return_value=Mock())
 async def test_bedrock_agent_get_response(
     client,
+    thread,
     bedrock_agent_unit_test_env,
     bedrock_agent_model_with_id,
     bedrock_agent_non_streaming_simple_response,
@@ -446,11 +454,14 @@ async def test_bedrock_agent_get_response(
 ):
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
+        patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
-        response = await agent.get_response(input_text="test_input_text")
+        mock_start.return_value = "test_session_id"
+
+        response = await agent.get_response(input_text="test_input_text", thread=thread)
         assert response.message.content == simple_response
 
         mock_invoke_agent.assert_called_once()
@@ -466,26 +477,29 @@ async def test_bedrock_agent_get_response_exception(
 ):
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
+        patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_empty_response
-        with pytest.raises(AgentInvokeException):
-            await agent.get_response("test_session_id", "test_input_text")
+        mock_start.return_value = "test_session_id"
 
-            mock_invoke_agent.assert_called_once_with(
-                "test_session_id",
-                "test_input_text",
-                None,
-                streamingConfigurations={"streamFinalResponse": False},
-                sessionState={},
-            )
+        with pytest.raises(AgentInvokeException):
+            await agent.get_response("test_input_text")
 
 
 # Test case to verify the invocation of BedrockAgent
+@pytest.mark.parametrize(
+    "thread",
+    [
+        None,
+        BedrockAgentThread(None, session_id="test_session_id"),
+    ],
+)
 @patch.object(boto3, "client", return_value=Mock())
 async def test_bedrock_agent_invoke(
     client,
+    thread,
     bedrock_agent_unit_test_env,
     bedrock_agent_model_with_id,
     bedrock_agent_non_streaming_simple_response,
@@ -493,12 +507,16 @@ async def test_bedrock_agent_invoke(
 ):
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
+        patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
+        patch.object(BedrockAgentThread, "id", "test_session_id"),
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
-        async for message in agent.invoke("test_session_id", "test_input_text"):
-            assert message.content == simple_response
+        mock_start.return_value = "test_session_id"
+
+        async for response in agent.invoke("test_input_text", thread=thread):
+            assert response.message.content == simple_response
 
         mock_invoke_agent.assert_called_once_with(
             "test_session_id",
@@ -510,9 +528,17 @@ async def test_bedrock_agent_invoke(
 
 
 # Test case to verify the streaming invocation of BedrockAgent
+@pytest.mark.parametrize(
+    "thread",
+    [
+        None,
+        BedrockAgentThread(None, session_id="test_session_id"),
+    ],
+)
 @patch.object(boto3, "client", return_value=Mock())
 async def test_bedrock_agent_invoke_stream(
     client,
+    thread,
     bedrock_agent_unit_test_env,
     bedrock_agent_model_with_id,
     bedrock_agent_streaming_simple_response,
@@ -520,13 +546,17 @@ async def test_bedrock_agent_invoke_stream(
 ):
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
+        patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
+        patch.object(BedrockAgentThread, "id", "test_session_id"),
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
         mock_invoke_agent.return_value = bedrock_agent_streaming_simple_response
+        mock_start.return_value = "test_session_id"
+
         full_message = ""
-        async for message in agent.invoke_stream("test_session_id", "test_input_text"):
-            full_message += message.content
+        async for response in agent.invoke_stream("test_input_text", thread=thread):
+            full_message += response.message.content
 
         assert full_message == simple_response
         mock_invoke_agent.assert_called_once_with(
@@ -550,6 +580,8 @@ async def test_bedrock_agent_invoke_with_function_call(
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
         patch.object(BedrockAgent, "_handle_function_call_contents") as mock_handle_function_call_contents,
+        patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
+        patch.object(BedrockAgentThread, "id", "test_session_id"),
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
@@ -568,7 +600,8 @@ async def test_bedrock_agent_invoke_with_function_call(
             bedrock_agent_function_call_response,
             bedrock_agent_non_streaming_simple_response,
         ]
-        async for _ in agent.invoke("test_session_id", "test_input_text"):
+        mock_start.return_value = "test_session_id"
+        async for _ in agent.invoke("test_input_text"):
             mock_invoke_agent.assert_called_with(
                 "test_session_id",
                 "test_input_text",
@@ -593,6 +626,8 @@ async def test_bedrock_agent_invoke_stream_with_function_call(
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
         patch.object(BedrockAgent, "_handle_function_call_contents") as mock_handle_function_call_contents,
+        patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
+        patch.object(BedrockAgentThread, "id", "test_session_id"),
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
@@ -611,7 +646,8 @@ async def test_bedrock_agent_invoke_stream_with_function_call(
             bedrock_agent_function_call_response,
             bedrock_agent_streaming_simple_response,
         ]
-        async for _ in agent.invoke_stream("test_session_id", "test_input_text"):
+        mock_start.return_value = "test_session_id"
+        async for _ in agent.invoke_stream("test_input_text"):
             mock_invoke_agent.assert_called_with(
                 "test_session_id",
                 "test_input_text",

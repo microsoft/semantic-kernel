@@ -4,7 +4,6 @@
 import asyncio
 import logging
 import sys
-import uuid
 from collections.abc import AsyncIterable
 from functools import partial, reduce
 from typing import Any, ClassVar
@@ -54,74 +53,57 @@ logger = logging.getLogger(__name__)
 class BedrockAgentThread(AgentThread):
     """Bedrock Agent Thread class."""
 
-    def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
-        """Initialize the Azure AI Agent Thread.
+    def __init__(
+        self,
+        bedrock_runtime_client: Any,
+        session_id: str | None = None,
+    ) -> None:
+        """Initialize the Bedrock Agent Thread.
+
+        The underlying Bedrock session of the thread is created when the thread is started.
+        https://docs.aws.amazon.com/bedrock/latest/userguide/sessions.html
 
         Args:
-            chat_history: The chat history for the thread. If None, a new
-                ChatHistory instance will be created.
-            thread_id: The ID of the thread
+            bedrock_runtime_client: The Bedrock Runtime Client.
+            session_id: The session ID.
         """
-        self._chat_history = chat_history or ChatHistory()
-        self._is_active = thread_id is not None
-        self._thread_id = thread_id
+        super().__init__()
+        self._bedrock_runtime_client = bedrock_runtime_client
+        self._session_id = session_id
 
     @override
-    @property
-    def is_active(self) -> bool:
-        """Indicates whether the thread is currently active."""
-        return self._is_active
+    async def _create(self) -> str:
+        """Starts the thread and returns the underlying Bedrock session ID."""
+        response = await run_in_executor(
+            None,
+            partial(
+                self._bedrock_runtime_client.create_session,
+            ),
+        )
+        return response["sessionId"]
 
     @override
-    @property
-    def id(self) -> str | None:
-        """Returns the ID of the current thread."""
-        return self._thread_id
+    async def _delete(self) -> None:
+        """Ends the current thread.
+
+        This will only end the underlying Bedrock session but not delete it.
+        """
+        # Must end the session before deleting it.
+        await run_in_executor(
+            None,
+            partial(
+                self._bedrock_runtime_client.end_session,
+                sessionIdentifier=self._session_id,
+            ),
+        )
 
     @override
-    async def create(self) -> str:
-        """Starts the thread and returns its ID."""
-        if self._is_active:
-            raise RuntimeError("You cannot start this thread, since the thread is already active.")
-
-        if not self._thread_id:
-            self._thread_id = f"thread_{uuid.uuid4().hex}"
-
-        self._is_active = True
-        return self._thread_id
-
-    @override
-    async def delete(self) -> None:
-        """Ends the current thread."""
-        if not self._is_active:
-            raise RuntimeError("This thread cannot be ended, since it is not currently active.")
-
-        self._is_active = False
-        self._thread_id = None
-
-    @override
-    async def on_new_message(self, new_message: str | ChatMessageContent) -> None:
+    async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
         """Called when a new message has been contributed to the chat."""
-        if not self._is_active:
-            raise RuntimeError("Messages cannot be added to this thread, since the thread is not currently active.")
-
-        if (
-            not isinstance(new_message, ChatMessageContent)
-            or not new_message.metadata
-            or "thread_id" not in new_message.metadata
-            or new_message.metadata["thread_id"] != self._thread_id
-        ):
-            self._chat_history.add_message(new_message)
-
-    async def retrieve_current_chat_history(self) -> ChatHistory:
-        """Retrieve the current chat history."""
-        if not self._is_active:
-            raise RuntimeError("Cannot retrieve chat history, since the thread is not currently active.")
-        return self._chat_history
-
-    def update_chat_history(self, messages: list[ChatMessageContent]) -> None:
-        """Update the chat history with the given messages."""
-        self._chat_history.messages = messages
+        raise NotImplementedError(
+            "This method is not implemented for BedrockAgentThread. "
+            "Messages and responses are automatically handled by the Bedrock service."
+        )
 
 
 @experimental
@@ -356,7 +338,6 @@ class BedrockAgent(BedrockAgentBase):
                     raise AgentInvokeException("No response from the agent.")
 
                 chat_message_content.metadata["thread_id"] = thread.id
-                await thread.on_new_message(chat_message_content)
                 return AgentResponseItem(message=chat_message_content, thread=thread)
 
         raise AgentInvokeException(
@@ -424,7 +405,6 @@ class BedrockAgent(BedrockAgentBase):
                     if BedrockAgentEventType.CHUNK in event:
                         cmc = self._handle_chunk_event(event)
                         cmc.metadata["thread_id"] = thread.id
-                        await thread.on_new_message(cmc)
                         yield AgentResponseItem(message=cmc, thread=thread)
                     elif BedrockAgentEventType.FILES in event:
                         cmc = ChatMessageContent(
@@ -435,7 +415,6 @@ class BedrockAgent(BedrockAgentBase):
                             ai_model_id=self.agent_model.foundation_model,
                         )
                         cmc.metadata["thread_id"] = thread.id
-                        await thread.on_new_message(cmc)
                         yield AgentResponseItem(message=cmc, thread=thread)
                     elif BedrockAgentEventType.TRACE in event:
                         cmc = ChatMessageContent(
@@ -447,7 +426,6 @@ class BedrockAgent(BedrockAgentBase):
                             metadata=self._handle_trace_event(event),
                         )
                         cmc.metadata["thread_id"] = thread.id
-                        await thread.on_new_message(cmc)
                         yield AgentResponseItem(message=cmc, thread=thread)
 
                 return
@@ -502,19 +480,16 @@ class BedrockAgent(BedrockAgentBase):
                 if BedrockAgentEventType.CHUNK in event:
                     scmc = self._handle_streaming_chunk_event(event)
                     scmc.metadata["thread_id"] = thread.id
-                    await thread.on_new_message(scmc)
                     yield AgentResponseItem(message=scmc, thread=thread)
                     continue
                 if BedrockAgentEventType.FILES in event:
                     scmc = self._handle_streaming_files_event(event)
                     scmc.metadata["thread_id"] = thread.id
-                    await thread.on_new_message(scmc)
                     yield AgentResponseItem(message=scmc, thread=thread)
                     continue
                 if BedrockAgentEventType.TRACE in event:
                     scmc = self._handle_streaming_trace_event(event)
                     scmc.metadata["thread_id"] = thread.id
-                    await thread.on_new_message(scmc)
                     yield AgentResponseItem(message=scmc, thread=thread)
                     continue
                 if BedrockAgentEventType.RETURN_CONTROL in event:
@@ -677,9 +652,7 @@ class BedrockAgent(BedrockAgentBase):
             if isinstance(item, FunctionResultContent)
         ]
 
-    async def create_channel(
-        self, chat_history: ChatHistory | None = None, thread_id: str | None = None
-    ) -> AgentChannel:
+    async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
         """Create a ChatHistoryChannel.
 
         Args:
@@ -693,20 +666,18 @@ class BedrockAgent(BedrockAgentBase):
 
         BedrockAgentChannel.model_rebuild()
 
-        thread = BedrockAgentThread(chat_history=chat_history, thread_id=thread_id)
+        thread = BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client, session_id=thread_id)
 
-        if not thread.is_active:
+        if thread.id is None:
             await thread.create()
 
-        chat_history = await thread.retrieve_current_chat_history()
-
-        return BedrockAgentChannel(messages=chat_history.messages, thread=thread)
+        return BedrockAgentChannel(thread=thread)
 
     async def _configure_thread(
         self,
         message: ChatMessageContent,
         thread: AgentThread | None = None,
-    ) -> AgentThread:
+    ) -> BedrockAgentThread:
         """Ensures the thread is properly initialized and active, then posts the new message.
 
         Args:
@@ -719,16 +690,14 @@ class BedrockAgent(BedrockAgentBase):
         Raises:
             AgentInitializationException: If `thread` is not an AzureAIAgentThread.
         """
-        thread = thread or BedrockAgentThread(client=self.client)
+        thread = thread or BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client)
 
         if not isinstance(thread, BedrockAgentThread):
             raise AgentInitializationException(
                 f"The thread must be an BedrockAgentThread, but got {type(thread).__name__}."
             )
 
-        if not thread.is_active:
+        if thread.id is None:
             await thread.create()
-
-        await thread.on_new_message(message)
 
         return thread
