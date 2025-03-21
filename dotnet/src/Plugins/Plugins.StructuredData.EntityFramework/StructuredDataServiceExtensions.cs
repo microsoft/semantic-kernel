@@ -30,7 +30,7 @@ public static class StructuredDataServiceExtensions
         options ??= new KernelFunctionFromMethodOptions
         {
             FunctionName = $"Insert{typeof(TEntity).Name}Record",
-            Description = "Creates / Inserts the provided entity record into the database.",
+            Description = $"Insert a {typeof(TEntity).Name} record into the database.",
             Parameters =
             [
                 new KernelParameterMetadata("entity")
@@ -114,7 +114,7 @@ public static class StructuredDataServiceExtensions
         options ??= new KernelFunctionFromMethodOptions
         {
             FunctionName = $"Update{typeof(TEntity).Name}Record",
-            Description = "Update the provided entity record in the database.",
+            Description = $"Update a {typeof(TEntity).Name} record in the database.",
             Parameters =
             [
                 new KernelParameterMetadata("entity")
@@ -152,7 +152,7 @@ public static class StructuredDataServiceExtensions
         options ??= new KernelFunctionFromMethodOptions
         {
             FunctionName = $"Delete{typeof(TEntity).Name}Record",
-            Description = "Delete the provided entity record from the database.",
+            Description = $"Delete a {typeof(TEntity).Name} record from the database.",
             Parameters =
             [
                 new KernelParameterMetadata("entity")
