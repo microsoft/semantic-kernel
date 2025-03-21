@@ -241,9 +241,7 @@ class TestQueryBuildFunctions:
 
 @fixture
 async def mock_connection(*args, **kwargs):
-    from pyodbc import Connection
-
-    return MagicMock(spec=Connection)
+    return MagicMock()
 
 
 @mark.parametrize(
