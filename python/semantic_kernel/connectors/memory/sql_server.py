@@ -449,7 +449,7 @@ class SqlServerCollection(
 
     @override
     async def create_collection(
-        self, create_if_not_exists: bool = True, queries: list[str] | None = None, **kwargs: Any
+        self, *, create_if_not_exists: bool = True, queries: list[str] | None = None, **kwargs: Any
     ) -> None:
         """Create a SQL table based on the data model.
 
