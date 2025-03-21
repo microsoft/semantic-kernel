@@ -35,6 +35,11 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\InternalUtilities\src\Diagnostics\CompilerFeatureRequiredAttribute.cs" Link="CompilerFeatureRequiredAttribute.cs" />
+    <Compile Include="..\..\InternalUtilities\src\Diagnostics\RequiredMemberAttribute.cs" Link="RequiredMemberAttribute.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Include neticon.png and PACKAGE.md in the project. -->
     <None Include="neticon.png" Pack="true" PackagePath="." />
     <None Include="PACKAGE.md" Pack="true" PackagePath="." />

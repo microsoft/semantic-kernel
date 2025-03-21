@@ -318,6 +318,12 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);

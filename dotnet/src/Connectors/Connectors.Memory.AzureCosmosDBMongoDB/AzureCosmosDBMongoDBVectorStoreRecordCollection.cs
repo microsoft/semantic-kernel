@@ -324,6 +324,12 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     #region private
 
     private async Task CreateIndexesAsync(string collectionName, CancellationToken cancellationToken)
