@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -16,6 +16,7 @@ public sealed class ChatHistoryAgentThread : AgentThread
 {
     private readonly ChatHistory _chatHistory = new();
     private string? _id = null;
+    private bool _isDeleted = false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class.
@@ -42,6 +43,11 @@ public sealed class ChatHistoryAgentThread : AgentThread
     /// <inheritdoc/>
     public override Task<string> CreateAsync(CancellationToken cancellationToken = default)
     {
+        if (this._isDeleted)
+        {
+            throw new InvalidOperationException("This thread has been deleted and cannot be recreated.");
+        }
+
         if (this._id is not null)
         {
             return Task.FromResult(this._id);
@@ -55,13 +61,18 @@ public sealed class ChatHistoryAgentThread : AgentThread
     /// <inheritdoc/>
     public override Task DeleteAsync(CancellationToken cancellationToken = default)
     {
+        if (this._isDeleted)
+        {
+            return Task.CompletedTask;
+        }
+
         if (this._id is null)
         {
-            throw new InvalidOperationException("This thread cannot be ended, since it has not been started.");
+            throw new InvalidOperationException("This thread cannot be deleted, since it has not been created.");
         }
 
         this._chatHistory.Clear();
-        this._id = null;
+        this._isDeleted = true;
 
         return Task.CompletedTask;
     }
@@ -69,6 +80,11 @@ public sealed class ChatHistoryAgentThread : AgentThread
     /// <inheritdoc/>
     public async override Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
+        if (this._isDeleted)
+        {
+            throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
+        }
+
         if (this._id is null)
         {
             await this.CreateAsync(cancellationToken).ConfigureAwait(false);
@@ -78,13 +94,21 @@ public sealed class ChatHistoryAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (this._id is null)
+        if (this._isDeleted)
         {
-            throw new InvalidOperationException("The messages for this thread cannot be retrieved, since the thread has not been started.");
+            throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
         }
 
-        return this._chatHistory.ToAsyncEnumerable();
+        if (this._id is null)
+        {
+            await this.CreateAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        foreach (var message in this._chatHistory)
+        {
+            yield return message;
+        }
     }
 }

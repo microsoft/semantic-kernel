@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Azure;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -49,7 +50,13 @@ public class AzureAIAgentFixture : AgentFixture
     {
         if (this._thread!.Id is not null)
         {
-            await this._agentsClient!.DeleteThreadAsync(this._thread!.Id);
+            try
+            {
+                await this._agentsClient!.DeleteThreadAsync(this._thread!.Id);
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+            }
         }
 
         await this._agentsClient!.DeleteAgentAsync(this._aiAgent!.Id);
