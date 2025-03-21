@@ -2,6 +2,8 @@
 
 import json
 import sys
+from dataclasses import dataclass
+from typing import NamedTuple
 from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock, patch
 
 from pytest import fixture, mark, param, raises
@@ -19,7 +21,7 @@ from semantic_kernel.connectors.memory.sql_server import (
     _build_select_query,
     _build_select_table_names_query,
 )
-from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition.vector_store_record_fields import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
@@ -27,7 +29,10 @@ from semantic_kernel.data.record_definition.vector_store_record_fields import (
 )
 from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
 from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
+from semantic_kernel.exceptions.vector_store_exceptions import (
+    VectorStoreInitializationException,
+    VectorStoreOperationException,
+)
 
 
 class TestQueryBuilder:
@@ -286,12 +291,17 @@ async def test_get_mssql_connection(connection_string):
 
 
 class TestSqlServerStore:
-    def test_create_store(self, sql_server_unit_test_env):
+    async def test_create_store(self, sql_server_unit_test_env):
         store = SqlServerStore()
         assert store is not None
         assert store.settings is not None
         assert store.settings.connection_string is not None
         assert "LongAsMax=yes;" in store.settings.connection_string.get_secret_value()
+
+        with patch("semantic_kernel.connectors.memory.sql_server._get_mssql_connection") as mock_get_connection:
+            mock_get_connection.return_value = AsyncMock()
+            await store.__aenter__()
+            assert store.connection is not None
 
     @mark.parametrize(
         "override_env_param_dict",
@@ -307,6 +317,11 @@ class TestSqlServerStore:
         assert store is not None
         assert store.settings is not None
         assert store.settings.connection_string is not None
+
+    @mark.parametrize("exclude_list", ["SQL_SERVER_CONNECTION_STRING"], indirect=True)
+    def test_create_without_connection_string(self, sql_server_unit_test_env):
+        with raises(VectorStoreInitializationException):
+            SqlServerStore(env_file_path="test.env")
 
     def test_get_collection(self, sql_server_unit_test_env, data_model_definition):
         store = SqlServerStore()
@@ -324,7 +339,17 @@ class TestSqlServerStore:
 
 
 class TestSqlServerCollection:
-    async def test_create_collection(self, sql_server_unit_test_env, data_model_definition):
+    @mark.parametrize("exclude_list", ["SQL_SERVER_CONNECTION_STRING"], indirect=True)
+    def test_create_without_connection_string(self, sql_server_unit_test_env, data_model_definition):
+        with raises(VectorStoreInitializationException):
+            SqlServerCollection(
+                collection_name="test",
+                data_model_type=dict,
+                data_model_definition=data_model_definition,
+                env_file_path="test.env",
+            )
+
+    async def test_create(self, sql_server_unit_test_env, data_model_definition):
         collection = SqlServerCollection(
             collection_name="test", data_model_type=dict, data_model_definition=data_model_definition
         )
@@ -332,6 +357,11 @@ class TestSqlServerCollection:
         assert collection.collection_name == "test"
         assert collection.settings is not None
         assert collection.settings.connection_string is not None
+
+        with patch("semantic_kernel.connectors.memory.sql_server._get_mssql_connection") as mock_get_connection:
+            mock_get_connection.return_value = AsyncMock()
+            await collection.__aenter__()
+            assert collection.connection is not None
 
     async def test_upsert(
         self,
@@ -368,12 +398,13 @@ class TestSqlServerCollection:
         mock_connection,
         data_model_definition,
     ):
-        from typing import NamedTuple
-
         class MockRow(NamedTuple):
             id: str
             content: str
-            vector: list[float]
+            vector: str
+
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
 
         collection = SqlServerCollection(
             collection_name="test",
@@ -383,11 +414,97 @@ class TestSqlServerCollection:
         )
         key = "1"
 
-        row = MockRow("1", "test", [0.1, 0.2, 0.3, 0.4, 0.5])
-        mock_connection.cursor.return_value.__enter__.return_value.description = [["id"], ["content"], ["vector"]]
+        row = MockRow("1", "test", "[0.1, 0.2, 0.3, 0.4, 0.5]")
+        mock_cursor.description = [["id"], ["content"], ["vector"]]
 
-        mock_connection.cursor.return_value.__enter__.return_value.next.side_effect = [row]
-        await collection.get(key)
-        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+        mock_cursor.__iter__.return_value = [row]
+        record = await collection.get(key)
+        mock_cursor.execute.assert_called_with(
             "SELECT\nid, content, vector FROM [dbo].[test] \nWHERE id IN\n (?) ;", ("1",)
+        )
+        assert record["id"] == "1"
+        assert record["content"] == "test"
+        assert record["vector"] == [0.1, 0.2, 0.3, 0.4, 0.5]
+
+    async def test_delete(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+        data_model_definition,
+    ):
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            connection=mock_connection,
+        )
+        key = "1"
+        await collection.delete(key)
+        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+            "DELETE FROM [dbo].[test] WHERE [id] IN (?) ;", ("1",)
+        )
+
+    async def test_search(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+        data_model_definition,
+    ):
+        mock_cursor = MagicMock()
+        mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
+        data_model_definition.fields["vector"].distance_function = DistanceFunction.COSINE_DISTANCE
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            connection=mock_connection,
+        )
+        vector = [0.1, 0.2, 0.3, 0.4, 0.5]
+        options = VectorSearchOptions(vector_field_name="vector", filter=VectorSearchFilter.equal_to("content", "test"))
+
+        @dataclass
+        class MockRow:
+            id: str
+            content: str
+            _vector_distance_value: float
+
+        row = MockRow("1", "test", 0.1)
+        mock_cursor.description = [["id"], ["content"], ["_vector_distance_value"]]
+
+        mock_cursor.__iter__.return_value = [row]
+        search_result = await collection.vectorized_search(vector, options)
+        async for record in search_result.results:
+            assert record.record["id"] == "1"
+            assert record.record["content"] == "test"
+            assert record.score == 0.1
+        mock_cursor.execute.assert_called_with(
+            (
+                "SELECT id, content, VECTOR_DISTANCE('cosine', vector, CAST(? AS VECTOR(5))) as "
+                "_vector_distance_value\n FROM [dbo].[test] \nWHERE [content] = ? \nORDER BY _vector_distance_value "
+                "ASC\nOFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;"
+            ),
+            (json.dumps(vector), "test"),
+        )
+
+    async def test_create_collection(
+        self,
+        sql_server_unit_test_env,
+        mock_connection,
+        data_model_definition,
+    ):
+        data_model_definition.fields["vector"].index_kind = IndexKind.FLAT
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+            connection=mock_connection,
+        )
+        await collection.create_collection()
+        mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
+            (
+                "IF OBJECT_ID(N' [dbo].[test] ', N'U') IS NULL\nBEGIN\nCREATE TABLE [dbo].[test] \n (\"id\" nvarchar"
+                '(255) NOT NULL,\n"content" nvarchar(max) NULL,\n"vector" VECTOR(5) NULL,\nPRIMARY KEY (id) \n) ;'
+                "\nEND\n"
+            ),
+            (),
         )
