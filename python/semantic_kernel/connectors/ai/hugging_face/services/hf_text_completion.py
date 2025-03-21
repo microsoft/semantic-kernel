@@ -43,6 +43,7 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
         ai_model_id: str,
         task: str | None = "text2text-generation",
         device: int = -1,
+        use_hpu: bool = False,
         service_id: str | None = None,
         model_kwargs: dict[str, Any] | None = None,
         pipeline_kwargs: dict[str, Any] | None = None,
@@ -67,17 +68,60 @@ class HuggingFaceTextCompletion(TextCompletionClientBase):
             pipeline_kwargs (dict[str, Any]): Additional keyword arguments passed along
                 to the specific pipeline init (see the documentation for the corresponding pipeline class
                 for possible values). (optional)
+            use_hpu (bool): Whether to use Habana Gaudi HPU for inference. When True, the model will
+                be loaded and run on HPU using GaudiTextGenerationPipeline. (optional)
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        generator = pipeline(
-            task=task,
-            model=ai_model_id,
-            device=device,
-            model_kwargs=model_kwargs,
-            **pipeline_kwargs or {},
-        )
-        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        if use_hpu:
+            import logging
+
+            from semantic_kernel.connectors.ai.hugging_face.services.gaudi.config import create_default_config
+            from semantic_kernel.connectors.ai.hugging_face.services.gaudi.pipeline import GaudiTextGenerationPipeline
+            
+            # Set up logger for Gaudi
+            logging.basicConfig(
+                level=logging.INFO,
+                format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+            logger = logging.getLogger("gaudi_text_completion")
+            
+            # Create default config for Gaudi
+            config = create_default_config()
+            
+            # Set model name
+            config.model_name_or_path = ai_model_id
+            
+            # Set task
+            config.task = task
+            
+            # Update config with model_kwargs if provided
+            if model_kwargs:
+                # Extract Gaudi-specific parameters from model_kwargs
+                for key, value in model_kwargs.items():
+                    if hasattr(config, key):
+                        setattr(config, key, value)
+            
+            # Update config with pipeline_kwargs if provided
+            if pipeline_kwargs:
+                # Extract Gaudi-specific parameters from pipeline_kwargs
+                for key, value in pipeline_kwargs.items():
+                    if hasattr(config, key):
+                        setattr(config, key, value)
+            
+            # Initialize the Gaudi pipeline
+            generator = GaudiTextGenerationPipeline(config, logger)
+            resolved_device = "hpu"
+        else:
+            generator = pipeline(
+                task=task,
+                model=ai_model_id,
+                device=device,
+                model_kwargs=model_kwargs,
+                **pipeline_kwargs or {},
+            )
+            resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+            
         super().__init__(
             service_id=service_id or ai_model_id,
             ai_model_id=ai_model_id,
