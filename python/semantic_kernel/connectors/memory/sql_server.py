@@ -75,6 +75,7 @@ __all__ = ["SqlServerCollection", "SqlServerStore"]
 # region: Settings
 
 
+@experimental
 class SqlSettings(KernelBaseSettings):
     """SQL settings.
 
@@ -120,6 +121,7 @@ class SqlSettings(KernelBaseSettings):
 # region: SQL Command and Query Builder
 
 
+@experimental
 class QueryBuilder:
     """A class that helps you build strings for SQL queries."""
 
@@ -195,6 +197,7 @@ class QueryBuilder:
         return self._file_str.getvalue()
 
 
+@experimental
 class SqlCommand:
     """A class that represents a SQL command with parameters."""
 
@@ -581,6 +584,7 @@ class SqlServerCollection(
 # region: SQL Server Store
 
 
+@experimental
 class SqlServerStore(VectorStore):
     """SQL Store implementation.
 
