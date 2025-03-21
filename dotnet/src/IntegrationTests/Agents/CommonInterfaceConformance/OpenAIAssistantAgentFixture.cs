@@ -55,7 +55,6 @@ public class OpenAIAssistantAgentFixture : AgentFixture
             }
             catch (ClientResultException ex) when (ex.Status == 404)
             {
-                Console.WriteLine(ex);
             }
         }
 
