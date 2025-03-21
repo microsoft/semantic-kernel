@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Represents a conversation thread based on an instance of <see cref="ChatHistory"/> that is maanged inside this class.
 /// </summary>
-public class ChatHistoryAgentThread : AgentThread
+public sealed class ChatHistoryAgentThread : AgentThread
 {
     private readonly ChatHistory _chatHistory = new();
     private string? _id = null;
@@ -67,15 +67,14 @@ public class ChatHistoryAgentThread : AgentThread
     }
 
     /// <inheritdoc/>
-    public override Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public async override Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
         if (this._id is null)
         {
-            throw new InvalidOperationException("Messages cannot be added to this thread, since the thread has not been started.");
+            await this.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
         this._chatHistory.Add(newMessage);
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
