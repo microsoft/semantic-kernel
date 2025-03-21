@@ -30,8 +30,6 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
     {
         Verify.NotNull(agentDefinition);
 
-        // TODO Implement template handling
-
         ChatCompletionAgent? kernelAgent = null;
         if (this.IsSupported(agentDefinition))
         {
@@ -40,7 +38,7 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
                 Name = agentDefinition.Name,
                 Description = agentDefinition.Description,
                 Instructions = agentDefinition.Instructions,
-                Arguments = agentDefinition.GetDefaultKernelArguments(),
+                Arguments = agentDefinition.GetDefaultKernelArguments(kernel),
                 Kernel = kernel,
                 LoggerFactory = kernel.LoggerFactory,
             };

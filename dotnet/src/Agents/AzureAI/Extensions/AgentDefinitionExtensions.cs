@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.Projects;
+using Azure.Core;
+using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -33,6 +37,8 @@ internal static class AgentDefinitionExtensions
         OpenApiType,
         SharepointGroundingType
     };
+
+    private const string ConnectionString = "connection_string";
 
     /// <summary>
     /// Return the Azure AI tool definitions which corresponds with the provided <see cref="AgentDefinition"/>.
@@ -102,6 +108,36 @@ internal static class AgentDefinitionExtensions
         return null;
     }
 
+    /// <summary>
+    /// Return the <see cref="AIProjectClient"/> to be used with the specified <see cref="AgentDefinition"/>.
+    /// </summary>
+    /// <param name="agentDefinition">Agent definition which will be used to provide connection for the <see cref="AIProjectClient"/>.</param>
+    /// <param name="kernel">Kernel instance which will be used to resolve a default <see cref="AIProjectClient"/>.</param>
+    public static AIProjectClient GetAIProjectClient(this AgentDefinition agentDefinition, Kernel kernel)
+    {
+        Verify.NotNull(agentDefinition);
+
+        // Use the agent connection as the first option
+        var connection = agentDefinition?.Model?.Connection;
+        if (connection is not null)
+        {
+            if (connection.ExtensionData.TryGetValue(ConnectionString, out var value) && value is string connectionString)
+            {
+#pragma warning disable CA2000 // Dispose objects before losing scope, not relevant because the HttpClient is created and may be used elsewhere
+                var httpClient = HttpClientProvider.GetHttpClient(kernel.Services);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+                AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
+
+                var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
+                return new(connectionString, tokenCredential, clientOptions);
+            }
+        }
+
+        // Return the client registered on the kernel
+        var client = kernel.GetAllServices<AIProjectClient>().FirstOrDefault();
+        return (AIProjectClient?)client ?? throw new InvalidOperationException("AzureAI project client not found.");
+    }
+
     #region private
     private static CodeInterpreterToolResource? GetCodeInterpreterToolResource(this AgentDefinition agentDefinition)
     {
@@ -142,10 +178,10 @@ internal static class AgentDefinitionExtensions
     private static AzureFunctionToolDefinition CreateAzureFunctionToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);
-        Verify.NotNull(tool.Name);
+        Verify.NotNull(tool.Id);
         Verify.NotNull(tool.Description);
 
-        string name = tool.Name;
+        string name = tool.Id;
         string description = tool.Description;
         AzureFunctionBinding inputBinding = tool.GetInputBinding();
         AzureFunctionBinding outputBinding = tool.GetOutputBinding();
@@ -181,10 +217,10 @@ internal static class AgentDefinitionExtensions
     private static FunctionToolDefinition CreateFunctionToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);
-        Verify.NotNull(tool.Name);
+        Verify.NotNull(tool.Id);
         Verify.NotNull(tool.Description);
 
-        string name = tool.Name;
+        string name = tool.Id;
         string description = tool.Description;
         BinaryData parameters = tool.GetParameters();
 
@@ -203,10 +239,10 @@ internal static class AgentDefinitionExtensions
     private static OpenApiToolDefinition CreateOpenApiToolDefinition(AgentToolDefinition tool)
     {
         Verify.NotNull(tool);
-        Verify.NotNull(tool.Name);
+        Verify.NotNull(tool.Id);
         Verify.NotNull(tool.Description);
 
-        string name = tool.Name;
+        string name = tool.Id;
         string description = tool.Description;
         BinaryData spec = tool.GetSpecification();
         OpenApiAuthDetails auth = tool.GetOpenApiAuthDetails();

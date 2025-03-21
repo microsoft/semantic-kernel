@@ -27,8 +27,7 @@ public class ChatCompletionAgentFactoryTests
             Instructions = "ChatCompletionAgent Instructions",
             Model = new()
             {
-                Id = "gpt-4o-mini",
-                Options = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }
+                Id = "gpt-4o-mini"
             }
         };
         ChatCompletionAgentFactory factory = new();

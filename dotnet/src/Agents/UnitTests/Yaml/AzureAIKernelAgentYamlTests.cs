@@ -107,9 +107,9 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: azure_function
-                  name: function1
+                  id: function1
                   description: function1 description
-                  configuration:
+                  options:
                       input_binding:
                           storage_service_endpoint: https://storage_service_endpoint
                           queue_name: queue_name
@@ -156,9 +156,9 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: function
-                  name: function1
+                  id: function1
                   description: function1 description
-                  configuration:
+                  options:
                       parameters:
                           - name: param1
                             type: string
@@ -199,7 +199,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: bing_grounding
-                  configuration:
+                  options:
                     tool_connections:
                       - connection_string
             """;
@@ -235,7 +235,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: fabric_aiskill
-                  configuration:
+                  options:
                       tool_connections:
                         - connection_string
             """;
@@ -271,21 +271,21 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: openapi
-                  name: function1
+                  id: function1
                   description: function1 description
-                  configuration:
+                  options:
                     specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
                 - type: openapi
-                  name: function2
+                  id: function2
                   description: function2 description
-                  configuration:
+                  options:
                       specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
                       authentication:
                           connection_id: connection_id
                 - type: openapi
-                  name: function3
+                  id: function3
                   description: function3 description
-                  configuration:
+                  options:
                       specification: {"openapi":"3.1.0","info":{"title":"Get Weather Data","description":"Retrieves current weather data for a location based on wttr.in.","version":"v1.0.0"},"servers":[{"url":"https://wttr.in"}],"auth":[],"paths":{"/{location}":{"get":{"description":"Get weather information for a specific location","operationId":"GetCurrentWeather","parameters":[{"name":"location","in":"path","description":"City or location to retrieve the weather for","required":true,"schema":{"type":"string"}},{"name":"format","in":"query","description":"Always use j1 value for this parameter","required":true,"schema":{"type":"string","default":"j1"}}],"responses":{"200":{"description":"Successful response","content":{"text/plain":{"schema":{"type":"string"}}}},"404":{"description":"Location not found"}},"deprecated":false}}},"components":{"schemes":{}}}
                       authentication:
                           audience: audience
@@ -324,7 +324,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: sharepoint_grounding
-                  configuration:
+                  options:
                     tool_connections:
                         - connection_string
             """;

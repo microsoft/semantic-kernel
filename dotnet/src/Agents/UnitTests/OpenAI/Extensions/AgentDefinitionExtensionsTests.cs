@@ -31,7 +31,7 @@ public class AgentDefinitionExtensionsTests
             Tools = [
                 new AgentToolDefinition()
                 {
-                    Name = "tool1",
+                    Id = "tool1",
                     Type = "code_interpreter",
                 },
             ]
@@ -56,7 +56,7 @@ public class AgentDefinitionExtensionsTests
     {
         // Arrange
         var fileIds = new List<string>(["file1", "file2"]);
-        var configuration = new Dictionary<string, object?>
+        var options = new Dictionary<string, object?>
         {
             { "file_ids", fileIds }
         };
@@ -65,9 +65,9 @@ public class AgentDefinitionExtensionsTests
             Tools = [
                 new AgentToolDefinition()
                 {
-                    Name = "tool1",
+                    Id = "tool1",
                     Type = "code_interpreter",
-                    Configuration = configuration,
+                    Options = options,
                 },
             ]
         };

@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// Type converter custom deserialization for <see cref="AgentToolDefinition"/> from YAML.
 /// </summary>
 /// <remarks>
-/// Required to correctly deserialize the <see cref="AgentToolDefinition.Configuration"/> from YAML.
+/// Required to correctly deserialize the <see cref="AgentToolDefinition.Options"/> from YAML.
 /// </remarks>
 internal sealed class AgentToolDefinitionTypeConverter : IYamlTypeConverter
 {
@@ -43,13 +43,13 @@ internal sealed class AgentToolDefinitionTypeConverter : IYamlTypeConverter
                     agentToolDefinition.Type = s_deserializer.Deserialize<string>(parser);
                     break;
                 case "name":
-                    agentToolDefinition.Name = s_deserializer.Deserialize<string>(parser);
+                    agentToolDefinition.Id = s_deserializer.Deserialize<string>(parser);
                     break;
                 case "description":
                     agentToolDefinition.Description = s_deserializer.Deserialize<string>(parser);
                     break;
                 default:
-                    (agentToolDefinition.Configuration ??= new Dictionary<string, object?>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
+                    (agentToolDefinition.Options ??= new Dictionary<string, object?>()).Add(propertyName, s_deserializer.Deserialize<object>(parser));
                     break;
             }
         }

@@ -41,7 +41,7 @@ internal static class BedrockAgentDefinitionExtensions
         {
             foreach (var knowledgeBase in knowledgeBases)
             {
-                if (knowledgeBase.Configuration?.TryGetValue(KnowledgeBaseId, out var value) ?? false && value is not null && value is string)
+                if (knowledgeBase.Options?.TryGetValue(KnowledgeBaseId, out var value) ?? false && value is not null && value is string)
                 {
                     var knowledgeBaseId = value as string;
                     var description = knowledgeBase.Description ?? string.Empty;
@@ -64,7 +64,7 @@ internal static class BedrockAgentDefinitionExtensions
         {
             functions.Add(new Function
             {
-                Name = functionTool.Name,
+                Name = functionTool.Id,
                 Description = functionTool.Description,
                 Parameters = functionTool.CreateParameterDetails(),
                 // This field controls whether user confirmation is required to invoke the function.
