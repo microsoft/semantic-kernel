@@ -49,7 +49,7 @@ async def main():
         return False
     finally:
         # Cleanup: Delete the thread
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
 
     # Sample output (using anthropic.claude-3-haiku-20240307-v1:0):
     # User:> Hi, my name is John.

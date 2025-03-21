@@ -69,7 +69,7 @@ async def main() -> None:
                     thread = response.thread
         finally:
             # 7. Cleanup: Delete the thread and agent and other resources
-            await thread.end() if thread else None
+            await thread.delete() if thread else None
             await client.agents.delete_vector_store(vector_store.id)
             await client.agents.delete_file(file.id)
             await client.agents.delete_agent(agent.id)

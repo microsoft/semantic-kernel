@@ -10,8 +10,8 @@ from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 """
 The following sample demonstrates how to create a chat completion agent that
 answers user questions using the Azure Chat Completion service. The Chat Completion
-Service is first added to the kernel, and the kernel is passed in to the 
-ChatCompletionAgent constructor. This sample demonstrates the basic steps to 
+Service is first added to the kernel, and the kernel is passed in to the
+ChatCompletionAgent constructor. This sample demonstrates the basic steps to
 create an agent and simulate a conversation with the agent.
 
 Note: if both a service and a kernel are provided, the service will be used.
@@ -57,7 +57,7 @@ async def main():
         thread = response.thread
 
     # 4. Cleanup: Clear the thread
-    await thread.end() if thread else None
+    await thread.delete() if thread else None
 
     """
     Sample output:

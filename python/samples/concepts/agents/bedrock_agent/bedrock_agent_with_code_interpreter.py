@@ -23,7 +23,7 @@ INSTRUCTION = "You are a friendly assistant. You help people find information."
 ASK = """
 Create a bar chart for the following data:
 Panda   5
-Tiger   8 
+Tiger   8
 Lion    3
 Monkey  6
 Dolphin  2
@@ -53,7 +53,7 @@ async def main():
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
 
     # Save the chart to a file
     if not binary_item:

@@ -55,17 +55,17 @@ async def main():
 
     finally:
         # 7. Clean up the resources
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
     """
     You should see output similar to the following:
 
     # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
+    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue
         light is scattered more than other colors because it travels in shorter, smaller waves.
     # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
+    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second
         (about 186,282 miles per second).
      """
 

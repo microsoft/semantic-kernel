@@ -66,7 +66,7 @@ async def main():
         thread = response.thread
 
     # 4. Cleanup: Clear the thread
-    await thread.end() if thread else None
+    await thread.delete() if thread else None
 
     """
     Sample output:

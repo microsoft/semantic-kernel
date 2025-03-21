@@ -6,10 +6,10 @@ from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an OpenAI         
+The following sample demonstrates how to create an OpenAI
 assistant using either Azure OpenAI or OpenAI. The sample
 shows how to use a Semantic Kernel plugin as part of the
-OpenAI Assistant.  
+OpenAI Assistant.
 """
 
 
@@ -75,7 +75,7 @@ async def main():
                 thread = response.thread
     finally:
         # 7. Clean up the resources
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
     """
@@ -88,7 +88,7 @@ async def main():
     # User: 'What is the special drink?'
     # Agent: The special drink today is Chai Tea. Would you like more information on anything else?
     # User: 'Thank you'
-    # Agent: You're welcome! If you have any more questions or need further assistance, feel free to ask. 
+    # Agent: You're welcome! If you have any more questions or need further assistance, feel free to ask.
         Enjoy your day!
      """
 

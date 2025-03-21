@@ -31,30 +31,69 @@ TMessage = TypeVar("TMessage", bound=ChatMessageContent | StreamingChatMessageCo
 class AgentThread(ABC):
     """Base class for agent threads."""
 
-    @property
-    @abstractmethod
-    def is_active(self) -> bool:
-        """Indicates whether the thread is currently active."""
-        raise NotImplementedError
+    def __init__(self):
+        """Initialize the agent thread."""
+        self._is_deleted: bool = False
+        self._id: str | None = None
 
     @property
-    @abstractmethod
     def id(self) -> str | None:
         """Returns the ID of the current thread (if any)."""
-        raise NotImplementedError
+        return self._id
+
+    async def create(self) -> str | None:
+        """Starts the thread and returns the thread ID."""
+        # A thread should not be recreated after it has been deleted.
+        if self._is_deleted:
+            raise RuntimeError("Cannot create thread because it has already been deleted.")
+
+        # If the thread ID is already set, we're done, just return the Id.
+        if self.id is not None:
+            return self.id
+
+        # Otherwise, create the thread.
+        self._id = await self._create()
+        return self.id
+
+    async def delete(self) -> None:
+        """Ends the current thread."""
+        # A thread should not be deleted if it has already been deleted.
+        if self._is_deleted:
+            return
+
+        # If the thread ID is not set, we're done, just return.
+        if self.id is None:
+            self._is_deleted = True
+            return
+
+        # Otherwise, delete the thread.
+        await self._delete()
+        self.id = None
+        self._is_deleted = True
+
+    async def on_new_message(
+        self,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Invoked when a new message has been contributed to the chat by any participant."""
+        # If the thread is not created yet, create it.
+        if self.id is None:
+            await self.create()
+
+        await self._on_new_message(new_message)
 
     @abstractmethod
-    async def start(self) -> str:
+    async def _create(self) -> str | None:
         """Starts the thread and returns the thread ID."""
         raise NotImplementedError
 
     @abstractmethod
-    async def end(self) -> None:
+    async def _delete(self) -> None:
         """Ends the current thread."""
         raise NotImplementedError
 
     @abstractmethod
-    async def on_new_message(
+    async def _on_new_message(
         self,
         new_message: ChatMessageContent,
     ) -> None:

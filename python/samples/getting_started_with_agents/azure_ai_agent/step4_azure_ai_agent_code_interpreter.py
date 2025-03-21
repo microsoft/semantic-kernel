@@ -51,7 +51,7 @@ async def main() -> None:
                 thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent
-            await thread.end() if thread else None
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
         """
@@ -75,12 +75,12 @@ async def main() -> None:
                 fib_sequence.append(a)
                 a, b = b, a + b
             return fib_sequence
-        
+
         Generate Fibonacci sequence values less than 101
         fibonacci_values = fibonacci_less_than(101)
         fibonacci_values
         # Agent: The values in the Fibonacci sequence that are less than 101 are:
-        
+
         [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
         """
 

@@ -102,7 +102,7 @@ async def main():
             annotations.clear()
     finally:
         await client.files.delete(file.id)
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

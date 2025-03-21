@@ -8,7 +8,7 @@ from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThre
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
-The following sample demonstrates how to create an OpenAI         
+The following sample demonstrates how to create an OpenAI
 assistant using either Azure OpenAI or OpenAI and leverage the
 multi-modal content types to have the assistant describe images
 and answer questions about them and provide streaming responses.
@@ -87,7 +87,7 @@ async def main():
 
     finally:
         await client.files.delete(file.id)
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
 

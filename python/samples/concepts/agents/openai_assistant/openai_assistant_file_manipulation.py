@@ -76,7 +76,7 @@ async def main():
                             await download_response_files(agent, [item])
     finally:
         await client.files.delete(file.id)
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

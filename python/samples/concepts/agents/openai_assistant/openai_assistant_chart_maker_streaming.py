@@ -96,7 +96,7 @@ async def main():
             file_ids.clear()
 
     finally:
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(assistant_id=agent.id)
 
 

@@ -48,7 +48,7 @@ async def main():
             thread = response.thread
     finally:
         # 7. Clean up the resources
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(agent.id)
 
 

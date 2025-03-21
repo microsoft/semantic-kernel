@@ -74,7 +74,7 @@ async def main():
                 print(response.message.content, end="", flush=True)
             print()
     finally:
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(assistant_id=agent.id)
 
 

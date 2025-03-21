@@ -49,63 +49,39 @@ class AutoGenConversableAgentThread(AgentThread):
             chat_history: The chat history for the thread. If None, a new ChatHistory instance will be created.
             thread_id: The ID of the thread. If None, a new thread will be created.
         """
+        super().__init__()
         self._chat_history = chat_history or ChatHistory()
-        self._is_active = thread_id is not None
-        self._thread_id = thread_id
+        self._id = thread_id
 
     @override
-    @property
-    def is_active(self) -> bool:
-        """Indicates whether the thread is currently active."""
-        return self._is_active
-
-    @override
-    @property
-    def id(self) -> str | None:
-        """Returns the ID of the current thread."""
-        return self._thread_id
-
-    @override
-    async def start(self) -> str:
+    async def _create(self) -> str:
         """Starts the thread and returns its ID."""
-        if self._is_active:
-            raise RuntimeError("You cannot start this thread, since the thread is already active.")
+        if not self._id:
+            self._id = f"thread_{uuid.uuid4().hex}"
 
-        if not self._thread_id:
-            self._thread_id = f"thread_{uuid.uuid4().hex}"
-
-        self._is_active = True
-        return self._thread_id
+        return self._id
 
     @override
-    async def end(self) -> None:
+    async def _delete(self) -> None:
         """Ends the current thread."""
-        if not self._is_active:
-            raise RuntimeError("This thread cannot be ended, since it is not currently active.")
-
         self._chat_history.clear()
-        self._is_active = False
-        self._thread_id = None
 
     @override
-    async def on_new_message(self, new_message: str | ChatMessageContent) -> None:
+    async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
         """Called when a new message has been contributed to the chat."""
-        if not self._is_active:
-            raise RuntimeError("Messages cannot be added to this thread, since the thread is not currently active.")
-
         if isinstance(new_message, str):
             new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
 
         if (
             not new_message.metadata
             or "thread_id" not in new_message.metadata
-            or new_message.metadata["thread_id"] != self._thread_id
+            or new_message.metadata["thread_id"] != self._id
         ):
             self._chat_history.add_message(new_message)
 
     async def retrieve_current_chat_history(self) -> ChatHistory:
         """Retrieve the current chat history."""
-        if not self._is_active:
+        if self._id is None:
             raise RuntimeError("Cannot retrieve chat history, since the thread is not currently active.")
         return self._chat_history
 
@@ -314,8 +290,8 @@ class AutoGenConversableAgent(Agent):
                 f"The thread must be an AutoGenConversableAgentThread, but got {type(thread).__name__}."
             )
 
-        if not thread.is_active:
-            await thread.start()
+        if thread._id is None:
+            await thread.create()
 
         await thread.on_new_message(message)
 

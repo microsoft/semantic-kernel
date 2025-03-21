@@ -7,7 +7,7 @@ from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
 The following sample demonstrates how to create an OpenAI
 assistant using either Azure OpenAI or OpenAI and retrieve it from
 the server to create a new instance of the assistant. This is done by
-retrieving the assistant definition from the server using the Assistant's 
+retrieving the assistant definition from the server using the Assistant's
 ID and creating a new instance of the assistant using the retrieved definition.
 """
 
@@ -49,7 +49,7 @@ async def main():
                 print(f"# {response.message.role}: {response.message.content}")
                 thread = response.thread
     finally:
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

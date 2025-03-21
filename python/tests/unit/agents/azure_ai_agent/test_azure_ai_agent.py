@@ -125,7 +125,7 @@ async def test_azure_ai_agent_create_channel(ai_project_client, ai_agent_definit
             side_effect="t",
         ),
         patch(
-            "semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentThread.start",
+            "semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentThread.create",
             new_callable=AsyncMock,
         ) as mock_start,
     ):

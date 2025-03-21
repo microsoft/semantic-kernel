@@ -109,7 +109,7 @@ async def main():
         print("\nCleaning up resources...")
         [await client.files.delete(file_id) for file_id in file_ids]
         await client.vector_stores.delete(vector_store.id)
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

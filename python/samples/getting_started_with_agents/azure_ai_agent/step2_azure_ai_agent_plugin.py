@@ -83,7 +83,7 @@ async def main() -> None:
                     thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent
-            await thread.end() if thread else None
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
         """

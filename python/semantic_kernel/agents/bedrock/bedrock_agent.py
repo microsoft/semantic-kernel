@@ -79,7 +79,7 @@ class BedrockAgentThread(AgentThread):
         return self._thread_id
 
     @override
-    async def start(self) -> str:
+    async def create(self) -> str:
         """Starts the thread and returns its ID."""
         if self._is_active:
             raise RuntimeError("You cannot start this thread, since the thread is already active.")
@@ -91,7 +91,7 @@ class BedrockAgentThread(AgentThread):
         return self._thread_id
 
     @override
-    async def end(self) -> None:
+    async def delete(self) -> None:
         """Ends the current thread."""
         if not self._is_active:
             raise RuntimeError("This thread cannot be ended, since it is not currently active.")
@@ -696,7 +696,7 @@ class BedrockAgent(BedrockAgentBase):
         thread = BedrockAgentThread(chat_history=chat_history, thread_id=thread_id)
 
         if not thread.is_active:
-            await thread.start()
+            await thread.create()
 
         chat_history = await thread.retrieve_current_chat_history()
 
@@ -727,7 +727,7 @@ class BedrockAgent(BedrockAgentBase):
             )
 
         if not thread.is_active:
-            await thread.start()
+            await thread.create()
 
         await thread.on_new_message(message)
 

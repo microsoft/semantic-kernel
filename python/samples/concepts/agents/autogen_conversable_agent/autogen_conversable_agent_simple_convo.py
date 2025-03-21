@@ -60,7 +60,7 @@ async def main():
         thread = response.thread
 
     # Cleanup: Delete the thread and agent
-    await thread.end() if thread else None
+    await thread.delete() if thread else None
 
 
 if __name__ == "__main__":

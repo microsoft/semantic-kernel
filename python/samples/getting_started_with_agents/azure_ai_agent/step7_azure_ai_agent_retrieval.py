@@ -51,13 +51,13 @@ async def main() -> None:
                 print(f"# {response.message.name}: {response.message}")
         finally:
             # 5. Cleanup: Delete the thread and agent
-            await thread.end() if thread else None
+            await thread.delete() if thread else None
             # Do not clean up the agent so it can be used again
 
         """
         Sample Output:
         # User: 'Why is the sky blue?'
-        # Agent: The sky appears blue because molecules in the Earth's atmosphere scatter sunlight, 
+        # Agent: The sky appears blue because molecules in the Earth's atmosphere scatter sunlight,
         and blue light is scattered more than other colors due to its shorter wavelength.
         """
 

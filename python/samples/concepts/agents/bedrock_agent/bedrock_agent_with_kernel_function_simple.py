@@ -52,7 +52,7 @@ async def main():
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
 
     # Sample output (using anthropic.claude-3-haiku-20240307-v1:0):
     # Response:

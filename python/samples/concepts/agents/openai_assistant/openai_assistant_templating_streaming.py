@@ -74,7 +74,7 @@ async def invoke_agent_with_template(
             print("\n")
     finally:
         # Clean up
-        await thread.end() if thread else None
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 
