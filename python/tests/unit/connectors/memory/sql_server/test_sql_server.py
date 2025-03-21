@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+import sys
+from unittest.mock import AsyncMock, MagicMock, NonCallableMagicMock, patch
 
 from pytest import fixture, mark, param, raises
 
@@ -245,7 +246,6 @@ async def mock_connection(*args, **kwargs):
     return MagicMock(spec=Connection)
 
 
-@patch("pyodbc.connect")
 @mark.parametrize(
     "connection_string",
     [
@@ -258,29 +258,33 @@ async def mock_connection(*args, **kwargs):
         ),
     ],
 )
-async def test_get_mssql_connection(patched_connection, connection_string):
-    from azure.identity.aio import DefaultAzureCredential
+async def test_get_mssql_connection(connection_string):
+    mock_pyodbc = NonCallableMagicMock()
+    sys.modules["pyodbc"] = mock_pyodbc
 
-    from semantic_kernel.connectors.memory.sql_server import SqlSettings, _get_mssql_connection
+    with patch("pyodbc.connect") as patched_connection:
+        from azure.identity.aio import DefaultAzureCredential
 
-    token = MagicMock()
-    token.token.return_value = "test_token"
-    token.token.encode.return_value = b"test_token"
-    credential = AsyncMock(spec=DefaultAzureCredential)
-    credential.__aenter__.return_value = credential
-    credential.get_token.return_value = token
+        from semantic_kernel.connectors.memory.sql_server import SqlSettings, _get_mssql_connection
 
-    settings = SqlSettings.create(connection_string=connection_string)
-    with patch("semantic_kernel.connectors.memory.sql_server.DefaultAzureCredential", return_value=credential):
-        connection = await _get_mssql_connection(settings)
-        assert connection is not None
-        assert isinstance(connection, MagicMock)
-        if "uid" in connection_string:
-            assert patched_connection.call_args.kwargs["attrs_before"] is None
-        else:
-            assert patched_connection.call_args.kwargs["attrs_before"] == {
-                1256: b"\n\x00\x00\x00test_token",
-            }
+        token = MagicMock()
+        token.token.return_value = "test_token"
+        token.token.encode.return_value = b"test_token"
+        credential = AsyncMock(spec=DefaultAzureCredential)
+        credential.__aenter__.return_value = credential
+        credential.get_token.return_value = token
+
+        settings = SqlSettings.create(connection_string=connection_string)
+        with patch("semantic_kernel.connectors.memory.sql_server.DefaultAzureCredential", return_value=credential):
+            connection = await _get_mssql_connection(settings)
+            assert connection is not None
+            assert isinstance(connection, MagicMock)
+            if "uid" in connection_string:
+                assert patched_connection.call_args.kwargs["attrs_before"] is None
+            else:
+                assert patched_connection.call_args.kwargs["attrs_before"] == {
+                    1256: b"\n\x00\x00\x00test_token",
+                }
 
 
 class TestSqlServerStore:
