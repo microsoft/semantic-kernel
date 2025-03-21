@@ -2,8 +2,11 @@
 
 import logging
 import sys
+import uuid
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
+
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -38,6 +41,78 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@release_candidate
+class ChatCompletionAgentThread(AgentThread):
+    """Azure AI Agent Thread class."""
+
+    def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
+        """Initialize the ChatCompletionAgent Thread.
+
+        Args:
+            chat_history: The chat history for the thread. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+        """
+        self._chat_history = chat_history or ChatHistory()
+        self._is_active = thread_id is not None
+        self._thread_id = thread_id
+
+    @override
+    @property
+    def is_active(self) -> bool:
+        """Indicates whether the thread is currently active."""
+        return self._is_active
+
+    @override
+    @property
+    def id(self) -> str | None:
+        """Returns the ID of the current thread."""
+        return self._thread_id
+
+    @override
+    async def start(self) -> str:
+        """Starts the thread and returns its ID."""
+        if self._is_active:
+            raise RuntimeError("You cannot start this thread, since the thread is already active.")
+
+        if not self._thread_id:
+            self._thread_id = f"thread_{uuid.uuid4().hex}"
+
+        self._is_active = True
+        return self._thread_id
+
+    @override
+    async def end(self) -> None:
+        """Ends the current thread."""
+        if not self._is_active:
+            raise RuntimeError("This thread cannot be ended, since it is not currently active.")
+
+        self._chat_history.clear()
+        self._is_active = False
+        self._thread_id = None
+
+    @override
+    async def on_new_message(self, new_message: str | ChatMessageContent) -> None:
+        """Called when a new message has been contributed to the chat."""
+        if not self._is_active:
+            raise RuntimeError("Messages cannot be added to this thread, since the thread is not currently active.")
+
+        if isinstance(new_message, str):
+            new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
+
+        if (
+            not new_message.metadata
+            or "thread_id" not in new_message.metadata
+            or new_message.metadata["thread_id"] != self._thread_id
+        ):
+            self._chat_history.add_message(new_message)
+
+    async def retrieve_current_chat_history(self) -> ChatHistory:
+        """Retrieve the current chat history."""
+        if not self._is_active:
+            raise RuntimeError("Cannot retrieve chat history, since the thread is not currently active.")
+        return self._chat_history
 
 
 @release_candidate
@@ -137,86 +212,136 @@ class ChatCompletionAgent(Agent):
         self.kernel.add_service(self.service, overwrite=True)
         return self
 
+    async def create_channel(
+        self, chat_history: ChatHistory | None = None, thread_id: str | None = None
+    ) -> AgentChannel:
+        """Create a ChatHistoryChannel.
+
+        Args:
+            chat_history: The chat history for the channel. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+
+        Returns:
+            An instance of AgentChannel.
+        """
+        thread = ChatCompletionAgentThread(chat_history=chat_history, thread_id=thread_id)
+
+        if not thread.is_active:
+            await thread.start()
+
+        chat_history = await thread.retrieve_current_chat_history()
+
+        return ChatHistoryChannel(messages=chat_history.messages, thread_id=thread.id)
+
     @trace_agent_get_response
     @override
     async def get_response(
         self,
-        history: ChatHistory,
+        *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> ChatMessageContent:
+    ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent.
 
         Args:
-            history: The chat history.
-            arguments: The kernel arguments. (optional)
-            kernel: The kernel instance. (optional)
-            kwargs: The keyword arguments. (optional)
+            message: The chat message content either as a string or ChatMessageContent.
+            thread: The thread to use for agent invocation.
+            arguments: The kernel arguments.
+            kernel: The kernel instance.
+            kwargs: The keyword arguments.
 
         Returns:
-            A chat message content.
+            An AgentResponseItem of type ChatMessageContent.
         """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread: ChatCompletionAgentThread = await self._configure_thread(message, thread)
+
+        chat_history = await thread.retrieve_current_chat_history()
+
         responses: list[ChatMessageContent] = []
-        async for response in self._inner_invoke(history, arguments, kernel, **kwargs):
+        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
             responses.append(response)
 
         if not responses:
             raise AgentInvokeException("No response from agent.")
 
-        return responses[0]
+        response = responses[-1]
+        await thread.on_new_message(response)
+        return AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke(
         self,
-        history: ChatHistory,
+        *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the chat history handler.
 
         Args:
-            history: The chat history.
+            message: The chat message content either as a string or ChatMessageContent.
+            thread: The thread to use for agent invocation.
             arguments: The kernel arguments.
             kernel: The kernel instance.
             kwargs: The keyword arguments.
 
         Returns:
-            An async iterable of ChatMessageContent.
+            An async iterable of AgentResponseItem of type ChatMessageContent.
         """
-        async for response in self._inner_invoke(history, arguments, kernel, **kwargs):
-            yield response
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread: ChatCompletionAgentThread = await self._configure_thread(message, thread)
+
+        chat_history = await thread.retrieve_current_chat_history()
+
+        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
+            await thread.on_new_message(response)
+            yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke_stream(
         self,
-        history: ChatHistory,
+        *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[StreamingChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the chat history handler in streaming mode.
 
         Args:
-            history: The chat history.
+            message: The chat message content either as a string or ChatMessageContent.
+            thread: The thread to use for agent invocation.
             arguments: The kernel arguments.
             kernel: The kernel instance.
             kwargs: The keyword arguments.
 
         Returns:
-            An async generator of StreamingChatMessageContent.
+            An async generator of AgentResponseItem of type StreamingChatMessageContent.
         """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread: ChatCompletionAgentThread = await self._configure_thread(message, thread)
+
+        chat_history = await thread.retrieve_current_chat_history()
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
             arguments.update(kwargs)
-
-        # Add the chat history to the args in the event that it is needed for prompt template configuration
-        if "chat_history" not in arguments:
-            arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
@@ -230,14 +355,10 @@ class ChatCompletionAgent(Agent):
             settings.function_choice_behavior = self.function_choice_behavior
 
         agent_chat_history = await self._prepare_agent_chat_history(
-            history=history,
+            history=chat_history,
             kernel=kernel,
             arguments=arguments,
         )
-
-        # Remove the chat history from the arguments, potentially used for the prompt,
-        # to avoid passing it to the service
-        arguments.pop("chat_history", None)
 
         message_count_before_completion = len(agent_chat_history)
 
@@ -264,11 +385,11 @@ class ChatCompletionAgent(Agent):
                 role = response.role
                 response.name = self.name
                 response_builder.append(response.content)
-                yield response
+                yield AgentResponseItem(message=response, thread=thread)
 
-        self._capture_mutated_messages(history, agent_chat_history, message_count_before_completion)
+        await self._capture_mutated_messages(chat_history, agent_chat_history, message_count_before_completion)
         if role != AuthorRole.TOOL:
-            history.add_message(
+            await thread.on_new_message(
                 ChatMessageContent(
                     role=role if role else AuthorRole.ASSISTANT, content="".join(response_builder), name=self.name
                 )
@@ -276,6 +397,7 @@ class ChatCompletionAgent(Agent):
 
     async def _inner_invoke(
         self,
+        thread: AgentThread,
         history: ChatHistory,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -286,10 +408,6 @@ class ChatCompletionAgent(Agent):
             arguments = KernelArguments(**kwargs)
         else:
             arguments.update(kwargs)
-
-        # Add the chat history to the args in the event that it is needed for prompt template configuration
-        if "chat_history" not in arguments:
-            arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
@@ -308,10 +426,6 @@ class ChatCompletionAgent(Agent):
             arguments=arguments,
         )
 
-        # Remove the chat history from the arguments, potentially used for the prompt,
-        # to avoid passing it to the service
-        arguments.pop("chat_history", None)
-
         message_count_before_completion = len(agent_chat_history)
 
         logger.debug(f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}.")
@@ -328,7 +442,7 @@ class ChatCompletionAgent(Agent):
             f"with message count: {message_count_before_completion}."
         )
 
-        self._capture_mutated_messages(history, agent_chat_history, message_count_before_completion)
+        await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
 
         for response in responses:
             response.name = self.name
@@ -363,9 +477,40 @@ class ChatCompletionAgent(Agent):
 
         return chat_completion_service, settings
 
-    def _capture_mutated_messages(self, caller_chat_history: ChatHistory, agent_chat_history: ChatHistory, start: int):
+    async def _capture_mutated_messages(self, agent_chat_history: ChatHistory, start: int, thread: AgentThread):
         """Capture mutated messages related function calling/tools."""
         for message_index in range(start, len(agent_chat_history)):
             message = agent_chat_history[message_index]  # type: ignore
             message.name = self.name
-            caller_chat_history.add_message(message)
+            await thread.on_new_message(message)
+
+    async def _configure_thread(
+        self,
+        message: ChatMessageContent,
+        thread: AgentThread | None = None,
+    ) -> AgentThread:
+        """Ensures the thread is properly initialized and active, then posts the new message.
+
+        Args:
+            message: The chat message content to post to the thread.
+            thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
+
+        Returns:
+            The active thread (AzureAIAgentThread) after posting the message.
+
+        Raises:
+            AgentInitializationException: If `thread` is not an AzureAIAgentThread.
+        """
+        thread = thread or ChatCompletionAgentThread()
+
+        if not isinstance(thread, ChatCompletionAgentThread):
+            raise AgentInitializationException(
+                f"The thread must be an ChatCompletionAgentThread, but got {type(thread).__name__}."
+            )
+
+        if not thread.is_active:
+            await thread.start()
+
+        await thread.on_new_message(message)
+
+        return thread

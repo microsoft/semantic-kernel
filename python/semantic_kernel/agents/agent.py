@@ -4,7 +4,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Iterable
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -18,10 +18,65 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+TMessage = TypeVar("TMessage", bound=ChatMessageContent | StreamingChatMessageContent)
+
+
+@release_candidate
+class AgentThread(ABC):
+    """Base class for agent threads."""
+
+    @property
+    @abstractmethod
+    def is_active(self) -> bool:
+        """Indicates whether the thread is currently active."""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def id(self) -> str | None:
+        """Returns the ID of the current thread (if any)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def start(self) -> str:
+        """Starts the thread and returns the thread ID."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def end(self) -> None:
+        """Ends the current thread."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def on_new_message(
+        self,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Invoked when a new message has been contributed to the chat by any participant."""
+        raise NotImplementedError
+
+
+@release_candidate
+class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
+    """Class representing a response item from an agent.
+
+    Attributes:
+        message: The message content of the response item.
+        thread: The conversation thread associated with the response item.
+    """
+
+    message: TMessage
+    thread: AgentThread
+
+    def __hash__(self):
+        """Get the hash of the response item."""
+        return hash((self.message, self.thread))
 
 
 class Agent(KernelBaseModel, ABC):
@@ -75,7 +130,7 @@ class Agent(KernelBaseModel, ABC):
         return data
 
     @abstractmethod
-    async def get_response(self, *args, **kwargs) -> ChatMessageContent:
+    async def get_response(self, *args, **kwargs) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent.
 
         This method returns the final result of the agent's execution
@@ -91,7 +146,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+    def invoke(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
@@ -102,7 +157,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the

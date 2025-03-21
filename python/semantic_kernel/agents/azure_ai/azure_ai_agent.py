@@ -23,13 +23,14 @@ from azure.ai.projects.models import (
 )
 from pydantic import Field
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.agent import Agent, AgentResponseItem, AgentThread
 from semantic_kernel.agents.azure_ai.agent_thread_actions import AgentThreadActions
 from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
@@ -56,6 +57,74 @@ AgentsApiResponseFormatOption = (
 )
 
 _T = TypeVar("_T", bound="AzureAIAgent")
+
+
+@experimental
+class AzureAIAgentThread(AgentThread):
+    """Azure AI Agent Thread class."""
+
+    def __init__(self, client: AIProjectClient, thread_id: str | None = None) -> None:
+        """Initialize the Azure AI Agent Thread.
+
+        Args:
+            client: The Azure AI Project client.
+            thread_id: The ID of the thread
+        """
+        if client is None:
+            raise ValueError("Client cannot be None")
+
+        self._client = client
+        self._is_active = thread_id is not None
+        self._thread_id = thread_id
+
+    @override
+    @property
+    def is_active(self) -> bool:
+        """Indicates whether the thread is currently active."""
+        return self._is_active
+
+    @override
+    @property
+    def id(self) -> str | None:
+        """Returns the ID of the current thread."""
+        return self._thread_id
+
+    @override
+    async def start(self) -> str:
+        """Starts the thread and returns its ID."""
+        if self._is_active:
+            raise RuntimeError("You cannot start this thread, since the thread is already active.")
+
+        response = await self._client.agents.create_thread()
+        self._thread_id = response.id
+        self._is_active = True
+        return self._thread_id
+
+    @override
+    async def end(self) -> None:
+        """Ends the current thread."""
+        if not self._is_active:
+            raise RuntimeError("This thread cannot be ended, since it is not currently active.")
+
+        await self._client.agents.delete_thread(self._thread_id)
+        self._is_active = False
+        self._thread_id = None
+
+    @override
+    async def on_new_message(self, new_message: str | ChatMessageContent) -> None:
+        """Called when a new message has been contributed to the chat."""
+        if not self._is_active:
+            raise RuntimeError("Messages cannot be added to this thread, since the thread is not currently active.")
+
+        if isinstance(new_message, str):
+            new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
+
+        if (
+            not new_message.metadata
+            or "thread_id" not in new_message.metadata
+            or new_message.metadata["thread_id"] != self._thread_id
+        ):
+            await AgentThreadActions.create_message(self._client, self._thread_id, new_message)
 
 
 @experimental
@@ -167,27 +236,15 @@ class AzureAIAgent(Agent):
             **kwargs,
         )
 
-    async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
-        """Add a chat message to the thread.
-
-        Args:
-            thread_id: The ID of the thread
-            message: The chat message to add
-
-        Returns:
-            ThreadMessage | None: The thread message
-        """
-        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
-
     @trace_agent_get_response
     @override
     async def get_response(
         self,
-        thread_id: str,
+        *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
-        # Run-level parameters:
-        *,
         model: str | None = None,
         instructions_override: str | None = None,
         additional_instructions: str | None = None,
@@ -202,8 +259,37 @@ class AzureAIAgent(Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> ChatMessageContent:
-        """Get a response from the agent on a thread."""
+    ) -> AgentResponseItem[ChatMessageContent]:
+        """Get a response from the agent on a thread.
+
+        Args:
+            message: The message to send to the agent.
+            thread: The thread to use for the agent.
+            arguments: The arguments for the agent.
+            kernel: The kernel to use for the agent.
+            model: The model to use for the agent.
+            instructions_override: Instructions to override the default instructions.
+            additional_instructions: Additional instructions for the agent.
+            additional_messages: Additional messages for the agent.
+            tools: Tools for the agent.
+            temperature: Temperature for the agent.
+            top_p: Top p for the agent.
+            max_prompt_tokens: Maximum prompt tokens for the agent.
+            max_completion_tokens: Maximum completion tokens for the agent.
+            truncation_strategy: Truncation strategy for the agent.
+            response_format: Response format for the agent.
+            parallel_tool_calls: Whether to allow parallel tool calls.
+            metadata: Metadata for the agent.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            AgentResponseItem[ChatMessageContent]: The response from the agent.
+        """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread = await self._configure_thread(message, thread)
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -232,27 +318,30 @@ class AzureAIAgent(Agent):
         messages: list[ChatMessageContent] = []
         async for is_visible, message in AgentThreadActions.invoke(
             agent=self,
-            thread_id=thread_id,
+            thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
             if is_visible and message.metadata.get("code") is not True:
+                message.metadata["thread_id"] = thread.id
                 messages.append(message)
 
         if not messages:
             raise AgentInvokeException("No response messages were returned from the agent.")
-        return messages[-1]
+        final_message = messages[-1]
+        await thread.on_new_message(final_message)
+        return AgentResponseItem(message=final_message, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke(
         self,
-        thread_id: str,
+        *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
-        # Run-level parameters:
-        *,
         model: str | None = None,
         instructions_override: str | None = None,
         additional_instructions: str | None = None,
@@ -267,8 +356,37 @@ class AzureAIAgent(Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
-        """Invoke the agent on the specified thread."""
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
+        """Invoke the agent on the specified thread.
+
+        Args:
+            message: The message to send to the agent.
+            thread: The thread to use for the agent.
+            arguments: The arguments for the agent.
+            kernel: The kernel to use for the agent.
+            model: The model to use for the agent.
+            instructions_override: Instructions to override the default instructions.
+            additional_instructions: Additional instructions for the agent.
+            additional_messages: Additional messages for the agent.
+            tools: Tools for the agent.
+            temperature: Temperature for the agent.
+            top_p: Top p for the agent.
+            max_prompt_tokens: Maximum prompt tokens for the agent.
+            max_completion_tokens: Maximum completion tokens for the agent.
+            truncation_strategy: Truncation strategy for the agent.
+            response_format: Response format for the agent.
+            parallel_tool_calls: Whether to allow parallel tool calls.
+            metadata: Metadata for the agent.
+            **kwargs: Additional keyword arguments.
+
+        Yields:
+            AgentResponseItem[ChatMessageContent]: The response from the agent.
+        """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread = await self._configure_thread(message, thread)
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -296,28 +414,30 @@ class AzureAIAgent(Agent):
 
         async for is_visible, message in AgentThreadActions.invoke(
             agent=self,
-            thread_id=thread_id,
+            thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
             if is_visible:
-                yield message
+                message.metadata["thread_id"] = thread.id
+                await thread.on_new_message(message)
+                yield AgentResponseItem(message=message, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke_stream(
         self,
-        thread_id: str,
-        messages: list[ChatMessageContent] | None = None,
-        kernel: Kernel | None = None,
-        arguments: KernelArguments | None = None,
-        # Run-level parameters:
         *,
-        model: str | None = None,
-        instructions_override: str | None = None,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
+        arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ThreadMessageOptions] | None = None,
+        instructions_override: str | None = None,
+        kernel: Kernel | None = None,
+        messages: list[ChatMessageContent] | None = None,
+        model: str | None = None,
         tools: list[ToolDefinition] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
@@ -328,8 +448,13 @@ class AzureAIAgent(Agent):
         parallel_tool_calls: bool | None = None,
         metadata: dict[str, str] | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingChatMessageContent"]:
+    ) -> AsyncIterable[AgentResponseItem["StreamingChatMessageContent"]]:
         """Invoke the agent on the specified thread with a stream of messages."""
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread = await self._configure_thread(message, thread)
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -357,13 +482,15 @@ class AzureAIAgent(Agent):
 
         async for message in AgentThreadActions.invoke_stream(
             agent=self,
-            thread_id=thread_id,
+            thread_id=thread.id,
             messages=messages,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
-            yield message
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+            yield AgentResponseItem(message=message, thread=thread)
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
@@ -383,8 +510,59 @@ class AzureAIAgent(Agent):
         # Distinguish between different scopes
         yield str(self.client.scope)
 
-    async def create_channel(self) -> AgentChannel:
-        """Create a channel."""
-        thread_id = await AgentThreadActions.create_thread(self.client)
+    async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
+        """Create a channel.
 
-        return AzureAIChannel(client=self.client, thread_id=thread_id)
+        Args:
+            thread_id: The ID of the thread to create the channel for. If not provided
+                a new thread will be created.
+        """
+        thread = AzureAIAgentThread(client=self.client, thread_id=thread_id)
+
+        if not thread.is_active:
+            await thread.start()
+
+        return AzureAIChannel(client=self.client, thread_id=thread.id)
+
+    async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
+        """Add a chat message to the thread.
+
+        Args:
+            thread_id: The ID of the thread
+            message: The chat message to add
+
+        Returns:
+            ThreadMessage | None: The thread message
+        """
+        return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
+
+    async def _configure_thread(
+        self,
+        message: ChatMessageContent,
+        thread: AgentThread | None = None,
+    ) -> AgentThread:
+        """Ensures the thread is properly initialized and active, then posts the new message.
+
+        Args:
+            message: The chat message content to post to the thread.
+            thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
+
+        Returns:
+            The active thread (AzureAIAgentThread) after posting the message.
+
+        Raises:
+            AgentInitializationException: If `thread` is not an AzureAIAgentThread.
+        """
+        thread = thread or AzureAIAgentThread(client=self.client)
+
+        if not isinstance(thread, AzureAIAgentThread):
+            raise AgentInitializationException(
+                f"The thread must be an AzureAIAgentThread, but got {type(thread).__name__}."
+            )
+
+        if not thread.is_active:
+            await thread.start()
+
+        await thread.on_new_message(message)
+
+        return thread

@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 class ChatHistoryChannel(AgentChannel, ChatHistory):
     """An AgentChannel specialization for that acts upon a ChatHistoryHandler."""
 
+    thread_id: str
+
     ALLOWED_CONTENT_TYPES: ClassVar[tuple[type, ...]] = (
         ImageContent,
         FunctionCallContent,
@@ -60,7 +62,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         mutated_history = set()
         message_queue: Deque[ChatMessageContent] = deque()
 
-        async for response_message in agent.invoke(self):
+        async for response in agent.invoke(self):
             # Capture all messages that have been included in the mutated history.
             for message_index in range(message_count, len(self.messages)):
                 mutated_message = self.messages[message_index]
@@ -71,9 +73,9 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
             message_count = len(self.messages)
 
             # Avoid duplicating any message included in the mutated history and also returned by the enumeration result.
-            if response_message not in mutated_history:
-                self.messages.append(response_message)
-                message_queue.append(response_message)
+            if response not in mutated_history:
+                self.messages.append(response)
+                message_queue.append(response)
 
             # Dequeue the next message to yield.
             yield_message = message_queue.popleft()

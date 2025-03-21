@@ -6,7 +6,7 @@ import logging
 from azure.ai.projects.models import AzureAISearchTool, ConnectionType
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -69,8 +69,10 @@ async def main() -> None:
             definition=agent_definition,
         )
 
-        # Create a new thread
-        thread = await client.agents.create_thread()
+        # Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         user_inputs = [
             "Which hotels are available with full-sized kitchens in Nashville, TN?",
@@ -79,17 +81,14 @@ async def main() -> None:
 
         try:
             for user_input in user_inputs:
-                # Add the user input as a chat message
-                await agent.add_chat_message(
-                    thread_id=thread.id,
-                    message=user_input,
-                )
                 print(f"# User: '{user_input}'\n")
                 # Invoke the agent for the specified thread
-                async for content in agent.invoke(thread_id=thread.id):
-                    print(f"# Agent: {content.content}\n")
+                async for response in agent.invoke(message=user_input, thread=thread):
+                    print(f"# Agent: {response.message}\n")
+                    thread = response.thread
         finally:
-            await client.agents.delete_thread(thread.id)
+            # Cleanup: Delete the thread and agent
+            await thread.end() if thread else None
             await client.agents.delete_agent(agent.id)
 
         """
