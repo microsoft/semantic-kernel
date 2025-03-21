@@ -14,7 +14,7 @@ public class ChatHistoryAgentThread : AgentThread
 {
     private readonly ChatHistory _chatHistory = new();
     private bool _isActive = false;
-    private string? _threadId = null;
+    private string? _id = null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class.
@@ -23,28 +23,41 @@ public class ChatHistoryAgentThread : AgentThread
     {
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class that resumes an existing thread.
+    /// </summary>
+    /// <param name="chatHistory">An existing chat history to base this thread on.</param>
+    /// <param name="id">The id of the existing thread. If not provided, a new one will be generated.</param>
+    public ChatHistoryAgentThread(ChatHistory chatHistory, string? id = null)
+    {
+        Verify.NotNull(chatHistory);
+        this._chatHistory = chatHistory;
+        this._isActive = true;
+        this._id = id ?? Guid.NewGuid().ToString("N");
+    }
+
     /// <inheritdoc />
     public override bool IsActive => this._isActive;
 
     /// <inheritdoc />
-    public override string? ThreadId => this._threadId;
+    public override string? Id => this._id;
 
     /// <inheritdoc/>
-    public override Task<string> StartThreadAsync(CancellationToken cancellationToken = default)
+    public override Task<string> StartAsync(CancellationToken cancellationToken = default)
     {
         if (this._isActive)
         {
             throw new InvalidOperationException("You cannot start this thread, since the thread is already active.");
         }
 
-        this._threadId = Guid.NewGuid().ToString("N");
+        this._id = Guid.NewGuid().ToString("N");
         this._isActive = true;
 
-        return Task.FromResult(this._threadId);
+        return Task.FromResult(this._id);
     }
 
     /// <inheritdoc/>
-    public override Task EndThreadAsync(CancellationToken cancellationToken = default)
+    public override Task EndAsync(CancellationToken cancellationToken = default)
     {
         if (!this._isActive)
         {
@@ -52,7 +65,7 @@ public class ChatHistoryAgentThread : AgentThread
         }
 
         this._chatHistory.Clear();
-        this._threadId = null;
+        this._id = null;
         this._isActive = false;
 
         return Task.CompletedTask;

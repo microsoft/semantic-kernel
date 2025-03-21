@@ -383,7 +383,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
 
         if (!thread.IsActive)
         {
-            await thread.StartThreadAsync(cancellationToken).ConfigureAwait(false);
+            await thread.StartAsync(cancellationToken).ConfigureAwait(false);
         }
 
         // Notify the thread that a new message is available.
@@ -396,7 +396,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         };
 
         // Invoke the Agent with the thread that we already added our message to.
-        var invokeResults = this.InvokeAsync(thread.ThreadId!, internalOptions, arguments, kernel, cancellationToken);
+        var invokeResults = this.InvokeAsync(thread.Id!, internalOptions, arguments, kernel, cancellationToken);
 
         // Process messages in the background.
         var processNewMessagesTask = ProcessNewMessagesAsync(thread, invokeResults, cancellationToken);
