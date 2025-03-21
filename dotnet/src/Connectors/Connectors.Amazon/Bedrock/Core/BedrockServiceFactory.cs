@@ -59,7 +59,12 @@ internal sealed class BedrockServiceFactory
             case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AmazonService();
+                    return new AmazonTitanService();
+                }
+
+                if (modelName.StartsWith("nova-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new AmazonNovaService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
             case "ANTHROPIC":
@@ -117,7 +122,11 @@ internal sealed class BedrockServiceFactory
             case "AMAZON":
                 if (modelName.StartsWith("titan-", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new AmazonService();
+                    return new AmazonTitanService();
+                }
+                if (modelName.StartsWith("nova-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new AmazonNovaService();
                 }
                 throw new NotSupportedException($"Unsupported Amazon model: {modelId}");
             case "ANTHROPIC":
