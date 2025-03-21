@@ -174,6 +174,7 @@
 
 - [Simple Chatbot](./reasoning/simple_reasoning.py)
 - [Simple Function Calling](./reasoning/simple_reasoning_function_calling.py)
+- [Chat Completion Agent with Reasoning Model](./reasoning/agent_reasoning.py)
 
 ### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/search) services information
 
