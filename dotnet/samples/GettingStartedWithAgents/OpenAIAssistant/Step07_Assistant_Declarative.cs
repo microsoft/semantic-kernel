@@ -1,4 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -31,7 +33,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
               id: gpt-4o-mini
-              configuration:
+              connection:
                 type: openai
                 api_key: {TestConfiguration.OpenAI.ApiKey}
             """;
@@ -53,13 +55,17 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
               id: gpt-4o-mini
-              configuration:
+              connection:
                 type: azure_openai
                 endpoint: {TestConfiguration.AzureOpenAI.Endpoint}
             """;
         OpenAIAssistantAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text) as OpenAIAssistantAgent;
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
+        var kernel = builder.Build();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, kernel) as OpenAIAssistantAgent;
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }

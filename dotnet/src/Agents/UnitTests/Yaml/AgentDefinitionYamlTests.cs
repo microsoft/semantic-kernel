@@ -40,7 +40,7 @@ public class AgentDefinitionYamlTests
                     temperature: 0.4
                     function_choice_behavior:
                         type: auto
-                configuration:
+                connection:
                     type: azureai
             inputs:
                 input1:
@@ -59,9 +59,9 @@ public class AgentDefinitionYamlTests
                 format: liquid
                 parser: semantic-kernel
             tools:
-                - name: tool1
+                - id: tool1
                   type: code_interpreter
-                - name: tool2
+                - id: tool2
                   type: file_search
             """;
 

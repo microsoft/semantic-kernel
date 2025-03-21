@@ -35,7 +35,7 @@ public sealed class AzureAIAgentFactory : KernelAgentFactory
 
         if (agentDefinition.Type?.Equals(AzureAIAgentType, System.StringComparison.Ordinal) ?? false)
         {
-            var projectClient = kernel.GetAIProjectClient(agentDefinition);
+            var projectClient = agentDefinition.GetAIProjectClient(kernel);
 
             AgentsClient client = projectClient.GetAgentsClient();
             Azure.AI.Projects.Agent agent = await client.CreateAgentAsync(

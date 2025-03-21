@@ -12,18 +12,18 @@ namespace Microsoft.SemanticKernel.Agents;
 public static class AgentToolDefinitionExtensions
 {
     /// <summary>
-    /// Get the configuration value for the specified key.
+    /// Get the option value for the specified key.
     /// </summary>
-    /// <typeparam name="T">Expected type for the configuration value.</typeparam>
+    /// <typeparam name="T">Expected type for the option value.</typeparam>
     /// <param name="agentToolDefinition">Agent definition instance.</param>
-    /// <param name="key">Key of the configuration value.</param>
+    /// <param name="key">Key of the option value.</param>
     /// <exception cref="InvalidCastException"></exception>
-    public static T? GetConfiguration<T>(this AgentToolDefinition agentToolDefinition, string key)
+    public static T? GetOption<T>(this AgentToolDefinition agentToolDefinition, string key)
     {
         Verify.NotNull(agentToolDefinition);
         Verify.NotNull(key);
 
-        if (agentToolDefinition.Configuration?.TryGetValue(key, out var value) ?? false)
+        if (agentToolDefinition.Options?.TryGetValue(key, out var value) ?? false)
         {
             if (value == null)
             {
@@ -36,7 +36,7 @@ public static class AgentToolDefinitionExtensions
             }
             catch (InvalidCastException)
             {
-                throw new InvalidCastException($"The configuration key '{key}' value must be of type '{typeof(T?)}' but is '{value.GetType()}'.");
+                throw new InvalidCastException($"The option key '{key}' value must be of type '{typeof(T?)}' but is '{value.GetType()}'.");
             }
         }
 

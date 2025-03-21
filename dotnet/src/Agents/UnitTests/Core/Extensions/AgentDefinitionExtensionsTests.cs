@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
@@ -18,6 +19,7 @@ public class AgentDefinitionExtensionsTests
     public void VerifyGetDefaultKernelArguments()
     {
         // Arrange
+        Kernel kernel = new();
         AgentDefinition agentDefinition = new()
         {
             Inputs = new Dictionary<string, AgentInput>
@@ -28,7 +30,7 @@ public class AgentDefinitionExtensionsTests
         };
 
         // Act
-        var defaultArgs = agentDefinition.GetDefaultKernelArguments();
+        var defaultArgs = agentDefinition.GetDefaultKernelArguments(kernel);
 
         // Assert
         Assert.NotNull(defaultArgs);
@@ -48,8 +50,8 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new AgentToolDefinition { Type = "code_interpreter", Name = "Tool1" },
-                new AgentToolDefinition { Type = "file_search", Name = "Tool2" },
+                new AgentToolDefinition { Type = "code_interpreter", Id = "Tool1" },
+                new AgentToolDefinition { Type = "file_search", Id = "Tool2" },
             ],
         };
 
@@ -70,7 +72,7 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new AgentToolDefinition { Type = "code_interpreter", Name = "Tool1" },
+                new AgentToolDefinition { Type = "code_interpreter", Id = "Tool1" },
             ],
         };
 
@@ -89,7 +91,7 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new AgentToolDefinition { Type = "file_search", Name = "Tool2" },
+                new AgentToolDefinition { Type = "file_search", Id = "Tool2" },
             ],
         };
 

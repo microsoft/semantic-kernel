@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -37,12 +38,12 @@ public sealed class ModelDefinition
     /// <summary>
     /// Gets or sets the options used by the model.
     /// </summary>
-    public PromptExecutionSettings? Options { get; set; }
+    public IDictionary<string, object>? Options { get; set; }
 
     /// <summary>
-    /// Gets or sets the options used by the model.
+    /// Gets or sets the connection used by the model.
     /// </summary>
-    public ModelConfiguration? Configuration { get; set; }
+    public ModelConnection? Connection { get; set; }
 
     #region
     private string? _api;

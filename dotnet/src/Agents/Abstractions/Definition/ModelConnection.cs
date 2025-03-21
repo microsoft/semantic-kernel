@@ -7,31 +7,31 @@ using System.Text.Json.Serialization;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Defines the configuration for a model.
+/// Defines the connection for a model.
 /// </summary>
 [ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
-public sealed class ModelConfiguration
+public sealed class ModelConnection
 {
     /// <summary>
-    /// The type of the model configuration.
+    /// The type of the model connection.
     /// </summary>
     /// <remarks>
     /// Used to identify the type of deployment e.g., azure_openai, openai, ...
-    /// This type will also be used for configuration hosting.
+    /// This type will also be used for connection hosting.
     /// </remarks>
     public string? Type { get; set; }
 
     /// <summary>
-    /// Gets or sets the Service ID of the model configuration.
+    /// Gets or sets the Service ID of the model connection.
     /// </summary>
     public string? ServiceId { get; set; }
 
     /// <summary>
-    /// Extra properties that may be included in the serialized model configuration.
+    /// Extra properties that may be included in the serialized model connection.
     /// </summary>
     /// <remarks>
-    /// Used to store model specific configuration e.g., the deployment name, endpoint, etc.
+    /// Used to store model specific connection e.g., the deployment name, endpoint, etc.
     /// </remarks>
     [JsonExtensionData]
     public IDictionary<string, object?> ExtensionData

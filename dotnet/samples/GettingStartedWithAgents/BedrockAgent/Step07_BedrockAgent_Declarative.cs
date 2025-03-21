@@ -31,7 +31,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
               id: {TestConfiguration.BedrockAgent.FoundationModel}
-              configuration:
+              connection:
                 type: bedrock
                 agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
             """;
@@ -53,7 +53,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             description: Agent with code interpreter tool.
             model:
               id: {TestConfiguration.BedrockAgent.FoundationModel}
-              configuration:
+              connection:
                 type: bedrock
                 agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
             tools:
@@ -77,23 +77,23 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             description: This agent uses the provided functions to answer questions about the menu.
             model:
               id: {TestConfiguration.BedrockAgent.FoundationModel}
-              configuration:
+              connection:
                 type: bedrock
                 agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
             tools:
-              - name: Current
+              - id: Current
                 type: function
                 description: Provides real-time weather information.
-                configuration:
+                options:
                   parameters:
                     - name: location
                       type: string
                       required: true
                       description: The location to get the weather for.
-              - name: Forecast
+              - id: Forecast
                 type: function
                 description: Forecast weather information.
-                configuration:
+                options:
                   parameters:
                     - name: location
                       type: string
@@ -121,13 +121,13 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             description: This agent uses the provided knowledge base to answer questions.
             model:
               id: {TestConfiguration.BedrockAgent.FoundationModel}
-              configuration:
+              connection:
                 type: bedrock
                 agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
             tools:
               - type: knowledge_base
                 description: You will find information here.
-                configuration:
+                options:
                   knowledge_base_id: {TestConfiguration.BedrockAgent.KnowledgeBaseId}
             """;
         BedrockAgentFactory factory = new();

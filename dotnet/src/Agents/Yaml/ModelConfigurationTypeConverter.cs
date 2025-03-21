@@ -10,17 +10,17 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Type converter with custom deserialization for <see cref="ModelConfiguration"/> from YAML.
+/// Type converter with custom deserialization for <see cref="ModelConnection"/> from YAML.
 /// </summary>
 ///  <remarks>
-/// Required to correctly deserialize the <see cref="ModelConfiguration.ExtensionData"/> from YAML.
+/// Required to correctly deserialize the <see cref="ModelConnection.ExtensionData"/> from YAML.
 /// </remarks>
 internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
 {
     /// <inheritdoc/>
     public bool Accepts(Type type)
     {
-        return type == typeof(ModelConfiguration);
+        return type == typeof(ModelConnection);
     }
 
     /// <inheritdoc/>
@@ -33,7 +33,7 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
 
         parser.MoveNext(); // Move to the first property  
 
-        var modelConfiguration = new ModelConfiguration();
+        var modelConfiguration = new ModelConnection();
         while (parser.Current is not MappingEnd)
         {
             var propertyName = parser.Consume<Scalar>().Value;

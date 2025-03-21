@@ -77,7 +77,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
     #region private
     private static string? GetAgentResourceRoleArn(AgentDefinition agentDefinition)
     {
-        return agentDefinition.Model?.Configuration?.ExtensionData.TryGetValue(AgentResourceRoleArn, out var value) ?? false ? value as string : null;
+        return agentDefinition.Model?.Connection?.ExtensionData.TryGetValue(AgentResourceRoleArn, out var value) ?? false ? value as string : null;
     }
 
     #endregion
