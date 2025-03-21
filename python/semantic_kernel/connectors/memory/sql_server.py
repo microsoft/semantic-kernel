@@ -215,23 +215,13 @@ class SqlCommand:
         self.parameters: list[str] = []
 
     def add_parameter(self, value: str) -> None:
-        """Add a parameter to the SqlCommand.
-
-        This adds a single value to the parameters.
-        If the command is set to execute many, it will add the parameters
-        to each of the the many_parameters contents.
-        Or create a new tuple with the value if there are no many_parameters yet.
-        """
+        """Add a parameter to the SqlCommand."""
         if (len(self.parameters) + 1) > SQL_PARAMETER_MAX_COUNT:
             raise VectorStoreOperationException("The maximum number of parameters is 2100.")
         self.parameters.append(value)
 
     def add_parameters(self, values: Sequence[str] | tuple[str, ...]) -> None:
-        """Add multiple parameters to the SqlCommand.
-
-        If the command is set to execute many, it will add a single new tuple to the many_parameters attribute.
-        If the command is not set to execute many, it will add the values to the parameters list.
-        """
+        """Add multiple parameters to the SqlCommand."""
         if (len(self.parameters) + len(values)) > SQL_PARAMETER_MAX_COUNT:
             raise VectorStoreOperationException(f"The maximum number of parameters is {SQL_PARAMETER_MAX_COUNT}.")
         self.parameters.extend(values)
@@ -242,8 +232,8 @@ class SqlCommand:
             logger.debug("This command has parameters.")
         return str(self.query)
 
-    def to_execute(self) -> tuple[str, tuple[Any, ...]]:
-        """Return the command and parameters for execute or execute many."""
+    def to_execute(self) -> tuple[str, tuple[str, ...]]:
+        """Return the command and parameters for execute."""
         return str(self.query), tuple(self.parameters)
 
 
