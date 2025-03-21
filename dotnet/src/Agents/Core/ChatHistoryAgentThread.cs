@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -84,13 +86,13 @@ public class ChatHistoryAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    public Task<ChatHistory> RetrieveCurrentChatHistoryAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(CancellationToken cancellationToken = default)
     {
         if (!this._isActive)
         {
             throw new InvalidOperationException("The chat history for this thread cannot be retrieved, since the thread is not currently active.");
         }
 
-        return Task.FromResult(this._chatHistory);
+        return this._chatHistory.ToAsyncEnumerable();
     }
 }

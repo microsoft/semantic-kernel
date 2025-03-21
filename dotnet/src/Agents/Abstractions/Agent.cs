@@ -143,7 +143,6 @@ public abstract class Agent
     /// Ensures that the thread exists, is of the expected type, and is active, plus adds the provided message to the thread.
     /// </summary>
     /// <typeparam name="TThreadType">The expected type of the thead.</typeparam>
-    /// <typeparam name="TAgentType">The type of the agent.</typeparam>
     /// <param name="message">The message to add to the thread once it is setup.</param>
     /// <param name="thread">The thread to create if it's null, validate it's type if not null, and start if it is not active.</param>
     /// <param name="constructThread">A callback to use to construct the thread if it's null.</param>

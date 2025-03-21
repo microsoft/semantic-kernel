@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.OpenAI.Internal;
@@ -73,7 +74,7 @@ public class OpenAIAssistantAgentThread : AgentThread
         }
 
         await this._client.DeleteThreadAsync(this._id, cancellationToken).ConfigureAwait(false);
-        this._id = null;
+        this._isActive = false;
         this._id = null;
     }
 
@@ -90,5 +91,16 @@ public class OpenAIAssistantAgentThread : AgentThread
         {
             await AssistantThreadActions.CreateMessageAsync(this._client, this._id!, newMessage, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        if (!this._isActive)
+        {
+            throw new InvalidOperationException("The messages for this thread cannot be retrieved, since the thread is not currently active.");
+        }
+
+        return AssistantThreadActions.GetMessagesAsync(this._client, this._id!, MessageCollectionOrder.Ascending, cancellationToken);
     }
 }

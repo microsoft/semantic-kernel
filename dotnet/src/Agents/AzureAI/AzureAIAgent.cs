@@ -118,7 +118,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <returns>An asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        return AgentThreadActions.GetMessagesAsync(this.Client, threadId, cancellationToken);
+        return AgentThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
     }
 
     /// <summary>

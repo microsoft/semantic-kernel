@@ -336,7 +336,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <returns>An asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        return AssistantThreadActions.GetMessagesAsync(this.Client, threadId, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
     }
 
     /// <summary>

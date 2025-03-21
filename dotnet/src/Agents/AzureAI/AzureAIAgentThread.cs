@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
@@ -90,5 +91,16 @@ public class AzureAIAgentThread : AgentThread
         {
             await AgentThreadActions.CreateMessageAsync(this._client, this._id!, newMessage, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        if (!this._isActive)
+        {
+            throw new InvalidOperationException("The messages for this thread cannot be retrieved, since the thread is not currently active.");
+        }
+
+        return AgentThreadActions.GetMessagesAsync(this._client, this._id!, ListSortOrder.Ascending, cancellationToken);
     }
 }

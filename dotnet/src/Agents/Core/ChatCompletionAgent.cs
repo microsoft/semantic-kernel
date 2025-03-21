@@ -75,7 +75,11 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             cancellationToken).ConfigureAwait(false);
 
         // Invoke Chat Completion with the updated chat history.
-        var chatHistory = await chatHistoryAgentThread.RetrieveCurrentChatHistoryAsync(cancellationToken).ConfigureAwait(false);
+        var chatHistory = new ChatHistory();
+        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            chatHistory.Add(existingMessage);
+        }
         string agentName = this.GetDisplayName();
         var invokeResults = this.InternalInvokeAsync(
             agentName,
@@ -126,7 +130,11 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             cancellationToken).ConfigureAwait(false);
 
         // Invoke Chat Completion with the updated chat history.
-        var chatHistory = await chatHistoryAgentThread.RetrieveCurrentChatHistoryAsync(cancellationToken).ConfigureAwait(false);
+        var chatHistory = new ChatHistory();
+        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
+        {
+            chatHistory.Add(existingMessage);
+        }
         string agentName = this.GetDisplayName();
         var invokeResults = this.InternalInvokeStreamingAsync(
             agentName,

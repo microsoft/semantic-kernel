@@ -86,9 +86,10 @@ internal static class AgentThreadActions
     /// </summary>
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="messageOrder">The order to return messages in.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, ListSortOrder? messageOrder, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
@@ -96,7 +97,7 @@ internal static class AgentThreadActions
         PageableList<ThreadMessage>? messages = null;
         do
         {
-            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
+            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, messageOrder ?? ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
             foreach (ThreadMessage message in messages)
             {
                 lastId = message.Id;
