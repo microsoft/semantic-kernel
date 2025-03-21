@@ -337,6 +337,11 @@ class TestSqlServerStore:
             collection_names = await store.list_collection_names()
             assert collection_names == ["Test1", "Test2"]
 
+    async def test_no_connection(self, sql_server_unit_test_env):
+        store = SqlServerStore()
+        with raises(VectorStoreOperationException):
+            await store.list_collection_names()
+
 
 class TestSqlServerCollection:
     @mark.parametrize("exclude_list", ["SQL_SERVER_CONNECTION_STRING"], indirect=True)
@@ -525,3 +530,24 @@ class TestSqlServerCollection:
         mock_connection.cursor.return_value.__enter__.return_value.execute.assert_called_with(
             "DROP TABLE IF EXISTS [dbo].[test] ;", ()
         )
+
+    async def test_no_connection(self, sql_server_unit_test_env, data_model_definition):
+        collection = SqlServerCollection(
+            collection_name="test",
+            data_model_type=dict,
+            data_model_definition=data_model_definition,
+        )
+        with raises(VectorStoreOperationException):
+            await collection.create_collection()
+        with raises(VectorStoreOperationException):
+            await collection.delete_collection()
+        with raises(VectorStoreOperationException):
+            await collection.does_collection_exist()
+        with raises(VectorStoreOperationException):
+            await collection.upsert({"id": "1", "content": "test", "vector": [0.1, 0.2, 0.3, 0.4, 0.5]})
+        with raises(VectorStoreOperationException):
+            await collection.get("1")
+        with raises(VectorStoreOperationException):
+            await collection.delete("1")
+        with raises(VectorStoreOperationException):
+            await collection.vectorized_search([0.1, 0.2, 0.3, 0.4, 0.5], VectorSearchOptions())
