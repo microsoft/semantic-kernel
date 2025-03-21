@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -18,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+public sealed class InMemoryVectorStoreRecordCollection<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
 {

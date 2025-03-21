@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -26,7 +27,7 @@ public static class InMemoryVectorStoreExtensions
     /// <param name="collectionName">The collection name.</param>
     /// <param name="stream">The stream to write the serialized JSON to.</param>
     /// <param name="jsonSerializerOptions">The JSON serializer options to use.</param>
-    public static async Task SerializeCollectionAsJsonAsync<TKey, TRecord>(
+    public static async Task SerializeCollectionAsJsonAsync<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord>(
         this InMemoryVectorStore vectorStore,
         string collectionName,
         Stream stream,
@@ -55,7 +56,7 @@ public static class InMemoryVectorStoreExtensions
     /// <typeparam name="TRecord">Type of the record.</typeparam>
     /// <param name="vectorStore">Instance of <see cref="InMemoryVectorStore"/> used to retrieve the collection.</param>
     /// <param name="stream">The stream to read the serialized JSON from.</param>
-    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, TRecord>(
+    public static async Task<IVectorStoreRecordCollection<TKey, TRecord>?> DeserializeCollectionFromJsonAsync<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord>(
         this InMemoryVectorStore vectorStore,
         Stream stream)
         where TKey : notnull
