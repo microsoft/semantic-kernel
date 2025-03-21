@@ -6,12 +6,20 @@ using Resources;
 
 namespace ChatCompletion;
 
-// This example shows how to use GPT Vision model with different content types (text and image).
+/// <summary>
+/// This sample shows how to use llama3.2-vision model with different content types (text and image).
+/// </summary>
 public class Ollama_ChatCompletionWithVision(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// This sample uses a local image file and sends it to the model along
+    /// with a text message the get the description of the image.
+    /// </summary>
     [Fact]
-    public async Task LocalImageAsync()
+    public async Task GetLocalImageDescription()
     {
+        Console.WriteLine($"======== Ollama - {nameof(GetLocalImageDescription)} ========");
+
         var imageBytes = await EmbeddedResource.ReadAllAsync("sample_image.jpg");
 
         var kernel = Kernel.CreateBuilder()
