@@ -76,6 +76,7 @@ async def main() -> None:
                         print(f"# {response.message.role}: ", end="", flush=True)
                         first_chunk = False
                     print(response.message.content, end="", flush=True)
+                    thread = response.thread
                 print()
         finally:
             # Cleanup: Delete the thread and agent

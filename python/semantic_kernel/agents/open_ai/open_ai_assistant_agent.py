@@ -35,6 +35,7 @@ from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
@@ -55,7 +56,6 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
@@ -707,7 +707,7 @@ class OpenAIAssistantAgent(Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[AgentResponseItem["StreamingChatMessageContent"]]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent.
 
         Args:
@@ -775,7 +775,6 @@ class OpenAIAssistantAgent(Agent):
             messages=messages,
             **run_level_params,  # type: ignore
         ):
-            await thread.on_new_message(message)
             yield AgentResponseItem(message=message, thread=thread)
 
     # endregion

@@ -31,7 +31,7 @@ async def main():
     with open(pdf_file_path, "rb") as file:
         file = await client.files.create(file=file, purpose="assistants")
 
-    vector_store = await client.beta.vector_stores.create(
+    vector_store = await client.vector_stores.create(
         name="step4_assistant_file_search",
         file_ids=[file.id],
     )
@@ -69,7 +69,7 @@ async def main():
     finally:
         # 9. Clean up the resources
         await client.files.delete(file.id)
-        await client.beta.vector_stores.delete(vector_store.id)
+        await client.vector_stores.delete(vector_store.id)
         await client.beta.threads.delete(thread.id)
         await client.beta.assistants.delete(agent.id)
 

@@ -15,6 +15,7 @@ from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -220,6 +221,7 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args):
     definition.top_p = 0.9
     definition.metadata = {}
     agent = AzureAssistantAgent(client=client, definition=definition)
+    mock_thread = AsyncMock(spec=AssistantThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):
@@ -233,7 +235,7 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args):
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke("thread_id", **(kwargs or {})):
+        async for item in agent.invoke(message="test", thread=mock_thread, **(kwargs or {})):
             results.append(item)
 
     assert len(results) == 1
@@ -254,10 +256,11 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
     definition.description = "desc"
     definition.instructions = "test agent"
     agent = AzureAssistantAgent(client=client, definition=definition)
+    mock_thread = AsyncMock(spec=AssistantThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):
-        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+        yield ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
 
     kwargs = None
     if include_args:
@@ -267,7 +270,7 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke_stream("thread_id", **(kwargs or {})):
+        async for item in agent.invoke_stream(message="test", thread=mock_thread, **(kwargs or {})):
             results.append(item)
 
     assert len(results) == 1

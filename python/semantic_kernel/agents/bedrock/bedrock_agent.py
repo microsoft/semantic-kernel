@@ -54,12 +54,15 @@ logger = logging.getLogger(__name__)
 class BedrockAgentThread(AgentThread):
     """Bedrock Agent Thread class."""
 
-    def __init__(self, thread_id: str | None = None) -> None:
+    def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
         """Initialize the Azure AI Agent Thread.
 
         Args:
+            chat_history: The chat history for the thread. If None, a new
+                ChatHistory instance will be created.
             thread_id: The ID of the thread
         """
+        self._chat_history = chat_history or ChatHistory()
         self._is_active = thread_id is not None
         self._thread_id = thread_id
 
@@ -108,8 +111,17 @@ class BedrockAgentThread(AgentThread):
             or "thread_id" not in new_message.metadata
             or new_message.metadata["thread_id"] != self._thread_id
         ):
-            # What do we do here...?
-            return
+            self._chat_history.add_message(new_message)
+
+    async def retrieve_current_chat_history(self) -> ChatHistory:
+        """Retrieve the current chat history."""
+        if not self._is_active:
+            raise RuntimeError("Cannot retrieve chat history, since the thread is not currently active.")
+        return self._chat_history
+
+    def update_chat_history(self, messages: list[ChatMessageContent]) -> None:
+        """Update the chat history with the given messages."""
+        self._chat_history.messages = messages
 
 
 @experimental
@@ -259,18 +271,6 @@ class BedrockAgent(BedrockAgentBase):
         await bedrock_agent.prepare_agent_and_wait_until_prepared()
 
         return bedrock_agent
-
-    @classmethod
-    def create_session_id(cls) -> str:
-        """Create a new session identifier.
-
-        It is the caller's responsibility to maintain the session ID
-        to continue the session with the agent.
-
-        Find the requirement for the session identifier here:
-        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeAgent.html#API_agent-runtime_InvokeAgent_RequestParameters
-        """
-        return str(uuid.uuid4())
 
     # endregion
 
@@ -676,6 +676,31 @@ class BedrockAgent(BedrockAgentBase):
             for item in chat_message.items
             if isinstance(item, FunctionResultContent)
         ]
+
+    async def create_channel(
+        self, chat_history: ChatHistory | None = None, thread_id: str | None = None
+    ) -> AgentChannel:
+        """Create a ChatHistoryChannel.
+
+        Args:
+            chat_history: The chat history for the channel. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+
+        Returns:
+            An instance of AgentChannel.
+        """
+        from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgentThread
+
+        BedrockAgentChannel.model_rebuild()
+
+        thread = BedrockAgentThread(chat_history=chat_history, thread_id=thread_id)
+
+        if not thread.is_active:
+            await thread.start()
+
+        chat_history = await thread.retrieve_current_chat_history()
+
+        return BedrockAgentChannel(messages=chat_history.messages, thread=thread)
 
     async def _configure_thread(
         self,

@@ -450,16 +450,10 @@ async def test_bedrock_agent_get_response(
         agent = BedrockAgent(bedrock_agent_model_with_id)
 
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
-        response = await agent.get_response("test_session_id", "test_input_text")
-        assert response.content == simple_response
+        response = await agent.get_response(input_text="test_input_text")
+        assert response.message.content == simple_response
 
-        mock_invoke_agent.assert_called_once_with(
-            "test_session_id",
-            "test_input_text",
-            None,
-            streamingConfigurations={"streamFinalResponse": False},
-            sessionState={},
-        )
+        mock_invoke_agent.assert_called_once()
 
 
 # Test case to verify the `get_response` method of BedrockAgent

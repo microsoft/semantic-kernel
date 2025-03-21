@@ -3,9 +3,9 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.agents import ChatCompletionAgent, ChatCompletionAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory, ChatMessageContent, FunctionCallContent, FunctionResultContent
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.filters import AutoFunctionInvocationContext
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
@@ -77,8 +77,8 @@ async def main():
         instructions="Answer questions about the menu.",
     )
 
-    # 2. Define the chat history
-    chat_history = ChatHistory()
+    # 2. Define the thread
+    thread: ChatCompletionAgentThread = None
 
     user_inputs = [
         "Hello",
@@ -88,22 +88,18 @@ async def main():
     ]
 
     for user_input in user_inputs:
-        # 3. Add the user message to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: '{user_input}'")
-
-        # 4. Get the response from the agent
-        content = await agent.get_response(chat_history)
-        # Don't add the message if it is a function call or result
-        if not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in content.items):
-            chat_history.add_message(content)
-        _write_content(content)
+        # 3. Get the response from the agent
+        response = await agent.get_response(message=user_input, thread=thread)
+        thread = response.thread
+        _write_content(response.message)
 
     print("================================")
     print("CHAT HISTORY")
     print("================================")
 
-    # Print out the chat history to view the different types of messages
+    # 4. Print out the chat history to view the different types of messages
+    chat_history = await thread.retrieve_current_chat_history()
     for message in chat_history.messages:
         _write_content(message)
 

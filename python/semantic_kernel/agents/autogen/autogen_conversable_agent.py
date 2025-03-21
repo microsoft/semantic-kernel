@@ -164,7 +164,7 @@ class AutoGenConversableAgent(Agent):
 
         logger.info("Called AutoGenConversableAgent.a_generate_reply.")
 
-        await self._create_reply_content(reply, thread)
+        return await self._create_reply_content(reply, thread)
 
     @trace_agent_invocation
     @override
@@ -240,7 +240,7 @@ class AutoGenConversableAgent(Agent):
 
             logger.info("Called AutoGenConversableAgent.a_generate_reply.")
 
-            await self._create_reply_content(reply, thread)
+            yield await self._create_reply_content(reply, thread)
 
     @override
     def invoke_stream(

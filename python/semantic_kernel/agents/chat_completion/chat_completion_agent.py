@@ -7,6 +7,7 @@ from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -70,6 +71,10 @@ class ChatCompletionAgentThread(AgentThread):
         """Returns the ID of the current thread."""
         return self._thread_id
 
+    def __len__(self) -> int:
+        """Returns the length of the chat history."""
+        return len(self._chat_history)
+
     @override
     async def start(self) -> str:
         """Starts the thread and returns its ID."""
@@ -113,6 +118,14 @@ class ChatCompletionAgentThread(AgentThread):
         if not self._is_active:
             raise RuntimeError("Cannot retrieve chat history, since the thread is not currently active.")
         return self._chat_history
+
+    async def reduce(self) -> ChatHistory | None:
+        """Reduce the chat history to a smaller size."""
+        if not self._is_active:
+            raise RuntimeError("Cannot reduce chat history, since the thread is not currently active.")
+        if not isinstance(self._chat_history, ChatHistoryReducer):
+            return None
+        return await self._chat_history.reduce()
 
 
 @release_candidate
@@ -224,6 +237,10 @@ class ChatCompletionAgent(Agent):
         Returns:
             An instance of AgentChannel.
         """
+        from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgentThread
+
+        ChatHistoryChannel.model_rebuild()
+
         thread = ChatCompletionAgentThread(chat_history=chat_history, thread_id=thread_id)
 
         if not thread.is_active:
@@ -231,7 +248,7 @@ class ChatCompletionAgent(Agent):
 
         chat_history = await thread.retrieve_current_chat_history()
 
-        return ChatHistoryChannel(messages=chat_history.messages, thread_id=thread.id)
+        return ChatHistoryChannel(messages=chat_history.messages, thread=thread)
 
     @trace_agent_get_response
     @override
@@ -387,7 +404,7 @@ class ChatCompletionAgent(Agent):
                 response_builder.append(response.content)
                 yield AgentResponseItem(message=response, thread=thread)
 
-        await self._capture_mutated_messages(chat_history, agent_chat_history, message_count_before_completion)
+        await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
         if role != AuthorRole.TOOL:
             await thread.on_new_message(
                 ChatMessageContent(

@@ -4,7 +4,7 @@ import asyncio
 import logging
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
 from semantic_kernel.contents import StreamingFileReferenceContent
 
 logging.basicConfig(level=logging.ERROR)
@@ -99,8 +99,7 @@ async def main():
         definition=definition,
     )
 
-    print("Creating thread...")
-    thread = await client.beta.threads.create()
+    thread: AssistantThread = None
 
     try:
         is_complete: bool = False
@@ -114,30 +113,33 @@ async def main():
                 is_complete = True
                 break
 
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
-
             is_code = False
             last_role = None
-            async for response in agent.invoke_stream(thread_id=thread.id):
-                current_is_code = response.metadata.get("code", False)
+            async for response in agent.invoke_stream(message=user_input, thread=thread):
+                current_is_code = response.message.metadata.get("code", False)
 
                 if current_is_code:
                     if not is_code:
                         print("\n\n```python")
                         is_code = True
-                    print(response.content, end="", flush=True)
+                    print(response.message.content, end="", flush=True)
                 else:
                     if is_code:
                         print("\n```")
                         is_code = False
                         last_role = None
-                    if hasattr(response, "role") and response.role is not None and last_role != response.role:
-                        print(f"\n# {response.role}: ", end="", flush=True)
-                        last_role = response.role
-                    print(response.content, end="", flush=True)
+                    if (
+                        hasattr(response.message, "role")
+                        and response.message.role is not None
+                        and last_role != response.message.role
+                    ):
+                        print(f"\n# {response.message.role}: ", end="", flush=True)
+                        last_role = response.message.role
+                    print(response.message.content, end="", flush=True)
                 file_ids.extend([
-                    item.file_id for item in response.items if isinstance(item, StreamingFileReferenceContent)
+                    item.file_id for item in response.message.items if isinstance(item, StreamingFileReferenceContent)
                 ])
+                thread = response.thread
             if is_code:
                 print("```\n")
             print()
@@ -148,7 +150,7 @@ async def main():
     finally:
         print("\nCleaning up resources...")
         [await client.files.delete(file_id) for file_id in file_ids]
-        await client.beta.threads.delete(thread.id)
+        await thread.end() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

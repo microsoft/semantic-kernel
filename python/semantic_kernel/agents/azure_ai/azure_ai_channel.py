@@ -30,7 +30,7 @@ class AzureAIChannel(AgentChannel):
 
         Args:
             client: The AzureAI Project client.
-            thread_id: The thread ID.
+            thread_id: The thread ID for the channel.
         """
         self.client = client
         self.thread_id = thread_id
