@@ -100,7 +100,8 @@ internal static class VectorStoreRecordMapping
     /// <param name="requiredEnumerable">The type to convert to.</param>
     /// <returns>The new enumerable in the required type.</returns>
     /// <exception cref="NotSupportedException">Thrown when a target type is requested that is not supported.</exception>
-    public static object? CreateEnumerable<T>(IEnumerable<T> input, Type requiredEnumerable)
+    [RequiresDynamicCode("Calls System.Collections.ArrayList.ToArray(Type)")]
+    public static object? CreateEnumerable<T>(IEnumerable<T> input, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type requiredEnumerable)
     {
         if (input is null)
         {
