@@ -51,7 +51,7 @@ This section explains how to manage conversation context using the `AgentThread`
 When an agent is invoked without a provided thread, it creates a new thread to manage the conversation context automatically.
 
 **Manual Thread Management:**  
-You can explicitly create a specific implementation for the desired `Agent` that derives from the base clas `AgentThread`. You have the option to assign a `thread_id` to manage the conversation session. This is particularly useful in complex scenarios or multi-user environments.
+You can explicitly create a specific implementation for the desired `Agent` that derives from the base class `AgentThread`. You have the option to assign a `thread_id` to manage the conversation session. This is particularly useful in complex scenarios or multi-user environments.
 
 ## Code Example
 
