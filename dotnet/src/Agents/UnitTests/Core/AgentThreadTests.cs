@@ -141,7 +141,7 @@ public class AgentThreadTests
         Assert.Equal(0, thread.OnNewMessageInternalAsyncCount);
     }
 
-    private class TestAgentThread : AgentThread
+    private sealed class TestAgentThread : AgentThread
     {
         public int CreateInternalAsyncCount { get; private set; }
         public int DeleteInternalAsyncCount { get; private set; }
