@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Optional parameters for agent invocation.
 /// </summary>
-public class AgentInvokeOptions
+public sealed class AgentInvokeOptions
 {
     /// <summary>
     /// Gets or sets optional arguments to pass to the agent's invocation, including any <see cref="PromptExecutionSettings"/>

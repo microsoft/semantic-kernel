@@ -37,9 +37,9 @@ public sealed class ChatHistoryAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    protected override Task<string> CreateInternalAsync(CancellationToken cancellationToken)
+    protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {
-        return Task.FromResult(Guid.NewGuid().ToString("N"));
+        return Task.FromResult<string?>(Guid.NewGuid().ToString("N"));
     }
 
     /// <inheritdoc />
