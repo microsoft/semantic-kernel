@@ -18,6 +18,10 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 public sealed class AzureAIAgentThread : AgentThread
 {
     private readonly AgentsClient _client;
+    private readonly IEnumerable<ThreadMessageOptions>? _messages;
+    private readonly ToolResources? _toolResources;
+    private readonly IReadOnlyDictionary<string, string>? _metadata;
+
     private string? _id = null;
     private bool _isDeleted = false;
 
@@ -25,11 +29,25 @@ public sealed class AzureAIAgentThread : AgentThread
     /// Initializes a new instance of the <see cref="AzureAIAgentThread"/> class.
     /// </summary>
     /// <param name="client">The agents client to use for interacting with threads.</param>
-    public AzureAIAgentThread(AgentsClient client)
+    /// <param name="messages">The initial messages to associate with the new thread after it is created.</param>
+    /// <param name="toolResources">
+    /// A set of resources that are made available to the agent's tools in this thread. The resources are specific to the
+    /// type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires
+    /// a list of vector store IDs.
+    /// </param>
+    /// <param name="metadata">Metadata to attach to the underlying thread when it is created..</param>
+    public AzureAIAgentThread(
+        AgentsClient client,
+        IEnumerable<ThreadMessageOptions>? messages = null,
+        ToolResources? toolResources = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
     {
         Verify.NotNull(client);
 
         this._client = client;
+        this._messages = messages;
+        this._toolResources = toolResources;
+        this._metadata = metadata;
     }
 
     /// <summary>
@@ -62,7 +80,11 @@ public sealed class AzureAIAgentThread : AgentThread
             return this._id;
         }
 
-        var assistantThreadResponse = await this._client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var assistantThreadResponse = await this._client.CreateThreadAsync(
+            this._messages,
+            this._toolResources,
+            this._metadata,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
         this._id = assistantThreadResponse.Value.Id;
 
         return assistantThreadResponse.Value.Id;

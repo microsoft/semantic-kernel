@@ -17,6 +17,8 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 public sealed class OpenAIAssistantAgentThread : AgentThread
 {
     private readonly AssistantClient _client;
+    private readonly ThreadCreationOptions? _options;
+
     private string? _id = null;
     private bool _isDeleted = false;
 
@@ -24,11 +26,13 @@ public sealed class OpenAIAssistantAgentThread : AgentThread
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentThread"/> class.
     /// </summary>
     /// <param name="client">The assistant client to use for interacting with threads.</param>
-    public OpenAIAssistantAgentThread(AssistantClient client)
+    /// <param name="options">The options to use when creating the thread.</param>
+    public OpenAIAssistantAgentThread(AssistantClient client, ThreadCreationOptions? options = null)
     {
         Verify.NotNull(client);
 
         this._client = client;
+        this._options = options;
     }
 
     /// <summary>
@@ -61,7 +65,7 @@ public sealed class OpenAIAssistantAgentThread : AgentThread
             return this._id;
         }
 
-        var assistantThreadResponse = await this._client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var assistantThreadResponse = await this._client.CreateThreadAsync(this._options, cancellationToken: cancellationToken).ConfigureAwait(false);
         this._id = assistantThreadResponse.Value.Id;
 
         return assistantThreadResponse.Value.Id;
