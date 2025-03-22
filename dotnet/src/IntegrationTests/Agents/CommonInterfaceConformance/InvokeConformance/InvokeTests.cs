@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeConformance;
 
 /// <summary>
 /// Base test class for testing the <see cref="Agent.InvokeAsync(ChatMessageContent, AgentThread?, AgentInvokeOptions?, System.Threading.CancellationToken)"/> method of agents.

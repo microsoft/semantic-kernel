@@ -33,4 +33,10 @@ public class AgentResponseItem<TMessage>
     /// Gets the conversation thread associated with the response.
     /// </summary>
     public AgentThread Thread => this._thread;
+
+    /// <summary>
+    /// Implicitly converts an <see cref="AgentResponseItem{T}"/> to a <see cref="ChatMessageContent"/> or <see cref="StreamingChatMessageContent"/>.
+    /// </summary>
+    /// <param name="responseItem"></param>
+    public static implicit operator TMessage(AgentResponseItem<TMessage> responseItem) => responseItem.Message;
 }
