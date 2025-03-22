@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock, patch
 from openai import AsyncOpenAI
 from openai.types.beta.assistant import Assistant
 
-from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgentThread
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread, OpenAIAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
 
@@ -28,7 +28,7 @@ async def test_open_ai_assistant_agent_invoke(mock_tracer, chat_history, openai_
     definition.metadata = {}
     open_ai_assistant_agent = OpenAIAssistantAgent(client=client, definition=definition)
 
-    thread = AsyncMock(spec=AzureAIAgentThread)
+    thread = AsyncMock(spec=AssistantThread)
 
     async def fake_invoke(*args, **kwargs):
         yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
@@ -60,10 +60,10 @@ async def test_open_ai_assistant_agent_invoke_stream(mock_tracer, chat_history, 
     definition.metadata = {}
     open_ai_assistant_agent = OpenAIAssistantAgent(client=client, definition=definition)
 
-    thread = AsyncMock(spec=AzureAIAgentThread)
+    thread = AsyncMock(spec=AssistantThread)
 
     async def fake_invoke(*args, **kwargs):
-        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+        yield StreamingChatMessageContent(role=AuthorRole.ASSISTANT, choice_index=0, content="content")
 
     # Act
     with patch(
