@@ -30,8 +30,8 @@ public abstract class AgentThread
     /// Creates the thread and returns the thread id.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The id of the new thread.</returns>
-    public virtual async Task<string> CreateAsync(CancellationToken cancellationToken = default)
+    /// <returns>A task that completes when the thread has been created.</returns>
+    public virtual async Task CreateAsync(CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
         {
@@ -40,11 +40,10 @@ public abstract class AgentThread
 
         if (this.Id is not null)
         {
-            return this.Id;
+            return;
         }
 
         this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-        return this.Id;
     }
 
     /// <summary>
@@ -98,8 +97,8 @@ public abstract class AgentThread
     /// Checks have already been completed in the <see cref="CreateAsync"/> method to ensure that the thread can be created.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The id of the thread that was created.</returns>
-    protected abstract Task<string> CreateInternalAsync(CancellationToken cancellationToken);
+    /// <returns>The id of the thread that was created if one is available.</returns>
+    protected abstract Task<string?> CreateInternalAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Deletes the current thread.
