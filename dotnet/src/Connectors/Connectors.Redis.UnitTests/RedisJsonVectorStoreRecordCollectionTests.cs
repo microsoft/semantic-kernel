@@ -525,9 +525,9 @@ public class RedisJsonVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(MultiPropsModel.Key), typeof(string)),
+                new VectorStoreRecordDataProperty(nameof(MultiPropsModel.Data1), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(MultiPropsModel.Vector1), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
             }
         };
 

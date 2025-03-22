@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -22,27 +23,20 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         TVector vector,
         string collectionName,
         string vectorPropertyName,
-        string keyPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
         VectorSearchOptions<TRecord> searchOptions,
-        IReadOnlyDictionary<string, string> storagePropertyNames,
-        IReadOnlyList<string> vectorPropertyStorageNames,
-        IReadOnlyList<string> dataPropertyStorageNames)
+        VectorStoreRecordModel model)
     {
         var vectorsQuery = searchOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
+            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
             string.Empty;
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
-                legacyFilter,
-                jsonSerializerOptions,
-                keyPropertyName,
-                storagePropertyNames),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(legacyFilter, jsonSerializerOptions, model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -61,7 +55,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
                 vector: {{vectorArray}}
               }
             ) {
-              {{string.Join(" ", dataPropertyStorageNames)}}
+              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
                 {{WeaviateConstants.ReservedKeyPropertyName}}
                 {{WeaviateConstants.ScorePropertyName}}
@@ -81,29 +75,22 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         TVector vector,
         string keywords,
         string collectionName,
-        string vectorPropertyName,
-        string keyPropertyName,
-        string textPropertyName,
+        VectorStoreRecordModel model,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        VectorStoreRecordDataPropertyModel textProperty,
         JsonSerializerOptions jsonSerializerOptions,
-        HybridSearchOptions<TRecord> searchOptions,
-        IReadOnlyDictionary<string, string> storagePropertyNames,
-        IReadOnlyList<string> vectorPropertyStorageNames,
-        IReadOnlyList<string> dataPropertyStorageNames)
+        HybridSearchOptions<TRecord> searchOptions)
     {
         var vectorsQuery = searchOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
+            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
             string.Empty;
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(
-                legacyFilter,
-                jsonSerializerOptions,
-                keyPropertyName,
-                storagePropertyNames),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, storagePropertyNames),
+            { OldFilter: VectorSearchFilter legacyFilter } => BuildLegacyFilter(legacyFilter, jsonSerializerOptions, model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new WeaviateFilterTranslator().Translate(newFilter, model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -119,13 +106,13 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               {{(filter is null ? "" : "where: " + filter)}}
               hybrid: {
                 query: "{{keywords}}"
-                properties: ["{{textPropertyName}}"]
-                targetVectors: ["{{vectorPropertyName}}"]
+                properties: ["{{textProperty.StorageName}}"]
+                targetVectors: ["{{vectorProperty.StorageName}}"]
                 vector: {{vectorArray}}
                 fusionType: rankedFusion
               }
             ) {
-              {{string.Join(" ", dataPropertyStorageNames)}}
+              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
                 {{WeaviateConstants.ReservedKeyPropertyName}}
                 {{WeaviateConstants.HybridScorePropertyName}}
@@ -147,8 +134,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     private static string BuildLegacyFilter(
         VectorSearchFilter? vectorSearchFilter,
         JsonSerializerOptions jsonSerializerOptions,
-        string keyPropertyName,
-        IReadOnlyDictionary<string, string> storagePropertyNames)
+        VectorStoreRecordModel model)
     {
         const string EqualOperator = "Equal";
         const string ContainsAnyOperator = "ContainsAny";
@@ -192,18 +178,12 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
                         nameof(AnyTagEqualToFilterClause)])}");
             }
 
-            string? storagePropertyName;
-
-            if (propertyName.Equals(keyPropertyName, StringComparison.Ordinal))
-            {
-                storagePropertyName = WeaviateConstants.ReservedKeyPropertyName;
-            }
-            else if (!storagePropertyNames.TryGetValue(propertyName, out storagePropertyName))
+            if (!model.PropertyMap.TryGetValue(propertyName, out var property))
             {
                 throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            var operand = $$"""{ path: ["{{storagePropertyName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
+            var operand = $$"""{ path: ["{{property.StorageName}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
 
             operands.Add(operand);
         }

@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -14,6 +15,19 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 internal static class QdrantVectorStoreRecordFieldMapping
 {
+    public static VectorStoreRecordModelBuildingOptions GetModelBuildOptions(bool hasNamedVectors)
+        => new()
+        {
+            RequiresAtLeastOneVector = !hasNamedVectors,
+            SupportsMultipleKeys = false,
+            SupportsMultipleVectors = hasNamedVectors,
+
+            SupportedKeyPropertyTypes = [typeof(ulong), typeof(Guid)],
+            SupportedDataPropertyTypes = QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes,
+            SupportedEnumerableDataPropertyTypes = QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes,
+            SupportedVectorPropertyTypes = QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes
+        };
+
     /// <summary>A set of types that data properties on the provided model may have.</summary>
     public static readonly HashSet<Type> s_supportedDataTypes =
     [
@@ -22,12 +36,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
         typeof(long),
         typeof(double),
         typeof(float),
-        typeof(bool),
-        typeof(int?),
-        typeof(long?),
-        typeof(double?),
-        typeof(float?),
-        typeof(bool?)
+        typeof(bool)
     ];
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>

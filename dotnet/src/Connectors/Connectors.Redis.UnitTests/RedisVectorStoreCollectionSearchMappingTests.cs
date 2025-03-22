@@ -2,14 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
-
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
 /// Contains tests for the <see cref="RedisVectorStoreCollectionSearchMapping"/> class.
@@ -66,17 +64,18 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var storagePropertyNames = new Dictionary<string, string>()
-        {
-            { "Vector", "storage_Vector" },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+        ]);
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, new VectorSearchOptions<DummyType>(), storagePropertyNames, storagePropertyNames.Values.Single(), null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, new VectorSearchOptions<DummyType>(), model, model.VectorProperty, null);
 
         // Assert.
         Assert.NotNull(query);
-        Assert.Equal("*=>[KNN 3 @storage_Vector $embedding AS vector_score]", query.QueryString);
+        Assert.Equal("*=>[KNN 3 @Vector $embedding AS vector_score]", query.QueryString);
         Assert.Equal("vector_score", query.SortBy);
         Assert.True(query.WithScores);
         Assert.Equal(2, query.dialect);
@@ -89,107 +88,25 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
         var vectorSearchOptions = new VectorSearchOptions<DummyType> { Top = 5, Skip = 3 };
-        var storagePropertyNames = new Dictionary<string, string>()
-        {
-            { "Vector", "storage_Vector" },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "storage_Vector" }
+        ]);
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, storagePropertyNames, storagePropertyNames.Values.Single(), selectFields);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, model, model.VectorProperty, selectFields);
 
         // Assert.
         Assert.NotNull(query);
         Assert.Equal("*=>[KNN 8 @storage_Vector $embedding AS vector_score]", query.QueryString);
     }
 
-    [Theory]
-    [InlineData("stringEquality")]
-    [InlineData("intEquality")]
-    [InlineData("longEquality")]
-    [InlineData("floatEquality")]
-    [InlineData("doubleEquality")]
-    [InlineData("tagContains")]
-    public void BuildFilterBuildsEqualityFilter(string filterType)
-    {
-        // Arrange.
-        var basicVectorSearchFilter = filterType switch
-        {
-            "stringEquality" => new VectorSearchFilter().EqualTo("Data1", "my value"),
-            "intEquality" => new VectorSearchFilter().EqualTo("Data1", 3),
-            "longEquality" => new VectorSearchFilter().EqualTo("Data1", 3L),
-            "floatEquality" => new VectorSearchFilter().EqualTo("Data1", 3.3f),
-            "doubleEquality" => new VectorSearchFilter().EqualTo("Data1", 3.3),
-            "tagContains" => new VectorSearchFilter().AnyTagEqualTo("Data1", "my value"),
-            _ => throw new InvalidOperationException(),
-        };
-
-        var storagePropertyNames = new Dictionary<string, string>()
-        {
-            { "Data1", "storage_Data1" },
-        };
-
-        // Act.
-        var filter = RedisVectorStoreCollectionSearchMapping.BuildLegacyFilter(basicVectorSearchFilter, storagePropertyNames);
-
-        // Assert.
-        switch (filterType)
-        {
-            case "stringEquality":
-                Assert.Equal("(@storage_Data1:{my value})", filter);
-                break;
-            case "intEquality":
-            case "longEquality":
-                Assert.Equal("(@storage_Data1:[3 3])", filter);
-                break;
-            case "floatEquality":
-            case "doubleEquality":
-                Assert.Equal("(@storage_Data1:[3.3 3.3])", filter);
-                break;
-            case "tagContains":
-                Assert.Equal("(@storage_Data1:{my value})", filter);
-                break;
-        }
-    }
-
-    [Fact]
-    public void BuildFilterThrowsForInvalidValueType()
-    {
-        // Arrange.
-        var basicVectorSearchFilter = new VectorSearchFilter().EqualTo("Data1", true);
-        var storagePropertyNames = new Dictionary<string, string>()
-        {
-            { "Data1", "storage_Data1" },
-        };
-
-        // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var filter = RedisVectorStoreCollectionSearchMapping.BuildLegacyFilter(basicVectorSearchFilter, storagePropertyNames);
-        });
-    }
-
-    [Fact]
-    public void BuildFilterThrowsForUnknownFieldName()
-    {
-        // Arrange.
-        var basicVectorSearchFilter = new VectorSearchFilter().EqualTo("UnknownData", "value");
-        var storagePropertyNames = new Dictionary<string, string>()
-        {
-            { "Data1", "storage_Data1" },
-        };
-
-        // Act & Assert.
-        Assert.Throws<InvalidOperationException>(() =>
-        {
-            var filter = RedisVectorStoreCollectionSearchMapping.BuildLegacyFilter(basicVectorSearchFilter, storagePropertyNames);
-        });
-    }
-
     [Fact]
     public void ResolveDistanceFunctionReturnsCosineSimilarityIfNoDistanceFunctionSpecified()
     {
-        var property = new VectorStoreRecordVectorProperty("Prop", typeof(ReadOnlyMemory<float>));
+        var property = new VectorStoreRecordVectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>));
 
         // Act.
         var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(property);
@@ -201,7 +118,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
     [Fact]
     public void ResolveDistanceFunctionReturnsDistanceFunctionFromProvidedProperty()
     {
-        var property = new VectorStoreRecordVectorProperty("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var property = new VectorStoreRecordVectorPropertyModel("Prop", typeof(ReadOnlyMemory<float>)) { DistanceFunction = DistanceFunction.DotProductSimilarity };
 
         // Act.
         var resolvedDistanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(property);
@@ -232,4 +149,10 @@ public class RedisVectorStoreCollectionSearchMappingTests
 #pragma warning disable CA1812 // An internal class that is apparently never instantiated. If so, remove the code from the assembly.
     private sealed class DummyType;
 #pragma warning restore CA1812
+
+    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
+        => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<DummyType>.ModelBuildingOptions)
+            .Build(
+                typeof(VectorStoreGenericDataModel<string>),
+                new() { Properties = properties });
 }

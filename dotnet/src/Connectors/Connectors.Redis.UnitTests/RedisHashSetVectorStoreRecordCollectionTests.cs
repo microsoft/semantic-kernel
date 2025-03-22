@@ -524,9 +524,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
             }
         };
 

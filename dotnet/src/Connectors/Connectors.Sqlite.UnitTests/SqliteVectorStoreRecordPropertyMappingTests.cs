@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
@@ -55,22 +56,20 @@ public sealed class SqliteVectorStoreRecordPropertyMappingTests
     public void GetColumnsReturnsCollectionOfColumns()
     {
         // Arrange
-        var properties = new List<VectorStoreRecordProperty>()
+        var properties = new List<VectorStoreRecordPropertyModel>()
         {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data", typeof(int)) { IsFilterable = true },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance },
-        };
-
-        var storagePropertyNames = new Dictionary<string, string>
-        {
-            ["Key"] = "Key",
-            ["Data"] = "my_data",
-            ["Vector"] = "Vector"
+            new VectorStoreRecordKeyPropertyModel("Key", typeof(string)) { StorageName = "Key" },
+            new VectorStoreRecordDataPropertyModel("Data", typeof(int)) { StorageName = "my_data", IsFilterable = true },
+            new VectorStoreRecordVectorPropertyModel("Vector", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 4,
+                DistanceFunction = DistanceFunction.ManhattanDistance,
+                StorageName = "Vector"
+            }
         };
 
         // Act
-        var columns = SqliteVectorStoreRecordPropertyMapping.GetColumns(properties, storagePropertyNames);
+        var columns = SqliteVectorStoreRecordPropertyMapping.GetColumns(properties);
 
         // Assert
         Assert.Equal("Key", columns[0].Name);

@@ -9,22 +9,23 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 internal class AzureCosmosDBNoSqlFilterTranslator
 {
-    private IReadOnlyDictionary<string, string> _storagePropertyNames = null!;
+    private VectorStoreRecordModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
     private readonly Dictionary<string, object?> _parameters = new();
     private readonly StringBuilder _sql = new();
 
-    internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
+    internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
     {
         Debug.Assert(this._sql.Length == 0);
 
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
@@ -252,11 +253,12 @@ internal class AzureCosmosDBNoSqlFilterTranslator
     {
         if (expression is MemberExpression member && member.Expression == this._recordParameter)
         {
-            if (!this._storagePropertyNames.TryGetValue(member.Member.Name, out column))
+            if (!this._model.PropertyMap.TryGetValue(member.Member.Name, out var property))
             {
                 throw new InvalidOperationException($"Property name '{member.Member.Name}' provided as part of the filter clause is not a valid property name.");
             }
 
+            column = property.StorageName;
             return true;
         }
 

@@ -32,7 +32,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 

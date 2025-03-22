@@ -37,7 +37,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new MongoDBVectorStoreRecordCollection<object>(this._mockMongoDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new MongoDBVectorStoreRecordCollection<object>(this._mockMongoDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 

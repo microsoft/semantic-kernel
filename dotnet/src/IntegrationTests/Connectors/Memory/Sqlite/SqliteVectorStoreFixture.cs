@@ -2,10 +2,7 @@
 
 using System;
 using System.IO;
-using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 

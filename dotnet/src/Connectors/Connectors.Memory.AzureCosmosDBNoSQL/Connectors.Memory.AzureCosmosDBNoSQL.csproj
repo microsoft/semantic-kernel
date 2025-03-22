@@ -7,6 +7,7 @@
     <TargetFrameworks>net8.0;netstandard2.0;net462</TargetFrameworks>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
     <VersionSuffix>preview</VersionSuffix>
+    <NoWarn>$(NoWarn);MEVD9001</NoWarn> <!-- Experimental MEVD connector-facing APIs -->
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->

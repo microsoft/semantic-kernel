@@ -532,9 +532,9 @@ public class QdrantVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(ulong)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
             }
         };
 
