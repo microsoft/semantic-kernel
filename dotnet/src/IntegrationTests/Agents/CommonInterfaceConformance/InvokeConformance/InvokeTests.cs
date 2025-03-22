@@ -23,7 +23,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     protected AgentFixture Fixture => this._agentFixture;
 
     [Fact]
-    public async Task InvokeReturnsResultAsync()
+    public virtual async Task InvokeReturnsResultAsync()
     {
         var agent = this.Fixture.Agent;
         var asyncResults = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France."), this.Fixture.AgentThread);
@@ -36,7 +36,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     }
 
     [Fact]
-    public async Task InvokeWithoutThreadCreatesThreadAsync()
+    public virtual async Task InvokeWithoutThreadCreatesThreadAsync()
     {
         var agent = this.Fixture.Agent;
         var asyncResults = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France."));
@@ -51,7 +51,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     }
 
     [Fact]
-    public async Task ConversationMaintainsHistoryAsync()
+    public virtual async Task ConversationMaintainsHistoryAsync()
     {
         var q1 = "What is the capital of France.";
         var q2 = "What is the capital of Austria.";

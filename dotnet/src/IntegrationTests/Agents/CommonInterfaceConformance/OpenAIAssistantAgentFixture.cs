@@ -30,10 +30,16 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     private Assistant? _assistant;
     private OpenAIAssistantAgent? _agent;
     private OpenAIAssistantAgentThread? _thread;
+    private OpenAIAssistantAgentThread? _serviceFailingAgentThread;
+    private OpenAIAssistantAgentThread? _createdServiceFailingAgentThread;
 
     public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
+
+    public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
+
+    public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
 
     public override async Task<ChatHistory> GetChatHistory()
     {
@@ -83,5 +89,11 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
         this._agent = new OpenAIAssistantAgent(this._assistant, this._assistantClient) { Kernel = kernel };
         this._thread = new OpenAIAssistantAgentThread(this._assistantClient);
+
+        var serviceFailingClient = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri("https://localhost/failingserviceclient"));
+        this._serviceFailingAgentThread = new OpenAIAssistantAgentThread(serviceFailingClient.GetAssistantClient());
+
+        var createdFailingThreadResponse = await this._assistantClient.CreateThreadAsync();
+        this._createdServiceFailingAgentThread = new OpenAIAssistantAgentThread(serviceFailingClient.GetAssistantClient(), createdFailingThreadResponse.Value.Id);
     }
 }

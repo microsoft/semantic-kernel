@@ -3,6 +3,8 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadConformance;
@@ -16,7 +18,7 @@ public abstract class AgentThreadTests(Func<AgentFixture> createAgentFixture) : 
     protected AgentFixture Fixture => this._agentFixture;
 
     [Fact]
-    public async Task DeletingThreadTwiceDoesNotThrowAsync()
+    public virtual async Task DeletingThreadTwiceDoesNotThrowAsync()
     {
         await this.Fixture.AgentThread.CreateAsync();
 
@@ -25,26 +27,45 @@ public abstract class AgentThreadTests(Func<AgentFixture> createAgentFixture) : 
     }
 
     [Fact]
-    public async Task UsingThreadAfterDeleteThrowsAsync()
+    public virtual async Task UsingThreadAfterDeleteThrowsAsync()
     {
         await this.Fixture.AgentThread.CreateAsync();
         await this.Fixture.AgentThread.DeleteAsync();
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.AgentThread.CreateAsync());
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.AgentThread.OnNewMessageAsync(new ChatMessageContent()));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.AgentThread.OnNewMessageAsync(new ChatMessageContent(AuthorRole.User, "Hi")));
     }
 
     [Fact]
-    public async Task DeleteThreadBeforeCreateThrowsAsync()
+    public virtual async Task DeleteThreadBeforeCreateThrowsAsync()
     {
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.AgentThread.DeleteAsync());
     }
 
     [Fact]
-    public async Task UsingThreadbeforeCreateCreatesAsync()
+    public virtual async Task UsingThreadbeforeCreateCreatesAsync()
     {
-        await this.Fixture.AgentThread.OnNewMessageAsync(new ChatMessageContent());
+        await this.Fixture.AgentThread.OnNewMessageAsync(new ChatMessageContent(AuthorRole.User, "Hi"));
         Assert.NotNull(this.Fixture.AgentThread.Id);
+    }
+
+    [Fact]
+    public virtual async Task CreateThreadWithServiceFailureThrowsAgentOperationExceptionAsync()
+    {
+        await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await this.Fixture.ServiceFailingAgentThread.CreateAsync());
+    }
+
+    [Fact]
+    public virtual async Task DeleteThreadWithServiceFailureThrowsAgentOperationExceptionAsync()
+    {
+        await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await this.Fixture.CreatedServiceFailingAgentThread.DeleteAsync());
+    }
+
+    [Fact]
+    public virtual async Task OnNewMessageWithServiceFailureThrowsAgentOperationExceptionAsync()
+    {
+        await Assert.ThrowsAsync<AgentThreadOperationException>(
+            async () => await this.Fixture.CreatedServiceFailingAgentThread.OnNewMessageAsync(new ChatMessageContent(AuthorRole.User, "Hi")));
     }
 
     public Task InitializeAsync()

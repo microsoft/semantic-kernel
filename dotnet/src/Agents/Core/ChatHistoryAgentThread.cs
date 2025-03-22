@@ -16,8 +16,6 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class ChatHistoryAgentThread : AgentThread
 {
     private readonly ChatHistory _chatHistory = new();
-    private string? _id = null;
-    private bool _isDeleted = false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class.
@@ -35,75 +33,39 @@ public sealed class ChatHistoryAgentThread : AgentThread
     {
         Verify.NotNull(chatHistory);
         this._chatHistory = chatHistory;
-        this._id = id ?? Guid.NewGuid().ToString("N");
+        this.Id = id ?? Guid.NewGuid().ToString("N");
     }
 
     /// <inheritdoc />
-    public override string? Id => this._id;
-
-    /// <inheritdoc/>
-    public override Task<string> CreateAsync(CancellationToken cancellationToken = default)
+    protected override Task<string> CreateInternalAsync(CancellationToken cancellationToken)
     {
-        if (this._isDeleted)
-        {
-            throw new InvalidOperationException("This thread has been deleted and cannot be recreated.");
-        }
-
-        if (this._id is not null)
-        {
-            return Task.FromResult(this._id);
-        }
-
-        this._id = Guid.NewGuid().ToString("N");
-
-        return Task.FromResult(this._id);
+        return Task.FromResult(Guid.NewGuid().ToString("N"));
     }
 
-    /// <inheritdoc/>
-    public override Task DeleteAsync(CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
     {
-        if (this._isDeleted)
-        {
-            return Task.CompletedTask;
-        }
-
-        if (this._id is null)
-        {
-            throw new InvalidOperationException("This thread cannot be deleted, since it has not been created.");
-        }
-
         this._chatHistory.Clear();
-        this._isDeleted = true;
-
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc/>
-    public async override Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        if (this._isDeleted)
-        {
-            throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
-        }
-
-        if (this._id is null)
-        {
-            await this.CreateAsync(cancellationToken).ConfigureAwait(false);
-        }
-
         this._chatHistory.Add(newMessage);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     [Experimental("SKEXP0110")]
     public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (this._isDeleted)
+        if (this.IsDeleted)
         {
             throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
         }
 
-        if (this._id is null)
+        if (this.Id is null)
         {
             await this.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
