@@ -19,6 +19,16 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
 
     public IReadOnlyList<ChatMessageContent> Response { get; set; } = [];
 
+    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        this.InvokeCount++;
+        return this.Response.Select(x => new AgentResponseItem<ChatMessageContent>(x, thread!)).ToAsyncEnumerable();
+    }
+
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -28,6 +38,17 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
         this.InvokeCount++;
 
         return this.Response.ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        this.InvokeCount++;
+        return this.Response.Select(m => new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(m.Role, m.Content), thread!)).ToAsyncEnumerable();
     }
 
     public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(

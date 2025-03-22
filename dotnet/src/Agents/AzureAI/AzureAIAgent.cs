@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
@@ -9,6 +10,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using AAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -116,7 +118,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     /// <returns>An asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        return AgentThreadActions.GetMessagesAsync(this.Client, threadId, cancellationToken);
+        return AgentThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
     }
 
     /// <summary>
@@ -137,6 +139,43 @@ public sealed partial class AzureAIAgent : KernelAgent
         CancellationToken cancellationToken = default)
     {
         return this.InvokeAsync(threadId, options: null, arguments, kernel, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages);
+
+        var azureAIAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+            messages,
+            thread,
+            () => new AzureAIAgentThread(this.Client),
+            cancellationToken).ConfigureAwait(false);
+
+        // Create options that include the additional instructions.
+        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new AzureAIInvocationOptions()
+        {
+            AdditionalInstructions = options?.AdditionalInstructions,
+        };
+
+        // Invoke the Agent with the thread that we already added our message to.
+        var invokeResults = this.InvokeAsync(
+            azureAIAgentThread.Id!,
+            internalOptions,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
+            cancellationToken);
+
+        // Notify the thread of new messages and return them to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await azureAIAgentThread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, azureAIAgentThread);
+        }
     }
 
     /// <summary>
@@ -175,6 +214,50 @@ public sealed partial class AzureAIAgent : KernelAgent
                     yield return message;
                 }
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages);
+
+        var azureAIAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+            messages,
+            thread,
+            () => new AzureAIAgentThread(this.Client),
+            cancellationToken).ConfigureAwait(false);
+
+        // Create options that include the additional instructions.
+        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new AzureAIInvocationOptions()
+        {
+            AdditionalInstructions = options?.AdditionalInstructions,
+        };
+
+        // Invoke the Agent with the thread that we already added our message to.
+        var newMessagesReceiver = new ChatHistory();
+        var invokeResults = this.InvokeStreamingAsync(
+            azureAIAgentThread.Id!,
+            internalOptions,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
+            newMessagesReceiver,
+            cancellationToken);
+
+        // Return the chunks to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            yield return new(result, azureAIAgentThread);
+        }
+
+        // Notify the thread of any new messages that were assembled from the streaming response.
+        foreach (var newMessage in newMessagesReceiver)
+        {
+            await azureAIAgentThread.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -276,7 +359,7 @@ public sealed partial class AzureAIAgent : KernelAgent
 
         this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        AgentThread thread = await this.Client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        AAIP.AgentThread thread = await this.Client.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
         this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 

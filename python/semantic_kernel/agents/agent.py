@@ -3,8 +3,8 @@
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterable, Iterable
-from typing import Any, ClassVar
+from collections.abc import AsyncIterable, Awaitable, Iterable
+from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -18,10 +18,106 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+TMessage = TypeVar("TMessage", bound=ChatMessageContent | StreamingChatMessageContent)
+
+
+@release_candidate
+class AgentThread(ABC):
+    """Base class for agent threads."""
+
+    def __init__(self):
+        """Initialize the agent thread."""
+        self._is_deleted: bool = False  # type: ignore
+        self._id: str | None = None  # type: ignore
+
+    @property
+    def id(self) -> str | None:
+        """Returns the ID of the current thread (if any)."""
+        if self._is_deleted:
+            raise RuntimeError("Thread has been deleted; call `create()` to recreate it.")
+        return self._id
+
+    async def create(self) -> str | None:
+        """Starts the thread and returns the thread ID."""
+        # A thread should not be recreated after it has been deleted.
+        if self._is_deleted:
+            raise RuntimeError("Cannot create thread because it has already been deleted.")
+
+        # If the thread ID is already set, we're done, just return the Id.
+        if self.id is not None:
+            return self.id
+
+        # Otherwise, create the thread.
+        self._id = await self._create()
+        return self.id
+
+    async def delete(self) -> None:
+        """Ends the current thread."""
+        # A thread should not be deleted if it has already been deleted.
+        if self._is_deleted:
+            return
+
+        # If the thread ID is not set, we're done, just return.
+        if self.id is None:
+            self._is_deleted = True
+            return
+
+        # Otherwise, delete the thread.
+        await self._delete()
+        self._id = None
+        self._is_deleted = True
+
+    async def on_new_message(
+        self,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Invoked when a new message has been contributed to the chat by any participant."""
+        # If the thread is not created yet, create it.
+        if self.id is None:
+            await self.create()
+
+        await self._on_new_message(new_message)
+
+    @abstractmethod
+    async def _create(self) -> str:
+        """Starts the thread and returns the thread ID."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def _delete(self) -> None:
+        """Ends the current thread."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def _on_new_message(
+        self,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Invoked when a new message has been contributed to the chat by any participant."""
+        raise NotImplementedError
+
+
+@release_candidate
+class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
+    """Class representing a response item from an agent.
+
+    Attributes:
+        message: The message content of the response item.
+        thread: The conversation thread associated with the response item.
+    """
+
+    message: TMessage
+    thread: AgentThread
+
+    def __hash__(self):
+        """Get the hash of the response item."""
+        return hash((self.message, self.thread))
 
 
 class Agent(KernelBaseModel, ABC):
@@ -75,7 +171,7 @@ class Agent(KernelBaseModel, ABC):
         return data
 
     @abstractmethod
-    async def get_response(self, *args, **kwargs) -> ChatMessageContent:
+    def get_response(self, *args, **kwargs) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
         """Get a response from the agent.
 
         This method returns the final result of the agent's execution
@@ -91,7 +187,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+    def invoke(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
@@ -102,7 +198,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the

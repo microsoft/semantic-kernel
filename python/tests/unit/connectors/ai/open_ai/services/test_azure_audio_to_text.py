@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from openai import AsyncAzureOpenAI
@@ -75,18 +75,20 @@ def test_azure_audio_to_text_init_with_from_dict(azure_openai_unit_test_env) -> 
         assert azure_audio_to_text.client.default_headers[key] == value
 
 
-@patch.object(AsyncTranscriptions, "create", return_value=Transcription(text="This is a test audio file."))
-async def test_azure_audio_to_text_get_text_contents(mock_transcription_create, azure_openai_unit_test_env) -> None:
+async def test_azure_audio_to_text_get_text_contents(azure_openai_unit_test_env) -> None:
     audio_content = AudioContent.from_audio_file(
         os.path.join(os.path.dirname(__file__), "../../../../../", "assets/sample_audio.mp3")
     )
 
-    openai_audio_to_text = AzureAudioToText()
+    with patch.object(AsyncTranscriptions, "create", new_callable=AsyncMock) as mock_transcription_create:
+        mock_transcription_create.return_value = Transcription(text="This is a test audio file.")
 
-    text_contents = await openai_audio_to_text.get_text_contents(audio_content)
-    assert len(text_contents) == 1
-    assert text_contents[0].text == "This is a test audio file."
-    assert text_contents[0].ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME"]
+        openai_audio_to_text = AzureAudioToText()
+
+        text_contents = await openai_audio_to_text.get_text_contents(audio_content)
+        assert len(text_contents) == 1
+        assert text_contents[0].text == "This is a test audio file."
+        assert text_contents[0].ai_model_id == azure_openai_unit_test_env["AZURE_OPENAI_AUDIO_TO_TEXT_DEPLOYMENT_NAME"]
 
 
 async def test_azure_audio_to_text_get_text_contents_invalid_audio_content(azure_openai_unit_test_env):

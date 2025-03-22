@@ -67,6 +67,7 @@
     <PackageReference Include="Testcontainers.Milvus" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Agents\AzureAI\Agents.AzureAI.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.Amazon\Connectors.Amazon.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureAIInference\Connectors.AzureAIInference.csproj" />
     <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />

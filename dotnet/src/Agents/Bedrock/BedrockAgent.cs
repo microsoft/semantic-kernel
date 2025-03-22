@@ -73,6 +73,28 @@ public class BedrockAgent : KernelAgent
 
     #region public methods
 
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: Implement the InvokeAsync method for BedrockAgent.
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        // TODO: Implement the InvokeStreamingAsync method for BedrockAgent.
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Invoke the Bedrock agent with the given message.
     /// </summary>

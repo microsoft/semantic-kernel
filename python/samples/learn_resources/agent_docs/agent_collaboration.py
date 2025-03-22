@@ -107,7 +107,7 @@ RESPONSE:
 """,
     )
 
-    history_reducer = ChatHistoryTruncationReducer(target_count=5)
+    history_reducer = ChatHistoryTruncationReducer(target_count=1)
 
     # Create the AgentGroupChat with selection and termination strategies.
     chat = AgentGroupChat(
