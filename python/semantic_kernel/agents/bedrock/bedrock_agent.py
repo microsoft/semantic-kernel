@@ -281,7 +281,8 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             A chat message content with the response.
         """
-        thread = await self._configure_thread(input_text, thread)
+        thread = await self._configure_thread(thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -369,7 +370,8 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of chat message content.
         """
-        thread = await self._configure_thread(input_text, thread)
+        thread = await self._configure_thread(thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -459,7 +461,8 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of streaming chat message content
         """
-        thread = await self._configure_thread(input_text, thread)
+        thread = await self._configure_thread(thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -675,13 +678,11 @@ class BedrockAgent(BedrockAgentBase):
 
     async def _configure_thread(
         self,
-        message: ChatMessageContent,
         thread: AgentThread | None = None,
     ) -> BedrockAgentThread:
         """Ensures the thread is properly initialized and active, then posts the new message.
 
         Args:
-            message: The chat message content to post to the thread.
             thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
 
         Returns:

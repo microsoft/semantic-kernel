@@ -3,7 +3,7 @@
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import AsyncIterable, Awaitable, Iterable
 from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
@@ -33,12 +33,14 @@ class AgentThread(ABC):
 
     def __init__(self):
         """Initialize the agent thread."""
-        self._is_deleted: bool = False
-        self._id: str | None = None
+        self._is_deleted: bool = False  # type: ignore
+        self._id: str | None = None  # type: ignore
 
     @property
     def id(self) -> str | None:
         """Returns the ID of the current thread (if any)."""
+        if self._is_deleted:
+            raise RuntimeError("Thread has been deleted; call `create()` to recreate it.")
         return self._id
 
     async def create(self) -> str | None:
@@ -68,7 +70,7 @@ class AgentThread(ABC):
 
         # Otherwise, delete the thread.
         await self._delete()
-        self.id = None
+        self._id = None
         self._is_deleted = True
 
     async def on_new_message(
@@ -83,7 +85,7 @@ class AgentThread(ABC):
         await self._on_new_message(new_message)
 
     @abstractmethod
-    async def _create(self) -> str | None:
+    async def _create(self) -> str:
         """Starts the thread and returns the thread ID."""
         raise NotImplementedError
 
@@ -169,7 +171,7 @@ class Agent(KernelBaseModel, ABC):
         return data
 
     @abstractmethod
-    async def get_response(self, *args, **kwargs) -> AgentResponseItem[ChatMessageContent]:
+    def get_response(self, *args, **kwargs) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
         """Get a response from the agent.
 
         This method returns the final result of the agent's execution

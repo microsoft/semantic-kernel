@@ -132,7 +132,7 @@ class AutoGenConversableAgent(Agent):
         if isinstance(message, str):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
-        thread: AutoGenConversableAgentThread = await self._configure_thread(message, thread)
+        thread = await self._configure_thread(message, thread)
 
         reply = await self.conversable_agent.a_generate_reply(
             messages=[message.to_dict()],
@@ -179,7 +179,7 @@ class AutoGenConversableAgent(Agent):
         if isinstance(message, str):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
-        thread: AutoGenConversableAgentThread = await self._configure_thread(message, thread)
+        thread = await self._configure_thread(message, thread)
 
         if recipient is not None:
             if not isinstance(recipient, AutoGenConversableAgent):
@@ -225,7 +225,7 @@ class AutoGenConversableAgent(Agent):
         kernel: "Kernel | None" = None,
         arguments: KernelArguments | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingChatMessageContent"]:
+    ) -> AsyncIterable[AgentResponseItem["StreamingChatMessageContent"]]:
         """Invoke the agent with a stream of messages."""
         raise NotImplementedError("The AutoGenConversableAgent does not support streaming.")
 

@@ -4,7 +4,7 @@ import logging
 import sys
 import uuid
 from collections.abc import AsyncGenerator, AsyncIterable
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
@@ -251,7 +251,8 @@ class ChatCompletionAgent(Agent):
         if isinstance(message, str):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
-        thread: ChatCompletionAgentThread = await self._configure_thread(message, thread)
+        thread = await self._configure_thread(message, thread)
+        thread = cast(ChatCompletionAgentThread, thread)
 
         chat_history = await thread.retrieve_current_chat_history()
 
@@ -292,7 +293,8 @@ class ChatCompletionAgent(Agent):
         if isinstance(message, str):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
-        thread: ChatCompletionAgentThread = await self._configure_thread(message, thread)
+        thread = await self._configure_thread(message, thread)
+        thread = cast(ChatCompletionAgentThread, thread)
 
         chat_history = await thread.retrieve_current_chat_history()
 
@@ -326,7 +328,8 @@ class ChatCompletionAgent(Agent):
         if isinstance(message, str):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
-        thread: ChatCompletionAgentThread = await self._configure_thread(message, thread)
+        thread = await self._configure_thread(message, thread)
+        thread = cast(ChatCompletionAgentThread, thread)
 
         chat_history = await thread.retrieve_current_chat_history()
 
@@ -389,7 +392,7 @@ class ChatCompletionAgent(Agent):
 
     async def _inner_invoke(
         self,
-        thread: AgentThread,
+        thread: ChatCompletionAgentThread,
         history: ChatHistory,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -469,7 +472,9 @@ class ChatCompletionAgent(Agent):
 
         return chat_completion_service, settings
 
-    async def _capture_mutated_messages(self, agent_chat_history: ChatHistory, start: int, thread: AgentThread):
+    async def _capture_mutated_messages(
+        self, agent_chat_history: ChatHistory, start: int, thread: ChatCompletionAgentThread
+    ) -> None:
         """Capture mutated messages related function calling/tools."""
         for message_index in range(start, len(agent_chat_history)):
             message = agent_chat_history[message_index]  # type: ignore

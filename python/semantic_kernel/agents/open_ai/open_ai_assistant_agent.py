@@ -90,6 +90,8 @@ class AssistantThread(AgentThread):
     @override
     async def _delete(self) -> None:
         """Ends the current thread."""
+        if self._id is None:
+            raise ValueError("The thread cannot be deleted because it has not been created yet.")
         await self._client.beta.threads.delete(self._id)
 
     @override
@@ -104,6 +106,7 @@ class AssistantThread(AgentThread):
             or "thread_id" not in new_message.metadata
             or new_message.metadata["thread_id"] != self._id
         ):
+            assert self._id is not None  # nosec
             await AssistantThreadActions.create_message(self._client, self._id, new_message)
 
 
@@ -381,6 +384,7 @@ class OpenAIAssistantAgent(Agent):
 
         if thread.id is None:
             await thread.create()
+        assert thread.id is not None  # nosec
 
         return OpenAIAssistantChannel(client=self.client, thread_id=thread.id)
 
@@ -458,6 +462,8 @@ class OpenAIAssistantAgent(Agent):
         if thread.id is None:
             await thread.create()
 
+        assert thread.id is not None  # nosec
+
         await thread.on_new_message(message)
 
         return thread
@@ -521,6 +527,7 @@ class OpenAIAssistantAgent(Agent):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
         thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -620,6 +627,7 @@ class OpenAIAssistantAgent(Agent):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
         thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -717,6 +725,7 @@ class OpenAIAssistantAgent(Agent):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
         thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)

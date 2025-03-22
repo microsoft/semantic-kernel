@@ -87,7 +87,9 @@ class AzureAIAgentThread(AgentThread):
     @override
     async def _delete(self) -> None:
         """Ends the current thread."""
-        await self._client.agents.delete_thread(self._thread_id)
+        if self._id is None:
+            raise ValueError("The thread cannot be deleted because it has not been created yet.")
+        await self._client.agents.delete_thread(self._id)
 
     @override
     async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
@@ -100,6 +102,7 @@ class AzureAIAgentThread(AgentThread):
             or "thread_id" not in new_message.metadata
             or new_message.metadata["thread_id"] != self.id
         ):
+            assert self.id is not None  # nosec
             await AgentThreadActions.create_message(self._client, self.id, new_message)
 
 
@@ -265,6 +268,7 @@ class AzureAIAgent(Agent):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
         thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -362,6 +366,7 @@ class AzureAIAgent(Agent):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
         thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -430,6 +435,7 @@ class AzureAIAgent(Agent):
             message = ChatMessageContent(role=AuthorRole.USER, content=message)
 
         thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -498,6 +504,8 @@ class AzureAIAgent(Agent):
         if thread.id is None:
             await thread.create()
 
+        assert thread.id is not None  # nosec
+
         return AzureAIChannel(client=self.client, thread_id=thread.id)
 
     async def add_chat_message(self, thread_id: str, message: str | ChatMessageContent) -> "ThreadMessage | None":
@@ -538,6 +546,8 @@ class AzureAIAgent(Agent):
 
         if thread.id is None:
             await thread.create()
+
+        assert thread.id is not None  # nosec
 
         await thread.on_new_message(message)
 

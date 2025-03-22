@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, PropertyMock, patch
 
 import boto3
 import pytest
@@ -455,8 +455,13 @@ async def test_bedrock_agent_get_response(
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
         patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
+        patch(
+            "semantic_kernel.agents.bedrock.bedrock_agent.BedrockAgentThread.id",
+            new_callable=PropertyMock,
+        ) as mock_id,
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
+        mock_id.return_value = "mock-thread-id"
 
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
         mock_start.return_value = "test_session_id"
@@ -478,8 +483,13 @@ async def test_bedrock_agent_get_response_exception(
     with (
         patch.object(BedrockAgent, "_invoke_agent", new_callable=AsyncMock) as mock_invoke_agent,
         patch.object(BedrockAgentThread, "create", new_callable=AsyncMock) as mock_start,
+        patch(
+            "semantic_kernel.agents.bedrock.bedrock_agent.BedrockAgentThread.id",
+            new_callable=PropertyMock,
+        ) as mock_id,
     ):
         agent = BedrockAgent(bedrock_agent_model_with_id)
+        mock_id.return_value = "mock-thread-id"
 
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_empty_response
         mock_start.return_value = "test_session_id"

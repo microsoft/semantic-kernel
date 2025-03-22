@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
 from azure.ai.projects.aio import AIProjectClient
@@ -127,12 +127,18 @@ async def test_azure_ai_agent_create_channel(ai_project_client, ai_agent_definit
         patch(
             "semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentThread.create",
             new_callable=AsyncMock,
-        ) as mock_start,
+        ),
+        patch(
+            "semantic_kernel.agents.azure_ai.azure_ai_agent.AzureAIAgentThread.id",
+            new_callable=PropertyMock,
+        ) as mock_id,
     ):
+        mock_id.return_value = "mock-thread-id"
+
         ch = await agent.create_channel()
-        mock_start.assert_awaited_once()
 
         assert isinstance(ch, AgentChannel)
+        assert ch.thread_id == "mock-thread-id"
 
 
 def test_create_client():
