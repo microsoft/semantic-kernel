@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -10,47 +11,24 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// Class for mapping between a dictionary and the consumer data model.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
+internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model) : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
 {
-    /// <summary><see cref="VectorStoreRecordPropertyReader"/> with helpers for reading vector store model properties and their attributes.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SqliteVectorStoreRecordMapper{TRecord}"/> class.
-    /// </summary>
-    /// <param name="propertyReader">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    public SqliteVectorStoreRecordMapper(VectorStoreRecordPropertyReader propertyReader)
-    {
-        Verify.NotNull(propertyReader);
-
-        this._propertyReader = propertyReader;
-
-        this._propertyReader.VerifyHasParameterlessConstructor();
-
-        // Validate property types.
-        this._propertyReader.VerifyDataProperties(SqliteConstants.SupportedDataTypes, supportEnumerable: false);
-        this._propertyReader.VerifyVectorProperties(SqliteConstants.SupportedVectorTypes);
-    }
-
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
     {
         var properties = new Dictionary<string, object?>
         {
-            // Add key property
-            { this._propertyReader.KeyPropertyStoragePropertyName, this._propertyReader.KeyPropertyInfo.GetValue(dataModel) }
+            { model.KeyProperty.StorageName, model.KeyProperty.GetValueAsObject(dataModel!) }
         };
 
-        // Add data properties
-        foreach (var property in this._propertyReader.DataPropertiesInfo)
+        foreach (var property in model.DataProperties)
         {
-            properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), property.GetValue(dataModel));
+            properties.Add(property.StorageName, property.GetValueAsObject(dataModel!));
         }
 
-        // Add vector properties
-        foreach (var property in this._propertyReader.VectorPropertiesInfo)
+        foreach (var property in model.VectorProperties)
         {
             object? result = null;
-            var propertyValue = property.GetValue(dataModel);
+            var propertyValue = property.GetValueAsObject(dataModel!);
 
             if (propertyValue is not null)
             {
@@ -58,7 +36,7 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
                 result = SqliteVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
             }
 
-            properties.Add(this._propertyReader.GetStoragePropertyName(property.Name), result);
+            properties.Add(property.StorageName, result);
         }
 
         return properties;
@@ -66,34 +44,27 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
 
     public TRecord MapFromStorageToDataModel(Dictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
     {
-        var record = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
+        var record = model.CreateRecord<TRecord>()!;
 
-        // Set key.
-        var keyPropertyValue = Convert.ChangeType(
-            storageModel[this._propertyReader.KeyPropertyStoragePropertyName],
-            this._propertyReader.KeyProperty.PropertyType);
+        var keyPropertyValue = Convert.ChangeType(storageModel[model.KeyProperty.StorageName], model.KeyProperty.Type);
+        model.KeyProperty.SetValueAsObject(record, keyPropertyValue);
 
-        this._propertyReader.KeyPropertyInfo.SetValue(record, keyPropertyValue);
-
-        // Process data properties.
-        var dataPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
-            this._propertyReader.DataPropertiesInfo,
-            this._propertyReader.StoragePropertyNamesMap,
-            storageModel);
-
-        VectorStoreRecordMapping.SetPropertiesOnRecord(record, dataPropertiesInfoWithValues);
+        foreach (var property in model.DataProperties)
+        {
+            property.SetValueAsObject(record, storageModel[property.StorageName]);
+        }
 
         if (options.IncludeVectors)
         {
-            // Process vector properties.
-            var vectorPropertiesInfoWithValues = VectorStoreRecordMapping.BuildPropertiesInfoWithValues(
-                this._propertyReader.VectorPropertiesInfo,
-                this._propertyReader.StoragePropertyNamesMap,
-                storageModel,
-                (object? vector, Type type) => vector is byte[] vectorBytes ?
-                    SqliteVectorStoreRecordPropertyMapping.MapVectorForDataModel(vectorBytes) : null);
+            foreach (var property in model.VectorProperties)
+            {
+                if (storageModel[property.StorageName] is not byte[] vectorBytes)
+                {
+                    throw new InvalidOperationException($"Retrieved value for vector property '{property.StorageName}' which is not a byte array ('{storageModel[property.StorageName]?.GetType().Name}').");
+                }
 
-            VectorStoreRecordMapping.SetPropertiesOnRecord(record, vectorPropertiesInfoWithValues);
+                property.SetValueAsObject(record, SqliteVectorStoreRecordPropertyMapping.MapVectorForDataModel(vectorBytes));
+            }
         }
 
         return record;

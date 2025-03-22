@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -11,54 +13,27 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// Mapper between a Qdrant record and the consumer data model that uses json as an intermediary to allow supporting a wide range of models.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
-internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, PointStruct>
+internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model, bool hasNamedVectors)
+    : IVectorStoreRecordMapper<TRecord, PointStruct>
 {
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    /// <summary>A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</summary>
-    private readonly bool _hasNamedVectors;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordMapper{TDataModel}"/> class.
-    /// </summary>
-    /// <param name="propertyReader">A helper to access property information for the current data model and record definition.</param>
-    /// <param name="hasNamedVectors">A value indicating whether the vectors in the store are named, or whether there is just a single unnamed vector per qdrant point.</param>
-    public QdrantVectorStoreRecordMapper(
-        VectorStoreRecordPropertyReader propertyReader,
-        bool hasNamedVectors)
-    {
-        Verify.NotNull(propertyReader);
-
-        // Validate property types.
-        propertyReader.VerifyHasParameterlessConstructor();
-        propertyReader.VerifyDataProperties(QdrantVectorStoreRecordFieldMapping.s_supportedDataTypes, supportEnumerable: true);
-        propertyReader.VerifyVectorProperties(QdrantVectorStoreRecordFieldMapping.s_supportedVectorTypes);
-
-        // Assign.
-        this._propertyReader = propertyReader;
-        this._hasNamedVectors = hasNamedVectors;
-    }
-
     /// <inheritdoc />
     public PointStruct MapFromDataToStorageModel(TRecord dataModel)
     {
-        PointId pointId;
-        var keyPropertyInfo = this._propertyReader.KeyPropertyInfo;
-        if (keyPropertyInfo.PropertyType == typeof(ulong))
+        var keyProperty = model.KeyProperty;
+
+        var pointId = keyProperty.Type switch
         {
-            var key = keyPropertyInfo.GetValue(dataModel) as ulong? ?? throw new VectorStoreRecordMappingException($"Missing key property {keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
-            pointId = new PointId { Num = key };
-        }
-        else if (keyPropertyInfo.PropertyType == typeof(Guid))
-        {
-            var key = keyPropertyInfo.GetValue(dataModel) as Guid? ?? throw new VectorStoreRecordMappingException($"Missing key property {keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
-            pointId = new PointId { Uuid = key.ToString("D") };
-        }
-        else
-        {
-            throw new VectorStoreRecordMappingException($"Unsupported key type {keyPropertyInfo.PropertyType.FullName} for key property {keyPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName}.");
-        }
+            var t when t == typeof(ulong) => new PointId
+            {
+                Num = (ulong?)keyProperty.GetValueAsObject(dataModel!) ?? throw new VectorStoreRecordMappingException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+            },
+
+            var t when t == typeof(Guid) => new PointId
+            {
+                Uuid = ((Guid?)keyProperty.GetValueAsObject(dataModel!))?.ToString("D") ?? throw new VectorStoreRecordMappingException($"Missing key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+            },
+            _ => throw new VectorStoreRecordMappingException($"Unsupported key type '{keyProperty.Type.Name}' for key property '{keyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+        };
 
         // Create point.
         var pointStruct = new PointStruct
@@ -69,25 +44,23 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         };
 
         // Add point payload.
-        foreach (var dataPropertyInfo in this._propertyReader.DataPropertiesInfo)
+        foreach (var property in model.DataProperties)
         {
-            var propertyName = this._propertyReader.GetStoragePropertyName(dataPropertyInfo.Name);
-            var propertyValue = dataPropertyInfo.GetValue(dataModel);
-            pointStruct.Payload.Add(propertyName, QdrantVectorStoreRecordFieldMapping.ConvertToGrpcFieldValue(propertyValue));
+            var propertyValue = property.GetValueAsObject(dataModel!);
+            pointStruct.Payload.Add(property.StorageName, QdrantVectorStoreRecordFieldMapping.ConvertToGrpcFieldValue(propertyValue));
         }
 
         // Add vectors.
-        if (this._hasNamedVectors)
+        if (hasNamedVectors)
         {
             var namedVectors = new NamedVectors();
-            foreach (var vectorPropertyInfo in this._propertyReader.VectorPropertiesInfo)
+            foreach (var property in model.VectorProperties)
             {
-                var propertyName = this._propertyReader.GetStoragePropertyName(vectorPropertyInfo.Name);
-                var propertyValue = vectorPropertyInfo.GetValue(dataModel);
+                var propertyValue = property.GetValueAsObject(dataModel!);
                 if (propertyValue is not null)
                 {
                     var castPropertyValue = (ReadOnlyMemory<float>)propertyValue;
-                    namedVectors.Vectors.Add(propertyName, castPropertyValue.ToArray());
+                    namedVectors.Vectors.Add(property.StorageName, castPropertyValue.ToArray());
                 }
             }
 
@@ -96,14 +69,14 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
         else
         {
             // We already verified in the constructor via FindProperties that there is exactly one vector property when not using named vectors.
-            var vectorPropertyInfo = this._propertyReader.FirstVectorPropertyInfo!;
-            if (vectorPropertyInfo.GetValue(dataModel) is ReadOnlyMemory<float> floatROM)
+            var property = model.VectorProperty;
+            if (property.GetValueAsObject(dataModel!) is ReadOnlyMemory<float> floatROM)
             {
                 pointStruct.Vectors.Vector = floatROM.ToArray();
             }
             else
             {
-                throw new VectorStoreRecordMappingException($"Vector property {vectorPropertyInfo.Name} on provided record of type {typeof(TRecord).FullName} may not be null when not using named vectors.");
+                throw new VectorStoreRecordMappingException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors.");
             }
         }
 
@@ -113,42 +86,49 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord> : IVectorStoreRecor
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
     {
-        // Get the key property name and value.
-        var keyPropertyValue = storageModel.Id.HasNum ? storageModel.Id.Num as object : new Guid(storageModel.Id.Uuid) as object;
+        var outputRecord = model.CreateRecord<TRecord>()!;
 
-        // Construct the output record.
-        var outputRecord = (TRecord)this._propertyReader.ParameterLessConstructorInfo.Invoke(null);
-
-        // Set Key
-        this._propertyReader.KeyPropertyInfo.SetValue(outputRecord, keyPropertyValue);
+        // TODO: Set the following generically to avoid boxing
+        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Id switch
+        {
+            { HasNum: true } => storageModel.Id.Num,
+            { HasUuid: true } => Guid.Parse(storageModel.Id.Uuid),
+            _ => throw new UnreachableException()
+        });
 
         // Set each vector property if embeddings are included in the point.
         if (options?.IncludeVectors is true)
         {
-            if (this._hasNamedVectors)
+            if (hasNamedVectors)
             {
-                VectorStoreRecordMapping.SetValuesOnProperties(
-                    outputRecord,
-                    this._propertyReader.VectorPropertiesInfo,
-                    this._propertyReader.StoragePropertyNamesMap,
-                    storageModel.Vectors.Vectors_.Vectors,
-                    (Vector vector, Type targetType) => new ReadOnlyMemory<float>(vector.Data.ToArray()));
+                var storageVectors = storageModel.Vectors.Vectors_.Vectors;
+
+                foreach (var vectorProperty in model.VectorProperties)
+                {
+                    vectorProperty.SetValueAsObject(
+                        outputRecord,
+                        new ReadOnlyMemory<float>(storageVectors[vectorProperty.StorageName].Data.ToArray()));
+                }
             }
             else
             {
-                this._propertyReader.FirstVectorPropertyInfo!.SetValue(
+                model.VectorProperty.SetValueAsObject(
                     outputRecord,
                     new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
             }
         }
 
-        // Set each data property.
-        VectorStoreRecordMapping.SetValuesOnProperties(
-            outputRecord,
-            this._propertyReader.DataPropertiesInfo,
-            this._propertyReader.StoragePropertyNamesMap,
-            storageModel.Payload,
-            QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType);
+        var payload = storageModel.Payload;
+
+        foreach (var dataProperty in model.DataProperties)
+        {
+            if (payload.TryGetValue(dataProperty.StorageName, out var fieldValue))
+            {
+                dataProperty.SetValueAsObject(
+                    outputRecord,
+                    QdrantVectorStoreRecordFieldMapping.ConvertFromGrpcFieldValueToNativeType(fieldValue, dataProperty.Type));
+            }
+        }
 
         return outputRecord;
     }

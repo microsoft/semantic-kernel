@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Xunit;
 
@@ -18,42 +19,40 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = JsonSerializerOptions.Default;
 
-    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
-    {
-        Properties = new List<VectorStoreRecordProperty>
-        {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-            new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-            new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-            new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-            new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-            new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-            new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-            new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
-            new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
-            new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
-#if NET5_0_OR_GREATER
-            new VectorStoreRecordVectorProperty("HalfVector", typeof(ReadOnlyMemory<Half>)),
-            new VectorStoreRecordVectorProperty("NullableHalfVector", typeof(ReadOnlyMemory<Half>?)),
-#endif
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-            new VectorStoreRecordVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>)),
-            new VectorStoreRecordVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?)),
-            new VectorStoreRecordVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>)),
-            new VectorStoreRecordVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?)),
-        },
-    };
-
-    private static readonly Dictionary<string, string> s_storagePropertyNames =
-        s_vectorStoreRecordDefinition.Properties.ToDictionary(
-            k => k.DataModelPropertyName,
-            v => v is VectorStoreRecordKeyProperty ? "id" : v.DataModelPropertyName);
+    private static readonly VectorStoreRecordModel s_model = new AzureCosmosDBNoSqlVectorStoreModelBuilder()
+        .Build(
+            typeof(VectorStoreGenericDataModel<Guid>),
+            new VectorStoreRecordDefinition
+            {
+                Properties = new List<VectorStoreRecordProperty>
+                {
+                    new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                    new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
+                    new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
+                    new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+                    new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
+                    new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+                    new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
+                    new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
+                    new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
+                    new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
+                    new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
+                    new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
+                    new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
+                    new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
+                    new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
+        #if NET5_0_OR_GREATER
+                    new VectorStoreRecordVectorProperty("HalfVector", typeof(ReadOnlyMemory<Half>)),
+                    new VectorStoreRecordVectorProperty("NullableHalfVector", typeof(ReadOnlyMemory<Half>?)),
+        #endif
+                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+                    new VectorStoreRecordVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>)),
+                    new VectorStoreRecordVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?)),
+                    new VectorStoreRecordVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>)),
+                    new VectorStoreRecordVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?)),
+                },
+            });
 
 #if NET5_0_OR_GREATER
     private static readonly Half[] s_halfVector = [(Half)1.0f, (Half)2.0f, (Half)3.0f];
@@ -67,10 +66,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -165,10 +161,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
             },
         };
 
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -183,10 +176,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject
         {
@@ -271,10 +261,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
             ["NullableFloatVector"] = null
         };
 
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -290,10 +277,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject();
 
@@ -317,10 +301,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
         };
 
         var dataModel = new VectorStoreGenericDataModel<string>("key");
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -350,10 +331,7 @@ public sealed class AzureCosmosDBNoSQLGenericDataModelMapperTests
             ["id"] = "key"
         };
 
-        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(
-            s_vectorStoreRecordDefinition.Properties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new AzureCosmosDBNoSQLGenericDataModelMapper(s_model, s_jsonSerializerOptions);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });

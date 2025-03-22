@@ -35,7 +35,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 

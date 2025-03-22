@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -11,8 +12,8 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
     private readonly Dictionary<string, object> _parameters = new();
 
-    internal SqliteFilterTranslator(IReadOnlyDictionary<string, string> storagePropertyNames,
-        LambdaExpression lambdaExpression) : base(storagePropertyNames, lambdaExpression, sql: null)
+    internal SqliteFilterTranslator(VectorStoreRecordModel model, LambdaExpression lambdaExpression)
+        : base(model, lambdaExpression, sql: null)
     {
     }
 

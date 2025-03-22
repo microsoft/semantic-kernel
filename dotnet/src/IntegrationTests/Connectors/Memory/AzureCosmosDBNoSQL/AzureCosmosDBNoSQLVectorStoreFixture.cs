@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
@@ -27,7 +28,14 @@ public class AzureCosmosDBNoSQLVectorStoreFixture : IAsyncLifetime, IDisposable
             throw new ArgumentNullException($"{connectionString} string is not configured");
         }
 
-        var options = new CosmosClientOptions { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default };
+        var options = new CosmosClientOptions
+        {
+            UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default,
+            ConnectionMode = ConnectionMode.Gateway,
+#pragma warning disable CA5400 // HttpClient may be created without enabling CheckCertificateRevocationList
+            HttpClientFactory = () => new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator })
+#pragma warning restore CA5400 // HttpClient may be created without enabling CheckCertificateRevocationList
+        };
 
         this._cosmosClient = new CosmosClient(connectionString, options);
     }

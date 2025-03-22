@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Redis when using hash sets.
 /// </summary>
-internal class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
+internal sealed class RedisHashSetGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, (string Key, HashEntry[] HashEntries)>
 {
     /// <summary>All the properties from the record definition.</summary>
     private readonly IReadOnlyList<VectorStoreRecordProperty> _properties;

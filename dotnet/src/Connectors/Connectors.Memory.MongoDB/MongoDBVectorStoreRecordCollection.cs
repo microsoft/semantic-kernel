@@ -4,13 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
@@ -51,14 +50,8 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
 
-    /// <summary>A dictionary that maps from a property name to the storage name that should be used when serializing it for data and vector properties.</summary>
-    private readonly Dictionary<string, string> _storagePropertyNames;
-
-    /// <summary>Collection of vector storage property names.</summary>
-    private readonly List<string> _vectorStoragePropertyNames;
-
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -77,23 +70,13 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         // Verify.
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.BsonDocumentCustomMapper is not null, MongoDBConstants.SupportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
         this.CollectionName = collectionName;
         this._options = options ?? new MongoDBVectorStoreRecordCollectionOptions<TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
-
-        this._storagePropertyNames = GetStoragePropertyNames(this._propertyReader.Properties, typeof(TRecord));
-
-        // Use Mongo reserved key property name as storage key property name
-        this._storagePropertyNames[this._propertyReader.KeyPropertyName] = MongoDBConstants.MongoReservedKeyPropertyName;
-
-        this._vectorStoragePropertyNames = this._propertyReader.VectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
-
+        this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
         this._mapper = this.InitializeMapper();
     }
 
@@ -269,15 +252,14 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._storagePropertyNames),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -291,7 +273,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         var searchQuery = MongoDBVectorStoreCollectionSearchMapping.GetSearchQuery(
             vectorArray,
             this._options.VectorIndexName,
-            vectorPropertyName,
+            vectorProperty.StorageName,
             itemsAmount,
             numCandidates,
             filter);
@@ -323,23 +305,21 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         Array vectorArray = VerifyVectorParam(vector);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
-        var vectorPropertyName = this._storagePropertyNames[vectorProperty.DataModelPropertyName];
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
-        var textDataPropertyName = this._storagePropertyNames[textDataProperty.DataModelPropertyName];
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._storagePropertyNames),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._storagePropertyNames),
+            { OldFilter: VectorSearchFilter legacyFilter } => MongoDBVectorStoreCollectionSearchMapping.BuildLegacyFilter(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new MongoDBFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
 
         // Constructing a query to fetch "skip + top" total items
-        // to perform skip logic locally, since skip option is not part of API. 
+        // to perform skip logic locally, since skip option is not part of API.
         var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
@@ -350,8 +330,8 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
             this.CollectionName,
             this._options.VectorIndexName,
             this._options.FullTextSearchIndexName,
-            vectorPropertyName,
-            textDataPropertyName,
+            vectorProperty.StorageName,
+            textDataProperty.StorageName,
             ScorePropertyName,
             DocumentPropertyName,
             itemsAmount,
@@ -387,13 +367,8 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             var fieldsArray = new BsonArray();
 
-            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(
-                this._propertyReader.VectorProperties,
-                this._storagePropertyNames));
-
-            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(
-                this._propertyReader.DataProperties,
-                this._storagePropertyNames));
+            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetVectorIndexFields(this._model.VectorProperties));
+            fieldsArray.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFilterableDataIndexFields(this._model.DataProperties));
 
             if (fieldsArray.Count > 0)
             {
@@ -411,9 +386,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             var fieldsDocument = new BsonDocument();
 
-            fieldsDocument.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFullTextSearchableDataIndexFields(
-                this._propertyReader.DataProperties,
-                this._storagePropertyNames));
+            fieldsDocument.AddRange(MongoDBVectorStoreCollectionCreateMapping.GetFullTextSearchableDataIndexFields(this._model.DataProperties));
 
             if (fieldsDocument.ElementCount > 0)
             {
@@ -455,13 +428,13 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         var includeVectors = options?.IncludeVectors ?? false;
 
-        if (!includeVectors && this._vectorStoragePropertyNames.Count > 0)
+        if (!includeVectors)
         {
-            foreach (var vectorPropertyName in this._vectorStoragePropertyNames)
+            foreach (var vectorPropertyName in this._model.VectorProperties)
             {
                 projectionDefinition = projectionDefinition is not null ?
-                    projectionDefinition.Exclude(vectorPropertyName) :
-                    projectionBuilder.Exclude(vectorPropertyName);
+                    projectionDefinition.Exclude(vectorPropertyName.StorageName) :
+                    projectionBuilder.Exclude(vectorPropertyName.StorageName);
             }
         }
 
@@ -625,37 +598,6 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <summary>
-    /// Gets storage property names taking into account BSON serialization attributes.
-    /// </summary>
-    private static Dictionary<string, string> GetStoragePropertyNames(
-        IReadOnlyList<VectorStoreRecordProperty> properties,
-        Type dataModel)
-    {
-        var storagePropertyNames = new Dictionary<string, string>();
-
-        foreach (var property in properties)
-        {
-            var propertyInfo = dataModel.GetProperty(property.DataModelPropertyName);
-            string propertyName;
-
-            if (propertyInfo != null)
-            {
-                var bsonElementAttribute = propertyInfo.GetCustomAttribute<BsonElementAttribute>();
-
-                propertyName = bsonElementAttribute?.ElementName ?? property.DataModelPropertyName;
-            }
-            else
-            {
-                propertyName = property.DataModelPropertyName;
-            }
-
-            storagePropertyNames[property.DataModelPropertyName] = propertyName;
-        }
-
-        return storagePropertyNames;
-    }
-
-    /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
     private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
@@ -667,10 +609,10 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
         {
-            return (new MongoDBGenericDataModelMapper(this._propertyReader.RecordDefinition) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
+            return (new MongoDBGenericDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
         }
 
-        return new MongoDBVectorStoreRecordMapper<TRecord>(this._propertyReader);
+        return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
     }
 
     private static Array VerifyVectorParam<TVector>(TVector vector)

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
 using Qdrant.Client.Grpc;
 using Xunit;
@@ -23,8 +24,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<ulong>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(reader, hasNamedVectors);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+            .Build(typeof(SinglePropsModel<ulong>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateSinglePropsModel<ulong>(5ul));
@@ -52,8 +54,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<Guid>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(reader, hasNamedVectors);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+            .Build(typeof(SinglePropsModel<Guid>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateSinglePropsModel<Guid>(Guid.Parse("11111111-1111-1111-1111-111111111111")));
@@ -74,8 +77,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(ulong));
-        var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<ulong>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(reader, hasNamedVectors);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+            .Build(typeof(SinglePropsModel<ulong>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(5, hasNamedVectors), new() { IncludeVectors = includeVectors });
@@ -104,8 +108,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateSinglePropsVectorStoreRecordDefinition(typeof(Guid));
-        var reader = new VectorStoreRecordPropertyReader(typeof(SinglePropsModel<Guid>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(reader, hasNamedVectors);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors))
+            .Build(typeof(SinglePropsModel<Guid>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors), new() { IncludeVectors = includeVectors });
@@ -130,8 +135,10 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<ulong>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(reader, true);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+            .Build(typeof(MultiPropsModel<ulong>), definition);
+
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateMultiPropsModel<ulong>(5ul));
@@ -158,8 +165,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<Guid>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(reader, true);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+            .Build(typeof(MultiPropsModel<Guid>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateMultiPropsModel<Guid>(Guid.Parse("11111111-1111-1111-1111-111111111111")));
@@ -188,8 +196,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(ulong));
-        var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<ulong>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(reader, true);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+            .Build(typeof(MultiPropsModel<ulong>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(5), new() { IncludeVectors = includeVectors });
@@ -226,8 +235,9 @@ public class QdrantVectorStoreRecordMapperTests
     {
         // Arrange.
         var definition = CreateMultiPropsVectorStoreRecordDefinition(typeof(Guid));
-        var reader = new VectorStoreRecordPropertyReader(typeof(MultiPropsModel<Guid>), definition, null);
-        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(reader, true);
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: true))
+            .Build(typeof(MultiPropsModel<Guid>), definition);
+        var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
         // Act.
         var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111")), new() { IncludeVectors = includeVectors });

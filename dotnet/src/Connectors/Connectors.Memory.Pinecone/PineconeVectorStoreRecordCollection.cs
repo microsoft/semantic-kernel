@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
 using Sdk = Pinecone;
 
@@ -27,7 +28,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    private readonly VectorStoreRecordModel _model;
     private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
     private IndexClient? _indexClient;
 
@@ -47,37 +48,13 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(collectionName);
 
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.VectorCustomMapper is not null, PineconeVectorStoreRecordFieldMapping.s_supportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
-
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = true,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = false,
-            });
+        this._model = new VectorStoreRecordModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
-        if (this._options.VectorCustomMapper is not null)
-        {
-            // Custom Mapper.
-            this._mapper = this._options.VectorCustomMapper;
-        }
-        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
-        {
-            // Generic data model mapper.
-            this._mapper = (new PineconeGenericDataModelMapper(this._propertyReader) as IVectorStoreRecordMapper<TRecord, Sdk.Vector>)!;
-        }
-        else
-        {
-            // Default Mapper.
-            this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._propertyReader);
-        }
+        this._mapper = this._options.VectorCustomMapper ?? new PineconeVectorStoreRecordMapper<TRecord>(this._model);
     }
 
     /// <inheritdoc />
@@ -95,18 +72,18 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
-        var vectorProperty = this._propertyReader.VectorProperty!;
+        var vectorProperty = this._model.VectorProperty!;
 
         if (!string.IsNullOrEmpty(vectorProperty.IndexKind) && vectorProperty.IndexKind != "PGA")
         {
             throw new InvalidOperationException(
-                $"IndexKind of '{vectorProperty.IndexKind}' for property '{vectorProperty.DataModelPropertyName}' is not supported. Pinecone only supports 'PGA' (Pinecone Graph Algorithm), which is always enabled.");
+                $"IndexKind of '{vectorProperty.IndexKind}' for property '{vectorProperty.ModelName}' is not supported. Pinecone only supports 'PGA' (Pinecone Graph Algorithm), which is always enabled.");
         }
 
         CreateIndexRequest request = new()
         {
             Name = this.CollectionName,
-            Dimension = vectorProperty.Dimensions ?? throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection."),
+            Dimension = vectorProperty.Dimensions ?? throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection."),
             Metric = MapDistanceFunction(vectorProperty),
             Spec = new ServerlessIndexSpec
             {
@@ -341,8 +318,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(options.OldFilter?.FilterClauses, this._propertyReader.StoragePropertyNamesMap),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new PineconeFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: VectorSearchFilter legacyFilter } => PineconeVectorStoreCollectionSearchMapping.BuildSearchFilter(options.OldFilter?.FilterClauses, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new PineconeFilterTranslator().Translate(newFilter, this._model),
             _ => null
         };
 #pragma warning restore CS0618
@@ -438,13 +415,12 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             _ => throw new ArgumentException($"Invalid serverless index cloud: {serverlessIndexCloud}.", nameof(serverlessIndexCloud))
         };
 
-    private static CreateIndexRequestMetric MapDistanceFunction(VectorStoreRecordVectorProperty vectorProperty)
+    private static CreateIndexRequestMetric MapDistanceFunction(VectorStoreRecordVectorPropertyModel vectorProperty)
         => vectorProperty.DistanceFunction switch
         {
-            DistanceFunction.CosineSimilarity => CreateIndexRequestMetric.Cosine,
+            DistanceFunction.CosineSimilarity or null => CreateIndexRequestMetric.Cosine,
             DistanceFunction.DotProductSimilarity => CreateIndexRequestMetric.Dotproduct,
             DistanceFunction.EuclideanSquaredDistance => CreateIndexRequestMetric.Euclidean,
-            null => CreateIndexRequestMetric.Cosine,
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' is not supported.")
         };
 
