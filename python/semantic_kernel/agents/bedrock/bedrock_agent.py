@@ -4,7 +4,6 @@
 import asyncio
 import logging
 import sys
-import uuid
 from collections.abc import AsyncIterable
 from functools import partial, reduce
 from typing import Any, ClassVar
@@ -16,6 +15,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.bedrock.action_group_utils import (
     parse_function_result_contents,
     parse_return_control_payload,
@@ -47,6 +47,63 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+@experimental
+class BedrockAgentThread(AgentThread):
+    """Bedrock Agent Thread class."""
+
+    def __init__(
+        self,
+        bedrock_runtime_client: Any,
+        session_id: str | None = None,
+    ) -> None:
+        """Initialize the Bedrock Agent Thread.
+
+        The underlying Bedrock session of the thread is created when the thread is started.
+        https://docs.aws.amazon.com/bedrock/latest/userguide/sessions.html
+
+        Args:
+            bedrock_runtime_client: The Bedrock Runtime Client.
+            session_id: The session ID.
+        """
+        super().__init__()
+        self._bedrock_runtime_client = bedrock_runtime_client
+        self._session_id = session_id
+
+    @override
+    async def _create(self) -> str:
+        """Starts the thread and returns the underlying Bedrock session ID."""
+        response = await run_in_executor(
+            None,
+            partial(
+                self._bedrock_runtime_client.create_session,
+            ),
+        )
+        return response["sessionId"]
+
+    @override
+    async def _delete(self) -> None:
+        """Ends the current thread.
+
+        This will only end the underlying Bedrock session but not delete it.
+        """
+        # Must end the session before deleting it.
+        await run_in_executor(
+            None,
+            partial(
+                self._bedrock_runtime_client.end_session,
+                sessionIdentifier=self._session_id,
+            ),
+        )
+
+    @override
+    async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
+        """Called when a new message has been contributed to the chat."""
+        raise NotImplementedError(
+            "This method is not implemented for BedrockAgentThread. "
+            "Messages and responses are automatically handled by the Bedrock service."
+        )
 
 
 @experimental
@@ -197,37 +254,25 @@ class BedrockAgent(BedrockAgentBase):
 
         return bedrock_agent
 
-    @classmethod
-    def create_session_id(cls) -> str:
-        """Create a new session identifier.
-
-        It is the caller's responsibility to maintain the session ID
-        to continue the session with the agent.
-
-        Find the requirement for the session identifier here:
-        https://docs.aws.amazon.com/bedrock/latest/APIReference/API_agent-runtime_InvokeAgent.html#API_agent-runtime_InvokeAgent_RequestParameters
-        """
-        return str(uuid.uuid4())
-
     # endregion
 
     @trace_agent_get_response
     @override
     async def get_response(
         self,
-        session_id: str,
         input_text: str,
+        thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs,
-    ) -> ChatMessageContent:
+    ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent.
 
         Args:
-            session_id (str): The session identifier. This is used to maintain the session state in the service.
             input_text (str): The input text.
+            thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
             kernel (Kernel, optional): The kernel to override the current kernel.
@@ -236,6 +281,9 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             A chat message content with the response.
         """
+        thread = await self._configure_thread(thread)
+        assert thread.id is not None  # nosec
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -248,7 +296,7 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("sessionState", {})
 
         for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+            response = await self._invoke_agent(thread.id, input_text, agent_alias, **kwargs)
 
             events: list[dict[str, Any]] = []
             for event in response.get("completion", []):
@@ -290,7 +338,8 @@ class BedrockAgent(BedrockAgentBase):
                 if not chat_message_content:
                     raise AgentInvokeException("No response from the agent.")
 
-                return chat_message_content
+                chat_message_content.metadata["thread_id"] = thread.id
+                return AgentResponseItem(message=chat_message_content, thread=thread)
 
         raise AgentInvokeException(
             "Failed to get a response from the agent. Please consider increasing the auto invoke attempts."
@@ -300,19 +349,19 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke(
         self,
-        session_id: str,
         input_text: str,
+        thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke an agent.
 
         Args:
-            session_id (str): The session identifier. This is used to maintain the session state in the service.
             input_text (str): The input text.
+            thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
             kernel (Kernel, optional): The kernel to override the current kernel.
@@ -321,6 +370,9 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of chat message content.
         """
+        thread = await self._configure_thread(thread)
+        assert thread.id is not None  # nosec
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -333,7 +385,7 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("sessionState", {})
 
         for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+            response = await self._invoke_agent(thread.id, input_text, agent_alias, **kwargs)
 
             events: list[dict[str, Any]] = []
             for event in response.get("completion", []):
@@ -353,17 +405,21 @@ class BedrockAgent(BedrockAgentBase):
             else:
                 for event in events:
                     if BedrockAgentEventType.CHUNK in event:
-                        yield self._handle_chunk_event(event)
+                        cmc = self._handle_chunk_event(event)
+                        cmc.metadata["thread_id"] = thread.id
+                        yield AgentResponseItem(message=cmc, thread=thread)
                     elif BedrockAgentEventType.FILES in event:
-                        yield ChatMessageContent(
+                        cmc = ChatMessageContent(
                             role=AuthorRole.ASSISTANT,
                             items=self._handle_files_event(event),  # type: ignore
                             name=self.name,
                             inner_content=event,
                             ai_model_id=self.agent_model.foundation_model,
                         )
+                        cmc.metadata["thread_id"] = thread.id
+                        yield AgentResponseItem(message=cmc, thread=thread)
                     elif BedrockAgentEventType.TRACE in event:
-                        yield ChatMessageContent(
+                        cmc = ChatMessageContent(
                             role=AuthorRole.ASSISTANT,
                             name=self.name,
                             content="",
@@ -371,6 +427,8 @@ class BedrockAgent(BedrockAgentBase):
                             ai_model_id=self.agent_model.foundation_model,
                             metadata=self._handle_trace_event(event),
                         )
+                        cmc.metadata["thread_id"] = thread.id
+                        yield AgentResponseItem(message=cmc, thread=thread)
 
                 return
 
@@ -382,19 +440,19 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke_stream(
         self,
-        session_id: str,
         input_text: str,
+        thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs,
-    ) -> AsyncIterable[StreamingChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke an agent with streaming.
 
         Args:
-            session_id (str): The session identifier. This is used to maintain the session state in the service.
             input_text (str): The input text.
+            thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
             kernel (Kernel, optional): The kernel to override the current kernel.
@@ -403,6 +461,9 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of streaming chat message content
         """
+        thread = await self._configure_thread(thread)
+        assert thread.id is not None  # nosec
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -415,18 +476,24 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("sessionState", {})
 
         for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            response = await self._invoke_agent(session_id, input_text, agent_alias, **kwargs)
+            response = await self._invoke_agent(thread.id, input_text, agent_alias, **kwargs)
 
             all_function_call_messages: list[StreamingChatMessageContent] = []
             for event in response.get("completion", []):
                 if BedrockAgentEventType.CHUNK in event:
-                    yield self._handle_streaming_chunk_event(event)
+                    scmc = self._handle_streaming_chunk_event(event)
+                    scmc.metadata["thread_id"] = thread.id
+                    yield AgentResponseItem(message=scmc, thread=thread)
                     continue
                 if BedrockAgentEventType.FILES in event:
-                    yield self._handle_streaming_files_event(event)
+                    scmc = self._handle_streaming_files_event(event)
+                    scmc.metadata["thread_id"] = thread.id
+                    yield AgentResponseItem(message=scmc, thread=thread)
                     continue
                 if BedrockAgentEventType.TRACE in event:
-                    yield self._handle_streaming_trace_event(event)
+                    scmc = self._handle_streaming_trace_event(event)
+                    scmc.metadata["thread_id"] = thread.id
+                    yield AgentResponseItem(message=scmc, thread=thread)
                     continue
                 if BedrockAgentEventType.RETURN_CONTROL in event:
                     all_function_call_messages.append(self._handle_streaming_return_control_event(event))
@@ -587,3 +654,51 @@ class BedrockAgent(BedrockAgentBase):
             for item in chat_message.items
             if isinstance(item, FunctionResultContent)
         ]
+
+    async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
+        """Create a ChatHistoryChannel.
+
+        Args:
+            chat_history: The chat history for the channel. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+
+        Returns:
+            An instance of AgentChannel.
+        """
+        from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgentThread
+
+        BedrockAgentChannel.model_rebuild()
+
+        thread = BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client, session_id=thread_id)
+
+        if thread.id is None:
+            await thread.create()
+
+        return BedrockAgentChannel(thread=thread)
+
+    async def _configure_thread(
+        self,
+        thread: AgentThread | None = None,
+    ) -> BedrockAgentThread:
+        """Ensures the thread is properly initialized and active, then posts the new message.
+
+        Args:
+            thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
+
+        Returns:
+            The active thread (AzureAIAgentThread) after posting the message.
+
+        Raises:
+            AgentInitializationException: If `thread` is not an AzureAIAgentThread.
+        """
+        thread = thread or BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client)
+
+        if not isinstance(thread, BedrockAgentThread):
+            raise AgentInitializationException(
+                f"The thread must be an BedrockAgentThread, but got {type(thread).__name__}."
+            )
+
+        if thread.id is None:
+            await thread.create()
+
+        return thread

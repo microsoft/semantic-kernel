@@ -2,9 +2,8 @@
 
 import asyncio
 
-from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.agents import ChatCompletionAgent, ChatCompletionAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory
 
 """
 The following sample demonstrates how to create a chat completion agent that
@@ -34,18 +33,23 @@ async def main():
         instructions="Answer the user's questions.",
     )
 
-    # 2. Create a chat history to hold the conversation
-    chat_history = ChatHistory()
+    # 2. Create a thread to hold the conversation
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: ChatCompletionAgentThread = None
 
     for user_input in USER_INPUTS:
-        # 3. Add the user input to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: {user_input}")
-        # 4. Invoke the agent for a response
-        response = await agent.get_response(chat_history)
-        print(f"# {response.name}: {response}")
-        # 5. Add the agent response to the chat history
-        chat_history.add_message(response)
+        # 3. Invoke the agent for a response
+        response = await agent.get_response(
+            message=user_input,
+            thread=thread,
+        )
+        print(f"# {response.message.name}: {response.message}")
+        thread = response.thread
+
+    # 4. Cleanup: Clear the thread
+    await thread.delete() if thread else None
 
     """
     Sample output:

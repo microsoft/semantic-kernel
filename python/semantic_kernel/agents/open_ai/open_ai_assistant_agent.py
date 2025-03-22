@@ -6,6 +6,9 @@ from collections.abc import AsyncIterable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
+from semantic_kernel.contents.utils.author_role import AuthorRole
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -32,6 +35,7 @@ from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
@@ -52,11 +56,58 @@ if TYPE_CHECKING:
     from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
-    from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@release_candidate
+class AssistantThread(AgentThread):
+    """An OpenAI Assistant Thread class."""
+
+    def __init__(self, client: AsyncOpenAI, thread_id: str | None = None) -> None:
+        """Initialize the OpenAI Assistant Thread.
+
+        Args:
+            client: The AsyncOpenAI client.
+            thread_id: The ID of the thread
+        """
+        super().__init__()
+
+        if client is None:
+            raise ValueError("Client cannot be None")
+
+        self._client = client
+        self._id = thread_id
+
+    @override
+    async def _create(self) -> str:
+        """Starts the thread and returns its ID."""
+        response = await self._client.beta.threads.create()
+        return response.id
+
+    @override
+    async def _delete(self) -> None:
+        """Ends the current thread."""
+        if self._id is None:
+            raise ValueError("The thread cannot be deleted because it has not been created yet.")
+        await self._client.beta.threads.delete(self._id)
+
+    @override
+    async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
+        """Called when a new message has been contributed to the chat."""
+        if isinstance(new_message, str):
+            new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
+
+        # Only add the message to the thread if it's not already there
+        if (
+            not new_message.metadata
+            or "thread_id" not in new_message.metadata
+            or new_message.metadata["thread_id"] != self._id
+        ):
+            assert self._id is not None  # nosec
+            await AssistantThreadActions.create_message(self._client, self._id, new_message)
 
 
 @release_candidate
@@ -322,9 +373,18 @@ class OpenAIAssistantAgent(Agent):
         # Distinguish between different API base URLs
         yield str(self.client.base_url)
 
-    async def create_channel(self) -> AgentChannel:
-        """Create a channel."""
-        thread = await self.client.beta.threads.create()
+    async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
+        """Create a channel.
+
+        Args:
+            thread_id: The ID of the thread to create the channel for. If not provided
+                a new thread will be created.
+        """
+        thread = AssistantThread(client=self.client, thread_id=thread_id)
+
+        if thread.id is None:
+            await thread.create()
+        assert thread.id is not None  # nosec
 
         return OpenAIAssistantChannel(client=self.client, thread_id=thread.id)
 
@@ -375,6 +435,39 @@ class OpenAIAssistantAgent(Agent):
             if len(content.items) > 0:
                 yield content
 
+    async def _configure_thread(
+        self,
+        message: ChatMessageContent,
+        thread: AgentThread | None = None,
+    ) -> AgentThread:
+        """Ensures the thread is properly initialized and active, then posts the new message.
+
+        Args:
+            message: The chat message content to post to the thread.
+            thread: An optional existing thread to configure. If None, a new OpenAIAssistantThread is created.
+
+        Returns:
+            The active thread (OpenAIAssistantThread) after posting the message.
+
+        Raises:
+            AgentInitializationException: If `thread` is not an OpenAIAssistantThread.
+        """
+        thread = thread or AssistantThread(client=self.client)
+
+        if not isinstance(thread, AssistantThread):
+            raise AgentInitializationException(
+                f"The thread must be an OpenAIAssistantThread, but got {type(thread).__name__}."
+            )
+
+        if thread.id is None:
+            await thread.create()
+
+        assert thread.id is not None  # nosec
+
+        await thread.on_new_message(message)
+
+        return thread
+
     # endregion
 
     # region Invocation Methods
@@ -383,14 +476,14 @@ class OpenAIAssistantAgent(Agent):
     @override
     async def get_response(
         self,
-        thread_id: str,
         *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
-        # Run-level parameters:
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
         instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
@@ -403,14 +496,15 @@ class OpenAIAssistantAgent(Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> ChatMessageContent:
+    ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
 
         Args:
-            thread_id: The ID of the thread.
+            message: The message to send to the agent.
+            thread: The Agent Thread to use.
             arguments: The kernel arguments.
-            kernel: The kernel.
             instructions_override: The instructions override.
+            kernel: The kernel to use as an override.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_completion_tokens: The maximum completion tokens.
@@ -427,8 +521,14 @@ class OpenAIAssistantAgent(Agent):
             kwargs: Additional keyword arguments.
 
         Returns:
-            ChatMessageContent: The response from the agent.
+            AgentResponseItem of type ChatMessageContent: The response from the agent.
         """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -458,7 +558,7 @@ class OpenAIAssistantAgent(Agent):
         messages: list[ChatMessageContent] = []
         async for is_visible, message in AssistantThreadActions.invoke(
             agent=self,
-            thread_id=thread_id,
+            thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
@@ -468,20 +568,22 @@ class OpenAIAssistantAgent(Agent):
 
         if not messages:
             raise AgentInvokeException("No response messages were returned from the agent.")
-        return messages[-1]
+        final_message = messages[-1]
+        await thread.on_new_message(final_message)
+        return AgentResponseItem(message=final_message, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke(
         self,
-        thread_id: str,
         *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
-        # Run-level parameters:
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
         instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
@@ -494,14 +596,15 @@ class OpenAIAssistantAgent(Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         Args:
-            thread_id: The ID of the thread.
+            message: The message to send to the agent.
+            thread: The Agent Thread to use.
             arguments: The kernel arguments.
-            kernel: The kernel.
             instructions_override: The instructions override.
+            kernel: The kernel to use as an override.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_completion_tokens: The maximum completion tokens.
@@ -518,8 +621,14 @@ class OpenAIAssistantAgent(Agent):
             kwargs: Additional keyword arguments.
 
         Yields:
-            The chat message content.
+            The AgentResponseItem of type ChatMessageContent.
         """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -548,20 +657,22 @@ class OpenAIAssistantAgent(Agent):
 
         async for is_visible, message in AssistantThreadActions.invoke(
             agent=self,
-            thread_id=thread_id,
+            thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
             if is_visible:
-                yield message
+                await thread.on_new_message(message)
+                yield AgentResponseItem(message=message, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke_stream(
         self,
-        thread_id: str,
         *,
+        message: str | ChatMessageContent,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         # Run-level parameters:
@@ -581,19 +692,21 @@ class OpenAIAssistantAgent(Agent):
         top_p: float | None = None,
         truncation_strategy: "TruncationStrategy | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingChatMessageContent"]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent.
 
         Args:
-            thread_id: The ID of the thread.
+            message: The message to send to the agent.
+            thread: The Agent Thread to use.
             arguments: The kernel arguments.
-            kernel: The kernel.
             instructions_override: The instructions override.
+            kernel: The kernel to use as an override.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_completion_tokens: The maximum completion tokens.
             max_prompt_tokens: The maximum prompt tokens.
             messages: The messages that act as a receiver for completed messages.
+                These are not used as input but rather to receive the output of the agent.
             metadata: The metadata.
             model: The model.
             parallel_tool_calls: Parallel tool calls.
@@ -606,8 +719,14 @@ class OpenAIAssistantAgent(Agent):
             kwargs: Additional keyword arguments.
 
         Yields:
-            The chat message content.
+            The AgentResponseItem of type StreamingChatMessageContent.
         """
+        if isinstance(message, str):
+            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+
+        thread = await self._configure_thread(message, thread)
+        assert thread.id is not None  # nosec
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -636,12 +755,12 @@ class OpenAIAssistantAgent(Agent):
 
         async for message in AssistantThreadActions.invoke_stream(
             agent=self,
-            thread_id=thread_id,
+            thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
             messages=messages,
             **run_level_params,  # type: ignore
         ):
-            yield message
+            yield AgentResponseItem(message=message, thread=thread)
 
     # endregion

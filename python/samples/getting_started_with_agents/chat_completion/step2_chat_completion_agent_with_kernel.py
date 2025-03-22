@@ -4,14 +4,14 @@ import asyncio
 
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory
 
 """
 The following sample demonstrates how to create a chat completion agent that
 answers user questions using the Azure Chat Completion service. The Chat Completion
-Service is first added to the kernel, and the kernel is passed in to the 
-ChatCompletionAgent constructor. This sample demonstrates the basic steps to 
+Service is first added to the kernel, and the kernel is passed in to the
+ChatCompletionAgent constructor. This sample demonstrates the basic steps to
 create an agent and simulate a conversation with the agent.
 
 Note: if both a service and a kernel are provided, the service will be used.
@@ -41,18 +41,23 @@ async def main():
         instructions="Answer the user's questions.",
     )
 
-    # 3. Create a chat history to hold the conversation
-    chat_history = ChatHistory()
+    # 3. Create a thread to hold the conversation
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: ChatCompletionAgentThread = None
 
     for user_input in USER_INPUTS:
-        # 4. Add the user input to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: {user_input}")
-        # 5. Invoke the agent for a response
-        response = await agent.get_response(chat_history)
-        print(f"# {response.name}: {response}")
-        # 6. Add the agent response to the chat history
-        chat_history.add_message(response)
+        # 4. Invoke the agent for a response
+        response = await agent.get_response(
+            message=user_input,
+            thread=thread,
+        )
+        print(f"# {response.message.name}: {response.message}")
+        thread = response.thread
+
+    # 4. Cleanup: Clear the thread
+    await thread.delete() if thread else None
 
     """
     Sample output:

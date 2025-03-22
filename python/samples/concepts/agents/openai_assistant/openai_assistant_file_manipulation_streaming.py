@@ -3,7 +3,7 @@ import asyncio
 import os
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 
@@ -50,8 +50,10 @@ async def main():
         definition=definition,
     )
 
-    # Define a thread and invoke the agent with the user input
-    thread = await agent.client.beta.threads.create()
+    # Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantThread = None
 
     try:
         user_inputs = [
@@ -60,30 +62,33 @@ async def main():
             "Create a tab delimited file report of profit by each country per month.",
         ]
         for user_input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
-
             print(f"# User: '{user_input}'")
             annotations: list[StreamingAnnotationContent] = []
             messages: list[ChatMessageContent] = []
             is_code = False
             last_role = None
-            async for response in agent.invoke_stream(thread_id=thread.id, messages=messages):
-                current_is_code = response.metadata.get("code", False)
+            async for response in agent.invoke_stream(message=user_input, thread=thread):
+                thread = response.thread
+                current_is_code = response.message.metadata.get("code", False)
 
                 if current_is_code:
                     if not is_code:
                         print("\n\n```python")
                         is_code = True
-                    print(response.content, end="", flush=True)
+                    print(response.message.content, end="", flush=True)
                 else:
                     if is_code:
                         print("\n```")
                         is_code = False
                         last_role = None
-                    if hasattr(response, "role") and response.role is not None and last_role != response.role:
-                        print(f"\n# {response.role}: ", end="", flush=True)
-                        last_role = response.role
-                    print(response.content, end="", flush=True)
+                    if (
+                        hasattr(response, "role")
+                        and response.message.role is not None
+                        and last_role != response.message.role
+                    ):
+                        print(f"\n# {response.message.role}: ", end="", flush=True)
+                        last_role = response.message.role
+                    print(response.message.content, end="", flush=True)
             if is_code:
                 print("```\n")
             else:
@@ -97,7 +102,7 @@ async def main():
             annotations.clear()
     finally:
         await client.files.delete(file.id)
-        await client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 
