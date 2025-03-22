@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Functions;
 
@@ -513,6 +514,16 @@ public abstract class KernelFunction
     public AIFunction AsAIFunction(Kernel? kernel = null)
     {
         return new KernelAIFunction(this, kernel);
+    }
+
+    /// <summary>Creates an <see cref="KernelFunction"/> for this <see cref="AIFunction"/>.</summary>
+    /// <param name="aiFunction">The <see cref="AIFunction"/> instance to wrap in a <see cref="KernelFunction"/>.</param>
+    /// <returns>An instance of <see cref="KernelFunction"/> that, when invoked, will in turn invoke the current <see cref="AIFunction"/>.</returns>
+    [Experimental("SKEXP0001")]
+    public static KernelFunction FromAIFunction(AIFunction aiFunction)
+    {
+        Verify.NotNull(aiFunction);
+        return new AIFunctionKernelFunction(aiFunction);
     }
 
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
