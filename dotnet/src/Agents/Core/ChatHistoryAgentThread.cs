@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -94,6 +95,7 @@ public sealed class ChatHistoryAgentThread : AgentThread
     }
 
     /// <inheritdoc />
+    [Experimental("SKEXP0110")]
     public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (this._isDeleted)
