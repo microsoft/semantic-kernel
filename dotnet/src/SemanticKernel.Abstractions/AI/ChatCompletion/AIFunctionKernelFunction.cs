@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,12 +14,6 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>Provides a <see cref="KernelFunction"/> that wraps an <see cref="AIFunction"/>.</summary>
-/// <remarks>
-/// The implementation of <see cref="ChatCompletionServiceChatClient"/> only manufactures these to pass along to the underlying
-/// <see cref="IChatCompletionService"/> with autoInvoke:false, which means the <see cref="IChatCompletionService"/>
-/// implementation shouldn't be invoking these functions at all. As such, the <see cref="InvokeCoreAsync"/> and
-/// <see cref="InvokeStreamingCoreAsync"/> methods both unconditionally throw, even though they could be implemented.
-/// </remarks>
 internal sealed class AIFunctionKernelFunction : KernelFunction
 {
     private readonly AIFunction _aiFunction;
@@ -50,16 +45,18 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         return new AIFunctionKernelFunction(this, pluginName);
     }
 
-    protected override ValueTask<FunctionResult> InvokeCoreAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    protected override async ValueTask<FunctionResult> InvokeCoreAsync(
+        Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
-        // This should never be invoked, as instances are always passed with autoInvoke:false.
-        throw new NotSupportedException();
+        object? result = await this._aiFunction.InvokeAsync(arguments, cancellationToken).ConfigureAwait(false);
+        return new FunctionResult(this, result);
     }
 
-    protected override IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+    protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
+        Kernel kernel, KernelArguments arguments, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        // This should never be invoked, as instances are always passed with autoInvoke:false.
-        throw new NotSupportedException();
+        object? result = await this._aiFunction.InvokeAsync(arguments, cancellationToken).ConfigureAwait(false);
+        yield return (TResult)result!;
     }
 
     private static IReadOnlyList<KernelParameterMetadata> MapParameterMetadata(AIFunction aiFunction)
