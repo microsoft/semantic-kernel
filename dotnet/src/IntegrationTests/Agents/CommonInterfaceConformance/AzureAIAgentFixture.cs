@@ -26,12 +26,15 @@ public class AzureAIAgentFixture : AgentFixture
     private AAIP.Agent? _aiAgent;
     private AzureAIAgent? _agent;
     private AzureAIAgentThread? _thread;
+    private AzureAIAgentThread? _createdThread;
     private AzureAIAgentThread? _serviceFailingAgentThread;
     private AzureAIAgentThread? _createdServiceFailingAgentThread;
 
     public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
+
+    public override AgentThread CreatedAgentThread => this._createdThread!;
 
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
@@ -67,6 +70,14 @@ public class AzureAIAgentFixture : AgentFixture
 
         try
         {
+            await this._agentsClient!.DeleteThreadAsync(this._createdThread!.Id);
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+        }
+
+        try
+        {
             await this._agentsClient!.DeleteThreadAsync(this._createdServiceFailingAgentThread!.Id);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
@@ -94,6 +105,9 @@ public class AzureAIAgentFixture : AgentFixture
 
         this._agent = new AzureAIAgent(this._aiAgent, this._agentsClient) { Kernel = kernel };
         this._thread = new AzureAIAgentThread(this._agentsClient);
+
+        this._createdThread = new AzureAIAgentThread(this._agentsClient);
+        await this._createdThread.CreateAsync();
 
         var serviceFailingClient = AzureAIAgent.CreateAzureAIClient("swedencentral.api.azureml.ms;<subscription_id>;<resource_group_name>;<project_name>", new AzureCliCredential());
         this._serviceFailingAgentThread = new AzureAIAgentThread(serviceFailingClient.GetAgentsClient());

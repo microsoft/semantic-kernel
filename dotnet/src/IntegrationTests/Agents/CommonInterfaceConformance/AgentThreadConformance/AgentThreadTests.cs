@@ -20,20 +20,16 @@ public abstract class AgentThreadTests(Func<AgentFixture> createAgentFixture) : 
     [Fact]
     public virtual async Task DeletingThreadTwiceDoesNotThrowAsync()
     {
-        await this.Fixture.AgentThread.CreateAsync();
-
-        await this.Fixture.AgentThread.DeleteAsync();
-        await this.Fixture.AgentThread.DeleteAsync();
+        await this.Fixture.CreatedAgentThread.DeleteAsync();
+        await this.Fixture.CreatedAgentThread.DeleteAsync();
     }
 
     [Fact]
     public virtual async Task UsingThreadAfterDeleteThrowsAsync()
     {
-        await this.Fixture.AgentThread.CreateAsync();
-        await this.Fixture.AgentThread.DeleteAsync();
+        await this.Fixture.CreatedAgentThread.DeleteAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.AgentThread.CreateAsync());
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.AgentThread.OnNewMessageAsync(new ChatMessageContent(AuthorRole.User, "Hi")));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await this.Fixture.CreatedAgentThread.OnNewMessageAsync(new ChatMessageContent(AuthorRole.User, "Hi")));
     }
 
     [Fact]
@@ -47,12 +43,6 @@ public abstract class AgentThreadTests(Func<AgentFixture> createAgentFixture) : 
     {
         await this.Fixture.AgentThread.OnNewMessageAsync(new ChatMessageContent(AuthorRole.User, "Hi"));
         Assert.NotNull(this.Fixture.AgentThread.Id);
-    }
-
-    [Fact]
-    public virtual async Task CreateThreadWithServiceFailureThrowsAgentOperationExceptionAsync()
-    {
-        await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await this.Fixture.ServiceFailingAgentThread.CreateAsync());
     }
 
     [Fact]

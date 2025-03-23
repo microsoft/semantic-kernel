@@ -61,6 +61,16 @@ public sealed class AzureAIAgentThread : AgentThread
         this.Id = id;
     }
 
+    /// <summary>
+    /// Creates the thread and returns the thread id.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that completes when the thread has been created.</returns>
+    public new Task CreateAsync(CancellationToken cancellationToken = default)
+    {
+        return base.CreateAsync(cancellationToken);
+    }
+
     /// <inheritdoc />
     protected async override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {

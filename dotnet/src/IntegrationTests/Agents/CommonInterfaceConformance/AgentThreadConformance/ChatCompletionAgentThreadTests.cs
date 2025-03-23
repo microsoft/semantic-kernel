@@ -8,13 +8,6 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.Agen
 public class ChatCompletionAgentThreadTests() : AgentThreadTests(() => new ChatCompletionAgentFixture())
 {
     [Fact]
-    public override Task CreateThreadWithServiceFailureThrowsAgentOperationExceptionAsync()
-    {
-        // Test not applicable since there is no service to fail.
-        return Task.CompletedTask;
-    }
-
-    [Fact]
     public override Task DeleteThreadWithServiceFailureThrowsAgentOperationExceptionAsync()
     {
         // Test not applicable since there is no service to fail.
