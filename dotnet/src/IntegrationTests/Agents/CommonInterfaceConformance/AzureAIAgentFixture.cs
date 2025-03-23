@@ -43,7 +43,7 @@ public class AzureAIAgentFixture : AgentFixture
     public override async Task<ChatHistory> GetChatHistory()
     {
         var chatHistory = new ChatHistory();
-        await foreach (var existingMessage in this._thread!.GetMessagesAsync().ConfigureAwait(false))
+        await foreach (var existingMessage in this._thread!.GetMessagesAsync(AAIP.ListSortOrder.Ascending).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
         }

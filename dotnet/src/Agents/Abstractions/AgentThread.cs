@@ -31,6 +31,7 @@ public abstract class AgentThread
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the thread has been created.</returns>
+    /// <exception cref="InvalidOperationException">The thread has been deleted.</exception>
     protected virtual async Task CreateAsync(CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
@@ -51,6 +52,7 @@ public abstract class AgentThread
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the thread has been deleted.</returns>
+    /// <exception cref="InvalidOperationException">The thread was never created.</exception>
     public virtual async Task DeleteAsync(CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
@@ -77,6 +79,7 @@ public abstract class AgentThread
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been updated.</returns>
+    /// <exception cref="InvalidOperationException">The thread has been deleted.</exception>
     public virtual async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
