@@ -79,7 +79,7 @@ public static class AgentKernelFunctionFactory
     {
         return s_kernelParameterMetadata ??= [
             new KernelParameterMetadata("query") { Description = "Available information that will guide in performing this operation.", ParameterType = typeof(string), IsRequired = true },
-            //new KernelParameterMetadata("instructions") { Description = "Additional instructions for the agent.", ParameterType = typeof(string), IsRequired = true },
+            new KernelParameterMetadata("instructions") { Description = "Additional instructions for the agent.", ParameterType = typeof(string), IsRequired = true },
         ];
     }
 

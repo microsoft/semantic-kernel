@@ -10,12 +10,16 @@ namespace GettingStarted;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step08_AgentHandOff(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step08_AgentHandOff : BaseAgentsTest
 {
+    public Step08_AgentHandOff(ITestOutputHelper output) : base(output)
+    {
+        this.ForceOpenAI = true;
+    }
+
     [Fact]
     public async Task SalesAssistantAgentAsync()
     {
-        this.ForceOpenAI = true;
         Kernel kernel = this.CreateKernelWithChatCompletion();
         kernel.Plugins.AddFromType<OrderPlugin>();
         kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(this.Output));
@@ -41,7 +45,6 @@ public class Step08_AgentHandOff(ITestOutputHelper output) : BaseAgentsTest(outp
     [Fact]
     public async Task RefundAgentAsync()
     {
-        this.ForceOpenAI = true;
         Kernel kernel = this.CreateKernelWithChatCompletion();
         kernel.Plugins.AddFromType<RefundPlugin>();
         kernel.AutoFunctionInvocationFilters.Add(new AutoFunctionInvocationFilter(this.Output));
@@ -67,7 +70,6 @@ public class Step08_AgentHandOff(ITestOutputHelper output) : BaseAgentsTest(outp
     [Fact]
     public async Task MultipleAgentsAsync()
     {
-        this.ForceOpenAI = true;
         Kernel kernel = this.CreateKernelWithChatCompletion();
         var agentPlugin = KernelPluginFactory.CreateFromFunctions("AgentPlugin",
             [
@@ -106,6 +108,7 @@ public class Step08_AgentHandOff(ITestOutputHelper output) : BaseAgentsTest(outp
         }
     }
 
+    #region private
     private ChatCompletionAgent CreateSalesAssistant()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
@@ -139,6 +142,7 @@ public class Step08_AgentHandOff(ITestOutputHelper output) : BaseAgentsTest(outp
             Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
         };
     }
+    #endregion
 }
 
 public sealed class OrderPlugin
@@ -153,7 +157,7 @@ public sealed class RefundPlugin
     public string ExecuteRefund(string itemName) => "success";
 }
 
-public class AutoFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
+public sealed class AutoFunctionInvocationFilter(ITestOutputHelper output) : IAutoFunctionInvocationFilter
 {
     public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
     {
