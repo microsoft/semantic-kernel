@@ -74,6 +74,7 @@ public sealed class BedrockAgentThread : AgentThread
     /// <inheritdoc />
     protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException($"{nameof(BedrockAgentThread)} does not support adding messages directly to the thread.");
+        string message = $"{nameof(BedrockAgentThread)} does not support adding messages directly to the thread.";
+        throw new NotImplementedException(message);
     }
 }
