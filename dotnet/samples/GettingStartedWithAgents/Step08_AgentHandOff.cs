@@ -92,8 +92,8 @@ public class Step08_AgentHandOff : BaseAgentsTest
         // Invoke the agent and display the responses
         string[] messages =
             [
-            "Place an order for a black boot.",
-            "Now I want a refund for the black boot."
+                "Place an order for a black boot.",
+                "Now I want a refund for the black boot."
             ];
 
         AgentThread? agentThread = null;
