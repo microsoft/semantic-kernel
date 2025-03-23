@@ -123,9 +123,15 @@ public sealed class OpenAIAssistantAgentThread : AgentThread
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Asynchronously retrieves all messages in the thread.
+    /// </summary>
+    /// <param name="sortOrder">The order to return messages in.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The messages in the thread.</returns>
+    /// <exception cref="InvalidOperationException">The thread has been deleted.</exception>
     [Experimental("SKEXP0110")]
-    public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(MessageCollectionOrder? sortOrder = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
         {
@@ -137,7 +143,7 @@ public sealed class OpenAIAssistantAgentThread : AgentThread
             await this.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        await foreach (var message in AssistantThreadActions.GetMessagesAsync(this._client, this.Id!, MessageCollectionOrder.Ascending, cancellationToken).ConfigureAwait(false))
+        await foreach (var message in AssistantThreadActions.GetMessagesAsync(this._client, this.Id!, sortOrder, cancellationToken).ConfigureAwait(false))
         {
             yield return message;
         }
