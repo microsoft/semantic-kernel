@@ -31,7 +31,7 @@ public abstract class AgentThread
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the thread has been created.</returns>
-    public virtual async Task CreateAsync(CancellationToken cancellationToken = default)
+    protected virtual async Task CreateAsync(CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
         {
