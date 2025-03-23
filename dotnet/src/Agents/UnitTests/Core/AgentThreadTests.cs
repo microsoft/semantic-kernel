@@ -147,6 +147,11 @@ public class AgentThreadTests
         public int DeleteInternalAsyncCount { get; private set; }
         public int OnNewMessageInternalAsyncCount { get; private set; }
 
+        public new Task CreateAsync(CancellationToken cancellationToken = default)
+        {
+            return base.CreateAsync(cancellationToken);
+        }
+
         protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
         {
             this.CreateInternalAsyncCount++;
