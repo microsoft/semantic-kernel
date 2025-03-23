@@ -5,8 +5,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.5" />
-    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.5" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="3.7.422.8" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="3.7.423.8" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.5" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.5" />
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.0.0-preview.5.24551.3" />

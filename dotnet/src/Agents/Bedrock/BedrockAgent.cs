@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
+using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Extensions;
@@ -74,14 +75,28 @@ public class BedrockAgent : KernelAgent
     #region public methods
 
     /// <inheritdoc/>
-    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Implement the InvokeAsync method for BedrockAgent.
-        throw new NotImplementedException();
+        // create thread if there isn't one already
+        var azureAIAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+            messages,
+            thread,
+            () => new BedrockAgentThread(this.RuntimeClient),
+            cancellationToken).ConfigureAwait(false);
+
+        var invokeAgentRequest = new InvokeAgentRequest
+        {
+            AgentAliasId = WorkingDraftAgentAlias,
+            AgentId = this.Id,
+            SessionId = sessionId,
+            InputText = message,
+        };
+
+        return this.InvokeAsync(invokeAgentRequest, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
