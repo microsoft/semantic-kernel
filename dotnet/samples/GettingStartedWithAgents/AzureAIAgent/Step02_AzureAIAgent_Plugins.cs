@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
 using Agent = Azure.AI.Projects.Agent;
+using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -24,19 +24,19 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
                 name: "Host");
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync(agent, thread.Id, "Hello");
-            await InvokeAgentAsync(agent, thread.Id, "What is the special soup and its price?");
-            await InvokeAgentAsync(agent, thread.Id, "What is the special drink and its price?");
-            await InvokeAgentAsync(agent, thread.Id, "Thank you");
+            await InvokeAgentAsync(agent, thread, "Hello");
+            await InvokeAgentAsync(agent, thread, "What is the special soup and its price?");
+            await InvokeAgentAsync(agent, thread, "What is the special drink and its price?");
+            await InvokeAgentAsync(agent, thread, "Thank you");
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
     }
@@ -48,16 +48,16 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
         AzureAIAgent agent = await CreateAzureAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync(agent, thread.Id, "Create a beautiful red colored widget for me.");
+            await InvokeAgentAsync(agent, thread, "Create a beautiful red colored widget for me.");
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
     }
@@ -83,13 +83,12 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
     }
 
     // Local function to invoke agent and display the conversation messages.
-    private async Task InvokeAgentAsync(AzureAIAgent agent, string threadId, string input)
+    private async Task InvokeAgentAsync(AzureAIAgent agent, AgentThread thread, string input)
     {
         ChatMessageContent message = new(AuthorRole.User, input);
-        await agent.AddChatMessageAsync(threadId, message);
         this.WriteAgentChatMessage(message);
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+        await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
         {
             this.WriteAgentChatMessage(response);
         }

@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
 using Agent = Azure.AI.Projects.Agent;
+using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -40,7 +41,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -52,7 +53,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
@@ -60,10 +61,9 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(thread.Id, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

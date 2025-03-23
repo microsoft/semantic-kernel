@@ -5,6 +5,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
 using Agent = Azure.AI.Projects.Agent;
+using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -38,7 +39,7 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         AzureAIAgent agent = new(agentModel, this.AgentsClient);
 
         // Create a thread associated for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -49,7 +50,7 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
             await this.AgentsClient.DeleteVectorStoreAsync(fileStore.Id);
             await this.AgentsClient.DeleteFileAsync(fileInfo.Id);
@@ -59,10 +60,9 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(thread.Id, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Resources;
 using Agent = Azure.AI.Projects.Agent;
+using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -35,7 +35,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         };
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         try
         {
@@ -52,14 +52,14 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id, arguments))
+            await foreach (ChatMessageContent response in agent.InvokeAsync([], thread, new() { KernelArguments = arguments }))
             {
                 WriteAgentChatMessage(response);
             }
