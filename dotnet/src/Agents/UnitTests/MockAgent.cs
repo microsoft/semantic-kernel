@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -29,6 +30,7 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
         return this.Response.Select(x => new AgentResponseItem<ChatMessageContent>(x, thread!)).ToAsyncEnumerable();
     }
 
+    [Obsolete("Use InvokeAsync with AgentThread instead.")]
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -51,6 +53,7 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
         return this.Response.Select(m => new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(m.Role, m.Content), thread!)).ToAsyncEnumerable();
     }
 
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
     public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,

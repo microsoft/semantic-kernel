@@ -37,6 +37,11 @@ public sealed class ChatHistoryAgentThread : AgentThread
     }
 
     /// <summary>
+    /// Gets the underlying <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> object that stores the chat history for this thread.
+    /// </summary>
+    public ChatHistory ChatHistory => this._chatHistory;
+
+    /// <summary>
     /// Creates the thread and returns the thread id.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

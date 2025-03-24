@@ -75,11 +75,11 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(ChatCompletionAgent agent, KernelArguments? arguments = null)
         {
-            ChatHistory chat = [new(AuthorRole.User, "Hello")];
-
             try
             {
-                await foreach (ChatMessageContent response in agent.InvokeAsync(chat, arguments))
+                await foreach (ChatMessageContent response in agent.InvokeAsync(
+                    new ChatMessageContent(AuthorRole.User, "Hello"),
+                    options: new() { KernelArguments = arguments }))
                 {
                     Console.WriteLine(response.Content);
                 }

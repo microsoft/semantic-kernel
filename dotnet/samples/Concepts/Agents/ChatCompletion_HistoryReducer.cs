@@ -71,19 +71,19 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     private async Task InvokeAgentAsync(ChatCompletionAgent agent, int messageCount)
     {
         ChatHistory chat = [];
+        ChatHistoryAgentThread agentThread = new(chat);
 
         int index = 1;
         while (index <= messageCount)
         {
             // Provide user input
-            chat.Add(new ChatMessageContent(AuthorRole.User, $"{index}"));
             Console.WriteLine($"# {AuthorRole.User}: '{index}'");
 
             // Reduce prior to invoking the agent
             bool isReduced = await agent.ReduceAsync(chat);
 
             // Invoke and display assistant response
-            await foreach (ChatMessageContent message in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent message in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, $"{index}"), agentThread))
             {
                 chat.Add(message);
                 Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");

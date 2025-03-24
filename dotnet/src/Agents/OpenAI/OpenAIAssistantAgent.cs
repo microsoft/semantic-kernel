@@ -408,6 +408,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    [Obsolete("Use InvokeAsync with AgentThread instead.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         KernelArguments? arguments = null,
