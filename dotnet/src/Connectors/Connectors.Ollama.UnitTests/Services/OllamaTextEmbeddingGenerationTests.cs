@@ -5,7 +5,6 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Embeddings;
 using OllamaSharp;
 using OllamaSharp.Models;
