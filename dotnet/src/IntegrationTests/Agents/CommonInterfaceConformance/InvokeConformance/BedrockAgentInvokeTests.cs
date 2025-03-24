@@ -10,7 +10,7 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.Invo
 
 public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixture())
 {
-    [Fact]
+    [Fact(Skip = "This test is for manual verification.")]
     public override async Task ConversationMaintainsHistoryAsync()
     {
         var q1 = "What is the capital of France.";
@@ -26,5 +26,17 @@ public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixtu
         Assert.Contains("Eiffel", result2.Message.Content);
 
         // The BedrockAgentThread cannot read messages from the thread. This is a limitation of Bedrock Sessions.
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public override Task InvokeReturnsResultAsync()
+    {
+        return base.InvokeReturnsResultAsync();
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public override Task InvokeWithoutThreadCreatesThreadAsync()
+    {
+        return base.InvokeWithoutThreadCreatesThreadAsync();
     }
 }

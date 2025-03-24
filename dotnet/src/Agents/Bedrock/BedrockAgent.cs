@@ -127,6 +127,7 @@ public class BedrockAgent : KernelAgent
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
+            await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, bedrockThread);
         }
     }
