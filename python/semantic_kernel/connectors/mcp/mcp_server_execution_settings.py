@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 from contextlib import asynccontextmanager
-from typing import Any, ClassVar
+from typing import Any
 
 from mcp import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
+from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
@@ -35,7 +36,7 @@ class MCPStdioServerExecutionSettings(MCPServerExecutionSettings):
     """MCP stdio server settings."""
 
     command: str
-    args: ClassVar[list[str]] = []
+    args: list[str] = Field(default_factory=list)
     env: dict[str, str] | None = None
     encoding: str = "utf-8"
 

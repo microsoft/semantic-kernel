@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import ClassVar
-
 from mcp.types import Tool
+from pydantic import Field
 
 from semantic_kernel.connectors.mcp.models.mcp_tool_parameters import MCPToolParameters
 from semantic_kernel.exceptions import ServiceInvalidTypeError
@@ -11,7 +10,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 class MCPTool(KernelBaseModel):
     """Semantic Kernel Class for MCP Tool."""
 
-    parameters: ClassVar[list[MCPToolParameters]] = []
+    parameters: list[MCPToolParameters] = Field(default_factory=list)
 
     @classmethod
     def from_mcp_tool(cls, tool: Tool):
