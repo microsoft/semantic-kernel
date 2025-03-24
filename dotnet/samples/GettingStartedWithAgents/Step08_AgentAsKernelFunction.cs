@@ -10,12 +10,9 @@ namespace GettingStarted;
 /// Demonstrate creation of <see cref="ChatCompletionAgent"/> and
 /// eliciting its response to three explicit user messages.
 /// </summary>
-public class Step08_AgentHandOff : BaseAgentsTest
+public class Step08_AgentAsKernelFunction(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    public Step08_AgentHandOff(ITestOutputHelper output) : base(output)
-    {
-        this.ForceOpenAI = true;
-    }
+    protected override bool ForceOpenAI { get; } = true;
 
     [Fact]
     public async Task SalesAssistantAgentAsync()
