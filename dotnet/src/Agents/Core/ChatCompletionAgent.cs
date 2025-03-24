@@ -92,7 +92,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            // Do not add a message implicitly added to the history.
+            // Do not add function call related messages as they will already be included in the chat history.
             if (!result.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
