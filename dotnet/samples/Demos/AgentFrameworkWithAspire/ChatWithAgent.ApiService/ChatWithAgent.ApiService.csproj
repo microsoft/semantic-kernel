@@ -14,16 +14,17 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.AI.OpenAI" />
     <PackageReference Include="Aspire.Azure.Search.Documents" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" />
-    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureAISearch" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
-    <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-    <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" />
-    <PackageReference Include="Microsoft.SemanticKernel.Yaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.Memory.AzureAISearch\Connectors.Memory.AzureAISearch.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+    <ProjectReference Include="..\..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\ChatWithAgent.ServiceDefaults\ChatWithAgent.ServiceDefaults.csproj" />
     <ProjectReference Include="..\ChatWithAgent.Configuration\ChatWithAgent.Configuration.csproj" IsAspireProjectResource="false" />
   </ItemGroup>
