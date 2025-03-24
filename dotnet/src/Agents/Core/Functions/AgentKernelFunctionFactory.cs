@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public static class AgentKernelFunctionFactory
 {
     /// <summary>
-    /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
+    /// Creates a <see cref="KernelFunction"/> that will invoke the provided Agent.
     /// </summary>
     /// <param name="agent">The <see cref="Agent"> to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">The name to use for the function. If null, it will default to the agent name.</param>
