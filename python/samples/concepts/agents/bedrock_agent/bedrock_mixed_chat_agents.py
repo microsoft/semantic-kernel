@@ -2,8 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.bedrock_agent import BedrockAgent
+from semantic_kernel.agents import AgentGroupChat, BedrockAgent, ChatCompletionAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents.utils.author_role import AuthorRole

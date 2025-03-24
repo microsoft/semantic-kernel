@@ -63,7 +63,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         message_queue: Deque[ChatMessageContent] = deque()
 
         async for response in agent.invoke(
-            message=self.messages[-1],
+            messages=self.messages[-1],
             thread=self.thread,
         ):
             # Capture all messages that have been included in the mutated history.
@@ -112,7 +112,7 @@ class ChatHistoryChannel(AgentChannel, ChatHistory):
         message_count = len(self.messages)
 
         async for response_message in agent.invoke_stream(
-            message=self.messages[-1],
+            messages=self.messages[-1],
             thread=self.thread,
         ):
             if response_message.message.content:

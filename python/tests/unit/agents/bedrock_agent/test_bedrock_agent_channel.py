@@ -282,56 +282,50 @@ async def test_get_history(mock_channel, chat_history):
     assert reversed_history[3].content == "Hello, Bedrock!"
 
 
-# Todo(evmattso): fix this test
+async def test_invoke_alternates_history_and_ensures_last_user_message(mock_channel, mock_agent):
+    """Test invoke method ensures history alternates and last message is user."""
+    mock_channel.messages = [
+        ChatMessageContent(role=AuthorRole.USER, content="User1"),
+        ChatMessageContent(role=AuthorRole.USER, content="User2"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assist1"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assist2"),
+        ChatMessageContent(role=AuthorRole.USER, content="User3"),
+        ChatMessageContent(role=AuthorRole.USER, content="User4"),
+        ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assist3"),
+    ]
 
-# async def test_invoke_alternates_history_and_ensures_last_user_message(mock_channel, mock_agent):
-#     """Test invoke method ensures history alternates and last message is user."""
+    async for _, msg in mock_channel.invoke(mock_agent):
+        pass
 
-#     # Put a user message in the channel so it won't raise No chat history
-#     await mock_channel.thread.start()
+    # let's define expected roles from that final structure:
+    expected_roles = [
+        AuthorRole.USER,
+        AuthorRole.ASSISTANT,  # placeholder
+        AuthorRole.USER,
+        AuthorRole.ASSISTANT,
+        AuthorRole.USER,  # placeholder
+        AuthorRole.ASSISTANT,
+        AuthorRole.USER,
+        AuthorRole.ASSISTANT,  # placeholder
+        AuthorRole.USER,
+        AuthorRole.ASSISTANT,
+        AuthorRole.USER,  # placeholder
+    ]
+    expected_contents = [
+        "User1",
+        BedrockAgentChannel.MESSAGE_PLACEHOLDER,
+        "User2",
+        "Assist1",
+        BedrockAgentChannel.MESSAGE_PLACEHOLDER,
+        "Assist2",
+        "User3",
+        BedrockAgentChannel.MESSAGE_PLACEHOLDER,
+        "User4",
+        "Assist3",
+        BedrockAgentChannel.MESSAGE_PLACEHOLDER,
+    ]
 
-#     mock_channel.messages = [
-#         ChatMessageContent(role=AuthorRole.USER, content="User1"),
-#         ChatMessageContent(role=AuthorRole.USER, content="User2"),
-#         ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assist1"),
-#         ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assist2"),
-#         ChatMessageContent(role=AuthorRole.USER, content="User3"),
-#         ChatMessageContent(role=AuthorRole.USER, content="User4"),
-#         ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assist3"),
-#     ]
-
-#     async for _, msg in mock_channel.invoke(mock_agent):
-#         pass
-
-#     # let's define expected roles from that final structure:
-#     expected_roles = [
-#         AuthorRole.USER,
-#         AuthorRole.ASSISTANT,  # placeholder
-#         AuthorRole.USER,
-#         AuthorRole.ASSISTANT,
-#         AuthorRole.USER,  # placeholder
-#         AuthorRole.ASSISTANT,
-#         AuthorRole.USER,
-#         AuthorRole.ASSISTANT,  # placeholder
-#         AuthorRole.USER,
-#         AuthorRole.ASSISTANT,
-#         AuthorRole.USER,  # placeholder
-#     ]
-#     expected_contents = [
-#         "User1",
-#         BedrockAgentChannel.MESSAGE_PLACEHOLDER,
-#         "User2",
-#         "Assist1",
-#         BedrockAgentChannel.MESSAGE_PLACEHOLDER,
-#         "Assist2",
-#         "User3",
-#         BedrockAgentChannel.MESSAGE_PLACEHOLDER,
-#         "User4",
-#         "Assist3",
-#         BedrockAgentChannel.MESSAGE_PLACEHOLDER,
-#     ]
-
-#     assert len(mock_channel.messages) == len(expected_roles)
-#     for i, (msg, exp_role, exp_content) in enumerate(zip(mock_channel.messages, expected_roles, expected_contents)):
-#         assert msg.role == exp_role, f"Role mismatch at index {i}. Got {msg.role}, expected {exp_role}"
-#         assert msg.content == exp_content, f"Content mismatch at index {i}. Got {msg.content}, expected {exp_content}"
+    assert len(mock_channel.messages) == len(expected_roles)
+    for i, (msg, exp_role, exp_content) in enumerate(zip(mock_channel.messages, expected_roles, expected_contents)):
+        assert msg.role == exp_role, f"Role mismatch at index {i}. Got {msg.role}, expected {exp_role}"
+        assert msg.content == exp_content, f"Content mismatch at index {i}. Got {msg.content}, expected {exp_content}"
