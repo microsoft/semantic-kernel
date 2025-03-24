@@ -27,7 +27,11 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import (
+    AgentInitializationException,
+    AgentInvokeException,
+    AgentThreadOperationException,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -91,7 +95,7 @@ class ChatHistoryAgentThread(AgentThread):
     async def get_messages(self) -> ChatHistory:
         """Retrieve the current chat history."""
         if self._is_deleted:
-            raise RuntimeError("Cannot retrieve chat history, since the thread has been deleted.")
+            raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
         if self._id is None:
             await self.create()
         return self._chat_history
@@ -99,7 +103,7 @@ class ChatHistoryAgentThread(AgentThread):
     async def reduce(self) -> ChatHistory | None:
         """Reduce the chat history to a smaller size."""
         if self._id is None:
-            raise RuntimeError("Cannot reduce chat history, since the thread is not currently active.")
+            raise AgentThreadOperationException("Cannot reduce chat history, since the thread is not currently active.")
         if not isinstance(self._chat_history, ChatHistoryReducer):
             return None
         return await self._chat_history.reduce()

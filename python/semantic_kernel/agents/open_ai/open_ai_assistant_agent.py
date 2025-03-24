@@ -14,7 +14,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from openai import AsyncOpenAI
+from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.beta.assistant import Assistant
 from openai.types.beta.assistant_create_params import (
@@ -35,7 +35,11 @@ from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import Open
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import (
+    AgentInitializationException,
+    AgentInvokeException,
+    AgentThreadOperationException,
+)
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -65,12 +69,22 @@ logger: logging.Logger = logging.getLogger(__name__)
 class AssistantThread(AgentThread):
     """An OpenAI Assistant Thread class."""
 
-    def __init__(self, client: AsyncOpenAI, thread_id: str | None = None) -> None:
+    def __init__(
+        self,
+        client: AsyncOpenAI,
+        thread_id: str | None = None,
+        messages: Iterable["Message"] | NotGiven = NOT_GIVEN,
+        metadata: dict[str, Any] | NotGiven = NOT_GIVEN,
+        tool_resources: ToolResources | NotGiven = NOT_GIVEN,
+    ) -> None:
         """Initialize the OpenAI Assistant Thread.
 
         Args:
             client: The AsyncOpenAI client.
             thread_id: The ID of the thread
+            messages: The messages in the thread.
+            metadata: The metadata.
+            tool_resources: The tool resources.
         """
         super().__init__()
 
@@ -79,19 +93,36 @@ class AssistantThread(AgentThread):
 
         self._client = client
         self._id = thread_id
+        self._messages = messages
+        self._metadata = metadata
+        self._tool_resources = tool_resources
 
     @override
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
-        response = await self._client.beta.threads.create()
+        try:
+            response = await self._client.beta.threads.create(
+                messages=self._messages,
+                metadata=self._metadata,
+                tool_resources=self._tool_resources,
+            )
+        except Exception as ex:
+            raise AgentThreadOperationException(
+                "The thread could not be created due to an error response from the service."
+            ) from ex
         return response.id
 
     @override
     async def _delete(self) -> None:
         """Ends the current thread."""
         if self._id is None:
-            raise ValueError("The thread cannot be deleted because it has not been created yet.")
-        await self._client.beta.threads.delete(self._id)
+            raise AgentThreadOperationException("The thread cannot be deleted because it has not been created yet.")
+        try:
+            await self._client.beta.threads.delete(self._id)
+        except Exception as ex:
+            raise AgentThreadOperationException(
+                "The thread could not be deleted due to an error response from the service."
+            ) from ex
 
     @override
     async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:

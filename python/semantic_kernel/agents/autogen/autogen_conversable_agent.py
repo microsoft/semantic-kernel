@@ -23,7 +23,7 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException, AgentThreadOperationException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -83,7 +83,7 @@ class AutoGenConversableAgentThread(AgentThread):
     async def get_messages(self) -> ChatHistory:
         """Retrieve the current chat history."""
         if self._is_deleted:
-            raise RuntimeError("Cannot retrieve chat history, since the thread has been deleted.")
+            raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
         if self._id is None:
             await self.create()
         return self._chat_history
@@ -91,7 +91,7 @@ class AutoGenConversableAgentThread(AgentThread):
     async def reduce(self) -> ChatHistory | None:
         """Reduce the chat history to a smaller size."""
         if self._id is None:
-            raise RuntimeError("Cannot reduce chat history, since the thread is not currently active.")
+            raise AgentThreadOperationException("Cannot reduce chat history, since the thread is not currently active.")
         if not isinstance(self._chat_history, ChatHistoryReducer):
             return None
         return await self._chat_history.reduce()

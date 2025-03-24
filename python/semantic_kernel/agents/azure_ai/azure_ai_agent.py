@@ -31,7 +31,11 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import (
+    AgentInitializationException,
+    AgentInvokeException,
+    AgentThreadOperationException,
+)
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -96,19 +100,29 @@ class AzureAIAgentThread(AgentThread):
     @override
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
-        response = await self._client.agents.create_thread(
-            messages=self._messages,
-            metadata=self._metadata,
-            tool_resources=self._tool_resources,
-        )
+        try:
+            response = await self._client.agents.create_thread(
+                messages=self._messages,
+                metadata=self._metadata,
+                tool_resources=self._tool_resources,
+            )
+        except Exception as ex:
+            raise AgentThreadOperationException(
+                "The thread could not be created due to an error response from the service."
+            ) from ex
         return response.id
 
     @override
     async def _delete(self) -> None:
         """Ends the current thread."""
         if self._id is None:
-            raise ValueError("The thread cannot be deleted because it has not been created yet.")
-        await self._client.agents.delete_thread(self._id)
+            raise AgentThreadOperationException("The thread cannot be deleted because it has not been created yet.")
+        try:
+            await self._client.agents.delete_thread(self._id)
+        except Exception as ex:
+            raise AgentThreadOperationException(
+                "The thread could not be deleted due to an error response from the service."
+            ) from ex
 
     @override
     async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
