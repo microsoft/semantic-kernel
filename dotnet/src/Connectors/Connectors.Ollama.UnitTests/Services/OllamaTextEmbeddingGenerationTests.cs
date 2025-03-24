@@ -26,14 +26,6 @@ public sealed class OllamaTextEmbeddingGenerationTests : IDisposable
     }
 
     [Fact]
-    public void AddOllamaTextEmbeddingGenerationShouldWorkOnlyForModelId()
-    {
-        // Arrange
-        var kernel = Kernel.CreateBuilder().AddOllamaTextEmbeddingGeneration("model-id").Build();
-        var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-    }
-
-    [Fact]
     public async Task ShouldSendPromptToServiceAsync()
     {
         //Arrange

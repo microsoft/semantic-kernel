@@ -23,7 +23,7 @@ public class Ollama_ChatCompletionWithVision(ITestOutputHelper output) : BaseTes
         var imageBytes = await EmbeddedResource.ReadAllAsync("sample_image.jpg");
 
         var kernel = Kernel.CreateBuilder()
-            .AddOllamaChatCompletion("llama3.2-vision")
+            .AddOllamaChatCompletion(modelId: "llama3.2-vision", endpoint: new Uri(TestConfiguration.Ollama.Endpoint))
             .Build();
 
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();

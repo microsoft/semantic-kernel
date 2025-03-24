@@ -190,9 +190,6 @@ public static class OllamaServiceCollectionExtensions
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            // Set default base address if not already set
-            httpClient.BaseAddress ??= new Uri("http://localhost:11434");
-
             var builder = ((IChatClient)new OllamaApiClient(httpClient, modelId))
                 .AsBuilder()
                 .UseFunctionInvocation(loggerFactory, config => config.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
@@ -301,9 +298,6 @@ public static class OllamaServiceCollectionExtensions
         services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
         {
             httpClient ??= HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
-
-            // Set default base address if not already set
-            httpClient.BaseAddress ??= new Uri("http://localhost:11434");
 
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
