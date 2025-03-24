@@ -5,7 +5,9 @@ using System.ClientModel;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.OpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using OpenAI.Assistants;
 using Xunit;
@@ -77,6 +79,50 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         var assistantClient = provider.AssistantClient;
 
         var thread = new OpenAIAssistantAgentThread(assistantClient);
+
+        // Act
+        await thread.CreateAsync();
+
+        // Assert
+        Assert.Equal("thread_abc123", thread.Id);
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+    }
+
+    /// <summary>
+    /// Tests that the CreateAsync method invokes the client and sets the thread ID.
+    /// </summary>
+    [Fact]
+    public async Task CreateWithOptionsShouldInvokeClientAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+
+        var provider = this.CreateTestProvider();
+        var assistantClient = provider.AssistantClient;
+
+        var thread = new OpenAIAssistantAgentThread(assistantClient, new ThreadCreationOptions());
+
+        // Act
+        await thread.CreateAsync();
+
+        // Assert
+        Assert.Equal("thread_abc123", thread.Id);
+        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+    }
+
+    /// <summary>
+    /// Tests that the CreateAsync method invokes the client and sets the thread ID.
+    /// </summary>
+    [Fact]
+    public async Task CreateWithParamsShouldInvokeClientAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+
+        var provider = this.CreateTestProvider();
+        var assistantClient = provider.AssistantClient;
+
+        var thread = new OpenAIAssistantAgentThread(assistantClient, [new ChatMessageContent(AuthorRole.User, "Hello")]);
 
         // Act
         await thread.CreateAsync();

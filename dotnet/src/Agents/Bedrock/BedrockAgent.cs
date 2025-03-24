@@ -91,7 +91,7 @@ public class BedrockAgent : KernelAgent
         }
 
         // Create a thread if needed
-        var bedrockThread = await this.EnsureThreadExistsWithMessageAsync(
+        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
@@ -136,7 +136,7 @@ public class BedrockAgent : KernelAgent
         }
 
         // Create a thread if needed
-        var bedrockThread = await this.EnsureThreadExistsWithMessageAsync(
+        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
@@ -332,7 +332,7 @@ public class BedrockAgent : KernelAgent
     #endregion
 
     /// <inheritdoc/>
-    protected override Task<TThreadType> EnsureThreadExistsWithMessageAsync<TThreadType>(ICollection<ChatMessageContent> messages, AgentThread? thread, Func<TThreadType> constructThread, CancellationToken cancellationToken)
+    protected override Task<TThreadType> EnsureThreadExistsWithMessagesAsync<TThreadType>(ICollection<ChatMessageContent> messages, AgentThread? thread, Func<TThreadType> constructThread, CancellationToken cancellationToken)
     {
         if (thread is null)
         {

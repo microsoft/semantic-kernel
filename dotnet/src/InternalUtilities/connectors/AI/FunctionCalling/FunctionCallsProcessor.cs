@@ -494,6 +494,12 @@ internal sealed class FunctionCallsProcessor
             return chatMessageContent.ToString();
         }
 
+        // Same optimization but for a enumerable of ChatMessageContent
+        if (functionResult is IEnumerable<ChatMessageContent> chatMessageContents)
+        {
+            return string.Join(",", chatMessageContents.Select(c => c.ToString()));
+        }
+
         return JsonSerializer.Serialize(functionResult, s_functionResultSerializerOptions);
     }
 

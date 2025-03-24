@@ -369,7 +369,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         Verify.NotNull(messages);
 
-        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new OpenAIAssistantAgentThread(this.Client),
@@ -463,7 +463,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     {
         Verify.NotNull(messages);
 
-        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new OpenAIAssistantAgentThread(this.Client),
