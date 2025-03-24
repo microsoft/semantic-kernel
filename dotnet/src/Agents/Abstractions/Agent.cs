@@ -213,7 +213,7 @@ public abstract class Agent
     /// <remarks>
     /// <para>
     /// Note that while all agents should notify their threads of new messages,
-    /// not all threads will necesarily take action. For some treads, this may be
+    /// not all threads will necessarily take action. For some treads, this may be
     /// the only way that they would know that a new message is available to be added
     /// to their history.
     /// </para>
