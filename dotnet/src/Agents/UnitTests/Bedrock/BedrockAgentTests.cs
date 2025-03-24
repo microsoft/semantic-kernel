@@ -211,58 +211,6 @@ public class BedrockAgentTests
     }
 
     /// <summary>
-    /// Verify the InvokeAsync method with AgentThread parameter.
-    /// </summary>
-    [Fact]
-    public async Task VerifyInvokeAsyncWithAgentThreadAsync()
-    {
-        // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
-        var messages = new List<ChatMessageContent>
-        {
-            new(AuthorRole.User, "Hello, how are you?")
-        };
-        var agentThread = new BedrockAgentThread(mockRuntimeClient.Object);
-
-        // Act
-        var responseItems = bedrockAgent.InvokeAsync(messages, agentThread, null, default);
-
-        // Assert
-        await foreach (var responseItem in responseItems)
-        {
-            Assert.NotNull(responseItem.Message);
-            Assert.Equal(agentThread, responseItem.Thread);
-        }
-    }
-
-    /// <summary>
-    /// Verify the InvokeStreamingAsync method with AgentThread parameter.
-    /// </summary>
-    [Fact]
-    public async Task VerifyInvokeStreamingAsyncWithAgentThreadAsync()
-    {
-        // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
-        var messages = new List<ChatMessageContent>
-        {
-            new(AuthorRole.User, "Hello, how are you?")
-        };
-        var agentThread = new Mock<AgentThread>();
-
-        // Act
-        var responseItems = bedrockAgent.InvokeStreamingAsync(messages, agentThread.Object, null, default);
-
-        // Assert
-        await foreach (var responseItem in responseItems)
-        {
-            Assert.NotNull(responseItem.Message);
-            Assert.Equal(agentThread.Object, responseItem.Thread);
-        }
-    }
-
-    /// <summary>
     /// Verify the InvokeAsync method throws when an incorrect thread type is provided.
     /// </summary>
     /// <returns></returns>

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -24,8 +27,9 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         // Respond to user input
         try
         {
-            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-            await foreach (var response in responses)
+            AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), null);
+            await foreach (ChatMessageContent response in responses)
             {
                 this.Output.WriteLine(response.Content);
             }
@@ -50,8 +54,9 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         var bedrockAgent = new BedrockAgent(getAgentResponse.Agent, this.Client, this.RuntimeClient);
 
         // Respond to user input
-        var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-        await foreach (var response in responses)
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
+        var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+        await foreach (ChatMessageContent response in responses)
         {
             this.Output.WriteLine(response.Content);
         }
@@ -70,8 +75,9 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         // Respond to user input
         try
         {
-            var streamingResponses = bedrockAgent.InvokeStreamingAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-            await foreach (var response in streamingResponses)
+            AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
+            var streamingResponses = bedrockAgent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+            await foreach (StreamingChatMessageContent response in streamingResponses)
             {
                 this.Output.WriteLine(response.Content);
             }
