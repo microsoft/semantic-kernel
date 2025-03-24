@@ -66,7 +66,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         Verify.NotNull(messages);
 
-        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
@@ -119,7 +119,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         Verify.NotNull(messages);
 
-        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+        var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new ChatHistoryAgentThread(),
