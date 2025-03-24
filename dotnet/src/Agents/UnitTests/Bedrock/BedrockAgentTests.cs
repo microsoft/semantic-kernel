@@ -1,12 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
+using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
 
@@ -204,6 +210,82 @@ public class BedrockAgentTests
         Assert.Single(bedrockAgent.GetChannelKeys());
     }
 
+    /// <summary>
+    /// Verify the InvokeAsync method with AgentThread parameter.
+    /// </summary>
+    [Fact]
+    public async Task VerifyInvokeAsyncWithAgentThreadAsync()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var messages = new List<ChatMessageContent>
+        {
+            new(AuthorRole.User, "Hello, how are you?")
+        };
+        var agentThread = new BedrockAgentThread(mockRuntimeClient.Object);
+
+        // Act
+        var responseItems = bedrockAgent.InvokeAsync(messages, agentThread, null, default);
+
+        // Assert
+        await foreach (var responseItem in responseItems)
+        {
+            Assert.NotNull(responseItem.Message);
+            Assert.Equal(agentThread, responseItem.Thread);
+        }
+    }
+
+    /// <summary>
+    /// Verify the InvokeStreamingAsync method with AgentThread parameter.
+    /// </summary>
+    [Fact]
+    public async Task VerifyInvokeStreamingAsyncWithAgentThreadAsync()
+    {
+        // Arrange
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var messages = new List<ChatMessageContent>
+        {
+            new(AuthorRole.User, "Hello, how are you?")
+        };
+        var agentThread = new Mock<AgentThread>();
+
+        // Act
+        var responseItems = bedrockAgent.InvokeStreamingAsync(messages, agentThread.Object, null, default);
+
+        // Assert
+        await foreach (var responseItem in responseItems)
+        {
+            Assert.NotNull(responseItem.Message);
+            Assert.Equal(agentThread.Object, responseItem.Thread);
+        }
+    }
+
+    /// <summary>
+    /// Verify the InvokeAsync method throws when an incorrect thread type is provided.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task VerifyInvokeWithWrongThreadTypeThrowsAsync()
+    {
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var messages = new List<ChatMessageContent>
+        {
+            new (AuthorRole.User, "Hello, how are you?")
+        };
+        var agentThread = new Mock<AgentThread>();
+
+        // Act
+        await Assert.ThrowsAsync<KernelException>(async () =>
+        {
+            await foreach (var response in bedrockAgent.InvokeAsync(messages, agentThread.Object, null, default))
+            {
+            }
+        });
+    }
+
     private (Mock<AmazonBedrockAgentClient>, Mock<AmazonBedrockAgentRuntimeClient>) CreateMockClients()
     {
 #pragma warning disable Moq1410 // Moq: Set MockBehavior to Strict
@@ -263,6 +345,11 @@ public class BedrockAgentTests
                 AgentStatus = AgentStatus.PREPARED,
             }
         });
+
+        mockRuntimeClient.Setup(x => x.InvokeAgentAsync(
+            It.IsAny<InvokeAgentRequest>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeAgentResponse() { HttpStatusCode = System.Net.HttpStatusCode.OK });
 
         return (mockClient, mockRuntimeClient);
     }

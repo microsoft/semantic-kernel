@@ -63,6 +63,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
         {
             try
             {
+                await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = this._thread!.Id });
                 await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._thread!.Id });
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
@@ -70,20 +71,28 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
             }
         }
 
-        try
+        if (this._createdThread!.Id is not null)
         {
-            await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdThread!.Id });
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
+            try
+            {
+                await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = this._createdThread!.Id });
+                await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdThread!.Id });
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+            }
         }
 
-        try
+        if (this._createdServiceFailingAgentThread!.Id is not null)
         {
-            await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdServiceFailingAgentThread!.Id });
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
+            try
+            {
+                await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = this._createdServiceFailingAgentThread!.Id });
+                await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdServiceFailingAgentThread!.Id });
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+            }
         }
 
         await this._client.DeleteAgentAsync(new DeleteAgentRequest() { AgentId = this._bedrockAgent!.AgentId });
@@ -132,7 +141,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 
         return new()
         {
-            AgentName = AgentName,
+            AgentName = $"{AgentName}-{Guid.NewGuid():n}",
             Description = AgentDescription,
             Instruction = AgentInstruction,
             AgentResourceRoleArn = bedrockAgentSettings.AgentResourceRoleArn,

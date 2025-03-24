@@ -37,7 +37,7 @@ public sealed class BedrockAgentThread : AgentThread
     /// <returns>A task that completes when the thread has been created.</returns>
     public new Task CreateAsync(CancellationToken cancellationToken = default)
     {
-        return this.CreateInternalAsync(cancellationToken);
+        return base.CreateAsync(cancellationToken);
     }
 
     /// <summary>
@@ -90,6 +90,7 @@ public sealed class BedrockAgentThread : AgentThread
             var response = await this._runtimeClient.CreateSessionAsync(
                 request: new(),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+
             return response.SessionId;
         }
         catch (AmazonBedrockAgentRuntimeException ex)
@@ -109,12 +110,21 @@ public sealed class BedrockAgentThread : AgentThread
 
         try
         {
-            var response = await this._runtimeClient.DeleteSessionAsync(
+            var endSessionResponse = await this._runtimeClient.EndSessionAsync(
                 request: new()
                 {
                     SessionIdentifier = this.Id
                 },
                 cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var deleteSessionResponse = await this._runtimeClient.DeleteSessionAsync(
+                request: new()
+                {
+                    SessionIdentifier = this.Id
+                },
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            this.Id = null;
         }
         catch (AmazonBedrockAgentRuntimeException ex)
         {
@@ -129,7 +139,7 @@ public sealed class BedrockAgentThread : AgentThread
     /// <inheritdoc />
     protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        string message = $"{nameof(BedrockAgentThread)} does not support adding messages directly to the thread.";
-        throw new NotImplementedException(message);
+        // Bedrock agents cannot add messages to the thread without invoking.
+        return Task.CompletedTask;
     }
 }

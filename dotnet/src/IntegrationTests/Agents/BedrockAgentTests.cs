@@ -34,7 +34,7 @@ public sealed class BedrockAgentTests : IDisposable
     /// <summary>
     /// Integration test for invoking a <see cref="BedrockAgent"/>.
     /// </summary>
-    [Theory(Skip = "This test is for manual verification.")]
+    [Theory()]
     [InlineData("Why is the sky blue in one sentence?")]
     public async Task InvokeTestAsync(string input)
     {
@@ -235,7 +235,7 @@ Dolphin  2")]
 
         return new()
         {
-            AgentName = AgentName,
+            AgentName = $"{AgentName}-{Guid.NewGuid():n}",
             Description = AgentDescription,
             Instruction = AgentInstruction,
             AgentResourceRoleArn = bedrockAgentSettings.AgentResourceRoleArn,

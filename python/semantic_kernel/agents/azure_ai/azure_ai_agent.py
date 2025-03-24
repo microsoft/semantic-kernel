@@ -549,6 +549,6 @@ class AzureAIAgent(Agent):
 
         assert thread.id is not None  # nosec
 
-        await thread.on_new_message(message)
+        await thread._on_new_message(message)
 
         return thread
