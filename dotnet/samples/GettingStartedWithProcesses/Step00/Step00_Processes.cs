@@ -59,7 +59,7 @@ public class Step00_Processes(ITestOutputHelper output) : BaseTest(output, redir
         KernelProcess kernelProcess = process.Build();
 
         // Start the process with an initial external event
-        using var runningProcess = await kernelProcess.StartAsync(
+        await using var runningProcess = await kernelProcess.StartAsync(
             kernel,
                 new KernelProcessEvent()
                 {

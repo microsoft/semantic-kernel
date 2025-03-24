@@ -18,7 +18,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task<KernelSearchResults<string>> SearchAsync(
+    Task<KernelSearchResults<string>> SearchAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
@@ -29,7 +29,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
+    Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
@@ -40,7 +40,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    public Task<KernelSearchResults<object>> GetSearchResultsAsync(
+    Task<KernelSearchResults<object>> GetSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);

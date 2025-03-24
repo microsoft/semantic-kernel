@@ -198,7 +198,7 @@ def get_anthropic_chat_completion_service_and_request_settings() -> tuple[
 def get_bedrock_chat_completion_service_and_request_settings() -> tuple[
     "ChatCompletionClientBase", "PromptExecutionSettings"
 ]:
-    """Return Anthropic chat completion service and request settings.
+    """Return Bedrock chat completion service and request settings.
 
     The service credentials can be read by 3 ways:
     1. Via the constructor
@@ -213,15 +213,14 @@ def get_bedrock_chat_completion_service_and_request_settings() -> tuple[
     """
     from semantic_kernel.connectors.ai.bedrock import BedrockChatCompletion, BedrockChatPromptExecutionSettings
 
-    chat_service = BedrockChatCompletion(service_id=service_id, model_id="cohere.command-r-v1:0")
+    chat_service = BedrockChatCompletion(service_id=service_id, model_id="anthropic.claude-3-sonnet-20240229-v1:0")
     request_settings = BedrockChatPromptExecutionSettings(
         # For model specific settings, specify them in the extension_data dictionary.
         # For example, for Cohere Command specific settings, refer to:
-        # https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-cohere-command-r-plus.html
+        # https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-anthropic-claude-messages.html
         service_id=service_id,
         extension_data={
-            "presence_penalty": 0.5,
-            "seed": 5,
+            "temperature": 0.8,
         },
     )
 

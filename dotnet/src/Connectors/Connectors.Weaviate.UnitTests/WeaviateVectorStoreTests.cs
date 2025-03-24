@@ -44,12 +44,13 @@ public sealed class WeaviateVectorStoreTests : IDisposable
         var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act
-        var collection = sut.GetCollection<Guid, WeaviateHotel>("collection1");
+        var collection = sut.GetCollection<Guid, WeaviateHotel>("Collection1");
 
         // Assert
         Assert.NotNull(collection);
     }
 
+#pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionWithFactoryReturnsCustomCollection()
     {
@@ -78,6 +79,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
             "collection",
             It.IsAny<VectorStoreRecordDefinition>()), Times.Once());
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task ListCollectionNamesReturnsCollectionNamesAsync()

@@ -48,6 +48,7 @@ public class AzureAISearchVectorStoreTests
         Assert.IsType<AzureAISearchVectorStoreRecordCollection<SinglePropsModel>>(actual);
     }
 
+#pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactory is obsolete
     [Fact]
     public void GetCollectionCallsFactoryIfProvided()
     {
@@ -65,6 +66,7 @@ public class AzureAISearchVectorStoreTests
         // Assert.
         Assert.Equal(collectionMock.Object, actual);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     [Fact]
     public void GetCollectionThrowsForInvalidKeyType()

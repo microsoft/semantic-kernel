@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -19,9 +18,15 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// </summary>
 public class BedrockAgent : KernelAgent
 {
-    internal readonly AmazonBedrockAgentClient Client;
+    /// <summary>
+    /// The client used to interact with the Bedrock Agent service.
+    /// </summary>
+    public AmazonBedrockAgentClient Client { get; }
 
-    internal readonly AmazonBedrockAgentRuntimeClient RuntimeClient;
+    /// <summary>
+    /// The client used to interact with the Bedrock Agent runtime service.
+    /// </summary>
+    public AmazonBedrockAgentRuntimeClient RuntimeClient { get; }
 
     internal readonly Amazon.BedrockAgent.Model.Agent AgentModel;
 
@@ -41,12 +46,12 @@ public class BedrockAgent : KernelAgent
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
     public BedrockAgent(
         Amazon.BedrockAgent.Model.Agent agentModel,
-        AmazonBedrockAgentClient? client = null,
-        AmazonBedrockAgentRuntimeClient? runtimeClient = null)
+        AmazonBedrockAgentClient client,
+        AmazonBedrockAgentRuntimeClient runtimeClient)
     {
         this.AgentModel = agentModel;
-        this.Client = client ?? new AmazonBedrockAgentClient();
-        this.RuntimeClient = runtimeClient ?? new AmazonBedrockAgentRuntimeClient();
+        this.Client = client;
+        this.RuntimeClient = runtimeClient;
 
         this.Id = agentModel.AgentId;
         this.Name = agentModel.AgentName;

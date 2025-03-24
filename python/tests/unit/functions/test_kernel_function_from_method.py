@@ -544,3 +544,25 @@ def test_gather_function_parameters_exception_handling(get_custom_type_function_
 
     with pytest.raises(FunctionExecutionException, match=r"Parameter param is expected to be parsed to .* but is not."):
         func.gather_function_parameters(context)
+
+
+@pytest.mark.parametrize(
+    ("mode"),
+    [
+        ("python"),
+        ("json"),
+    ],
+)
+def test_function_model_dump(get_custom_type_function_pydantic, mode):
+    func: KernelFunctionFromMethod = get_custom_type_function_pydantic
+    model_dump = func.model_dump(mode=mode)
+    assert isinstance(model_dump, dict)
+    assert "metadata" in model_dump
+    assert len(model_dump["metadata"]["parameters"]) == 1
+
+
+def test_function_model_dump_json(get_custom_type_function_pydantic):
+    func = get_custom_type_function_pydantic
+    model_dump = func.model_dump_json()
+    assert isinstance(model_dump, str)
+    assert "metadata" in model_dump

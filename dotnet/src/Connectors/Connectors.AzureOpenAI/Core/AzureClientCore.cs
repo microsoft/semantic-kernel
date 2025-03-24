@@ -141,6 +141,7 @@ internal partial class AzureClientCore : ClientCore
                 "2024-10-01-PREVIEW" or "V2024_10_01_PREVIEW" or "2024_10_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview,
                 "2024-12-01-PREVIEW" or "V2024_12_01_PREVIEW" or "2024_12_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2024_12_01_Preview,
                 "2025-01-01-PREVIEW" or "V2025_01_01_PREVIEW" or "2025_01_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2025_01_01_Preview,
+                "2025-03-01-PREVIEW" or "V2025_03_01_PREVIEW" or "2025_03_01_PREVIEW" => AzureOpenAIClientOptions.ServiceVersion.V2025_03_01_Preview,
 
                 _ => throw new NotSupportedException($"The service version '{serviceVersion}' is not supported.")
             };

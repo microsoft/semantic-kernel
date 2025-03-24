@@ -104,7 +104,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         var command = this._commandBuilder.BuildDropTableCommand(TableName);
 
         // Assert
-        Assert.Equal("DROP TABLE [TestTable];", command.CommandText);
+        Assert.Equal("DROP TABLE IF EXISTS [TestTable];", command.CommandText);
     }
 
     [Theory]
@@ -233,6 +233,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
             leftTablePropertyNames,
             rightTablePropertyNames,
             conditions,
+            extraWhereFilter: null,
+            extraParameters: null,
             orderByPropertyName);
 
         // Assert

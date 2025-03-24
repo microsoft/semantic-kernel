@@ -36,7 +36,7 @@ Copy the `.env.example` file to `.env` and update the following values:
 1. `ACS_CONNECTION_STRING`: Azure Communication Service resource's connection string.
 2. `CALLBACK_URI_HOST`: Base url of the app. (For local development use the dev tunnel url from the step above)
 3. `AZURE_OPENAI_ENDPOINT`: Azure Open AI service endpoint
-4. `AZURE_OPENAI_DEPLOYMENT_MODEL_NAME`: Azure Open AI deployment name
+4. `AZURE_OPENAI_REALTIME_DEPLOYMENT_NAME`: Azure Open AI deployment name
 5. `AZURE_OPENAI_API_VERSION`: Azure Open AI API version, this should be one that includes the realtime api, for instance '2024-10-01-preview'
 6. `AZURE_OPENAI_API_KEY`: Azure Open AI API key, optionally, you can also use Entra Auth.
 

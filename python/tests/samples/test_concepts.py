@@ -23,6 +23,7 @@ from samples.concepts.chat_completion.simple_chatbot_kernel_function import main
 from samples.concepts.chat_completion.simple_chatbot_logit_bias import main as simple_chatbot_logit_bias
 from samples.concepts.chat_completion.simple_chatbot_streaming import main as simple_chatbot_streaming
 from samples.concepts.chat_completion.simple_chatbot_with_image import main as simple_chatbot_with_image
+from samples.concepts.embedding.text_embedding_generation import main as text_embedding_generation
 from samples.concepts.filtering.auto_function_invoke_filters import main as auto_function_invoke_filters
 from samples.concepts.filtering.function_invocation_filters import main as function_invocation_filters
 from samples.concepts.filtering.function_invocation_filters_stream import main as function_invocation_filters_stream
@@ -45,8 +46,8 @@ from samples.concepts.prompt_templates.configuring_prompts import main as config
 from samples.concepts.prompt_templates.load_yaml_prompt import main as load_yaml_prompt
 from samples.concepts.prompt_templates.template_language import main as template_language
 from samples.concepts.rag.rag_with_text_memory_plugin import main as rag_with_text_memory_plugin
-from samples.concepts.search.bing_search_plugin import main as bing_search_plugin
 from samples.concepts.service_selector.custom_service_selector import main as custom_service_selector
+from samples.concepts.text_completion.text_completion import main as text_completion
 from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent_simple import (
     main as step1_chat_completion_agent_simple,
 )
@@ -248,12 +249,6 @@ concepts = [
     ),
     param(rag_with_text_memory_plugin, [], id="rag_with_text_memory_plugin"),
     param(
-        bing_search_plugin,
-        [],
-        id="bing_search_plugin",
-        marks=pytest.mark.skip(reason="Flaky test due to Azure OpenAI content policy"),
-    ),
-    param(
         custom_service_selector,
         [],
         id="custom_service_selector",
@@ -347,6 +342,22 @@ concepts = [
         image_generation,
         [],
         id="image_generation",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        text_completion,
+        [],
+        id="text_completion",
+        marks=pytest.mark.skipif(
+            os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
+        ),
+    ),
+    param(
+        text_embedding_generation,
+        [],
+        id="text_embedding_generation",
         marks=pytest.mark.skipif(
             os.getenv(COMPLETIONS_CONCEPT_SAMPLE, None) is None, reason="Not running completion samples."
         ),

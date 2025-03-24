@@ -6,14 +6,16 @@ from typing import Annotated
 from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
-# This sample shows how to interact with a Bedrock agent that is capable of using kernel functions.
-# Instead of creating a kernel and adding plugins to it, you can directly pass the plugins to the
-# agent when creating it.
-# This sample uses the following main component(s):
-# - a Bedrock agent
-# - a kernel function
-# - a kernel
-# You will learn how to create a new Bedrock agent and ask it a question that requires a kernel function to answer.
+"""
+This sample shows how to interact with a Bedrock agent that is capable of using kernel functions.
+Instead of creating a kernel and adding plugins to it, you can directly pass the plugins to the
+agent when creating it.
+This sample uses the following main component(s):
+- a Bedrock agent
+- a kernel function
+- a kernel
+You will learn how to create a new Bedrock agent and ask it a question that requires a kernel function to answer.
+"""
 
 AGENT_NAME = "semantic-kernel-bedrock-agent"
 INSTRUCTION = "You are a friendly assistant. You help people find information."
