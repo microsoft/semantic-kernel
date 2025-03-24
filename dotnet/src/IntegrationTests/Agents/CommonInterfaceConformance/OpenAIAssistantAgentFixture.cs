@@ -85,13 +85,13 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
     public override async Task InitializeAsync()
     {
-        AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+        AzureAIConfiguration configuration = this._configuration.GetSection("AzureAI").Get<AzureAIConfiguration>()!;
         var client = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(configuration.Endpoint));
         this._assistantClient = client.GetAssistantClient();
 
         this._assistant =
             await this._assistantClient.CreateAssistantAsync(
-                configuration.ModelId,
+                configuration.ChatModelId,
                 name: "HelpfulAssistant",
                 instructions: "You are a helpful assistant.");
 
