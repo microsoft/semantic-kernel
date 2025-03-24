@@ -553,8 +553,8 @@ public class InMemoryVectorStoreRecordCollectionTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsFilterable = true },
-            new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
+            new VectorStoreRecordDataProperty("Data", typeof(string)) { IsIndexed = true },
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
         ]
     };
@@ -564,10 +564,10 @@ public class InMemoryVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public TKey? Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public List<string> Tags { get; set; } = new List<string>();
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Data { get; set; } = string.Empty;
 
         [VectorStoreRecordVector]

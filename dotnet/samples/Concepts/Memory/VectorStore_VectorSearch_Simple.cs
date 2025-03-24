@@ -93,7 +93,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         [VectorStoreRecordKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Category { get; set; }
 
         [VectorStoreRecordData]

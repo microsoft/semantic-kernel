@@ -81,7 +81,7 @@ internal static class AzureCosmosDBMongoDBVectorStoreCollectionCreateMapping
         // Create separate index for each data property
         foreach (var property in dataProperties)
         {
-            if (property.IsFilterable)
+            if (property.IsIndexed)
             {
                 // Use index name same as data property name with underscore
                 var dataPropertyName = storagePropertyNames[property.DataModelPropertyName];

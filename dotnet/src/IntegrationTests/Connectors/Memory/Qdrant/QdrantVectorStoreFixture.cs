@@ -53,11 +53,11 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance }
             }
@@ -67,7 +67,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             Properties = new List<VectorStoreRecordProperty>
             {
                 new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextSearchable = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance }
             }
@@ -318,22 +318,22 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public ulong HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsIndexed = true, IsFullTextSearchable = true)]
         public string? HotelName { get; set; }
 
         /// <summary>An int metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public int HotelCode { get; set; }
 
         /// <summary>A  float metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public float? HotelRating { get; set; }
 
         /// <summary>A bool metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "parking_is_included")]
+        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "parking_is_included")]
         public bool ParkingIncluded { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public List<string> Tags { get; set; } = new List<string>();
 
         /// <summary>A data field.</summary>
@@ -356,7 +356,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public Guid HotelId { get; init; }
 
         /// <summary>A string metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsIndexed = true, IsFullTextSearchable = true)]
         public string? HotelName { get; set; }
 
         /// <summary>A data field.</summary>

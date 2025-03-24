@@ -21,7 +21,7 @@ public sealed class VectorStoreRecordDataAttribute : Attribute
     /// <value>
     /// The default is <see langword="false" />.
     /// </value>
-    public bool IsFilterable { get; init; }
+    public bool IsIndexed { get; init; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this data property is full-text searchable.

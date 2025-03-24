@@ -32,10 +32,10 @@ public class PostgresVectorStoreRecordCollectionTests
         {
             Properties = [
                 new VectorStoreRecordKeyProperty("HotelId", typeof(int)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 100, DistanceFunction = DistanceFunction.ManhattanDistance }
@@ -63,7 +63,7 @@ public class PostgresVectorStoreRecordCollectionTests
         {
             Properties = [
                 new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextSearchable = true },
             ]
         };
         var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>()

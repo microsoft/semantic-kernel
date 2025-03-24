@@ -624,8 +624,8 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Properties =
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsFilterable = true, StoragePropertyName = "ignored_data1_storage_name" },
-            new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Data1", typeof(string)) { IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name" },
+            new VectorStoreRecordDataProperty("Data2", typeof(string)) { IsIndexed = true },
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance, StoragePropertyName = "ignored_vector1_storage_name" },
             new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 }
         ]
@@ -637,10 +637,10 @@ public class RedisJsonVectorStoreRecordCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("data1_json_name")]
-        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "ignored_data1_storage_name")]
+        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "ignored_data1_storage_name")]
         public string Data1 { get; set; } = string.Empty;
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Data2 { get; set; } = string.Empty;
 
         [JsonPropertyName("vector1_json_name")]
