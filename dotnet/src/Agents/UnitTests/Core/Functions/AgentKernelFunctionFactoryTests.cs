@@ -191,9 +191,9 @@ public class AgentKernelFunctionFactoryTests
     /// </summary>
     private sealed class MockAgentThread : AgentThread
     {
-        protected override Task<string> CreateInternalAsync(CancellationToken cancellationToken)
+        protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult("mock_thread_id");
+            return Task.FromResult<string?>("mock_thread_id");
         }
 
         protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
