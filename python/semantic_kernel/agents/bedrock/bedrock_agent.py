@@ -81,7 +81,7 @@ class BedrockAgentThread(AgentThread):
             ),
         )
         self._id = response["sessionId"]
-        return self._id
+        return self._id  # type: ignore
 
     @override
     async def _delete(self) -> None:
