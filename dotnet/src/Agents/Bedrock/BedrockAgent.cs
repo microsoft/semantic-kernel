@@ -75,13 +75,22 @@ public class BedrockAgent : KernelAgent
 
     #region public methods
 
-    // TODO: Add overload that allows the AgentAliasId to be specified
-
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(messages, thread, options, WorkingDraftAgentAlias, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        string? agentAliasId = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages, nameof(messages));
@@ -105,7 +114,7 @@ public class BedrockAgent : KernelAgent
 
         var invokeAgentRequest = new InvokeAgentRequest
         {
-            AgentAliasId = WorkingDraftAgentAlias,
+            AgentAliasId = agentAliasId ?? WorkingDraftAgentAlias,
             SessionState = sessionState,
             AgentId = this.Id,
             SessionId = bedrockThread.Id,

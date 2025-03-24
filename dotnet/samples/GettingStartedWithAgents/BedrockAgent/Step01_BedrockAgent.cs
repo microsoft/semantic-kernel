@@ -25,10 +25,10 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent");
 
         // Respond to user input
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
         try
         {
-            AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
-            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), null);
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
             await foreach (ChatMessageContent response in responses)
             {
                 this.Output.WriteLine(response.Content);
@@ -37,6 +37,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         finally
         {
             await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 
@@ -55,10 +56,17 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
 
         // Respond to user input
         AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
-        var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
-        await foreach (ChatMessageContent response in responses)
+        try
         {
-            this.Output.WriteLine(response.Content);
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+            await foreach (ChatMessageContent response in responses)
+            {
+                this.Output.WriteLine(response.Content);
+            }
+        }
+        finally
+        {
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 
@@ -71,11 +79,11 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step01_BedrockAgent_Streaming");
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
 
         // Respond to user input
         try
         {
-            AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
             var streamingResponses = bedrockAgent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
             await foreach (StreamingChatMessageContent response in streamingResponses)
             {
@@ -85,6 +93,7 @@ public class Step01_BedrockAgent(ITestOutputHelper output) : BaseBedrockAgentTes
         finally
         {
             await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 
