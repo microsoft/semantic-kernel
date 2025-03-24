@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
+[Experimental("SKEXP0020")]
 public class SqlServerMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "dbo";

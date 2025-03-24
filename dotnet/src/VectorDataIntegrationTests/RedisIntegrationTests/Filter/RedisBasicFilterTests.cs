@@ -70,7 +70,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
 {
     public new class Fixture : BasicFilterTests<string>.Fixture
     {
-        public override TestStore TestStore => RedisTestStore.Instance;
+        public override TestStore TestStore => RedisTestStore.JsonInstance;
 
         protected override string CollectionName => "JsonCollectionFilterTests";
 
@@ -83,7 +83,7 @@ public class RedisJsonCollectionBasicFilterTests(RedisJsonCollectionBasicFilterT
 
         protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
             => new RedisJsonVectorStoreRecordCollection<FilterRecord>(
-                RedisTestStore.Instance.Database,
+                RedisTestStore.JsonInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
     }
@@ -122,7 +122,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
 
     public new class Fixture : BasicFilterTests<string>.Fixture
     {
-        public override TestStore TestStore => RedisTestStore.Instance;
+        public override TestStore TestStore => RedisTestStore.HashSetInstance;
 
         protected override string CollectionName => "HashSetCollectionFilterTests";
 
@@ -138,7 +138,7 @@ public class RedisHashSetCollectionBasicFilterTests(RedisHashSetCollectionBasicF
 
         protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
             => new RedisHashSetVectorStoreRecordCollection<FilterRecord>(
-                RedisTestStore.Instance.Database,
+                RedisTestStore.HashSetInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
 

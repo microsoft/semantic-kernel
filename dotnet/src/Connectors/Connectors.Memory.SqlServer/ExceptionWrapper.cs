@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class ExceptionWrapper
 {
-    private const string VectorStoreType = "SqlServer";
+    internal const string VectorStoreType = "SqlServer";
 
     internal static async Task<T> WrapAsync<T>(
         SqlConnection connection,
@@ -33,6 +33,12 @@ internal static class ExceptionWrapper
         }
         catch (Exception ex)
         {
+#if NET
+            await connection.DisposeAsync().ConfigureAwait(false);
+#else
+            connection.Dispose();
+#endif
+
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = operationName,
