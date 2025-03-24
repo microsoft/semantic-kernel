@@ -22,7 +22,7 @@ public sealed class BedrockAgentThread : AgentThread
     /// Initializes a new instance of the <see cref="BedrockAgentThread"/> class.
     /// </summary>
     /// <param name="runtimeClient">A client used to interact with the Bedrock Agent runtime service.</param>
-    /// <param name="sessionId">An optional session Id to continue an exsting session.</param>
+    /// <param name="sessionId">An optional session Id to continue an existing session.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public BedrockAgentThread(AmazonBedrockAgentRuntimeClient runtimeClient, string? sessionId = null)
     {

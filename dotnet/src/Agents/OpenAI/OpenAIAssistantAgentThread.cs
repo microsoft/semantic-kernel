@@ -17,20 +17,64 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// </summary>
 public sealed class OpenAIAssistantAgentThread : AgentThread
 {
+    private readonly bool _useThreadConstructorExtension = false;
     private readonly AssistantClient _client;
+
     private readonly ThreadCreationOptions? _options;
+
+    private readonly IEnumerable<ChatMessageContent>? _messages;
+    private readonly IReadOnlyList<string>? _codeInterpreterFileIds;
+    private readonly string? _vectorStoreId;
+    private readonly IReadOnlyDictionary<string, string>? _metadata;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIAssistantAgentThread"/> class.
+    /// </summary>
+    /// <param name="client">The assistant client to use for interacting with threads.</param>
+    public OpenAIAssistantAgentThread(AssistantClient client)
+    {
+        Verify.NotNull(client);
+
+        this._client = client;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentThread"/> class.
     /// </summary>
     /// <param name="client">The assistant client to use for interacting with threads.</param>
     /// <param name="options">The options to use when creating the thread.</param>
-    public OpenAIAssistantAgentThread(AssistantClient client, ThreadCreationOptions? options = null)
+    public OpenAIAssistantAgentThread(AssistantClient client, ThreadCreationOptions options)
     {
         Verify.NotNull(client);
 
         this._client = client;
         this._options = options;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OpenAIAssistantAgentThread"/> class.
+    /// </summary>
+    /// <param name="client">The assistant client to use for interacting with threads.</param>
+    /// <param name="messages">The initial messages for the thread.</param>
+    /// <param name="codeInterpreterFileIds">The file IDs for the code interpreter tool.</param>
+    /// <param name="vectorStoreId">The vector store identifier.</param>
+    /// <param name="metadata">The metadata for the thread.</param>
+    public OpenAIAssistantAgentThread(
+        AssistantClient client,
+        IEnumerable<ChatMessageContent>? messages = null,
+        IReadOnlyList<string>? codeInterpreterFileIds = null,
+        string? vectorStoreId = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        Verify.NotNull(client);
+
+        this._useThreadConstructorExtension = true;
+
+        this._client = client;
+        this._messages = messages;
+        this._codeInterpreterFileIds = codeInterpreterFileIds;
+        this._vectorStoreId = vectorStoreId;
+        this._metadata = metadata;
     }
 
     /// <summary>
@@ -64,6 +108,11 @@ public sealed class OpenAIAssistantAgentThread : AgentThread
 
         try
         {
+            if (this._useThreadConstructorExtension)
+            {
+                return await this._client.CreateThreadAsync(this._messages, this._codeInterpreterFileIds, this._vectorStoreId, this._metadata, cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+
             var assistantThreadResponse = await this._client.CreateThreadAsync(this._options, cancellationToken: cancellationToken).ConfigureAwait(false);
             return assistantThreadResponse.Value.Id;
         }

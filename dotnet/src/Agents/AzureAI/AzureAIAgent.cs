@@ -150,7 +150,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     {
         Verify.NotNull(messages);
 
-        var azureAIAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+        var azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
@@ -226,7 +226,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     {
         Verify.NotNull(messages);
 
-        var azureAIAgentThread = await this.EnsureThreadExistsWithMessageAsync(
+        var azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
             () => new AzureAIAgentThread(this.Client),
