@@ -36,7 +36,7 @@ public static class AgentKernelFunctionFactory
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNull(agent, nameof(agent));
+        Verify.NotNull(agent);
 
         async Task<FunctionResult> InvokeAgentAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
         {
