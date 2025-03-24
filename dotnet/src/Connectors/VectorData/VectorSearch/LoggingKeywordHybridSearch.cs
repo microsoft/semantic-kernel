@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.VectorData;
 /// A keyword hybrid search that logs operations to an <see cref="ILogger"/>
 /// </summary>
 [Experimental("SKEXP0020")]
-public class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<TRecord>
+public class LoggingKeywordHybridSearch<TRecord> : DelegatingKeywordHybridSearch<TRecord>
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -27,7 +27,7 @@ public class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<TRecord>
     /// </summary>
     /// <param name="innerSearch">The underlying <see cref="LoggingKeywordHybridSearch{TRecord}"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
-    public LoggingKeywordHybridSearch(IKeywordHybridSearch<TRecord> innerSearch, ILogger logger)
+    public LoggingKeywordHybridSearch(IKeywordHybridSearch<TRecord> innerSearch, ILogger logger) : base(innerSearch)
     {
         Verify.NotNull(innerSearch);
         Verify.NotNull(logger);
@@ -37,11 +37,11 @@ public class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<TRecord>
     }
 
     /// <inheritdoc/>
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(HybridSearchAsync),
-            () => this._innerSearch.HybridSearchAsync(vector, keywords, options, cancellationToken));
+            () => base.HybridSearchAsync(vector, keywords, options, cancellationToken));
     }
 }

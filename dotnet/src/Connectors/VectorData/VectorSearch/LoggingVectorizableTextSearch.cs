@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData;
 /// A vectorizable text search that logs operations to an <see cref="ILogger"/>
 /// </summary>
 [Experimental("SKEXP0020")]
-public class LoggingVectorizableTextSearch<TRecord> : IVectorizableTextSearch<TRecord>
+public class LoggingVectorizableTextSearch<TRecord> : DelegatingVectorizableTextSearch<TRecord>
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -26,7 +26,7 @@ public class LoggingVectorizableTextSearch<TRecord> : IVectorizableTextSearch<TR
     /// </summary>
     /// <param name="innerSearch">The underlying <see cref="IVectorizableTextSearch{TRecord}"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance used for all logging.</param>
-    public LoggingVectorizableTextSearch(IVectorizableTextSearch<TRecord> innerSearch, ILogger logger)
+    public LoggingVectorizableTextSearch(IVectorizableTextSearch<TRecord> innerSearch, ILogger logger) : base(innerSearch)
     {
         Verify.NotNull(innerSearch);
         Verify.NotNull(logger);
@@ -36,11 +36,11 @@ public class LoggingVectorizableTextSearch<TRecord> : IVectorizableTextSearch<TR
     }
 
     /// <inheritdoc/>
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(VectorizableTextSearchAsync),
-            () => this._innerSearch.VectorizableTextSearchAsync(searchText, options, cancellationToken));
+            () => base.VectorizableTextSearchAsync(searchText, options, cancellationToken));
     }
 }

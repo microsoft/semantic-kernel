@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 [Experimental("SKEXP0020")]
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
+public class LoggingVectorStoreRecordCollection<TKey, TRecord> : DelegatingVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
@@ -30,6 +30,7 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     /// <param name="innerCollection">The underlying <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
     public LoggingVectorStoreRecordCollection(IVectorStoreRecordCollection<TKey, TRecord> innerCollection, ILogger logger)
+        : base(innerCollection)
     {
         Verify.NotNull(innerCollection);
         Verify.NotNull(logger);
@@ -39,106 +40,103 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc/>
-    public string CollectionName => this._innerCollection.CollectionName;
-
-    /// <inheritdoc/>
-    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(CollectionExistsAsync),
-            () => this._innerCollection.CollectionExistsAsync(cancellationToken));
+            () => base.CollectionExistsAsync(cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(CreateCollectionAsync),
-            () => this._innerCollection.CreateCollectionAsync(cancellationToken));
+            () => base.CreateCollectionAsync(cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public override Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(CreateCollectionIfNotExistsAsync),
-            () => this._innerCollection.CreateCollectionIfNotExistsAsync(cancellationToken));
+            () => base.CreateCollectionIfNotExistsAsync(cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(DeleteAsync),
-            () => this._innerCollection.DeleteAsync(key, cancellationToken));
+            () => base.DeleteAsync(key, cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public override Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(DeleteBatchAsync),
-            () => this._innerCollection.DeleteBatchAsync(keys, cancellationToken));
+            () => base.DeleteBatchAsync(keys, cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public override Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(DeleteCollectionAsync),
-            () => this._innerCollection.DeleteCollectionAsync(cancellationToken));
+            () => base.DeleteCollectionAsync(cancellationToken));
     }
 
     /// <inheritdoc/>
-    public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(GetAsync),
-            () => this._innerCollection.GetAsync(key, options, cancellationToken));
+            () => base.GetAsync(key, options, cancellationToken));
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(GetBatchAsync),
-            () => this._innerCollection.GetBatchAsync(keys, options, cancellationToken),
+            () => base.GetBatchAsync(keys, options, cancellationToken),
             cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public override Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(UpsertAsync),
-            () => this._innerCollection.UpsertAsync(record, cancellationToken));
+            () => base.UpsertAsync(record, cancellationToken));
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(UpsertBatchAsync),
-            () => this._innerCollection.UpsertBatchAsync(records, cancellationToken),
+            () => base.UpsertBatchAsync(records, cancellationToken),
             cancellationToken);
     }
 
     /// <inheritdoc/>
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(VectorizedSearchAsync),
-            () => this._innerCollection.VectorizedSearchAsync(vector, options, cancellationToken));
+            () => base.VectorizedSearchAsync(vector, options, cancellationToken));
     }
 }
