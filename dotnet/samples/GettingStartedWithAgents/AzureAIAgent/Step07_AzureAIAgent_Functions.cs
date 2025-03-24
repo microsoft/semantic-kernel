@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
-using Agent = Azure.AI.Projects.Agent;
-using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -28,7 +27,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
 
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(
             model: TestConfiguration.AzureAI.ChatModelId,
             name: HostName,
             description: null,

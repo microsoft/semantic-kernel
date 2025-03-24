@@ -4,8 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using Agent = Azure.AI.Projects.Agent;
-using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -39,7 +37,7 @@ public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzur
         AzureAIAgent agent = new(agentModel, this.AgentsClient);
 
         // Create a thread associated for the agent conversation.
-        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
+        Microsoft.SemanticKernel.Agents.AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try

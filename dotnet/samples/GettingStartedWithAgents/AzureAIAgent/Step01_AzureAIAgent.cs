@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Resources;
-using Agent = Azure.AI.Projects.Agent;
-using AgentThread = Microsoft.SemanticKernel.Agents.AgentThread;
 
 namespace GettingStarted.AzureAgents;
 
@@ -20,7 +19,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
         // Instructions, Name and Description properties defined via the PromptTemplateConfig.
-        Agent definition = await this.AgentsClient.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
+        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
         AzureAIAgent agent = new(
             definition,
             this.AgentsClient,
