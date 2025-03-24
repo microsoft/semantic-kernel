@@ -5,7 +5,7 @@ import os
 
 from autogen import ConversableAgent
 
-from semantic_kernel.agents.autogen import AutoGenConversableAgent, AutoGenConversableAgentThread
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 
 """
 The following sample demonstrates how to use the AutoGenConversableAgent to create a conversation between two agents

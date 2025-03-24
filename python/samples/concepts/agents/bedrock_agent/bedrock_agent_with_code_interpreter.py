@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents.bedrock_agent import BedrockAgent, BedrockAgentThread
 from semantic_kernel.contents.binary_content import BinaryContent
 
 """

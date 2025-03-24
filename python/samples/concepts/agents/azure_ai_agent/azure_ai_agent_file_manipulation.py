@@ -6,7 +6,7 @@ import os
 from azure.ai.projects.models import CodeInterpreterTool, FilePurpose
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 

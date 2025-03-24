@@ -4,7 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentThread
 
 """
 The following sample demonstrates how to use an already existing

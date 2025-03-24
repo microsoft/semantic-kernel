@@ -5,7 +5,7 @@ import asyncio
 from autogen import ConversableAgent
 from autogen.coding import LocalCommandLineCodeExecutor
 
-from semantic_kernel.agents.autogen import AutoGenConversableAgent, AutoGenConversableAgentThread
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 
 """
 The following sample demonstrates how to use the AutoGenConversableAgent to create a reply from an agent

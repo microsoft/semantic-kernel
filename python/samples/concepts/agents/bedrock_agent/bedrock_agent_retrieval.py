@@ -4,7 +4,7 @@ import asyncio
 
 import boto3
 
-from semantic_kernel.agents.bedrock import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 
 """
 The following sample demonstrates how to use an already existing

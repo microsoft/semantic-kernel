@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents import OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

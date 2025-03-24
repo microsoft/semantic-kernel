@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from autogen import ConversableAgent, register_function
 
-from semantic_kernel.agents.autogen import AutoGenConversableAgent, AutoGenConversableAgentThread
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 

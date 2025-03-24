@@ -3,8 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import kernel_function
 

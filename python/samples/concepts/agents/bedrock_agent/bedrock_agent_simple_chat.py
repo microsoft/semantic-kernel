@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents.bedrock import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 
 """
 This sample shows how to interact with a Bedrock agent in the simplest way.

@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
 from semantic_kernel.contents import StreamingAnnotationContent
 
 """

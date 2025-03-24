@@ -2,9 +2,9 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.contents import AuthorRole
+from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an OpenAI

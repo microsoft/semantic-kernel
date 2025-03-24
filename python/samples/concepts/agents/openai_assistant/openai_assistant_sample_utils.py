@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+    from semantic_kernel.agents import OpenAIAssistantAgent
     from semantic_kernel.contents import AnnotationContent, StreamingAnnotationContent
 
 

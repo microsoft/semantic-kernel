@@ -2,10 +2,10 @@
 
 import asyncio
 
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.const import TEMPLATE_FORMAT_TYPES
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 """
 The following sample demonstrates how to create an assistant

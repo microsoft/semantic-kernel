@@ -3,9 +3,8 @@ import asyncio
 import os
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.contents import ChatMessageContent, StreamingAnnotationContent
 
 """
 The following sample demonstrates how to create an OpenAI
