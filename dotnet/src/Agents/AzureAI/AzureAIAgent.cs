@@ -173,7 +173,7 @@ public sealed partial class AzureAIAgent : KernelAgent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            await azureAIAgentThread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            await this.NotifyThreadOfNewMessage(azureAIAgentThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, azureAIAgentThread);
         }
     }
@@ -257,7 +257,7 @@ public sealed partial class AzureAIAgent : KernelAgent
         // Notify the thread of any new messages that were assembled from the streaming response.
         foreach (var newMessage in newMessagesReceiver)
         {
-            await azureAIAgentThread.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
+            await this.NotifyThreadOfNewMessage(azureAIAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 

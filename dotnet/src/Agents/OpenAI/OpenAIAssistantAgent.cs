@@ -392,7 +392,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            await openAIAssistantAgentThread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, openAIAssistantAgentThread);
         }
     }
@@ -494,7 +494,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         // Notify the thread of any new messages that were assembled from the streaming response.
         foreach (var newMessage in newMessagesReceiver)
         {
-            await openAIAssistantAgentThread.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
+            await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 
