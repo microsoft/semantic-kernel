@@ -86,7 +86,7 @@ async def main():
 
         try:
             # 6. Add the task as a message to the group chat
-            await chat.add_chat_message(message=TASK)
+            await chat.add_chat_message(messages=TASK)
             print(f"# {AuthorRole.USER}: '{TASK}'")
             # 7. Invoke the chat
             async for content in chat.invoke():

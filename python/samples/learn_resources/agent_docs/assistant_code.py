@@ -115,7 +115,7 @@ async def main():
 
             is_code = False
             last_role = None
-            async for response in agent.invoke_stream(message=user_input, thread=thread):
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
                 current_is_code = response.metadata.get("code", False)
 
                 if current_is_code:

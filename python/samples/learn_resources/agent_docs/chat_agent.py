@@ -75,7 +75,7 @@ async def main():
             is_complete = True
             break
 
-        async for response in agent.invoke(message=user_input, thread=thread):
+        async for response in agent.invoke(messages=user_input, thread=thread):
             print(f"{response.content}")
             thread = response.thread
 

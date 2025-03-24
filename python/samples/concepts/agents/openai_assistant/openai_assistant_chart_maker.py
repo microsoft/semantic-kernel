@@ -57,7 +57,7 @@ async def main():
     try:
         for user_input in user_inputs:
             file_ids = []
-            async for response in agent.invoke(message=user_input, thread=thread):
+            async for response in agent.invoke(messages=user_input, thread=thread):
                 thread = response.thread
                 if response.content:
                     print(f"# {response.role}: {response}")
