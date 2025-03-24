@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import ChatCompletionAgent, ChatCompletionAgentThread
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import PromptTemplateConfig
@@ -28,7 +28,7 @@ inputs = [
 async def invoke_chat_completion_agent(agent: ChatCompletionAgent, inputs):
     """Invokes the given agent with each (input, style) in inputs."""
 
-    thread: ChatCompletionAgentThread = None
+    thread: ChatHistoryAgentThread = None
 
     for user_input, style in inputs:
         print(f"[USER]: {user_input}\n")
@@ -39,8 +39,8 @@ async def invoke_chat_completion_agent(agent: ChatCompletionAgent, inputs):
             argument_overrides = KernelArguments(style=style)
 
         # Stream agent responses
-        async for response in agent.invoke_stream(message=user_input, thread=thread, arguments=argument_overrides):
-            print(f"{response.message.content}", end="", flush=True)
+        async for response in agent.invoke_stream(messages=user_input, thread=thread, arguments=argument_overrides):
+            print(f"{response.content}", end="", flush=True)
             thread = response.thread
         print()
 

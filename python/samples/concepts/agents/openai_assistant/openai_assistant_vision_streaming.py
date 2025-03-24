@@ -3,8 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
@@ -42,7 +41,7 @@ async def main():
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     # Define a series of message with either ImageContent or FileReferenceContent
     user_inputs = {
@@ -76,12 +75,12 @@ async def main():
             print(f"# User: '{user_input.items[0].text}'")  # type: ignore
 
             first_chunk = True
-            async for response in agent.invoke_stream(message=user_input, thread=thread):
-                if response.message.role != AuthorRole.TOOL:
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                if response.role != AuthorRole.TOOL:
                     if first_chunk:
                         print("# Agent: ", end="", flush=True)
                         first_chunk = False
-                    print(response.message.content, end="", flush=True)
+                    print(response.content, end="", flush=True)
                 thread = response.thread
             print("\n")
 

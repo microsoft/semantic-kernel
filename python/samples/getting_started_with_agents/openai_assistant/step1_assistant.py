@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -43,14 +43,14 @@ async def main():
     # 4. Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         for user_input in USER_INPUTS:
             print(f"# User: '{user_input}'")
             # 6. Invoke the agent for the current thread and print the response
-            response = await agent.get_response(message=user_input, thread=thread)
-            print(f"# {response.message.name}: {response.message}")
+            response = await agent.get_response(messages=user_input, thread=thread)
+            print(f"# {response.name}: {response}")
             thread = response.thread
 
     finally:

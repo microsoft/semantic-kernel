@@ -51,7 +51,7 @@ async def test_azure_ai_agent_get_response(ai_project_client, ai_agent_definitio
         "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke",
         side_effect=fake_invoke,
     ):
-        response = await agent.get_response(message="message", thread=thread)
+        response = await agent.get_response(messages="message", thread=thread)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content == "content"
         assert response.thread is not None
@@ -71,7 +71,7 @@ async def test_azure_ai_agent_get_response_exception(ai_project_client, ai_agent
         ),
         pytest.raises(AgentInvokeException),
     ):
-        await agent.get_response(message="message", thread=thread)
+        await agent.get_response(messages="message", thread=thread)
 
 
 async def test_azure_ai_agent_invoke(ai_project_client, ai_agent_definition):
@@ -86,7 +86,7 @@ async def test_azure_ai_agent_invoke(ai_project_client, ai_agent_definition):
         "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke(message="message", thread=thread):
+        async for item in agent.invoke(messages="message", thread=thread):
             results.append(item)
 
     assert len(results) == 1
@@ -104,7 +104,7 @@ async def test_azure_ai_agent_invoke_stream(ai_project_client, ai_agent_definiti
         "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke_stream(message="message", thread=thread):
+        async for item in agent.invoke_stream(messages="message", thread=thread):
             results.append(item)
 
     assert len(results) == 1

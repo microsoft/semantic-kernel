@@ -90,7 +90,7 @@ public class AzureAIAgentFixture : AgentFixture
     public override async Task InitializeAsync()
     {
         AzureAIConfiguration configuration = this._configuration.GetSection("AzureAI").Get<AzureAIConfiguration>()!;
-        var client = AzureAIAgent.CreateAzureAIClient(configuration.ConnectionString, new AzureCliCredential());
+        var client = AzureAIAgent.CreateAzureAIClient(configuration.ConnectionString!, new AzureCliCredential());
         this._agentsClient = client.GetAgentsClient();
 
         this._aiAgent =

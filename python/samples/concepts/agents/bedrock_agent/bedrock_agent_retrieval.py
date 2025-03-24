@@ -4,7 +4,7 @@ import asyncio
 
 import boto3
 
-from semantic_kernel.agents.bedrock import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 
 """
 The following sample demonstrates how to use an already existing
@@ -39,7 +39,7 @@ async def main():
                 input_text=user_input,
                 thread=thread,
             ):
-                print(f"Bedrock agent: {response.message}")
+                print(f"Bedrock agent: {response}")
                 thread = response.thread
     except KeyboardInterrupt:
         print("\n\nExiting chat...")

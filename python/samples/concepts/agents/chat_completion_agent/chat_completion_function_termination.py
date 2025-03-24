@@ -3,11 +3,11 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import ChatCompletionAgent, ChatCompletionAgentThread
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.filters import AutoFunctionInvocationContext
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel import Kernel
 
 """
@@ -78,7 +78,7 @@ async def main():
     )
 
     # 2. Define the thread
-    thread: ChatCompletionAgentThread = None
+    thread: ChatHistoryAgentThread = None
 
     user_inputs = [
         "Hello",
@@ -90,16 +90,16 @@ async def main():
     for user_input in user_inputs:
         print(f"# User: '{user_input}'")
         # 3. Get the response from the agent
-        response = await agent.get_response(message=user_input, thread=thread)
+        response = await agent.get_response(messages=user_input, thread=thread)
         thread = response.thread
-        _write_content(response.message)
+        _write_content(response)
 
     print("================================")
     print("CHAT HISTORY")
     print("================================")
 
     # 4. Print out the chat history to view the different types of messages
-    chat_history = await thread.retrieve_current_chat_history()
+    chat_history = await thread.get_messages()
     for message in chat_history.messages:
         _write_content(message)
 

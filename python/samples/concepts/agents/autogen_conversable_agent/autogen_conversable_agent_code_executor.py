@@ -5,7 +5,7 @@ import asyncio
 from autogen import ConversableAgent
 from autogen.coding import LocalCommandLineCodeExecutor
 
-from semantic_kernel.agents.autogen import AutoGenConversableAgent, AutoGenConversableAgentThread
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 
 """
 The following sample demonstrates how to use the AutoGenConversableAgent to create a reply from an agent
@@ -59,8 +59,8 @@ if __name__ == "__main__":
 This is the end of the message.
 """
 
-    async for response in autogen_agent.invoke(message=message_with_code_block, thread=thread):
-        print(f"# {response.message.role} - {response.message.name or '*'}: '{response.message}'")
+    async for response in autogen_agent.invoke(messages=message_with_code_block, thread=thread):
+        print(f"# {response.role} - {response.name or '*'}: '{response}'")
         thread = response.thread
 
     # Cleanup: Delete the thread and agent

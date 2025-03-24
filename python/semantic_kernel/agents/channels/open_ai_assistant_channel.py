@@ -83,7 +83,7 @@ class OpenAIAssistantChannel(AgentChannel):
             raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")
 
         async for message in AssistantThreadActions.invoke_stream(
-            agent=agent, thread_id=self.thread_id, messages=messages, **kwargs
+            agent=agent, thread_id=self.thread_id, output_messages=messages, **kwargs
         ):
             yield message
 

@@ -24,7 +24,7 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
-    from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgentThread
+    from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 class ChatHistoryChannel(AgentChannel, ChatHistory):
     """An AgentChannel specialization for that acts upon a ChatHistoryHandler."""
 
-    thread: "ChatCompletionAgentThread"
+    thread: "ChatHistoryAgentThread"
 
     ALLOWED_CONTENT_TYPES: ClassVar[tuple[type, ...]] = (
         ImageContent,

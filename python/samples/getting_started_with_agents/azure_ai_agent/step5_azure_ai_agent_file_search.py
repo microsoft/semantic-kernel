@@ -6,7 +6,7 @@ import os
 from azure.ai.projects.models import FileSearchTool, OpenAIFile, VectorStore
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import AuthorRole
 
 """
@@ -63,9 +63,9 @@ async def main() -> None:
             for user_input in USER_INPUTS:
                 print(f"# User: '{user_input}'")
                 # 6. Invoke the agent for the specified thread for response
-                async for response in agent.invoke(message=user_input, thread=thread):
-                    if response.message.role != AuthorRole.TOOL:
-                        print(f"# Agent: {response.message}")
+                async for response in agent.invoke(messages=user_input, thread=thread):
+                    if response.role != AuthorRole.TOOL:
+                        print(f"# Agent: {response}")
                     thread = response.thread
         finally:
             # 7. Cleanup: Delete the thread and agent and other resources

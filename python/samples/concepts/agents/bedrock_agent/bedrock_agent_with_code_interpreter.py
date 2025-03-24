@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents.bedrock_agent import BedrockAgent, BedrockAgentThread
 from semantic_kernel.contents.binary_content import BinaryContent
 
 """
@@ -44,10 +44,10 @@ async def main():
             input_text=ASK,
             thread=thread,
         ):
-            print(f"Response:\n{response.message}")
+            print(f"Response:\n{response}")
             thread = response.thread
             if not binary_item:
-                binary_item = next((item for item in response.message.items if isinstance(item, BinaryContent)), None)
+                binary_item = next((item for item in response.items if isinstance(item, BinaryContent)), None)
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()

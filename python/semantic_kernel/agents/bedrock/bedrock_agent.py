@@ -260,9 +260,9 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def get_response(
         self,
+        *,
         input_text: str,
         thread: AgentThread | None = None,
-        *,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -281,6 +281,15 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             A chat message content with the response.
         """
+        # TODO(Tao): Update to the same pattern as ChatCompletionAgent/AzureAIAgent/OpenAIAssistantAgent
+        # to use:
+        # thread = await self._ensure_thread_exists_with_messages(  # noqa: ERA001, RUF100
+        #     messages=messages,  # noqa: ERA001
+        #     thread=thread,  # noqa: ERA001
+        #     construct_thread=lambda: BedrockAgentThread(),  # noqa: ERA001
+        #     expected_type=BedrockAgentThread,  # noqa: ERA001
+        # )  # noqa: ERA001, RUF100
+        # assert thread.id is not None  # nosec
         thread = await self._configure_thread(thread)
         assert thread.id is not None  # nosec
 
@@ -370,6 +379,15 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of chat message content.
         """
+        # TODO(Tao): Update to the same pattern as ChatCompletionAgent/AzureAIAgent/OpenAIAssistantAgent
+        # to use:
+        # thread = await self._ensure_thread_exists_with_messages(  # noqa: ERA001, RUF100
+        #     messages=messages,  # noqa: ERA001
+        #     thread=thread,  # noqa: ERA001
+        #     construct_thread=lambda: BedrockAgentThread(),  # noqa: ERA001
+        #     expected_type=BedrockAgentThread,  # noqa: ERA001
+        # )  # noqa: ERA001, RUF100
+        # assert thread.id is not None  # nosec
         thread = await self._configure_thread(thread)
         assert thread.id is not None  # nosec
 
@@ -461,6 +479,15 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of streaming chat message content
         """
+        # TODO(Tao): Update to the same pattern as ChatCompletionAgent/AzureAIAgent/OpenAIAssistantAgent
+        # to use:
+        # thread = await self._ensure_thread_exists_with_messages(  # noqa: ERA001, RUF100
+        #     messages=messages,  # noqa: ERA001
+        #     thread=thread,  # noqa: ERA001
+        #     construct_thread=lambda: BedrockAgentThread(),  # noqa: ERA001
+        #     expected_type=BedrockAgentThread,  # noqa: ERA001
+        # )  # noqa: ERA001, RUF100
+        # assert thread.id is not None  # nosec
         thread = await self._configure_thread(thread)
         assert thread.id is not None  # nosec
 

@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents.bedrock import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 
 """
 This sample shows how to interact with a Bedrock agent via streaming in the simplest way.
@@ -30,7 +30,7 @@ async def main():
             # The chat history is maintained in the thread
             print("Bedrock agent: ", end="")
             async for response in bedrock_agent.invoke_stream(input_text=user_input, thread=thread):
-                print(response.message, end="")
+                print(response, end="")
                 thread = response.thread
             print()
     except KeyboardInterrupt:

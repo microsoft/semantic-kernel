@@ -2,10 +2,10 @@
 
 import asyncio
 
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.functions import KernelArguments
+from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.const import TEMPLATE_FORMAT_TYPES
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 """
 The following sample demonstrates how to create an assistant
@@ -53,7 +53,7 @@ async def invoke_agent_with_template(
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         for user_input, style in inputs:
@@ -67,9 +67,9 @@ async def invoke_agent_with_template(
                 argument_overrides = KernelArguments(style=style)
 
             # Stream agent responses
-            async for response in agent.invoke_stream(message=user_input, thread=thread, arguments=argument_overrides):
-                if response.message.content:
-                    print(f"{response.message.content}", flush=True, end="")
+            async for response in agent.invoke_stream(messages=user_input, thread=thread, arguments=argument_overrides):
+                if response.content:
+                    print(f"{response.content}", flush=True, end="")
                 thread = response.thread
             print("\n")
     finally:

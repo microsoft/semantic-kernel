@@ -6,7 +6,7 @@ import os
 from azure.ai.projects.models import CodeInterpreterTool, FilePurpose
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -66,11 +66,11 @@ async def main() -> None:
             for user_input in user_inputs:
                 print(f"# User: '{user_input}'")
                 # Invoke the agent for the specified user input
-                async for response in agent.invoke(message=user_input, thread=thread):
-                    if response.message.role != AuthorRole.TOOL:
-                        print(f"# Agent: {response.message}")
-                        if len(response.message.items) > 0:
-                            for item in response.message.items:
+                async for response in agent.invoke(messages=user_input, thread=thread):
+                    if response.role != AuthorRole.TOOL:
+                        print(f"# Agent: {response}")
+                        if len(response.items) > 0:
+                            for item in response.items:
                                 # Show Annotation Content if it exist
                                 if isinstance(item, AnnotationContent):
                                     print(f"\n`{item.quote}` => {item.file_id}")
