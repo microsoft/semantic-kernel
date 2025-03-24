@@ -119,6 +119,60 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         return queryDefinition;
     }
 
+    internal static QueryDefinition BuildSearchQuery(
+        List<string> fields,
+        Dictionary<string, string> storagePropertyNames,
+        string whereClause, Dictionary<string, object?> filterParameters,
+        string? orderByArgument,
+        bool ascending,
+        int top,
+        int skip)
+    {
+        var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
+        var fieldsArgument = fields.Select(field => $"{tableVariableName}.{field}");
+
+        var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
+
+        // If Offset is not configured, use Top parameter instead of Limit/Offset
+        // since it's more optimized. Hybrid search doesn't allow top to be passed as a parameter
+        // so directly add it to the query here.
+        var topArgument = skip == 0 ? $"TOP {top} " : string.Empty;
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine($"SELECT {topArgument}{selectClauseArguments}");
+        builder.AppendLine($"FROM {tableVariableName}");
+        builder.Append("WHERE ").AppendLine(whereClause);
+
+        if (!string.IsNullOrEmpty(orderByArgument))
+        {
+            builder.AppendFormat("ORDER BY {0}.{1}", tableVariableName, orderByArgument);
+
+            if (!ascending)
+            {
+                builder.Append(" DESC");
+            }
+
+            builder.AppendLine();
+        }
+
+        if (string.IsNullOrEmpty(topArgument))
+        {
+            // Hybrid search doesn't allow offset and limit to be passed as parameters
+            // so directly add it to the query here.
+            builder.AppendLine($"OFFSET {skip} LIMIT {top}");
+        }
+
+        var queryDefinition = new QueryDefinition(builder.ToString());
+
+        foreach (var queryParameter in filterParameters)
+        {
+            queryDefinition.WithParameter(queryParameter.Key, queryParameter.Value);
+        }
+
+        return queryDefinition;
+    }
+
     /// <summary>
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL.
     /// </summary>

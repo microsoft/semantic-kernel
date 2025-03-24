@@ -281,7 +281,21 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
+            .AsQueryable()
+            .Where(options.Filter);
+
+        if (options.OrderBy is not null)
+        {
+            records = options.SortAscending
+                ? records.OrderBy(options.OrderBy)
+                : records.OrderByDescending(options.OrderBy);
+        }
+
+        return records
+            .Skip(options.Skip)
+            .Take(options.Top)
+            .ToAsyncEnumerable();
     }
 
     /// <summary>

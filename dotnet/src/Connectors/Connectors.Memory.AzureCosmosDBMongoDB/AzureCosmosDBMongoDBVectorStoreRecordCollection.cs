@@ -325,9 +325,49 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(options);
+
+        // Translate the filter now, so if it fails, we throw immediately.
+        var filter = new AzureCosmosDBMongoDBFilterTranslator().Translate(options.Filter, this._storagePropertyNames);
+        SortDefinition<BsonDocument>? sortDefinition = null;
+
+        if (this._propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty sortProperty)
+        {
+            var storageName = this._storagePropertyNames[sortProperty.DataModelPropertyName];
+            sortDefinition = options.SortAscending
+                ? Builders<BsonDocument>.Sort.Ascending(storageName)
+                : Builders<BsonDocument>.Sort.Descending(storageName);
+        }
+
+        using IAsyncCursor<BsonDocument> cursor = await this.RunOperationAsync(
+            "QueryAsync",
+            async () =>
+            {
+                return await this._mongoCollection.FindAsync(filter,
+                    new()
+                    {
+                        Limit = options.Top,
+                        Skip = options.Skip,
+                        Sort = sortDefinition
+                    },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    "QueryAsync",
+                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+
+                yield return record;
+            }
+        }
     }
 
     #region private
