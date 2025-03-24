@@ -3,10 +3,9 @@
 import asyncio
 from typing import TYPE_CHECKING
 
-from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import AuthorRole
 from semantic_kernel.kernel import Kernel
 
 if TYPE_CHECKING:

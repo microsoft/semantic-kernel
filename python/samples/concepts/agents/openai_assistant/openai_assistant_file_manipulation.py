@@ -3,8 +3,8 @@ import asyncio
 import os
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.contents import AnnotationContent
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -50,7 +50,7 @@ async def main():
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         user_inputs = [
@@ -61,17 +61,17 @@ async def main():
 
         for user_input in user_inputs:
             print(f"# User: '{user_input}'")
-            async for response in agent.invoke(message=user_input, thread=thread):
+            async for response in agent.invoke(messages=user_input, thread=thread):
                 thread = response.thread
-                if response.message.metadata.get("code", False):
-                    print(f"# {response.message.role}:\n\n```python")
-                    print(response.message.content)
+                if response.metadata.get("code", False):
+                    print(f"# {response.role}:\n\n```python")
+                    print(response)
                     print("```")
                 else:
-                    print(f"# {response.message.role}: {response.message.content}")
+                    print(f"# {response.role}: {response}")
 
-                if response.message.items:
-                    for item in response.message.items:
+                if response.items:
+                    for item in response.items:
                         if isinstance(item, AnnotationContent):
                             await download_response_files(agent, [item])
     finally:

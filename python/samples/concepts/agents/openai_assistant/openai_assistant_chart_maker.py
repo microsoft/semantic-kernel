@@ -2,8 +2,8 @@
 import asyncio
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_images
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.contents import FileReferenceContent
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -38,7 +38,7 @@ async def main():
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     user_inputs = [
         """
@@ -57,17 +57,17 @@ async def main():
     try:
         for user_input in user_inputs:
             file_ids = []
-            async for response in agent.invoke(message=user_input, thread=thread):
+            async for response in agent.invoke(messages=user_input, thread=thread):
                 thread = response.thread
-                if response.message.content:
-                    print(f"# {response.message.role}: {response.message}")
+                if response.content:
+                    print(f"# {response.role}: {response}")
 
-                if len(response.message.items) > 0:
-                    for item in response.message.items:
+                if len(response.items) > 0:
+                    for item in response.items:
                         if isinstance(item, FileReferenceContent):
                             file_ids.extend([
                                 item.file_id
-                                for item in response.message.items
+                                for item in response.items
                                 if isinstance(item, FileReferenceContent) and item.file_id is not None
                             ])
 

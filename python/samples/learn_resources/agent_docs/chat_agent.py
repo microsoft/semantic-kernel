@@ -5,7 +5,7 @@ import os
 import sys
 from datetime import datetime
 
-from semantic_kernel.agents import ChatCompletionAgent, ChatCompletionAgentThread
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import KernelArguments
@@ -64,7 +64,7 @@ async def main():
         arguments=KernelArguments(settings=settings),
     )
 
-    thread: ChatCompletionAgentThread = None
+    thread: ChatHistoryAgentThread = None
     is_complete: bool = False
     while not is_complete:
         user_input = input("User:> ")
@@ -75,8 +75,8 @@ async def main():
             is_complete = True
             break
 
-        async for response in agent.invoke(message=user_input, thread=thread):
-            print(f"{response.message.content}")
+        async for response in agent.invoke(messages=user_input, thread=thread):
+            print(f"{response.content}")
             thread = response.thread
 
 

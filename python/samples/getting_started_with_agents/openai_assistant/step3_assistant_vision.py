@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AssistantThread, OpenAIAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, OpenAIAssistantAgent
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
@@ -41,7 +41,7 @@ async def main():
     # 5. Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     # 6. Define the user messages with the image content to simulate the conversation
     user_messages = {
@@ -74,8 +74,8 @@ async def main():
         for message in user_messages:
             print(f"# User: {str(message)}")  # type: ignore
             # 8. Invoke the agent for the current thread and print the response
-            async for response in agent.invoke(message=message, thread=thread):
-                print(f"# Agent: {response.message}\n")
+            async for response in agent.invoke(messages=message, thread=thread):
+                print(f"# Agent: {response}\n")
                 thread = response.thread
     finally:
         # 9. Clean up the resources

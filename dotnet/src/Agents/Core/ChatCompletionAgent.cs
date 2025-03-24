@@ -95,7 +95,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             // Do not add a message implicitly added to the history.
             if (!result.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
-                await chatHistoryAgentThread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+                await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
             }
 
             yield return new(result, chatHistoryAgentThread);
@@ -142,7 +142,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         var invokeResults = this.InternalInvokeStreamingAsync(
             agentName,
             chatHistory,
-            (newMessage) => chatHistoryAgentThread.OnNewMessageAsync(newMessage),
+            (newMessage) => this.NotifyThreadOfNewMessage(chatHistoryAgentThread, newMessage, cancellationToken),
             options?.KernelArguments,
             options?.Kernel,
             options?.AdditionalInstructions,

@@ -95,7 +95,7 @@ class AzureAIChannel(AgentChannel):
         async for message in AgentThreadActions.invoke_stream(
             agent=agent,
             thread_id=self.thread_id,
-            messages=messages,
+            output_messages=messages,
             arguments=agent.arguments,
             kernel=agent.kernel,
             **kwargs,

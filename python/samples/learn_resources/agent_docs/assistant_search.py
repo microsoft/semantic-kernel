@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import StreamingAnnotationContent
 
 """
@@ -73,7 +73,7 @@ async def main():
         definition=definition,
     )
 
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         is_complete: bool = False
@@ -87,12 +87,10 @@ async def main():
                 break
 
             footnotes: list[StreamingAnnotationContent] = []
-            async for response in agent.invoke_stream(message=user_input, thread=thread):
-                footnotes.extend([
-                    item for item in response.message.items if isinstance(item, StreamingAnnotationContent)
-                ])
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                footnotes.extend([item for item in response.items if isinstance(item, StreamingAnnotationContent)])
 
-                print(f"{response.message.content}", end="", flush=True)
+                print(f"{response.content}", end="", flush=True)
                 if not thread:
                     thread = response.thread
 

@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import ChatCompletionAgent, ChatCompletionAgentThread
+from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 
 """
@@ -13,15 +13,13 @@ demonstrates the basic steps to create an agent and simulate a conversation
 with the agent.
 
 The interaction with the agent is via the `get_response` method, which sends a
-user input to the agent and receives a response from the agent. The conversation
-history needs to be maintained by the caller in the chat history object.
+user input to the agent and receives a response from the agent.
 """
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Hello, I am John Doe.",
-    "What is your name?",
-    "What is my name?",
+    "Why is the sky blue?",
+    "What is the capital of France?",
 ]
 
 
@@ -30,35 +28,25 @@ async def main():
     agent = ChatCompletionAgent(
         service=AzureChatCompletion(),
         name="Assistant",
-        instructions="Answer the user's questions.",
+        instructions="Answer questions about the world in one sentence.",
     )
-
-    # 2. Create a thread to hold the conversation
-    # If no thread is provided, a new thread will be
-    # created and returned with the initial response
-    thread: ChatCompletionAgentThread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: {user_input}")
-        # 3. Invoke the agent for a response
+        # 2. Invoke the agent for a response
         response = await agent.get_response(
-            message=user_input,
-            thread=thread,
+            messages=user_input,
         )
-        print(f"# {response.message.name}: {response.message}")
-        thread = response.thread
-
-    # 4. Cleanup: Clear the thread
-    await thread.delete() if thread else None
+        # 3. Print the response
+        print(f"# {response.name}: {response}")
 
     """
     Sample output:
-    # User: Hello, I am John Doe.
-    # Assistant: Hello, John Doe! How can I assist you today?
-    # User: What is your name?
-    # Assistant: I don't have a personal name like a human does, but you can call me Assistant.?
-    # User: What is my name?
-    # Assistant: You mentioned that your name is John Doe. How can I assist you further, John?
+    # User: Why is the sky blue?
+    # Assistant: The sky appears blue because molecules in the Earth's atmosphere scatter shorter wavelengths of 
+        sunlight, like blue, more than the longer wavelengths, causing the sky to look blue to our eyes.
+    # User: What is the capital of France?
+    # Assistant: The capital of France is Paris.
     """
 
 
