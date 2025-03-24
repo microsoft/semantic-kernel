@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -45,7 +46,7 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAssis
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -57,7 +58,7 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAssis
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
 
@@ -65,10 +66,9 @@ public class Step06_AssistantTool_Function(ITestOutputHelper output) : BaseAssis
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(threadId, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

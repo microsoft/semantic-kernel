@@ -15,6 +15,7 @@ using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+using AAIP = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -45,7 +46,7 @@ internal static class AgentThreadActions
     /// <returns>The thread identifier</returns>
     public static async Task<string> CreateThreadAsync(AgentsClient client, CancellationToken cancellationToken = default)
     {
-        AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        AAIP.AgentThread thread = await client.CreateThreadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return thread.Id;
     }
@@ -85,9 +86,10 @@ internal static class AgentThreadActions
     /// </summary>
     /// <param name="client">The assistant client</param>
     /// <param name="threadId">The thread identifier</param>
+    /// <param name="messageOrder">The order to return messages in.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Asynchronous enumeration of messages.</returns>
-    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, [EnumeratorCancellation] CancellationToken cancellationToken)
+    public static async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(AgentsClient client, string threadId, ListSortOrder? messageOrder, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Dictionary<string, string?> agentNames = []; // Cache agent names by their identifier
 
@@ -95,7 +97,7 @@ internal static class AgentThreadActions
         PageableList<ThreadMessage>? messages = null;
         do
         {
-            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
+            messages = await client.GetMessagesAsync(threadId, runId: null, limit: null, messageOrder ?? ListSortOrder.Descending, after: lastId, before: null, cancellationToken).ConfigureAwait(false);
             foreach (ThreadMessage message in messages)
             {
                 lastId = message.Id;

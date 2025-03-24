@@ -3,14 +3,16 @@
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterable, Iterable
-from typing import Any, ClassVar
+from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
+from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
@@ -18,10 +20,140 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+TMessage = TypeVar("TMessage", bound=ChatMessageContent)
+TThreadType = TypeVar("TThreadType", bound="AgentThread")
+
+
+@release_candidate
+class AgentThread(ABC):
+    """Base class for agent threads."""
+
+    def __init__(self):
+        """Initialize the agent thread."""
+        self._is_deleted: bool = False  # type: ignore
+        self._id: str | None = None  # type: ignore
+
+    @property
+    def id(self) -> str | None:
+        """Returns the ID of the current thread (if any)."""
+        if self._is_deleted:
+            raise RuntimeError("Thread has been deleted; call `create()` to recreate it.")
+        return self._id
+
+    async def create(self) -> str | None:
+        """Starts the thread and returns the thread ID."""
+        # A thread should not be recreated after it has been deleted.
+        if self._is_deleted:
+            raise RuntimeError("Cannot create thread because it has already been deleted.")
+
+        # If the thread ID is already set, we're done, just return the Id.
+        if self.id is not None:
+            return self.id
+
+        # Otherwise, create the thread.
+        self._id = await self._create()
+        return self.id
+
+    async def delete(self) -> None:
+        """Ends the current thread."""
+        # A thread should not be deleted if it has already been deleted.
+        if self._is_deleted:
+            return
+
+        # If the thread ID is not set, we're done, just return.
+        if self.id is None:
+            self._is_deleted = True
+            return
+
+        # Otherwise, delete the thread.
+        await self._delete()
+        self._id = None
+        self._is_deleted = True
+
+    async def on_new_message(
+        self,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Invoked when a new message has been contributed to the chat by any participant."""
+        # If the thread is not created yet, create it.
+        if self.id is None:
+            await self.create()
+
+        await self._on_new_message(new_message)
+
+    @abstractmethod
+    async def _create(self) -> str:
+        """Starts the thread and returns the thread ID."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def _delete(self) -> None:
+        """Ends the current thread."""
+        raise NotImplementedError
+
+    @abstractmethod
+    async def _on_new_message(
+        self,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Invoked when a new message has been contributed to the chat by any participant."""
+        raise NotImplementedError
+
+
+@release_candidate
+class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
+    """Class representing a response item from an agent.
+
+    Attributes:
+        message: The message content of the response item.
+        thread: The conversation thread associated with the response item.
+    """
+
+    message: TMessage
+    thread: AgentThread
+
+    @property
+    def content(self) -> TMessage:
+        """Get the content of the response item."""
+        return self.message
+
+    @property
+    def items(self) -> list[CMC_ITEM_TYPES]:
+        """Get the items of the response item."""
+        return self.message.items
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        """Get the metadata of the response item."""
+        return self.message.metadata
+
+    @property
+    def name(self) -> str | None:
+        """Get the name of the response item."""
+        return self.message.name
+
+    @property
+    def role(self) -> str | None:
+        """Get the role of the response item."""
+        return self.message.role
+
+    def __str__(self):
+        """Get the string representation of the response item."""
+        return str(self.content)
+
+    def __getattr__(self, item):
+        """Get an attribute of the response item."""
+        return getattr(self.message, item)
+
+    def __hash__(self):
+        """Get the hash of the response item."""
+        return hash((self.message, self.thread))
 
 
 class Agent(KernelBaseModel, ABC):
@@ -75,7 +207,7 @@ class Agent(KernelBaseModel, ABC):
         return data
 
     @abstractmethod
-    async def get_response(self, *args, **kwargs) -> ChatMessageContent:
+    def get_response(self, *args, **kwargs) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
         """Get a response from the agent.
 
         This method returns the final result of the agent's execution
@@ -91,7 +223,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def invoke(self, *args, **kwargs) -> AsyncIterable[ChatMessageContent]:
+    def invoke(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
@@ -102,7 +234,7 @@ class Agent(KernelBaseModel, ABC):
         pass
 
     @abstractmethod
-    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
+    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the
@@ -176,6 +308,44 @@ class Agent(KernelBaseModel, ABC):
         merged_params.update(override_args)
 
         return KernelArguments(settings=merged_execution_settings, **merged_params)
+
+    async def _ensure_thread_exists_with_messages(
+        self,
+        messages: str | ChatMessageContent | Sequence[str | ChatMessageContent],
+        thread: AgentThread | None,
+        construct_thread: Callable[[], TThreadType],
+        expected_type: type[TThreadType],
+    ) -> TThreadType:
+        """Ensure the thread exists with the provided message(s)."""
+        if isinstance(messages, (str, ChatMessageContent)):
+            messages = [messages]
+
+        normalized_messages = [
+            ChatMessageContent(role=AuthorRole.USER, content=msg) if isinstance(msg, str) else msg for msg in messages
+        ]
+
+        if thread is None:
+            thread = construct_thread()
+            await thread.create()
+
+        if not isinstance(thread, expected_type):
+            raise AgentExecutionException(
+                f"{self.__class__.__name__} currently only supports agent threads of type {expected_type.__name__}."
+            )
+
+        # Notify the thread that new messages are available.
+        for msg in normalized_messages:
+            await self._notify_thread_of_new_message(thread, msg)
+
+        return thread
+
+    async def _notify_thread_of_new_message(
+        self,
+        thread: AgentThread,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Notify the thread of a new message."""
+        await thread.on_new_message(new_message)
 
     def __eq__(self, other):
         """Check if two agents are equal."""

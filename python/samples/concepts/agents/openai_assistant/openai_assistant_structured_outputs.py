@@ -3,14 +3,14 @@ import asyncio
 
 from pydantic import BaseModel
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI
 assistant using either Azure OpenAI or OpenAI and leverage the
 assistant's ability to returned structured outputs, based on a user-defined
 Pydantic model. This could also be a non-Pydantic model. Use the convenience
-method on the OpenAIAssistantAgent class to configure the response format, 
+method on the OpenAIAssistantAgent class to configure the response format,
 as shown below.
 
 Note, you may specify your own JSON Schema. You'll need to make sure it is correct
@@ -68,21 +68,23 @@ async def main():
         definition=definition,
     )
 
-    # Define a thread and invoke the agent with the user input
-    thread = await agent.client.beta.threads.create()
+    # Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     user_inputs = ["Why is the sky blue?"]
 
     try:
         for user_input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
             print(f"# User: '{user_input}'")
-            async for content in agent.invoke(thread_id=thread.id):
+            async for response in agent.invoke(messages=user_input, thread=thread):
                 # The response returned is a Pydantic Model, so we can validate it using the model_validate_json method
-                response_model = ResponseModel.model_validate_json(content.content)
-                print(f"# {content.role}: {response_model}")
+                response_model = ResponseModel.model_validate_json(str(response.content))
+                print(f"# {response.role}: {response_model}")
+                thread = response.thread
     finally:
-        await client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

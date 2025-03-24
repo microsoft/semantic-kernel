@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, ClassVar
 from opentelemetry import trace
 from pydantic import Field
 
-from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
+from semantic_kernel.agents.strategies import SelectionStrategy
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.azure_chat_prompt_execution_settings import (
+from semantic_kernel.connectors.ai.open_ai import (
     AzureChatPromptExecutionSettings,
+    OpenAIChatCompletion,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
