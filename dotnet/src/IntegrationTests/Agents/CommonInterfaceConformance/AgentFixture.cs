@@ -17,6 +17,8 @@ public abstract class AgentFixture : IAsyncLifetime
 
     public abstract AgentThread AgentThread { get; }
 
+    public abstract AgentThread CreatedAgentThread { get; }
+
     public abstract AgentThread ServiceFailingAgentThread { get; }
 
     public abstract AgentThread CreatedServiceFailingAgentThread { get; }

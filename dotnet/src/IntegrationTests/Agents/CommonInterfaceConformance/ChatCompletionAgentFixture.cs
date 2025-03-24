@@ -24,10 +24,13 @@ public class ChatCompletionAgentFixture : AgentFixture
 
     private ChatCompletionAgent? _agent;
     private ChatHistoryAgentThread? _thread;
+    private ChatHistoryAgentThread? _createdThread;
 
     public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
+
+    public override AgentThread CreatedAgentThread => this._createdThread!;
 
     public override AgentThread ServiceFailingAgentThread => null!;
 
@@ -53,7 +56,7 @@ public class ChatCompletionAgentFixture : AgentFixture
         return Task.CompletedTask;
     }
 
-    public override Task InitializeAsync()
+    public async override Task InitializeAsync()
     {
         AzureOpenAIConfiguration configuration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
 
@@ -70,7 +73,7 @@ public class ChatCompletionAgentFixture : AgentFixture
             Instructions = "You are a helpful assistant.",
         };
         this._thread = new ChatHistoryAgentThread();
-
-        return Task.CompletedTask;
+        this._createdThread = new ChatHistoryAgentThread();
+        await this._createdThread.CreateAsync();
     }
 }

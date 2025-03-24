@@ -30,12 +30,15 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     private Assistant? _assistant;
     private OpenAIAssistantAgent? _agent;
     private OpenAIAssistantAgentThread? _thread;
+    private OpenAIAssistantAgentThread? _createdThread;
     private OpenAIAssistantAgentThread? _serviceFailingAgentThread;
     private OpenAIAssistantAgentThread? _createdServiceFailingAgentThread;
 
     public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
+
+    public override AgentThread CreatedAgentThread => this._createdThread!;
 
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
@@ -44,7 +47,7 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     public override async Task<ChatHistory> GetChatHistory()
     {
         var chatHistory = new ChatHistory();
-        await foreach (var existingMessage in this._thread!.GetMessagesAsync().ConfigureAwait(false))
+        await foreach (var existingMessage in this._thread!.GetMessagesAsync(MessageCollectionOrder.Ascending).ConfigureAwait(false))
         {
             chatHistory.Add(existingMessage);
         }
@@ -62,6 +65,14 @@ public class OpenAIAssistantAgentFixture : AgentFixture
             catch (ClientResultException ex) when (ex.Status == 404)
             {
             }
+        }
+
+        try
+        {
+            await this._assistantClient!.DeleteThreadAsync(this._createdThread!.Id);
+        }
+        catch (ClientResultException ex) when (ex.Status == 404)
+        {
         }
 
         await this._assistantClient!.DeleteAssistantAsync(this._assistant!.Id);
@@ -89,6 +100,9 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
         this._agent = new OpenAIAssistantAgent(this._assistant, this._assistantClient) { Kernel = kernel };
         this._thread = new OpenAIAssistantAgentThread(this._assistantClient);
+
+        this._createdThread = new OpenAIAssistantAgentThread(this._assistantClient);
+        await this._createdThread.CreateAsync();
 
         var serviceFailingClient = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri("https://localhost/failingserviceclient"));
         this._serviceFailingAgentThread = new OpenAIAssistantAgentThread(serviceFailingClient.GetAssistantClient());

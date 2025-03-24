@@ -181,7 +181,7 @@ public abstract class Agent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An async task that completes once all update are complete.</returns>
     /// <exception cref="KernelException"></exception>
-    protected async Task<TThreadType> EnsureThreadExistsWithMessageAsync<TThreadType>(
+    protected virtual async Task<TThreadType> EnsureThreadExistsWithMessageAsync<TThreadType>(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread,
         Func<TThreadType> constructThread,
@@ -197,8 +197,6 @@ public abstract class Agent
         {
             throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
         }
-
-        await thread.CreateAsync(cancellationToken).ConfigureAwait(false);
 
         // Notify the thread that new messages are available.
         foreach (var message in messages)
