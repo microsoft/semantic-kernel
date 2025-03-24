@@ -110,8 +110,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         agent.Kernel.Plugins.Add(plugin);
 
         /// Create the thread to capture the agent interaction.
-        ChatHistory chat = new();
-        ChatHistoryAgentThread agentThread = new(chat);
+        ChatHistoryAgentThread agentThread = new();
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync("Hello");
@@ -128,7 +127,7 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
             ChatMessageContent message = new(AuthorRole.User, input);
             this.WriteAgentChatMessage(message);
 
-            int historyCount = chat.Count;
+            int historyCount = agentThread.ChatHistory.Count;
 
             bool isFirst = false;
             await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread))
@@ -147,11 +146,11 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
                 Console.WriteLine($"\t > streamed: '{response.Content}'");
             }
 
-            if (historyCount <= chat.Count)
+            if (historyCount <= agentThread.ChatHistory.Count)
             {
-                for (int index = historyCount; index < chat.Count; index++)
+                for (int index = historyCount; index < agentThread.ChatHistory.Count; index++)
                 {
-                    this.WriteAgentChatMessage(chat[index]);
+                    this.WriteAgentChatMessage(agentThread.ChatHistory[index]);
                 }
             }
         }
