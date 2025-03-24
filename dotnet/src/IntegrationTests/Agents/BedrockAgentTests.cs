@@ -34,7 +34,7 @@ public sealed class BedrockAgentTests : IDisposable
     /// <summary>
     /// Integration test for invoking a <see cref="BedrockAgent"/>.
     /// </summary>
-    [Theory()]
+    [Theory(Skip = "This test is for manual verification.")]
     [InlineData("Why is the sky blue in one sentence?")]
     public async Task InvokeTestAsync(string input)
     {

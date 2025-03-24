@@ -604,36 +604,3 @@ class AzureAIAgent(Agent):
             ThreadMessage | None: The thread message
         """
         return await AgentThreadActions.create_message(client=self.client, thread_id=thread_id, message=message)
-
-    async def _configure_thread(
-        self,
-        message: ChatMessageContent,
-        thread: AgentThread | None = None,
-    ) -> AgentThread:
-        """Ensures the thread is properly initialized and active, then posts the new message.
-
-        Args:
-            message: The chat message content to post to the thread.
-            thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
-
-        Returns:
-            The active thread (AzureAIAgentThread) after posting the message.
-
-        Raises:
-            AgentInitializationException: If `thread` is not an AzureAIAgentThread.
-        """
-        thread = thread or AzureAIAgentThread(client=self.client)
-
-        if not isinstance(thread, AzureAIAgentThread):
-            raise AgentInitializationException(
-                f"The thread must be an AzureAIAgentThread, but got {type(thread).__name__}."
-            )
-
-        if thread.id is None:
-            await thread.create()
-
-        assert thread.id is not None  # nosec
-
-        await thread._on_new_message(message)
-
-        return thread
