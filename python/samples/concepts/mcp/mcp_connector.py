@@ -3,21 +3,19 @@
 import asyncio
 from typing import TYPE_CHECKING
 
-from mcp.client.stdio import StdioServerParameters
-
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.mcp.mcp_server_settings import MCPStdioServerSettings
+from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPStdioServerExecutionSettings
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.functions import KernelArguments, KernelPlugin
+from semantic_kernel.functions import KernelArguments
 
 if TYPE_CHECKING:
     pass
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #
-# using Semantic Kernel, featuring auto function calling,           #
+# using Semantic Kernel, featuring MCP Tools,                       #
 # non-streaming responses, and support for math and time plugins.   #
 # The chatbot is designed to interact with the user, call functions #
 # as needed, and return responses.                                  #
@@ -107,21 +105,25 @@ async def chat() -> bool:
 
 
 async def main() -> None:
-    # Since MCP uses local STDIO, we need to specify the command to run the server.
-    # The server runs on the local machine, please ensure Node.js/Npx is installed.
-    # Also ensure npx is added to your PATH environment variable.
-    settings = MCPStdioServerSettings(
-        server_params=StdioServerParameters(
-            command="npx", args=["-y", "@modelcontextprotocol/server-everything"], env=None
-        ),
+    # Make sure to have NPX installed and available in your PATH.
+
+    # The is a small bug fixed in the next version of the MCP Package
+    # to workon windows and Linux, use shutil.which to find the npx executable
+    import shutil
+
+    execution_settings = MCPStdioServerExecutionSettings(
+        command=shutil.which("npx"),
+        args=["-y", "@modelcontextprotocol/server-github"],
     )
 
-    kernel.add_plugin(await KernelPlugin.from_mcp_server(plugin_name="MCPEverything", settings=settings))
-    print("Welcome to the chat bot!\n  Type 'exit' to exit.")
+    await kernel.add_plugin_from_mcp(
+        plugin_name="TestMCP",
+        execution_settings=execution_settings,
+    )
+    print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")
     chatting = True
     while chatting:
         chatting = await chat()
-    del settings
 
 
 if __name__ == "__main__":

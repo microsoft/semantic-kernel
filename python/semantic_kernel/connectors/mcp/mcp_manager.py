@@ -1,59 +1,62 @@
 # Copyright (c) Microsoft. All rights reserved.
-from mcp.types import Tool
+from mcp.types import ListToolsResult, Tool
 
-from semantic_kernel.connectors.mcp.mcp_server_settings import (
-    MCPServerSettings,
+from semantic_kernel.connectors.mcp import (
+    MCPTool,
+    MCPToolParameters,
+)
+from semantic_kernel.connectors.mcp.mcp_server_execution_settings import (
+    MCPServerExecutionSettings,
 )
 from semantic_kernel.functions import KernelFunction, KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
 
 
-async def create_function_from_mcp_server(settings: MCPServerSettings):
+async def create_function_from_mcp_server(settings: MCPServerExecutionSettings):
     """Loads Function from an MCP Server to KernelFunctions."""
-    await settings.initialize_session()
-    return await _create_function_from_mcp_server(settings)
+    async with settings.get_session() as session:
+        tools: ListToolsResult = await session.list_tools()
+        return _create_kernel_function_from_mcp_server_tools(tools, settings)
 
 
-async def _create_function_from_mcp_server(settings: MCPServerSettings) -> list[KernelFunction]:
+def _create_kernel_function_from_mcp_server_tools(
+    tools: ListToolsResult, settings: MCPServerExecutionSettings
+) -> list[KernelFunction]:
     """Loads Function from an MCP Server to KernelFunctions."""
-    # List available tools
-    await settings.initialize_session()
-    if settings.session is None:
-        raise RuntimeError("The MCP Server Client Session is not initialized. Please initialize the session first.")
-    response = await settings.session.list_tools()
-    return [_generate_kernel_function_from_tool(tool, settings) for tool in response.tools]
+    return [_create_kernel_function_from_mcp_server_tool(tool, settings) for tool in tools.tools]
 
 
-def _generate_kernel_function_from_tool(tool: Tool, settings: MCPServerSettings) -> KernelFunction:
+def _create_kernel_function_from_mcp_server_tool(tool: Tool, settings: MCPServerExecutionSettings) -> KernelFunction:
     """Generate a KernelFunction from a tool."""
 
     @kernel_function(name=tool.name, description=tool.description)
     async def mcp_tool_call(**kwargs):
-        return await settings.session.call_tool(tool.name, arguments=kwargs)
+        async with settings.get_session() as session:
+            return await session.call_tool(tool.name, arguments=kwargs)
 
-    schema = tool.inputSchema
-    properties = schema.get("properties", {})
-    required = schema.get("required", [])
-
+    # Convert MCP Object in SK Object
+    mcp_function: MCPTool = MCPTool.from_mcp_tool(tool)
     parameters: list[KernelParameterMetadata] = [
-        KernelParameterMetadata(
-            name=prop_name,
-            type_=prop_details.get("type", "object"),
-            is_required=prop_name in required,
-            default_value="",
-            schema_data=(
-                prop_details.get("items")
-                if prop_details.get("items") is not None and isinstance(prop_details.get("items"), dict)
-                else {"type": f"{prop_details.get('type')}"}
-                if prop_details.get("type")
-                else None
-            ),
-        )
-        for prop_name, prop_details in properties.items()
+        _generate_kernel_parameter_from_mcp_param(mcp_parameter) for mcp_parameter in mcp_function.parameters
     ]
 
     return KernelFunctionFromMethod(
         method=mcp_tool_call,
         parameters=parameters,
+    )
+
+
+def _generate_kernel_parameter_from_mcp_param(property: MCPToolParameters) -> KernelParameterMetadata:
+    """Generate a KernelParameterMetadata from an MCP Server."""
+    return KernelParameterMetadata(
+        name=property.name,
+        type_=property.type,
+        is_required=property.required,
+        default_value=property.default_value,
+        schema_data=property.items
+        if property.items is not None and isinstance(property.items, dict)
+        else {"type": f"{property.type}"}
+        if property.type
+        else None,
     )

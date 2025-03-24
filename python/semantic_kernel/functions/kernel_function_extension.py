@@ -18,6 +18,7 @@ from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateB
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPServerExecutionSettings
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -231,6 +232,33 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 plugin_name=plugin_name,
                 openapi_document_path=openapi_document_path,
                 openapi_parsed_spec=openapi_parsed_spec,
+                execution_settings=execution_settings,
+                description=description,
+            )
+        )
+
+    async def add_plugin_from_mcp(
+        self,
+        plugin_name: str,
+        execution_settings: "MCPServerExecutionSettings | None" = None,
+        description: str | None = None,
+    ) -> KernelPlugin:
+        """Add a plugins from a MCP Server.
+
+        Args:
+            plugin_name: The name of the plugin
+            execution_settings: The execution parameters
+            description: The description of the plugin
+
+        Returns:
+            KernelPlugin: The imported plugin
+
+        Raises:
+            PluginInitializationError: if the MCP Server is not provided
+        """
+        return self.add_plugin(
+            await KernelPlugin.from_mcp_server(
+                plugin_name=plugin_name,
                 execution_settings=execution_settings,
                 description=description,
             )
