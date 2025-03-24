@@ -467,7 +467,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProcessFrameworkWithAspire", "ProcessFrameworkWithAspire", "{3F260A77-B6C9-97FD-1304-4B34DA936CF4}"
 	ProjectSection(SolutionItems) = preProject
 		samples\Demos\ProcessFrameworkWithAspire\README.md = samples\Demos\ProcessFrameworkWithAspire\README.md
-		samples\Demos\Hosting\Agent\README.md = samples\Demos\Hosting\Agent\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessFramework.Aspire.AppHost", "samples\Demos\ProcessFrameworkWithAspire\ProcessFramework.Aspire\ProcessFramework.Aspire.AppHost\ProcessFramework.Aspire.AppHost.csproj", "{2756FED3-ABC1-4F58-932E-5DD05A5EE066}"
