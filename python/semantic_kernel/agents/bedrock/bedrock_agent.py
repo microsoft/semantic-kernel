@@ -69,7 +69,7 @@ class BedrockAgentThread(AgentThread):
         """
         super().__init__()
         self._bedrock_runtime_client = bedrock_runtime_client
-        self._session_id = session_id
+        self._id = session_id
 
     @override
     async def _create(self) -> str:
@@ -80,7 +80,8 @@ class BedrockAgentThread(AgentThread):
                 self._bedrock_runtime_client.create_session,
             ),
         )
-        return response["sessionId"]
+        self._id = response["sessionId"]
+        return self._id  # type: ignore
 
     @override
     async def _delete(self) -> None:
@@ -93,7 +94,7 @@ class BedrockAgentThread(AgentThread):
             None,
             partial(
                 self._bedrock_runtime_client.end_session,
-                sessionIdentifier=self._session_id,
+                sessionIdentifier=self._id,
             ),
         )
 
@@ -281,16 +282,12 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             A chat message content with the response.
         """
-        # TODO(Tao): Update to the same pattern as ChatCompletionAgent/AzureAIAgent/OpenAIAssistantAgent
-        # to use:
-        # thread = await self._ensure_thread_exists_with_messages(  # noqa: ERA001, RUF100
-        #     messages=messages,  # noqa: ERA001
-        #     thread=thread,  # noqa: ERA001
-        #     construct_thread=lambda: BedrockAgentThread(),  # noqa: ERA001
-        #     expected_type=BedrockAgentThread,  # noqa: ERA001
-        # )  # noqa: ERA001, RUF100
-        # assert thread.id is not None  # nosec
-        thread = await self._configure_thread(thread)
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=[input_text],
+            thread=thread,
+            construct_thread=lambda: BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client),
+            expected_type=BedrockAgentThread,
+        )
         assert thread.id is not None  # nosec
 
         if arguments is None:
@@ -379,16 +376,12 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of chat message content.
         """
-        # TODO(Tao): Update to the same pattern as ChatCompletionAgent/AzureAIAgent/OpenAIAssistantAgent
-        # to use:
-        # thread = await self._ensure_thread_exists_with_messages(  # noqa: ERA001, RUF100
-        #     messages=messages,  # noqa: ERA001
-        #     thread=thread,  # noqa: ERA001
-        #     construct_thread=lambda: BedrockAgentThread(),  # noqa: ERA001
-        #     expected_type=BedrockAgentThread,  # noqa: ERA001
-        # )  # noqa: ERA001, RUF100
-        # assert thread.id is not None  # nosec
-        thread = await self._configure_thread(thread)
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=[input_text],
+            thread=thread,
+            construct_thread=lambda: BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client),
+            expected_type=BedrockAgentThread,
+        )
         assert thread.id is not None  # nosec
 
         if arguments is None:
@@ -479,16 +472,12 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of streaming chat message content
         """
-        # TODO(Tao): Update to the same pattern as ChatCompletionAgent/AzureAIAgent/OpenAIAssistantAgent
-        # to use:
-        # thread = await self._ensure_thread_exists_with_messages(  # noqa: ERA001, RUF100
-        #     messages=messages,  # noqa: ERA001
-        #     thread=thread,  # noqa: ERA001
-        #     construct_thread=lambda: BedrockAgentThread(),  # noqa: ERA001
-        #     expected_type=BedrockAgentThread,  # noqa: ERA001
-        # )  # noqa: ERA001, RUF100
-        # assert thread.id is not None  # nosec
-        thread = await self._configure_thread(thread)
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=[input_text],
+            thread=thread,
+            construct_thread=lambda: BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client),
+            expected_type=BedrockAgentThread,
+        )
         assert thread.id is not None  # nosec
 
         if arguments is None:
@@ -703,29 +692,10 @@ class BedrockAgent(BedrockAgentBase):
 
         return BedrockAgentChannel(thread=thread)
 
-    async def _configure_thread(
-        self,
-        thread: AgentThread | None = None,
-    ) -> BedrockAgentThread:
-        """Ensures the thread is properly initialized and active, then posts the new message.
+    @override
+    async def _notify_thread_of_new_message(self, thread, new_message):
+        """Bedrock agent doesn't need to notify the thread of new messages.
 
-        Args:
-            thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
-
-        Returns:
-            The active thread (AzureAIAgentThread) after posting the message.
-
-        Raises:
-            AgentInitializationException: If `thread` is not an AzureAIAgentThread.
+        The new message is passed to the agent when invoking the agent.
         """
-        thread = thread or BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client)
-
-        if not isinstance(thread, BedrockAgentThread):
-            raise AgentInitializationException(
-                f"The thread must be an BedrockAgentThread, but got {type(thread).__name__}."
-            )
-
-        if thread.id is None:
-            await thread.create()
-
-        return thread
+        pass

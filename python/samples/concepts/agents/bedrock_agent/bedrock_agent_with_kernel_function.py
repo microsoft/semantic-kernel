@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.bedrock_agent import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 

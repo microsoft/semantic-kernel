@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-import asyncio
 import logging
 import uuid
 from abc import ABC, abstractmethod
@@ -327,15 +326,26 @@ class Agent(KernelBaseModel, ABC):
 
         if thread is None:
             thread = construct_thread()
+            await thread.create()
 
         if not isinstance(thread, expected_type):
             raise AgentExecutionException(
                 f"{self.__class__.__name__} currently only supports agent threads of type {expected_type.__name__}."
             )
 
-        await asyncio.gather(*(thread.on_new_message(message) for message in normalized_messages))
+        # Notify the thread that new messages are available.
+        for msg in normalized_messages:
+            await self._notify_thread_of_new_message(thread, msg)
 
         return thread
+
+    async def _notify_thread_of_new_message(
+        self,
+        thread: AgentThread,
+        new_message: ChatMessageContent,
+    ) -> None:
+        """Notify the thread of a new message."""
+        await thread.on_new_message(new_message)
 
     def __eq__(self, other):
         """Check if two agents are equal."""
