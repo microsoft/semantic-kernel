@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// Implementation of database client managing SQL Server or Azure SQL database operations.
 /// </summary>
 [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "We need to build the full table name using schema and collection, it does not support parameterized passing.")]
+[Experimental("SKEXP0020")]
 internal sealed class SqlServerClient : ISqlServerClient
 {
     private readonly SqlConnection _connection;
@@ -80,14 +81,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     {
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            using var cmd = this._connection.CreateCommand();
-            cmd.CommandText = """
-                SELECT TABLE_NAME
-                FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_TYPE = 'BASE TABLE'
-                    AND TABLE_SCHEMA = @schema
-                """;
-            cmd.Parameters.AddWithValue("@schema", this._schema);
+            using var cmd = SqlServerCommandBuilder.SelectTableNames(this._connection, this._schema);
             using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -101,16 +95,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     {
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            using var cmd = this._connection.CreateCommand();
-            cmd.CommandText = """
-                SELECT TABLE_NAME
-                FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_TYPE = 'BASE TABLE'
-                    AND TABLE_SCHEMA = @schema
-                    AND TABLE_NAME = @tableName
-                """;
-            cmd.Parameters.AddWithValue("@schema", this._schema);
-            cmd.Parameters.AddWithValue("@tableName", tableName);
+            using var cmd = SqlServerCommandBuilder.SelectTableName(this._connection, this._schema, tableName);
             using var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -121,11 +106,7 @@ internal sealed class SqlServerClient : ISqlServerClient
     {
         using (await this.OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
         {
-            using var cmd = this._connection.CreateCommand();
-            var fullTableName = this.GetSanitizedFullTableName(tableName);
-            cmd.CommandText = $"""
-                DROP TABLE IF EXISTS {fullTableName}
-                """;
+            using var cmd = SqlServerCommandBuilder.DropTableIfExists(this._connection, this._schema, tableName);
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }

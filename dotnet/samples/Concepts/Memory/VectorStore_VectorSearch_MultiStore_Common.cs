@@ -70,8 +70,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var filter = new VectorSearchFilter().EqualTo(nameof(Glossary<TKey>.Category), "External Definitions");
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 3, Filter = filter });
+        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 3, Filter = g => g.Category == "External Definitions" });
         resultRecords = await searchResult.Results.ToListAsync();
 
         output.WriteLine("Search string: " + searchString);

@@ -104,7 +104,7 @@ async def main():
     # we also use the async with to open and close the connection
     # for the in memory collection, this is just a no-op
     # but for other collections, like Azure AI Search, this will open and close the connection
-    async with InMemoryVectorCollection[DataModel](
+    async with InMemoryVectorCollection[str, DataModel](
         collection_name="test",
         data_model_type=DataModel,
     ) as record_collection:

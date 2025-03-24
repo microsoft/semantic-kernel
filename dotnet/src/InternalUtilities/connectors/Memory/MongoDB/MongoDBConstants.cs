@@ -19,6 +19,9 @@ internal static class MongoDBConstants
     /// <summary>Default vector index name.</summary>
     internal const string DefaultVectorIndexName = "vector_index";
 
+    /// <summary>Default full text search index name.</summary>
+    internal const string DefaultFullTextSearchIndexName = "full_text_search_index";
+
     /// <summary>Default index kind for vector search.</summary>
     internal const string DefaultIndexKind = IndexKind.IvfFlat;
 

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.VectorData;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <summary>
 /// Interface for constructing <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> Azure CosmosDB NoSQL instances when using <see cref="IVectorStore"/> to retrieve these.
 /// </summary>
+[Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
 public interface IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory
 {
     /// <summary>

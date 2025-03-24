@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel;
 
 internal delegate bool ProcessEventProxy(ProcessEvent processEvent);
 
-internal sealed class LocalProcess : LocalStep, IDisposable
+internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
 {
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
@@ -49,7 +49,14 @@ internal sealed class LocalProcess : LocalStep, IDisposable
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this.Name) ?? new NullLogger<LocalStep>();
+        // if parent id is null this is the root process
+        this.RootProcessId = this.ParentProcessId == null ? this.Id : null;
     }
+
+    /// <summary>
+    /// The Id of the root process.
+    /// </summary>
+    internal string? RootProcessId { get; init; }
 
     /// <summary>
     /// Starts the process with an initial event and an optional kernel.
@@ -120,10 +127,16 @@ internal sealed class LocalProcess : LocalStep, IDisposable
     /// <param name="processEvent">Required. The <see cref="KernelProcessEvent"/> to start the process with.</param>
     /// <param name="kernel">Optional. A <see cref="Kernel"/> to use when executing the process.</param>
     /// <returns>A <see cref="Task"/></returns>
-    internal Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
+    internal async Task SendMessageAsync(KernelProcessEvent processEvent, Kernel? kernel = null)
     {
         Verify.NotNull(processEvent, nameof(processEvent));
-        return this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask();
+        await this._externalEventChannel.Writer.WriteAsync(processEvent).AsTask().ConfigureAwait(false);
+
+        // make sure the process is running in case it was already cancelled
+        if (this._processCancelSource == null)
+        {
+            await this.StartAsync(this._kernel).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -190,7 +203,9 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     new LocalProcess(processStep, this._kernel)
                     {
                         ParentProcessId = this.Id,
+                        RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
+                        ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -199,6 +214,16 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     new LocalMap(mapStep, this._kernel)
                     {
                         ParentProcessId = this.Id,
+                    };
+            }
+            else if (step is KernelProcessProxy proxyStep)
+            {
+                localStep =
+                    new LocalProxy(proxyStep, this._kernel)
+                    {
+                        ParentProcessId = this.RootProcessId,
+                        EventProxy = this.EventProxy,
+                        ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
             else
@@ -211,7 +236,6 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
-                        ExternalMessageChannel = this.ExternalMessageChannel,
                     };
             }
 
@@ -314,7 +338,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             {
                 foreach (var edge in edges)
                 {
-                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Data);
+                    ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, externalEvent.Id, externalEvent.Data);
                     messageChannel.Enqueue(message);
                 }
             }
@@ -342,7 +366,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
             bool foundEdge = false;
             foreach (KernelProcessEdge edge in step.GetEdgeForEvent(stepEvent.QualifiedId))
             {
-                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
                 messageChannel.Enqueue(message);
                 foundEdge = true;
             }
@@ -354,7 +378,7 @@ internal sealed class LocalProcess : LocalStep, IDisposable
                 {
                     foreach (KernelProcessEdge edge in edges)
                     {
-                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.Data);
+                        ProcessMessage message = ProcessMessageFactory.CreateFromEdge(edge, stepEvent.SourceId, stepEvent.Data);
                         messageChannel.Enqueue(message);
                     }
                 }
@@ -387,11 +411,20 @@ internal sealed class LocalProcess : LocalStep, IDisposable
 
     #endregion
 
-    public void Dispose()
+    /// <inheritdoc/>
+    public override async Task DeinitializeStepAsync()
+    {
+        await this.DisposeAsync().ConfigureAwait(false);
+    }
+
+    public async ValueTask DisposeAsync()
     {
         this._externalEventChannel.Writer.Complete();
         this._joinableTaskContext.Dispose();
-        this._joinableTaskContext.Dispose();
+        foreach (var step in this._steps)
+        {
+            await step.DeinitializeStepAsync().ConfigureAwait(false);
+        }
         this._processCancelSource?.Dispose();
     }
 }

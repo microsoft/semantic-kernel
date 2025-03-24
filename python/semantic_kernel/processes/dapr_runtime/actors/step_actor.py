@@ -102,7 +102,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         await self._int_initialize_step(step_info, input_dict.get("parent_process_id"))
 
         try:
-            await self._state_manager.try_add_state(ActorStateKeys.StepInfoState.value, step_info)
+            await self._state_manager.try_add_state(ActorStateKeys.StepInfoState.value, step_info.model_dump_json())
             await self._state_manager.try_add_state(
                 ActorStateKeys.StepParentProcessId.value, input_dict.get("parent_process_id")
             )
@@ -207,10 +207,10 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         t_state = get_generic_state_type(step_cls)
 
         if t_state is not None:
-            # Create state_type as KernelProcessStepState[TState].
             state_type = KernelProcessStepState[t_state]
 
             if state_object is None:
+                # Create a fresh step state object if none is provided.
                 state_object = state_type(
                     name=step_cls.__name__,
                     id=step_cls.__name__,
@@ -219,7 +219,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             else:
                 # Ensure that state_object is an instance of the expected type.
                 if not isinstance(state_object, KernelProcessStepState):
-                    error_message = "State object is not of the expected type."
+                    error_message = "State object is not of the expected KernelProcessStepState type."
                     raise KernelException(error_message)
 
                 await self._state_manager.try_add_state(
@@ -232,13 +232,21 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
                 )
                 await self._state_manager.save_state()
 
-            # Initialize state_object.state if it is not already set.
+            # If state is None, instantiate it. If it exists but is not the right type, validate it.
             if state_object.state is None:
                 try:
                     state_object.state = t_state()
                 except Exception as e:
                     error_message = f"Cannot instantiate state of type {t_state}: {e}"
                     raise KernelException(error_message)
+            else:
+                # Convert the existing state if it's not already an instance of t_state
+                if not isinstance(state_object.state, t_state):
+                    try:
+                        state_object.state = t_state.model_validate(state_object.state)
+                    except Exception as e:
+                        error_message = f"Cannot validate state of type {t_state}: {e}"
+                        raise KernelException(error_message)
         else:
             # The step has no user-defined state; use the base KernelProcessStepState.
             state_type = KernelProcessStepState
@@ -390,7 +398,7 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
             )
             await target_step.enqueue(message.model_dump_json())
 
-    async def to_dapr_step_info(self) -> str:
+    async def to_dapr_step_info(self) -> dict:
         """Converts the step to a DaprStepInfo object."""
         if not self.step_activated:
             async with self.init_lock:
@@ -407,13 +415,16 @@ class StepActor(Actor, StepInterface, KernelProcessMessageChannel):
         if self.inner_step_type is None:
             raise ValueError("The inner step type must be initialized before converting to DaprStepInfo.")
 
+        if self.step_state is not None:
+            self.step_info.state = self.step_state
+
         step_info = DaprStepInfo(
             inner_step_python_type=self.inner_step_type,
             state=self.step_info.state,
             edges=self.step_info.edges,
         )
 
-        return step_info.model_dump_json()
+        return step_info.model_dump()
 
     async def _on_activate(self) -> None:
         """Override the Actor's on_activate method."""

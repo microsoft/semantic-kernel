@@ -364,6 +364,36 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// An object to allow models to search the web for the latest information before generating a response.
+    /// </summary>
+    /// <remarks>
+    /// Supported types are:
+    /// <para>- <see cref="ChatWebSearchOptions"/> object;</para>
+    /// <para>- <see cref="JsonElement"/>, which will be used to automatically deserialize into <see cref="ChatWebSearchOptions"/>.</para>
+    /// <para>- <see cref="string"/>, which will be used to automatically deserialize into <see cref="ChatWebSearchOptions"/>.</para>
+    /// <para>
+    /// Currently, you need to use one of these models to use web search in Chat Completions:
+    /// <list type="bullet">
+    /// <item>gpt-4o-search-preview</item>
+    /// <item>gpt-4o-mini-search-preview</item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("web_search_options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? WebSearchOptions
+    {
+        get => this._webSearchOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._webSearchOptions = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -456,12 +486,14 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             TopLogprobs = this.TopLogprobs,
             Store = this.Store,
             Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
-            ReasoningEffort = this.ReasoningEffort
+            ReasoningEffort = this.ReasoningEffort,
+            WebSearchOptions = this.WebSearchOptions,
         };
     }
 
     #region private ================================================================================
 
+    private object? _webSearchOptions;
     private object? _reasoningEffort;
     private double? _temperature;
     private double? _topP;

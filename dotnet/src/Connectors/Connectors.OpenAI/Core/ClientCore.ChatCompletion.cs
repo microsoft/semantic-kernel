@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using Microsoft.SemanticKernel.Text;
 using OpenAI.Chat;
 using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
 
@@ -142,7 +144,7 @@ internal partial class ClientCore
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(chatHistory, JsonOptionsCache.ChatHistory),
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -231,7 +233,7 @@ internal partial class ClientCore
         if (this.Logger!.IsEnabled(LogLevel.Trace))
         {
             this.Logger.LogTrace("ChatHistory: {ChatHistory}, Settings: {Settings}",
-                JsonSerializer.Serialize(chatHistory),
+                JsonSerializer.Serialize(chatHistory, JsonOptionsCache.ChatHistory),
                 JsonSerializer.Serialize(executionSettings));
         }
 
@@ -459,6 +461,7 @@ internal partial class ClientCore
     {
         var options = new ChatCompletionOptions
         {
+            WebSearchOptions = GetWebSearchOptions(executionSettings),
             MaxOutputTokenCount = executionSettings.MaxTokens,
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
@@ -547,6 +550,31 @@ internal partial class ClientCore
         }
 
         throw new NotSupportedException($"The provided reasoning effort '{effortLevelObject.GetType()}' is not supported.");
+    }
+
+    protected static ChatWebSearchOptions? GetWebSearchOptions(OpenAIPromptExecutionSettings executionSettings)
+    {
+        if (executionSettings.WebSearchOptions is null)
+        {
+            return null;
+        }
+
+        if (executionSettings.WebSearchOptions is ChatWebSearchOptions webSearchOptions)
+        {
+            return webSearchOptions;
+        }
+
+        if (executionSettings.WebSearchOptions is string webSearchOptionsString)
+        {
+            return ModelReaderWriter.Read<ChatWebSearchOptions>(BinaryData.FromString(webSearchOptionsString));
+        }
+
+        if (executionSettings.WebSearchOptions is JsonElement webSearchOptionsElement)
+        {
+            return ModelReaderWriter.Read<ChatWebSearchOptions>(BinaryData.FromString(webSearchOptionsElement.GetRawText()));
+        }
+
+        throw new NotSupportedException($"The provided web search options '{executionSettings.WebSearchOptions.GetType()}' is not supported.");
     }
 
     /// <summary>
