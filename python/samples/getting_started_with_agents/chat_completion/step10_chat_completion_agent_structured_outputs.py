@@ -6,7 +6,7 @@ import json
 from pydantic import BaseModel
 
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgentThread
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, AzureChatPromptExecutionSettings
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 
@@ -53,14 +53,14 @@ async def main():
     # 3. Create a thread to hold the conversation
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ChatCompletionAgentThread = None
+    thread: ChatHistoryAgentThread = None
 
     print(f"# User: {USER_INPUT}")
     # 4. Invoke the agent for a response
     response = await agent.get_response(message=USER_INPUT, thread=thread)
     # 5. Validate the response and print the structured output
-    reasoned_result = Reasoning.model_validate(json.loads(response.message.content))
-    print(f"# {response.message.name}:\n\n{reasoned_result.model_dump_json(indent=4)}")
+    reasoned_result = Reasoning.model_validate(json.loads(response.content))
+    print(f"# {response.name}:\n\n{reasoned_result.model_dump_json(indent=4)}")
 
     # 6. Cleanup: Clear the thread
     await thread.delete() if thread else None

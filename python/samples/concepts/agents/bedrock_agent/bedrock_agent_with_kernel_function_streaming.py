@@ -57,7 +57,7 @@ async def main():
             input_text="What is the weather in Seattle?",
             thread=thread,
         ):
-            print(response.message, end="")
+            print(response, end="")
             thread = response.thread
     finally:
         # Delete the agent

@@ -5,7 +5,7 @@ from typing import Annotated
 
 from semantic_kernel import Kernel
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgentThread
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.functions import KernelArguments, kernel_function
@@ -72,13 +72,13 @@ async def main():
     # 4. Create a thread to hold the conversation
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ChatCompletionAgentThread = None
+    thread: ChatHistoryAgentThread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: {user_input}")
         # 5. Invoke the agent for a response
-        async for response in agent.invoke(message=user_input, thread=thread):
-            print(f"# {response.message.name}: {response.message}")
+        async for response in agent.invoke(messages=user_input, thread=thread):
+            print(f"# {response.name}: {response}")
             thread = response.thread
 
     # 6. Cleanup: Clear the thread

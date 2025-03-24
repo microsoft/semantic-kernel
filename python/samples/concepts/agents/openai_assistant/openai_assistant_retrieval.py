@@ -45,8 +45,8 @@ async def main():
     try:
         for user_input in user_inputs:
             print(f"# User: '{user_input}'")
-            async for response in agent.invoke(message=user_input, thread=thread):
-                print(f"# {response.message.role}: {response.message.content}")
+            async for response in agent.invoke(messages=user_input, thread=thread):
+                print(f"# {response.role}: {response.content}")
                 thread = response.thread
     finally:
         await thread.delete() if thread else None

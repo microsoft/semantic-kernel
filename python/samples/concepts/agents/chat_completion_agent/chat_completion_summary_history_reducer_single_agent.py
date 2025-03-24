@@ -5,7 +5,7 @@ import logging
 
 from semantic_kernel.agents import (
     ChatCompletionAgent,
-    ChatCompletionAgentThread,
+    ChatHistoryAgentThread,
 )
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import (
@@ -33,7 +33,7 @@ async def main():
         service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
     )
 
-    thread: ChatCompletionAgentThread = ChatCompletionAgentThread(chat_history=history_summarization_reducer)
+    thread: ChatHistoryAgentThread = ChatHistoryAgentThread(chat_history=history_summarization_reducer)
 
     # Create our agent
     agent = ChatCompletionAgent(
@@ -48,9 +48,9 @@ async def main():
         print(f"# User: '{index}'")
 
         # Get agent response and store it
-        response = await agent.get_response(message=str(index), thread=thread)
+        response = await agent.get_response(messages=str(index), thread=thread)
         thread = response.thread
-        print(f"# Agent - {response.message.name}: '{response.message.content}'")
+        print(f"# Agent - {response.name}: '{response.content}'")
 
         # Attempt reduction
         is_reduced = await thread.reduce()
@@ -61,7 +61,7 @@ async def main():
 
         # If reduced, print summary if present
         if is_reduced:
-            chat_history = await thread.retrieve_current_chat_history()
+            chat_history = await thread.get_messages()
             for msg in chat_history.messages:
                 if msg.metadata and msg.metadata.get("__summary__"):
                     print(f"\tSummary: {msg.content}")

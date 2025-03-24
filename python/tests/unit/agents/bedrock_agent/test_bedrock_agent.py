@@ -495,7 +495,7 @@ async def test_bedrock_agent_get_response_exception(
         mock_start.return_value = "test_session_id"
 
         with pytest.raises(AgentInvokeException):
-            await agent.get_response("test_input_text")
+            await agent.get_response(input_text="test_input_text")
 
 
 # Test case to verify the invocation of BedrockAgent

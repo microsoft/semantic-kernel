@@ -45,10 +45,10 @@ async def main():
             input_text=ASK,
             thread=thread,
         ):
-            print(response.message, end="")
+            print(response, end="")
             thread = response.thread
             if not binary_item:
-                binary_item = next((item for item in response.message.items if isinstance(item, BinaryContent)), None)
+                binary_item = next((item for item in response.items if isinstance(item, BinaryContent)), None)
         print()
     finally:
         # Delete the agent

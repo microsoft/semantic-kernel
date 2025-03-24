@@ -7,6 +7,7 @@ from collections.abc import AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
@@ -22,7 +23,7 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -79,11 +80,21 @@ class AutoGenConversableAgentThread(AgentThread):
         ):
             self._chat_history.add_message(new_message)
 
-    async def retrieve_current_chat_history(self) -> ChatHistory:
+    async def get_messages(self) -> ChatHistory:
         """Retrieve the current chat history."""
+        if self._is_deleted:
+            raise RuntimeError("Cannot retrieve chat history, since the thread has been deleted.")
         if self._id is None:
-            raise RuntimeError("Cannot retrieve chat history, since the thread is not currently active.")
+            await self.create()
         return self._chat_history
+
+    async def reduce(self) -> ChatHistory | None:
+        """Reduce the chat history to a smaller size."""
+        if self._id is None:
+            raise RuntimeError("Cannot reduce chat history, since the thread is not currently active.")
+        if not isinstance(self._chat_history, ChatHistoryReducer):
+            return None
+        return await self._chat_history.reduce()
 
 
 @experimental
@@ -118,24 +129,30 @@ class AutoGenConversableAgent(Agent):
     @trace_agent_get_response
     @override
     async def get_response(
-        self, message: str | ChatMessageContent, thread: AgentThread | None = None
+        self, messages: str | ChatMessageContent | list[str | ChatMessageContent], thread: AgentThread | None = None
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent.
 
         Args:
-            message: The message to send.
+            messages: The input chat message content either as a string, ChatMessageContent or
+                a list of strings or ChatMessageContent.
             thread: The thread to use for the conversation. If None, a new thread will be created.
 
         Returns:
             An AgentResponseItem of type ChatMessageContent object with the response and the thread.
         """
-        if isinstance(message, str):
-            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: AutoGenConversableAgentThread(),
+            expected_type=AutoGenConversableAgentThread,
+        )
+        assert thread.id is not None  # nosec
 
-        thread = await self._configure_thread(message, thread)
+        chat_history = await thread.get_messages()
 
         reply = await self.conversable_agent.a_generate_reply(
-            messages=[message.to_dict()],
+            messages=[message.to_dict() for message in chat_history.messages],
         )
 
         logger.info("Called AutoGenConversableAgent.a_generate_reply.")
@@ -147,7 +164,7 @@ class AutoGenConversableAgent(Agent):
     async def invoke(
         self,
         *,
-        message: str | ChatMessageContent,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
         thread: AgentThread | None = None,
         recipient: "AutoGenConversableAgent | None" = None,
         clear_history: bool = True,
@@ -161,6 +178,8 @@ class AutoGenConversableAgent(Agent):
         """A direct `invoke` method for the ConversableAgent.
 
         Args:
+            messages: The input chat message content either as a string, ChatMessageContent or
+                a list of strings or ChatMessageContent.
             thread: The thread to use for the conversation. If None, a new thread will be created.
             recipient: The recipient ConversableAgent to chat with
             clear_history: Whether to clear the chat history before starting. True by default.
@@ -176,10 +195,15 @@ class AutoGenConversableAgent(Agent):
         Yields:
             An AgentResponseItem of type ChatMessageContent object with the response and the thread.
         """
-        if isinstance(message, str):
-            message = ChatMessageContent(role=AuthorRole.USER, content=message)
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: AutoGenConversableAgentThread(),
+            expected_type=AutoGenConversableAgentThread,
+        )
+        assert thread.id is not None  # nosec
 
-        thread = await self._configure_thread(message, thread)
+        chat_history = await thread.get_messages()
 
         if recipient is not None:
             if not isinstance(recipient, AutoGenConversableAgent):
@@ -196,7 +220,7 @@ class AutoGenConversableAgent(Agent):
                 max_turns=max_turns,
                 summary_method=summary_method,
                 summary_args=summary_args,
-                message=message.content,  # type: ignore
+                message=chat_history.messages[-1].content,  # type: ignore
                 **kwargs,
             )
 
@@ -211,7 +235,7 @@ class AutoGenConversableAgent(Agent):
                 )
         else:
             reply = await self.conversable_agent.a_generate_reply(
-                messages=[message.to_dict()],
+                messages=[message.to_dict() for message in chat_history.messages],
             )
 
             logger.info("Called AutoGenConversableAgent.a_generate_reply.")
@@ -265,37 +289,6 @@ class AutoGenConversableAgent(Agent):
                     )
 
         return ChatMessageContent(role=role, items=items, name=name)  # type: ignore
-
-    async def _configure_thread(
-        self,
-        message: ChatMessageContent,
-        thread: AgentThread | None = None,
-    ) -> AgentThread:
-        """Ensures the thread is properly initialized and active, then posts the new message.
-
-        Args:
-            message: The chat message content to post to the thread.
-            thread: An optional existing thread to configure. If None, a new AzureAIAgentThread is created.
-
-        Returns:
-            The active thread (AzureAIAgentThread) after posting the message.
-
-        Raises:
-            AgentInitializationException: If `thread` is not an AzureAIAgentThread.
-        """
-        thread = thread or AutoGenConversableAgentThread()
-
-        if not isinstance(thread, AutoGenConversableAgentThread):
-            raise AgentInitializationException(
-                f"The thread must be an AutoGenConversableAgentThread, but got {type(thread).__name__}."
-            )
-
-        if thread._id is None:
-            await thread.create()
-
-        await thread.on_new_message(message)
-
-        return thread
 
     async def _create_reply_content(
         self, reply: str | dict[str, Any], thread: AgentThread

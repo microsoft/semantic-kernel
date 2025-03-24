@@ -82,19 +82,19 @@ async def main():
     async for response in user_proxy_agent.invoke(
         thread=thread,
         recipient=assistant_agent,
-        message="What is (44232 + 13312 / (232 - 32)) * 5?",
+        messages="What is (44232 + 13312 / (232 - 32)) * 5?",
         max_turns=10,
     ):
-        for item in response.message.items:
+        for item in response.items:
             match item:
                 case FunctionResultContent(result=r):
-                    print(f"# {response.message.role} - {response.message.name or '*'}: '{r}'")
+                    print(f"# {response.role} - {response.name or '*'}: '{r}'")
                 case FunctionCallContent(function_name=fn, arguments=arguments):
                     print(
-                        f"# {response.message.role} - {response.message.name or '*'}: Function Name: '{fn}', Arguments: '{arguments}'"  # noqa: E501
+                        f"# {response.role} - {response.name or '*'}: Function Name: '{fn}', Arguments: '{arguments}'"  # noqa: E501
                     )
                 case _:
-                    print(f"# {response.message.role} - {response.message.name or '*'}: '{response.message}'")
+                    print(f"# {response.role} - {response.name or '*'}: '{response}'")
         thread = response.thread
 
     # Cleanup: Delete the thread and agent

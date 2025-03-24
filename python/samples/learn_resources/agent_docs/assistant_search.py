@@ -88,11 +88,9 @@ async def main():
 
             footnotes: list[StreamingAnnotationContent] = []
             async for response in agent.invoke_stream(message=user_input, thread=thread):
-                footnotes.extend([
-                    item for item in response.message.items if isinstance(item, StreamingAnnotationContent)
-                ])
+                footnotes.extend([item for item in response.items if isinstance(item, StreamingAnnotationContent)])
 
-                print(f"{response.message.content}", end="", flush=True)
+                print(f"{response.content}", end="", flush=True)
                 if not thread:
                     thread = response.thread
 

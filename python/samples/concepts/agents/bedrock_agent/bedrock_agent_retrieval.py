@@ -39,7 +39,7 @@ async def main():
                 input_text=user_input,
                 thread=thread,
             ):
-                print(f"Bedrock agent: {response.message}")
+                print(f"Bedrock agent: {response}")
                 thread = response.thread
     except KeyboardInterrupt:
         print("\n\nExiting chat...")

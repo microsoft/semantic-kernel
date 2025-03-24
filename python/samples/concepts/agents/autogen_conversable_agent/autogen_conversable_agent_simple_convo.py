@@ -56,7 +56,7 @@ async def main():
     async for response in cathy_autogen_agent.invoke(
         recipient=joe_autogen_agent, message="Tell me a joke about the stock market.", thread=thread, max_turns=3
     ):
-        print(f"# {response.message.role} - {response.message.name or '*'}: '{response.message}'")
+        print(f"# {response.role} - {response.name or '*'}: '{response}'")
         thread = response.thread
 
     # Cleanup: Delete the thread and agent

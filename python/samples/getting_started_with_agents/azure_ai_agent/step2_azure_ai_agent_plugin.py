@@ -75,11 +75,11 @@ async def main() -> None:
                 print(f"# User: {user_input}")
                 # 5. Invoke the agent for the specified thread for response
                 async for response in agent.invoke(
-                    message=user_input,
+                    messages=user_input,
                     thread_id=thread,
                     temperature=0.2,  # override the agent-level temperature setting with a run-time value
                 ):
-                    print(f"# {response.message.name}: {response.message}")
+                    print(f"# {response.name}: {response}")
                     thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent

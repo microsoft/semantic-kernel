@@ -22,7 +22,6 @@ The concept agents examples are grouped by prefix:
 
 Prefix|Description
 ---|---
-assistant|How to use agents based on the [Open AI Assistant API](https://platform.openai.com/docs/assistants).
 autogen_conversable_agent| How to use [AutoGen 0.2 Conversable Agents](https://microsoft.github.io/autogen/0.2/docs/Getting-Started) within Semantic Kernel.
 azure_ai_agent|How to use an [Azure AI Agent](https://learn.microsoft.com/en-us/azure/ai-services/agents/quickstart?pivots=programming-language-python-azure) within Semantic Kernel.
 chat_completion_agent|How to use Semantic Kernel Chat Completion agents that leverage AI Connector Chat Completion APIs.
@@ -81,7 +80,7 @@ for user_input in USER_INPUTS:
         message=user_input,
         thread=thread,
     )
-    print(f"# {response.message.name}: {response.message}")
+    print(f"# {response.name}: {response}")
     thread = response.thread
 
 # 4. Cleanup: Clear the thread
@@ -113,8 +112,6 @@ A list of `user_inputs` simulates a conversation. For each input:
 
 **Cleanup:**  
 The code safely ends the thread if it exists.
-
-## Conclusion
 
 By leveraging the `AgentThread`, you ensure that each conversation maintains its context seamlessly -- whether the thread is automatically created or manually managed with a custom `thread_id`. This approach is crucial for developing agents that deliver coherent and context-aware interactions.
 

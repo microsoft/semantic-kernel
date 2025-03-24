@@ -67,9 +67,9 @@ async def invoke_agent_with_template(
                 argument_overrides = KernelArguments(style=style)
 
             # Stream agent responses
-            async for response in agent.invoke_stream(message=user_input, thread=thread, arguments=argument_overrides):
-                if response.message.content:
-                    print(f"{response.message.content}", flush=True, end="")
+            async for response in agent.invoke_stream(messages=user_input, thread=thread, arguments=argument_overrides):
+                if response.content:
+                    print(f"{response.content}", flush=True, end="")
                 thread = response.thread
             print("\n")
     finally:

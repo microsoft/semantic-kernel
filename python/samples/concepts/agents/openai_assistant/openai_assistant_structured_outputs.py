@@ -78,10 +78,10 @@ async def main():
     try:
         for user_input in user_inputs:
             print(f"# User: '{user_input}'")
-            async for response in agent.invoke(message=user_input, thread=thread):
+            async for response in agent.invoke(messages=user_input, thread=thread):
                 # The response returned is a Pydantic Model, so we can validate it using the model_validate_json method
-                response_model = ResponseModel.model_validate_json(response.message.content)
-                print(f"# {response.message.role}: {response_model}")
+                response_model = ResponseModel.model_validate_json(str(response.content))
+                print(f"# {response.role}: {response_model}")
                 thread = response.thread
     finally:
         await thread.delete() if thread else None

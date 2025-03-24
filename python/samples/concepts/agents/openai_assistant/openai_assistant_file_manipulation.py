@@ -61,17 +61,17 @@ async def main():
 
         for user_input in user_inputs:
             print(f"# User: '{user_input}'")
-            async for response in agent.invoke(message=user_input, thread=thread):
+            async for response in agent.invoke(messages=user_input, thread=thread):
                 thread = response.thread
-                if response.message.metadata.get("code", False):
-                    print(f"# {response.message.role}:\n\n```python")
-                    print(response.message.content)
+                if response.metadata.get("code", False):
+                    print(f"# {response.role}:\n\n```python")
+                    print(response)
                     print("```")
                 else:
-                    print(f"# {response.message.role}: {response.message.content}")
+                    print(f"# {response.role}: {response}")
 
-                if response.message.items:
-                    for item in response.message.items:
+                if response.items:
+                    for item in response.items:
                         if isinstance(item, AnnotationContent):
                             await download_response_files(agent, [item])
     finally:

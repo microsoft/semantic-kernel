@@ -74,8 +74,8 @@ async def main():
         for message in user_messages:
             print(f"# User: {str(message)}")  # type: ignore
             # 8. Invoke the agent for the current thread and print the response
-            async for response in agent.invoke(message=message, thread=thread):
-                print(f"# Agent: {response.message}\n")
+            async for response in agent.invoke(messages=message, thread=thread):
+                print(f"# Agent: {response}\n")
                 thread = response.thread
     finally:
         # 9. Clean up the resources

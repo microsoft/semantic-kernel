@@ -66,12 +66,12 @@ async def main():
             print(f"# {AuthorRole.USER}: '{user_input}'")
 
             first_chunk = True
-            async for response in agent.invoke_stream(message=user_input, thread=thread):
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
                 thread = response.thread
                 if first_chunk:
-                    print(f"# {response.message.role}: ", end="", flush=True)
+                    print(f"# {response.role}: ", end="", flush=True)
                     first_chunk = False
-                print(response.message.content, end="", flush=True)
+                print(response.content, end="", flush=True)
             print()
     finally:
         await thread.delete() if thread else None

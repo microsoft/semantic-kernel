@@ -45,9 +45,9 @@ async def main() -> None:
         try:
             print(f"# User: '{TASK}'")
             # 4. Invoke the agent for the specified thread for response
-            async for response in agent.invoke(message=TASK, thread=thread):
-                if response.message.role != AuthorRole.TOOL:
-                    print(f"# Agent: {response.message}")
+            async for response in agent.invoke(messages=TASK, thread=thread):
+                if response.role != AuthorRole.TOOL:
+                    print(f"# Agent: {response}")
                 thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent

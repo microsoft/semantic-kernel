@@ -56,9 +56,9 @@ async def main() -> None:
             for user_input in USER_INPUTS:
                 print(f"# User: {user_input}")
                 # 4. Invoke the agent with the specified message for response
-                response = await agent.get_response(message=user_input, thread=thread)
-                print(f"# {response.message.name}: {response.message}")
-                # thread = response.thread
+                response = await agent.get_response(messages=user_input, thread=thread)
+                print(f"# {response.content}: {response}")
+                thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent
             await thread.delete() if thread else None

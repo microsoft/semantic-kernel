@@ -59,15 +59,15 @@ async def main():
             file_ids = []
             async for response in agent.invoke(message=user_input, thread=thread):
                 thread = response.thread
-                if response.message.content:
-                    print(f"# {response.message.role}: {response.message}")
+                if response.content:
+                    print(f"# {response.role}: {response}")
 
-                if len(response.message.items) > 0:
-                    for item in response.message.items:
+                if len(response.items) > 0:
+                    for item in response.items:
                         if isinstance(item, FileReferenceContent):
                             file_ids.extend([
                                 item.file_id
-                                for item in response.message.items
+                                for item in response.items
                                 if isinstance(item, FileReferenceContent) and item.file_id is not None
                             ])
 

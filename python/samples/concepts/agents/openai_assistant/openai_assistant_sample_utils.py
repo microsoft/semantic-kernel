@@ -28,7 +28,7 @@ async def download_file_content(agent: "OpenAIAssistantAgent", file_id: str, fil
         with open(file_path, "wb") as file:
             file.write(response_content.content)
 
-        print(f"File saved to: {file_path}")
+        print(f"\n\nFile saved to: {file_path}")
     except Exception as e:
         print(f"An error occurred while downloading file {file_id}: {str(e)}")
 

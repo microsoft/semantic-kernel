@@ -30,7 +30,7 @@ async def main():
             # The chat history is maintained in the thread
             print("Bedrock agent: ", end="")
             async for response in bedrock_agent.invoke_stream(input_text=user_input, thread=thread):
-                print(response.message, end="")
+                print(response, end="")
                 thread = response.thread
             print()
     except KeyboardInterrupt:

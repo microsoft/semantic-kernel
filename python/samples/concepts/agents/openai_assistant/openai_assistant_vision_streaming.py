@@ -76,12 +76,12 @@ async def main():
             print(f"# User: '{user_input.items[0].text}'")  # type: ignore
 
             first_chunk = True
-            async for response in agent.invoke_stream(message=user_input, thread=thread):
-                if response.message.role != AuthorRole.TOOL:
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                if response.role != AuthorRole.TOOL:
                     if first_chunk:
                         print("# Agent: ", end="", flush=True)
                         first_chunk = False
-                    print(response.message.content, end="", flush=True)
+                    print(response.content, end="", flush=True)
                 thread = response.thread
             print("\n")
 

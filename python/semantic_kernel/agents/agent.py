@@ -1,16 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 import uuid
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterable, Awaitable, Iterable
+from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
 from typing import Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
@@ -24,7 +27,8 @@ from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-TMessage = TypeVar("TMessage", bound=ChatMessageContent | StreamingChatMessageContent)
+TMessage = TypeVar("TMessage", bound=ChatMessageContent)
+TThreadType = TypeVar("TThreadType", bound="AgentThread")
 
 
 @release_candidate
@@ -114,6 +118,39 @@ class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
 
     message: TMessage
     thread: AgentThread
+
+    @property
+    def content(self) -> TMessage:
+        """Get the content of the response item."""
+        return self.message
+
+    @property
+    def items(self) -> list[CMC_ITEM_TYPES]:
+        """Get the items of the response item."""
+        return self.message.items
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        """Get the metadata of the response item."""
+        return self.message.metadata
+
+    @property
+    def name(self) -> str | None:
+        """Get the name of the response item."""
+        return self.message.name
+
+    @property
+    def role(self) -> str | None:
+        """Get the role of the response item."""
+        return self.message.role
+
+    def __str__(self):
+        """Get the string representation of the response item."""
+        return str(self.content)
+
+    def __getattr__(self, item):
+        """Get an attribute of the response item."""
+        return getattr(self.message, item)
 
     def __hash__(self):
         """Get the hash of the response item."""
@@ -272,6 +309,33 @@ class Agent(KernelBaseModel, ABC):
         merged_params.update(override_args)
 
         return KernelArguments(settings=merged_execution_settings, **merged_params)
+
+    async def _ensure_thread_exists_with_messages(
+        self,
+        messages: str | ChatMessageContent | Sequence[str | ChatMessageContent],
+        thread: AgentThread | None,
+        construct_thread: Callable[[], TThreadType],
+        expected_type: type[TThreadType],
+    ) -> TThreadType:
+        """Ensure the thread exists with the provided message(s)."""
+        if isinstance(messages, (str, ChatMessageContent)):
+            messages = [messages]
+
+        normalized_messages = [
+            ChatMessageContent(role=AuthorRole.USER, content=msg) if isinstance(msg, str) else msg for msg in messages
+        ]
+
+        if thread is None:
+            thread = construct_thread()
+
+        if not isinstance(thread, expected_type):
+            raise AgentExecutionException(
+                f"{self.__class__.__name__} currently only supports agent threads of type {expected_type.__name__}."
+            )
+
+        await asyncio.gather(*(thread.on_new_message(message) for message in normalized_messages))
+
+        return thread
 
     def __eq__(self, other):
         """Check if two agents are equal."""

@@ -38,7 +38,7 @@ async def test_open_ai_assistant_agent_invoke(mock_tracer, chat_history, openai_
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
         side_effect=fake_invoke,
     ):
-        async for item in open_ai_assistant_agent.invoke(message="message", thread=thread):
+        async for item in open_ai_assistant_agent.invoke(messages="message", thread=thread):
             pass
     # Assert
     mock_tracer.start_as_current_span.assert_called_once_with(f"invoke_agent {open_ai_assistant_agent.name}")
@@ -70,7 +70,7 @@ async def test_open_ai_assistant_agent_invoke_stream(mock_tracer, chat_history, 
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
-        async for item in open_ai_assistant_agent.invoke_stream(message="message", thread=thread):
+        async for item in open_ai_assistant_agent.invoke_stream(messages="message", thread=thread):
             pass
     # Assert
     mock_tracer.start_as_current_span.assert_called_once_with(f"invoke_agent {open_ai_assistant_agent.name}")
