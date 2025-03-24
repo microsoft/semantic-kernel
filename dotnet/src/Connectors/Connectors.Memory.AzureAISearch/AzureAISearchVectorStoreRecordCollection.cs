@@ -229,9 +229,19 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync(
+        return this.RunOperationAsync<Response>(
             "DeleteIndex",
-            () => this._searchIndexClient.DeleteIndexAsync(this._collectionName, cancellationToken));
+            async () =>
+            {
+                try
+                {
+                    return await this._searchIndexClient.DeleteIndexAsync(this._collectionName, cancellationToken).ConfigureAwait(false);
+                }
+                catch (RequestFailedException ex) when (ex.Status == 404)
+                {
+                    return null!;
+                }
+            });
     }
 
     /// <inheritdoc />

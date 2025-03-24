@@ -120,13 +120,13 @@ public sealed class ChatHistoryInFunctions(ITestOutputHelper output) : BaseTest(
         };
 
         // Send a request.
-        var result = await kernel.InvokePromptAsync("Send email to test@test.com", new(executionSettings));
+        var result = await kernel.InvokePromptAsync("Send email to test@contoso.com", new(executionSettings));
 
         Console.WriteLine($"Result: {result}");
 
         // Output:
         // SendEmail - Chat History Message Count: 2
-        // Result: Email has been sent to test@test.com.
+        // Result: Email has been sent to test@contoso.com.
     }
 
     #region private

@@ -238,11 +238,26 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
     /// <inheritdoc />
     public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
-    {
-        return this.RunOperationAsync(
-            "DeleteCollection",
-            () => this._qdrantClient.DeleteCollectionAsync(this._collectionName, null, cancellationToken));
-    }
+        => this.RunOperationAsync("DeleteCollection",
+            async () =>
+            {
+                try
+                {
+                    await this._qdrantClient.DeleteCollectionAsync(this._collectionName, null, cancellationToken).ConfigureAwait(false);
+                }
+                catch (QdrantException)
+                {
+                    // There is no reliable way to check if the operation failed because the
+                    // collection does not exist based on the exception itself.
+                    // So we just check here if it exists, and if not, ignore the exception.
+                    if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        return;
+                    }
+
+                    throw;
+                }
+            });
 
     /// <inheritdoc />
     public virtual async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)

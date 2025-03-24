@@ -21,7 +21,9 @@ public class ExceptionJsonConverterTests
 #pragma warning disable CA1031 // Do not catch general exception types
         try
         {
+#pragma warning disable JSON001 // Invalid JSON pattern
             JsonSerializer.Deserialize<object>("invalid_json");
+#pragma warning restore JSON001 // Invalid JSON pattern
         }
         catch (Exception ex)
         {

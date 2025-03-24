@@ -1767,4 +1767,4 @@ Example of events coming from a few seconds of conversation with the OpenAI Real
 
 
 [openai-realtime-api]: https://platform.openai.com/docs/guides/realtime
-[google-gemini]: https://ai.google.dev/api/multimodal-live
+[google-gemini]: https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/multimodal-live

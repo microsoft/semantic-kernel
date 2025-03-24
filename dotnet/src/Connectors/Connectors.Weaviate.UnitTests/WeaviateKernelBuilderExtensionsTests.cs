@@ -43,7 +43,7 @@ public sealed class WeaviateKernelBuilderExtensionsTests
         this._kernelBuilder.Services.AddSingleton<HttpClient>(httpClient);
 
         // Act
-        this._kernelBuilder.AddWeaviateVectorStoreRecordCollection<TestRecord>("testcollection");
+        this._kernelBuilder.AddWeaviateVectorStoreRecordCollection<TestRecord>("Testcollection");
 
         var kernel = this._kernelBuilder.Build();
 

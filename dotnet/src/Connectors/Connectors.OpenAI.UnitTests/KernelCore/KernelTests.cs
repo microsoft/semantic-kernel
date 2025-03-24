@@ -78,6 +78,16 @@ public sealed class KernelTests : IDisposable
             }
         });
 
+        var completed = false;
+
+        listener.MeasurementsCompleted = (instrument, state) =>
+        {
+            completed = true;
+            // Stop the listener to stop collecting data
+            Assert.Contains(12, measurements["semantic_kernel.function.invocation.token_usage.prompt"]);
+            Assert.Contains(5, measurements["semantic_kernel.function.invocation.token_usage.completion"]);
+        };
+
         listener.Start();  // Start the listener to begin collecting data
 
         this._multiMessageHandlerStub.ResponsesToReturn.Add(
@@ -91,12 +101,16 @@ public sealed class KernelTests : IDisposable
 
         var kernelFunction = KernelFunctionFactory.CreateFromPrompt("prompt", loggerFactory: this._mockLoggerFactory.Object);
 
-        // Act
+        // Act & Assert
         var result = await kernel.InvokeAsync(kernelFunction);
 
-        // Assert
-        Assert.Contains(12, measurements["semantic_kernel.function.invocation.token_usage.prompt"]);
-        Assert.Contains(5, measurements["semantic_kernel.function.invocation.token_usage.completion"]);
+        listener.Dispose();
+
+        while (!completed)
+        {
+            // Wait for the measurements to be completed
+            await Task.Delay(100);
+        }
     }
 
     public void Dispose()

@@ -136,6 +136,75 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         Assert.Equal(expectedVersion, header);
     }
 
+    public void Dispose()
+    {
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
+    }
+
+    [Theory]
+    [InlineData("https://malicious-site.com")]
+    [InlineData("http://internal-network.local")]
+    [InlineData("ftp://attacker.com")]
+    [InlineData("//bypass.com")]
+    [InlineData("javascript:alert(1)")]
+    [InlineData("data:text/html,<script>alert(1)</script>")]
+    public void ItThrowsOnLocationUrlInjectionAttempt(string maliciousLocation)
+    {
+        // Arrange
+        var bearerTokenGenerator = new BearerTokenGenerator()
+        {
+            BearerKeys = ["key1", "key2", "key3"]
+        };
+
+        using var httpClient = new HttpClient();
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var client = new VertexAIEmbeddingClient(
+                httpClient: httpClient,
+                modelId: "fake-model",
+                apiVersion: VertexAIVersion.V1,
+                bearerTokenProvider: bearerTokenGenerator.GetBearerToken,
+                location: maliciousLocation,
+                projectId: "fake-project-id");
+        });
+    }
+
+    [Theory]
+    [InlineData("useast1")]
+    [InlineData("us-east1")]
+    [InlineData("europe-west4")]
+    [InlineData("asia-northeast1")]
+    [InlineData("us-central1-a")]
+    [InlineData("northamerica-northeast1")]
+    [InlineData("australia-southeast1")]
+    public void ItAcceptsValidHostnameSegments(string validLocation)
+    {
+        // Arrange
+        var bearerTokenGenerator = new BearerTokenGenerator()
+        {
+            BearerKeys = ["key1", "key2", "key3"]
+        };
+
+        using var httpClient = new HttpClient();
+
+        // Act & Assert
+        var exception = Record.Exception(() =>
+        {
+            var client = new VertexAIEmbeddingClient(
+                httpClient: httpClient,
+                modelId: "fake-model",
+                apiVersion: VertexAIVersion.V1,
+                bearerTokenProvider: bearerTokenGenerator.GetBearerToken,
+                location: validLocation,
+                projectId: "fake-project-id");
+        });
+
+        Assert.Null(exception);
+    }
+
     private VertexAIEmbeddingClient CreateEmbeddingsClient(
         string modelId = "fake-model",
         string? bearerKey = "fake-key")
@@ -150,9 +219,11 @@ public sealed class VertexAIClientEmbeddingsGenerationTests : IDisposable
         return client;
     }
 
-    public void Dispose()
+    private sealed class BearerTokenGenerator()
     {
-        this._httpClient.Dispose();
-        this._messageHandlerStub.Dispose();
+        private int _index = 0;
+        public required List<string> BearerKeys { get; init; }
+
+        public ValueTask<string> GetBearerToken() => ValueTask.FromResult(this.BearerKeys[this._index++]);
     }
 }

@@ -103,6 +103,7 @@ class AzureRealtimeWebsocket(OpenAIRealtimeWebsocketBase, AzureOpenAIConfigBase)
         if not azure_openai_settings.realtime_deployment_name:
             raise ServiceInitializationError("The OpenAI realtime model ID is required.")
         super().__init__(
+            api_key=azure_openai_settings.api_key.get_secret_value() if azure_openai_settings.api_key else None,
             audio_output_callback=audio_output_callback,
             deployment_name=azure_openai_settings.realtime_deployment_name,
             endpoint=azure_openai_settings.endpoint,

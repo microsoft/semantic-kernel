@@ -52,8 +52,14 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         ReadOnlyMemory<float> orthogonalVector = new([0f, -1f, -1f, 0f]);
 
         double[] scoreDictionary = [expectedExactMatchScore, expectedOppositeScore, expectedOrthogonalScore];
+        double[] expectedScores =
+        [
+            scoreDictionary[resultOrder[0]],
+            scoreDictionary[resultOrder[1]],
+            scoreDictionary[resultOrder[2]]
+        ];
 
-        List<SearchRecord> records =
+        List<SearchRecord> insertedRecords =
         [
             new()
             {
@@ -76,10 +82,16 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
                 Vector = orthogonalVector,
             }
         ];
+        SearchRecord[] expectedRecords =
+        [
+            insertedRecords[resultOrder[0]],
+            insertedRecords[resultOrder[1]],
+            insertedRecords[resultOrder[2]]
+        ];
 
         // The record definition describes the distance function,
         // so we need a dedicated collection per test.
-        string uniqueCollectionName = Guid.NewGuid().ToString();
+        string uniqueCollectionName = fixture.GetUniqueCollectionName();
         var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, SearchRecord>(
             uniqueCollectionName, this.GetRecordDefinition(distanceFunction));
 
@@ -89,35 +101,55 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
 
         try
         {
-            await collection.UpsertBatchAsync(records).ToArrayAsync();
+            await collection.UpsertBatchAsync(insertedRecords).ToArrayAsync();
 
             var searchResult = await collection.VectorizedSearchAsync(baseVector);
             var results = await searchResult.Results.ToListAsync();
-            VerifySearchResults(resultOrder, scoreDictionary, records, results, includeVectors: false);
+            VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: false);
 
             searchResult = await collection.VectorizedSearchAsync(baseVector, new() { IncludeVectors = true });
             results = await searchResult.Results.ToListAsync();
-            VerifySearchResults(resultOrder, scoreDictionary, records, results, includeVectors: true);
+            VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: true);
+
+            for (int skip = 0; skip <= insertedRecords.Count; skip++)
+            {
+                for (int top = Math.Max(1, skip); top <= insertedRecords.Count; top++)
+                {
+                    searchResult = await collection.VectorizedSearchAsync(baseVector,
+                        new()
+                        {
+                            Skip = skip,
+                            Top = top,
+                            IncludeVectors = true
+                        });
+                    results = await searchResult.Results.ToListAsync();
+
+                    VerifySearchResults(
+                        expectedRecords.Skip(skip).Take(top).ToArray(),
+                        expectedScores.Skip(skip).Take(top).ToArray(),
+                        results, includeVectors: true);
+                }
+            }
         }
         finally
         {
             await collection.DeleteCollectionAsync();
         }
 
-        static void VerifySearchResults(int[] resultOrder, double[] scoreDictionary, List<SearchRecord> records,
+        static void VerifySearchResults(SearchRecord[] expectedRecords, double[] expectedScores,
             List<VectorSearchResult<SearchRecord>> results, bool includeVectors)
         {
-            Assert.Equal(records.Count, results.Count);
+            Assert.Equal(expectedRecords.Length, results.Count);
             for (int i = 0; i < results.Count; i++)
             {
-                Assert.Equal(records[resultOrder[i]].Key, results[i].Record.Key);
-                Assert.Equal(records[resultOrder[i]].Int, results[i].Record.Int);
-                Assert.Equal(records[resultOrder[i]].String, results[i].Record.String);
-                Assert.Equal(Math.Round(scoreDictionary[resultOrder[i]], 2), Math.Round(results[i].Score!.Value, 2));
+                Assert.Equal(expectedRecords[i].Key, results[i].Record.Key);
+                Assert.Equal(expectedRecords[i].Int, results[i].Record.Int);
+                Assert.Equal(expectedRecords[i].String, results[i].Record.String);
+                Assert.Equal(Math.Round(expectedScores[i], 2), Math.Round(results[i].Score!.Value, 2));
 
                 if (includeVectors)
                 {
-                    Assert.Equal(records[resultOrder[i]].Vector.ToArray(), results[i].Record.Vector.ToArray());
+                    Assert.Equal(expectedRecords[i].Vector.ToArray(), results[i].Record.Vector.ToArray());
                 }
                 else
                 {

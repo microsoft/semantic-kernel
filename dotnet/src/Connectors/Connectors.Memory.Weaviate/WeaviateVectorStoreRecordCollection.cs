@@ -118,6 +118,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// </param>
     /// <param name="collectionName">The name of the collection that this <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
+    /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     public WeaviateVectorStoreRecordCollection(
         HttpClient httpClient,
         string collectionName,
@@ -125,7 +126,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     {
         // Verify.
         Verify.NotNull(httpClient);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        VerifyCollectionName(collectionName);
 
         var endpoint = (options?.Endpoint ?? httpClient.BaseAddress) ?? throw new ArgumentException($"Weaviate endpoint should be provided via HttpClient.BaseAddress property or {nameof(WeaviateVectorStoreRecordCollectionOptions<TRecord>)} options parameter.");
 
@@ -535,5 +536,24 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         }
     }
 
+    private static void VerifyCollectionName(string collectionName)
+    {
+        Verify.NotNullOrWhiteSpace(collectionName);
+
+        // Based on https://weaviate.io/developers/weaviate/starter-guides/managing-collections#collection--property-names
+        char first = collectionName[0];
+        if (!(first is >= 'A' and <= 'Z'))
+        {
+            throw new ArgumentException("Collection name must start with an uppercase ASCII letter.", nameof(collectionName));
+        }
+
+        foreach (char character in collectionName)
+        {
+            if (!((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z') || (character is >= '0' and <= '9')))
+            {
+                throw new ArgumentException("Collection name must contain only ASCII letters and digits.", nameof(collectionName));
+            }
+        }
+    }
     #endregion
 }

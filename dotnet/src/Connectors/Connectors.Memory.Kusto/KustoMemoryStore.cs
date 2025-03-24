@@ -104,7 +104,7 @@ public class KustoMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var inClauseValue = string.Join(",", keys.Select(k => $"'{k}'"));
+        var inClauseValue = string.Join(",", keys.Select(k => $"'{k.Replace("'", "''")}'"));
         var query = $"{this.GetBaseQuery(collectionName)} " +
             $"| where Key in ({inClauseValue}) " +
             "| project " +

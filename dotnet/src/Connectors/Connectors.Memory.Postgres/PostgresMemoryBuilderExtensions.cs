@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure Postgres connector.
 /// </summary>
+[Experimental("SKEXP0020")]
 public static class PostgresMemoryBuilderExtensions
 {
     /// <summary>

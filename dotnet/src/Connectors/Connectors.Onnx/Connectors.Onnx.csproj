@@ -7,6 +7,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
     <VersionSuffix>alpha</VersionSuffix>
+    <NoWarn>SYSLIB1222</NoWarn>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->

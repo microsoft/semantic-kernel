@@ -5,7 +5,6 @@
     <AssemblyName>Microsoft.SemanticKernel.Core</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NoWarn>$(NoWarn);SKEXP0001,SKEXP0120</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>

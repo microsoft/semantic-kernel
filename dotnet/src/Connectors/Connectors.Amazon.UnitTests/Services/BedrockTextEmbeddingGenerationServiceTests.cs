@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.BedrockRuntime;
+using Amazon.Runtime;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Services;
 using Moq;
@@ -72,19 +74,37 @@ public sealed class BedrockTextEmbeddingGenerationServiceTests
     /// Checks that an invalid BedrockRuntime object will throw an exception.
     /// </summary>
     [Fact]
-    public async Task ShouldThrowExceptionForNullBedrockRuntimeAsync()
+    public async Task ShouldThrowExceptionForNullBedrockRuntimeWhenNotConfiguredAsync()
     {
         // Arrange
         string modelId = "amazon.titan-embed-text-v2:0";
         List<string> prompts = new() { "King", "Queen", "Prince" };
         IAmazonBedrockRuntime? nullBedrockRuntime = null;
+        bool notConfigured = false;
 
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        try
         {
-            var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
-            var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-            await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
-        }).ConfigureAwait(true);
+            var runtime = new ServiceCollection()
+                .TryAddAWSService<IAmazonBedrockRuntime>()
+                .BuildServiceProvider()
+                .GetService<IAmazonBedrockRuntime>();
+        }
+        catch (AmazonClientException)
+        {
+            // If cannot grab the runtime from the container then we are not configured
+            notConfigured = true;
+        }
+
+        // Act
+        if (notConfigured)
+        {
+            // If No RegionEndpoint or ServiceURL is configured, the runtime will throw an exception
+            await Assert.ThrowsAnyAsync<Exception>(async () =>
+            {
+                var kernel = Kernel.CreateBuilder().AddBedrockTextEmbeddingGenerationService(modelId, nullBedrockRuntime).Build();
+                var service = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
+                await service.GenerateEmbeddingsAsync(prompts).ConfigureAwait(true);
+            }).ConfigureAwait(true);
+        }
     }
 }

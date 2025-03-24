@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schemas.botframework.com/schemas/skills/v2.2/skill-manifest.json",
+  "$id": "SKCopilotSkill",
+  "name": "SK Copilot Skill",
+  "version": "1.0",
+  "description": "This is a sample skill using Semantic Kernel",
+  "publisherName": "Microsoft",
+  "privacyUrl": "https://www.microsoft.com/en-us/privacy/privacystatement",
+  "iconUrl": "https://docs.botframework.com/static/devportal/client/images/bot-framework-default.png",
+  "endpoints": [
+    {
+      "name": "default",
+      "protocol": "BotFrameworkV3",
+      "description": "Default endpoint for the bot",
+      "endpointUrl": "__botEndpoint",
+      "msAppId": "__botAppId"
+    }
+  ],
+  "activities": {
+    "message": {
+      "type": "message",
+      "description": "Invoke Semantic Kernel skill"
+    }
+  }
+}

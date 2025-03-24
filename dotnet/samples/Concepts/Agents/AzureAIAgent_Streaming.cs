@@ -51,10 +51,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             AgentName,
             null,
             AgentInstructions);
-        AzureAIAgent agent = new(definition, this.AgentsClient)
-        {
-            Kernel = new Kernel(),
-        };
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
@@ -84,10 +81,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
             null,
             AgentInstructions,
             [new CodeInterpreterToolDefinition()]);
-        AzureAIAgent agent = new(definition, this.AgentsClient)
-        {
-            Kernel = new Kernel(),
-        };
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
         AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);

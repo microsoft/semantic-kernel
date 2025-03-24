@@ -143,15 +143,11 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
     {
         // Create a new agent on the Bedrock Agent service and prepare it for use
         var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
-        // Create a new kernel with plugins
-        Kernel kernel = new();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
         // Create a new BedrockAgent instance with the agent model and the client
         // so that we can interact with the agent using Semantic Kernel contents.
-        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient)
-        {
-            Kernel = kernel,
-        };
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient);
+        // Initialize kernel with plugins
+        bedrockAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
         // Create the kernel function action group and prepare the agent for interaction
         await bedrockAgent.CreateKernelFunctionActionGroupAsync();
 

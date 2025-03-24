@@ -97,7 +97,7 @@ public class CreatePluginFromOpenApiSpec_Github(ITestOutputHelper output) : Base
         }
     }
 
-    private static void WriteStringToStream(Stream stream, string input)
+    private static void WriteStringToStream(MemoryStream stream, string input)
     {
         using var writer = new StreamWriter(stream, leaveOpen: true);
         writer.Write(input);

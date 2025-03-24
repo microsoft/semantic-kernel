@@ -44,7 +44,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
         var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act
-        var collection = sut.GetCollection<Guid, WeaviateHotel>("collection1");
+        var collection = sut.GetCollection<Guid, WeaviateHotel>("Collection1");
 
         // Assert
         Assert.NotNull(collection);

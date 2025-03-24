@@ -2,6 +2,8 @@
 using System;
 using System.Threading.Tasks;
 using SemanticKernel.Process.TestsShared.CloudEvents;
+using SemanticKernel.Process.TestsShared.Services;
+using SemanticKernel.Process.TestsShared.Setup;
 using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
@@ -34,7 +36,8 @@ public class LocalProxyTests
         counterStep.OnFunctionResult().EmitExternalEvent(proxyStep, this._topic1);
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
@@ -95,7 +98,8 @@ public class LocalProxyTests
         var mockProxyClient = new MockCloudEventClient();
         ProcessBuilder process = this.GetSampleProcessWithProxyEmittingTwoTopics(nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync), counterName: nameof(ProcessWithCyclesAndProxyWithTwoTopicsAsync));
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
@@ -138,7 +142,8 @@ public class LocalProxyTests
             .SendEventTo(innerProcess.WhereInputEventIs(this._startProcessEvent));
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))
@@ -187,7 +192,8 @@ public class LocalProxyTests
             .SendEventTo(innerProcess.WhereInputEventIs(this._startProcessEvent));
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using (LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, null, this._startProcessEvent, externalMessageChannel: mockProxyClient))

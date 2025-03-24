@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SemanticKernel.Process.TestsShared.Services;
+using SemanticKernel.Process.TestsShared.Setup;
 using SemanticKernel.Process.TestsShared.Steps;
 using Xunit;
 
@@ -311,7 +313,8 @@ public class LocalMapTests
             .SendEventTo(new ProcessFunctionTargetBuilder(unionStep, UnionStep.SumSquareFunction));
 
         KernelProcess processInstance = process.Build();
-        Kernel kernel = new();
+        CounterService counterService = new();
+        Kernel kernel = KernelSetup.SetupKernelWithCounterService(counterService);
 
         // Act
         await using LocalKernelProcessContext processContext = await this.RunProcessAsync(kernel, processInstance, new int[] { 1, 2, 3, 4, 5 }, "Start");
@@ -319,7 +322,7 @@ public class LocalMapTests
         // Assert
         UnionState unionState = await GetUnionStateAsync(processContext);
         Assert.Equal(55L, unionState.SquareResult);
-        Assert.Equal(5, CommonSteps.CountStep.GetCount(CounterName));
+        Assert.Equal(5, counterService.GetCount());
     }
 
     /// <summary>

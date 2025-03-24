@@ -1,0 +1,4 @@
+python-dotenv>=1.0.1
+botbuilder-integration-aiohttp>=4.15.0
+teams-ai>=1.4.0,<2.0.0
+semantic-kernel>=1.22.0

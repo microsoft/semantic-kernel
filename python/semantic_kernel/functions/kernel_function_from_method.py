@@ -6,7 +6,7 @@ from collections.abc import Callable
 from inspect import isasyncgen, isasyncgenfunction, isawaitable, iscoroutinefunction, isgenerator, isgeneratorfunction
 from typing import Any
 
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from semantic_kernel.exceptions import FunctionExecutionException, FunctionInitializationError
 from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
@@ -21,8 +21,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 class KernelFunctionFromMethod(KernelFunction):
     """Semantic Kernel Function from a method."""
 
-    method: Callable[..., Any]
-    stream_method: Callable[..., Any] | None = None
+    method: Callable[..., Any] = Field(exclude=True)
+    stream_method: Callable[..., Any] | None = Field(default=None, exclude=True)
 
     def __init__(
         self,

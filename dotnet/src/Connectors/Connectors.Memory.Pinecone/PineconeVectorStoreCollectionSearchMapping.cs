@@ -14,15 +14,15 @@ internal static class PineconeVectorStoreCollectionSearchMapping
 {
 #pragma warning disable CS0618 // FilterClause is obsolete
     /// <summary>
-    /// Build a Pinecone <see cref="MetadataMap"/> from a set of filter clauses.
+    /// Build a Pinecone <see cref="Metadata"/> from a set of filter clauses.
     /// </summary>
-    /// <param name="filterClauses">The filter clauses to build the Pinecone <see cref="MetadataMap"/> from.</param>
+    /// <param name="filterClauses">The filter clauses to build the Pinecone <see cref="Metadata"/> from.</param>
     /// <param name="storagePropertyNamesMap">A mapping from property name to the name under which the property would be stored.</param>
-    /// <returns>The Pinecone <see cref="MetadataMap"/>.</returns>
+    /// <returns>The Pinecone <see cref="Metadata"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
-    public static MetadataMap BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
+    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
     {
-        var metadataMap = new MetadataMap();
+        var metadataMap = new Metadata();
 
         if (filterClauses is null)
         {
@@ -46,15 +46,14 @@ internal static class PineconeVectorStoreCollectionSearchMapping
                     bool boolValue => (MetadataValue)boolValue,
                     float floatValue => (MetadataValue)floatValue,
                     double doubleValue => (MetadataValue)doubleValue,
-                    decimal decimalValue => (MetadataValue)decimalValue,
-                    _ => throw new InvalidOperationException($"Unsupported filter value type '{equalToFilterClause.Value.GetType().Name}'.")
+                    _ => throw new NotSupportedException($"Unsupported filter value type '{equalToFilterClause.Value.GetType().Name}'.")
                 };
 
                 metadataMap.Add(storagePropertyName, metadataValue);
             }
             else
             {
-                throw new InvalidOperationException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
+                throw new NotSupportedException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
             }
         }
 

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "currentUserId": {
+      "value": "${AZURE_PRINCIPAL_ID}"
+    },
+    "runningOnGh": {
+      "value": "${GITHUB_ACTIONS}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "openAiName": {
+      "value": "${AZURE_OPENAI_NAME}"
+    },
+    "openAiResourceGroupName": {
+      "value": "${AZURE_OPENAI_RG}"
+    },
+    "openAIModel": {
+      "value": "${AZURE_OPENAI_MODEL=gpt-4o}"
+    },
+    "openAIApiVersion": {
+      "value": "${AZURE_OPENAI_API_VERSION=2024-08-01-preview}"
+    },
+    "apiAppExists": {
+      "value": "${SERVICE_API_RESOURCE_EXISTS=false}"
+    },
+    "botAppId": {
+      "value": "${BOT_APPID}"
+    },
+    "botPassword": {
+      "value": "${BOT_PASSWORD}"
+    },
+    "botTenantId": {
+      "value": "${BOT_TENANT_ID}"
+    }
+  }
+}

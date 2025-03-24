@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -7,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// Provides extension methods for the <see cref="MemoryBuilder"/> class to configure SQL Server or Azure SQL connector.
 /// </summary>
+[Experimental("SKEXP0020")]
 public static class SqlServerMemoryBuilderExtensions
 {
     /// <summary>

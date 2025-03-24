@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Grpc.Core;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 using Sdk = Pinecone;
@@ -20,7 +19,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 public class PineconeVectorStore : IVectorStore
 {
     private const string DatabaseName = "Pinecone";
-    private const string ListCollectionsName = "ListCollections";
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreOptions _options;
@@ -63,24 +61,27 @@ public class PineconeVectorStore : IVectorStore
     /// <inheritdoc />
     public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        IndexDetails[] collections;
+        IndexList indexList;
 
         try
         {
-            collections = await this._pineconeClient.ListIndexes(cancellationToken).ConfigureAwait(false);
+            indexList = await this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
         }
-        catch (RpcException ex)
+        catch (PineconeApiException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
                 VectorStoreType = DatabaseName,
-                OperationName = ListCollectionsName
+                OperationName = "ListCollections"
             };
         }
 
-        foreach (var collection in collections)
+        if (indexList.Indexes is not null)
         {
-            yield return collection.Name;
+            foreach (var index in indexList.Indexes)
+            {
+                yield return index.Name;
+            }
         }
     }
 }

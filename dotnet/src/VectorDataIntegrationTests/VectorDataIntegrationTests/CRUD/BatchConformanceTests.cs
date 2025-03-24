@@ -127,6 +127,51 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
     }
 
     [ConditionalFact]
+    public Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch_WithVectors()
+        => this.UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(includeVectors: true);
+
+    [ConditionalFact]
+    public Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch_WithoutVectors()
+        => this.UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(includeVectors: false);
+
+    private async Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(bool includeVectors)
+    {
+        SimpleModel<TKey>[] records = Enumerable.Range(0, 10).Select(i => new SimpleModel<TKey>()
+        {
+            Id = fixture.GenerateNextKey<TKey>(),
+            Number = 100 + i,
+            Text = i.ToString(),
+            Floats = Enumerable.Range(0, SimpleModel<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+        }).ToArray();
+
+        // We take first half of the records and insert them.
+        SimpleModel<TKey>[] firstHalf = records.Take(records.Length / 2).ToArray();
+        TKey[] insertedKeys = await fixture.Collection.UpsertBatchAsync(firstHalf).ToArrayAsync();
+        Assert.Equal(
+            firstHalf.Select(r => r.Id).OrderBy(id => id).ToArray(),
+            insertedKeys.OrderBy(id => id).ToArray());
+
+        // Now we modify the first half of the records.
+        foreach (var record in firstHalf)
+        {
+            record.Text += "updated";
+            record.Number += 200;
+        }
+
+        // And now we upsert all the records (the first half is an update, the second is an insert).
+        TKey[] mixedKeys = await fixture.Collection.UpsertBatchAsync(records).ToArrayAsync();
+        Assert.Equal(
+            records.Select(r => r.Id).OrderBy(id => id).ToArray(),
+            mixedKeys.OrderBy(id => id).ToArray());
+
+        var received = await fixture.Collection.GetBatchAsync(mixedKeys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        foreach (var record in records)
+        {
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+        }
+    }
+
+    [ConditionalFact]
     public async Task DeleteBatchAsyncDoesNotThrowForEmptyBatch()
     {
         await fixture.Collection.DeleteBatchAsync([]);
@@ -151,6 +196,6 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
     // The order of records in the received array is not guaranteed
     // to match the order of keys in the requested keys array.
-    private SimpleModel<TKey> GetRecord(SimpleModel<TKey>[] received, TKey key)
+    protected SimpleModel<TKey> GetRecord(SimpleModel<TKey>[] received, TKey key)
         => received.Single(r => r.Id!.Equals(key));
 }

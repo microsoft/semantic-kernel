@@ -382,3 +382,39 @@ async def test_prompt_render_with_filter(kernel: Kernel, openai_unit_test_env):
     context = FunctionInvocationContext(function=function, kernel=kernel, arguments=KernelArguments())
     prompt_render_result = await function._render_prompt(context)
     assert prompt_render_result.rendered_prompt == "preface test"
+
+
+@pytest.mark.parametrize(
+    ("mode"),
+    [
+        ("python"),
+        ("json"),
+    ],
+)
+def test_function_model_dump(mode: str):
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt="test",
+        template_format="semantic-kernel",
+        prompt_template_config=PromptTemplateConfig(
+            template="test",
+            input_variables=[InputVariable(name="input", type="str", default="test", is_required=False)],
+        ),
+    )
+    model_dump = function.model_dump(mode=mode)
+    assert isinstance(model_dump, dict)
+    assert "metadata" in model_dump
+    assert len(model_dump["metadata"]["parameters"]) == 1
+
+
+def test_function_model_dump_json():
+    function = KernelFunctionFromPrompt(
+        function_name="test",
+        plugin_name="test",
+        prompt="test",
+        template_format="semantic-kernel",
+    )
+    model_dump_json = function.model_dump_json()
+    assert isinstance(model_dump_json, str)
+    assert "test" in model_dump_json

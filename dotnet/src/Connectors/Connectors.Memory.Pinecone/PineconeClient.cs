@@ -32,6 +32,8 @@ public sealed class PineconeClient : IPineconeClient
     /// <param name="httpClient">An optional HttpClient instance for making HTTP requests.</param>
     public PineconeClient(string pineconeEnvironment, string apiKey, ILoggerFactory? loggerFactory = null, HttpClient? httpClient = null)
     {
+        Verify.NotNullOrWhiteSpace(pineconeEnvironment);
+        Verify.ValidHostnameSegment(pineconeEnvironment);
         this._pineconeEnvironment = pineconeEnvironment;
         this._authHeader = new KeyValuePair<string, string>("Api-Key", apiKey);
         this._jsonSerializerOptions = PineconeUtils.DefaultSerializerOptions;
