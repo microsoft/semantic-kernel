@@ -763,37 +763,6 @@ async def test_handle_audio_transcript_delta(openai_realtime_base, prepare_event
         assert event.event_type == "text"
 
 
-# @pytest.mark.asyncio
-# async def test_parse_function_call_arguments_done_extended(openai_realtime_base):
-#     """Test parsing and execution of function call arguments done."""
-
-#     # Prepare mock data
-#     call_event = ResponseFunctionCallArgumentsDoneEvent(
-#         type=ListenEvents.RESPONSE_FUNCTION_CALL_ARGUMENTS_DONE.value,
-#         call_id="sample-id",
-#         item_id="1234",
-#         arguments='{"param": "value"}',
-#         content_index=0,
-#         output_index=0,
-#         response_id="response_id",
-#         event_id="event_id",
-#     )
-
-#     # Create chat history mock
-#     mock_chat_history = AsyncMock(ChatHistory)
-#     openai_realtime_base.kernel.invoke_function_call = AsyncMock()
-
-#     # Call the function
-#     async for event in openai_realtime_base._parse_function_call_arguments_done(call_event):
-#         pass
-
-#     # Ensure correct method is called in kernel
-#     openai_realtime_base.kernel.invoke_function_call.assert_called_with(
-#         FunctionCallContent(id="1234", plugin_name="", function_name="sample-id", arguments='{"param": "value"}'),
-#         mock_chat_history,
-#     )
-
-
 @pytest.mark.asyncio
 async def test_handle_unknown_event_type(prepare_event):
     """Test handling of an unknown/unexpected event type."""
