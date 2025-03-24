@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgentRuntime;
-using Amazon.BedrockAgentRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// <summary>
@@ -38,46 +33,6 @@ public sealed class BedrockAgentThread : AgentThread
     public new Task CreateAsync(CancellationToken cancellationToken = default)
     {
         return base.CreateAsync(cancellationToken);
-    }
-
-    /// <summary>
-    /// Asynchronously retrieves all messages in the thread.
-    /// </summary>
-    /// <param name="maxResults">The maximum number of results to return in the response.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The messages in the thread.</returns>
-    /// <exception cref="InvalidOperationException">The thread has been deleted.</exception>
-    [Experimental("SKEXP0110")]
-    public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(int maxResults = 100, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        if (this.IsDeleted)
-        {
-            throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
-        }
-
-        if (this.Id is null)
-        {
-            await this.CreateAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        var invocationSteps = await this._runtimeClient.ListInvocationStepsAsync(new ListInvocationStepsRequest() { SessionIdentifier = this.Id, MaxResults = maxResults }, cancellationToken).ConfigureAwait(false);
-        var invocationStepTasks = invocationSteps.InvocationStepSummaries.Select(s => this._runtimeClient.GetInvocationStepAsync(new GetInvocationStepRequest { InvocationIdentifier = s.InvocationId }));
-        await Task.WhenAll(invocationStepTasks).ConfigureAwait(false);
-
-        foreach (var invocationStep in invocationStepTasks)
-        {
-            var response = await invocationStep.ConfigureAwait(false);
-            if (response.InvocationStep?.Payload is not null)
-            {
-                foreach (BedrockSessionContentBlock? block in response.InvocationStep.Payload.ContentBlocks)
-                {
-                    yield return new ChatMessageContent
-                    {
-                        Content = block.Text
-                    };
-                }
-            }
-        }
     }
 
     /// <inheritdoc />
@@ -137,9 +92,9 @@ public sealed class BedrockAgentThread : AgentThread
     }
 
     /// <inheritdoc />
-    protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    protected override async Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        // Bedrock agents cannot add messages to the thread without invoking.
-        return Task.CompletedTask;
+        // Create the thread if it does not exist. Bedrock agents cannot add messages to the thread without invoking so we don't do that here
+        await this.CreateAsync(cancellationToken).ConfigureAwait(false);
     }
 }

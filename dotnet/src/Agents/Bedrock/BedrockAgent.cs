@@ -238,16 +238,21 @@ public class BedrockAgent : KernelAgent
                 innerContents.Add(message.InnerContent);
             }
 
-            yield return content.Length == 0
-                ? throw new KernelException("No content was returned from the agent.")
-                : new ChatMessageContent(AuthorRole.Assistant, content)
-                {
-                    AuthorName = this.GetDisplayName(),
-                    Items = items,
-                    ModelId = this.AgentModel.FoundationModel,
-                    Metadata = metadata,
-                    InnerContent = innerContents,
-                };
+            if (content.Length == 0)
+            {
+                throw new KernelException("No content was returned from the agent.");
+            }
+
+            var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, content)
+            {
+                AuthorName = this.GetDisplayName(),
+                Items = items,
+                ModelId = this.AgentModel.FoundationModel,
+                Metadata = metadata,
+                InnerContent = innerContents,
+            };
+
+            yield return chatMessageContent;
         }
     }
 
@@ -330,22 +335,6 @@ public class BedrockAgent : KernelAgent
     }
 
     #endregion
-
-    /// <inheritdoc/>
-    protected override Task<TThreadType> EnsureThreadExistsWithMessagesAsync<TThreadType>(ICollection<ChatMessageContent> messages, AgentThread? thread, Func<TThreadType> constructThread, CancellationToken cancellationToken)
-    {
-        if (thread is null)
-        {
-            thread = constructThread();
-        }
-
-        if (thread is not TThreadType concreteThreadType)
-        {
-            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
-        }
-
-        return Task.FromResult(concreteThreadType);
-    }
 
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()

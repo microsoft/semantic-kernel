@@ -49,6 +49,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 
     public override async Task DeleteThread(AgentThread thread)
     {
+        await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = thread.Id });
         await this._runtimeClient.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = thread.Id });
     }
 
@@ -101,14 +102,10 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
         this._client.Dispose();
     }
 
-    public override async Task<ChatHistory> GetChatHistory()
+    public override Task<ChatHistory> GetChatHistory()
     {
-        var chatHistory = new ChatHistory();
-        await foreach (var existingMessage in this._thread!.GetMessagesAsync(maxResults: 100).ConfigureAwait(false))
-        {
-            chatHistory.Add(existingMessage);
-        }
-        return chatHistory;
+        // The BedrockAgentThread cannot read messages from the thread. This is a limitation of Bedrock Sessions.
+        throw new NotImplementedException();
     }
 
     public override async Task InitializeAsync()
