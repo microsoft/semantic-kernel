@@ -49,6 +49,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 
     public override async Task DeleteThread(AgentThread thread)
     {
+        await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = thread.Id });
         await this._runtimeClient.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = thread.Id });
     }
 
@@ -63,6 +64,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
         {
             try
             {
+                await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = this._thread!.Id });
                 await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._thread!.Id });
             }
             catch (RequestFailedException ex) when (ex.Status == 404)
@@ -70,20 +72,28 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
             }
         }
 
-        try
+        if (this._createdThread!.Id is not null)
         {
-            await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdThread!.Id });
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
+            try
+            {
+                await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = this._createdThread!.Id });
+                await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdThread!.Id });
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+            }
         }
 
-        try
+        if (this._createdServiceFailingAgentThread!.Id is not null)
         {
-            await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdServiceFailingAgentThread!.Id });
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
+            try
+            {
+                await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = this._createdServiceFailingAgentThread!.Id });
+                await this._runtimeClient!.DeleteSessionAsync(new DeleteSessionRequest() { SessionIdentifier = this._createdServiceFailingAgentThread!.Id });
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+            }
         }
 
         await this._client.DeleteAgentAsync(new DeleteAgentRequest() { AgentId = this._bedrockAgent!.AgentId });
@@ -92,14 +102,10 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
         this._client.Dispose();
     }
 
-    public override async Task<ChatHistory> GetChatHistory()
+    public override Task<ChatHistory> GetChatHistory()
     {
-        var chatHistory = new ChatHistory();
-        await foreach (var existingMessage in this._thread!.GetMessagesAsync(maxResults: 100).ConfigureAwait(false))
-        {
-            chatHistory.Add(existingMessage);
-        }
-        return chatHistory;
+        // The BedrockAgentThread cannot read messages from the thread. This is a limitation of Bedrock Sessions.
+        throw new NotImplementedException();
     }
 
     public override async Task InitializeAsync()
@@ -132,7 +138,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 
         return new()
         {
-            AgentName = AgentName,
+            AgentName = $"{AgentName}-{Guid.NewGuid():n}",
             Description = AgentDescription,
             Instruction = AgentInstruction,
             AgentResourceRoleArn = bedrockAgentSettings.AgentResourceRoleArn,

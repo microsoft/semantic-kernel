@@ -75,13 +75,22 @@ public class BedrockAgent : KernelAgent
 
     #region public methods
 
-    // TODO: Add overload that allows the AgentAliasId to be specified
-
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(messages, thread, options, WorkingDraftAgentAlias, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        string? agentAliasId = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages, nameof(messages));
@@ -105,7 +114,7 @@ public class BedrockAgent : KernelAgent
 
         var invokeAgentRequest = new InvokeAgentRequest
         {
-            AgentAliasId = WorkingDraftAgentAlias,
+            AgentAliasId = agentAliasId ?? WorkingDraftAgentAlias,
             SessionState = sessionState,
             AgentId = this.Id,
             SessionId = bedrockThread.Id,
@@ -118,6 +127,7 @@ public class BedrockAgent : KernelAgent
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
+            await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, bedrockThread);
         }
     }
@@ -238,16 +248,21 @@ public class BedrockAgent : KernelAgent
                 innerContents.Add(message.InnerContent);
             }
 
-            yield return content.Length == 0
-                ? throw new KernelException("No content was returned from the agent.")
-                : new ChatMessageContent(AuthorRole.Assistant, content)
-                {
-                    AuthorName = this.GetDisplayName(),
-                    Items = items,
-                    ModelId = this.AgentModel.FoundationModel,
-                    Metadata = metadata,
-                    InnerContent = innerContents,
-                };
+            if (content.Length == 0)
+            {
+                throw new KernelException("No content was returned from the agent.");
+            }
+
+            var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, content)
+            {
+                AuthorName = this.GetDisplayName(),
+                Items = items,
+                ModelId = this.AgentModel.FoundationModel,
+                Metadata = metadata,
+                InnerContent = innerContents,
+            };
+
+            yield return chatMessageContent;
         }
     }
 
@@ -330,22 +345,6 @@ public class BedrockAgent : KernelAgent
     }
 
     #endregion
-
-    /// <inheritdoc/>
-    protected override Task<TThreadType> EnsureThreadExistsWithMessagesAsync<TThreadType>(ICollection<ChatMessageContent> messages, AgentThread? thread, Func<TThreadType> constructThread, CancellationToken cancellationToken)
-    {
-        if (thread is null)
-        {
-            thread = constructThread();
-        }
-
-        if (thread is not TThreadType concreteThreadType)
-        {
-            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
-        }
-
-        return Task.FromResult(concreteThreadType);
-    }
 
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
