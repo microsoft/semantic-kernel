@@ -181,7 +181,7 @@ public abstract class Agent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An async task that completes once all update are complete.</returns>
     /// <exception cref="KernelException"></exception>
-    protected virtual async Task<TThreadType> EnsureThreadExistsWithMessageAsync<TThreadType>(
+    protected virtual async Task<TThreadType> EnsureThreadExistsWithMessagesAsync<TThreadType>(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread,
         Func<TThreadType> constructThread,
