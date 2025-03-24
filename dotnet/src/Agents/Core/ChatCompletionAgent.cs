@@ -83,7 +83,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         var invokeResults = this.InternalInvokeAsync(
             agentName,
             chatHistory,
-            (m) => chatHistoryAgentThread.OnNewMessageAsync(m, cancellationToken),
+            (m) => this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken),
             options?.KernelArguments,
             options?.Kernel,
             options?.AdditionalInstructions,
