@@ -10,11 +10,10 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
+from semantic_kernel.contents import ChatHistory, ChatMessageContent
+from semantic_kernel.functions import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 

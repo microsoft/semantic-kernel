@@ -16,11 +16,11 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 
 @pytest.fixture
 def chat_history_channel() -> ChatHistoryChannel:
-    from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgentThread
+    from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
 
     ChatHistoryChannel.model_rebuild()
 
-    thread = ChatCompletionAgentThread()
+    thread = ChatHistoryAgentThread()
 
     return ChatHistoryChannel(thread=thread)
 

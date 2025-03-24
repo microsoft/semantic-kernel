@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents.bedrock import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 
 """
 This sample shows how to interact with a Bedrock agent in the simplest way.
@@ -36,7 +36,7 @@ async def main():
                 input_text=user_input,
                 thread=thread,
             )
-            print(f"Bedrock agent: {response.message}")
+            print(f"Bedrock agent: {response}")
             thread = response.thread
     except KeyboardInterrupt:
         print("\n\nExiting chat...")

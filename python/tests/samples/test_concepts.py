@@ -51,16 +51,16 @@ from samples.concepts.text_completion.text_completion import main as text_comple
 from samples.getting_started_with_agents.chat_completion.step1_chat_completion_agent_simple import (
     main as step1_chat_completion_agent_simple,
 )
-from samples.getting_started_with_agents.chat_completion.step2_chat_completion_agent_with_kernel import (
+from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_with_kernel import (
     main as step2_chat_completion_agent_with_kernel,
 )
-from samples.getting_started_with_agents.chat_completion.step3_chat_completion_agent_plugin_simple import (
+from samples.getting_started_with_agents.chat_completion.step4_chat_completion_agent_plugin_simple import (
     main as step3_chat_completion_agent_plugin_simple,
 )
-from samples.getting_started_with_agents.chat_completion.step4_chat_completion_agent_plugin_with_kernel import (
+from samples.getting_started_with_agents.chat_completion.step5_chat_completion_agent_plugin_with_kernel import (
     main as step4_chat_completion_agent_plugin_with_kernel,
 )
-from samples.getting_started_with_agents.chat_completion.step5_chat_completion_agent_group_chat import (
+from samples.getting_started_with_agents.chat_completion.step6_chat_completion_agent_group_chat import (
     main as step5_chat_completion_agent_group_chat,
 )
 from samples.getting_started_with_agents.openai_assistant.step1_assistant import main as step1_openai_assistant

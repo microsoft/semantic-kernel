@@ -4,7 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentThread
 
 """
 The following sample demonstrates how to use an already existing
@@ -47,8 +47,8 @@ async def main() -> None:
             for user_input in USER_INPUTS:
                 print(f"# User: '{user_input}'")
                 # 4. Invoke the agent for the specified thread for response
-                response = await agent.get_response(message=user_input, thread=thread)
-                print(f"# {response.message.name}: {response.message}")
+                response = await agent.get_response(messages=user_input, thread=thread)
+                print(f"# {response.name}: {response}")
         finally:
             # 5. Cleanup: Delete the thread and agent
             await thread.delete() if thread else None

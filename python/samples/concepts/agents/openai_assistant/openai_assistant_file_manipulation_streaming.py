@@ -3,9 +3,8 @@ import asyncio
 import os
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_files
-from semantic_kernel.agents.open_ai import AssistantThread, AzureAssistantAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.contents import ChatMessageContent, StreamingAnnotationContent
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -53,7 +52,7 @@ async def main():
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         user_inputs = [
@@ -67,28 +66,24 @@ async def main():
             messages: list[ChatMessageContent] = []
             is_code = False
             last_role = None
-            async for response in agent.invoke_stream(message=user_input, thread=thread):
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
                 thread = response.thread
-                current_is_code = response.message.metadata.get("code", False)
+                current_is_code = response.metadata.get("code", False)
 
                 if current_is_code:
                     if not is_code:
                         print("\n\n```python")
                         is_code = True
-                    print(response.message.content, end="", flush=True)
+                    print(response.content, end="", flush=True)
                 else:
                     if is_code:
                         print("\n```")
                         is_code = False
                         last_role = None
-                    if (
-                        hasattr(response, "role")
-                        and response.message.role is not None
-                        and last_role != response.message.role
-                    ):
-                        print(f"\n# {response.message.role}: ", end="", flush=True)
-                        last_role = response.message.role
-                    print(response.message.content, end="", flush=True)
+                    if hasattr(response, "role") and response.role is not None and last_role != response.role:
+                        print(f"\n# {response.role}: ", end="", flush=True)
+                        last_role = response.role
+                    print(response.content, end="", flush=True)
             if is_code:
                 print("```\n")
             else:

@@ -6,7 +6,7 @@ import logging
 from azure.ai.projects.models import AzureAISearchTool, ConnectionType
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -83,8 +83,8 @@ async def main() -> None:
             for user_input in user_inputs:
                 print(f"# User: '{user_input}'\n")
                 # Invoke the agent for the specified thread
-                async for response in agent.invoke(message=user_input, thread=thread):
-                    print(f"# Agent: {response.message}\n")
+                async for response in agent.invoke(messages=user_input, thread=thread):
+                    print(f"# Agent: {response}\n")
                     thread = response.thread
         finally:
             # Cleanup: Delete the thread and agent

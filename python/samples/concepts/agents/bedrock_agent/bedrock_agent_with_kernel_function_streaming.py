@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
+from semantic_kernel.agents.bedrock_agent import BedrockAgent, BedrockAgentThread
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 
@@ -57,7 +57,7 @@ async def main():
             input_text="What is the weather in Seattle?",
             thread=thread,
         ):
-            print(response.message, end="")
+            print(response, end="")
             thread = response.thread
     finally:
         # Delete the agent
