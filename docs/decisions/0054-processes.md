@@ -281,7 +281,7 @@ The instance of `KernelProcess` that we've created is nothing more than an objec
 
 Running a Process requires using a "connector" to a supported runtime. As part of the core packages we will include an in-process runtime that is capable of of running a process locally on a dev machine or in a server. This runtime will initially use memory or file based persistence and will allow for easy development and debugging.
 
-Additionally we will provide support for [Orleans](https://learn.microsoft.com/en-us/dotnet/orleans/overview) and [Dapr Actor](https://docs.dapr.io/developing-applications/building-blocks/actors/actors-overview/) based runtimes which will allow customers to easily deploy processes as a distributed and highly scalable cloud based system.
+Additionally we will provide support for [Orleans](https://learn.microsoft.com/en-us/dotnet/orleans/overview) and Darp Actor<!-- and [Dapr Actor](https://docs.dapr.io/developing-applications/building-blocks/actors/actors-overview/) --> based runtimes which will allow customers to easily deploy processes as a distributed and highly scalable cloud based system.
 
 ### Packages
 
