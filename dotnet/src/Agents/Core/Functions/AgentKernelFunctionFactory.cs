@@ -20,12 +20,12 @@ public static class AgentKernelFunctionFactory
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> that will invoke the provided Agent.
     /// </summary>
-    /// <param name="agent">The <see cref="Agent"> to be represented via the created <see cref="KernelFunction"/>.</param>
+    /// <param name="agent">The <see cref="Agent" /> to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="functionName">The name to use for the function. If null, it will default to the agent name.</param>
     /// <param name="description">The description to use for the function. If null, it will default to agent description.</param>
-    /// <param name="parameters">Optional parameter descriptions. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
+    /// <param name="parameters">Optional parameter descriptions. If null, it will default to query and additional instructions parameters.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
+    /// <returns>The created <see cref="KernelFunction"/> for invoking the <see cref="Agent"/>.</returns>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     public static KernelFunction CreateFromAgent(
@@ -33,7 +33,6 @@ public static class AgentKernelFunctionFactory
         string? functionName = null,
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
-        KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(agent);
@@ -64,7 +63,7 @@ public static class AgentKernelFunctionFactory
             FunctionName = functionName ?? agent.GetName(),
             Description = description ?? agent.Description,
             Parameters = parameters ?? GetDefaultKernelParameterMetadata(),
-            ReturnParameter = new() { ParameterType = typeof(IAsyncEnumerable<AgentResponseItem<ChatMessageContent>>) },
+            ReturnParameter = new() { ParameterType = typeof(FunctionResult) },
         };
 
         return KernelFunctionFactory.CreateFromMethod(
