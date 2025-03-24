@@ -66,16 +66,13 @@ app.MapPost("/api/summary", async (Kernel kernel, SummarizeRequest summarizeRequ
         Instructions = "Summarize user input",
         Kernel = kernel
     };
-    // Create a ChatHistory object to maintain the conversation state.
-    ChatHistory chat = [];
 
     // Add a user message to the conversation
-    chat.Add(new ChatMessageContent(AuthorRole.User, summarizeRequest.TextToSummarize));
+    var message = new ChatMessageContent(AuthorRole.User, summarizeRequest.TextToSummarize);
 
     // Generate the agent response(s)
-    await foreach (var response in summaryAgent.InvokeAsync(chat).ConfigureAwait(false))
+    await foreach (ChatMessageContent response in summaryAgent.InvokeAsync(message).ConfigureAwait(false))
     {
-        chat.AddAssistantMessage(response.ToString());
         return response.Items.Last().ToString();
     }
 
