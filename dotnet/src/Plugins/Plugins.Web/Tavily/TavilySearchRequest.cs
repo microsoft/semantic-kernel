@@ -100,7 +100,7 @@ internal sealed class TavilySearchRequest
     public IList<string>? ExcludeDomains { get; set; }
 
     /// <summary>
-    /// A list of domains to specifically exclude from the search results.
+    /// Additional properties that are not explicitly defined in the schema.
     /// </summary>
     [System.Text.Json.Serialization.JsonExtensionData]
     public IDictionary<string, object> AdditionalProperties { get; set; } = new Dictionary<string, object>();
