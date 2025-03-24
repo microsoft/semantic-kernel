@@ -90,7 +90,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            await chatHistoryAgentThread.OnNewMessageAsync(result, cancellationToken).ConfigureAwait(false);
+            await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, chatHistoryAgentThread);
         }
     }
@@ -135,7 +135,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         var invokeResults = this.InternalInvokeStreamingAsync(
             agentName,
             chatHistory,
-            (newMessage) => chatHistoryAgentThread.OnNewMessageAsync(newMessage),
+            (newMessage) => this.NotifyThreadOfNewMessage(chatHistoryAgentThread, newMessage, cancellationToken),
             this.MergeArguments(options?.KernelArguments),
             options?.Kernel ?? this.Kernel,
             options?.AdditionalInstructions,
