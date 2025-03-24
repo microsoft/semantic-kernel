@@ -150,11 +150,10 @@ public class AgentKernelFunctionFactoryTests
         Assert.Equal("Response to: 'Mock query' with instructions: 'Mock instructions'", items.First().ToString());
     }
 
-
     /// <summary>
     /// Mock implementation of <see cref="Agent"/>.
     /// </summary>
-    private class MockAgent : Agent
+    private sealed class MockAgent : Agent
     {
         public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
@@ -190,7 +189,7 @@ public class AgentKernelFunctionFactoryTests
     /// <summary>
     /// Mock implementation of <see cref="AgentThread"/>
     /// </summary>
-    private class MockAgentThread : AgentThread
+    private sealed class MockAgentThread : AgentThread
     {
         protected override Task<string> CreateInternalAsync(CancellationToken cancellationToken)
         {
