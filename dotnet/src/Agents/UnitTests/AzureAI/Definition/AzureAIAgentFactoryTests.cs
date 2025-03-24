@@ -69,7 +69,7 @@ public class AzureAIAgentFactoryTests : IDisposable
             Tools = [
                 new Microsoft.SemanticKernel.Agents.AgentToolDefinition()
                 {
-                    Name = "tool1",
+                    Id = "tool1",
                     Type = "code_interpreter",
                 },
             ]

@@ -47,11 +47,11 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             model:
               options:
                 temperature: 0.4
-                function_choice_behavior:
-                  type: auto
-                  functions:
-                    - MenuPlugin.GetSpecials
-                    - MenuPlugin.GetItemPrice
+            tools:
+              - id: MenuPlugin.GetSpecials
+                type: function
+              - id: MenuPlugin.GetItemPrice
+                type: function
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 

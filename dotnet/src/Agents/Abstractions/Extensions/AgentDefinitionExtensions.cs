@@ -12,15 +12,45 @@ namespace Microsoft.SemanticKernel.Agents;
 [Experimental("SKEXP0110")]
 public static class AgentDefinitionExtensions
 {
+    private const string FunctionType = "function";
+    private const string FunctionNameSeparator = ".";
+
     /// <summary>
     /// Creates default <see cref="KernelArguments"/> from the <see cref="AgentDefinition"/>.
     /// </summary>
-    /// <param name="agentDefinition">Agen definition to retrieve default arguments from.</param>
-    public static KernelArguments GetDefaultKernelArguments(this AgentDefinition agentDefinition)
+    /// <param name="agentDefinition">Agent definition to retrieve default arguments from.</param>
+    /// <param name="kernel">Kernel instance.</param>
+    public static KernelArguments GetDefaultKernelArguments(this AgentDefinition agentDefinition, Kernel kernel)
     {
         Verify.NotNull(agentDefinition);
 
-        var arguments = new KernelArguments(agentDefinition?.Model?.Options);
+        PromptExecutionSettings executionSettings = new()
+        {
+            ExtensionData = agentDefinition.Model?.Options ?? new Dictionary<string, object>()
+        };
+
+        // Enable automatic function calling if functions are defined.
+        var functions = agentDefinition.GetToolDefinitions(FunctionType);
+        if (functions is not null)
+        {
+            List<KernelFunction> kernelFunctions = [];
+            foreach (var function in functions)
+            {
+                var nameParts = FunctionName.Parse(function.Id!, FunctionNameSeparator);
+
+                // Look up the function in the kernel.
+                if (kernel is not null && kernel.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var kernelFunction))
+                {
+                    kernelFunctions.Add(kernelFunction);
+                    continue;
+                }
+                throw new KernelException($"The specified function {function.Id} is not available in the kernel.");
+            }
+
+            executionSettings.FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(kernelFunctions);
+        }
+
+        var arguments = new KernelArguments(executionSettings);
         if (agentDefinition?.Inputs is not null)
         {
             // Add default arguments for the agent

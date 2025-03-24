@@ -37,7 +37,7 @@ public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
         KernelAgent? kernelAgent = null;
         if (this.IsSupported(agentDefinition))
         {
-            var client = kernel.GetOpenAIClient(agentDefinition);
+            var client = agentDefinition.GetOpenAIClient(kernel);
             AssistantClient assistantClient = client.GetAssistantClient();
 
             var assistantCreationOptions = agentDefinition.CreateAssistantCreationOptions();
@@ -46,7 +46,7 @@ public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
             kernelAgent = new OpenAIAssistantAgent(model, assistantClient)
             {
                 Kernel = kernel,
-                Arguments = agentDefinition.GetDefaultKernelArguments() ?? [],
+                Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
             };
         }
 

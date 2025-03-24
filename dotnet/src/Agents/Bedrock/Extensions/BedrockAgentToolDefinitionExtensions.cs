@@ -14,14 +14,14 @@ internal static class BedrockAgentToolDefinitionExtensions
         this AgentToolDefinition agentToolDefinition)
     {
         Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> parameterSpec = [];
-        var parameters = agentToolDefinition.GetConfiguration<List<object>?>("parameters");
+        var parameters = agentToolDefinition.GetOption<List<object>?>("parameters");
         if (parameters is not null)
         {
             foreach (var parameter in parameters)
             {
                 if (parameter is not Dictionary<object, object> parameterDict)
                 {
-                    throw new ArgumentException($"Invalid parameter type for function {agentToolDefinition.Name}");
+                    throw new ArgumentException($"Invalid parameter type for function {agentToolDefinition.Id}");
                 }
 
                 var name = parameterDict.GetRequiredValue("name");
@@ -46,7 +46,7 @@ internal static class BedrockAgentToolDefinitionExtensions
     {
         return parameter.TryGetValue(key, out var requiredValue) && requiredValue is string requiredString
             ? requiredString
-            : throw new ArgumentException($"The configuration key '{key}' is required for a Bedrock function parameter.");
+            : throw new ArgumentException($"The option key '{key}' is required for a Bedrock function parameter.");
     }
     #endregion
 }
