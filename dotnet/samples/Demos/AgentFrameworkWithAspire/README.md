@@ -210,7 +210,7 @@ Some upstream dependencies require connection strings, which `azd` will prompt y
 | AzureOpenAI     | `Endpoint=<uri>;Key=<key>`     | `Endpoint=https://{account_name}.openai.azure.com;Key=123` or `Key=123` |
 | AzureAISearch     | `Endpoint=<uri>;Key=<key>`     | `Endpoint=https://{search_service}.search.windows.net;Key=123` or `Key=123` |
 
-When running agent locally, the connections string should be specified in user secrets. Please refer to the [Running the agent locally](#running-the-agent-locally) section for more information.
+When running agent locally, the connections string should be specified in user secrets. Please refer to the [Running the agent locally](#running-agent-locally) section for more information.
 
 
 ## Running agent locally
