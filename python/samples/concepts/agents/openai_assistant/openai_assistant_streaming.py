@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 
@@ -57,7 +57,7 @@ async def main():
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "How much is that?", "Thank you"]
 

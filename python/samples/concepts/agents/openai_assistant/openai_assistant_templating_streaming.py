@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import PromptTemplateConfig
 from semantic_kernel.prompt_template.const import TEMPLATE_FORMAT_TYPES
@@ -53,7 +53,7 @@ async def invoke_agent_with_template(
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         for user_input, style in inputs:

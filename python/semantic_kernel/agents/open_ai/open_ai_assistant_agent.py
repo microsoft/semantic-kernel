@@ -67,8 +67,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @release_candidate
-class AssistantThread(AgentThread):
-    """An OpenAI Assistant Thread class."""
+class AssistantAgentThread(AgentThread):
+    """An OpenAI Assistant Agent Thread class."""
 
     def __init__(
         self,
@@ -428,7 +428,7 @@ class OpenAIAssistantAgent(Agent):
             thread_id: The ID of the thread to create the channel for. If not provided
                 a new thread will be created.
         """
-        thread = AssistantThread(client=self.client, thread_id=thread_id)
+        thread = AssistantAgentThread(client=self.client, thread_id=thread_id)
 
         if thread.id is None:
             await thread.create()
@@ -516,8 +516,8 @@ class OpenAIAssistantAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: AssistantThread(client=self.client),
-            expected_type=AssistantThread,
+            construct_thread=lambda: AssistantAgentThread(client=self.client),
+            expected_type=AssistantAgentThread,
         )
         assert thread.id is not None  # nosec
 
@@ -619,8 +619,8 @@ class OpenAIAssistantAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: AssistantThread(client=self.client),
-            expected_type=AssistantThread,
+            construct_thread=lambda: AssistantAgentThread(client=self.client),
+            expected_type=AssistantAgentThread,
         )
         assert thread.id is not None  # nosec
 
@@ -718,8 +718,8 @@ class OpenAIAssistantAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: AssistantThread(client=self.client),
-            expected_type=AssistantThread,
+            construct_thread=lambda: AssistantAgentThread(client=self.client),
+            expected_type=AssistantAgentThread,
         )
         assert thread.id is not None  # nosec
 

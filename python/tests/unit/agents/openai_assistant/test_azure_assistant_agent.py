@@ -14,7 +14,7 @@ from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -217,7 +217,7 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args):
     definition.top_p = 0.9
     definition.metadata = {}
     agent = AzureAssistantAgent(client=client, definition=definition)
-    mock_thread = AsyncMock(spec=AssistantThread)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):
@@ -252,7 +252,7 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
     definition.description = "desc"
     definition.instructions = "test agent"
     agent = AzureAssistantAgent(client=client, definition=definition)
-    mock_thread = AsyncMock(spec=AssistantThread)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):

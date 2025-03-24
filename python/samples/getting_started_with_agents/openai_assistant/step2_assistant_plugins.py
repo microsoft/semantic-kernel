@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -64,7 +64,7 @@ async def main():
     # 4. Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         for user_input in USER_INPUTS:

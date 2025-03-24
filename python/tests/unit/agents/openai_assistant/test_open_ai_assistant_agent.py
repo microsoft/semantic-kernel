@@ -6,7 +6,7 @@ import pytest
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents import OpenAIAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -135,7 +135,7 @@ async def test_open_ai_assistant_agent_add_chat_message(message, openai_client, 
 async def test_open_ai_assistant_agent_get_response(arguments, include_args, openai_client, assistant_definition):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
 
-    mock_thread = AsyncMock(spec=AssistantThread)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
 
     async def fake_invoke(*args, **kwargs):
         yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
@@ -167,7 +167,7 @@ async def test_open_ai_assistant_agent_get_response_exception(
 ):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
 
-    mock_thread = AsyncMock(spec=AssistantThread)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
 
     async def fake_invoke(*args, **kwargs):
         yield False, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
@@ -195,7 +195,7 @@ async def test_open_ai_assistant_agent_get_response_exception(
 )
 async def test_open_ai_assistant_agent_invoke(arguments, include_args, openai_client, assistant_definition):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
-    mock_thread = AsyncMock(spec=AssistantThread)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):
@@ -224,7 +224,7 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args, openai_cl
 )
 async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args, openai_client, assistant_definition):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
-    mock_thread = AsyncMock(spec=AssistantThread)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):

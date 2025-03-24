@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import StreamingAnnotationContent
 
 """
@@ -73,7 +73,7 @@ async def main():
         definition=definition,
     )
 
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     try:
         is_complete: bool = False

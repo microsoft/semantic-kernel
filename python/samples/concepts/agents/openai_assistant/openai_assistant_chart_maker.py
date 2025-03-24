@@ -2,7 +2,7 @@
 import asyncio
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_images
-from semantic_kernel.agents import AssistantThread, AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import FileReferenceContent
 
 """
@@ -38,7 +38,7 @@ async def main():
     # Create a new thread for use with the assistant
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: AssistantThread = None
+    thread: AssistantAgentThread = None
 
     user_inputs = [
         """

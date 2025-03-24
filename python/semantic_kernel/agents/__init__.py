@@ -12,7 +12,7 @@ from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCom
 from semantic_kernel.agents.group_chat.agent_chat import AgentChat
 from semantic_kernel.agents.group_chat.agent_group_chat import AgentGroupChat
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
-from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantThread, OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssistantAgent
 
 __all__ = [
     "Agent",
@@ -20,7 +20,7 @@ __all__ = [
     "AgentGroupChat",
     "AgentResponseItem",
     "AgentThread",
-    "AssistantThread",
+    "AssistantAgentThread",
     "AutoGenConversableAgent",
     "AutoGenConversableAgentThread",
     "AzureAIAgent",
