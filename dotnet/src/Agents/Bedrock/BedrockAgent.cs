@@ -205,7 +205,7 @@ public class BedrockAgent : KernelAgent
         KernelArguments? arguments,
         CancellationToken cancellationToken = default)
     {
-        return invokeAgentRequest.StreamingConfigurations != null && (invokeAgentRequest.StreamingConfigurations.StreamFinalResponse)
+        return invokeAgentRequest.StreamingConfigurations != null && (invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false)
             ? throw new ArgumentException("The streaming configuration must be null for non-streaming responses.")
             : ActivityExtensions.RunWithActivityAsync(
                 () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
@@ -301,7 +301,7 @@ public class BedrockAgent : KernelAgent
                 StreamFinalResponse = true,
             };
         }
-        else if (!(invokeAgentRequest.StreamingConfigurations.StreamFinalResponse))
+        else if (!(invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false))
         {
             throw new ArgumentException("The streaming configuration must have StreamFinalResponse set to true.");
         }
