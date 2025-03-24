@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from openai import AsyncOpenAI
     from openai.types.beta.assistant_tool_param import AssistantToolParam
     from openai.types.beta.code_interpreter_tool_param import CodeInterpreterToolParam
+    from openai.types.beta.thread_create_params import Message as ThreadCreateMessage
     from openai.types.beta.threads.message import Message
     from openai.types.beta.threads.run_create_params import TruncationStrategy
 
@@ -73,7 +74,7 @@ class AssistantThread(AgentThread):
         self,
         client: AsyncOpenAI,
         thread_id: str | None = None,
-        messages: Iterable["Message"] | NotGiven = NOT_GIVEN,
+        messages: Iterable["ThreadCreateMessage"] | NotGiven = NOT_GIVEN,
         metadata: dict[str, Any] | NotGiven = NOT_GIVEN,
         tool_resources: ToolResources | NotGiven = NOT_GIVEN,
     ) -> None:
