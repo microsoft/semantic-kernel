@@ -36,6 +36,16 @@ public sealed class ChatHistoryAgentThread : AgentThread
         this.Id = id ?? Guid.NewGuid().ToString("N");
     }
 
+    /// <summary>
+    /// Creates the thread and returns the thread id.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that completes when the thread has been created.</returns>
+    public new Task CreateAsync(CancellationToken cancellationToken = default)
+    {
+        return base.CreateAsync(cancellationToken);
+    }
+
     /// <inheritdoc />
     protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {
@@ -56,7 +66,15 @@ public sealed class ChatHistoryAgentThread : AgentThread
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Asynchronously retrieves all messages in the thread.
+    /// </summary>
+    /// <remarks>
+    /// Messages will be returned in ascending chronological order.
+    /// </remarks>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The messages in the thread.</returns>
+    /// <exception cref="InvalidOperationException">The thread has been deleted.</exception>
     [Experimental("SKEXP0110")]
     public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
