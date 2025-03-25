@@ -23,7 +23,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
 
     protected AgentFixture Fixture => this._agentFixture;
 
-    [RetryFact(3, 5000)]
+    [RetryFact(3, 10_000)]
     public virtual async Task InvokeStreamingAsyncReturnsResultAsync()
     {
         // Arrange
@@ -41,7 +41,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         Assert.NotNull(firstResult.Thread);
     }
 
-    [RetryFact(3, 5000)]
+    [RetryFact(3, 10_000)]
     public virtual async Task InvokeStreamingAsyncWithoutThreadCreatesThreadAsync()
     {
         // Arrange
@@ -62,7 +62,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         await this.Fixture.DeleteThread(firstResult.Thread);
     }
 
-    [RetryFact(3, 5000)]
+    [RetryFact(3, 10_000)]
     public virtual async Task ConversationMaintainsHistoryAsync()
     {
         // Arrange
@@ -100,7 +100,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
     /// The step does multiple iterations to make sure that the agent
     /// also manages the chat history correctly.
     /// </summary>
-    [RetryFact(3, 5000)]
+    [RetryFact(3, 10_000)]
     public virtual async Task MultiStepInvokeStreamingAsyncWithPluginAndArgOverridesAsync()
     {
         // Arrange
