@@ -1,10 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-from typing import Annotated
 
-from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent
-from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.functions import kernel_function
+from semantic_kernel.agents import OpenAIResponseAgent
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -18,33 +15,9 @@ associated with the thread. Therefore, client code does not need to maintain the
 conversation history.
 """
 
-
-# Define a sample plugin for the sample
-class MenuPlugin:
-    """A sample Menu Plugin used for the concept sample."""
-
-    @kernel_function(description="Provides a list of specials from the menu.")
-    def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
-        return """
-        Special Soup: Clam Chowder
-        Special Salad: Cobb Salad
-        Special Drink: Chai Tea
-        """
-
-    @kernel_function(description="Provides the price of the requested menu item.")
-    def get_item_price(
-        self, menu_item: Annotated[str, "The name of the menu item."]
-    ) -> Annotated[str, "Returns the price of the menu item."]:
-        return "$9.99"
-
-
-# Simulate a conversation with the agent
 USER_INPUTS = [
-    "Hello",
-    "What is the special soup?",
-    "What is the special drink?",
-    "How much is it?",
-    "Thank you",
+    "Why is the sky blue?",
+    "What is the speed of light?",
 ]
 
 
@@ -57,21 +30,15 @@ async def main():
         ai_model_id=model,
         client=client,
         instructions="Answer questions about the world in one sentence.",
-        name="Host",
-        plugins=[MenuPlugin()],
+        name="Expert",
     )
 
-    # 3. Create a chat history to hold the conversation
-    chat_history = ChatHistory()
-
     for user_input in USER_INPUTS:
-        # 3. Add the user input to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: '{user_input}'")
-        # 4. Invoke the agent for the current message and print the response
-        response = await agent.get_response(chat_history=chat_history)
+        # 3. Invoke the agent for the current message and print the response
+        response = await agent.get_response(messages=user_input)
         print(f"# {response.name}: {response.content}")
-        chat_history.add_message(response)
+
     """
     You should see output similar to the following:
 

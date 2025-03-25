@@ -13,6 +13,7 @@ from semantic_kernel.agents.group_chat.agent_chat import AgentChat
 from semantic_kernel.agents.group_chat.agent_group_chat import AgentGroupChat
 from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssistantAgent
+from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent, ResponseAgentThread
 
 __all__ = [
     "Agent",
@@ -32,4 +33,6 @@ __all__ = [
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
     "OpenAIAssistantAgent",
+    "OpenAIResponseAgent",
+    "ResponseAgentThread",
 ]

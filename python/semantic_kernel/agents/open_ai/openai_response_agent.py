@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import uuid
 from collections.abc import AsyncIterable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
@@ -15,6 +16,7 @@ else:
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
 from openai.types.responses.file_search_tool_param import FileSearchToolParam, RankingOptions
+from openai.types.responses.response import Response
 from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
 from openai.types.shared_params.comparison_filter import ComparisonFilter
@@ -22,6 +24,7 @@ from openai.types.shared_params.compound_filter import CompoundFilter
 from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
@@ -30,12 +33,17 @@ from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
+from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentChatException,
     AgentInitializationException,
     AgentInvokeException,
+    AgentThreadOperationException,
 )
 from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
@@ -53,12 +61,78 @@ if TYPE_CHECKING:
     from openai import AsyncOpenAI
     from openai.types.responses.response_text_config_param import ResponseTextConfigParam
 
-    from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+# region Agent Thread
+
+
+@experimental
+class ResponseAgentThread(AgentThread):
+    """Response Agent Thread class."""
+
+    def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
+        """Initialize the ChatCompletionAgent Thread.
+
+        Args:
+            chat_history: The chat history for the thread. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+        """
+        super().__init__()
+
+        self._chat_history = chat_history or ChatHistory()
+        self._thread_id = thread_id or f"thread_{uuid.uuid4().hex}"
+        self._is_deleted = False
+
+    def __len__(self) -> int:
+        """Returns the length of the chat history."""
+        return len(self._chat_history)
+
+    @override
+    async def _create(self) -> str:
+        """Starts the thread and returns its ID."""
+        return self._thread_id
+
+    @override
+    async def _delete(self) -> None:
+        """Ends the current thread."""
+        self._chat_history.clear()
+
+    @override
+    async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
+        """Called when a new message has been contributed to the chat."""
+        if isinstance(new_message, str):
+            new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
+
+        if (
+            not new_message.metadata
+            or "thread_id" not in new_message.metadata
+            or new_message.metadata["thread_id"] != self._id
+        ):
+            self._chat_history.add_message(new_message)
+
+    async def get_messages(self) -> ChatHistory:
+        """Retrieve the current chat history."""
+        if self._is_deleted:
+            raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
+        if self._id is None:
+            await self.create()
+        return self._chat_history
+
+    async def reduce(self) -> ChatHistory | None:
+        """Reduce the chat history to a smaller size."""
+        if self._id is None:
+            raise AgentThreadOperationException("Cannot reduce chat history, since the thread is not currently active.")
+        if not isinstance(self._chat_history, ChatHistoryReducer):
+            return None
+        return await self._chat_history.reduce()
+
+
+# endregion
+
+# region Channel
 
 
 @experimental
@@ -158,6 +232,9 @@ class OpenAIResponseChannel(AgentChannel):
             await self.client.beta.threads.delete(thread_id=self.thread_id)
         except Exception as e:
             raise AgentChatException(f"Failed to delete thread: {e}")
+
+
+# endregion
 
 
 @experimental
@@ -342,60 +419,6 @@ class OpenAIResponseAgent(Agent):
 
     # region Tool Handling
 
-    # @staticmethod
-    # def configure_file_search_tool(
-    #     vector_store_ids: str | list[str],
-    #     filters: ComparisonFilter | CompoundFilter | None = None,
-    #     max_num_results: int | None = None,
-    #     score_threshold: float | None = None,
-    #     ranker: Literal["auto", "default_2024_11_15"] | None = None,
-    # ) -> FileSearchToolParam:
-    #     """Generate the file search tool param.
-
-    #     Args:
-    #         vector_store_ids: Single or list of vector store IDs.
-    #         filters: A filter to apply based on file attributes.
-    #             - ComparisonFilter: A single filter.
-    #             - CompoundFilter: A compound filter.
-    #         max_num_results: Optional override for maximum results (1 to 50).
-    #         score_threshold: Floating point threshold between 0 and 1.
-    #         ranker: The ranker to use ('auto' or 'default_2024_08_21').
-    #         kwargs: Any extra arguments needed by ToolResourcesFileSearch.
-
-    #     Returns:
-    #         A FileSearchToolParam dictionary with any passed-in parameters.
-    #     """
-    #     if isinstance(vector_store_ids, str):
-    #         vector_store_ids = [vector_store_ids]
-
-    #     # Base tool definition
-    #     tool: FileSearchToolParam = {
-    #         "type": "file_search",
-    #         "vector_store_ids": vector_store_ids,
-    #     }
-
-    #     file_search_config = {}
-
-    #     if filters is not None:
-    #         file_search_config["filters"] = filters
-
-    #     # Only set overrides if provided
-    #     if max_num_results is not None:
-    #         file_search_config["max_num_results"] = max_num_results
-
-    #     if score_threshold is not None or ranker is not None:
-    #         file_search_config["ranking_options"] = {}
-    #         if score_threshold is not None:
-    #             file_search_config["ranking_options"]["score_threshold"] = score_threshold  # type: ignore
-    #         if ranker is not None:
-    #             file_search_config["ranking_options"]["ranker"] = ranker  # type: ignore
-
-    #     # Include file_search in the tool if any config was provided
-    #     if file_search_config:
-    #         tool["file_search"] = file_search_config
-
-    #     return tool
-
     @staticmethod
     def configure_file_search_tool(
         vector_store_ids: str | list[str],
@@ -574,8 +597,8 @@ class OpenAIResponseAgent(Agent):
     async def get_response(
         self,
         *,
-        # Run-level parameters:
-        chat_history: "ChatHistory",
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         include: list[
@@ -598,11 +621,12 @@ class OpenAIResponseAgent(Agent):
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> ChatMessageContent:
+    ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent on a thread.
 
         Args:
-            chat_history: The Chat History for the agent.
+            messages: The messages to send to the agent.
+            thread: The thread to use for the agent.
             arguments: The kernel arguments.
             kernel: The kernel.
             include: Additional output data to include in the response.
@@ -627,6 +651,16 @@ class OpenAIResponseAgent(Agent):
         Returns:
             ResponseMessageContent: The response from the agent.
         """
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: ResponseAgentThread(),
+            expected_type=ResponseAgentThread,
+        )
+        assert thread.id is not None  # nosec
+
+        chat_history = await thread.get_messages()
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -654,29 +688,37 @@ class OpenAIResponseAgent(Agent):
 
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
 
-        messages: list[ChatMessageContent] = []
-        async for is_visible, message in ResponseAgentThreadActions.invoke(
+        response_messages: list[ChatMessageContent] = []
+        async for is_visible, response in ResponseAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
+            thread=thread,
             kernel=kernel,
             arguments=arguments,
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            if is_visible and message.metadata.get("code") is not True:
-                messages.append(message)
+            if is_visible and response.metadata.get("code") is not True:
+                if hasattr(response, "inner_content") and isinstance(response.inner_content, Response):
+                    # If the response has an inner_content with an ID, set the thread ID
+                    # to the response ID so that it can be used to track the convo server-side.
+                    thread._id = response.inner_content.id
+                response.metadata["thread_id"] = thread.id
+                response_messages.append(response)
 
-        if not messages:
+        if not response_messages:
             raise AgentInvokeException("No response messages were returned from the agent.")
-        return messages[-1]
+        final_message = response_messages[-1]
+        await thread.on_new_message(final_message)
+        return AgentResponseItem(message=final_message, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke(
         self,
         *,
-        # Run-level parameters:
-        chat_history: "ChatHistory",
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
@@ -698,11 +740,12 @@ class OpenAIResponseAgent(Agent):
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         Args:
-            chat_history: The Chat History for the agent.
+            messages: The messages to send to the agent.
+            thread: The thread to use for the agent.
             arguments: The kernel arguments.
             kernel: The kernel.
             include: Additional output data to include in the response.
@@ -726,6 +769,16 @@ class OpenAIResponseAgent(Agent):
         Yields:
             The chat message content.
         """
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: ResponseAgentThread(),
+            expected_type=ResponseAgentThread,
+        )
+        assert thread.id is not None  # nosec
+
+        chat_history = await thread.get_messages()
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -752,24 +805,31 @@ class OpenAIResponseAgent(Agent):
 
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
 
-        async for is_visible, message in ResponseAgentThreadActions.invoke(
+        async for is_visible, response in ResponseAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
+            thread=thread,
             kernel=kernel,
             arguments=arguments,
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
             if is_visible:
-                yield message
+                if hasattr(response, "inner_content") and isinstance(response.inner_content, Response):
+                    # If the response has an inner_content with an ID, set the thread ID
+                    # to the response ID so that it can be used to track the convo server-side.
+                    thread._id = response.inner_content.id
+                response.metadata["thread_id"] = thread.id
+                await thread.on_new_message(response)
+                yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke_stream(
         self,
         *,
-        # Run-level parameters:
-        chat_history: "ChatHistory",
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
@@ -781,7 +841,7 @@ class OpenAIResponseAgent(Agent):
         | None = None,
         instructions_override: str | None = None,
         max_output_tokens: int | None = None,
-        messages: list[ChatMessageContent] | None = None,
+        output_messages: list[ChatMessageContent] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -792,11 +852,12 @@ class OpenAIResponseAgent(Agent):
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingResponseMessageContent"]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingResponseMessageContent]]:
         """Invoke the agent.
 
         Args:
-            chat_history: The Chat History for the agent.
+            messages: The messages to send to the agent.
+            thread: The thread to use for the agent.
             arguments: The kernel arguments.
             kernel: The kernel.
             include: Additional output data to include in the response.
@@ -806,7 +867,7 @@ class OpenAIResponseAgent(Agent):
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_output_tokens: The maximum completion tokens.
-            messages: The messages to aggregate from agent responses.
+            output_messages: The messages to aggregate from agent responses.
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
@@ -821,6 +882,16 @@ class OpenAIResponseAgent(Agent):
         Yields:
             The chat message content.
         """
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: ResponseAgentThread(),
+            expected_type=ResponseAgentThread,
+        )
+        assert thread.id is not None  # nosec
+
+        chat_history = await thread.get_messages()
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
@@ -847,15 +918,22 @@ class OpenAIResponseAgent(Agent):
 
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
 
-        async for message in ResponseAgentThreadActions.invoke_stream(
+        async for response in ResponseAgentThreadActions.invoke_stream(
             agent=self,
             chat_history=chat_history,
+            thread=thread,
             kernel=kernel,
             arguments=arguments,
-            messages=messages,
+            output_messages=output_messages,
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            yield message
+            if hasattr(response, "inner_content") and isinstance(response.inner_content, Response):
+                # If the response has an inner_content with an ID, set the thread ID
+                # to the response ID so that it can be used to track the convo server-side.
+                thread._id = response.inner_content.id
+            response.metadata["thread_id"] = thread.id
+            await thread.on_new_message(response)
+            yield AgentResponseItem(message=response, thread=thread)
 
     # endregion

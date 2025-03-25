@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent
+from semantic_kernel.agents import OpenAIResponseAgent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.response_message_content import ResponseMessageContent

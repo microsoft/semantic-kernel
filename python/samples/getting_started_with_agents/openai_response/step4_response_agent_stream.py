@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-import os
+from typing import Annotated
 
-from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent
+from semantic_kernel.agents import OpenAIResponseAgent
 from semantic_kernel.contents.chat_history import ChatHistory
-from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
+from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -19,11 +19,32 @@ conversation history.
 """
 
 
+# Define a sample plugin for the sample
+class MenuPlugin:
+    """A sample Menu Plugin used for the concept sample."""
+
+    @kernel_function(description="Provides a list of specials from the menu.")
+    def get_specials(self, menu_item: str) -> Annotated[str, "Returns the specials from the menu."]:
+        return """
+        Special Soup: Clam Chowder
+        Special Salad: Cobb Salad
+        Special Drink: Chai Tea
+        """
+
+    @kernel_function(description="Provides the price of the requested menu item.")
+    def get_item_price(
+        self, menu_item: Annotated[str, "The name of the menu item."]
+    ) -> Annotated[str, "Returns the price of the menu item."]:
+        return "$9.99"
+
+
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Who is the youngest employee?",
-    "Who works in sales?",
-    "I have a customer request, who can help me?",
+    "Hello",
+    "What is the special soup?",
+    "What is the special drink?",
+    "How much is it?",
+    "Thank you",
 ]
 
 
@@ -31,33 +52,18 @@ async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
     client, model = OpenAIResponseAgent.setup_resources()
 
-    pdf_file_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
-    )
-
-    with open(pdf_file_path, "rb") as file:
-        file = await client.files.create(file=file, purpose="assistants")
-
-    vector_store = await client.vector_stores.create(
-        name="step4_assistant_file_search",
-        file_ids=[file.id],
-    )
-
-    file_search_tool = OpenAIResponseAgent.configure_file_search_tool(vector_store.id)
-
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
     agent = OpenAIResponseAgent(
         ai_model_id=model,
         client=client,
-        instructions="Find answers to the user's questions in the provided file.",
-        name="FileSearch",
-        tools=[file_search_tool],
+        instructions="Answer questions about the menu.",
+        name="Host",
+        plugins=[MenuPlugin()],
     )
 
     # 3. Create a chat history to hold the conversation
     chat_history = ChatHistory()
 
-    response_chunks: list[StreamingResponseMessageContent] = []
     for user_input in USER_INPUTS:
         # 3. Add the user input to the chat history
         chat_history.add_user_message(user_input)
@@ -65,16 +71,11 @@ async def main():
         # 4. Invoke the agent for the current message and print the response
         first_chunk = True
         async for response in agent.invoke_stream(chat_history=chat_history):
-            response_chunks.append(response)
             if first_chunk:
                 print(f"# {response.name}: ", end="", flush=True)
                 first_chunk = False
             print(response.content, end="", flush=True)
         print()
-
-        full_message = sum(response_chunks[1:], response_chunks[0])
-        # Add the chat message to the chat history to keep track of the conversation.
-        chat_history.add_message(full_message)
 
     """
     You should see output similar to the following:

@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
+import os
 
-from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent
+from semantic_kernel.agents import OpenAIResponseAgent
 from semantic_kernel.contents.chat_history import ChatHistory
 
 """
@@ -19,7 +20,9 @@ conversation history.
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Find me news articles about the latest technology trends.",
+    "Who is the youngest employee?",
+    "Who works in sales?",
+    "I have a customer request, who can help me?",
 ]
 
 
@@ -27,15 +30,27 @@ async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
     client, model = OpenAIResponseAgent.setup_resources()
 
-    web_search_tool = OpenAIResponseAgent.configure_web_search_tool()
+    pdf_file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
+    )
+
+    with open(pdf_file_path, "rb") as file:
+        file = await client.files.create(file=file, purpose="assistants")
+
+    vector_store = await client.vector_stores.create(
+        name="step4_assistant_file_search",
+        file_ids=[file.id],
+    )
+
+    file_search_tool = OpenAIResponseAgent.configure_file_search_tool(vector_store.id)
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
     agent = OpenAIResponseAgent(
         ai_model_id=model,
         client=client,
-        instructions="Answer questions from the user.",
-        name="Host",
-        tools=[web_search_tool],
+        instructions="Find answers to the user's questions in the provided file.",
+        name="FileSearch",
+        tools=[file_search_tool],
     )
 
     # 3. Create a chat history to hold the conversation
