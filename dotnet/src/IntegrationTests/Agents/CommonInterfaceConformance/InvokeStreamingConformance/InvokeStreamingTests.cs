@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using xRetry;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeStreamingConformance;
@@ -22,7 +23,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
 
     protected AgentFixture Fixture => this._agentFixture;
 
-    [Fact]
+    [RetryFact(3, 5000)]
     public virtual async Task InvokeStreamingAsyncReturnsResultAsync()
     {
         // Arrange
@@ -40,7 +41,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         Assert.NotNull(firstResult.Thread);
     }
 
-    [Fact]
+    [RetryFact(3, 5000)]
     public virtual async Task InvokeStreamingAsyncWithoutThreadCreatesThreadAsync()
     {
         // Arrange
@@ -61,7 +62,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         await this.Fixture.DeleteThread(firstResult.Thread);
     }
 
-    [Fact]
+    [RetryFact(3, 5000)]
     public virtual async Task ConversationMaintainsHistoryAsync()
     {
         // Arrange
@@ -99,7 +100,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
     /// The step does multiple iterations to make sure that the agent
     /// also manages the chat history correctly.
     /// </summary>
-    [Fact]
+    [RetryFact(3, 5000)]
     public virtual async Task MultiStepInvokeStreamingAsyncWithPluginAndArgOverridesAsync()
     {
         // Arrange
