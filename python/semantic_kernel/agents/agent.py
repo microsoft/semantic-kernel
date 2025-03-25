@@ -4,7 +4,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Annotated, Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -13,6 +13,7 @@ from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMe
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
@@ -205,6 +206,35 @@ class Agent(KernelBaseModel, ABC):
                 kernel.add_plugin(plugin, plugin_name=name)
             data["kernel"] = kernel
         return data
+
+    def model_post_init(self, __context: Any) -> None:
+        """Post initialization: create a kernel_function that calls this agent's get_response()."""
+
+        @kernel_function(name=self.name, description=self.description)
+        async def _as_kernel_function(
+            messages: Annotated[str | list[str], "The user messages for the agent."],
+            instructions_override: Annotated[str | None, "Override agent instructions."] = None,
+        ) -> Annotated[str, "Agent response."]:
+            """A Minimal universal function for all agents.
+
+            Exposes 'messages' and 'instructions_override'.
+            Internally, we pass them to get_response() for whichever agent is calling it.
+            """
+            # Convert a single string to a list if necessary
+            if isinstance(messages, str):
+                messages = [messages]
+
+            # Forward to get_response(), passing the optional override
+            response_item = await self.get_response(
+                messages=messages, instructions_override=instructions_override if instructions_override else None
+            )
+
+            # Return the final .content
+            return response_item.content
+
+        # To keep Pydantic happy, it needs to be marked with an underscore
+        # so it doesn't try to validate the function signature.
+        setattr(self, "_as_kernel_function", _as_kernel_function)
 
     @abstractmethod
     def get_response(self, *args, **kwargs) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
