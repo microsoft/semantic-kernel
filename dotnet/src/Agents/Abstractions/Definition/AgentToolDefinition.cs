@@ -14,6 +14,11 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentToolDefinition
 {
     /// <summary>
+    /// The id of the tool.
+    /// </summary>
+    public string? Id { get; set; }
+
+    /// <summary>
     /// The type of the tool.
     /// </summary>
     /// <remarks>
@@ -22,21 +27,16 @@ public sealed class AgentToolDefinition
     public string? Type { get; set; }
 
     /// <summary>
-    /// The name of the tool.
-    /// </summary>
-    public string? Name { get; set; }
-
-    /// <summary>
     /// The description of the tool.
     /// </summary>
     public string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets the configuration for the tool.
+    /// Gets or sets the options for the tool.
     /// </summary>
     /// <remarks>
-    /// Used to store tool specific configuration e.g., files associated with the tool, etc.
+    /// Used to store tool specific options e.g., files associated with the tool, etc.
     /// </remarks>
     [JsonExtensionData]
-    public IDictionary<string, object?>? Configuration { get; set; }
+    public IDictionary<string, object?>? Options { get; set; }
 }

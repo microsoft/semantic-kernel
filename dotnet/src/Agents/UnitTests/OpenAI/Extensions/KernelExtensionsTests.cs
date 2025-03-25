@@ -23,7 +23,7 @@ public class KernelExtensionsTests
             Model = new()
             {
                 Id = "gpt-4o-mini",
-                Configuration = new()
+                Connection = new()
                 {
                     ExtensionData = new Dictionary<string, object?>()
                     {

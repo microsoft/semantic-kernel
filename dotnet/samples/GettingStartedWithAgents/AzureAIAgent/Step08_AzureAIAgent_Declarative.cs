@@ -32,7 +32,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
               id: gpt-4o-mini
-              configuration:
+              connection:
                 connection_string: {TestConfiguration.AzureAI.ConnectionString}
             """;
         AzureAIAgentFactory factory = new();
@@ -83,36 +83,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithFunctionsViaOptionsAsync()
-    {
-        var text =
-            """
-            type: foundry_agent
-            name: FunctionCallingAgent
-            instructions: Use the provided functions to answer questions about the menu.
-            description: This agent uses the provided functions to answer questions about the menu.
-            model:
-              id: gpt-4o-mini
-              options:
-                temperature: 0.4
-                function_choice_behavior:
-                  type: auto
-                  functions:
-                    - MenuPlugin.GetSpecials
-                    - MenuPlugin.GetItemPrice
-            """;
-        AzureAIAgentFactory factory = new();
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
-
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
-        Assert.NotNull(agent);
-
-        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
-    }
-
-    [Fact]
     public async Task AzureAIAgentWithFunctionsAsync()
     {
         var text =
@@ -126,13 +96,13 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
               options:
                 temperature: 0.4
             tools:
-              - name: GetSpecials
+              - id: GetSpecials
                 type: function
                 description: Get the specials from the menu.
-              - name: GetItemPrice
+              - id: GetItemPrice
                 type: function
                 description: Get the price of an item on the menu.
-                configuration:
+                options:
                   parameters:
                     - name: menuItem
                       type: string
@@ -164,7 +134,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                 temperature: 0.4
             tools:
               - type: bing_grounding
-                configuration:
+                options:
                   tool_connections:
                     - {TestConfiguration.AzureAI.BingConnectionId}
             """;
@@ -194,7 +164,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             tools:
               - type: file_search
                 description: Grounding with available files.
-                configuration:
+                options:
                   vector_store_ids:
                     - {TestConfiguration.AzureAI.VectorStoreId}
             """;
@@ -224,9 +194,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                 temperature: 0.4
             tools:
               - type: openapi
-                name: GetCurrentWeather
+                id: GetCurrentWeather
                 description: Retrieves current weather data for a location based on wttr.in.
-                configuration:
+                options:
                   specification: |
                     {
                       "openapi": "3.1.0",
@@ -314,9 +284,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                 temperature: 0.4
             tools:
               - type: openapi
-                name: GetCurrentWeather
+                id: GetCurrentWeather
                 description: Retrieves current weather data for a location based on wttr.in.
-                configuration:
+                options:
                   specification:
                     openapi: "3.1.0"  
                     info:  

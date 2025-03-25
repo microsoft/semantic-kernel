@@ -67,7 +67,7 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
             Tools = [
                 new AgentToolDefinition()
                 {
-                    Name = "tool1",
+                    Id = "tool1",
                     Type = "code_interpreter",
                 },
             ]

@@ -23,12 +23,12 @@ public class AgentDefinitionExtensionsTests
             Tools = [
                 new AgentToolDefinition()
                 {
-                    Name = "tool1",
+                    Id = "tool1",
                     Type = "code_interpreter",
                 },
                 new AgentToolDefinition()
                 {
-                    Name = "tool2",
+                    Id = "tool2",
                     Type = "file_search",
                 },
             ]

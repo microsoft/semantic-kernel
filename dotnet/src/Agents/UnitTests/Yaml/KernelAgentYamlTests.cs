@@ -86,7 +86,7 @@ public class KernelAgentYamlTests : IDisposable
                     temperature: 0.4
                     function_choice_behavior:
                         type: auto
-                configuration:
+                connection:
                     type: azureai
             inputs:
                 input1:
@@ -105,9 +105,9 @@ public class KernelAgentYamlTests : IDisposable
                 format: liquid
                 parser: semantic-kernel
             tools:
-                - name: tool1
+                - id: tool1
                   type: code_interpreter
-                - name: tool2
+                - id: tool2
                   type: file_search
             """;
 
@@ -168,7 +168,7 @@ public class KernelAgentYamlTests : IDisposable
             model:
               id: gpt-4o-mini
             tools:
-                - name: tool1
+                - id: tool1
                   type: code_interpreter
             """;
         OpenAIAssistantAgentFactory factory = new();
@@ -202,7 +202,7 @@ public class KernelAgentYamlTests : IDisposable
             model:
               id: gpt-4o-mini
             tools:
-                - name: tool1
+                - id: tool1
                   type: code_interpreter
             """;
         AzureAIAgentFactory factory = new();
