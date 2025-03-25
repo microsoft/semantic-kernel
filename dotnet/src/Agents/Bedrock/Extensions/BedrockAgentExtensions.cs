@@ -176,7 +176,11 @@ public static class BedrockAgentExtensions
         // will return immediately if the agent is already in PREPARED status.
         await client.WaitForAgentStatusAsync(agent, AgentStatus.PREPARING, cancellationToken: cancellationToken).ConfigureAwait(false);
         // When the agent is prepared, it will enter the PREPARED status.
-        return await client.WaitForAgentStatusAsync(agent, AgentStatus.PREPARED, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var preparedAgent = await client.WaitForAgentStatusAsync(agent, AgentStatus.PREPARED, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken).ConfigureAwait(false);
+
+        return preparedAgent;
     }
 
     /// <summary>
