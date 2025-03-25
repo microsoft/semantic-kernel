@@ -111,11 +111,11 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var kernel = agent.Kernel.Clone();
         kernel.Plugins.AddFromType<MenuPlugin>();
 
-        foreach (var questionAndAsnwer in questionsAndAnswers)
+        foreach (var questionAndAnswer in questionsAndAnswers)
         {
             // Act
             var asyncResults = agent.InvokeAsync(
-                new ChatMessageContent(AuthorRole.User, questionAndAsnwer.Item1),
+                new ChatMessageContent(AuthorRole.User, questionAndAnswer.Item1),
                 this.Fixture.AgentThread,
                 options: new()
                 {
@@ -126,7 +126,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
             // Assert
             var result = await asyncResults.FirstAsync();
             Assert.NotNull(result);
-            Assert.Contains(questionAndAsnwer.Item2, result.Message.Content);
+            Assert.Contains(questionAndAnswer.Item2, result.Message.Content);
         }
     }
 

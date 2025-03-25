@@ -116,11 +116,11 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         var kernel = agent.Kernel.Clone();
         kernel.Plugins.AddFromType<MenuPlugin>();
 
-        foreach (var questionAndAsnwer in questionsAndAnswers)
+        foreach (var questionAndAnswer in questionsAndAnswers)
         {
             // Act
             var asyncResults = agent.InvokeStreamingAsync(
-                new ChatMessageContent(AuthorRole.User, questionAndAsnwer.Item1),
+                new ChatMessageContent(AuthorRole.User, questionAndAnswer.Item1),
                 this.Fixture.AgentThread,
                 options: new()
                 {
@@ -131,7 +131,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
 
             // Assert
             var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
-            Assert.Contains(questionAndAsnwer.Item2, resultString);
+            Assert.Contains(questionAndAnswer.Item2, resultString);
         }
     }
 
