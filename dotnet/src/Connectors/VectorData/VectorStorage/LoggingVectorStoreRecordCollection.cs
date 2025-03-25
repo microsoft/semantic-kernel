@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -39,6 +40,7 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc/>
+    [Obsolete("Use GetService(typeof(VectorStoreRecordCollectionMetadata)) to get an information about vector store record collection.")]
     public string CollectionName => this._innerCollection.CollectionName;
 
     /// <inheritdoc/>
@@ -112,6 +114,16 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
             nameof(GetBatchAsync),
             () => this._innerCollection.GetBatchAsync(keys, options, cancellationToken),
             cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._innerCollection.GetService(serviceType, serviceKey);
     }
 
     /// <inheritdoc/>

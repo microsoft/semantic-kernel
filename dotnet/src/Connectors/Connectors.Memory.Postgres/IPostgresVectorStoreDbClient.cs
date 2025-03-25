@@ -22,6 +22,11 @@ internal interface IPostgresVectorStoreDbClient
     NpgsqlDataSource DataSource { get; }
 
     /// <summary>
+    /// The name of the database.
+    /// </summary>
+    string? DatabaseName { get; }
+
+    /// <summary>
     /// Check if a table exists.
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>

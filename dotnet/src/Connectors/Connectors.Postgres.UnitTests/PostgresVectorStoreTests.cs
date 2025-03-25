@@ -26,6 +26,7 @@ public class PostgresVectorStoreTests
     public PostgresVectorStoreTests()
     {
         this._postgresClientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
+        this._postgresClientMock.Setup(l => l.DatabaseName).Returns("TestDatabase");
     }
 
     [Fact]
@@ -60,7 +61,10 @@ public class PostgresVectorStoreTests
         var factoryMock = new Mock<IPostgresVectorStoreRecordCollectionFactory>(MockBehavior.Strict);
         var collectionMock = new Mock<IVectorStoreRecordCollection<int, SinglePropsModel<int>>>(MockBehavior.Strict);
         var clientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
+
         clientMock.Setup(x => x.DataSource).Returns<NpgsqlDataSource>(null);
+        clientMock.Setup(x => x.DatabaseName).Returns("TestDatabase");
+
         factoryMock
             .Setup(x => x.CreateVectorStoreRecordCollection<int, SinglePropsModel<int>>(It.IsAny<NpgsqlDataSource>(), TestCollectionName, null))
             .Returns(collectionMock.Object);

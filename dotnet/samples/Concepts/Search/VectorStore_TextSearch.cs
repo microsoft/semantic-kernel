@@ -150,6 +150,16 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
 
             return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken);
         }
+
+        /// <inheritdoc />
+        public object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            ArgumentNullException.ThrowIfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+                vectorizedSearch.GetService(serviceType, serviceKey);
+        }
     }
 
     /// <summary>

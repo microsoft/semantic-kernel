@@ -8,9 +8,6 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 internal static class PostgresConstants
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    public const string DatabaseName = "Postgres";
-
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedKeyTypes =
     [
