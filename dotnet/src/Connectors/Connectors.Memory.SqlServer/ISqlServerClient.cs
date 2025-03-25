@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,6 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// <summary>
 /// Interface for client managing SQL Server or Azure SQL database operations.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal interface ISqlServerClient
 {
     /// <summary>

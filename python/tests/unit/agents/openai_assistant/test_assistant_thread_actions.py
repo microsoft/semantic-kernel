@@ -548,7 +548,9 @@ async def test_assistant_thread_actions_stream(
 
     # Scenario A: Use only prompt template
     messages = []
-    async for content in AssistantThreadActions.invoke_stream(agent=agent, thread_id="thread_id", messages=messages):
+    async for content in AssistantThreadActions.invoke_stream(
+        agent=agent, thread_id="thread_id", output_messages=messages
+    ):
         assert content is not None
 
 
@@ -593,7 +595,9 @@ async def test_assistant_thread_actions_stream_run_fails(
     # Scenario A: Use only prompt template
     messages = []
     with pytest.raises(AgentInvokeException):
-        async for _ in AssistantThreadActions.invoke_stream(agent=agent, thread_id="thread_id", messages=messages):
+        async for _ in AssistantThreadActions.invoke_stream(
+            agent=agent, thread_id="thread_id", output_messages=messages
+        ):
             pass
 
 
@@ -643,7 +647,9 @@ async def test_assistant_thread_actions_stream_with_instructions(
 
     # Scenario A: Use only prompt template
     messages = []
-    async for content in AssistantThreadActions.invoke_stream(agent=agent, thread_id="thread_id", messages=messages):
+    async for content in AssistantThreadActions.invoke_stream(
+        agent=agent, thread_id="thread_id", output_messages=messages
+    ):
         assert content is not None
 
     assert len(messages) > 0, "Expected messages to be populated during the stream."
@@ -665,7 +671,7 @@ async def test_assistant_thread_actions_stream_with_instructions(
     async for content in AssistantThreadActions.invoke_stream(
         agent=agent,
         thread_id="thread_id",
-        messages=messages,
+        output_messages=messages,
         additional_instructions="My additional instructions",
     ):
         assert content is not None

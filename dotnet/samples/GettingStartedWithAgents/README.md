@@ -37,7 +37,7 @@ Example|Description
 [Step01_Assistant](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step01_Assistant.cs)|How to create an Open AI Assistant agent.
 [Step02_Assistant_Plugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step02_Assistant_Plugins.cs)|How to create an Open AI Assistant agent.
 [Step03_Assistant_Vision](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step03_Assistant_Vision.cs)|How to provide an image as input to an Open AI Assistant agent.
-[Step04_AssistantTool_CodeInterpreter_](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step04_AssistantTool_CodeInterpreter_.cs)|How to use the code-interpreter tool for an Open AI Assistant agent.
+[Step04_AssistantTool_CodeInterpreter_](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step04_AssistantTool_CodeInterpreter.cs)|How to use the code-interpreter tool for an Open AI Assistant agent.
 [Step05_AssistantTool_FileSearch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/OpenAIAssistant/Step05_AssistantTool_FileSearch.cs)|How to use the file-search tool for an Open AI Assistant agent.
 
 ### Azure AI Agent
@@ -46,10 +46,10 @@ Example|Description
 ---|---
 [Step01_AzureAIAgent](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step01_AzureAIAgent.cs)|How to create an Azure AI agent.
 [Step02_AzureAIAgent_Plugins](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step02_AzureAIAgent_Plugins.cs)|How to create an Azure AI agent.
-[Step03_AzureAIAgent_Chat](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step02_AzureAIAgent_Chat.cs)|How create a conversation with Azure AI agents.
-[Step04_AzureAIAgent_CodeInterpreter](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step03_AzureAIAgent_CodeInterpreter.cs)|How to use the code-interpreter tool for an Azure AI agent.
-[Step05_AzureAIAgent_FileSearch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step04_AzureAIAgent_FileSearch.cs)|How to use the file-search tool for an Azure AI agent.
-[Step06_AzureAIAgent_OpenAPI](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step05_AzureAIAgent_OpenAPI.cs)|How to use the Open API tool for an Azure AI agent.
+[Step03_AzureAIAgent_Chat](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step03_AzureAIAgent_Chat.cs)|How create a conversation with Azure AI agents.
+[Step04_AzureAIAgent_CodeInterpreter](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step04_AzureAIAgent_CodeInterpreter.cs)|How to use the code-interpreter tool for an Azure AI agent.
+[Step05_AzureAIAgent_FileSearch](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step05_AzureAIAgent_FileSearch.cs)|How to use the file-search tool for an Azure AI agent.
+[Step06_AzureAIAgent_OpenAPI](https://github.com/microsoft/semantic-kernel/blob/main/dotnet/samples/GettingStartedWithAgents/AzureAIAgent/Step06_AzureAIAgent_OpenAPI.cs)|How to use the Open API tool for an Azure AI agent.
 
 ### Bedrock Agent
 

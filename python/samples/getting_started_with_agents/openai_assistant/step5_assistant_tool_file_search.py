@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -31,7 +31,7 @@ async def main():
     with open(pdf_file_path, "rb") as file:
         file = await client.files.create(file=file, purpose="assistants")
 
-    vector_store = await client.beta.vector_stores.create(
+    vector_store = await client.vector_stores.create(
         name="step4_assistant_file_search",
         file_ids=[file.id],
     )
@@ -54,24 +54,22 @@ async def main():
         definition=definition,
     )
 
-    # 6. Create a new thread on the Azure OpenAI assistant service
-    thread = await agent.client.beta.threads.create()
+    # 6. Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     try:
         for user_input in USER_INPUTS:
-            # 7. Add the user input to the chat thread
-            await agent.add_chat_message(
-                thread_id=thread.id,
-                message=user_input,
-            )
             print(f"# User: '{user_input}'")
-            # 8. Invoke the agent for the current thread and print the response
-            async for content in agent.invoke(thread_id=thread.id):
-                print(f"# Agent: {content.content}")
+            # 7. Invoke the agent for the current thread and print the response
+            async for response in agent.invoke(messages=user_input, thread=thread):
+                print(f"# Agent: {response}")
+                thread = response.thread
     finally:
         # 9. Clean up the resources
         await client.files.delete(file.id)
-        await client.beta.vector_stores.delete(vector_store.id)
+        await client.vector_stores.delete(vector_store.id)
         await client.beta.threads.delete(thread.id)
         await client.beta.assistants.delete(agent.id)
 

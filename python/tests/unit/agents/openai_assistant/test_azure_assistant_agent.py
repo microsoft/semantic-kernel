@@ -1,6 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -14,12 +13,10 @@ from openai.types.beta.threads.text import Text
 from openai.types.beta.threads.text_content_block import TextContentBlock
 from pydantic import BaseModel, ValidationError
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents.open_ai.azure_assistant_agent import AzureAssistantAgent
+from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
-from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -220,6 +217,7 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args):
     definition.top_p = 0.9
     definition.metadata = {}
     agent = AzureAssistantAgent(client=client, definition=definition)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):
@@ -233,7 +231,7 @@ async def test_open_ai_assistant_agent_invoke(arguments, include_args):
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke("thread_id", **(kwargs or {})):
+        async for item in agent.invoke(messages="test", thread=mock_thread, **(kwargs or {})):
             results.append(item)
 
     assert len(results) == 1
@@ -254,10 +252,11 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
     definition.description = "desc"
     definition.instructions = "test agent"
     agent = AzureAssistantAgent(client=client, definition=definition)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
     results = []
 
     async def fake_invoke(*args, **kwargs):
-        yield True, ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
+        yield ChatMessageContent(role=AuthorRole.ASSISTANT, content="content")
 
     kwargs = None
     if include_args:
@@ -267,7 +266,7 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args):
         "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke_stream("thread_id", **(kwargs or {})):
+        async for item in agent.invoke_stream(messages="test", thread=mock_thread, **(kwargs or {})):
             results.append(item)
 
     assert len(results) == 1
@@ -347,41 +346,3 @@ async def test_retrieve_agent_missing_chat_deployment_name_throws(kernel, azure_
             endpoint="https://test_endpoint.com",
             default_headers={"user_agent": "test"},
         )
-
-
-async def test_get_thread_messages(mock_thread_messages, openai_unit_test_env):
-    async def mock_list_messages(*args, **kwargs) -> Any:
-        return MagicMock(data=mock_thread_messages)
-
-    async def mock_retrieve_assistant(*args, **kwargs) -> Any:
-        asst = AsyncMock(spec=Assistant)
-        asst.name = "test-assistant"
-        return asst
-
-    mock_client = AsyncMock(spec=AsyncOpenAI)
-    mock_client.beta = MagicMock()
-    mock_client.beta.threads = MagicMock()
-    mock_client.beta.threads.messages = MagicMock()
-    mock_client.beta.threads.messages.list = AsyncMock(side_effect=mock_list_messages)
-    mock_client.beta.assistants = MagicMock()
-    mock_client.beta.assistants.retrieve = AsyncMock(side_effect=mock_retrieve_assistant)
-
-    definition = AsyncMock(spec=Assistant)
-    definition.id = "agent123"
-    definition.name = "agentName"
-    definition.description = "desc"
-    definition.instructions = "test agent"
-    agent = AzureAssistantAgent(client=mock_client, definition=definition)
-
-    messages = [message async for message in agent.get_thread_messages("test_thread_id")]
-
-    assert len(messages) == 2
-    assert len(messages[0].items) == 3
-    assert isinstance(messages[0].items[0], TextContent)
-    assert isinstance(messages[0].items[1], AnnotationContent)
-    assert isinstance(messages[0].items[2], AnnotationContent)
-    assert messages[0].items[0].text == "Hello"
-
-    assert len(messages[1].items) == 1
-    assert isinstance(messages[1].items[0], FileReferenceContent)
-    assert str(messages[1].items[0].file_id) == "test_file_id"

@@ -7,7 +7,7 @@ import os
 from azure.ai.projects.models import OpenApiAnonymousAuthDetails, OpenApiTool
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import AuthorRole
 
 """
@@ -68,18 +68,19 @@ async def main() -> None:
             definition=agent_definition,
         )
 
-        # 5. Create a new thread on the Azure AI agent service
-        thread = await client.agents.create_thread()
+        # 5. Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         try:
             for user_input in USER_INPUTS:
-                # 6. Add the user input as a chat message
-                await agent.add_chat_message(thread_id=thread.id, message=user_input)
                 print(f"# User: '{user_input}'")
                 # 7. Invoke the agent for the specified thread for response
-                async for content in agent.invoke(thread_id=thread.id):
-                    if content.role != AuthorRole.TOOL:
-                        print(f"# Agent: {content.content}")
+                async for response in agent.invoke(messages=user_input, thread=thread):
+                    if response.role != AuthorRole.TOOL:
+                        print(f"# Agent: {response}")
+                    thread = response.thread
         finally:
             # 8. Cleanup: Delete the thread and agent
             await client.agents.delete_thread(thread.id)
