@@ -2,8 +2,9 @@
 
 using System.Reflection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -29,13 +30,14 @@ Dolphin  2";
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step02_BedrockAgent_CodeInterpreter");
+        AgentThread bedrockAgentThread = new BedrockAgentThread(this.RuntimeClient);
 
         // Respond to user input
         try
         {
             BinaryContent? binaryContent = null;
-            var responses = bedrockAgent.InvokeAsync(BedrockAgent.CreateSessionId(), UserQuery, null);
-            await foreach (var response in responses)
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, UserQuery), bedrockAgentThread, null);
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -72,6 +74,7 @@ Dolphin  2";
         finally
         {
             await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+            await bedrockAgentThread.DeleteAsync();
         }
     }
 

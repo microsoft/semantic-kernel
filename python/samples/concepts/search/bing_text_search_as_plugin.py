@@ -1,19 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
-from collections.abc import Coroutine
-from typing import Any
+from collections.abc import Awaitable, Callable
 
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
     OpenAIChatCompletion,
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.search.bing import BingSearch
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
 
 kernel = Kernel()
@@ -84,7 +81,9 @@ arguments = KernelArguments(settings=execution_settings)
 
 
 @kernel.filter(filter_type=FilterTypes.FUNCTION_INVOCATION)
-async def log_bing_filter(context: FunctionInvocationContext, next: Coroutine[FunctionInvocationContext, Any, None]):
+async def log_bing_filter(
+    context: FunctionInvocationContext, next: Callable[[FunctionInvocationContext], Awaitable[None]]
+):
     if context.function.plugin_name == "bing":
         print("Calling Bing search with arguments:")
         if "query" in context.arguments:

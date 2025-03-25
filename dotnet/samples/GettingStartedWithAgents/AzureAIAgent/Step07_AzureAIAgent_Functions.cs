@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -28,22 +27,19 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         var tools = plugin.Select(f => f.ToToolDefinition(plugin.Name));
 
-        Agent definition = await this.AgentsClient.CreateAgentAsync(
+        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(
             model: TestConfiguration.AzureAI.ChatModelId,
             name: HostName,
             description: null,
             instructions: HostInstructions,
             tools: tools);
-        AzureAIAgent agent = new(definition, this.AgentsClient)
-        {
-            Kernel = new Kernel(),
-        };
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Add plugin to the agent's Kernel (same as direct Kernel usage).
         agent.Kernel.Plugins.Add(plugin);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -55,7 +51,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
@@ -63,10 +59,9 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(thread.Id, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

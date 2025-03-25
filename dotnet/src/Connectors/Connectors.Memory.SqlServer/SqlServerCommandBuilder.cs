@@ -34,12 +34,11 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(schema, tableName);
         sb.AppendLine(" (");
         string keyColumnName = GetColumnName(keyProperty);
-        var keyMapping = Map(keyProperty.PropertyType);
-        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, keyMapping.sqlName);
+        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, Map(keyProperty));
         sb.AppendLine();
         for (int i = 0; i < dataProperties.Count; i++)
         {
-            sb.AppendFormat("[{0}] {1},", GetColumnName(dataProperties[i]), Map(dataProperties[i].PropertyType).sqlName);
+            sb.AppendFormat("[{0}] {1},", GetColumnName(dataProperties[i]), Map(dataProperties[i]));
             sb.AppendLine();
         }
         for (int i = 0; i < vectorProperties.Count; i++)
@@ -156,19 +155,17 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand? MergeIntoMany(
-        SqlConnection connection,
+    internal static bool MergeIntoMany(
+        SqlCommand command,
         string? schema,
         string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IEnumerable<IDictionary<string, object?>> records)
     {
-        SqlCommand command = connection.CreateCommand();
-
         StringBuilder sb = new(200);
         // The DECLARE statement creates a table variable to store the keys of the inserted rows.
-        sb.AppendFormat("DECLARE @InsertedKeys TABLE (KeyColumn {0});", Map(keyProperty.PropertyType).sqlName);
+        sb.AppendFormat("DECLARE @InsertedKeys TABLE (KeyColumn {0});", Map(keyProperty));
         sb.AppendLine();
         // The MERGE statement performs the upsert operation and outputs the keys of the inserted rows into the table variable.
         sb.Append("MERGE INTO ");
@@ -191,7 +188,7 @@ internal static class SqlServerCommandBuilder
 
         if (rowIndex == 0)
         {
-            return null; // there is nothing to do!
+            return false; // there is nothing to do!
         }
 
         sb.Length -= (1 + Environment.NewLine.Length); // remove the last comma and newline
@@ -226,7 +223,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("SELECT KeyColumn FROM @InsertedKeys;");
 
         command.CommandText = sb.ToString();
-        return command;
+        return true;
     }
 
     internal static SqlCommand DeleteSingle(
@@ -247,12 +244,10 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand? DeleteMany<TKey>(
-        SqlConnection connection, string? schema, string tableName,
+    internal static bool DeleteMany<TKey>(
+        SqlCommand command, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty, IEnumerable<TKey> keys)
     {
-        SqlCommand command = connection.CreateCommand();
-
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
@@ -262,11 +257,11 @@ internal static class SqlServerCommandBuilder
 
         if (emptyKeys)
         {
-            return null; // there is nothing to do!
+            return false;
         }
 
         command.CommandText = sb.ToString();
-        return command;
+        return true;
     }
 
     internal static SqlCommand SelectSingle(
@@ -294,15 +289,13 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    internal static SqlCommand? SelectMany<TKey>(
-        SqlConnection connection, string? schema, string tableName,
+    internal static bool SelectMany<TKey>(
+        SqlCommand command, string? schema, string tableName,
         VectorStoreRecordKeyProperty keyProperty,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IEnumerable<TKey> keys,
         bool includeVectors)
     {
-        SqlCommand command = connection.CreateCommand();
-
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
         sb.AppendColumnNames(properties, includeVectors: includeVectors);
@@ -316,11 +309,11 @@ internal static class SqlServerCommandBuilder
 
         if (emptyKeys)
         {
-            return null; // there is nothing to do!
+            return false; // there is nothing to do!
         }
 
         command.CommandText = sb.ToString();
-        return command;
+        return true;
     }
 
     internal static SqlCommand SelectVector<TRecord>(
@@ -509,28 +502,27 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-    private static (string sqlName, string? autoGenerate) Map(Type type)
+    private static string Map(VectorStoreRecordProperty property) => property.PropertyType switch
     {
-        return type switch
-        {
-            Type t when t == typeof(byte) => ("TINYINT", null),
-            Type t when t == typeof(short) => ("SMALLINT", null),
-            Type t when t == typeof(int) => ("INT", "IDENTITY(1,1)"),
-            Type t when t == typeof(long) => ("BIGINT", "IDENTITY(1,1)"),
-            Type t when t == typeof(Guid) => ("UNIQUEIDENTIFIER", "DEFAULT NEWSEQUENTIALID()"),
-            Type t when t == typeof(string) => ("NVARCHAR(255)", null),
-            Type t when t == typeof(byte[]) => ("VARBINARY(MAX)", null),
-            Type t when t == typeof(bool) => ("BIT", null),
-            Type t when t == typeof(DateTime) => ("DATETIME2", null),
+        Type t when t == typeof(byte) => "TINYINT",
+        Type t when t == typeof(short) => "SMALLINT",
+        Type t when t == typeof(int) => "INT",
+        Type t when t == typeof(long) => "BIGINT",
+        Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
+        Type t when t == typeof(string) && property is VectorStoreRecordKeyProperty => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is VectorStoreRecordDataProperty { IsFilterable: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) => "NVARCHAR(MAX)",
+        Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
+        Type t when t == typeof(bool) => "BIT",
+        Type t when t == typeof(DateTime) => "DATETIME2",
 #if NET
-            Type t when t == typeof(TimeOnly) => ("TIME", null),
+        Type t when t == typeof(TimeOnly) => "TIME",
 #endif
-            Type t when t == typeof(decimal) => ("DECIMAL", null),
-            Type t when t == typeof(double) => ("FLOAT", null),
-            Type t when t == typeof(float) => ("REAL", null),
-            _ => throw new NotSupportedException($"Type {type} is not supported.")
-        };
-    }
+        Type t when t == typeof(decimal) => "DECIMAL",
+        Type t when t == typeof(double) => "FLOAT",
+        Type t when t == typeof(float) => "REAL",
+        _ => throw new NotSupportedException($"Type {property.PropertyType} is not supported.")
+    };
 
     // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
     private static (string distanceMetric, string sorting) MapDistanceFunction(string name) => name switch

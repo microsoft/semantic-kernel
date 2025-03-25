@@ -2,8 +2,8 @@
 import asyncio
 
 from samples.concepts.agents.openai_assistant.openai_assistant_sample_utils import download_response_images
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.contents import FileReferenceContent
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -35,8 +35,10 @@ async def main():
         definition=definition,
     )
 
-    # Define a thread and invoke the agent with the user input
-    thread = await agent.client.beta.threads.create()
+    # Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     user_inputs = [
         """
@@ -55,17 +57,17 @@ async def main():
     try:
         for user_input in user_inputs:
             file_ids = []
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
-            async for message in agent.invoke(thread_id=thread.id):
-                if message.content:
-                    print(f"# {message.role}: {message.content}")
+            async for response in agent.invoke(messages=user_input, thread=thread):
+                thread = response.thread
+                if response.content:
+                    print(f"# {response.role}: {response}")
 
-                if len(message.items) > 0:
-                    for item in message.items:
+                if len(response.items) > 0:
+                    for item in response.items:
                         if isinstance(item, FileReferenceContent):
                             file_ids.extend([
                                 item.file_id
-                                for item in message.items
+                                for item in response.items
                                 if isinstance(item, FileReferenceContent) and item.file_id is not None
                             ])
 
@@ -73,7 +75,7 @@ async def main():
             await download_response_images(agent, file_ids)
 
     finally:
-        await client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(assistant_id=agent.id)
 
 

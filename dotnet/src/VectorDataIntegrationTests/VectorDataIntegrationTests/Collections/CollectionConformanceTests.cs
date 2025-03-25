@@ -8,7 +8,7 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.Collections;
 
-public class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) where TKey : notnull
+public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) where TKey : notnull
 {
     [ConditionalFact]
     public Task DeleteCollectionDoesNotThrowForNonExistingCollection()
@@ -17,6 +17,14 @@ public class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) where 
     [ConditionalFact]
     public Task DeleteCollectionDoesNotThrowForNonExistingCollection_GenericDataModel()
         => this.DeleteNonExistingCollection<VectorStoreGenericDataModel<TKey>>();
+
+    [ConditionalFact]
+    public Task CreateCollectionCreatesTheCollection()
+        => this.CreateCollection<SimpleModel<TKey>>();
+
+    [ConditionalFact]
+    public Task CreateCollectionCreatesTheCollection_GenericDataModel()
+        => this.CreateCollection<VectorStoreGenericDataModel<TKey>>();
 
     [ConditionalFact]
     public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow()
@@ -69,14 +77,31 @@ public class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) where 
         await collection.DeleteCollectionAsync();
     }
 
+    private async Task CreateCollection<TRecord>()
+    {
+        var collection = await this.GetNonExistingCollectionAsync<TRecord>();
+
+        await collection.CreateCollectionAsync();
+
+        try
+        {
+            Assert.True(await collection.CollectionExistsAsync());
+            Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collection.CollectionName));
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
+        }
+    }
+
     private async Task CreateCollectionIfNotExistsMoreThanOnce<TRecord>()
     {
         var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
+        await collection.CreateCollectionIfNotExistsAsync();
+
         try
         {
-            await collection.CreateCollectionIfNotExistsAsync();
-
             Assert.True(await collection.CollectionExistsAsync());
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collection.CollectionName));
 
@@ -92,10 +117,10 @@ public class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) where 
     {
         var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
+        await collection.CreateCollectionAsync();
+
         try
         {
-            await collection.CreateCollectionAsync();
-
             Assert.True(await collection.CollectionExistsAsync());
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collection.CollectionName));
 
