@@ -59,4 +59,8 @@
   <ItemGroup>
     <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="VectorData.UnitTests" />
+  </ItemGroup>
 </Project>

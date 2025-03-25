@@ -93,7 +93,7 @@ public class OpenTelemetryVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <inheritdoc/>
     public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "collection_exists_if_not_exists";
+        const string OperationName = "create_collection_if_not_exists";
 
         return TelemetryHelpers.RunOperationAsync(
             this._activitySource,
