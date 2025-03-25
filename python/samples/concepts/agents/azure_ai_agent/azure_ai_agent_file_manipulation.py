@@ -6,7 +6,7 @@ import os
 from azure.ai.projects.models import CodeInterpreterTool, FilePurpose
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -51,8 +51,10 @@ async def main() -> None:
             definition=agent_definition,
         )
 
-        # Create a new thread
-        thread = await client.agents.create_thread()
+        # Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         user_inputs = [
             "Which segment had the most sales?",
@@ -62,18 +64,14 @@ async def main() -> None:
 
         try:
             for user_input in user_inputs:
-                # Add the user input as a chat message
-                await agent.add_chat_message(
-                    thread_id=thread.id,
-                    message=user_input,
-                )
                 print(f"# User: '{user_input}'")
-                # Invoke the agent for the specified thread
-                async for content in agent.invoke(thread_id=thread.id):
-                    if content.role != AuthorRole.TOOL:
-                        print(f"# Agent: {content.content}")
-                        if len(content.items) > 0:
-                            for item in content.items:
+                # Invoke the agent for the specified user input
+                async for response in agent.invoke(messages=user_input, thread=thread):
+                    if response.role != AuthorRole.TOOL:
+                        print(f"# Agent: {response}")
+                        if len(response.items) > 0:
+                            for item in response.items:
+                                # Show Annotation Content if it exist
                                 if isinstance(item, AnnotationContent):
                                     print(f"\n`{item.quote}` => {item.file_id}")
                                     response_content = await client.agents.get_file_content(file_id=item.file_id)
@@ -82,8 +80,10 @@ async def main() -> None:
                                         content_bytes.extend(chunk)
                                     tab_delimited_text = content_bytes.decode("utf-8")
                                     print(tab_delimited_text)
+                    thread = response.thread
         finally:
-            await client.agents.delete_thread(thread.id)
+            # Cleanup: Delete the thread and agent
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
 

@@ -5,7 +5,7 @@ import asyncio
 from autogen import ConversableAgent
 from autogen.coding import LocalCommandLineCodeExecutor
 
-from semantic_kernel.agents.autogen.autogen_conversable_agent import AutoGenConversableAgent
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 
 """
 The following sample demonstrates how to use the AutoGenConversableAgent to create a reply from an agent
@@ -17,6 +17,8 @@ https://microsoft.github.io/autogen/0.2/docs/tutorial/code-executors#local-execu
 
 
 async def main():
+    thread: AutoGenConversableAgentThread = None
+
     # Create a temporary directory to store the code files.
     import os
 
@@ -42,19 +44,27 @@ async def main():
     message_with_code_block = """This is a message with code block.
 The code block is below:
 ```python
-import numpy as np
-import matplotlib.pyplot as plt
-x = np.random.randint(0, 100, 100)
-y = np.random.randint(0, 100, 100)
-plt.scatter(x, y)
-plt.savefig('scatter.png')
-print('Scatter plot saved to scatter.png')
+def generate_fibonacci(max_val):
+    a, b = 0, 1
+    fibonacci_numbers = []
+    while a <= max_val:
+        fibonacci_numbers.append(a)
+        a, b = b, a + b
+    return fibonacci_numbers
+
+if __name__ == "__main__":
+    fib_numbers = generate_fibonacci(101)
+    print(fib_numbers)
 ```
 This is the end of the message.
 """
 
-    async for content in autogen_agent.invoke(message=message_with_code_block):
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+    async for response in autogen_agent.invoke(messages=message_with_code_block, thread=thread):
+        print(f"# {response.role} - {response.name or '*'}: '{response}'")
+        thread = response.thread
+
+    # Cleanup: Delete the thread and agent
+    await thread.delete() if thread else None
 
 
 if __name__ == "__main__":

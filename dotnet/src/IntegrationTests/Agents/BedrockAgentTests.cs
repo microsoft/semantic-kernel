@@ -235,7 +235,7 @@ Dolphin  2")]
 
         return new()
         {
-            AgentName = AgentName,
+            AgentName = $"{AgentName}-{Guid.NewGuid():n}",
             Description = AgentDescription,
             Instruction = AgentInstruction,
             AgentResourceRoleArn = bedrockAgentSettings.AgentResourceRoleArn,
