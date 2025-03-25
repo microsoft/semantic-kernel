@@ -1,0 +1,169 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Azure;
+using Azure.AI.Projects;
+using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
+
+namespace Microsoft.SemanticKernel.Agents.AzureAI;
+
+/// <summary>
+/// Represents a conversation thread for an Azure AI agent.
+/// </summary>
+public sealed class AzureAIAgentThread : AgentThread
+{
+    private readonly AgentsClient _client;
+    private readonly IEnumerable<ThreadMessageOptions>? _messages;
+    private readonly ToolResources? _toolResources;
+    private readonly IReadOnlyDictionary<string, string>? _metadata;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAIAgentThread"/> class.
+    /// </summary>
+    /// <param name="client">The agents client to use for interacting with threads.</param>
+    /// <param name="messages">The initial messages to associate with the new thread after it is created.</param>
+    /// <param name="toolResources">
+    /// A set of resources that are made available to the agent's tools in this thread. The resources are specific to the
+    /// type of tool. For example, the `code_interpreter` tool requires a list of file IDs, while the `file_search` tool requires
+    /// a list of vector store IDs.
+    /// </param>
+    /// <param name="metadata">Metadata to attach to the underlying thread when it is created..</param>
+    public AzureAIAgentThread(
+        AgentsClient client,
+        IEnumerable<ThreadMessageOptions>? messages = null,
+        ToolResources? toolResources = null,
+        IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        Verify.NotNull(client);
+
+        this._client = client;
+        this._messages = messages;
+        this._toolResources = toolResources;
+        this._metadata = metadata;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AzureAIAgentThread"/> class that resumes an existing thread.
+    /// </summary>
+    /// <param name="client">The agents client to use for interacting with threads.</param>
+    /// <param name="id">The ID of an existing thread to resume.</param>
+    public AzureAIAgentThread(AgentsClient client, string id)
+    {
+        Verify.NotNull(client);
+        Verify.NotNull(id);
+
+        this._client = client;
+        this.Id = id;
+    }
+
+    /// <summary>
+    /// Creates the thread and returns the thread id.
+    /// </summary>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that completes when the thread has been created.</returns>
+    public new Task CreateAsync(CancellationToken cancellationToken = default)
+    {
+        return base.CreateAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    protected async override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
+    {
+        const string ErrorMessage = "The thread could not be created due to an error response from the service.";
+
+        try
+        {
+            var agentThreadResponse = await this._client.CreateThreadAsync(
+                this._messages,
+                this._toolResources,
+                this._metadata,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+            return agentThreadResponse.Value.Id;
+        }
+        catch (RequestFailedException ex)
+        {
+            throw new AgentThreadOperationException(ErrorMessage, ex);
+        }
+        catch (AggregateException ex)
+        {
+            throw new AgentThreadOperationException(ErrorMessage, ex);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task DeleteInternalAsync(CancellationToken cancellationToken)
+    {
+        const string ErrorMessage = "The thread could not be deleted due to an error response from the service.";
+
+        try
+        {
+            await this._client.DeleteThreadAsync(this.Id, cancellationToken).ConfigureAwait(false);
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            // Do nothing, since the thread was already deleted.
+        }
+        catch (RequestFailedException ex)
+        {
+            throw new AgentThreadOperationException(ErrorMessage, ex);
+        }
+        catch (AggregateException ex)
+        {
+            throw new AgentThreadOperationException(ErrorMessage, ex);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    {
+        const string ErrorMessage = "The message could not be added to the thread due to an error response from the service.";
+
+        // If the message was generated by this agent, it is already in the thread and we shouldn't add it again.
+        if (newMessage.Metadata == null || !newMessage.Metadata.TryGetValue("ThreadId", out var messageThreadId) || !string.Equals(messageThreadId, this.Id))
+        {
+            try
+            {
+                await AgentThreadActions.CreateMessageAsync(this._client, this.Id!, newMessage, cancellationToken).ConfigureAwait(false);
+            }
+            catch (RequestFailedException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
+            catch (AggregateException ex)
+            {
+                throw new AgentThreadOperationException(ErrorMessage, ex);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously retrieves all messages in the thread.
+    /// </summary>
+    /// <param name="sortOrder">The order to return messages in.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The messages in the thread.</returns>
+    /// <exception cref="InvalidOperationException">The thread has been deleted.</exception>
+    [Experimental("SKEXP0110")]
+    public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync(ListSortOrder? sortOrder = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (this.IsDeleted)
+        {
+            throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
+        }
+
+        if (this.Id is null)
+        {
+            await this.CreateAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        await foreach (var message in AgentThreadActions.GetMessagesAsync(this._client, this.Id!, sortOrder, cancellationToken).ConfigureAwait(false))
+        {
+            yield return message;
+        }
+    }
+}

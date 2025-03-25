@@ -52,7 +52,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, null, cancellationToken);
     }
 
     /// <inheritdoc/>

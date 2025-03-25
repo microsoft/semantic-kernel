@@ -6,6 +6,7 @@ import logging
 from semantic_kernel.agents import (
     ChatCompletionAgent,
 )
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import (
     ChatHistoryTruncationReducer,
@@ -32,6 +33,8 @@ async def main():
         service=AzureChatCompletion(), target_count=reducer_msg_count, threshold_count=reducer_threshold
     )
 
+    thread: ChatHistoryAgentThread = ChatHistoryAgentThread(chat_history=history_truncation_reducer)
+
     # Create our agent
     agent = ChatCompletionAgent(
         name="NumeroTranslator",
@@ -42,19 +45,17 @@ async def main():
     # Number of messages to simulate
     message_count = 50
     for index in range(1, message_count + 1, 2):
-        # Add user message
-        history_truncation_reducer.add_user_message(str(index))
         print(f"# User: '{index}'")
 
-        # Attempt reduction
-        is_reduced = await history_truncation_reducer.reduce()
-        if is_reduced:
-            print(f"@ History reduced to {len(history_truncation_reducer.messages)} messages.")
-
         # Get agent response and store it
-        response = await agent.get_response(history_truncation_reducer)
-        history_truncation_reducer.add_message(response)
+        response = await agent.get_response(messages=str(index), thread=thread)
+        thread = response.thread
         print(f"# Agent - {response.name}: '{response.content}'")
+
+        # Attempt reduction
+        is_reduced = await thread.reduce()
+        if is_reduced:
+            print(f"@ History reduced to {len(thread)} messages.")
 
         print(f"@ Message Count: {len(history_truncation_reducer.messages)}\n")
 

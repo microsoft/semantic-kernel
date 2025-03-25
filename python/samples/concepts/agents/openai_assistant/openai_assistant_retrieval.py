@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI
 assistant using either Azure OpenAI or OpenAI and retrieve it from
 the server to create a new instance of the assistant. This is done by
-retrieving the assistant definition from the server using the Assistant's 
+retrieving the assistant definition from the server using the Assistant's
 ID and creating a new instance of the assistant using the retrieved definition.
 """
 
@@ -35,19 +35,21 @@ async def main():
         definition=new_asst_definition,
     )
 
-    # Define a thread and invoke the agent with the user input
-    thread = await agent.client.beta.threads.create()
+    # Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     user_inputs = ["Why is the sky blue?"]
 
     try:
         for user_input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
             print(f"# User: '{user_input}'")
-            async for content in agent.invoke(thread_id=thread.id):
-                print(f"# {content.role}: {content.content}")
+            async for response in agent.invoke(messages=user_input, thread=thread):
+                print(f"# {response.role}: {response.content}")
+                thread = response.thread
     finally:
-        await client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

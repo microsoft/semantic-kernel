@@ -70,37 +70,35 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
     // Proceed with dialog by directly invoking the agent and explicitly managing the history.
     private async Task InvokeAgentAsync(ChatCompletionAgent agent, int messageCount)
     {
-        ChatHistory chat = [];
+        ChatHistoryAgentThread agentThread = new();
 
         int index = 1;
         while (index <= messageCount)
         {
             // Provide user input
-            chat.Add(new ChatMessageContent(AuthorRole.User, $"{index}"));
             Console.WriteLine($"# {AuthorRole.User}: '{index}'");
 
             // Reduce prior to invoking the agent
-            bool isReduced = await agent.ReduceAsync(chat);
+            bool isReduced = await agent.ReduceAsync(agentThread.ChatHistory);
 
             // Invoke and display assistant response
-            await foreach (ChatMessageContent message in agent.InvokeAsync(chat))
+            await foreach (ChatMessageContent message in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, $"{index}"), agentThread))
             {
-                chat.Add(message);
                 Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
             }
 
             index += 2;
 
             // Display the message count of the chat-history for visibility into reduction
-            Console.WriteLine($"@ Message Count: {chat.Count}\n");
+            Console.WriteLine($"@ Message Count: {agentThread.ChatHistory.Count}\n");
 
             // Display summary messages (if present) if reduction has occurred
             if (isReduced)
             {
                 int summaryIndex = 0;
-                while (chat[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
+                while (agentThread.ChatHistory[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
                 {
-                    Console.WriteLine($"\tSummary: {chat[summaryIndex].Content}");
+                    Console.WriteLine($"\tSummary: {agentThread.ChatHistory[summaryIndex].Content}");
                     ++summaryIndex;
                 }
             }
