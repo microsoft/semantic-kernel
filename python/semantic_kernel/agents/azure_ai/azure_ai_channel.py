@@ -30,7 +30,7 @@ class AzureAIChannel(AgentChannel):
 
         Args:
             client: The AzureAI Project client.
-            thread_id: The thread ID.
+            thread_id: The thread ID for the channel.
         """
         self.client = client
         self.thread_id = thread_id
@@ -95,7 +95,7 @@ class AzureAIChannel(AgentChannel):
         async for message in AgentThreadActions.invoke_stream(
             agent=agent,
             thread_id=self.thread_id,
-            messages=messages,
+            output_messages=messages,
             arguments=agent.arguments,
             kernel=agent.kernel,
             **kwargs,

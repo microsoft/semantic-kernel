@@ -33,16 +33,13 @@ public class ManagerAgentStep : KernelProcessStep
         // Get the chat history
         IChatHistoryProvider historyProvider = kernel.GetHistory();
         ChatHistory history = await historyProvider.GetHistoryAsync();
-
-        // Add the user input to the chat history
-        history.Add(new ChatMessageContent(AuthorRole.User, userInput));
+        ChatHistoryAgentThread agentThread = new(history);
 
         // Obtain the agent response
         ChatCompletionAgent agent = kernel.GetAgent<ChatCompletionAgent>(AgentServiceKey);
-        await foreach (ChatMessageContent message in agent.InvokeAsync(history))
+        await foreach (ChatMessageContent message in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, userInput), agentThread))
         {
-            // Capture each response
-            history.Add(message);
+            // Both the input message and response message will automatically be added to the thread, which will update the internal chat history.
 
             // Emit event for each agent response
             await context.EmitEventAsync(new() { Id = AgentOrchestrationEvents.AgentResponse, Data = message });

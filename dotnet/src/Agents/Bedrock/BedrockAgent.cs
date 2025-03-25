@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
@@ -72,6 +74,108 @@ public class BedrockAgent : KernelAgent
     #endregion
 
     #region public methods
+
+    /// <inheritdoc/>
+    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(messages, thread, options, WorkingDraftAgentAlias, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        string? agentAliasId = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages, nameof(messages));
+        if (messages.Count == 0)
+        {
+            throw new InvalidOperationException("The Bedrock agent requires a message to be invoked.");
+        }
+
+        // Create a thread if needed
+        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
+            messages,
+            thread,
+            () => new BedrockAgentThread(this.RuntimeClient),
+            cancellationToken).ConfigureAwait(false);
+
+        // Ensure that the last message provided is a user message
+        string? message = this.ExtractUserMessage(messages.Last());
+
+        // Build session state with conversation history if needed
+        SessionState sessionState = this.ExtractSessionState(messages);
+
+        var invokeAgentRequest = new InvokeAgentRequest
+        {
+            AgentAliasId = agentAliasId ?? WorkingDraftAgentAlias,
+            SessionState = sessionState,
+            AgentId = this.Id,
+            SessionId = bedrockThread.Id,
+            InputText = message,
+        };
+
+        var arguments = this.MergeArguments(options?.KernelArguments);
+        var invokeResults = this.InvokeAsync(invokeAgentRequest, arguments, cancellationToken);
+
+        // Return the results to the caller in AgentResponseItems.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, bedrockThread);
+        }
+    }
+
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages, nameof(messages));
+        if (messages.Count == 0)
+        {
+            throw new InvalidOperationException("The Bedrock agent requires a message to be invoked.");
+        }
+
+        // Create a thread if needed
+        var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
+            messages,
+            thread,
+            () => new BedrockAgentThread(this.RuntimeClient),
+            cancellationToken).ConfigureAwait(false);
+
+        // Ensure that the last message provided is a user message
+        string? message = this.ExtractUserMessage(messages.Last());
+
+        // Build session state with conversation history if needed
+        SessionState sessionState = this.ExtractSessionState(messages);
+
+        var invokeAgentRequest = new InvokeAgentRequest
+        {
+            AgentAliasId = WorkingDraftAgentAlias,
+            SessionState = sessionState,
+            AgentId = this.Id,
+            SessionId = bedrockThread.Id,
+            InputText = message,
+        };
+
+        var arguments = this.MergeArguments(options?.KernelArguments);
+        var invokeResults = this.InvokeStreamingAsync(invokeAgentRequest, arguments, cancellationToken);
+
+        // Return the results to the caller in AgentResponseItems.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            yield return new(result, bedrockThread);
+        }
+    }
 
     /// <summary>
     /// Invoke the Bedrock agent with the given message.
@@ -144,16 +248,21 @@ public class BedrockAgent : KernelAgent
                 innerContents.Add(message.InnerContent);
             }
 
-            yield return content.Length == 0
-                ? throw new KernelException("No content was returned from the agent.")
-                : new ChatMessageContent(AuthorRole.Assistant, content)
-                {
-                    AuthorName = this.GetDisplayName(),
-                    Items = items,
-                    ModelId = this.AgentModel.FoundationModel,
-                    Metadata = metadata,
-                    InnerContent = innerContents,
-                };
+            if (content.Length == 0)
+            {
+                throw new KernelException("No content was returned from the agent.");
+            }
+
+            var chatMessageContent = new ChatMessageContent(AuthorRole.Assistant, content)
+            {
+                AuthorName = this.GetDisplayName(),
+                Items = items,
+                ModelId = this.AgentModel.FoundationModel,
+                Metadata = metadata,
+                InnerContent = innerContents,
+            };
+
+            yield return chatMessageContent;
         }
     }
 
@@ -263,6 +372,63 @@ public class BedrockAgent : KernelAgent
     internal string CodeInterpreterActionGroupSignature { get => $"{this.GetDisplayName()}_CodeInterpreter"; }
     internal string KernelFunctionActionGroupSignature { get => $"{this.GetDisplayName()}_KernelFunctions"; }
     internal string UseInputActionGroupSignature { get => $"{this.GetDisplayName()}_UserInput"; }
+
+    #endregion
+
+    #region private methods
+
+    private string ExtractUserMessage(ChatMessageContent chatMessageContent)
+    {
+        if (!chatMessageContent.Role.Equals(AuthorRole.User))
+        {
+            throw new InvalidOperationException("Bedrock agents must be invoked with a user message");
+        }
+
+        return chatMessageContent.Content ?? "";
+    }
+
+    private SessionState ExtractSessionState(ICollection<ChatMessageContent> messages)
+    {
+        // If there is more than one message provided, add all but the last message to the session state
+        SessionState sessionState = new();
+        if (messages.Count > 1)
+        {
+            List<Amazon.BedrockAgentRuntime.Model.Message> messageHistory = [];
+            for (int i = 0; i < messages.Count - 1; i++)
+            {
+                var currentMessage = messages.ElementAt(i);
+                messageHistory.Add(this.ToBedrockMessage(currentMessage));
+            }
+
+            sessionState.ConversationHistory = new ConversationHistory() { Messages = messageHistory };
+        }
+
+        return sessionState;
+    }
+
+    private Amazon.BedrockAgentRuntime.Model.Message ToBedrockMessage(ChatMessageContent chatMessageContent)
+    {
+        return new Amazon.BedrockAgentRuntime.Model.Message()
+        {
+            Role = this.MapBedrockAgentUser(chatMessageContent.Role),
+            Content = [new() { Text = chatMessageContent.Content }]
+        };
+    }
+
+    private Amazon.BedrockAgentRuntime.ConversationRole MapBedrockAgentUser(AuthorRole authorRole)
+    {
+        if (authorRole == AuthorRole.User)
+        {
+            return Amazon.BedrockAgentRuntime.ConversationRole.User;
+        }
+
+        if (authorRole == AuthorRole.Assistant)
+        {
+            return Amazon.BedrockAgentRuntime.ConversationRole.Assistant;
+        }
+
+        throw new ArgumentOutOfRangeException($"Invalid role: {authorRole}");
+    }
 
     #endregion
 }

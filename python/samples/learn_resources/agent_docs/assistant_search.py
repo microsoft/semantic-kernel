@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import StreamingAnnotationContent
 
 """
@@ -43,7 +43,7 @@ async def main():
             file = await client.files.create(file=file, purpose="assistants")
             file_ids.append(file.id)
 
-    vector_store = await client.beta.vector_stores.create(
+    vector_store = await client.vector_stores.create(
         name="assistant_search",
         file_ids=file_ids,
     )
@@ -73,8 +73,7 @@ async def main():
         definition=definition,
     )
 
-    print("Creating thread...")
-    thread = await client.beta.threads.create()
+    thread: AssistantAgentThread = None
 
     try:
         is_complete: bool = False
@@ -87,13 +86,13 @@ async def main():
                 is_complete = True
                 break
 
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
-
             footnotes: list[StreamingAnnotationContent] = []
-            async for response in agent.invoke_stream(thread_id=thread.id):
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
                 footnotes.extend([item for item in response.items if isinstance(item, StreamingAnnotationContent)])
 
                 print(f"{response.content}", end="", flush=True)
+                if not thread:
+                    thread = response.thread
 
             print()
 
@@ -107,7 +106,8 @@ async def main():
     finally:
         print("\nCleaning up resources...")
         [await client.files.delete(file_id) for file_id in file_ids]
-        await client.beta.threads.delete(thread.id)
+        await client.vector_stores.delete(vector_store.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 
