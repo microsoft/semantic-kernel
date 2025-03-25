@@ -8,6 +8,7 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 /// <summary>
 /// A test plugin used to verify the ability of Semantic Kernel's Common Agent Interface to invoke plugins.
 /// </summary>
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 internal sealed class MenuPlugin
 {
     [KernelFunction, Description("Provides a list of specials from the menu.")]
@@ -30,3 +31,4 @@ internal sealed class MenuPlugin
         return "$9.99";
     }
 }
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
