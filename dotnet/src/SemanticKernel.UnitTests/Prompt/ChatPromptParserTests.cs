@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
@@ -236,18 +237,14 @@ public sealed class ChatPromptParserTests
                     {
                         Assert.IsType<AudioContent>(o);
                         var x = (AudioContent)o;
-                        Assert.Equal("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAACABAAZGF0YVgAAAAA", x.DataUri);
-                        var b = Convert.FromBase64String("UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAACABAAZGF0YVgAAAAA");
-                        Assert.Equal(b, x.Data);
+                        Assert.Equal($"data:audio/wav;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("audio/wav", x.MimeType);
                     },
                     o =>
                     {
                         Assert.IsType<PdfContent>(o);
                         var x = (PdfContent)o;
-                        Assert.Equal("data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1hSZWYvUGFnZXMgNiAwIFIKL1R5cGUvUGFnZS9NZWRpYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9G", x.DataUri);
-                        var b = Convert.FromBase64String("JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1hSZWYvUGFnZXMgNiAwIFIKL1R5cGUvUGFnZS9NZWRpYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9G");
-                        Assert.Equal(b, x.Data);
+                        Assert.Equal($"data:application/pdf;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/pdf", x.MimeType);
                     },
                     o =>
@@ -261,9 +258,7 @@ public sealed class ChatPromptParserTests
                     {
                         Assert.IsType<DocContent>(o);
                         var x = (DocContent)o;
-                        Assert.Equal("data:application/msword;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==", x.DataUri);
-                        var b = Convert.FromBase64String("UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==");
-                        Assert.Equal(b, x.Data);
+                        Assert.Equal($"data:application/msword;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/msword", x.MimeType);
                     },
                     o =>
@@ -277,9 +272,7 @@ public sealed class ChatPromptParserTests
                     {
                         Assert.IsType<DocxContent>(o);
                         var x = (DocxContent)o;
-                        Assert.Equal("data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==", x.DataUri);
-                        var b = Convert.FromBase64String("UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==");
-                        Assert.Equal(b, x.Data);
+                        Assert.Equal($"data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/vnd.openxmlformats-officedocument.wordprocessingml.document", x.MimeType);
                     },
                     o =>
@@ -293,9 +286,7 @@ public sealed class ChatPromptParserTests
                     {
                         Assert.IsType<BinaryContent>(o);
                         var x = (BinaryContent)o;
-                        Assert.Equal("data:application/octet-stream;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==", x.DataUri);
-                        var b = Convert.FromBase64String("UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==");
-                        Assert.Equal(b, x.Data);
+                        Assert.Equal($"data:application/octet-stream;base64,{s_FakeContent}", x.DataUri);
                         Assert.Equal("application/octet-stream", x.MimeType);
                     },
                     o =>
@@ -555,28 +546,30 @@ public sealed class ChatPromptParserTests
             """;
     }
 
+    private static readonly string s_FakeContent = Convert.ToBase64String(Encoding.UTF8.GetBytes("Fake content"));
+
     private static string GetValidPromptWithMixedBinaryAndTextContent()
     {
         return
-            """
+            $"""
 
-            <message role="assistant">What can I help with?</message>
+             <message role="assistant">What can I help with?</message>
 
-            <message role='user'>
-                This part will be discarded upon parsing
-                <text>Make sense of this random assortment of stuff.</text>
-                <image>https://fake-link-to-image/</image>
-                <audio>data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAACABAAZGF0YVgAAAAA</audio>
-                <pdf>data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1hSZWYvUGFnZXMgNiAwIFIKL1R5cGUvUGFnZS9NZWRpYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9G</pdf>
-                <pdf>https://fake-link-to-pdf/</pdf>
-                <doc>data:application/msword;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==</doc>
-                <doc>https://fake-link-to-doc/</doc>
-                <docx>data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==</docx>
-                <docx>https://fake-link-to-docx/</docx>
-                <file>data:application/octet-stream;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==</file>
-                <file>https://fake-link-to-binary/</file>
-                This part will also be discarded upon parsing
-            </message>
-            """;
+             <message role='user'>
+                 This part will be discarded upon parsing
+                 <text>Make sense of this random assortment of stuff.</text>
+                 <image>https://fake-link-to-image/</image>
+                 <audio>data:audio/wav;base64,{s_FakeContent}</audio>
+                 <pdf>data:application/pdf;base64,{s_FakeContent}</pdf>
+                 <pdf>https://fake-link-to-pdf/</pdf>
+                 <doc>data:application/msword;base64,{s_FakeContent}</doc>
+                 <doc>https://fake-link-to-doc/</doc>
+                 <docx>data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{s_FakeContent}</docx>
+                 <docx>https://fake-link-to-docx/</docx>
+                 <file>data:application/octet-stream;base64,{s_FakeContent}</file>
+                 <file>https://fake-link-to-binary/</file>
+                 This part will also be discarded upon parsing
+             </message>
+             """;
     }
 }

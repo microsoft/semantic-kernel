@@ -115,13 +115,27 @@ internal static class ChatPromptParser
                     items.Add(new PdfContent(new Uri(childNode.Content!)));
                 }
             }
-            else if (childNode.TagName.Equals(DocxTagName, StringComparison.OrdinalIgnoreCase) && childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            else if (childNode.TagName.Equals(DocxTagName, StringComparison.OrdinalIgnoreCase))
             {
-                items.Add(new DocxContent(childNode.Content));
+                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(new DocxContent(childNode.Content));
+                }
+                else
+                {
+                    items.Add(new DocxContent(new Uri(childNode.Content!)));
+                }
             }
-            else if (childNode.TagName.Equals(DocTagName, StringComparison.OrdinalIgnoreCase) && childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            else if (childNode.TagName.Equals(DocTagName, StringComparison.OrdinalIgnoreCase))
             {
-                items.Add(new DocContent(childNode.Content));
+                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(new DocContent(childNode.Content));
+                }
+                else
+                {
+                    items.Add(new DocContent(new Uri(childNode.Content!)));
+                }
             }
             else if (childNode.TagName.Equals(BinaryTagName, StringComparison.OrdinalIgnoreCase))
             {
