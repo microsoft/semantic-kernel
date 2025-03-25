@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
+using Dapr.Actors.Client;
 
 namespace Microsoft.SemanticKernel;
 /// <summary>
@@ -15,7 +16,7 @@ public static class DaprKernelProcessFactory
     /// <param name="initialEvent">Required: The initial event to start the process.</param>
     /// <param name="processId">Optional: Used to specify the unique Id of the process. If the process already has an Id, it will not be overwritten and this parameter has no effect.</param>
     /// <returns>An instance of <see cref="KernelProcess"/> that can be used to interrogate or stop the running process.</returns>
-    public static async Task<DaprKernelProcessContext> StartAsync(this KernelProcess process, KernelProcessEvent initialEvent, string? processId = null)
+    public static async Task<DaprKernelProcessContext> StartAsync(this KernelProcess process, KernelProcessEvent initialEvent, string? processId = null, IActorProxyFactory? actorProxyFactory = null)
     {
         Verify.NotNull(process);
         Verify.NotNullOrWhiteSpace(process.State?.Name);
@@ -27,7 +28,7 @@ public static class DaprKernelProcessFactory
             process = process with { State = process.State with { Id = processId } };
         }
 
-        DaprKernelProcessContext processContext = new(process);
+        DaprKernelProcessContext processContext = new(process, actorProxyFactory);
         await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
         return processContext;
     }
