@@ -9,6 +9,7 @@ from semantic_kernel.connectors.mcp.mcp_server_execution_settings import (
     MCPSseServerExecutionSettings,
     MCPStdioServerExecutionSettings,
 )
+from semantic_kernel.exceptions.kernel_exceptions import KernelPluginInvalidConfigurationError
 
 
 @pytest.mark.asyncio
@@ -71,3 +72,31 @@ async def test_mcp_stdio_server_settings_initialize_session():
         # Test the `get_session` method with ClientSession mock
         async with settings.get_session() as session:
             assert session == mock_client_session
+
+
+@pytest.mark.asyncio
+async def test_mcp_stdio_server_settings_failed_initialize_session():
+    # Patch both the `ClientSession` and `stdio_client` independently
+    with (
+        patch("semantic_kernel.connectors.mcp.mcp_server_execution_settings.stdio_client") as mock_stdio_client,
+    ):
+        mock_read = MagicMock()
+        mock_write = MagicMock()
+
+        mock_generator = MagicMock()
+        # Make the mock_stdio_client return an AsyncMock for the context manager
+        mock_generator.__aenter__.side_effect = Exception("Connection failed")
+        mock_generator.__aexit__.return_value = (mock_read, mock_write)
+
+        # Make the mock_stdio_client return an AsyncMock for the context manager
+        mock_stdio_client.return_value = mock_generator
+
+        settings = MCPStdioServerExecutionSettings(
+            command="echo",
+            args=["Hello"],
+        )
+
+        # Test the `get_session` method with ClientSession mock and expect an exception
+        with pytest.raises(KernelPluginInvalidConfigurationError):
+            async with settings.get_session():
+                pass

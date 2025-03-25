@@ -107,8 +107,7 @@ async def chat() -> bool:
 async def main() -> None:
     # Make sure to have NPX installed and available in your PATH.
 
-    # The is a small bug fixed in the next version of the MCP Package
-    # to workon windows and Linux, use shutil.which to find the npx executable
+    # Find the NPX executable in the system PATH.
     import shutil
 
     execution_settings = MCPStdioServerExecutionSettings(

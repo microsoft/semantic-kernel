@@ -11,8 +11,10 @@ from semantic_kernel.connectors.mcp.mcp_server_execution_settings import (
 from semantic_kernel.functions import KernelFunction, KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 async def create_function_from_mcp_server(settings: MCPServerExecutionSettings):
     """Loads Function from an MCP Server to KernelFunctions."""
     async with settings.get_session() as session:

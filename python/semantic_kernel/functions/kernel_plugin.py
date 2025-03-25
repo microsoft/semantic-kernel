@@ -21,6 +21,7 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OptionalOneOrMany
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
@@ -378,6 +379,7 @@ class KernelPlugin(KernelBaseModel):
             ),
         )
 
+    @experimental
     @classmethod
     async def from_mcp_server(
         cls: type[_T],

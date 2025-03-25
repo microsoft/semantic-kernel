@@ -16,6 +16,7 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME, TEMPLATE_FORMAT_TYPES
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPServerExecutionSettings
@@ -237,6 +238,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             )
         )
 
+    @experimental
     async def add_plugin_from_mcp(
         self,
         plugin_name: str,

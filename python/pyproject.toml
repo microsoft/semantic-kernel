@@ -81,7 +81,7 @@ hugging_face = [
     "torch == 2.6.0"
 ]
 mcp = [
-    "mcp ~= 1.3.0"
+    "mcp ~= 1.5"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.12",

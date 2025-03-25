@@ -7,6 +7,7 @@ from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from pydantic import Field
 
+from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 
@@ -18,14 +19,17 @@ class MCPServerExecutionSettings(KernelBaseModel):
     @asynccontextmanager
     async def get_session(self):
         """Get or Open an MCP session."""
-        if self.session is None:
-            # If the session is not open, create always new one
-            async with self.get_mcp_client() as (read, write), ClientSession(read, write) as session:
-                await session.initialize()
-                yield session
-        else:
-            # If the session is already open by the user, just yield it
-            yield self.session
+        try:
+            if self.session is None:
+                # If the session is not open, create always new one
+                async with self.get_mcp_client() as (read, write), ClientSession(read, write) as session:
+                    await session.initialize()
+                    yield session
+            else:
+                # If the session is set by the user, just yield it
+                yield self.session
+        except Exception as ex:
+            raise KernelPluginInvalidConfigurationError("Failed establish MCP session.") from ex
 
     def get_mcp_client(self):
         """Get an MCP client."""
