@@ -4,10 +4,9 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel import Kernel
-from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents import ChatHistory, FunctionCallContent, FunctionResultContent
 from semantic_kernel.functions import KernelArguments, kernel_function
 
 """
@@ -69,23 +68,20 @@ async def main():
         arguments=KernelArguments(settings=settings),
     )
 
-    # 4. Create a chat history to hold the conversation
-    chat_history = ChatHistory()
+    # 4. Create a thread to hold the conversation
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: ChatHistoryAgentThread = None
 
     for user_input in USER_INPUTS:
-        # 5. Add the user input to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: {user_input}")
-        # 6. Invoke the agent for a response
-        async for content in agent.invoke(chat_history):
-            print(f"# {content.name}: ", end="")
-            if (
-                not any(isinstance(item, (FunctionCallContent, FunctionResultContent)) for item in content.items)
-                and content.content.strip()
-            ):
-                # We only want to print the content if it's not a function call or result
-                print(f"{content.content}", end="", flush=True)
-        print("")
+        # 5. Invoke the agent for a response
+        async for response in agent.invoke(messages=user_input, thread=thread):
+            print(f"# {response.name}: {response}")
+            thread = response.thread
+
+    # 6. Cleanup: Clear the thread
+    await thread.delete() if thread else None
 
     """
     Sample output:

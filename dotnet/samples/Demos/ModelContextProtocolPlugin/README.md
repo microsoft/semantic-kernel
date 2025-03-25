@@ -4,7 +4,7 @@ This example demonstrates how to use Model Context Protocol tools with Semantic 
 
 MCP is an open protocol that standardizes how applications provide context to LLMs.
 
-For for information on Model Context Protocol (MCP) please refer to the [documentation](https://modelcontextprotocol.io/introduction).
+For information on Model Context Protocol (MCP) please refer to the [documentation](https://modelcontextprotocol.io/introduction).
 
 The sample shows:
 

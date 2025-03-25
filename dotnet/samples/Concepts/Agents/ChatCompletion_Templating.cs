@@ -112,7 +112,6 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
         {
             // Add input to chat
             ChatMessageContent request = new(AuthorRole.User, input);
-            chat.Add(request);
             this.WriteAgentChatMessage(request);
 
             KernelArguments? arguments = null;
@@ -124,7 +123,7 @@ public class ChatCompletion_Templating(ITestOutputHelper output) : BaseAgentsTes
             }
 
             // Process agent response
-            await foreach (ChatMessageContent message in agent.InvokeAsync(chat, arguments))
+            await foreach (ChatMessageContent message in agent.InvokeAsync(request, options: new() { KernelArguments = arguments }))
             {
                 chat.Add(message);
                 this.WriteAgentChatMessage(message);
