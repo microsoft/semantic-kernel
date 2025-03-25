@@ -40,10 +40,10 @@ public class Step01_ResponsesAgent(ITestOutputHelper output) : BaseResponsesAgen
         };
 
         ICollection<ChatMessageContent> messages =
-            [
+        [
             new ChatMessageContent(AuthorRole.User, "What is the capital of France?"),
             new ChatMessageContent(AuthorRole.User, "What is the capital of Ireland?")
-            ];
+        ];
 
         // Invoke the agent and output the response
         var responseItems = agent.InvokeAsync(messages);

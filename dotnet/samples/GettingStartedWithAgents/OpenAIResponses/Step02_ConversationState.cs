@@ -23,11 +23,11 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         };
 
         ICollection<ChatMessageContent> messages =
-            [
+        [
             new ChatMessageContent(AuthorRole.User, "knock knock."),
             new ChatMessageContent(AuthorRole.Assistant, "Who's there?"),
             new ChatMessageContent(AuthorRole.User, "Orange.")
-            ];
+        ];
 
         // Invoke the agent and output the response
         var responseItems = agent.InvokeAsync(messages);
