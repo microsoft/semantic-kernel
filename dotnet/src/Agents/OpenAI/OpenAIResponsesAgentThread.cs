@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a conversation thread for an OpenAI responses-based agent.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIResponsesAgentThread : AgentThread
 {
     private readonly OpenAIResponseClient _client;

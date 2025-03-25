@@ -1,0 +1,56 @@
+﻿{
+  "id": "resp_67e315cf0e148191a3424db903561ba704584dfd0b14dc67",
+  "object": "response",
+  "created_at": 1742935503,
+  "status": "completed",
+  "error": null,
+  "incomplete_details": null,
+  "instructions": "Answer all queries in English and French.",
+  "max_output_tokens": null,
+  "model": "gpt-4o-2024-08-06",
+  "output": [
+    {
+      "type": "message",
+      "id": "msg_67e315cf52f88191b5e63ef1d045b37e04584dfd0b14dc67",
+      "status": "completed",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "The capital of France is Paris.\n\nLa capitale de la France est Paris.",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "parallel_tool_calls": true,
+  "previous_response_id": null,
+  "reasoning": {
+    "effort": null,
+    "generate_summary": null
+  },
+  "store": true,
+  "temperature": 1.0,
+  "text": {
+    "format": {
+      "type": "text"
+    }
+  },
+  "tool_choice": "auto",
+  "tools": [],
+  "top_p": 1.0,
+  "truncation": "disabled",
+  "usage": {
+    "input_tokens": 44,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens": 16,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 60
+  },
+  "user": "ResponseAgent",
+  "metadata": {}
+}

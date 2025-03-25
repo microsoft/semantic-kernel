@@ -16,6 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class OpenAIResponsesAgent : KernelAgent
 {
     /// <summary>
@@ -51,12 +52,6 @@ public sealed class OpenAIResponsesAgent : KernelAgent
         // Invoke responses with the updated chat history.
         var chatHistory = new ChatHistory();
         chatHistory.AddRange(messages);
-        /*
-        await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
-        {
-            chatHistory.Add(existingMessage);
-        }
-        */
         var invokeResults = this.InternalInvokeAsync(
             this.Name,
             chatHistory,
@@ -80,7 +75,7 @@ public sealed class OpenAIResponsesAgent : KernelAgent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+    protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
@@ -94,7 +89,7 @@ public sealed class OpenAIResponsesAgent : KernelAgent
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
-    protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+    protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
