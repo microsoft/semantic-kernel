@@ -59,7 +59,7 @@ internal static class BedrockModelUtilities
                (content is DocxContent docx && docx.DataUri != null);
     }
 
-    private static ImageFormat MimeTypeToImageFormat(string mimeType)
+    private static ImageFormat MimeTypeToImageFormat(string? mimeType)
     {
         return mimeType switch
         {
@@ -67,7 +67,7 @@ internal static class BedrockModelUtilities
             "image/jpeg" => ImageFormat.Jpeg,
             "image/gif" => ImageFormat.Gif,
             "image/webp" => ImageFormat.Webp,
-            _ => throw new InvalidOperationException($"Unsupported image format: {mimeType}")
+            _ => throw new InvalidOperationException($"Unsupported image format: '{mimeType}'")
         };
     }
 

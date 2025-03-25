@@ -891,7 +891,7 @@ internal partial class ClientCore
 
     private static ChatMessageContentPart GetAudioContentItem(AudioContent audioContent)
     {
-        var audioFormat = audioContent.MimeType.ToUpperInvariant() switch
+        var audioFormat = audioContent.MimeType?.ToUpperInvariant() switch
         {
             "AUDIO/MPEG" => ChatInputAudioFormat.Mp3,
             "AUDIO/WAV" => ChatInputAudioFormat.Wav,
