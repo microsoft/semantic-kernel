@@ -65,6 +65,23 @@ def test_create_kernel_function_from_mcp_server_tool_wrong_schema():
         _create_kernel_function_from_mcp_server_tool(test_tool, test_settings)
 
 
+def test_create_kernel_function_from_mcp_server_tool_missing_required():
+    test_tool = Tool(
+        name="test_tool",
+        description="This is a test tool",
+        inputSchema={
+            "properties": {
+                "test": {"type": "string", "default_value": "default_value"},
+                "test2": {"type": "integer"},
+            },
+        },
+    )
+
+    test_settings = MCPServerExecutionSettings(session=MagicMock(spec=ClientSession))
+    with pytest.raises(ServiceInvalidTypeError):
+        _create_kernel_function_from_mcp_server_tool(test_tool, test_settings)
+
+
 def test_create_kernel_function_from_mcp_server_tool():
     test_tool = Tool(
         name="test_tool",

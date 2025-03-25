@@ -240,7 +240,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
     async def add_plugin_from_mcp(
         self,
         plugin_name: str,
-        execution_settings: "MCPServerExecutionSettings | None" = None,
+        execution_settings: "MCPServerExecutionSettings",
         description: str | None = None,
     ) -> KernelPlugin:
         """Add a plugins from a MCP Server.

@@ -15,12 +15,15 @@ class MCPTool(KernelBaseModel):
     @classmethod
     def from_mcp_tool(cls, tool: Tool):
         """Creates an MCPFunction instance from a tool."""
-        properties: dict = tool.inputSchema.get("properties")
-        required: dict = tool.inputSchema.get("required")
+        properties = tool.inputSchema.get("properties", None)
+        required = tool.inputSchema.get("required", None)
         # Check if 'properties' is missing or not a dictionary
         if properties is None or not isinstance(properties, dict):
             raise ServiceInvalidTypeError("""Could not parse tool properties,
-                please ensure your server returns properties as a dictionary and required as a array.""")
+            please ensure your server returns properties as a dictionary and required as an array.""")
+        if required is None or not isinstance(required, list):
+            raise ServiceInvalidTypeError("""Could not parse tool required fields,
+            please ensure your server returns required as an array.""")
         parameters = [
             MCPToolParameters(
                 name=prop_name,

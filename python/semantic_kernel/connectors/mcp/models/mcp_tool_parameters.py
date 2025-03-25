@@ -8,5 +8,5 @@ class MCPToolParameters(KernelBaseModel):
     name: str
     type: str
     required: bool = False
-    default_value: str | int | float = None
+    default_value: str | int | float = ""
     items: dict | None = None
