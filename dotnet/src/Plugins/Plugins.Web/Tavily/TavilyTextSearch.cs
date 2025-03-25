@@ -164,6 +164,15 @@ public sealed class TavilyTextSearch : ITextSearch
             yield return result;
             await Task.Yield();
         }
+
+        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        {
+            foreach (var image in searchResponse.Images!)
+            {
+                yield return image;
+                await Task.Yield();
+            }
+        }
     }
 
     /// <summary>
@@ -182,6 +191,15 @@ public sealed class TavilyTextSearch : ITextSearch
         {
             yield return this._resultMapper.MapFromResultToTextSearchResult(result);
             await Task.Yield();
+        }
+
+        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        {
+            foreach (var image in searchResponse.Images!)
+            {
+                yield return this._resultMapper.MapFromResultToTextSearchResult(image);
+                await Task.Yield();
+            }
         }
     }
 
@@ -208,6 +226,15 @@ public sealed class TavilyTextSearch : ITextSearch
             yield return this._stringMapper.MapFromResultToString(result);
             await Task.Yield();
         }
+
+        if (this._searchOptions?.IncludeImages ?? false && searchResponse.Images is not null)
+        {
+            foreach (var image in searchResponse.Images!)
+            {
+                yield return this._stringMapper.MapFromResultToString(image);
+                await Task.Yield();
+            }
+        }
     }
 
     /// <summary>
@@ -230,12 +257,15 @@ public sealed class TavilyTextSearch : ITextSearch
         /// <inheritdoc />
         public string MapFromResultToString(object result)
         {
-            if (result is not TavilySearchResult searchResult)
+            if (result is TavilySearchResult searchResult)
             {
-                throw new ArgumentException("Result must be a TavilySearchResult", nameof(result));
+                return searchResult.RawContent ?? searchResult.Content ?? string.Empty;
             }
-
-            return searchResult.RawContent ?? searchResult.Content ?? string.Empty;
+            else if (result is TavilyImageResult imageResult)
+            {
+                return imageResult.Description ?? string.Empty;
+            }
+            throw new ArgumentException("Result must be a TavilySearchResult", nameof(result));
         }
     }
 
@@ -247,12 +277,17 @@ public sealed class TavilyTextSearch : ITextSearch
         /// <inheritdoc />
         public TextSearchResult MapFromResultToTextSearchResult(object result)
         {
-            if (result is not TavilySearchResult searchResult)
+            if (result is TavilySearchResult searchResult)
             {
-                throw new ArgumentException("Result must be a TavilySearchResult", nameof(result));
+                return new TextSearchResult(searchResult.RawContent ?? searchResult.Content ?? string.Empty) { Name = searchResult.Title, Link = searchResult.Url };
             }
-
-            return new TextSearchResult(searchResult.RawContent ?? searchResult.Content ?? string.Empty) { Name = searchResult.Title, Link = searchResult.Url };
+            else if (result is TavilyImageResult imageResult)
+            {
+                var uri = new Uri(imageResult.Url);
+                var name = uri.Segments[^1];
+                return new TextSearchResult(imageResult.Description ?? string.Empty) { Name = name, Link = imageResult.Url };
+            }
+            throw new ArgumentException("Result must be a TavilySearchResult", nameof(result));
         }
     }
 
@@ -316,7 +351,9 @@ public sealed class TavilyTextSearch : ITextSearch
             topic,
             timeRange,
             days,
-            this._searchOptions?.SearchDepth,
+#pragma warning disable CA1308 // Lower is preferred over uppercase
+            this._searchOptions?.SearchDepth?.ToString()?.ToLowerInvariant(),
+#pragma warning restore CA1308
             this._searchOptions?.ChunksPerSource,
             this._searchOptions?.IncludeImages,
             this._searchOptions?.IncludeImageDescriptions,

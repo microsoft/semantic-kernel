@@ -172,6 +172,106 @@ public sealed class TavilyTextSearchTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task SearchWithAnswerReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Tavily search
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeAnswer = true });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(5, resultList.Count);
+        foreach (var stringResult in resultList)
+        {
+            Assert.NotEmpty(stringResult);
+        }
+    }
+
+    [Fact]
+    public async Task SearchWithImagesReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Tavily search
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
+
+        // Act
+        KernelSearchResults<string> result = await textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(9, resultList.Count);
+        foreach (var stringResult in resultList)
+        {
+            Assert.NotEmpty(stringResult);
+        }
+    }
+
+    [Fact]
+    public async Task GetTextSearchResultsWithAnswerReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Tavily search
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeAnswer = true });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(4, resultList.Count);
+        foreach (var textSearchResult in resultList)
+        {
+            Assert.NotNull(textSearchResult.Name);
+            Assert.NotNull(textSearchResult.Value);
+            Assert.NotNull(textSearchResult.Link);
+        }
+    }
+
+    [Fact]
+    public async Task GetTextSearchResultsWithImagesReturnsSuccessfullyAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(WhatIsTheSKResponseJson));
+
+        // Create an ITextSearch instance using Tavily search
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true, IncludeImageDescriptions = true });
+
+        // Act
+        KernelSearchResults<TextSearchResult> result = await textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotNull(result.Results);
+        var resultList = await result.Results.ToListAsync();
+        Assert.NotNull(resultList);
+        Assert.Equal(9, resultList.Count);
+        foreach (var textSearchResult in resultList)
+        {
+            Assert.NotNull(textSearchResult.Name);
+            Assert.NotNull(textSearchResult.Value);
+            Assert.NotNull(textSearchResult.Link);
+        }
+    }
+
     [Theory]
     [InlineData("topic", "general", "{\"query\":\"What is the Semantic Kernel?\",\"topic\":\"general\",\"max_results\":4}")]
     [InlineData("topic", "news", "{\"query\":\"What is the Semantic Kernel?\",\"topic\":\"news\",\"max_results\":4}")]
