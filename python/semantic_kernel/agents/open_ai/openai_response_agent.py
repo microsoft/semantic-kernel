@@ -15,8 +15,8 @@ else:
 
 from openai import AsyncOpenAI
 from openai.lib._parsing._completions import type_to_response_format_param
+from openai.types.responses.computer_tool_param import ComputerToolParam
 from openai.types.responses.file_search_tool_param import FileSearchToolParam, RankingOptions
-from openai.types.responses.response import Response
 from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
 from openai.types.shared_params.comparison_filter import ComparisonFilter
@@ -496,6 +496,31 @@ class OpenAIResponseAgent(Agent):
         return tool
 
     @staticmethod
+    def configure_computer_use_tool(
+        display_height: float,
+        display_width: float,
+        environment: Literal["mac", "windows", "ubuntu", "browser"],
+    ) -> ComputerToolParam:
+        """Generate the tool definition for computer use.
+
+        Args:
+            display_height: The height of the computer display.
+            display_width: The width of the computer display.
+            environment: The type of computer environment to control.
+
+        Returns:
+            A ComputerToolParam dictionary with any passed-in parameters.
+        """
+        tool: ComputerToolParam = {
+            "type": "computer_use_preview",
+            "display_height": display_height,
+            "display_width": display_width,
+            "environment": environment,
+        }
+
+        return tool
+
+    @staticmethod
     def configure_response_format(
         response_format: dict[Literal["type"], Literal["text", "json_object"]]
         | dict[str, Any]
@@ -692,17 +717,12 @@ class OpenAIResponseAgent(Agent):
         async for is_visible, response in ResponseAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
-            thread=thread,
             kernel=kernel,
             arguments=arguments,
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
             if is_visible and response.metadata.get("code") is not True:
-                if hasattr(response, "inner_content") and isinstance(response.inner_content, Response):
-                    # If the response has an inner_content with an ID, set the thread ID
-                    # to the response ID so that it can be used to track the convo server-side.
-                    thread._id = response.inner_content.id
                 response.metadata["thread_id"] = thread.id
                 response_messages.append(response)
 
@@ -815,10 +835,6 @@ class OpenAIResponseAgent(Agent):
             **response_level_params,  # type: ignore
         ):
             if is_visible:
-                if hasattr(response, "inner_content") and isinstance(response.inner_content, Response):
-                    # If the response has an inner_content with an ID, set the thread ID
-                    # to the response ID so that it can be used to track the convo server-side.
-                    thread._id = response.inner_content.id
                 response.metadata["thread_id"] = thread.id
                 await thread.on_new_message(response)
                 yield AgentResponseItem(message=response, thread=thread)
@@ -928,10 +944,6 @@ class OpenAIResponseAgent(Agent):
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
-            if hasattr(response, "inner_content") and isinstance(response.inner_content, Response):
-                # If the response has an inner_content with an ID, set the thread ID
-                # to the response ID so that it can be used to track the convo server-side.
-                thread._id = response.inner_content.id
             response.metadata["thread_id"] = thread.id
             await thread.on_new_message(response)
             yield AgentResponseItem(message=response, thread=thread)

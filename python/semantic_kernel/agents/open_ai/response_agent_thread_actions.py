@@ -46,7 +46,6 @@ if TYPE_CHECKING:
     from openai.types.responses.response_text_config_param import ResponseTextConfigParam
     from openai.types.responses.tool_param import ToolParam
 
-    from semantic_kernel.agents.agent import AgentThread
     from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent
     from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.contents.chat_history import ChatHistory
@@ -74,7 +73,6 @@ class ResponseAgentThreadActions:
         *,
         agent: "OpenAIResponseAgent",
         chat_history: "ChatHistory",
-        thread: "AgentThread | None" = None,
         arguments: KernelArguments | None = None,
         function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         include: list[
@@ -102,7 +100,6 @@ class ResponseAgentThreadActions:
         Args:
             agent: The assistant agent.
             chat_history: The Chat History to use for input.
-            thread: The thread to use for invocation.
             arguments: The kernel arguments.
             kernel: The kernel.
             function_choice_behavior: The function choice behavior.
@@ -155,7 +152,6 @@ class ResponseAgentThreadActions:
             response = await cls._get_response(
                 agent=agent,
                 chat_history=chat_history,
-                thread=thread,
                 merged_instructions=merged_instructions,
                 tools=tools,
                 response_options=response_options,
@@ -228,28 +224,20 @@ class ResponseAgentThreadActions:
         cls: type[_T],
         agent: "OpenAIResponseAgent",
         chat_history: "ChatHistory",
-        thread: "AgentThread | None" = None,
         merged_instructions: str | None = None,
         tools: Any | None = None,
         response_options: dict | None = None,
         stream: bool = False,
     ) -> Response | AsyncStream[ResponseStreamEvent]:
-        previous_response_id = None
-        if thread.id.startswith("resp_"):
-            previous_response_id = thread.id
-            chat_history.messages = chat_history.messages[-1]
-            input_items = cls._prepare_chat_history_for_request(chat_history)
-        else:
-            input_items = cls._prepare_chat_history_for_request(chat_history)
         response: Response = await agent.client.responses.create(
-            input=input_items,
-            previous_response_id=previous_response_id,
+            input=cls._prepare_chat_history_for_request(chat_history),
             instructions=merged_instructions or agent.instructions,
             tools=tools,  # type: ignore
             stream=stream,
             **response_options,
         )
-        assert response is not None  # nosec
+        if response is None:
+            raise AgentInvokeException("Response is None")
         return response
 
     @classmethod
@@ -258,8 +246,6 @@ class ResponseAgentThreadActions:
         *,
         agent: "OpenAIResponseAgent",
         chat_history: "ChatHistory",
-        thread: "AgentThread | None" = None,
-        # Run-level parameters:
         arguments: KernelArguments | None = None,
         function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         include: list[
@@ -288,7 +274,6 @@ class ResponseAgentThreadActions:
         Args:
             agent: The assistant agent.
             chat_history: The Chat History to use for input.
-            thread_id: The thread ID.
             arguments: The kernel arguments.
             kernel: The kernel.
             function_choice_behavior: The function choice behavior.
@@ -342,7 +327,6 @@ class ResponseAgentThreadActions:
             response: AsyncStream[ResponseStreamEvent] = await cls._get_response(
                 agent=agent,
                 chat_history=chat_history,
-                thread=thread,
                 merged_instructions=merged_instructions,
                 tools=tools,
                 response_options=response_options,

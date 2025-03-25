@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents import OpenAIResponseAgent
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.agents import OpenAIResponseAgent, ResponseAgentThread
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -38,16 +37,17 @@ async def main():
         tools=[web_search_tool],
     )
 
-    # 3. Create a chat history to hold the conversation
-    chat_history = ChatHistory()
+    # 3. Create a thread for the agent
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: ResponseAgentThread = None
 
     for user_input in USER_INPUTS:
-        # 3. Add the user input to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: '{user_input}'")
         # 4. Invoke the agent for the current message and print the response
         first_chunk = True
-        async for response in agent.invoke_stream(chat_history=chat_history):
+        async for response in agent.invoke_stream(messages=user_input, thread=thread):
+            thread = response.thread
             if first_chunk:
                 print(f"# {response.name}: ", end="", flush=True)
                 first_chunk = False

@@ -2,8 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import OpenAIResponseAgent
-from semantic_kernel.contents.chat_history import ChatHistory
+from semantic_kernel.agents import OpenAIResponseAgent, ResponseAgentThread
 from semantic_kernel.functions import kernel_function
 
 """
@@ -61,17 +60,17 @@ async def main():
         plugins=[MenuPlugin()],
     )
 
-    # 3. Create a chat history to hold the conversation
-    chat_history = ChatHistory()
+    # 3. Create a thread for the agent
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: ResponseAgentThread = None
 
     for user_input in USER_INPUTS:
-        # 3. Add the user input to the chat history
-        chat_history.add_user_message(user_input)
         print(f"# User: '{user_input}'")
         # 4. Invoke the agent for the current message and print the response
-        response = await agent.get_response(chat_history=chat_history)
+        response = await agent.get_response(messages=user_input, thread=thread)
         print(f"# {response.name}: {response.content}")
-        chat_history.add_message(response)
+        thread = response.thread
     """
     You should see output similar to the following:
 
