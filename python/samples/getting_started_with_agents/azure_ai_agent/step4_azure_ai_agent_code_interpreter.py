@@ -5,7 +5,7 @@ import asyncio
 from azure.ai.projects.models import CodeInterpreterTool
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.contents import AuthorRole
 
 """
@@ -37,20 +37,21 @@ async def main() -> None:
             definition=agent_definition,
         )
 
-        # 3. Create a new thread on the Azure AI agent service
-        thread = await client.agents.create_thread()
+        # 3. Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         try:
-            # 4. Add the task as a chat message
-            await agent.add_chat_message(thread_id=thread.id, message=TASK)
             print(f"# User: '{TASK}'")
-            # 5. Invoke the agent for the specified thread for response
-            async for content in agent.invoke(thread_id=thread.id):
-                if content.role != AuthorRole.TOOL:
-                    print(f"# Agent: {content.content}")
+            # 4. Invoke the agent for the specified thread for response
+            async for response in agent.invoke(messages=TASK, thread=thread):
+                if response.role != AuthorRole.TOOL:
+                    print(f"# Agent: {response}")
+                thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent
-            await client.agents.delete_thread(thread.id)
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
         """
@@ -74,12 +75,12 @@ async def main() -> None:
                 fib_sequence.append(a)
                 a, b = b, a + b
             return fib_sequence
-        
+
         Generate Fibonacci sequence values less than 101
         fibonacci_values = fibonacci_less_than(101)
         fibonacci_values
         # Agent: The values in the Fibonacci sequence that are less than 101 are:
-        
+
         [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
         """
 

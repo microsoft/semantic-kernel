@@ -112,7 +112,7 @@ By default, the polling interval is 250 ms. You can slow it down to 1 second (or
 ```python
 # Required imports
 from datetime import timedelta
-from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.agents.run_polling_options import RunPollingOptions
 
 # Configure the polling options as part of the `AzureAIAgent`
 agent = AzureAIAgent(

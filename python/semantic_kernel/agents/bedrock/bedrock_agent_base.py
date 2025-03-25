@@ -348,7 +348,7 @@ class BedrockAgentBase(Agent):
 
     async def _invoke_agent(
         self,
-        session_id: str,
+        thread_id: str,
         input_text: str,
         agent_alias: str | None = None,
         **kwargs,
@@ -366,7 +366,7 @@ class BedrockAgentBase(Agent):
                     self.bedrock_runtime_client.invoke_agent,
                     agentAliasId=agent_alias,
                     agentId=self.agent_model.agent_id,
-                    sessionId=session_id,
+                    sessionId=thread_id,
                     inputText=input_text,
                     **kwargs,
                 ),
