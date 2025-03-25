@@ -36,7 +36,7 @@ async def main():
             # Invoke the agent
             # The chat history is maintained in the session
             async for response in bedrock_agent.invoke(
-                input_text=user_input,
+                messages=user_input,
                 thread=thread,
             ):
                 print(f"Bedrock agent: {response}")
