@@ -63,6 +63,7 @@
         "pytestmark",
         "qdrant",
         "retrywrites",
+        "scmc",
         "SEMANTICKERNEL",
         "serde",
         "skprompt",

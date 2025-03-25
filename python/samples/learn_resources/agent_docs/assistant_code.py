@@ -4,7 +4,7 @@ import asyncio
 import logging
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import StreamingFileReferenceContent
 
 logging.basicConfig(level=logging.ERROR)
@@ -99,8 +99,7 @@ async def main():
         definition=definition,
     )
 
-    print("Creating thread...")
-    thread = await client.beta.threads.create()
+    thread: AssistantAgentThread = None
 
     try:
         is_complete: bool = False
@@ -114,11 +113,9 @@ async def main():
                 is_complete = True
                 break
 
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
-
             is_code = False
             last_role = None
-            async for response in agent.invoke_stream(thread_id=thread.id):
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
                 current_is_code = response.metadata.get("code", False)
 
                 if current_is_code:
@@ -138,6 +135,7 @@ async def main():
                 file_ids.extend([
                     item.file_id for item in response.items if isinstance(item, StreamingFileReferenceContent)
                 ])
+                thread = response.thread
             if is_code:
                 print("```\n")
             print()
@@ -148,7 +146,7 @@ async def main():
     finally:
         print("\nCleaning up resources...")
         [await client.files.delete(file_id) for file_id in file_ids]
-        await client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(agent.id)
 
 

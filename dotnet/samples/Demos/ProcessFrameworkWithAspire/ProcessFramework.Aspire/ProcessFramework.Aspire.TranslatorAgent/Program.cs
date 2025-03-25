@@ -66,16 +66,13 @@ app.MapPost("/api/translator", async (Kernel kernel, TranslationRequest translat
         Instructions = "Translate user input in english",
         Kernel = kernel
     };
-    // Create a ChatHistory object to maintain the conversation state.
-    ChatHistory chat = [];
 
     // Add a user message to the conversation
-    chat.Add(new ChatMessageContent(AuthorRole.User, translationRequest.TextToTranslate));
+    var message = new ChatMessageContent(AuthorRole.User, translationRequest.TextToTranslate);
 
     // Generate the agent response(s)
-    await foreach (var response in summaryAgent.InvokeAsync(chat).ConfigureAwait(false))
+    await foreach (ChatMessageContent response in summaryAgent.InvokeAsync(message).ConfigureAwait(false))
     {
-        chat.AddAssistantMessage(response.ToString());
         return response.Items.Last().ToString();
     }
 
