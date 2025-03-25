@@ -202,15 +202,14 @@ class Agent(KernelBaseModel, ABC):
             if not kernel:
                 kernel = Kernel()
             for plugin in plugins:
-                name = Agent._get_plugin_name(plugin)
-                kernel.add_plugin(plugin, plugin_name=name)
+                kernel.add_plugin(plugin)
             data["kernel"] = kernel
         return data
 
     def model_post_init(self, __context: Any) -> None:
         """Post initialization: create a kernel_function that calls this agent's get_response()."""
 
-        @kernel_function(name=self.name, description=self.description)
+        @kernel_function(name=self.name, description=self.description or self.instructions)
         async def _as_kernel_function(
             messages: Annotated[str | list[str], "The user messages for the agent."],
             instructions_override: Annotated[str | None, "Override agent instructions."] = None,
@@ -220,20 +219,16 @@ class Agent(KernelBaseModel, ABC):
             Exposes 'messages' and 'instructions_override'.
             Internally, we pass them to get_response() for whichever agent is calling it.
             """
-            # Convert a single string to a list if necessary
             if isinstance(messages, str):
                 messages = [messages]
 
-            # Forward to get_response(), passing the optional override
             response_item = await self.get_response(
                 messages=messages, instructions_override=instructions_override if instructions_override else None
             )
-
-            # Return the final .content
             return response_item.content
 
-        # To keep Pydantic happy, it needs to be marked with an underscore
-        # so it doesn't try to validate the function signature.
+        # Keep Pydantic happy with the "private" method, otherwise
+        # it will fail validating the model.
         setattr(self, "_as_kernel_function", _as_kernel_function)
 
     @abstractmethod
