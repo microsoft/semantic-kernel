@@ -439,9 +439,49 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        Verify.NotNull(options);
+
+        var filter = new RedisFilterTranslator().Translate(options.Filter, this._propertyReader.JsonPropertyNamesMap);
+        var orderByField = this._propertyReader.GetOrderByProperty(options.OrderBy) switch
+        {
+            // Key properties are not supported for ordering as they are not part of the schema.
+            VectorStoreRecordKeyProperty keyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
+            VectorStoreRecordProperty dataProperty => this._propertyReader.GetJsonPropertyName(dataProperty.DataModelPropertyName),
+            null => null
+        };
+
+        Query query = new Query(filter)
+            .Limit(options.Skip, options.Top)
+            .Dialect(2);
+
+        if (orderByField is not null)
+        {
+            query = query.SetSortBy(orderByField, ascending: options.SortAscending);
+        }
+
+        var results = await this.RunOperationAsync(
+            "FT.SEARCH",
+            () => this._database
+                .FT()
+                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+
+        foreach (var document in results.Documents)
+        {
+            var redisResultString = document["json"].ToString();
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this._collectionName,
+                "FT.SEARCH",
+                () =>
+                {
+                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
+                    return this._mapper.MapFromStorageToDataModel(
+                        (this.RemoveKeyPrefixIfNeeded(document.Id), node),
+                        new() { IncludeVectors = options.IncludeVectors });
+                });
+        }
     }
 
     /// <summary>

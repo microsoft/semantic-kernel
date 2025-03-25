@@ -226,12 +226,15 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Legacy filter support
 
+    protected virtual List<FilterRecord> GetOrderedRecords(IQueryable<FilterRecord> filtered)
+        => filtered.OrderBy(r => r.Key).ToList();
+
     protected virtual async Task TestFilterAsync(
         Expression<Func<FilterRecord, bool>> filter,
         bool expectZeroResults = false,
         bool expectAllResults = false)
     {
-        var expected = fixture.TestData.AsQueryable().Where(filter).OrderBy(r => r.Key).ToList();
+        var expected = this.GetOrderedRecords(fixture.TestData.AsQueryable().Where(filter));
 
         if (expected.Count == 0 && !expectZeroResults)
         {
@@ -376,7 +379,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                 new()
                 {
                     Key = this.GenerateNextKey<TKey>(),
-                    Int = 9,
+                    Int = 123,
                     String = "foo",
                     Bool = true,
                     Int2 = 9,

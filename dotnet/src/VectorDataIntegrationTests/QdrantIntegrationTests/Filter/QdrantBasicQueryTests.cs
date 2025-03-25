@@ -14,7 +14,7 @@ public class QdrantBasicQueryTests(QdrantBasicQueryTests.Fixture fixture)
 {
     protected override async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
         // TODO adsitnik: find a way to create an index that supports ordering
-        => (await fixture.Collection.QueryAsync(new() { Filter = filter, Top = top }).ToListAsync()).OrderBy(r => r.Key).ToList();
+        => (await fixture.Collection.QueryAsync(new() { Filter = filter, Top = top }).ToListAsync()).OrderBy(r => r.Int).ToList();
 
     public new class Fixture : BasicQueryTests<ulong>.QueryFixture
     {

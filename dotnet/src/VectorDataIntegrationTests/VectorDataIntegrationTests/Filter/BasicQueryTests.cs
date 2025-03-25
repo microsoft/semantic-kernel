@@ -7,8 +7,12 @@ namespace VectorDataSpecificationTests.Filter;
 public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture fixture)
     : BasicFilterTests<TKey>(fixture) where TKey : notnull
 {
+    // Not all of the connectors allow to sort by the Key, so we sort by the Int.
+    protected override List<FilterRecord> GetOrderedRecords(IQueryable<FilterRecord> filtered)
+        => filtered.OrderBy(r => r.Int).ToList();
+
     protected override async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
-        => (await fixture.Collection.QueryAsync(new() { Filter = filter, Top = top, OrderBy = r => r.Key }).ToListAsync());
+        => (await fixture.Collection.QueryAsync(new() { Filter = filter, Top = top, OrderBy = r => r.Int }).ToListAsync());
 
     [Obsolete("Not used by derived types")]
     public sealed override Task Legacy_And() => Task.CompletedTask;
