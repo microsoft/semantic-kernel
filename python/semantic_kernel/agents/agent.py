@@ -213,7 +213,7 @@ class Agent(KernelBaseModel, ABC):
         async def _as_kernel_function(
             messages: Annotated[str | list[str], "The user messages for the agent."],
             instructions_override: Annotated[str | None, "Override agent instructions."] = None,
-        ) -> Annotated[str, "Agent response."]:
+        ) -> Annotated[Any, "Agent response."]:
             """A Minimal universal function for all agents.
 
             Exposes 'messages' and 'instructions_override'.

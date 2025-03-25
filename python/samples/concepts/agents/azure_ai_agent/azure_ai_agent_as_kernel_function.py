@@ -14,6 +14,14 @@ from semantic_kernel.agents import (
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.filters import FunctionInvocationContext
 
+"""
+The following sample demonstrates how to create an Azure AI Agent Agent
+and a ChatCompletionAgent use them as tools available for a Triage Agent 
+to delegate requests to the appropriate agent. A Function Invocation Filter 
+is used to show the function call content and the function result content so the caller
+can see which agent was called and what the response was.
+"""
+
 
 # Define the auto function invocation filter that will be used by the kernel
 async def function_invocation_filter(context: FunctionInvocationContext, next):
