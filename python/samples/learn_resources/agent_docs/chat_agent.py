@@ -75,7 +75,9 @@ async def main():
             is_complete = True
             break
 
-        async for response in agent.invoke(messages=user_input, thread=thread):
+        arguments = KernelArguments(now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+
+        async for response in agent.invoke(messages=user_input, thread=thread, arguments=arguments):
             print(f"{response.content}")
             thread = response.thread
 
