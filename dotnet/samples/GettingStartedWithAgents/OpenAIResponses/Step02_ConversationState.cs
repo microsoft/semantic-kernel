@@ -47,10 +47,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         };
 
         string[] messages =
-            [
+        [
             "Tell me a joke?",
             "Tell me another?",
-            ];
+        ];
 
         // Invoke the agent and output the response
         AgentThread? agentThread = null;
@@ -75,10 +75,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         };
 
         string[] messages =
-            [
+        [
             "Tell me a joke?",
             "Explain why this is funny.",
-            ];
+        ];
 
         // Invoke the agent and output the response
         AgentThread? agentThread = null;
