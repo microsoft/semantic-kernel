@@ -49,7 +49,7 @@ builder.Services
         modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o-mini",
         apiKey: apiKey);
 Kernel kernel = builder.Build();
-kernel.Plugins.AddFromFunctions("GitHub", tools.Select(KernelFunction.FromAIFunction));
+kernel.Plugins.AddFromFunctions("GitHub", tools.Select(aiFunction => aiFunction.AsKernelFunction()));
 
 // Enable automatic function calling
 OpenAIPromptExecutionSettings executionSettings = new()

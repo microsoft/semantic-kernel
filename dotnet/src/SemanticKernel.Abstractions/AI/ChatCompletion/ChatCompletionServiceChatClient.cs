@@ -195,7 +195,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 
         if (options.Tools is { Count: > 0 })
         {
-            var functions = options.Tools.OfType<AIFunction>().Select(KernelFunction.FromAIFunction);
+            var functions = options.Tools.OfType<AIFunction>().Select(aiFunction => aiFunction.AsKernelFunction());
             settings.FunctionChoiceBehavior =
                 options.ToolMode is null or AutoChatToolMode ? FunctionChoiceBehavior.Auto(functions, autoInvoke: false) :
                 options.ToolMode is RequiredChatToolMode { RequiredFunctionName: null } ? FunctionChoiceBehavior.Required(functions, autoInvoke: false) :
