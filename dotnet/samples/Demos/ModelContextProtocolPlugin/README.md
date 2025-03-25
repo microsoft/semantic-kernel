@@ -13,6 +13,10 @@ The sample shows:
 3. Convert the MCP tools to Semantic Kernel functions so they can be added to a Kernel instance
 4. Invoke the tools from Semantic Kernel using function calling
 
+## Installing Prerequisites
+
+The sample requires node.js and npm to be installed. So, please install them from [here](https://nodejs.org/en/download/).
+ 
 ## Configuring Secrets or Environment Variables
 
 The example require credentials to access OpenAI.
