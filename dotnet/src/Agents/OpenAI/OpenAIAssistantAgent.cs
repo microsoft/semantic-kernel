@@ -370,7 +370,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return this.InvokeAsync(
             messages,
             thread,
-            options is null ? null : new OpenAIAssistantAgentInvokeOptions(options),
+            options is null ?
+                null :
+                options is OpenAIAssistantAgentInvokeOptions ? options : new OpenAIAssistantAgentInvokeOptions(options),
             cancellationToken);
     }
 
@@ -494,7 +496,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return this.InvokeStreamingAsync(
             messages,
             thread,
-            options is null ? null : new OpenAIAssistantAgentInvokeOptions(options),
+            options is null ?
+                null :
+                options is OpenAIAssistantAgentInvokeOptions ? options : new OpenAIAssistantAgentInvokeOptions(options),
             cancellationToken);
     }
 
