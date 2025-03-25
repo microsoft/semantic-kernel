@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Amazon.BedrockRuntime;
 using Amazon.BedrockRuntime.Model;
@@ -48,6 +50,105 @@ internal static class BedrockModelUtilities
             .ToList();
     }
 
+    private static bool IsContentSupported(KernelContent content)
+    {
+        return content is TextContent ||
+               (content is ImageContent image && image.DataUri != null) ||
+               (content is PdfContent pdf && pdf.DataUri != null) ||
+               (content is DocContent doc && doc.DataUri != null) ||
+               (content is DocxContent docx && docx.DataUri != null);
+    }
+
+    private static ImageFormat MimeTypeToImageFormat(string mimeType)
+    {
+        return mimeType switch
+        {
+            "image/png" => ImageFormat.Png,
+            "image/jpeg" => ImageFormat.Jpeg,
+            "image/gif" => ImageFormat.Gif,
+            "image/webp" => ImageFormat.Webp,
+            _ => throw new InvalidOperationException($"Unsupported image format: {mimeType}")
+        };
+    }
+
+    private static IEnumerable<ContentBlock> MessageContentItemsToContentBlock(ChatMessageContentItemCollection items)
+    {
+        return items.Where(IsContentSupported)
+            .Select((item, i) =>
+            {
+                if (item is TextContent text)
+                {
+                    return new ContentBlock { Text = text.Text };
+                }
+                if (item is ImageContent image)
+                {
+                    Debug.Assert(image.DataUri != null);
+                    return new ContentBlock
+                    {
+                        Image = new ImageBlock
+                        {
+                            Format = MimeTypeToImageFormat(image.MimeType),
+                            Source = new ImageSource
+                            {
+                                Bytes = new MemoryStream(image.Data?.ToArray() ?? [])
+                            }
+                        }
+                    };
+                }
+                if (item is PdfContent pdf)
+                {
+                    Debug.Assert(pdf.DataUri != null);
+                    return new ContentBlock
+                    {
+                        Document = new DocumentBlock
+                        {
+                            Format = DocumentFormat.Pdf,
+                            Name = $"document-{i + 1}.pdf",  // NOTE: Generated to prevent possibility of prompt injection attack
+                            Source = new DocumentSource
+                            {
+                                Bytes = new MemoryStream(pdf.Data?.ToArray() ?? [])
+                            }
+                        }
+                    };
+                }
+                if (item is DocContent doc)
+                {
+                    Debug.Assert(doc.DataUri != null);
+                    return new ContentBlock
+                    {
+                        Document = new DocumentBlock
+                        {
+                            Format = DocumentFormat.Doc,
+                            Name = $"document-{i + 1}.doc",  // NOTE: Generated to prevent possibility of prompt injection attack
+                            Source = new DocumentSource
+                            {
+                                Bytes = new MemoryStream(doc.Data?.ToArray() ?? [])
+                            }
+                        }
+                    };
+                }
+                if (item is DocxContent docx)
+                {
+                    Debug.Assert(docx.DataUri != null);
+                    return new ContentBlock
+                    {
+                        Document = new DocumentBlock
+                        {
+                            Format = DocumentFormat.Docx,
+                            Name = $"document-{i + 1}.docx",  // NOTE: Generated to prevent possibility of prompt injection attack
+                            Source = new DocumentSource
+                            {
+                                Bytes = new MemoryStream(docx.Data?.ToArray() ?? [])
+                            }
+                        }
+                    };
+                }
+                return null;
+            })
+            .Where(item => item != null)
+            .Select(item => item!);
+    }
+
     /// <summary>
     /// Creates the list of user and assistant messages for the Converse Request from the Chat History.
     /// </summary>
@@ -63,14 +164,13 @@ internal static class BedrockModelUtilities
         {
             throw new ArgumentException("Last message in chat history was null or whitespace.");
         }
-        return chatHistory
+        return [.. chatHistory
             .Where(m => m.Role != AuthorRole.System)
             .Select(m => new Message
             {
                 Role = MapAuthorRoleToConversationRole(m.Role),
-                Content = new List<ContentBlock> { new() { Text = m.Content } }
-            })
-            .ToList();
+                Content = [.. MessageContentItemsToContentBlock(m.Items)]
+            })];
     }
 
     /// <summary>

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;

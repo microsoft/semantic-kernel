@@ -202,6 +202,114 @@ public sealed class ChatPromptParserTests
     }
 
     [Fact]
+    public void ItReturnsChatHistoryWithMixedBinaryAndTextContent()
+    {
+        // Arrange
+        string prompt = GetValidPromptWithMixedBinaryAndTextContent();
+
+        // Act
+        bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
+
+        // Assert
+        Assert.True(result);
+        Assert.NotNull(chatHistory);
+
+        Assert.Collection(chatHistory,
+            c => Assert.Equal("What can I help with?", c.Content),
+            c =>
+            {
+                Assert.Equal("Make sense of this random assortment of stuff.", c.Content);
+                Assert.Collection(c.Items,
+                    o =>
+                    {
+                        Assert.IsType<TextContent>(o);
+                        Assert.Equal("Make sense of this random assortment of stuff.", ((TextContent)o).Text);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<ImageContent>(o);
+                        var x = (ImageContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-image/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<AudioContent>(o);
+                        var x = (AudioContent)o;
+                        Assert.Equal("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAACABAAZGF0YVgAAAAA", x.DataUri);
+                        var b = Convert.FromBase64String("UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAACABAAZGF0YVgAAAAA");
+                        Assert.Equal(b, x.Data);
+                        Assert.Equal("audio/wav", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<PdfContent>(o);
+                        var x = (PdfContent)o;
+                        Assert.Equal("data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1hSZWYvUGFnZXMgNiAwIFIKL1R5cGUvUGFnZS9NZWRpYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9G", x.DataUri);
+                        var b = Convert.FromBase64String("JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1hSZWYvUGFnZXMgNiAwIFIKL1R5cGUvUGFnZS9NZWRpYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9G");
+                        Assert.Equal(b, x.Data);
+                        Assert.Equal("application/pdf", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<PdfContent>(o);
+                        var x = (PdfContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-pdf/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<DocContent>(o);
+                        var x = (DocContent)o;
+                        Assert.Equal("data:application/msword;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==", x.DataUri);
+                        var b = Convert.FromBase64String("UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==");
+                        Assert.Equal(b, x.Data);
+                        Assert.Equal("application/msword", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<DocContent>(o);
+                        var x = (DocContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-doc/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<DocxContent>(o);
+                        var x = (DocxContent)o;
+                        Assert.Equal("data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==", x.DataUri);
+                        var b = Convert.FromBase64String("UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==");
+                        Assert.Equal(b, x.Data);
+                        Assert.Equal("application/vnd.openxmlformats-officedocument.wordprocessingml.document", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<DocxContent>(o);
+                        var x = (DocxContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-docx/", x.Uri.AbsoluteUri);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.Equal("data:application/octet-stream;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==", x.DataUri);
+                        var b = Convert.FromBase64String("UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==");
+                        Assert.Equal(b, x.Data);
+                        Assert.Equal("application/octet-stream", x.MimeType);
+                    },
+                    o =>
+                    {
+                        Assert.IsType<BinaryContent>(o);
+                        var x = (BinaryContent)o;
+                        Assert.NotNull(x.Uri);
+                        Assert.Equal("https://fake-link-to-binary/", x.Uri.AbsoluteUri);
+                    }
+                );
+            });
+    }
+
+    [Fact]
     public void ItReturnsChatHistoryWithEmptyContent()
     {
         // Arrange
@@ -266,7 +374,7 @@ public sealed class ChatPromptParserTests
                                   </message>
                               </code>
                               """, c.Content),
-            // In this case, when we trim node.InnerXml only the opening <code> tag is indented. 
+            // In this case, when we trim node.InnerXml only the opening <code> tag is indented.
             c => Assert.Equal("""
                               <code>
                                   <text>explain image</text>
@@ -444,6 +552,31 @@ public sealed class ChatPromptParserTests
               </code>
             </message>
 
+            """;
+    }
+
+    private static string GetValidPromptWithMixedBinaryAndTextContent()
+    {
+        return
+            """
+
+            <message role="assistant">What can I help with?</message>
+
+            <message role='user'>
+                This part will be discarded upon parsing
+                <text>Make sense of this random assortment of stuff.</text>
+                <image>https://fake-link-to-image/</image>
+                <audio>data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAACABAAZGF0YVgAAAAA</audio>
+                <pdf>data:application/pdf;base64,JVBERi0xLjQKJeLjz9MKMyAwIG9iago8PC9UeXBlL1hSZWYvUGFnZXMgNiAwIFIKL1R5cGUvUGFnZS9NZWRpYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9GMiA8PC9GMyA8PC9GNCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GNSA8PC9GNiA8PC9GNyBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GOCAvPj4KZW5kb2JqCjEwIDAgb2JqCjw8L1R5cGUvUGFnZS9NYWRlYUJveCBbMCAwIDQ4MCA1MF0KL0NvbnRlbnRzIDw8L0V4dEdTdGF0ZSA8PC9JRCBbPDwvTGVuZ3RoIDQ4XQovRm9udCA8PC9GMSA8PC9G</pdf>
+                <pdf>https://fake-link-to-pdf/</pdf>
+                <doc>data:application/msword;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==</doc>
+                <doc>https://fake-link-to-doc/</doc>
+                <docx>data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==</docx>
+                <docx>https://fake-link-to-docx/</docx>
+                <file>data:application/octet-stream;base64,UEsDBBQAAAAIAI+Q1k5a2gAAABQAAAAIAAAAbmFtZS5kb2N4VVQJAAD9AAAACwAAAB4AAAAAA==</file>
+                <file>https://fake-link-to-binary/</file>
+                This part will also be discarded upon parsing
+            </message>
             """;
     }
 }

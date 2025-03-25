@@ -16,6 +16,11 @@ internal static class ChatPromptParser
     private const string RoleAttributeName = "role";
     private const string ImageTagName = "image";
     private const string TextTagName = "text";
+    private const string AudioTagName = "audio";
+    private const string PdfTagName = "pdf";
+    private const string DocxTagName = "docx";
+    private const string DocTagName = "doc";
+    private const string BinaryTagName = "file";
 
     /// <summary>
     /// Parses a prompt for an XML representation of a <see cref="ChatHistory"/>.
@@ -87,6 +92,51 @@ internal static class ChatPromptParser
             else if (childNode.TagName.Equals(TextTagName, StringComparison.OrdinalIgnoreCase))
             {
                 items.Add(new TextContent(childNode.Content));
+            }
+            else if (childNode.TagName.Equals(AudioTagName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(new AudioContent(childNode.Content));
+                }
+                else
+                {
+                    items.Add(new AudioContent(new Uri(childNode.Content!)));
+                }
+            }
+            else if (childNode.TagName.Equals(PdfTagName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(new PdfContent(childNode.Content));
+                }
+                else
+                {
+                    items.Add(new PdfContent(new Uri(childNode.Content!)));
+                }
+            }
+            else if (childNode.TagName.Equals(DocxTagName, StringComparison.OrdinalIgnoreCase) && childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                items.Add(new DocxContent(childNode.Content));
+            }
+            else if (childNode.TagName.Equals(DocTagName, StringComparison.OrdinalIgnoreCase) && childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+            {
+                items.Add(new DocContent(childNode.Content));
+            }
+            else if (childNode.TagName.Equals(BinaryTagName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (childNode.Content!.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                {
+                    items.Add(new BinaryContent(childNode.Content));
+                }
+                else
+                {
+                    items.Add(new BinaryContent(new Uri(childNode.Content!)));
+                }
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported node type: {childNode.TagName}");
             }
         }
 

@@ -764,6 +764,9 @@ internal partial class ClientCore
                     {
                         TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
                         ImageContent imageContent => GetImageContentItem(imageContent),
+                        PdfContent pdfContent => GetPdfContentItem(pdfContent),
+                        AudioContent audioContent when audioContent.Data is { IsEmpty: false } => GetAudioContentItem(audioContent),
+                        BinaryContent binaryContent when binaryContent.Uri != null => GetFileReferenceContent(binaryContent),
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }))
                 { ParticipantName = message.AuthorName }
@@ -862,6 +865,44 @@ internal partial class ClientCore
         }
 
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
+    }
+
+    private static ChatMessageContentPart GetPdfContentItem(PdfContent pdfContent)
+    {
+        if (pdfContent.Data is { IsEmpty: false } data)
+        {
+            // NOTE: generating a random file name to prevent the possibility of a prompt injection attack
+            return ChatMessageContentPart.CreateFilePart(BinaryData.FromBytes(data), "application/pdf", $"{Guid.NewGuid()}.pdf");
+        }
+
+        if (pdfContent.Uri is not null)
+        {
+            // URI expected to be encoded as a file with the path set to the uploaded file ID
+            // "file://<file-id>", (e.g. "file://file-123xyz")
+            if (!pdfContent.Uri.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Only file URIs are supported for PDF content.");
+            }
+            return ChatMessageContentPart.CreateFilePart(pdfContent.Uri.AbsolutePath);
+        }
+
+        throw new ArgumentException($"{nameof(PdfContent)} must have either Data or a Uri.");
+    }
+
+    private static ChatMessageContentPart GetAudioContentItem(AudioContent audioContent)
+    {
+        var audioFormat = audioContent.MimeType.ToUpperInvariant() switch
+        {
+            "AUDIO/MPEG" => ChatInputAudioFormat.Mp3,
+            "AUDIO/WAV" => ChatInputAudioFormat.Wav,
+            _ => throw new ArgumentException($"Unsupported audio format '{audioContent.MimeType}'. Supported values are 'audio/mpeg' and 'audio/wav'.")
+        };
+        return ChatMessageContentPart.CreateInputAudioPart(BinaryData.FromBytes(audioContent.Data!.Value), audioFormat);
+    }
+
+    private static ChatMessageContentPart GetFileReferenceContent(BinaryContent binaryContent)
+    {
+        return ChatMessageContentPart.CreateFilePart(binaryContent.Uri!.AbsoluteUri);
     }
 
     private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
