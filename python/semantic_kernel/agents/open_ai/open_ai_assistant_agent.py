@@ -140,7 +140,7 @@ class AssistantAgentThread(AgentThread):
             assert self._id is not None  # nosec
             await AssistantThreadActions.create_message(self._client, self._id, new_message)
 
-    async def get_messages(self, sort_order: Literal["asc", "desc"] = "desc") -> AsyncIterable[ChatMessageContent]:
+    async def get_messages(self, sort_order: Literal["asc", "desc"] | None = None) -> AsyncIterable[ChatMessageContent]:
         """Get the messages in the thread.
 
         Args:
@@ -556,6 +556,7 @@ class OpenAIAssistantAgent(Agent):
             **run_level_params,  # type: ignore
         ):
             if is_visible and response.metadata.get("code") is not True:
+                response.metadata["thread_id"] = thread.id
                 response_messages.append(response)
 
         if not response_messages:
@@ -650,7 +651,7 @@ class OpenAIAssistantAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
-        async for is_visible, message in AssistantThreadActions.invoke(
+        async for is_visible, response in AssistantThreadActions.invoke(
             agent=self,
             thread_id=thread.id,
             kernel=kernel,
@@ -658,8 +659,9 @@ class OpenAIAssistantAgent(Agent):
             **run_level_params,  # type: ignore
         ):
             if is_visible:
-                await thread.on_new_message(message)
-                yield AgentResponseItem(message=message, thread=thread)
+                response.metadata["thread_id"] = thread.id
+                await thread.on_new_message(response)
+                yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
     @override
