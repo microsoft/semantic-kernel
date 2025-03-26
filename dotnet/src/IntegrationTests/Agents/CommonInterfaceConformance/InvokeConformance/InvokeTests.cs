@@ -62,6 +62,25 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     }
 
     [RetryFact(3, 5000)]
+    public virtual async Task InvokeWithoutMessageCreatesThreadAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+
+        // Act
+        var asyncResults = agent.InvokeAsync([]);
+        var results = await asyncResults.ToListAsync();
+
+        // Assert
+        Assert.Single(results);
+        var firstResult = results.First();
+        Assert.NotNull(firstResult.Thread);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(firstResult.Thread);
+    }
+
+    [RetryFact(3, 5000)]
     public virtual async Task ConversationMaintainsHistoryAsync()
     {
         // Arrange
