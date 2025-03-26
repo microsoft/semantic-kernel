@@ -5,21 +5,51 @@ using ProcessWithCloudEvents.Processes.Steps;
 
 namespace ProcessWithCloudEvents.Processes;
 
+/// <summary>
+/// Compontents related to the SK Process for generating documentation
+/// </summary>
 public static class DocumentGenerationProcess
 {
+    /// <summary>
+    /// SK Process events emitted by <see cref="DocumentGenerationProcess"/>
+    /// </summary>
     public static class DocGenerationEvents
     {
+        /// <summary>
+        /// Event to start the document generation process
+        /// </summary>
         public const string StartDocumentGeneration = nameof(StartDocumentGeneration);
+        /// <summary>
+        /// Event emitted when the user rejects the document
+        /// </summary>
         public const string UserRejectedDocument = nameof(UserRejectedDocument);
+        /// <summary>
+        /// Event emitted when the user approves the document
+        /// </summary>
         public const string UserApprovedDocument = nameof(UserApprovedDocument);
     }
 
+    /// <summary>
+    /// SK Process topics emitted by <see cref="DocumentGenerationProcess"/>
+    /// Topics are used to emit events to external systems
+    /// </summary>
     public static class DocGenerationTopics
     {
+        /// <summary>
+        /// Request user review document generation topic
+        /// </summary>
         public const string RequestUserReview = nameof(RequestUserReview);
+        /// <summary>
+        /// Publish documentat generated topic
+        /// </summary>
         public const string PublishDocumentation = nameof(PublishDocumentation);
     }
 
+    /// <summary>
+    /// Creates a process builder for the Document Generation SK Process
+    /// </summary>
+    /// <param name="processName">name of the SK Process</param>
+    /// <returns>instance of <see cref="ProcessBuilder"/></returns>
     public static ProcessBuilder CreateProcessBuilder(string processName = "DocumentationGeneration")
     {
         // Create the process builder

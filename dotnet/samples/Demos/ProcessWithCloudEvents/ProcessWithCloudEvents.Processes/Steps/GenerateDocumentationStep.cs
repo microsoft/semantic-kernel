@@ -45,6 +45,12 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
         return base.ActivateAsync(state);
     }
 
+    /// <summary>
+    /// Function that generates documentation from the <see cref="ProductInfo"/> provided
+    /// </summary>
+    /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
+    /// <param name="content">content to be used for document generation</param>
+    /// <returns></returns>
     [KernelFunction(Functions.GenerateDocs)]
     public async Task OnGenerateDocumentationAsync(KernelProcessStepContext context, ProductInfo content)
     {
