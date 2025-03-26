@@ -24,7 +24,6 @@ public sealed class TavilyTextSearchOptions
     /// A basic search costs 1 API Credit, while an advanced search costs 2 API Credits.
     /// Available options: basic, advanced
     /// </summary>
-    // TODO Create an enum
     public SearchDepth? SearchDepth { get; set; }
 
     /// <summary>
@@ -78,8 +77,8 @@ public sealed class TavilyTextSearchOptions
 }
 
 /// <summary>
-/// The depth of the search. advanced search is tailored to retrieve the
-/// most relevant sources and content snippets for your query,
+/// The depth of the search. advanced search is tailored to retrieve
+/// the most relevant sources and content snippets for your query,
 /// while basic search provides generic content snippets from each source.
 /// </summary>
 public enum SearchDepth
