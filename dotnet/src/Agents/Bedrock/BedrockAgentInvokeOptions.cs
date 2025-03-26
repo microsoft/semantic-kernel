@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// <summary>
 /// Optional parameters for BedrockAgent invocation.
 /// </summary>
-public class BedrockAgentInvokeOptions : AgentInvokeOptions
+public sealed class BedrockAgentInvokeOptions : AgentInvokeOptions
 {
     /// <summary>
     /// Gets or sets the alias ID of the agent to invoke.

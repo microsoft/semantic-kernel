@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// <summary>
 /// Provides a specialized <see cref="KernelAgent"/> for the Bedrock Agent service.
 /// </summary>
-public class BedrockAgent : KernelAgent
+public sealed class BedrockAgent : KernelAgent
 {
     /// <summary>
     /// The client used to interact with the Bedrock Agent service.
