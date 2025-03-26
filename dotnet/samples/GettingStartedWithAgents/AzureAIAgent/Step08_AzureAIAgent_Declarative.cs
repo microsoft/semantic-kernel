@@ -345,7 +345,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     private async Task InvokeAgentAsync(AzureAIAgent agent, string input, bool? deleteAgent = true)
     {
         // Create a thread for the agent conversation.
-        AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
+        Azure.AI.Projects.AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
 
         try
         {

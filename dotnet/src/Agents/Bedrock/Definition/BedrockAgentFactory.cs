@@ -30,7 +30,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? templateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Name);
@@ -61,7 +61,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
-                Template = agentDefinition.GetPromptTemplate(kernel, templateFactory),
+                Template = agentDefinition.GetPromptTemplate(kernel, promptTemplateFactory),
             };
 
             // create tools from the definition

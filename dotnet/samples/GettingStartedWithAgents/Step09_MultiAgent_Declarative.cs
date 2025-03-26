@@ -102,7 +102,7 @@ public class Step09_MultiAgent_Declarative : BaseAgentsTest
     private async Task InvokeAgentAsync(AzureAIAgent agent, string input)
     {
         // Create a thread for the agent conversation.
-        AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
+        Azure.AI.Projects.AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
 
         // Respond to user input
         try
