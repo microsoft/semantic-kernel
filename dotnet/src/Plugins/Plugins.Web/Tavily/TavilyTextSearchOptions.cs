@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
 /// <summary>
-/// Options used to construct an instance of <see cref="TavilyTextSearch"/>
+/// Options used to construct an instance of <see cref="TavilyTextSearch"/>.
 /// </summary>
 public sealed class TavilyTextSearchOptions
 {
