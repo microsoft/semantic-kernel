@@ -8,6 +8,11 @@ using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Grpc.Clients;
 
+/// <summary>
+/// Client that implements the <see cref="IExternalKernelProcessMessageChannel"/> interface used internally by the SK process
+/// to emit events to external systems.<br/>
+/// This implementation is an example of a gRPC client that emits events to a gRPC server
+/// </summary>
 public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
 {
     private GrpcChannel? _grpcChannel;

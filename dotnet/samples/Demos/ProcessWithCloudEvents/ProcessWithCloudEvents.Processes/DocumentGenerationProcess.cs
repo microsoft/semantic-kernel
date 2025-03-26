@@ -6,7 +6,7 @@ using ProcessWithCloudEvents.Processes.Steps;
 namespace ProcessWithCloudEvents.Processes;
 
 /// <summary>
-/// Compontents related to the SK Process for generating documentation
+/// Components related to the SK Process for generating documentation
 /// </summary>
 public static class DocumentGenerationProcess
 {
