@@ -118,7 +118,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
 
             if (agentThread is not null)
             {
-                await openaiAgent.Client.DeleteThreadAsync(agentThread.Id);
+                await agentThread.DeleteAsync();
             }
         }
     }
