@@ -104,7 +104,9 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
         finally
         {
             // Remove the subscriber when client disconnects  
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             subscribers.TryTake(out responseStream);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
         }
     }
 
@@ -184,7 +186,9 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
         finally
         {
             // Remove the subscriber when client disconnects  
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
             subscribers.TryTake(out responseStream);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
         }
     }
 }
