@@ -289,6 +289,69 @@ public partial class ClientCoreTests
         }
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FunctionArgumentTypesShouldBeRetainedIfSpecifiedAsync(bool retain)
+    {
+        // Arrange
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(File.ReadAllText("TestData/chat_completion_multiple_function_calls_test_response.json"))
+        };
+
+        using HttpMessageHandlerStub handler = new();
+        handler.ResponseToReturn = responseMessage;
+        using HttpClient client = new(handler);
+
+        var clientCore = new ClientCore("modelId", "apikey", httpClient: client);
+
+        ChatHistory chatHistory = [];
+        chatHistory.Add(new ChatMessageContent(AuthorRole.User, "Hello"));
+
+        var settings = new OpenAIPromptExecutionSettings()
+        {
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(
+                autoInvoke: false,
+                options: new FunctionChoiceBehaviorOptions
+                {
+                    RetainArgumentTypes = retain
+                })
+        };
+
+        // Act
+        var result = await clientCore.GetChatMessageContentsAsync("gpt-4", chatHistory, settings, new Kernel());
+
+        // Assert
+        var functionCalls = FunctionCallContent.GetFunctionCalls(result.Single()).ToArray();
+        Assert.NotEmpty(functionCalls);
+
+        var getCurrentWeatherFunctionCall = functionCalls.FirstOrDefault(call => call.FunctionName == "GetCurrentWeather");
+        Assert.NotNull(getCurrentWeatherFunctionCall);
+
+        var intArgumentsFunctionCall = functionCalls.FirstOrDefault(call => call.FunctionName == "IntArguments");
+        Assert.NotNull(intArgumentsFunctionCall);
+
+        if (retain)
+        {
+            var location = Assert.IsType<JsonElement>(getCurrentWeatherFunctionCall.Arguments?["location"]);
+            Assert.Equal(JsonValueKind.String, location.ValueKind);
+            Assert.Equal("Boston, MA", location.ToString());
+
+            var age = Assert.IsType<JsonElement>(intArgumentsFunctionCall.Arguments?["age"]);
+            Assert.Equal(JsonValueKind.Number, age.ValueKind);
+            Assert.Equal(36, age.GetInt32());
+        }
+        else
+        {
+            var location = Assert.IsType<string>(getCurrentWeatherFunctionCall.Arguments?["location"]);
+            Assert.Equal("Boston, MA", location);
+
+            var age = Assert.IsType<string>(intArgumentsFunctionCall.Arguments?["age"]);
+            Assert.Equal("36", age);
+        }
+    }
+
     internal sealed class ChatMessageContentWithFunctionCalls : TheoryData<ChatMessageContent, bool>
     {
         private static readonly ChatToolCall s_functionCallWithInvalidFunctionName = ChatToolCall.CreateFunctionToolCall(id: "call123", functionName: "bar.foo", functionArguments: BinaryData.FromString("{}"));

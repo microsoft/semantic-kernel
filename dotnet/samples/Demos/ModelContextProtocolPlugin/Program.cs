@@ -55,7 +55,7 @@ kernel.Plugins.AddFromFunctions("GitHub", tools.Select(aiFunction => aiFunction.
 OpenAIPromptExecutionSettings executionSettings = new()
 {
     Temperature = 0,
-    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
 };
 
 // Test using GitHub tools

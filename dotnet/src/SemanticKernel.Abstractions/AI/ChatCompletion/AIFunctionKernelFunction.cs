@@ -78,7 +78,9 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
                 DefaultValue = param.Value.TryGetProperty("default", out JsonElement defaultValue) ? defaultValue : null,
                 IsRequired = param.Value.TryGetProperty("required", out JsonElement required) && required.GetBoolean(),
                 ParameterType = paramInfo?.ParameterType,
-                Schema = param.Value.TryGetProperty("schema", out JsonElement schema) ? new KernelJsonSchema(schema) : null,
+                Schema = param.Value.TryGetProperty("schema", out JsonElement schema)
+                    ? new KernelJsonSchema(schema)
+                    : new KernelJsonSchema(param.Value),
             });
         }
 
