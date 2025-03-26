@@ -42,92 +42,30 @@ public class Step09_MultiAgent_Declarative : BaseAgentsTest
             );
     }
 
-    #region private
-    private readonly Kernel _kernel;
-    private readonly KernelAgentFactory _kernelAgentFactory;
-
-    /// <summary>
-    /// Invoke the <see cref="ChatCompletionAgent"/> with the user input.
-    /// </summary>
-    private async Task InvokeAgentAsync(ChatCompletionAgent agent, string input)
+    [Fact]
+    public async Task ChatCompletionAgentWithKernelAsync()
     {
-        ChatHistory chat = [];
-        ChatMessageContent message = new(AuthorRole.User, input);
-        chat.Add(message);
-        this.WriteAgentChatMessage(message);
+        Kernel kernel = this.CreateKernelWithChatCompletion();
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
+        var text =
+            """
+            type: chat_completion_agent
+            name: StoryAgent
+            description: Store Telling Agent
+            instructions: Tell a story suitable for children about the topic provided by the user.
+            """;
+
+        var agent = await this._kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
+
+        await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
         {
-            chat.Add(response);
-
             this.WriteAgentChatMessage(response);
         }
     }
 
-    /// <summary>
-    /// Invoke the <see cref="OpenAIAssistantAgent"/> with the user input.
-    /// </summary>
-    private async Task InvokeAgentAsync(OpenAIAssistantAgent agent, string input)
-    {
-        // Create a thread for the agent conversation.
-        string threadId = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
-
-        try
-        {
-            await InvokeAgentAsync(input);
-        }
-        finally
-        {
-            await agent.Client.DeleteThreadAsync(threadId);
-            await agent.Client.DeleteAssistantAsync(agent.Id);
-        }
-
-        // Local function to invoke agent and display the response.
-        async Task InvokeAgentAsync(string input)
-        {
-            ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(threadId, message);
-            this.WriteAgentChatMessage(message);
-
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
-            {
-                WriteAgentChatMessage(response);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Invoke the <see cref="AzureAIAgent"/> with the user input.
-    /// </summary>
-    private async Task InvokeAgentAsync(AzureAIAgent agent, string input)
-    {
-        // Create a thread for the agent conversation.
-        AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
-
-        // Respond to user input
-        try
-        {
-            await InvokeAsync(input);
-        }
-        finally
-        {
-            await agent.Client.DeleteThreadAsync(thread.Id);
-            await agent.Client.DeleteAgentAsync(agent!.Id);
-        }
-
-        // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAsync(string input)
-        {
-            ChatMessageContent message = new(AuthorRole.User, input);
-            await agent!.AddChatMessageAsync(thread.Id, message);
-            this.WriteAgentChatMessage(message);
-
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
-            {
-                this.WriteAgentChatMessage(response);
-            }
-        }
-    }
+    #region private
+    private readonly Kernel _kernel;
+    private readonly KernelAgentFactory _kernelAgentFactory;
     #endregion
 
 }

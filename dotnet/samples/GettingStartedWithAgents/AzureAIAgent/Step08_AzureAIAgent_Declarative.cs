@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
+using Agent = Microsoft.SemanticKernel.Agents.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -37,7 +38,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -56,7 +57,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -77,7 +78,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
@@ -114,9 +115,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?", false);
+        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
     }
 
     [Fact]
@@ -143,9 +144,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
-        await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?", false);
+        await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?");
     }
 
     [Fact]
@@ -173,10 +174,10 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
         Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?", false);
+        await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");
     }
 
     [Fact]
@@ -263,10 +264,10 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
         Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What is the current weather in Dublin?", false);
+        await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
     }
 
     [Fact]
@@ -330,7 +331,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
@@ -342,35 +343,33 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(AzureAIAgent agent, string input, bool? deleteAgent = true)
+    private async Task InvokeAgentAsync(Agent agent, string input, bool? deleteAgent = true)
     {
-        // Create a thread for the agent conversation.
-        AgentThread thread = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
-
+        Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
         try
         {
-            // Invoke agent and display the response.
-            await InvokeAsync(input);
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+            {
+                agentThread = response.Thread;
+                WriteAgentChatMessage(response);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error invoking agent: {e.Message}");
         }
         finally
         {
             if (deleteAgent ?? true)
             {
-                await agent.Client.DeleteThreadAsync(thread.Id);
-                await agent.Client.DeleteAgentAsync(agent!.Id);
-            }
-        }
+                var azureaiAgent = agent as AzureAIAgent;
+                Assert.NotNull(azureaiAgent);
+                await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
 
-        // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAsync(string input)
-        {
-            ChatMessageContent message = new(AuthorRole.User, input);
-            await agent!.AddChatMessageAsync(thread.Id, message);
-            this.WriteAgentChatMessage(message);
-
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
-            {
-                this.WriteAgentChatMessage(response);
+                if (agentThread is not null)
+                {
+                    await agentThread.DeleteAsync();
+                }
             }
         }
     }

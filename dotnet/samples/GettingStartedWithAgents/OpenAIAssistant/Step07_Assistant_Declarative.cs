@@ -39,7 +39,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             """;
         OpenAIAssistantAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text) as OpenAIAssistantAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -65,7 +65,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
         var kernel = builder.Build();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, kernel) as OpenAIAssistantAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, kernel);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -84,7 +84,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             """;
         OpenAIAssistantAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as OpenAIAssistantAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -95,31 +95,30 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(OpenAIAssistantAgent agent, string input)
+    private async Task InvokeAgentAsync(KernelAgent agent, string input)
     {
-        // Create a thread for the agent conversation.
-        string threadId = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
-
+        AgentThread? agentThread = null;
         try
         {
-            await InvokeAgentAsync(input);
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+            {
+                agentThread = response.Thread;
+                WriteAgentChatMessage(response);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error invoking agent: {e.Message}");
         }
         finally
         {
-            await agent.Client.DeleteThreadAsync(threadId);
-            await agent.Client.DeleteAssistantAsync(agent.Id);
-        }
+            var openaiAgent = agent as OpenAIAssistantAgent;
+            Assert.NotNull(openaiAgent);
+            await openaiAgent.Client.DeleteAssistantAsync(openaiAgent.Id);
 
-        // Local function to invoke agent and display the response.
-        async Task InvokeAgentAsync(string input)
-        {
-            ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(threadId, message);
-            this.WriteAgentChatMessage(message);
-
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+            if (agentThread is not null)
             {
-                WriteAgentChatMessage(response);
+                await agentThread.DeleteAsync();
             }
         }
     }
