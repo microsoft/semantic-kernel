@@ -10,6 +10,7 @@ from .group_chat.agent_chat import AgentChat
 from .group_chat.agent_group_chat import AgentGroupChat
 from .open_ai.azure_assistant_agent import AzureAssistantAgent
 from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssistantAgent
+from .open_ai.openai_responses_agent import OpenAIResponsesAgent
 
 __all__ = [
     "Agent",
@@ -29,4 +30,5 @@ __all__ = [
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
     "OpenAIAssistantAgent",
+    "OpenAIResponsesAgent",
 ]

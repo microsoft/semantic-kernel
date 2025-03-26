@@ -70,8 +70,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
-class ResponseAgentThread(AgentThread):
-    """Response Agent Thread class."""
+class ResponsesAgentThread(AgentThread):
+    """OpenAI Responses Agent Thread class."""
 
     def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
         """Initialize the ChatCompletionAgent Thread.
@@ -136,11 +136,11 @@ class ResponseAgentThread(AgentThread):
 
 
 @experimental
-class OpenAIResponseChannel(AgentChannel):
-    """OpenAI Response Channel."""
+class ResponsesAgentChannel(AgentChannel):
+    """OpenAI Responses Agent Channel."""
 
     def __init__(self, client: AsyncOpenAI, thread_id: str) -> None:
-        """Initialize the OpenAI Response Channel."""
+        """Initialize the Responses Agent Channel."""
         self.client = client
         self.thread_id = thread_id
 
@@ -238,8 +238,8 @@ class OpenAIResponseChannel(AgentChannel):
 
 
 @experimental
-class OpenAIResponseAgent(Agent):
-    """OpenAI Response Agent class.
+class OpenAIResponsesAgent(Agent):
+    """OpenAI Responses Agent class.
 
     Provides the ability to interact with OpenAI's Responses API.
     """
@@ -259,7 +259,7 @@ class OpenAIResponseAgent(Agent):
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
     tools: list[ToolParam] = Field(default_factory=list)
 
-    channel_type: ClassVar[type[AgentChannel | None]] = OpenAIResponseChannel
+    channel_type: ClassVar[type[AgentChannel | None]] = ResponsesAgentChannel
 
     def __init__(
         self,
@@ -596,7 +596,7 @@ class OpenAIResponseAgent(Agent):
             Iterable[str]: The channel keys.
         """
         # Distinguish from other channel types.
-        yield f"{OpenAIResponseAgent.__name__}"
+        yield f"{OpenAIResponsesAgent.__name__}"
 
         # Distinguish between different agent IDs
         yield self.id
@@ -611,7 +611,7 @@ class OpenAIResponseAgent(Agent):
         """Create a channel."""
         thread = await self.client.beta.threads.create()
 
-        return OpenAIResponseChannel(client=self.client, thread_id=thread.id)
+        return ResponsesAgentChannel(client=self.client, thread_id=thread.id)
 
     # endregion
 
@@ -679,8 +679,8 @@ class OpenAIResponseAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ResponseAgentThread(),
-            expected_type=ResponseAgentThread,
+            construct_thread=lambda: ResponsesAgentThread(),
+            expected_type=ResponsesAgentThread,
         )
         assert thread.id is not None  # nosec
 
@@ -792,8 +792,8 @@ class OpenAIResponseAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ResponseAgentThread(),
-            expected_type=ResponseAgentThread,
+            construct_thread=lambda: ResponsesAgentThread(),
+            expected_type=ResponsesAgentThread,
         )
         assert thread.id is not None  # nosec
 
@@ -901,8 +901,8 @@ class OpenAIResponseAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ResponseAgentThread(),
-            expected_type=ResponseAgentThread,
+            construct_thread=lambda: ResponsesAgentThread(),
+            expected_type=ResponsesAgentThread,
         )
         assert thread.id is not None  # nosec
 

@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from openai.types.responses.response_text_config_param import ResponseTextConfigParam
     from openai.types.responses.tool_param import ToolParam
 
-    from semantic_kernel.agents.open_ai.openai_response_agent import OpenAIResponseAgent
+    from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent
     from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
@@ -71,7 +71,7 @@ class ResponseAgentThreadActions:
     async def invoke(
         cls: type[_T],
         *,
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         chat_history: "ChatHistory",
         arguments: KernelArguments | None = None,
         function_choice_behavior: "FunctionChoiceBehavior | None" = None,
@@ -222,7 +222,7 @@ class ResponseAgentThreadActions:
     @classmethod
     async def _get_response(
         cls: type[_T],
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         chat_history: "ChatHistory",
         merged_instructions: str | None = None,
         tools: Any | None = None,
@@ -244,7 +244,7 @@ class ResponseAgentThreadActions:
     async def invoke_stream(
         cls: type[_T],
         *,
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         chat_history: "ChatHistory",
         arguments: KernelArguments | None = None,
         function_choice_behavior: "FunctionChoiceBehavior | None" = None,
@@ -445,7 +445,7 @@ class ResponseAgentThreadActions:
     def _build_streaming_msg(
         cls: type[_T],
         *,
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         metadata: dict[str, str] | None,
         event: ResponseStreamEvent,
         items: list[Any],
@@ -617,7 +617,7 @@ class ResponseAgentThreadActions:
     @classmethod
     def _create_response_message_content(
         cls: type[_T],
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         response: Response,
     ) -> "ResponseMessageContent":
         """Create a chat message content object from a choice."""
@@ -635,7 +635,7 @@ class ResponseAgentThreadActions:
 
     @classmethod
     def _create_output_item_done(
-        cls: type[_T], agent: "OpenAIResponseAgent", response: ResponseOutputItem
+        cls: type[_T], agent: "OpenAIResponsesAgent", response: ResponseOutputItem
     ) -> "ResponseMessageContent":
         """Create a chat message content object from a choice."""
         metadata = {}
@@ -659,7 +659,7 @@ class ResponseAgentThreadActions:
     @classmethod
     def _create_streaming_response_message_content(
         cls: type[_T],
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         response_content_part: ResponseContentPartAddedEvent,
     ) -> "StreamingResponseMessageContent":
         """Create a streaming chat message content object from a choice."""
@@ -739,7 +739,7 @@ class ResponseAgentThreadActions:
     def _merge_options(
         cls: type[_T],
         *,
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         model: str | None = None,
         text: "ResponseTextConfigParam | None" = None,
         temperature: float | None = None,
@@ -781,7 +781,7 @@ class ResponseAgentThreadActions:
     @classmethod
     def _get_tools(
         cls: type[_T],
-        agent: "OpenAIResponseAgent",
+        agent: "OpenAIResponsesAgent",
         kernel: "Kernel",
         function_choice_behavior: "FunctionChoiceBehavior",
     ) -> list[dict[str, str]]:
