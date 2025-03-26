@@ -77,6 +77,26 @@ public sealed class BedrockAgent : KernelAgent
 
     #region InvokeAsync
 
+    /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="messages">The messages to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional instance of <see cref="BedrockAgentInvokeOptions"/> for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        BedrockAgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(messages, thread, options, cancellationToken);
+    }
+
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
@@ -125,6 +145,24 @@ public sealed class BedrockAgent : KernelAgent
             await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, bedrockThread);
         }
+    }
+
+    /// <summary>
+    /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
+    /// The provided thread is used to continue the conversation. If the thread is not provided and the session id is provided,
+    /// a new thread is created with the provided session id. If neither is provided, a new thread is created.
+    /// </summary>
+    /// <param name="invokeAgentRequest">The request to send to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameter of type <see cref="BedrockAgentInvokeOptions"/> for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        InvokeAgentRequest invokeAgentRequest,
+        AgentThread? thread = null,
+        BedrockAgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(invokeAgentRequest, thread, options, cancellationToken);
     }
 
     /// <summary>
@@ -271,6 +309,26 @@ public sealed class BedrockAgent : KernelAgent
 
     #region InvokeStreamingAsync
 
+    /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="messages">The messages to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameters of type <see cref="BedrockAgentInvokeOptions"/> for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        BedrockAgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeStreamingAsync(messages, thread, options, cancellationToken);
+    }
+
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
@@ -318,6 +376,25 @@ public sealed class BedrockAgent : KernelAgent
         {
             yield return new(result, bedrockThread);
         }
+    }
+
+    /// <summary>
+    /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
+    /// The provided thread is used to continue the conversation. If the thread is not provided and the session id is provided,
+    /// a new thread is created with the provided session id. If neither is provided, a new thread is created.
+    /// </summary>
+    /// <param name="invokeAgentRequest">The request to send to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameters of type <see cref="BedrockAgentInvokeOptions"/> for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="StreamingChatMessageContent"/>.</returns>
+    public IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        InvokeAgentRequest invokeAgentRequest,
+        AgentThread? thread = null,
+        BedrockAgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeStreamingAsync(invokeAgentRequest, thread, options, cancellationToken);
     }
 
     /// <summary>
