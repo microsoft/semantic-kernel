@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
@@ -36,6 +37,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
         Verify.NotNull(options);
 
         this.ModelName = options.ModelName;
+        this.OverrideInstructions = options.OverrideInstructions;
         this.AdditionalMessages = options.AdditionalMessages;
         this.EnableCodeInterpreter = options.EnableCodeInterpreter;
         this.EnableFileSearch = options.EnableFileSearch;
@@ -50,12 +52,18 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     }
 
     /// <summary>
-    /// Gets the AI model targeted by the agent.
+    /// Gets or sets the AI model targeted by the agent.
     /// </summary>
     public string? ModelName { get; init; }
 
     /// <summary>
-    /// Gets the additional messages to add to the thread.
+    /// Gets or sets the override instructions.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OverrideInstructions { get; init; }
+
+    /// <summary>
+    /// Gets or sets the additional messages to add to the thread.
     /// </summary>
     /// <remarks>
     /// Only supports messages with <see href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages">role = User or Assistant</see>.
@@ -63,32 +71,32 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     public IReadOnlyList<ChatMessageContent>? AdditionalMessages { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether the code_interpreter tool is enabled.
+    /// Gets or sets a value that indicates whether the code_interpreter tool is enabled.
     /// </summary>
     public bool EnableCodeInterpreter { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether the file_search tool is enabled.
+    /// Gets or sets a value that indicates whether the file_search tool is enabled.
     /// </summary>
     public bool EnableFileSearch { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether the JSON response format is enabled.
+    /// Gets or sets a value that indicates whether the JSON response format is enabled.
     /// </summary>
     public bool? EnableJsonResponse { get; init; }
 
     /// <summary>
-    /// Gets the maximum number of completion tokens that can be used over the course of the run.
+    /// Gets or sets the maximum number of completion tokens that can be used over the course of the run.
     /// </summary>
     public int? MaxCompletionTokens { get; init; }
 
     /// <summary>
-    /// Gets the maximum number of prompt tokens that can be used over the course of the run.
+    /// Gets or sets the maximum number of prompt tokens that can be used over the course of the run.
     /// </summary>
     public int? MaxPromptTokens { get; init; }
 
     /// <summary>
-    /// Gets a value that indicates whether the parallel function calling is enabled during tool use.
+    /// Gets or sets a value that indicates whether the parallel function calling is enabled during tool use.
     /// </summary>
     /// <value>
     /// <see langword="true"/> if parallel function calling is enabled during tool use; otherwise, <see langword="false"/>. The default is <see langword="true"/>.
@@ -96,17 +104,17 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     public bool? ParallelToolCallsEnabled { get; init; }
 
     /// <summary>
-    /// Gets the number of recent messages that the thread will be truncated to.
+    /// Gets or sets the number of recent messages that the thread will be truncated to.
     /// </summary>
     public int? TruncationMessageCount { get; init; }
 
     /// <summary>
-    /// Gets the sampling temperature to use, between 0 and 2.
+    /// Gets or sets the sampling temperature to use, between 0 and 2.
     /// </summary>
     public float? Temperature { get; init; }
 
     /// <summary>
-    /// Gets the probability mass of tokens whose results are considered in nucleus sampling.
+    /// Gets or sets the probability mass of tokens whose results are considered in nucleus sampling.
     /// </summary>
     /// <remarks>
     /// It's recommended to set this property or <see cref="Temperature"/>, but not both.
@@ -118,7 +126,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     public float? TopP { get; init; }
 
     /// <summary>
-    /// Gets a set of up to 16 key/value pairs that can be attached to an agent, used for
+    /// Gets or sets a set of up to 16 key/value pairs that can be attached to an agent, used for
     /// storing additional information about that object in a structured format.
     /// </summary>
     /// <remarks>
@@ -135,6 +143,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
         return new AzureAIInvocationOptions
         {
             ModelName = this.ModelName,
+            OverrideInstructions = this.OverrideInstructions,
             AdditionalInstructions = this.AdditionalInstructions,
             AdditionalMessages = this.AdditionalMessages,
             EnableCodeInterpreter = this.EnableCodeInterpreter,
