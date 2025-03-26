@@ -439,6 +439,70 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] messages = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi")).ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+        Assert.Single(messages[0].Message.Items);
+        Assert.IsType<TextContent>(messages[0].Message.Items[0]);
+        Assert.Equal("Hello, how can I help you?", messages[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeMultipleMessagesWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hello"),
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("How can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] messages = await agent.InvokeAsync(
+        [
+            new ChatMessageContent(AuthorRole.Assistant, "Hello"),
+            new ChatMessageContent(AuthorRole.User, "Hi")
+        ]).ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+        Assert.Single(messages[0].Message.Items);
+        Assert.IsType<TextContent>(messages[0].Message.Items[0]);
+        Assert.Equal("How can I help you?", messages[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// </summary>
+    [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeAsync()
     {
         // Arrange

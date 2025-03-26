@@ -372,7 +372,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             thread,
             options is null ?
                 null :
-                options is OpenAIAssistantAgentInvokeOptions ? options : new OpenAIAssistantAgentInvokeOptions(options),
+                options is OpenAIAssistantAgentInvokeOptions openAIAssistantAgentInvokeOptions ? openAIAssistantAgentInvokeOptions : new OpenAIAssistantAgentInvokeOptions(options),
             cancellationToken);
     }
 
@@ -498,7 +498,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             thread,
             options is null ?
                 null :
-                options is OpenAIAssistantAgentInvokeOptions ? options : new OpenAIAssistantAgentInvokeOptions(options),
+                options is OpenAIAssistantAgentInvokeOptions openAIAssistantAgentInvokeOptions ? openAIAssistantAgentInvokeOptions : new OpenAIAssistantAgentInvokeOptions(options),
             cancellationToken);
     }
 
