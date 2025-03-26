@@ -31,7 +31,7 @@
     <PackageVersion Include="Google.Apis.Auth" Version="1.69.0" />
     <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.1.25171.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="7.5.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
