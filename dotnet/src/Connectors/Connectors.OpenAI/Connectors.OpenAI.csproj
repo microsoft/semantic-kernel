@@ -5,7 +5,6 @@
     <AssemblyName>Microsoft.SemanticKernel.Connectors.OpenAI</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);NU5104;SKEXP0001,SKEXP0010</NoWarn>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>

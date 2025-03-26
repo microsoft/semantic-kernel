@@ -178,3 +178,10 @@ def bedrock_agent_function_call_response():
             },
         ],
     }
+
+
+@pytest.fixture
+def bedrock_agent_create_session_response():
+    return {
+        "sessionId": "test_session_id",
+    }

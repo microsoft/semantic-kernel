@@ -108,6 +108,7 @@ public sealed class OpenAIAssistantAgentTests
     /// function result contents.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentFunctionCallResultAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -135,6 +136,7 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Azure OpenAI services.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentTokensAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -167,6 +169,7 @@ public sealed class OpenAIAssistantAgentTests
     /// function result contents.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentAdditionalMessagesAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -216,6 +219,7 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Open AI services.
     /// </summary>
     [Fact]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentStreamingFileSearchAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
