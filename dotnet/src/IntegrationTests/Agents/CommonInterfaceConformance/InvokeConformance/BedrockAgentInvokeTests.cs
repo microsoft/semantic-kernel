@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -38,6 +39,13 @@ public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixtu
     public override Task InvokeWithoutThreadCreatesThreadAsync()
     {
         return base.InvokeWithoutThreadCreatesThreadAsync();
+    }
+
+    [Fact(Skip = "This test is for manual verification.")]
+    public override Task InvokeWithoutMessageCreatesThreadAsync()
+    {
+        // The Bedrock agent does not support invoking without a message.
+        return Assert.ThrowsAsync<InvalidOperationException>(async () => await base.InvokeWithoutThreadCreatesThreadAsync());
     }
 
     [Fact(Skip = "This test is for manual verification.")]

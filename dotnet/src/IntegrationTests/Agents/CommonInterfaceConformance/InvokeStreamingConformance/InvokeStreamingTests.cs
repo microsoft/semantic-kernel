@@ -63,6 +63,25 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
     }
 
     [RetryFact(3, 10_000)]
+    public virtual async Task InvokeStreamingAsyncWithoutMessageCreatesThreadAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+
+        // Act
+        var asyncResults = agent.InvokeStreamingAsync([]);
+        var results = await asyncResults.ToListAsync();
+
+        // Assert
+        var firstResult = results.First();
+        var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
+        Assert.NotNull(firstResult.Thread);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(firstResult.Thread);
+    }
+
+    [RetryFact(3, 10_000)]
     public virtual async Task ConversationMaintainsHistoryAsync()
     {
         // Arrange
