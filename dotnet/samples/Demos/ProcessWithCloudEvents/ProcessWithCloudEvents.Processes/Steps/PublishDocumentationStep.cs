@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Processes.Steps;
 
 public class PublishDocumentationStep : KernelProcessStep
 {
     [KernelFunction]
-    public string OnPublishDocumentation(string document, bool userApproval)
+    public DocumentInfo OnPublishDocumentation(DocumentInfo document, bool userApproval)
     {
-        string publishedDoc = $"DOCUMENT {document} is Approved";
-        return publishedDoc;
+        Console.WriteLine($"Document {document.Title} has been approved by the user");
+        return document;
     }
 }

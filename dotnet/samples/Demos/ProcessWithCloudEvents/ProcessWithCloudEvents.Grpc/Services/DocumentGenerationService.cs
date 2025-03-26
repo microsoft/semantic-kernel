@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.Threading;
 using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
 using ProcessWithCloudEvents.Processes;
+using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Grpc.Services;
 
@@ -35,7 +36,8 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
         var processContext = await process.StartAsync(new KernelProcessEvent()
         {
             Id = DocumentGenerationProcess.DocGenerationEvents.StartDocumentGeneration,
-            Data = $"Title = {request.Title}, UserInput = {request.UserDescription}, Content = {request.Content}",
+            // The object ProductInfo is sent because this is the type the GatherProductInfoStep is expecting
+            Data = new ProductInfo() { Title = request.Title, Content = request.Content, UserInput = request.UserDescription },
         },
         processId,
         this._actorProxyFactory);

@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Text.Json;
 using Grpc.Net.Client;
 using Microsoft.SemanticKernel;
 using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
 using ProcessWithCloudEvents.Processes;
+using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Grpc.Clients;
 
@@ -35,25 +37,32 @@ public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
             switch (externalTopicEvent)
             {
                 case DocumentGenerationProcess.DocGenerationTopics.RequestUserReview:
-                    await this._grpcClient.RequestUserReviewDocumentationFromProcessAsync(new()
+                    var requestDocument = JsonSerializer.Deserialize<DocumentInfo>(eventData.EventData!.ToString()!);
+                    if (requestDocument != null)
                     {
-                        Title = "Document for user review",
-                        AssistantMessage = "",
-                        Content = eventData.EventData?.ToString(),
-                        ProcessData = new() { ProcessId = eventData.ProcessId }
-                    });
-
+                        await this._grpcClient.RequestUserReviewDocumentationFromProcessAsync(new()
+                        {
+                            Title = requestDocument.Title,
+                            AssistantMessage = "Document ready for user revision. Approve or reject document",
+                            Content = requestDocument.Content,
+                            ProcessData = new() { ProcessId = eventData.ProcessId }
+                        });
+                    }
                     return;
 
                 case DocumentGenerationProcess.DocGenerationTopics.PublishDocumentation:
-                    await this._grpcClient.PublishDocumentationAsync(new()
+                    var publishedDocument = JsonSerializer.Deserialize<DocumentInfo>(eventData.EventData!.ToString()!);
+                    if (publishedDocument != null)
                     {
-                        ProcessData = new() { ProcessId = eventData.ProcessId }
-                    });
+                        await this._grpcClient.PublishDocumentationAsync(new()
+                        {
+                            Title = publishedDocument.Title,
+                            AssistantMessage = "Published Document Ready",
+                            Content = publishedDocument.Content,
+                            ProcessData = new() { ProcessId = eventData.ProcessId }
+                        });
+                    }
                     return;
-
-                default:
-                    break;
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Processes.Steps;
 
@@ -13,16 +14,16 @@ public class ProofReadDocumentationStep : KernelProcessStep
     }
 
     [KernelFunction]
-    public async Task OnProofReadDocumentAsync(KernelProcessStepContext context, string document)
+    public async Task OnProofReadDocumentAsync(KernelProcessStepContext context, DocumentInfo document)
     {
-        if (document.StartsWith("Generated", System.StringComparison.InvariantCulture))
+        if (document.Title.StartsWith("Generated", System.StringComparison.InvariantCulture))
         {
-            // Simulating document had errors and needs user input
-            await context.EmitEventAsync(OutputEvents.DocumentationApproved, document, KernelProcessEventVisibility.Public);
+            // Simulating document had errors and needs corrections
+            await context.EmitEventAsync(OutputEvents.DocumentationRejected, document, KernelProcessEventVisibility.Public);
         }
         else
         {
-            // User provided suggestions
+            // Document has been revised
             await context.EmitEventAsync(OutputEvents.DocumentationApproved, document, KernelProcessEventVisibility.Public);
         }
     }

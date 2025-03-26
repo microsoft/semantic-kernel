@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Processes.Steps;
 
+/// <summary>
+/// Step that generates document content
+/// </summary>
 public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentationState>
 {
     /// <summary>
@@ -11,7 +15,13 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// </summary>
     public static class Functions
     {
+        /// <summary>
+        /// Genereta Doc function name
+        /// </summary>
         public const string GenerateDocs = nameof(GenerateDocs);
+        /// <summary>
+        /// Apply Suggestions function name
+        /// </summary>
         public const string ApplySuggestions = nameof(ApplySuggestions);
     }
 
@@ -20,11 +30,15 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// </summary>
     public static class OutputEvents
     {
+        /// <summary>
+        /// Document Generated output event
+        /// </summary>
         public const string DocumentationGenerated = nameof(DocumentationGenerated);
     }
 
     internal GenerateDocumentationState? _state = new();
 
+    /// <inheritdoc/>
     public override ValueTask ActivateAsync(KernelProcessStepState<GenerateDocumentationState> state)
     {
         this._state = state.State;
@@ -32,9 +46,15 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     }
 
     [KernelFunction(Functions.GenerateDocs)]
-    public async Task OnGenerateDocumentationAsync(KernelProcessStepContext context, string content)
+    public async Task OnGenerateDocumentationAsync(KernelProcessStepContext context, ProductInfo content)
     {
-        var generatedContent = $"Generated {content}";
+        DocumentInfo generatedContent = new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = $"Generated document - {content.Title}",
+            Content = $"Generated {content.Content}",
+        };
+
         this._state!.LastGeneratedDocument = generatedContent;
 
         await context.EmitEventAsync(OutputEvents.DocumentationGenerated, generatedContent);
@@ -43,14 +63,27 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     [KernelFunction(Functions.ApplySuggestions)]
     public async Task ApplySuggestionsAsync(KernelProcessStepContext context, string suggestions)
     {
-        var updatedContent = $"{suggestions} + {this._state?.LastGeneratedDocument}";
+        DocumentInfo updatedContent = new()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = $"Revised - {this._state?.LastGeneratedDocument.Title}",
+            Content = $"{suggestions} + {this._state?.LastGeneratedDocument.Content}",
+        };
+
         this._state!.LastGeneratedDocument = updatedContent;
 
         await context.EmitEventAsync(OutputEvents.DocumentationGenerated, updatedContent);
     }
 }
 
+/// <summary>
+/// State of <see cref="GenerateDocumentationStep"/>
+/// State must be saved since data is shared across functions
+/// </summary>
 public sealed class GenerateDocumentationState
 {
-    public string LastGeneratedDocument = string.Empty;
+    /// <summary>
+    /// Last Document generated data
+    /// </summary>
+    public DocumentInfo LastGeneratedDocument { get; set; } = new();
 }

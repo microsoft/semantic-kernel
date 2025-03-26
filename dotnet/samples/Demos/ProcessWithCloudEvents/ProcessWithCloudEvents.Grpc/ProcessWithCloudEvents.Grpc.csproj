@@ -35,4 +35,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Media\" />
+  </ItemGroup>
+
 </Project>
