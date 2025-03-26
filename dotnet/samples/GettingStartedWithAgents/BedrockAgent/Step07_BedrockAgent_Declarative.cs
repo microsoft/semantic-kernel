@@ -165,10 +165,12 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// </summary>
     private async Task InvokeAgentAsync(KernelAgent agent, string input)
     {
+        AgentThread? agentThread = null;
         try
         {
             await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
             {
+                agentThread = response.Thread;
                 WriteAgentChatMessage(response);
             }
         }
@@ -181,6 +183,11 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             var bedrockAgent = agent as BedrockAgent;
             Assert.NotNull(bedrockAgent);
             await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
         }
     }
 

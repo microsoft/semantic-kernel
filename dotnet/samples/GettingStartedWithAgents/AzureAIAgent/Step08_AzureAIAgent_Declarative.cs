@@ -6,6 +6,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Plugins;
+using Agent = Microsoft.SemanticKernel.Agents.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -342,7 +343,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(KernelAgent agent, string input, bool? deleteAgent = true)
+    private async Task InvokeAgentAsync(Agent agent, string input, bool? deleteAgent = true)
     {
         Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
         try
