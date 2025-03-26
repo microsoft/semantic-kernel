@@ -323,7 +323,7 @@ def dataclass_vector_data_model(
                 property_type=vector_property_type,
             ),
         ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+        id: Annotated[str, VectorStoreRecordKeyField(property_type="str")] = field(default_factory=lambda: str(uuid4()))
         content: Annotated[
             str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
         ] = "content1"
@@ -364,10 +364,11 @@ def data_model_definition(
 ) -> VectorStoreRecordDefinition:
     return VectorStoreRecordDefinition(
         fields={
-            "id": VectorStoreRecordKeyField(),
+            "id": VectorStoreRecordKeyField(property_type="str"),
             "content": VectorStoreRecordDataField(
                 has_embedding=True,
                 embedding_property_name="vector",
+                property_type="str",
             ),
             "vector": VectorStoreRecordVectorField(
                 dimensions=dimensions,
