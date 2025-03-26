@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -37,7 +38,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text) as BedrockAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -61,7 +62,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as BedrockAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that are less then the value of 101?");
     }
@@ -105,7 +106,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<WeatherPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as BedrockAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Seattle and what is the weather forecast in Seattle?");
     }
@@ -132,7 +133,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as BedrockAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
 
         await InvokeAgentAsync(agent!, "What is Semantic Kernel?");
     }
@@ -162,29 +163,30 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(BedrockAgent agent, string input)
+    private async Task InvokeAgentAsync(KernelAgent agent, string input)
     {
-        // Create a thread for the agent conversation.
-        string sessionId = BedrockAgent.CreateSessionId();
-
+        AgentThread? agentThread = null;
         try
         {
-            await InvokeAgentAsync(input);
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+            {
+                agentThread = response.Thread;
+                WriteAgentChatMessage(response);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error invoking agent: {e.Message}");
         }
         finally
         {
-            await agent.Client.DeleteAgentAsync(new() { AgentId = agent.Id });
-        }
+            var bedrockAgent = agent as BedrockAgent;
+            Assert.NotNull(bedrockAgent);
+            await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
 
-        // Local function to invoke agent and display the response.
-        async Task InvokeAgentAsync(string input)
-        {
-            await foreach (ChatMessageContent response in agent.InvokeAsync(sessionId, input, null))
+            if (agentThread is not null)
             {
-                if (response.Content != null)
-                {
-                    this.Output.WriteLine(response.Content);
-                }
+                await agentThread.DeleteAsync();
             }
         }
     }

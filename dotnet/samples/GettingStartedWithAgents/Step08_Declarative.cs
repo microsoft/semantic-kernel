@@ -26,9 +26,12 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel) as ChatCompletionAgent;
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
 
-        await InvokeAgentAsync(agent!, "Cats and Dogs");
+        await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
+        {
+            this.WriteAgentChatMessage(response);
+        }
     }
 
     [Fact]
@@ -55,9 +58,12 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel) as ChatCompletionAgent;
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
 
-        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
+        await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the special soup and how much does it cost?")))
+        {
+            this.WriteAgentChatMessage(response);
+        }
     }
 
     [Fact]
@@ -105,24 +111,4 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             this.WriteAgentChatMessage(response);
         }
     }
-
-    #region private
-    /// <summary>
-    /// Invoke the <see cref="ChatCompletionAgent"/> with the user input.
-    /// </summary>
-    private async Task InvokeAgentAsync(ChatCompletionAgent agent, string input)
-    {
-        ChatHistory chat = [];
-        ChatMessageContent message = new(AuthorRole.User, input);
-        chat.Add(message);
-        this.WriteAgentChatMessage(message);
-
-        await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
-        {
-            chat.Add(response);
-
-            this.WriteAgentChatMessage(response);
-        }
-    }
-    #endregion
 }
