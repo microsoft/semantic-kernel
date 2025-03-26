@@ -3,86 +3,41 @@
 import logging
 from enum import Enum
 from html import unescape
-from typing import Annotated, Any, ClassVar, Literal, overload
+from typing import Any, ClassVar, Literal, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from defusedxml import ElementTree
 from pydantic import Field
 
-from semantic_kernel.contents.annotation_content import AnnotationContent
-from semantic_kernel.contents.audio_content import AudioContent
-from semantic_kernel.contents.binary_content import BinaryContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.const import (
-    ANNOTATION_CONTENT_TAG,
-    DISCRIMINATOR_FIELD,
-    FILE_REFERENCE_CONTENT_TAG,
-    FUNCTION_CALL_CONTENT_TAG,
-    FUNCTION_RESULT_CONTENT_TAG,
-    IMAGE_CONTENT_TAG,
-    RESPONSE_MESSAGE_CONTENT_TAG,
-    STREAMING_ANNOTATION_CONTENT_TAG,
-    STREAMING_FILE_REFERENCE_CONTENT_TAG,
-    TEXT_CONTENT_TAG,
-    ContentTypes,
-)
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, TAG_CONTENT_MAP, ChatMessageContent
+from semantic_kernel.contents.const import RESPONSE_MESSAGE_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
-from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.contents.utils.status import Status
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
-TAG_CONTENT_MAP = {
-    ANNOTATION_CONTENT_TAG: AnnotationContent,
-    TEXT_CONTENT_TAG: TextContent,
-    FILE_REFERENCE_CONTENT_TAG: FileReferenceContent,
-    FUNCTION_CALL_CONTENT_TAG: FunctionCallContent,
-    FUNCTION_RESULT_CONTENT_TAG: FunctionResultContent,
-    IMAGE_CONTENT_TAG: ImageContent,
-    STREAMING_FILE_REFERENCE_CONTENT_TAG: StreamingFileReferenceContent,
-    STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
-}
-
-CMC_ITEM_TYPES = Annotated[
-    AnnotationContent
-    | BinaryContent
-    | ImageContent
-    | TextContent
-    | FunctionResultContent
-    | FunctionCallContent
-    | FileReferenceContent
-    | StreamingAnnotationContent
-    | StreamingFileReferenceContent
-    | AudioContent,
-    Field(discriminator=DISCRIMINATOR_FIELD),
-]
-
-
 logger = logging.getLogger(__name__)
 
 
-class ResponseMessageContent(ChatMessageContent):
-    """This is the class for response message response content.
+class ResponsesMessageContent(ChatMessageContent):
+    """This is the class for responses message response content.
 
     All response completion services should return an instance of this class as response.
     Or they can implement their own subclass of this class and return an instance.
 
     Args:
-        inner_content: Optional[Any] - The inner content of the response,
+        inner_content: The inner content of the response,
             this should hold all the information from the response so even
             when not creating a subclass a developer can leverage the full thing.
-        ai_model_id: Optional[str] - The id of the AI model that generated this response.
-        metadata: Dict[str, Any] - Any metadata that should be attached to the response.
-        role: ChatRole - The role of the chat message.
-        content: Optional[str] - The text of the response.
-        encoding: Optional[str] - The encoding of the text.
+        ai_model_id: The id of the AI model that generated this response.
+        metadata: Any metadata that should be attached to the response.
+        role: The role of the chat message.
+        content: The text of the response.
+        encoding: The encoding of the text.
+        status: The status of the response.
 
     Methods:
         __str__: Returns the content of the response.
@@ -139,7 +94,7 @@ class ResponseMessageContent(ChatMessageContent):
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
     ):
-        """Create a ChatMessageContent instance.
+        """Create a ResponsesMessageContent instance.
 
         Args:
             role: AuthorRole - The role of the chat message.
@@ -200,7 +155,7 @@ class ResponseMessageContent(ChatMessageContent):
         """Set the content of the response."""
         if not value:
             logger.warning(
-                "Setting empty content on ChatMessageContent does not work, "
+                "Setting empty content on ResponsesMessageContent does not work, "
                 "you can do this through the underlying items if needed, ignoring."
             )
             return
@@ -245,7 +200,7 @@ class ResponseMessageContent(ChatMessageContent):
         return root
 
     @classmethod
-    def from_element(cls, element: Element) -> "ResponseMessageContent":
+    def from_element(cls, element: Element) -> "ResponsesMessageContent":
         """Create a new instance of ResponseMessageContent from an XML element.
 
         Args:
@@ -273,11 +228,11 @@ class ResponseMessageContent(ChatMessageContent):
             kwargs["content"] = "".join(item.text for item in items)  # type: ignore
         else:
             kwargs["items"] = items
-        if "choice_index" in kwargs and cls is ResponseMessageContent:
+        if "choice_index" in kwargs and cls is ResponsesMessageContent:
             logger.info(
                 "Seems like you are trying to create a ResponseMessageContent, "
-                "use StreamingChatMessageContent.from_element instead, ignoring that field "
-                "and creating a ChatMessageContent instance."
+                "use StreamingResponsesMessageContent.from_element instead, ignoring that field "
+                "and creating a ResponsesMessageContent instance."
             )
             kwargs.pop("choice_index")
         return cls(**kwargs)

@@ -14,13 +14,19 @@ else:
 
 
 from openai import AsyncOpenAI
-from openai.lib._parsing._completions import type_to_response_format_param
+from openai.lib._parsing._responses import type_to_text_format_param
 from openai.types.responses.computer_tool_param import ComputerToolParam
 from openai.types.responses.file_search_tool_param import FileSearchToolParam, RankingOptions
+from openai.types.responses.response_format_text_config_param import ResponseFormatText
+from openai.types.responses.response_format_text_json_schema_config_param import (
+    ResponseFormatTextJSONSchemaConfigParam,
+)
+from openai.types.responses.response_text_config_param import ResponseTextConfigParam
 from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
 from openai.types.shared_params.comparison_filter import ComparisonFilter
 from openai.types.shared_params.compound_filter import CompoundFilter
+from openai.types.shared_params.response_format_json_object import ResponseFormatJSONObject
 from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
@@ -28,11 +34,10 @@ from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
-from semantic_kernel.agents.open_ai.response_agent_thread_actions import ResponseAgentThreadActions
+from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
-from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -59,10 +64,11 @@ from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semanti
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
-    from openai.types.responses.response_text_config_param import ResponseTextConfigParam
 
     from semantic_kernel.kernel import Kernel
     from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+
+ResponseFormatUnion = ResponseFormatText | ResponseFormatTextJSONSchemaConfigParam | ResponseFormatJSONObject
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -73,32 +79,74 @@ logger: logging.Logger = logging.getLogger(__name__)
 class ResponsesAgentThread(AgentThread):
     """OpenAI Responses Agent Thread class."""
 
-    def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
+    def __init__(
+        self,
+        client: AsyncOpenAI,
+        chat_history: ChatHistory | None = None,
+        thread_id: str | None = None,
+        enable_store: bool | None = None,
+    ) -> None:
         """Initialize the ChatCompletionAgent Thread.
 
         Args:
+            client: The OpenAI client.
             chat_history: The chat history for the thread. If None, a new ChatHistory instance will be created.
             thread_id: The ID of the thread. If None, a new thread will be created.
+            enable_store: Whether to enable storing the thread. If None, it will be set to False.
         """
-        super().__init__()
-
-        self._chat_history = chat_history or ChatHistory()
-        self._thread_id = thread_id or f"thread_{uuid.uuid4().hex}"
+        self._client = client
+        self._chat_history = ChatHistory() if chat_history is None else chat_history
+        self._id = thread_id or f"thread_{uuid.uuid4().hex}"
         self._is_deleted = False
+        self._enable_store = enable_store or False
+        self._response_id = None
 
     def __len__(self) -> int:
         """Returns the length of the chat history."""
         return len(self._chat_history)
 
+    @property
+    def response_id(self) -> str | None:
+        """Get the response ID."""
+        return self._response_id
+
+    @response_id.setter
+    def response_id(self, value: str | None) -> None:
+        """Set the response ID."""
+        self._response_id = value
+
+    @property
+    def store_enabled(self) -> bool:
+        """Check if the store is enabled."""
+        return self._enable_store
+
+    @override
+    @property
+    def id(self) -> str | None:
+        """Get the thread ID."""
+        return self.response_id
+
     @override
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
-        return self._thread_id
+        if self._is_deleted:
+            raise AgentThreadOperationException(
+                "Cannot create a new thread, since the current thread has been deleted."
+            )
+        self._enable_store = True
+
+        # The ID isn't available until after a message is sent
+        return ""
 
     @override
     async def _delete(self) -> None:
         """Ends the current thread."""
+        if self._is_deleted:
+            return
+        if self.response_id is None:
+            raise AgentThreadOperationException("Cannot delete the thread, since it has not been created.")
         self._chat_history.clear()
+        self._is_deleted = True
 
     @override
     async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
@@ -106,20 +154,26 @@ class ResponsesAgentThread(AgentThread):
         if isinstance(new_message, str):
             new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
 
-        if (
-            not new_message.metadata
-            or "thread_id" not in new_message.metadata
-            or new_message.metadata["thread_id"] != self._id
-        ):
+        if not self.response_id:
             self._chat_history.add_message(new_message)
 
-    async def get_messages(self) -> ChatHistory:
+    async def get_messages(
+        self, limit: int | None = None, sort_order: Literal["asc", "desc"] | None = "desc"
+    ) -> AsyncIterable[ChatMessageContent]:
         """Retrieve the current chat history."""
         if self._is_deleted:
             raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
-        if self._id is None:
-            await self.create()
-        return self._chat_history
+        if self.store_enabled and self.response_id is not None:
+            async for message in ResponsesAgentThreadActions.get_messages(
+                self._client,
+                self.response_id,
+                limit=limit,
+                sort_order=sort_order,
+            ):
+                yield message
+        else:
+            for message in self._chat_history.messages:
+                yield message
 
     async def reduce(self) -> ChatHistory | None:
         """Reduce the chat history to a smaller size."""
@@ -252,20 +306,22 @@ class OpenAIResponsesAgent(Agent):
         default_factory=lambda: FunctionChoiceBehavior.Auto()
     )
     instruction_role: str = Field(default="developer")
-    metadata: dict[str, str] | None = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     temperature: float | None = Field(default=None)
     top_p: float | None = Field(default=None)
     plugins: list[Any] = Field(default_factory=list)
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
+    store_enabled: bool = Field(default=True, description="Whether to store responses.")
+    text: dict[str, Any] | None = Field(default_factory=dict)
     tools: list[ToolParam] = Field(default_factory=list)
 
     channel_type: ClassVar[type[AgentChannel | None]] = ResponsesAgentChannel
 
     def __init__(
         self,
+        *,
         ai_model_id: str,
         client: AsyncOpenAI,
-        *,
         arguments: KernelArguments | None = None,
         description: str | None = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
@@ -278,7 +334,9 @@ class OpenAIResponsesAgent(Agent):
         plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object] | None = None,
         polling_options: RunPollingOptions | None = None,
         prompt_template_config: "PromptTemplateConfig | None" = None,
+        store_enabled: bool | None = None,
         temperature: float | None = None,
+        text: ResponseTextConfigParam | None = None,
         tools: list[ToolParam] | None = None,
         top_p: float | None = None,
         **kwargs: Any,
@@ -302,7 +360,9 @@ class OpenAIResponsesAgent(Agent):
                 the plugins take precedence and are added to the kernel by default.
             polling_options: The polling options.
             prompt_template_config: The prompt template configuration.
+            store_enabled: Whether to enable storing the responses from the agent.
             temperature: The temperature for the agent.
+            text: The text/response format configuration for the agent.
             tools: The tools to use with the agent.
             top_p: The top p value for the agent.
             kwargs: Additional keyword arguments.
@@ -345,8 +405,12 @@ class OpenAIResponsesAgent(Agent):
                 args["instructions"] = prompt_template_config.template
         if polling_options is not None:
             args["polling_options"] = polling_options
+        if store_enabled is not None:
+            args["store_enabled"] = store_enabled
         if temperature is not None:
             args["temperature"] = temperature
+        if text is not None:
+            args["text"] = text
         if tools:
             args["tools"] = tools
         if top_p is not None:
@@ -396,7 +460,7 @@ class OpenAIResponsesAgent(Agent):
         if not openai_settings.api_key:
             raise AgentInitializationException("The OpenAI API key is required.")
 
-        if not openai_settings.response_model_id:
+        if not openai_settings.responses_model_id:
             raise AgentInitializationException("The OpenAI Response model ID is required.")
 
         merged_headers = dict(copy(default_headers)) if default_headers else {}
@@ -413,7 +477,7 @@ class OpenAIResponsesAgent(Agent):
             **kwargs,
         )
 
-        return client, openai_settings.response_model_id
+        return client, openai_settings.responses_model_id
 
     # endregion
 
@@ -496,33 +560,19 @@ class OpenAIResponsesAgent(Agent):
         return tool
 
     @staticmethod
-    def configure_computer_use_tool(
-        display_height: float,
-        display_width: float,
-        environment: Literal["mac", "windows", "ubuntu", "browser"],
-    ) -> ComputerToolParam:
-        """Generate the tool definition for computer use.
+    def configure_computer_use_tool() -> ComputerToolParam:
+        """Generate the tool definition for computer use."""
+        raise NotImplementedError("Computer use tool is not implemented yet.")
 
-        Args:
-            display_height: The height of the computer display.
-            display_width: The width of the computer display.
-            environment: The type of computer environment to control.
-
-        Returns:
-            A ComputerToolParam dictionary with any passed-in parameters.
-        """
-        tool: ComputerToolParam = {
-            "type": "computer_use_preview",
-            "display_height": display_height,
-            "display_width": display_width,
-            "environment": environment,
-        }
-
-        return tool
+    @staticmethod
+    def _generate_structured_output_response_format_schema(name: str, schema: dict) -> dict:
+        """Mock function to simulate formatting the final schema with 'strict' = True."""
+        return {"type": "json_schema", "name": name, "schema": schema, "strict": True}
 
     @staticmethod
     def configure_response_format(
-        response_format: dict[Literal["type"], Literal["text", "json_object"]]
+        response_format: ResponseFormatUnion
+        | dict[Literal["type"] | Literal["text", "json_object"]]
         | dict[str, Any]
         | type[BaseModel]
         | type
@@ -530,12 +580,22 @@ class OpenAIResponsesAgent(Agent):
     ) -> dict | None:
         """Form the response format.
 
+            {
+              "text": {
+                "format": {
+                  "name": "<some_name>",
+                  "type": "json_schema",
+                  "schema": { ... },
+                  "strict": true
+                }
+              }
+            }
+
         "auto" is the default value. Not configuring the response format will result in the model
         outputting text.
 
         Setting to `{ "type": "json_schema", "json_schema": {...} }` enables Structured
-        Outputs which ensures the model will match your supplied JSON schema. Learn more
-        in the [Structured Outputs guide](https://platform.openai.com/docs/guides/structured-outputs).
+        Outputs which ensures the model will match your supplied JSON schema.
 
         Setting to `{ "type": "json_object" }` enables JSON mode, which ensures the
         message the model generates is valid JSON, as long as the prompt contains "JSON."
@@ -544,46 +604,133 @@ class OpenAIResponsesAgent(Agent):
             response_format: The response format.
 
         Returns:
-            The response format.
+            The final dict containing `text.format` if JSON-based, or None if "auto".
         """
-        if response_format is None or response_format == "auto":
-            return None
-
-        configured_response_format = None
         if isinstance(response_format, dict):
-            resp_type = response_format.get("type")
+            resp_type = response_format.get("type", None)
+
             if resp_type == "json_object":
-                configured_response_format = {"type": "json_object"}
-            elif resp_type == "json_schema":
-                json_schema = response_format.get("json_schema")  # type: ignore
-                if not isinstance(json_schema, dict):
+                json_object_format = response_format  # type: ignore
+                if "name" not in json_object_format:
                     raise AgentInitializationException(
-                        "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
+                        "json_object format must specify 'name' if your usage requires it."
                     )
-                # We're assuming the response_format has already been provided in the correct format
-                configured_response_format = response_format  # type: ignore
+                configured_format = {"type": "json_object", "name": json_object_format["name"]}  # type: ignore
+
+            elif resp_type == "json_schema":
+                json_schema_format = response_format  # type: ignore
+                if "schema" not in json_schema_format:
+                    raise AgentInitializationException("json_schema format dict is missing the 'schema' key.")
+                name = json_schema_format.get("name", "DefaultSchemaName")
+                strict = json_schema_format.get("strict", True)
+                configured_format = {
+                    "type": "json_schema",
+                    "name": name,
+                    "schema": json_schema_format["schema"],  # type: ignore
+                    "strict": strict,
+                }
+
+            elif resp_type == "text":
+                configured_format = {"type": "text"}
+
             else:
                 raise AgentInitializationException(
-                    f"Encountered unexpected response_format type: {resp_type}. Allowed types are `json_object` "
-                    " and `json_schema`."
+                    f"Encountered unexpected response_format type: {resp_type}. "
+                    "Allowed types are `json_object`, `json_schema`, `text`."
                 )
         elif isinstance(response_format, type):
-            # If it's a type, differentiate based on whether it's a BaseModel subclass
             if issubclass(response_format, BaseModel):
-                configured_response_format = type_to_response_format_param(response_format)  # type: ignore
+                interim_format = type_to_text_format_param(response_format)
+                if interim_format["type"] != "json_schema":
+                    raise AgentInitializationException("Only 'json_schema' is allowed from that helper.")
+                embedded = interim_format["json_schema"]  # type: ignore
+                configured_format = {
+                    "type": "json_schema",
+                    "name": embedded.get("name", response_format.__name__),
+                    "schema": embedded["schema"],
+                    "strict": embedded.get("strict", True),
+                }
             else:
+                # Build a schema from a plain Python class
                 generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
-                assert generated_schema is not None  # nosec
-                configured_response_format = generate_structured_output_response_format_schema(
-                    name=response_format.__name__, schema=generated_schema
-                )
+                if generated_schema is None:
+                    raise AgentInitializationException(f"Could not generate schema for the type {response_format}.")
+                configured_format = {
+                    "type": "json_schema",
+                    "name": response_format.__name__,
+                    "schema": generated_schema,
+                    "strict": True,
+                }
         else:
-            # If it's not a dict or a type, throw an exception
             raise AgentInitializationException(
-                "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
+                "response_format must be a dict, a subclass of BaseModel, a Python class/type, or None"
             )
 
-        return configured_response_format  # type: ignore
+        return {"format": configured_format}
+
+        # if response_format is None or response_format == "auto":
+        #     return None
+
+        # configured_format: dict[str, Any] = {}
+
+        # # 1) If given a dict:
+        # if isinstance(response_format, dict):
+        #     resp_type = response_format.get("type")
+        #     if resp_type == "json_object":
+        #         # Minimal validation. For the JSON object scenario,
+        #         # we only need to ensure the 'type' is 'json_object'
+        #         configured_format = {
+        #             "type": "json_object",
+        #             "name": response_format.get("name", "DefaultJsonObjectName"),
+        #         }
+        #     elif resp_type == "json_schema":
+        #         json_schema = response_format.get("json_schema")
+        #         if not isinstance(json_schema, dict):
+        #             raise AgentInitializationException(
+        #                 "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
+        #             )
+        #         # Make sure we have a "name" set
+        #         name = response_format.get("name", "DefaultSchemaName")
+        #         # 'strict' can default to True if absent
+        #         strict = response_format.get("strict", True)
+
+        #         configured_format = {
+        #             "type": "json_schema",
+        #             "name": name,
+        #             "schema": json_schema,
+        #             "strict": strict,
+        #         }
+        #     else:
+        #         raise AgentInitializationException(
+        #             f"Encountered unexpected response_format type: {resp_type}. "
+        #             "Allowed types are `json_object` and `json_schema`."
+        #         )
+
+        # # 2) If given a type (class or pydantic model):
+        # elif isinstance(response_format, type):
+        #     # If it's a BaseModel subclass, introspect for schema
+        #     if issubclass(response_format, BaseModel):
+        #         interim_format = type_to_text_format_param(response_format)  # type: ignore
+        #         configured_format = {
+        #             "type": interim_format["type"],
+        #             "name": interim_format["json_schema"]["name"],
+        #             "schema": interim_format["json_schema"]["schema"],
+        #             "strict": interim_format["json_schema"].get("strict", True),
+        #         }
+        #     else:
+        #         # Build a schema from a plain Python class
+        #         generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
+        #         if generated_schema is None:
+        #             raise AgentInitializationException(f"Could not generate schema for the type {response_format}.")
+        #         configured_format = OpenAIResponsesAgent._generate_structured_output_response_format_schema(
+        #             name=response_format.__name__, schema=generated_schema
+        #         )
+        # else:
+        #     raise AgentInitializationException(
+        #         "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
+        #     )
+
+        # return {"format": configured_format}
 
     # endregion
 
@@ -616,6 +763,27 @@ class OpenAIResponsesAgent(Agent):
     # endregion
 
     # region Invocation Methods
+
+    def _prepare_input_message(
+        self,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+    ) -> ChatHistory:
+        """Prepare the input message for the agent.
+
+        Args:
+            messages: The messages to send to the agent.
+
+        Returns:
+            The chat history with the input messages.
+        """
+        if isinstance(messages, (str, ChatMessageContent)):
+            messages = [messages]
+
+        normalized_messages = [
+            ChatMessageContent(role=AuthorRole.USER, content=msg) if isinstance(msg, str) else msg for msg in messages
+        ]
+
+        return ChatHistory(messages=normalized_messages)
 
     @trace_agent_get_response
     @override
@@ -679,12 +847,11 @@ class OpenAIResponsesAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ResponsesAgentThread(),
+            construct_thread=lambda: ResponsesAgentThread(client=self.client, enable_store=self.store_enabled),
             expected_type=ResponsesAgentThread,
         )
-        assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
+        chat_history = self._prepare_input_message(messages)
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -712,11 +879,14 @@ class OpenAIResponsesAgent(Agent):
         response_level_params = {k: v for k, v in response_level_params.items() if v is not None}
 
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
+        assert function_choice_behavior is not None  # nosec
 
         response_messages: list[ChatMessageContent] = []
-        async for is_visible, response in ResponseAgentThreadActions.invoke(
+        async for is_visible, response in ResponsesAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
+            thread=thread,
+            store_enabled=self.store_enabled,
             kernel=kernel,
             arguments=arguments,
             function_choice_behavior=function_choice_behavior,
@@ -792,12 +962,11 @@ class OpenAIResponsesAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ResponsesAgentThread(),
+            construct_thread=lambda: ResponsesAgentThread(client=self.client, enable_store=self.store_enabled),
             expected_type=ResponsesAgentThread,
         )
-        assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
+        chat_history = self._prepare_input_message(messages)
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -824,11 +993,13 @@ class OpenAIResponsesAgent(Agent):
         response_level_params = {k: v for k, v in response_level_params.items() if v is not None}
 
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
+        assert function_choice_behavior is not None  # nosec
 
-        async for is_visible, response in ResponseAgentThreadActions.invoke(
+        async for is_visible, response in ResponsesAgentThreadActions.invoke(
             agent=self,
             chat_history=chat_history,
             thread=thread,
+            store_enabled=self.store_enabled,
             kernel=kernel,
             arguments=arguments,
             function_choice_behavior=function_choice_behavior,
@@ -901,12 +1072,11 @@ class OpenAIResponsesAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: ResponsesAgentThread(),
+            construct_thread=lambda: ResponsesAgentThread(client=self.client, enable_store=self.store_enabled),
             expected_type=ResponsesAgentThread,
         )
-        assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
+        chat_history = self._prepare_input_message(messages)
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)
@@ -933,11 +1103,13 @@ class OpenAIResponsesAgent(Agent):
         response_level_params = {k: v for k, v in response_level_params.items() if v is not None}
 
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
+        assert function_choice_behavior is not None  # nosec
 
-        async for response in ResponseAgentThreadActions.invoke_stream(
+        async for response in ResponsesAgentThreadActions.invoke_stream(
             agent=self,
             chat_history=chat_history,
             thread=thread,
+            store_enabled=self.store_enabled,
             kernel=kernel,
             arguments=arguments,
             output_messages=output_messages,

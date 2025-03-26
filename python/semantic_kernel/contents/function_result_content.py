@@ -18,7 +18,7 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
-    from semantic_kernel.contents.response_message_content import ResponseMessageContent
+    from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
     from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
     from semantic_kernel.functions.function_result import FunctionResult
@@ -123,7 +123,7 @@ class FunctionResultContent(KernelContent):
     ) -> _T:
         """Create an instance from a FunctionCallContent and a result."""
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
-        from semantic_kernel.contents.response_message_content import ResponseMessageContent
+        from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
         from semantic_kernel.functions.function_result import FunctionResult
 
         metadata.update(function_call_content.metadata or {})
@@ -133,7 +133,7 @@ class FunctionResultContent(KernelContent):
             result = result.value
         if isinstance(result, TextContent):
             res = result.text
-        elif isinstance(result, (ChatMessageContent, ResponseMessageContent)):
+        elif isinstance(result, (ChatMessageContent, ResponsesMessageContent)):
             if isinstance(result.items[0], TextContent):
                 res = result.items[0].text
             elif isinstance(result.items[0], ImageContent):
@@ -165,11 +165,11 @@ class FunctionResultContent(KernelContent):
 
         return StreamingChatMessageContent(role=AuthorRole.TOOL, choice_index=0, items=[self])
 
-    def to_response_message_content(self) -> "ResponseMessageContent":
+    def to_response_message_content(self) -> "ResponsesMessageContent":
         """Convert the instance to a ChatMessageContent."""
-        from semantic_kernel.contents.response_message_content import ResponseMessageContent
+        from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
 
-        return ResponseMessageContent(role=AuthorRole.TOOL, items=[self])
+        return ResponsesMessageContent(role=AuthorRole.TOOL, items=[self])
 
     def to_streaming_response_message_content(self) -> "StreamingResponseMessageContent":
         """Convert the instance to a StreamingChatMessageContent."""

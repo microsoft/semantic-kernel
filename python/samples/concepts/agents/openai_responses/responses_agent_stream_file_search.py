@@ -1,12 +1,14 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
+import os
 
-from semantic_kernel.agents import OpenAIResponseAgent, ResponseAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.contents import StreamingResponseMessageContent
 
 """
-The following sample demonstrates how to create an OpenAI assistant using either
-Azure OpenAI or OpenAI. The sample shows how to have the assistant answrer
-questions about the world.
+The following sample demonstrates how to create an OpenAI Responses Agent.
+The sample shows how to have the agent answer questions about the provided
+document with streaming responses.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
@@ -18,36 +20,52 @@ conversation history.
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Find me news articles about the latest technology trends.",
+    "Who is the youngest employee?",
+    "Who works in sales?",
+    "I have a customer request, who can help me?",
 ]
 
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponseAgent.setup_resources()
+    client, model = OpenAIResponsesAgent.setup_resources()
 
-    web_search_tool = OpenAIResponseAgent.configure_web_search_tool()
+    pdf_file_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
+    )
+
+    with open(pdf_file_path, "rb") as file:
+        file = await client.files.create(file=file, purpose="assistants")
+
+    vector_store = await client.vector_stores.create(
+        name="step4_assistant_file_search",
+        file_ids=[file.id],
+    )
+
+    file_search_tool = OpenAIResponsesAgent.configure_file_search_tool(vector_store.id)
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponseAgent(
+    agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
-        instructions="Answer questions from the user.",
-        name="Host",
-        tools=[web_search_tool],
+        instructions="Find answers to the user's questions in the provided file.",
+        name="FileSearch",
+        tools=[file_search_tool],
     )
 
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponseAgentThread = None
+    thread: ResponsesAgentThread = None
 
+    response_chunks: list[StreamingResponseMessageContent] = []
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")
         # 4. Invoke the agent for the current message and print the response
         first_chunk = True
         async for response in agent.invoke_stream(messages=user_input, thread=thread):
             thread = response.thread
+            response_chunks.append(response)
             if first_chunk:
                 print(f"# {response.name}: ", end="", flush=True)
                 first_chunk = False

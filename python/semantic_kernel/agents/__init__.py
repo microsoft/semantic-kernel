@@ -20,7 +20,9 @@ _AGENTS = {
     "AzureAssistantAgent": ".open_ai.azure_assistant_agent",
     "AssistantAgentThread": ".open_ai.open_ai_assistant_agent",
     "OpenAIAssistantAgent": ".open_ai.open_ai_assistant_agent",
-    "OpenAIResponsesAgent": ".open_ai.open_ai_responses_agent",
+    "OpenAIResponsesAgent": ".open_ai.openai_responses_agent",
+    "AzureResponsesAgent": ".open_ai.azure_responses_agent",
+    "ResponsesAgentThread": ".open_ai.openai_responses_agent",
 }
 
 

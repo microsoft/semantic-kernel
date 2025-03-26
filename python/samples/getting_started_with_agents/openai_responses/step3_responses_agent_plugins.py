@@ -2,13 +2,12 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import OpenAIResponseAgent, ResponseAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
 from semantic_kernel.functions import kernel_function
 
 """
-The following sample demonstrates how to create an OpenAI assistant using either
-Azure OpenAI or OpenAI. The sample shows how to have the assistant answrer
-questions about the world.
+The following sample demonstrates how to create an OpenAI Responses Agent.
+The sample shows how to have the agent answer questions about the sample menu.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
@@ -49,10 +48,10 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponseAgent.setup_resources()
+    client, model = OpenAIResponsesAgent.setup_resources()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponseAgent(
+    agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
         instructions="Answer questions about the world in one sentence.",
@@ -63,7 +62,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponseAgentThread = None
+    thread: ResponsesAgentThread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")

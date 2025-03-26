@@ -2,12 +2,12 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import OpenAIResponseAgent, ResponseAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
 
 """
-The following sample demonstrates how to create an OpenAI assistant using either
-Azure OpenAI or OpenAI. The sample shows how to have the assistant answrer
-questions about the world.
+The following sample demonstrates how to create an OpenAI Responses Agent.
+The sample shows how to have the agent answer questions about the provided
+document.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
@@ -27,7 +27,7 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponseAgent.setup_resources()
+    client, model = OpenAIResponsesAgent.setup_resources()
 
     pdf_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
@@ -41,10 +41,10 @@ async def main():
         file_ids=[file.id],
     )
 
-    file_search_tool = OpenAIResponseAgent.configure_file_search_tool(vector_store.id)
+    file_search_tool = OpenAIResponsesAgent.configure_file_search_tool(vector_store.id)
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponseAgent(
+    agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
         instructions="Find answers to the user's questions in the provided file.",
@@ -55,7 +55,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponseAgentThread = None
+    thread: ResponsesAgentThread = None
 
     try:
         for user_input in USER_INPUTS:

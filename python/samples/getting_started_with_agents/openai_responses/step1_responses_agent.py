@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents import OpenAIResponseAgent
+from semantic_kernel.agents import OpenAIResponsesAgent
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -23,10 +23,10 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponseAgent.setup_resources()
+    client, model = OpenAIResponsesAgent.setup_resources()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponseAgent(
+    agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
         instructions="Answer questions about the world in one sentence.",

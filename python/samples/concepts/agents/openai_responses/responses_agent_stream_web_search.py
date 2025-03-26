@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents import OpenAIResponseAgent, ResponseAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
 
 """
-The following sample demonstrates how to create an OpenAI assistant using either
-Azure OpenAI or OpenAI. The sample shows how to have the assistant answrer
-questions about the world.
+The following sample demonstrates how to create an OpenAI Responses Agent.
+The sample shows how to have the agent answer questions using the web search
+preview tool with streaming responses.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
@@ -18,35 +18,29 @@ conversation history.
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Who is the youngest employee?",
-    "Who works in sales?",
-    "I have a customer request, who can help me?",
+    "Find me news articles about the latest technology trends.",
 ]
 
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponseAgent.setup_resources()
+    client, model = OpenAIResponsesAgent.setup_resources()
 
-    computer_use_tool = OpenAIResponseAgent.configure_computer_use_tool(
-        display_height=1080,
-        display_width=1920,
-        environment="mac",
-    )
+    web_search_tool = OpenAIResponsesAgent.configure_web_search_tool()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponseAgent(
+    agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
-        instructions="Leverage the computer use tool to answer questions about the world.",
-        name="ComputerUse",
-        tools=[computer_use_tool],
+        instructions="Answer questions from the user.",
+        name="Host",
+        tools=[web_search_tool],
     )
 
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponseAgentThread = None
+    thread: ResponsesAgentThread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")

@@ -26,10 +26,11 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     merge_function_results,
 )
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.response_message_content import ResponseMessageContent
+from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
 from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -43,23 +44,24 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
+    from openai import AsyncOpenAI
     from openai.types.responses.response_text_config_param import ResponseTextConfigParam
     from openai.types.responses.tool_param import ToolParam
 
-    from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent
+    from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
     from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
 
-_T = TypeVar("_T", bound="ResponseAgentThreadActions")
+_T = TypeVar("_T", bound="ResponsesAgentThreadActions")
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
-class ResponseAgentThreadActions:
+class ResponsesAgentThreadActions:
     """Response Agent Thread Actions class."""
 
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
@@ -73,8 +75,10 @@ class ResponseAgentThreadActions:
         *,
         agent: "OpenAIResponsesAgent",
         chat_history: "ChatHistory",
+        thread: "ResponsesAgentThread",
+        store_enabled: bool,
+        function_choice_behavior: "FunctionChoiceBehavior",
         arguments: KernelArguments | None = None,
-        function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         include: list[
             Literal[
                 "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
@@ -100,6 +104,8 @@ class ResponseAgentThreadActions:
         Args:
             agent: The assistant agent.
             chat_history: The Chat History to use for input.
+            thread: The thread to use for the response.
+            store_enabled: Whether to store the response.
             arguments: The kernel arguments.
             kernel: The kernel.
             function_choice_behavior: The function choice behavior.
@@ -148,14 +154,30 @@ class ResponseAgentThreadActions:
 
         response_options = {k: v for k, v in response_options.items() if v is not None}
 
+        override_history = chat_history
+        if not store_enabled:
+            # Use the thread chat history
+            override_history = ChatHistory(messages=[*thread._chat_history.messages, *chat_history.messages])
+
+        previous_response_id = None
+        if thread.store_enabled and thread.response_id:
+            previous_response_id = thread.response_id
+
         for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
             response = await cls._get_response(
                 agent=agent,
-                chat_history=chat_history,
+                chat_history=override_history,
                 merged_instructions=merged_instructions,
+                previous_response_id=previous_response_id,
+                store_output_enabled=store_enabled,
                 tools=tools,
                 response_options=response_options,
             )
+            if not isinstance(response, Response):
+                raise AgentInvokeException("Response is not of type Response")
+
+            if store_enabled:
+                thread.response_id = response.id
 
             while response.status != "completed":
                 # handle a timeout here...
@@ -176,10 +198,10 @@ class ResponseAgentThreadActions:
             # Check if tool calls are required
             function_calls = cls._get_tool_calls_from_output(response.output)
             if (fc_count := len(function_calls)) == 0:
-                yield True, cls._create_response_message_content(agent, response)
+                yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)
                 break
 
-            response_message = cls._create_response_message_content(agent, response)
+            response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)
             chat_history.add_message(message=response_message)
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
@@ -207,38 +229,18 @@ class ResponseAgentThreadActions:
                 for msg in merge_function_results(chat_history.messages[-len(results) :]):
                     yield True, msg
         else:
-            pass
             # Do a final call, without function calling when the max has been reached.
             function_choice_behavior = FunctionChoiceBehavior.NoneInvoke()
             response = await cls._get_response(
                 agent=agent,
-                chat_history=chat_history,
+                chat_history=override_history,
                 merged_instructions=merged_instructions,
+                previous_response_id=previous_response_id,
+                store_output_enabled=store_enabled,
                 tools=tools,
                 response_options=response_options,
             )
-            yield True, cls._create_response_message_content(agent, response)
-
-    @classmethod
-    async def _get_response(
-        cls: type[_T],
-        agent: "OpenAIResponsesAgent",
-        chat_history: "ChatHistory",
-        merged_instructions: str | None = None,
-        tools: Any | None = None,
-        response_options: dict | None = None,
-        stream: bool = False,
-    ) -> Response | AsyncStream[ResponseStreamEvent]:
-        response: Response = await agent.client.responses.create(
-            input=cls._prepare_chat_history_for_request(chat_history),
-            instructions=merged_instructions or agent.instructions,
-            tools=tools,  # type: ignore
-            stream=stream,
-            **response_options,
-        )
-        if response is None:
-            raise AgentInvokeException("Response is None")
-        return response
+            yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)
 
     @classmethod
     async def invoke_stream(
@@ -246,8 +248,10 @@ class ResponseAgentThreadActions:
         *,
         agent: "OpenAIResponsesAgent",
         chat_history: "ChatHistory",
+        thread: "ResponsesAgentThread",
+        store_enabled: bool,
+        function_choice_behavior: "FunctionChoiceBehavior",
         arguments: KernelArguments | None = None,
-        function_choice_behavior: "FunctionChoiceBehavior | None" = None,
         include: list[
             Literal[
                 "file_search_call.results", "message.input_image.image_url", "computer_call_output.output.image_url"
@@ -274,6 +278,8 @@ class ResponseAgentThreadActions:
         Args:
             agent: The assistant agent.
             chat_history: The Chat History to use for input.
+            thread: The thread to use for the response.
+            store_enabled: Whether to store the response.
             arguments: The kernel arguments.
             kernel: The kernel.
             function_choice_behavior: The function choice behavior.
@@ -323,11 +329,22 @@ class ResponseAgentThreadActions:
 
         response_options = {k: v for k, v in response_options.items() if v is not None}
 
+        override_history = chat_history
+        if not store_enabled:
+            # Use the thread chat history
+            override_history = ChatHistory(messages=[*thread._chat_history.messages, *chat_history.messages])
+
+        previous_response_id = None
+        if thread.store_enabled and thread.response_id:
+            previous_response_id = thread.response_id
+
         for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
             response: AsyncStream[ResponseStreamEvent] = await cls._get_response(
                 agent=agent,
-                chat_history=chat_history,
+                chat_history=override_history,
                 merged_instructions=merged_instructions,
+                previous_response_id=previous_response_id,
+                store_output_enabled=store_enabled,
                 tools=tools,
                 response_options=response_options,
                 stream=True,
@@ -442,6 +459,74 @@ class ResponseAgentThreadActions:
     # region Helper Methods
 
     @classmethod
+    async def _get_response(
+        cls: type[_T],
+        agent: "OpenAIResponsesAgent",
+        chat_history: "ChatHistory",
+        merged_instructions: str | None = None,
+        previous_response_id: str | None = None,
+        store_output_enabled: bool | None = None,
+        tools: Any | None = None,
+        response_options: dict | None = None,
+        stream: bool = False,
+    ) -> Response | AsyncStream[ResponseStreamEvent]:
+        response: Response = await agent.client.responses.create(
+            input=cls._prepare_chat_history_for_request(chat_history),
+            instructions=merged_instructions or agent.instructions,
+            previous_response_id=previous_response_id,
+            store=store_output_enabled,
+            tools=tools,  # type: ignore
+            stream=stream,
+            **response_options,
+        )
+        if response is None:
+            raise AgentInvokeException("Response is None")
+        return response
+
+    @classmethod
+    async def get_messages(
+        cls: type[_T],
+        client: "AsyncOpenAI",
+        response_id: str,
+        limit: int | None = None,
+        sort_order: Literal["asc", "desc"] | None = None,
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Get messages from a thread.
+
+        Args:
+            client: The client to use to get the messages.
+            response_id: The ID of the response to get the messages from.
+            limit: The maximum number of messages to get.
+            sort_order: The order to sort the messages in.
+
+        Yields:
+            An AsyncIterale of ChatMessageContent that includes the response messages.
+        """
+        last_id: str | None = None
+
+        while True:
+            responses = await client.responses.input_items.list(
+                response_id=response_id,
+                limit=limit,  # type: ignore
+                order=sort_order,
+                after=last_id,
+            )
+
+            if not responses:
+                break
+
+            for response in responses.data:
+                last_id = response.id
+
+                content = cls._create_response_message_content(response)
+
+                if len(content.items) > 0:
+                    yield content
+
+            if not responses.has_more:
+                break
+
+    @classmethod
     def _build_streaming_msg(
         cls: type[_T],
         *,
@@ -474,7 +559,7 @@ class ResponseAgentThreadActions:
     @classmethod
     def _merge_streaming_function_results(
         cls: type[_T],
-        messages: list["ResponseMessageContent | StreamingResponseMessageContent"],
+        messages: list["ResponsesMessageContent | StreamingResponseMessageContent"],
         name: str,
         ai_model_id: str | None = None,
         function_invoke_attempt: int | None = None,
@@ -520,7 +605,7 @@ class ResponseAgentThreadActions:
         or StreamingFileReferenceContent, and always map the role to either user,
         assistant, or developer.
         """
-        response_inputs = []  # type: ignore
+        response_inputs: list[Any] = []  # type: ignore
         for message in chat_history.messages:
             allowed_items = [
                 i
@@ -537,7 +622,7 @@ class ResponseAgentThreadActions:
             if not allowed_items:
                 continue
 
-            filtered_msg = ResponseMessageContent(role=message.role, items=allowed_items)
+            filtered_msg = ResponsesMessageContent(role=message.role, items=allowed_items)
             original_role = message.role
             if original_role == AuthorRole.TOOL:
                 original_role = AuthorRole.ASSISTANT
@@ -617,17 +702,19 @@ class ResponseAgentThreadActions:
     @classmethod
     def _create_response_message_content(
         cls: type[_T],
-        agent: "OpenAIResponsesAgent",
         response: Response,
-    ) -> "ResponseMessageContent":
+        ai_model_id: str | None = None,
+        name: str | None = None,
+    ) -> "ResponsesMessageContent":
         """Create a chat message content object from a choice."""
         metadata = cls._get_metadata_from_response(response)
         items = cls._collect_items_from_output(response.output)
         role_str = response.output[0].role if (response.output and hasattr(response.output[0], "role")) else "assistant"
-        return ResponseMessageContent(
+        return ResponsesMessageContent(
             inner_content=response,
-            ai_model_id=agent.ai_model_id,
+            ai_model_id=ai_model_id,
             metadata=metadata,
+            name=name,
             role=AuthorRole(role_str),
             items=items,
             status=Status(response.status),
@@ -636,10 +723,10 @@ class ResponseAgentThreadActions:
     @classmethod
     def _create_output_item_done(
         cls: type[_T], agent: "OpenAIResponsesAgent", response: ResponseOutputItem
-    ) -> "ResponseMessageContent":
+    ) -> "ResponsesMessageContent":
         """Create a chat message content object from a choice."""
-        metadata = {}
-        items = []
+        metadata: dict[str, Any] = {}
+        items: list[CMC_ITEM_TYPES] = []
         match response:
             case ResponseOutputMessage():
                 items.extend(cls._collect_items_from_output([response]))
@@ -647,7 +734,7 @@ class ResponseAgentThreadActions:
         # Determine role (if none is found, default to 'assistant')
         role_str = response.role if (response and hasattr(response, "role")) else "assistant"
 
-        return ResponseMessageContent(
+        return ResponsesMessageContent(
             inner_content=response,
             ai_model_id=agent.ai_model_id,
             metadata=metadata,
@@ -698,7 +785,7 @@ class ResponseAgentThreadActions:
     @classmethod
     def _collect_text_and_annotations(cls: type[_T], content_list: list[Any]) -> list[Any]:
         """Collect text content and annotation content from a single message's content."""
-        collected = []
+        collected: list[TextContent | AnnotationContent] = []
         for content in content_list:
             if isinstance(content, ResponseOutputText):
                 collected.append(TextContent(text=content.text))
@@ -753,7 +840,7 @@ class ResponseAgentThreadActions:
         """
         return {
             "model": model if model is not None else agent.ai_model_id,
-            "text": text if text is not None else None,
+            "text": text if text is not None else agent.text,
             "temperature": temperature if temperature is not None else agent.temperature,
             "top_p": top_p if top_p is not None else agent.top_p,
             "metadata": metadata if metadata is not None else agent.metadata,
