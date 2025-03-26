@@ -223,7 +223,8 @@ class Agent(KernelBaseModel, ABC):
                 messages = [messages]
 
             response_item = await self.get_response(
-                messages=messages, instructions_override=instructions_override if instructions_override else None
+                messages=messages,  # type: ignore
+                instructions_override=instructions_override if instructions_override else None,
             )
             return response_item.content
 
