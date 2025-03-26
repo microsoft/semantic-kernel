@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -13,7 +14,8 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
     internal PostgresFilterTranslator(
         IReadOnlyDictionary<string, string> storagePropertyNames,
         LambdaExpression lambdaExpression,
-        int startParamIndex) : base(storagePropertyNames, lambdaExpression, sql: null)
+        int startParamIndex,
+        StringBuilder? sql = null) : base(storagePropertyNames, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
     }
