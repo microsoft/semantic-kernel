@@ -367,7 +367,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
 
                 if (agentThread is not null)
                 {
-                    await azureaiAgent.Client.DeleteThreadAsync(agentThread.Id);
+                    await agentThread.DeleteAsync();
                 }
             }
         }
