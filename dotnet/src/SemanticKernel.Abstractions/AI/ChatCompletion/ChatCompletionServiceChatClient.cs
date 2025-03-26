@@ -19,7 +19,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     private readonly IChatCompletionService _chatCompletionService;
 
     /// <summary>Initializes the <see cref="ChatCompletionServiceChatClient"/> for <paramref name="chatCompletionService"/>.</summary>
-    public ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
+    internal ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
     {
         Verify.NotNull(chatCompletionService);
 
@@ -39,7 +39,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     {
         Verify.NotNull(messages);
 
-        ChatHistory chatHistory = new(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+        ChatHistory chatHistory = new(messages.Select(m => m.ToChatMessageContent()));
         int preCount = chatHistory.Count;
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
@@ -58,10 +58,10 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         // Then add the result message.
         for (int i = preCount; i < chatHistory.Count; i++)
         {
-            chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(chatHistory[i]));
+            chatResponse.Messages.Add(chatHistory[i].ToChatMessage());
         }
 
-        chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(response));
+        chatResponse.Messages.Add(response.ToChatMessage());
 
         return chatResponse;
     }
@@ -72,12 +72,12 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         Verify.NotNull(messages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            new ChatHistory(messages.Select(m => m.ToChatMessageContent())),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
         {
-            yield return ToStreamingChatCompletionUpdate(update);
+            yield return update.ToChatResponseUpdate();
         }
     }
 
@@ -204,46 +204,5 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         }
 
         return settings;
-    }
-
-    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
-    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    private static ChatResponseUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
-    {
-        ChatResponseUpdate update = new()
-        {
-            AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
-            AuthorName = content.AuthorName,
-            ModelId = content.ModelId,
-            RawRepresentation = content,
-            Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
-        };
-
-        foreach (var item in content.Items)
-        {
-            AIContent? aiContent = null;
-            switch (item)
-            {
-                case Microsoft.SemanticKernel.StreamingTextContent tc:
-                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
-                    break;
-
-                case Microsoft.SemanticKernel.StreamingFunctionCallUpdateContent fcc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
-                        fcc.CallId ?? string.Empty,
-                        fcc.Name ?? string.Empty,
-                        fcc.Arguments is not null ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
-                    break;
-            }
-
-            if (aiContent is not null)
-            {
-                aiContent.RawRepresentation = content;
-
-                update.Contents.Add(aiContent);
-            }
-        }
-
-        return update;
     }
 }
