@@ -60,9 +60,16 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
         await context.EmitEventAsync(OutputEvents.DocumentationGenerated, generatedContent);
     }
 
+    /// <summary>
+    /// Function that integrates suggestion into document content
+    /// </summary>
+    /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
+    /// <param name="suggestions">suggestions to be integrated into the document content</param>
+    /// <returns></returns>
     [KernelFunction(Functions.ApplySuggestions)]
     public async Task ApplySuggestionsAsync(KernelProcessStepContext context, string suggestions)
     {
+        // Simulating integrating suggestions into document content
         DocumentInfo updatedContent = new()
         {
             Id = Guid.NewGuid().ToString(),
