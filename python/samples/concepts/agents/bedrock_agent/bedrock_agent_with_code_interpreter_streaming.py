@@ -42,7 +42,7 @@ async def main():
         # Invoke the agent
         print("Response: ")
         async for response in bedrock_agent.invoke_stream(
-            input_text=ASK,
+            messages=ASK,
             thread=thread,
         ):
             print(response, end="")

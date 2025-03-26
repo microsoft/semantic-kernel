@@ -173,7 +173,7 @@ async def test_invoke_inserts_placeholders_when_history_needs_to_alternate(mock_
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant 1"))
 
     # Mock agent.invoke to return an async generator
-    async def mock_invoke(input_text: str, thread: AgentThread, sessionState=None, **kwargs):
+    async def mock_invoke(messages: str, thread: AgentThread, sessionState=None, **kwargs):
         # We just yield one message as if the agent responded
         yield AgentResponseItem(
             message=ChatMessageContent(role=AuthorRole.ASSISTANT, content="Mock Agent Response"),
@@ -231,7 +231,7 @@ async def test_invoke_stream_appends_response_message(mock_channel, mock_agent):
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.USER, content="Last user message"))
 
     async def mock_invoke_stream(
-        input_text: str, thread: AgentThread, sessionState=None, **kwargs
+        messages: str, thread: AgentThread, sessionState=None, **kwargs
     ) -> AsyncIterable[StreamingChatMessageContent]:
         yield AgentResponseItem(
             message=StreamingChatMessageContent(
