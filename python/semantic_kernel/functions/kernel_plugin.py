@@ -238,6 +238,7 @@ class KernelPlugin(KernelBaseModel):
             candidates = plugin_instance.items()
         else:
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.isfunction))  # type: ignore
         # Read every method from the plugin instance
         functions = [
             KernelFunctionFromMethod(method=candidate, plugin_name=plugin_name)

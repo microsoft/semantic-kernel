@@ -44,7 +44,7 @@ async def main():
     try:
         # Invoke the agent
         async for response in bedrock_agent.invoke(
-            input_text="What is the weather in Seattle?",
+            messages="What is the weather in Seattle?",
             thread=thread,
         ):
             print(f"Response:\n{response}")
