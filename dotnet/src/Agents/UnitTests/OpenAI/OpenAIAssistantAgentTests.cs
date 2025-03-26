@@ -436,7 +436,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeWithThreadAsync()
@@ -465,7 +465,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeMultipleMessagesWithThreadAsync()
@@ -500,7 +500,43 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// Verify direct streaming invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeStreamingWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<StreamingChatMessageContent>[] messages = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi")).ToArrayAsync();
+
+        // Assert
+        Assert.Equal(3, messages.Length);
+        var combinedMessage = string.Concat(messages.Select(x => x.Message.Content));
+        Assert.Equal("Hello, how can I help you?", combinedMessage);
+    }
+
+    /// <summary>
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeAsync()
