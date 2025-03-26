@@ -2,8 +2,8 @@ apps:
 - appDirPath: samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Grpc
   appID: processwithcloudevents-grpc
   appPort: 58641
-  appProtocol: h2c
   command:
   - dotnet
   - run
+  appProtocol: h2c
 version: 1

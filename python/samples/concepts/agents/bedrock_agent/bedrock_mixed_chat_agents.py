@@ -2,11 +2,9 @@
 
 import asyncio
 
-from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+from semantic_kernel.agents import AgentGroupChat, BedrockAgent, ChatCompletionAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.kernel import Kernel
 
@@ -77,7 +75,7 @@ async def main():
 
     input = "A slogan for a new line of electric cars."
 
-    await chat.add_chat_message(ChatMessageContent(role=AuthorRole.USER, content=input))
+    await chat.add_chat_message(message=input)
     print(f"# {AuthorRole.USER}: '{input}'")
 
     try:

@@ -3,11 +3,11 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, OpenAIAssistantAgent
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
-The following sample demonstrates how to create an OpenAI         
+The following sample demonstrates how to create an OpenAI
 assistant using OpenAI configuration, and leverage the
 multi-modal content types to have the assistant describe images
 and answer questions about them. This sample uses non-streaming responses.
@@ -38,8 +38,10 @@ async def main():
         definition=definition,
     )
 
-    # 5. Create a new thread on the OpenAI assistant service
-    thread = await agent.client.beta.threads.create()
+    # 5. Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     # 6. Define the user messages with the image content to simulate the conversation
     user_messages = {
@@ -70,16 +72,15 @@ async def main():
 
     try:
         for message in user_messages:
-            # 7. Add the user input to the chat thread
-            await agent.add_chat_message(thread_id=thread.id, message=message)
             print(f"# User: {str(message)}")  # type: ignore
             # 8. Invoke the agent for the current thread and print the response
-            async for content in agent.invoke(thread_id=thread.id):
-                print(f"# Agent: {content.content}\n")
+            async for response in agent.invoke(messages=message, thread=thread):
+                print(f"# Agent: {response}\n")
+                thread = response.thread
     finally:
         # 9. Clean up the resources
         await client.files.delete(file.id)
-        await agent.client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
 

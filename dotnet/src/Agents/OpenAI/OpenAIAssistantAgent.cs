@@ -336,7 +336,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <returns>An asynchronous enumeration of messages.</returns>
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        return AssistantThreadActions.GetMessagesAsync(this.Client, threadId, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
     }
 
     /// <summary>
@@ -360,6 +360,43 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         return this.IsDeleted;
     }
 
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages);
+
+        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+            messages,
+            thread,
+            () => new OpenAIAssistantAgentThread(this.Client),
+            cancellationToken).ConfigureAwait(false);
+
+        // Create options that include the additional instructions.
+        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
+        {
+            AdditionalInstructions = options?.AdditionalInstructions,
+        };
+
+        // Invoke the Agent with the thread that we already added our message to.
+        var invokeResults = this.InvokeAsync(
+            openAIAssistantAgentThread.Id!,
+            internalOptions,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
+            cancellationToken);
+
+        // Notify the thread of new messages and return them to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, result, cancellationToken).ConfigureAwait(false);
+            yield return new(result, openAIAssistantAgentThread);
+        }
+    }
+
     /// <summary>
     /// Invokes the assistant on the specified thread.
     /// </summary>
@@ -371,6 +408,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    [Obsolete("Use InvokeAsync with AgentThread instead.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         KernelArguments? arguments = null,
@@ -414,6 +452,50 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                     yield return message;
                 }
             }
+        }
+    }
+
+    /// <inheritdoc/>
+    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(messages);
+
+        var openAIAssistantAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
+            messages,
+            thread,
+            () => new OpenAIAssistantAgentThread(this.Client),
+            cancellationToken).ConfigureAwait(false);
+
+        // Create options that include the additional instructions.
+        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
+        {
+            AdditionalInstructions = options?.AdditionalInstructions,
+        };
+
+        // Invoke the Agent with the thread that we already added our message to.
+        var newMessagesReceiver = new ChatHistory();
+        var invokeResults = this.InvokeStreamingAsync(
+            openAIAssistantAgentThread.Id!,
+            internalOptions,
+            this.MergeArguments(options?.KernelArguments),
+            options?.Kernel ?? this.Kernel,
+            newMessagesReceiver,
+            cancellationToken);
+
+        // Return the chunks to the caller.
+        await foreach (var result in invokeResults.ConfigureAwait(false))
+        {
+            yield return new(result, openAIAssistantAgentThread);
+        }
+
+        // Notify the thread of any new messages that were assembled from the streaming response.
+        foreach (var newMessage in newMessagesReceiver)
+        {
+            await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 
