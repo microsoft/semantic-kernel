@@ -1,4 +1,6 @@
-﻿using ProcessWithCloudEvents.Processes.Steps;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using ProcessWithCloudEvents.Processes.Steps;
 
 namespace ProcessWithCloudEvents.Processes.Models;
 

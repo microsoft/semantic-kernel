@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Runtime.Serialization;
 using System.Text.Json;
 
 namespace ProcessWithCloudEvents.Processes.Models;
@@ -29,7 +31,7 @@ public class DocumentInfo
 
     /// <summary>
     /// For properly supporting serialization for state management saving and restoring,
-    /// objects used in state and paramater types must be serializable.<br/>
+    /// objects used in state and parameter types must be serializable.<br/>
     /// Overriding the ToString method allows injecting custom serialization logic if needed.
     /// </summary>
     /// <returns></returns>
