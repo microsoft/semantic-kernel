@@ -162,7 +162,7 @@ public sealed class BedrockAgent : KernelAgent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(invokeAgentRequest, thread, options, cancellationToken);
+        return this.InvokeAsync(invokeAgentRequest, thread, options as AgentInvokeOptions, cancellationToken);
     }
 
     /// <summary>
@@ -326,7 +326,7 @@ public sealed class BedrockAgent : KernelAgent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync(messages, thread, options, cancellationToken);
+        return this.InvokeStreamingAsync(messages, thread, options as AgentInvokeOptions, cancellationToken);
     }
 
     /// <inheritdoc/>
