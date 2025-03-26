@@ -4,7 +4,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Annotated, Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -13,6 +13,7 @@ from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMe
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
@@ -201,13 +202,44 @@ class Agent(KernelBaseModel, ABC):
             if not kernel:
                 kernel = Kernel()
             for plugin in plugins:
-                name = Agent._get_plugin_name(plugin)
-                kernel.add_plugin(plugin, plugin_name=name)
+                kernel.add_plugin(plugin)
             data["kernel"] = kernel
         return data
 
+    def model_post_init(self, __context: Any) -> None:
+        """Post initialization: create a kernel_function that calls this agent's get_response()."""
+
+        @kernel_function(name=self.name, description=self.description or self.instructions)
+        async def _as_kernel_function(
+            messages: Annotated[str | list[str], "The user messages for the agent."],
+            instructions_override: Annotated[str | None, "Override agent instructions."] = None,
+        ) -> Annotated[Any, "Agent response."]:
+            """A Minimal universal function for all agents.
+
+            Exposes 'messages' and 'instructions_override'.
+            Internally, we pass them to get_response() for whichever agent is calling it.
+            """
+            if isinstance(messages, str):
+                messages = [messages]
+
+            response_item = await self.get_response(
+                messages=messages,  # type: ignore
+                instructions_override=instructions_override if instructions_override else None,
+            )
+            return response_item.content
+
+        # Keep Pydantic happy with the "private" method, otherwise
+        # it will fail validating the model.
+        setattr(self, "_as_kernel_function", _as_kernel_function)
+
     @abstractmethod
-    def get_response(self, *args, **kwargs) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
+    def get_response(
+        self,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs,
+    ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
         """Get a response from the agent.
 
         This method returns the final result of the agent's execution
@@ -219,28 +251,64 @@ class Agent(KernelBaseModel, ABC):
         objects. Streaming only the final result is not feasible because the timing of
         the final result's availability is unknown, and blocking the caller until then
         is undesirable in streaming scenarios.
+
+        Args:
+            messages: The message(s) to send to the agent.
+            thread: The conversation thread associated with the message(s).
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            An agent response item.
         """
         pass
 
     @abstractmethod
-    def invoke(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
+    def invoke(
+        self,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs,
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
         of the agent's execution as a stream of ChatMessageContent objects to the caller.
 
         Note: A ChatMessageContent object contains an entire message.
+
+        Args:
+            messages: The message(s) to send to the agent.
+            thread: The conversation thread associated with the message(s).
+            kwargs: Additional keyword arguments.
+
+        Yields:
+            An agent response item.
         """
         pass
 
     @abstractmethod
-    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
+    def invoke_stream(
+        self,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs,
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the
         agent's execution as a stream of StreamingChatMessageContent objects to the caller.
 
         Note: A StreamingChatMessageContent object contains a chunk of a message.
+
+        Args:
+            messages: The message(s) to send to the agent.
+            thread: The conversation thread associated with the message(s).
+            kwargs: Additional keyword arguments.
+
+        Yields:
+            An agent response item.
         """
         pass
 
