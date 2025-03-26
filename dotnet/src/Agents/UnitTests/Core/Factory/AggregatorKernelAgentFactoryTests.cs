@@ -60,7 +60,7 @@ public class AggregatorKernelAgentFactoryTests
         {
         }
 
-        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? templateFactory = null, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-1"
                 ? null
@@ -80,7 +80,7 @@ public class AggregatorKernelAgentFactoryTests
         {
         }
 
-        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? templateFactory = null, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-2"
                 ? null
@@ -98,6 +98,16 @@ public class AggregatorKernelAgentFactoryTests
     {
         public MyKernelAgent1()
         {
+        }
+
+        public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
@@ -120,6 +130,16 @@ public class AggregatorKernelAgentFactoryTests
     {
         public MyKernelAgent2()
         {
+        }
+
+        public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)

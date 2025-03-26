@@ -26,7 +26,7 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, CancellationToken cancellationToken = default)
+    public override Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? templateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
@@ -40,6 +40,7 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
                 Instructions = agentDefinition.Instructions,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel),
                 Kernel = kernel,
+                Template = agentDefinition.GetPromptTemplate(kernel, templateFactory),
                 LoggerFactory = kernel.LoggerFactory,
             };
         }
