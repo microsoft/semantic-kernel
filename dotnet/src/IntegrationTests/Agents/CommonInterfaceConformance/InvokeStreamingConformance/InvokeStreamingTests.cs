@@ -9,13 +9,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using xRetry;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeConformance;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.InvokeStreamingConformance;
 
 /// <summary>
-/// Base test class for testing the <see cref="Agent.InvokeAsync(ChatMessageContent, AgentThread?, AgentInvokeOptions?, System.Threading.CancellationToken)"/> method of agents.
+/// Base test class for testing the <see cref="Agent.InvokeStreamingAsync(ChatMessageContent, AgentThread?, AgentInvokeOptions?, System.Threading.CancellationToken)"/> method of agents.
 /// Each agent type should have its own derived class.
 /// </summary>
-public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyncLifetime
+public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture) : IAsyncLifetime
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private AgentFixture _agentFixture;
@@ -23,45 +23,46 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
 
     protected AgentFixture Fixture => this._agentFixture;
 
-    [RetryFact(3, 5000)]
-    public virtual async Task InvokeReturnsResultAsync()
+    [RetryFact(3, 10_000)]
+    public virtual async Task InvokeStreamingAsyncReturnsResultAsync()
     {
         // Arrange
         var agent = this.Fixture.Agent;
 
         // Act
-        var asyncResults = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France."), this.Fixture.AgentThread);
+        var asyncResults = agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France."), this.Fixture.AgentThread);
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
         var firstResult = results.First();
+        var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
 
-        Assert.Contains("Paris", firstResult.Message.Content);
+        Assert.Contains("Paris", resultString);
         Assert.NotNull(firstResult.Thread);
     }
 
-    [RetryFact(3, 5000)]
-    public virtual async Task InvokeWithoutThreadCreatesThreadAsync()
+    [RetryFact(3, 10_000)]
+    public virtual async Task InvokeStreamingAsyncWithoutThreadCreatesThreadAsync()
     {
         // Arrange
         var agent = this.Fixture.Agent;
 
         // Act
-        var asyncResults = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France."));
+        var asyncResults = agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France."));
         var results = await asyncResults.ToListAsync();
 
         // Assert
-        Assert.Single(results);
         var firstResult = results.First();
-        Assert.Contains("Paris", firstResult.Message.Content);
+        var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
+
+        Assert.Contains("Paris", resultString);
         Assert.NotNull(firstResult.Thread);
 
         // Cleanup
         await this.Fixture.DeleteThread(firstResult.Thread);
     }
 
-    [RetryFact(3, 5000)]
+    [RetryFact(3, 10_000)]
     public virtual async Task ConversationMaintainsHistoryAsync()
     {
         // Arrange
@@ -70,14 +71,18 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var agent = this.Fixture.Agent;
 
         // Act
-        var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, q1), this.Fixture.AgentThread);
-        var result1 = await asyncResults1.FirstAsync();
-        var asyncResults2 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, q2), result1.Thread);
-        var result2 = await asyncResults2.FirstAsync();
+        var asyncResults1 = agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, q1), this.Fixture.AgentThread);
+        var results1 = await asyncResults1.ToListAsync();
+        var resultString1 = string.Join(string.Empty, results1.Select(x => x.Message.Content));
+        var result1 = results1.First();
+
+        var asyncResults2 = agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, q2), result1.Thread);
+        var results2 = await asyncResults2.ToListAsync();
+        var resultString2 = string.Join(string.Empty, results2.Select(x => x.Message.Content));
 
         // Assert
-        Assert.Contains("Paris", result1.Message.Content);
-        Assert.Contains("Austria", result2.Message.Content);
+        Assert.Contains("Paris", resultString1);
+        Assert.Contains("Austria", resultString2);
 
         var chatHistory = await this.Fixture.GetChatHistory();
         Assert.Equal(4, chatHistory.Count);
@@ -95,8 +100,8 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     /// The step does multiple iterations to make sure that the agent
     /// also manages the chat history correctly.
     /// </summary>
-    [RetryFact(3, 5000)]
-    public virtual async Task MultiStepInvokeWithPluginAndArgOverridesAsync()
+    [RetryFact(3, 10_000)]
+    public virtual async Task MultiStepInvokeStreamingAsyncWithPluginAndArgOverridesAsync()
     {
         // Arrange
         var questionsAndAnswers = new[]
@@ -115,7 +120,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         foreach (var questionAndAnswer in questionsAndAnswers)
         {
             // Act
-            var asyncResults = agent.InvokeAsync(
+            var asyncResults = agent.InvokeStreamingAsync(
                 new ChatMessageContent(AuthorRole.User, questionAndAnswer.Item1),
                 this.Fixture.AgentThread,
                 options: new()
@@ -123,11 +128,11 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
                     Kernel = kernel,
                     KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
                 });
+            var results = await asyncResults.ToListAsync();
 
             // Assert
-            var result = await asyncResults.FirstAsync();
-            Assert.NotNull(result);
-            Assert.Contains(questionAndAnswer.Item2, result.Message.Content);
+            var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
+            Assert.Contains(questionAndAnswer.Item2, resultString);
         }
     }
 
