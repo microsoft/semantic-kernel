@@ -233,7 +233,13 @@ class Agent(KernelBaseModel, ABC):
         setattr(self, "_as_kernel_function", _as_kernel_function)
 
     @abstractmethod
-    def get_response(self, *args, **kwargs) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
+    def get_response(
+        self,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs,
+    ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
         """Get a response from the agent.
 
         This method returns the final result of the agent's execution
@@ -245,28 +251,64 @@ class Agent(KernelBaseModel, ABC):
         objects. Streaming only the final result is not feasible because the timing of
         the final result's availability is unknown, and blocking the caller until then
         is undesirable in streaming scenarios.
+
+        Args:
+            messages: The message(s) to send to the agent.
+            thread: The conversation thread associated with the message(s).
+            kwargs: Additional keyword arguments.
+
+        Returns:
+            An agent response item.
         """
         pass
 
     @abstractmethod
-    def invoke(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
+    def invoke(
+        self,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs,
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
         This invocation method will return the intermediate steps and the final results
         of the agent's execution as a stream of ChatMessageContent objects to the caller.
 
         Note: A ChatMessageContent object contains an entire message.
+
+        Args:
+            messages: The message(s) to send to the agent.
+            thread: The conversation thread associated with the message(s).
+            kwargs: Additional keyword arguments.
+
+        Yields:
+            An agent response item.
         """
         pass
 
     @abstractmethod
-    def invoke_stream(self, *args, **kwargs) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
+    def invoke_stream(
+        self,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs,
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
 
         This invocation method will return the intermediate steps and final results of the
         agent's execution as a stream of StreamingChatMessageContent objects to the caller.
 
         Note: A StreamingChatMessageContent object contains a chunk of a message.
+
+        Args:
+            messages: The message(s) to send to the agent.
+            thread: The conversation thread associated with the message(s).
+            kwargs: Additional keyword arguments.
+
+        Yields:
+            An agent response item.
         """
         pass
 

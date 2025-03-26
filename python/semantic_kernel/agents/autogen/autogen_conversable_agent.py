@@ -129,7 +129,10 @@ class AutoGenConversableAgent(Agent):
     @trace_agent_get_response
     @override
     async def get_response(
-        self, messages: str | ChatMessageContent | list[str | ChatMessageContent], thread: AgentThread | None = None
+        self,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
+        **kwargs: Any,
     ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent.
 
@@ -137,6 +140,7 @@ class AutoGenConversableAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The thread to use for the conversation. If None, a new thread will be created.
+            kwargs: Additional keyword arguments
 
         Returns:
             An AgentResponseItem of type ChatMessageContent object with the response and the thread.
@@ -153,6 +157,7 @@ class AutoGenConversableAgent(Agent):
 
         reply = await self.conversable_agent.a_generate_reply(
             messages=[message.to_dict() for message in chat_history.messages],
+            **kwargs,
         )
 
         logger.info("Called AutoGenConversableAgent.a_generate_reply.")
@@ -245,7 +250,9 @@ class AutoGenConversableAgent(Agent):
     @override
     def invoke_stream(
         self,
-        message: str,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        thread: AgentThread | None = None,
         kernel: "Kernel | None" = None,
         arguments: KernelArguments | None = None,
         **kwargs: Any,
