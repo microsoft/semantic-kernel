@@ -188,13 +188,21 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         try
         {
             var operations = new List<RestApiOperation>();
-            var operationServers = CreateRestApiOperationServers(document.Servers);
+
+            // Create servers collection from global document servers
+            var globalServers = CreateRestApiOperationServers(document.Servers);
+
+            // Create servers collection from path-level servers
+            var pathServers = CreateRestApiOperationServers(pathItem.Servers);
 
             foreach (var operationPair in pathItem.Operations)
             {
                 var method = operationPair.Key.ToString();
 
                 var operationItem = operationPair.Value;
+
+                // Create servers collection from operation-level servers
+                var operationServers = CreateRestApiOperationServers(operationItem.Servers);
 
                 // Skip the operation parsing and don't add it to the result operations list if it's explicitly excluded by the predicate.
                 if (!options?.OperationSelectionPredicate?.Invoke(new OperationSelectionPredicateContext(operationItem.OperationId, path, method, operationItem.Description)) ?? false)
@@ -206,7 +214,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 {
                     var operation = new RestApiOperation(
                     id: operationItem.OperationId,
-                    servers: operationServers,
+                    servers: MergeServers(globalServers, pathServers, operationServers),
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
@@ -263,12 +271,16 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <param name="servers">Represents servers which hosts the REST API.</param>
     private static List<RestApiServer> CreateRestApiOperationServers(IList<OpenApiServer> servers)
     {
-        var result = new List<RestApiServer>(servers.Count);
+        if (servers == null || servers.Count == 0)
+        {
+            return new List<RestApiServer>();
+        }
 
+        var result = new List<RestApiServer>(servers.Count);
         foreach (var server in servers)
         {
             var variables = server.Variables.ToDictionary(item => item.Key, item => new RestApiServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
-            result.Add(new(server?.Url, variables));
+            result.Add(new RestApiServer(server.Url, variables, server.Description));
         }
 
         return result;
@@ -600,6 +612,48 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
             this._logger.LogWarning("Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
         }
+    }
+
+    /// <summary>
+    /// <param name="globalServers"></param>
+    /// <param name="pathServers"></param>
+    /// <param name="operationServers"></param>
+    /// <returns></returns>
+    /// </summary>
+    private static List<RestApiServer> MergeServers(List<RestApiServer> globalServers, List<RestApiServer> pathServers, List<RestApiServer> operationServers)
+    {
+        // Create a dictionary to store the merged servers, using URL as the key
+        var mergedServers = new Dictionary<string, RestApiServer>();
+
+        // Add global servers first (lowest precedence)
+        foreach (var server in globalServers)
+        {
+            if (server.Url != null)
+            {
+                mergedServers[server.Url] = server;
+            }
+        }
+
+        // Add path servers, overriding any global servers with the same URL
+        foreach (var server in pathServers)
+        {
+            if (server.Url != null)
+            {
+                mergedServers[server.Url] = server;
+            }
+        }
+
+        // Add operation servers, overriding any global or path servers with the same URL
+        foreach (var server in operationServers)
+        {
+            if (server.Url != null)
+            {
+                mergedServers[server.Url] = server;
+            }
+        }
+
+        // Return the merged servers as a list
+        return mergedServers.Values.ToList();
     }
 
     #endregion

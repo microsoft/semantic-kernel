@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
@@ -27,6 +29,11 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     /// OpenAPI document stream.
     /// </summary>
     private readonly Stream _openApiDocument;
+
+    /// <summary>
+    /// Logger instance.
+    /// </summary>
+    private readonly ILogger _logger = new LoggerFactory().CreateLogger<OpenApiDocumentParserV30Tests>();
 
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiDocumentParserV30Tests"/> class.
@@ -669,6 +676,184 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Null(formatParameter.DefaultValue);
         Assert.NotNull(formatParameter.Schema);
         Assert.Equal("string", formatParameter.Schema.RootElement.GetProperty("type").GetString());
+    }
+
+    [Fact]
+    public void ItCanVerifyPathServersNotInGlobalAreAddedToFinalList()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://global-server.com", Description = "Global server" }
+                }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://path-unique.com", Description = "Path unique server" }
+                },
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var servers = operations[0].Servers;
+
+        // Assert
+        Assert.Equal(2, servers.Count);
+        Assert.Contains(servers, s => s.Url == "https://global-server.com");
+        Assert.Contains(servers, s => s.Url == "https://path-unique.com");
+
+        var pathServer = servers.Single(s => s.Url == "https://path-unique.com");
+        Assert.Equal("Path unique server", pathServer.Description);
+    }
+
+    [Fact]
+    public void ItCanVerifyPathServersOverrideGlobalServersWithSameUrl()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://shared-server.com", Description = "Global server description" }
+                }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://shared-server.com", Description = "Path override description" }
+                },
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var servers = operations[0].Servers;
+
+        // Assert
+        Assert.Equal(1, servers.Count);
+        var sharedServer = servers.Single(s => s.Url == "https://shared-server.com");
+        Assert.Equal("Path override description", sharedServer.Description);
+    }
+
+    [Fact]
+    public void ItCanVerifyOperationServersNotInGlobalOrPathAreAddedToFinalList()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://global-server.com", Description = "Global server" }
+                }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://path-server.com", Description = "Path server" }
+                },
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Servers = new List<OpenApiServer>
+                        {
+                            new() { Url = "https://operation-unique.com", Description = "Operation unique server" }
+                        },
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var servers = operations[0].Servers;
+
+        // Assert
+        Assert.Equal(3, servers.Count);
+        Assert.Contains(servers, s => s.Url == "https://global-server.com");
+        Assert.Contains(servers, s => s.Url == "https://path-server.com");
+        Assert.Contains(servers, s => s.Url == "https://operation-unique.com");
+
+        var operationServer = servers.Single(s => s.Url == "https://operation-unique.com");
+        Assert.Equal("Operation unique server", operationServer.Description);
+    }
+
+    [Fact]
+    public void ItCanVerifyOperationServersOverrideGlobalAndPathServersWithSameUrl()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://global-shared.com", Description = "Global server" },
+                    new() { Url = "https://both-shared.com", Description = "Global both shared" }
+                }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Servers = new List<OpenApiServer>
+                {
+                    new() { Url = "https://path-shared.com", Description = "Path server" },
+                    new() { Url = "https://both-shared.com", Description = "Path both shared" }
+                },
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Servers = new List<OpenApiServer>
+                        {
+                            new() { Url = "https://global-shared.com", Description = "Operation override of global" },
+                            new() { Url = "https://path-shared.com", Description = "Operation override of path" },
+                            new() { Url = "https://both-shared.com", Description = "Operation override of both" }
+                        },
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var servers = operations[0].Servers;
+
+        // Assert
+        Assert.Equal(3, servers.Count);
+
+        var globalSharedServer = servers.Single(s => s.Url == "https://global-shared.com");
+        Assert.Equal("Operation override of global", globalSharedServer.Description);
+
+        var pathSharedServer = servers.Single(s => s.Url == "https://path-shared.com");
+        Assert.Equal("Operation override of path", pathSharedServer.Description);
+
+        var bothSharedServer = servers.Single(s => s.Url == "https://both-shared.com");
+        Assert.Equal("Operation override of both", bothSharedServer.Description);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
