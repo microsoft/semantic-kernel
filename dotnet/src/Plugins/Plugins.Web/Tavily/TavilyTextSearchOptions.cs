@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Net.Http;
@@ -24,7 +24,6 @@ public sealed class TavilyTextSearchOptions
     /// A basic search costs 1 API Credit, while an advanced search costs 2 API Credits.
     /// Available options: basic, advanced
     /// </summary>
-    // TODO Create an enum
     public SearchDepth? SearchDepth { get; set; }
 
     /// <summary>
