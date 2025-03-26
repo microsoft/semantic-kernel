@@ -58,7 +58,7 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
         // Local function to invoke agent and display the response.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync([], thread, options: new() { KernelArguments = arguments }))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(thread, options: new() { KernelArguments = arguments }))
             {
                 WriteAgentChatMessage(response);
             }
