@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -45,6 +46,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         builder.Services.AddSingleton<AIProjectClient>(client);
 
         this._kernel = builder.Build();
+        this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
     }
 
     /// <inheritdoc/>
@@ -156,16 +158,13 @@ public class AzureAIKernelAgentYamlTests : IDisposable
               id: gpt-4o-mini
             tools:
                 - type: function
-                  id: function1
-                  description: function1 description
+                  id: WeatherPlugin.Current
+                  description: Provides real-time weather information.
                   options:
                       parameters:
-                          - name: param1
+                          - name: location
                             type: string
-                            description: param1 description
-                          - name: param2
-                            type: string
-                            description: param2 description
+                            description: The location to get the weather for.
             """;
         AzureAIAgentFactory factory = new();
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
@@ -350,5 +349,20 @@ public class AzureAIKernelAgentYamlTests : IDisposable
             {
                 Content = new StringContent(response)
             };
+
+    private sealed class WeatherPlugin
+    {
+        [KernelFunction, Description("Provides real-time weather information.")]
+        public string Current([Description("The location to get the weather for.")] string location)
+        {
+            return $"The current weather in {location} is 72 degrees.";
+        }
+
+        [KernelFunction, Description("Forecast weather information.")]
+        public string Forecast([Description("The location to get the weather for.")] string location)
+        {
+            return $"The forecast for {location} is 75 degrees tomorrow.";
+        }
+    }
     #endregion
 }

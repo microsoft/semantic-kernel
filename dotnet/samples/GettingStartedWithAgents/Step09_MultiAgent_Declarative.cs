@@ -67,5 +67,4 @@ public class Step09_MultiAgent_Declarative : BaseAgentsTest
     private readonly Kernel _kernel;
     private readonly KernelAgentFactory _kernelAgentFactory;
     #endregion
-
 }

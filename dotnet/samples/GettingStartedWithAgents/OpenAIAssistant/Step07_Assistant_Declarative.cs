@@ -89,6 +89,66 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
 
+    [Fact]
+    public async Task OpenAIAssistantAgentWithTemplateAsync()
+    {
+        var text =
+            """
+            type: openai_assistant
+            name: StoryAgent
+            description: A agent that generates a story about a topic.
+            instructions: Tell a story about {{$topic}} that is {{$length}} sentences long.
+            model:
+              id: gpt-4o-mini
+            inputs:
+                topic:
+                    description: The topic of the story.
+                    required: true
+                    default: Cats
+                length:
+                    description: The number of sentences in the story.
+                    required: true
+                    default: 2
+            outputs:
+                - description: output1 description
+            template:
+                format: semantic-kernel
+            """;
+        OpenAIAssistantAgentFactory factory = new();
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel, promptTemplateFactory) as OpenAIAssistantAgent;
+        Assert.NotNull(agent);
+
+        var options = new AgentInvokeOptions()
+        {
+            KernelArguments = new()
+            {
+                { "topic", "Dogs" },
+                { "length", "3" },
+            }
+        };
+
+        AgentThread? agentThread = null;
+        try
+        {
+            await foreach (var response in agent.InvokeAsync([], agentThread, options))
+            {
+                agentThread = response.Thread;
+                this.WriteAgentChatMessage(response);
+            }
+        }
+        finally
+        {
+            await agent.Client.DeleteAssistantAsync(agent.Id);
+
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
+        }
+    }
+
     #region private
     private readonly Kernel _kernel;
 

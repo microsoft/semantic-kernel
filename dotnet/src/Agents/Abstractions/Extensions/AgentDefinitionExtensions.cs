@@ -67,6 +67,29 @@ public static class AgentDefinitionExtensions
     }
 
     /// <summary>
+    /// Creates a <see cref="IPromptTemplate"/> from the <see cref="AgentDefinition"/> if required.
+    /// </summary>
+    /// <param name="agentDefinition">Agent definition to retrieve default arguments from.</param>
+    /// <param name="kernel">Kernel instance.</param>
+    /// <param name="templateFactory">Optional prompt template factory</param>
+    public static IPromptTemplate? GetPromptTemplate(this AgentDefinition agentDefinition, Kernel kernel, IPromptTemplateFactory? templateFactory)
+    {
+        Verify.NotNull(agentDefinition);
+
+        if (templateFactory == null || agentDefinition.Template is null || agentDefinition.Instructions is null)
+        {
+            return null;
+        }
+
+        PromptTemplateConfig templateConfig = new(agentDefinition.Instructions)
+        {
+            TemplateFormat = agentDefinition.Template.Format,
+        };
+
+        return templateFactory.Create(templateConfig);
+    }
+
+    /// <summary>
     /// Get the first tool definition of the specified type.
     /// </summary>
     /// <param name="agentDefinition">Agent definition to retrieve the first tool from.</param>
