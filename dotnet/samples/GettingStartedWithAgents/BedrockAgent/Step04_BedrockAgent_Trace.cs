@@ -35,7 +35,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
                 EnableTrace = true,
             };
 
-            var responses = bedrockAgent.InvokeAsync([new ChatMessageContent(AuthorRole.User, userQuery)], null, options);
+            var responses = bedrockAgent.InvokeAsync([new ChatMessageContent(AuthorRole.User, userQuery)], agentThread, options);
             await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
