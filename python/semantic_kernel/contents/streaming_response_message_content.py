@@ -12,8 +12,8 @@ from semantic_kernel.contents.const import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -35,7 +35,7 @@ STREAMING_CMC_ITEM_TYPES = Annotated[
 ]
 
 
-class StreamingResponseMessageContent(ResponsesMessageContent, StreamingContentMixin):
+class StreamingResponseMessageContent(StreamingChatMessageContent, StreamingContentMixin):
     """This is the class for streaming response message response content.
 
     All Response Services should return an instance of this class as streaming response,

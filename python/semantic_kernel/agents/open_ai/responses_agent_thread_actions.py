@@ -622,7 +622,7 @@ class ResponsesAgentThreadActions:
             if not allowed_items:
                 continue
 
-            filtered_msg = ResponsesMessageContent(role=message.role, items=allowed_items)
+            filtered_msg = ResponsesMessageContent(role=message.role, items=allowed_items)  # type: ignore
             original_role = message.role
             if original_role == AuthorRole.TOOL:
                 original_role = AuthorRole.ASSISTANT

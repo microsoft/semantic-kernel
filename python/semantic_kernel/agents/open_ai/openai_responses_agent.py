@@ -312,7 +312,7 @@ class OpenAIResponsesAgent(Agent):
     plugins: list[Any] = Field(default_factory=list)
     polling_options: RunPollingOptions = Field(default_factory=RunPollingOptions)
     store_enabled: bool = Field(default=True, description="Whether to store responses.")
-    text: dict[str, Any] | None = Field(default_factory=dict)
+    text: dict[str, Any] = Field(default_factory=dict)
     tools: list[ToolParam] = Field(default_factory=list)
 
     channel_type: ClassVar[type[AgentChannel | None]] = ResponsesAgentChannel
