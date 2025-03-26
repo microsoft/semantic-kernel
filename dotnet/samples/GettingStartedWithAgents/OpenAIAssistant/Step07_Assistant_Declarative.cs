@@ -117,7 +117,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         OpenAIAssistantAgentFactory factory = new();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel) as OpenAIAssistantAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel, promptTemplateFactory) as OpenAIAssistantAgent;
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()
@@ -129,20 +129,23 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             }
         };
 
-        string threadId = await agent.Client.CreateThreadAsync(metadata: SampleMetadata);
-        var agentThread = new OpenAIAssistantAgentThread(agent.Client, threadId);
-
+        AgentThread? agentThread = null;
         try
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync([], agentThread, options))
+            await foreach (var response in agent.InvokeAsync([], agentThread, options))
             {
+                agentThread = response.Thread;
                 this.WriteAgentChatMessage(response);
             }
         }
         finally
         {
-            await agent.Client.DeleteThreadAsync(threadId);
             await agent.Client.DeleteAssistantAsync(agent.Id);
+
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
         }
     }
 

@@ -337,6 +337,66 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
     }
 
+    [Fact]
+    public async Task AzureAIAgentWithTemplateAsync()
+    {
+        var text =
+            """
+            type: foundry_agent
+            name: StoryAgent
+            description: A agent that generates a story about a topic.
+            instructions: Tell a story about {{$topic}} that is {{$length}} sentences long.
+            model:
+              id: gpt-4o-mini
+            inputs:
+                topic:
+                    description: The topic of the story.
+                    required: true
+                    default: Cats
+                length:
+                    description: The number of sentences in the story.
+                    required: true
+                    default: 2
+            outputs:
+                - description: output1 description
+            template:
+                format: semantic-kernel
+            """;
+        AzureAIAgentFactory factory = new();
+        var promptTemplateFactory = new KernelPromptTemplateFactory();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel, promptTemplateFactory) as AzureAIAgent;
+        Assert.NotNull(agent);
+
+        var options = new AgentInvokeOptions()
+        {
+            KernelArguments = new()
+            {
+                { "topic", "Dogs" },
+                { "length", "3" },
+            }
+        };
+
+        Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
+        try
+        {
+            await foreach (var response in agent.InvokeAsync([], agentThread, options))
+            {
+                agentThread = response.Thread;
+                this.WriteAgentChatMessage(response);
+            }
+        }
+        finally
+        {
+            await agent.Client.DeleteAgentAsync(agent.Id);
+
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
+        }
+    }
+
     #region private
     private readonly Kernel _kernel;
 
