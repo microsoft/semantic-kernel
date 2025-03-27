@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -153,6 +154,50 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
             var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
             Assert.Contains(questionAndAnswer.Item2, resultString);
         }
+    }
+
+    /// <summary>
+    /// Verifies that the agent notifies callers of all messages
+    /// including function calling ones when using invoke streaming with a plugin.
+    /// </summary>
+    [RetryFact(3, 10_000)]
+    public virtual async Task InvokeStreamingWithPluginNotifiesForAllMessagesAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+        agent.Kernel.Plugins.AddFromType<MenuPlugin>();
+        var notifiedMessages = new List<ChatMessageContent>();
+
+        // Act
+        var asyncResults = agent.InvokeStreamingAsync(
+            new ChatMessageContent(AuthorRole.User, "What is the special soup?"),
+            this.Fixture.AgentThread,
+            options: new()
+            {
+                KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                OnNewMessage = (message) =>
+                {
+                    notifiedMessages.Add(message);
+                    return Task.CompletedTask;
+                }
+            });
+
+        // Assert
+        var results = await asyncResults.ToListAsync();
+        var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
+        Assert.Contains("Clam Chowder", resultString);
+
+        Assert.Equal(3, notifiedMessages.Count);
+        Assert.Contains(notifiedMessages[0].Items, x => x is FunctionCallContent);
+        Assert.Contains(notifiedMessages[1].Items, x => x is FunctionResultContent);
+
+        var functionCallContent = notifiedMessages[0].Items.OfType<FunctionCallContent>().First();
+        var functionResultContent = notifiedMessages[1].Items.OfType<FunctionResultContent>().First();
+
+        Assert.Equal("GetSpecials", functionCallContent.FunctionName);
+        Assert.Equal("GetSpecials", functionResultContent.FunctionName);
+
+        Assert.Contains("Clam Chowder", notifiedMessages[2].Content);
     }
 
     public Task InitializeAsync()
