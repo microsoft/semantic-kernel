@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.agents import AzureResponsesAgent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -48,13 +48,13 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client, model = AzureResponsesAgent.setup_resources()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponsesAgent(
+    agent = AzureResponsesAgent(
         ai_model_id=model,
         client=client,
-        instructions="Answer questions about the world in one sentence.",
+        instructions="Answer questions about the menu.",
         name="Host",
         plugins=[MenuPlugin()],
     )
@@ -62,7 +62,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponsesAgentThread = None
+    thread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")
@@ -73,12 +73,16 @@ async def main():
     """
     You should see output similar to the following:
 
-    # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
-        light is scattered more than other colors because it travels in shorter, smaller waves.
-    # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
-        (about 186,282 miles per second).
+    # User: 'Hello'
+    # Host: Hi there! How can I assist you today?
+    # User: 'What is the special soup?'
+    # Host: The special soup is Clam Chowder.
+    # User: 'What is the special drink?'
+    # Host: The special drink is Chai Tea.
+    # User: 'How much is it?'
+    # Host: The Chai Tea costs $9.99.
+    # User: 'Thank you'
+    # Host: You're welcome! If you have any more questions, feel free to ask.
      """
 
 

@@ -12,7 +12,6 @@ from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_content_mixin import StreamingContentMixin
-from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
 from semantic_kernel.exceptions import (
     FunctionCallInvalidArgumentsException,
     FunctionExecutionException,
@@ -323,7 +322,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         request_index: int | None = None,
         is_streaming: bool = False,
         function_behavior: "FunctionChoiceBehavior | None" = None,
-        is_response_api: bool = False,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
         args_cloned = copy(arguments) if arguments else KernelArguments()
@@ -407,14 +405,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             function_call_content=function_call,
             result=invocation_context.function_result,
         )
-        is_streaming = any(
-            isinstance(message, (StreamingChatMessageContent, StreamingResponseMessageContent))
-            for message in chat_history.messages
-        )
-        if is_response_api:
-            message = frc.to_streaming_response_message_content() if is_streaming else frc.to_response_message_content()
-        else:
-            message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
+        is_streaming = any(isinstance(message, StreamingChatMessageContent) for message in chat_history.messages)
+        message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
 
         chat_history.add_message(message=message)
 

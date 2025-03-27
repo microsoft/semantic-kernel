@@ -1,14 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
-from typing import Annotated
 
 from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
-from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
-The sample shows how to have the agent answer questions about the sample menu
-with streaming responses.
+The sample shows how to have the agent answer questions using the web search
+preview tool with streaming responses.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
@@ -18,32 +16,9 @@ conversation history.
 """
 
 
-# Define a sample plugin for the sample
-class MenuPlugin:
-    """A sample Menu Plugin used for the concept sample."""
-
-    @kernel_function(description="Provides a list of specials from the menu.")
-    def get_specials(self, menu_item: str) -> Annotated[str, "Returns the specials from the menu."]:
-        return """
-        Special Soup: Clam Chowder
-        Special Salad: Cobb Salad
-        Special Drink: Chai Tea
-        """
-
-    @kernel_function(description="Provides the price of the requested menu item.")
-    def get_item_price(
-        self, menu_item: Annotated[str, "The name of the menu item."]
-    ) -> Annotated[str, "Returns the price of the menu item."]:
-        return "$9.99"
-
-
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Hello",
-    "What is the special soup?",
-    "What is the special drink?",
-    "How much is it?",
-    "Thank you",
+    "Find me news articles about the latest technology trends.",
 ]
 
 
@@ -51,13 +26,15 @@ async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
     client, model = OpenAIResponsesAgent.setup_resources()
 
+    web_search_tool = OpenAIResponsesAgent.configure_web_search_tool()
+
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
     agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
-        instructions="Answer questions about the menu.",
+        instructions="Answer questions from the user.",
         name="Host",
-        plugins=[MenuPlugin()],
+        tools=[web_search_tool],
     )
 
     # 3. Create a thread for the agent
@@ -66,6 +43,7 @@ async def main():
     thread: ResponsesAgentThread = None
 
     for user_input in USER_INPUTS:
+        print(f"# User: '{user_input}'")
         # 4. Invoke the agent for the current message and print the response
         first_chunk = True
         async for response in agent.invoke_stream(messages=user_input, thread=thread):
@@ -79,13 +57,15 @@ async def main():
     """
     You should see output similar to the following:
 
-    # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
-        light is scattered more than other colors because it travels in shorter, smaller waves.
-    # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
-        (about 186,282 miles per second).
-     """
+    # User: 'Find me news articles about the latest technology trends.'
+    # NewsSearcher: Recent developments in technology have highlighted several key trends shaping various industries:
+
+    **Artificial Intelligence (AI) Integration**: AI continues to revolutionize sectors by automating tasks, 
+        enhancing real-time analytics, and improving content delivery. At the 2025 NAB Show, AI's influence is 
+        evident across creator platforms, sports technology, streaming solutions, and cloud architectures. 
+        ([tvtechnology.com](https://www.tvtechnology.com/news/nab-show-2025-exhibitor-insight-black-box?utm_source=openai))
+    ...
+    """
 
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ async def main():
         print(f"# User: {str(user_input)}")  # type: ignore
         # 5. Invoke the agent with the current chat history and print the response
         response = await agent.get_response(messages=user_input, thread=thread)
-        reasoned_result = Reasoning.model_validate(json.loads(response.content))
+        reasoned_result = Reasoning.model_validate(json.loads(str(response.content)))
         print(f"# {response.name}:\n\n{reasoned_result.model_dump_json(indent=4)}")
         thread = response.thread
 

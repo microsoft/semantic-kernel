@@ -18,9 +18,7 @@ from semantic_kernel.exceptions.content_exceptions import ContentInitializationE
 if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
-    from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-    from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
     from semantic_kernel.functions.function_result import FunctionResult
 
 TAG_CONTENT_MAP = {
@@ -36,6 +34,7 @@ class FunctionResultContent(KernelContent):
     content_type: Literal[ContentTypes.FUNCTION_RESULT_CONTENT] = Field(FUNCTION_RESULT_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FUNCTION_RESULT_CONTENT_TAG
     id: str
+    call_id: str | None = None
     result: Any
     name: str | None = None
     function_name: str
@@ -47,6 +46,7 @@ class FunctionResultContent(KernelContent):
         inner_content: Any | None = None,
         ai_model_id: str | None = None,
         id: str | None = None,
+        call_id: str | None = None,
         name: str | None = None,
         function_name: str | None = None,
         plugin_name: str | None = None,
@@ -61,6 +61,7 @@ class FunctionResultContent(KernelContent):
             inner_content (Any | None): The inner content.
             ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call that the result relates to.
+            call_id (str | None): The call id of the function call from the Responses API.
             name (str | None): The name of the function.
                 When not supplied function_name and plugin_name should be supplied.
             function_name (str | None): The function name.
@@ -89,6 +90,8 @@ class FunctionResultContent(KernelContent):
             "result": result,
             "encoding": encoding,
         }
+        if call_id:
+            args["call_id"] = call_id
         if metadata:
             args["metadata"] = metadata
 
@@ -123,7 +126,6 @@ class FunctionResultContent(KernelContent):
     ) -> _T:
         """Create an instance from a FunctionCallContent and a result."""
         from semantic_kernel.contents.chat_message_content import ChatMessageContent
-        from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
         from semantic_kernel.functions.function_result import FunctionResult
 
         metadata.update(function_call_content.metadata or {})
@@ -133,7 +135,7 @@ class FunctionResultContent(KernelContent):
             result = result.value
         if isinstance(result, TextContent):
             res = result.text
-        elif isinstance(result, (ChatMessageContent, ResponsesMessageContent)):
+        elif isinstance(result, ChatMessageContent):
             if isinstance(result.items[0], TextContent):
                 res = result.items[0].text
             elif isinstance(result.items[0], ImageContent):
@@ -145,6 +147,7 @@ class FunctionResultContent(KernelContent):
             res = result
         return cls(
             id=function_call_content.id or "unknown",
+            call_id=function_call_content.call_id or "",
             inner_content=inner_content,
             result=res,
             function_name=function_call_content.function_name,
@@ -164,18 +167,6 @@ class FunctionResultContent(KernelContent):
         from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
         return StreamingChatMessageContent(role=AuthorRole.TOOL, choice_index=0, items=[self])
-
-    def to_response_message_content(self) -> "ResponsesMessageContent":
-        """Convert the instance to a ChatMessageContent."""
-        from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
-
-        return ResponsesMessageContent(role=AuthorRole.TOOL, items=[self])
-
-    def to_streaming_response_message_content(self) -> "StreamingResponseMessageContent":
-        """Convert the instance to a StreamingChatMessageContent."""
-        from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
-
-        return StreamingResponseMessageContent(role=AuthorRole.TOOL, choice_index=0, items=[self])
 
     def to_dict(self) -> dict[str, str]:
         """Convert the instance to a dictionary."""

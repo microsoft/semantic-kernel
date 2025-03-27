@@ -4,8 +4,8 @@ import asyncio
 import os
 
 from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -42,7 +42,7 @@ async def main():
 
     # 4. Define a list of user messages that include text and image content for the vision task
     user_messages = [
-        ResponsesMessageContent(
+        ChatMessageContent(
             role=AuthorRole.USER,
             items=[
                 TextContent(text="Describe this image."),
@@ -51,14 +51,14 @@ async def main():
                 ),
             ],
         ),
-        ResponsesMessageContent(
+        ChatMessageContent(
             role=AuthorRole.USER,
             items=[
                 TextContent(text="What is the main color in this image?"),
                 ImageContent(uri="https://upload.wikimedia.org/wikipedia/commons/5/56/White_shark.jpg"),
             ],
         ),
-        ResponsesMessageContent(
+        ChatMessageContent(
             role=AuthorRole.USER,
             items=[
                 TextContent(text="Is there an animal in this image?"),

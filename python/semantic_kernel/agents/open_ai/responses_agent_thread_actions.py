@@ -26,13 +26,12 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     merge_function_results,
 )
 from semantic_kernel.contents.annotation_content import AnnotationContent
-from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES
+from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
 from semantic_kernel.contents.streaming_annotation_content import StreamingAnnotationContent
-from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -51,7 +50,6 @@ if TYPE_CHECKING:
     from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
     from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
 
@@ -196,7 +194,7 @@ class ResponsesAgentThreadActions:
                 )
 
             # Check if tool calls are required
-            function_calls = cls._get_tool_calls_from_output(response.output)
+            function_calls = cls._get_tool_calls_from_output(response.output)  # type: ignore
             if (fc_count := len(function_calls)) == 0:
                 yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)
                 break
@@ -219,7 +217,6 @@ class ResponsesAgentThreadActions:
                         function_call_count=fc_count,
                         request_index=request_index,
                         function_behavior=function_choice_behavior,
-                        is_response_api=True,
                     )
                     for function_call in function_calls
                 ],
@@ -240,6 +237,7 @@ class ResponsesAgentThreadActions:
                 tools=tools,
                 response_options=response_options,
             )
+            assert isinstance(response, Response)  # nosec
             yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)
 
     @classmethod
@@ -261,7 +259,7 @@ class ResponsesAgentThreadActions:
         instructions_override: str | None = None,
         kernel: "Kernel | None" = None,
         max_output_tokens: int | None = None,
-        messages: list["ChatMessageContent"] | None = None,
+        output_messages: list["ChatMessageContent"] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -272,7 +270,7 @@ class ResponsesAgentThreadActions:
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable["StreamingResponseMessageContent"]:
+    ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the assistant.
 
         Args:
@@ -286,7 +284,7 @@ class ResponsesAgentThreadActions:
             include: Additional output data to include in the response.
             instructions_override: The instructions override.
             max_output_tokens: The maximum completion tokens.
-            messages: The messages to include in the request.
+            output_messages: The messages to include in the request.
             metadata: The metadata.
             model: The model.
             parallel_tool_calls: The parallel tool calls.
@@ -339,7 +337,7 @@ class ResponsesAgentThreadActions:
             previous_response_id = thread.response_id
 
         for request_index in range(function_choice_behavior.maximum_auto_invoke_attempts):
-            response: AsyncStream[ResponseStreamEvent] = await cls._get_response(
+            response: AsyncStream[ResponseStreamEvent] = await cls._get_response(  # type: ignore
                 agent=agent,
                 chat_history=override_history,
                 merged_instructions=merged_instructions,
@@ -350,7 +348,7 @@ class ResponsesAgentThreadActions:
                 stream=True,
             )
 
-            all_messages: list[StreamingResponseMessageContent] = []
+            all_messages: list[StreamingChatMessageContent] = []
             function_call_returned = False
 
             async with response as response_stream:
@@ -360,7 +358,7 @@ class ResponsesAgentThreadActions:
                         case ResponseCreatedEvent():
                             logger.debug(f"Agent response created with ID: {event.response.id}")
                         case ResponseOutputItemAddedEvent():
-                            function_calls = cls._get_tool_calls_from_output([event.item])
+                            function_calls = cls._get_tool_calls_from_output([event.item])  # type: ignore
                             if function_calls:
                                 function_call_returned = True
                             msg = cls._build_streaming_msg(
@@ -399,9 +397,9 @@ class ResponsesAgentThreadActions:
                             )
                             yield msg
                         case ResponseOutputItemDoneEvent():
-                            msg = cls._create_output_item_done(agent, event.item)
-                            if messages is not None:
-                                messages.append(msg)
+                            msg = cls._create_output_item_done(agent, event.item)  # type: ignore
+                            if output_messages is not None:
+                                output_messages.append(msg)
                         case ResponseErrorEvent():
                             logger.error(
                                 f"Error in agent invoke_stream: {event.message} "
@@ -412,7 +410,7 @@ class ResponsesAgentThreadActions:
             if not function_call_returned:
                 return
 
-            full_completion: StreamingResponseMessageContent = reduce(lambda x, y: x + y, all_messages)
+            full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
@@ -433,7 +431,6 @@ class ResponsesAgentThreadActions:
                         function_call_count=fc_count,
                         request_index=request_index,
                         function_behavior=function_choice_behavior,
-                        is_response_api=True,
                     )
                     for function_call in function_calls
                 ],
@@ -443,13 +440,16 @@ class ResponsesAgentThreadActions:
             # Include the ai_model_id so we can later add two streaming messages together
             # Some settings may not have an ai_model_id, so we need to check for it
             function_result_messages = cls._merge_streaming_function_results(
-                messages=chat_history.messages[-len(results) :],
+                messages=chat_history.messages[-len(results) :],  # type: ignore
                 name=agent.name,
                 ai_model_id=agent.ai_model_id,  # type: ignore
                 function_invoke_attempt=request_index,
             )
             if cls._yield_function_result_messages(function_result_messages):
-                yield function_result_messages[0]
+                msg = function_result_messages[0]
+                if output_messages is not None:
+                    output_messages.append(msg)
+                yield msg
 
             if any(result.terminate for result in results if result is not None):
                 break
@@ -508,8 +508,8 @@ class ResponsesAgentThreadActions:
             responses = await client.responses.input_items.list(
                 response_id=response_id,
                 limit=limit,  # type: ignore
-                order=sort_order,
-                after=last_id,
+                order=sort_order,  # type: ignore
+                after=last_id,  # type: ignore
             )
 
             if not responses:
@@ -518,7 +518,7 @@ class ResponsesAgentThreadActions:
             for response in responses.data:
                 last_id = response.id
 
-                content = cls._create_response_message_content(response)
+                content = cls._create_response_message_content(response)  # type: ignore
 
                 if len(content.items) > 0:
                     yield content
@@ -536,9 +536,9 @@ class ResponsesAgentThreadActions:
         items: list[Any],
         choice_index: int,
         role: str = "assistant",
-    ) -> StreamingResponseMessageContent:
-        """Helper to create StreamingResponseMessageContent."""
-        return StreamingResponseMessageContent(
+    ) -> StreamingChatMessageContent:
+        """Helper to create StreamingChatMessageContent."""
+        return StreamingChatMessageContent(
             inner_content=event,
             ai_model_id=agent.ai_model_id,
             metadata=metadata,
@@ -559,11 +559,11 @@ class ResponsesAgentThreadActions:
     @classmethod
     def _merge_streaming_function_results(
         cls: type[_T],
-        messages: list["ResponsesMessageContent | StreamingResponseMessageContent"],
+        messages: list["StreamingChatMessageContent"],
         name: str,
         ai_model_id: str | None = None,
         function_invoke_attempt: int | None = None,
-    ) -> list["StreamingResponseMessageContent"]:
+    ) -> list["StreamingChatMessageContent"]:
         """Combine multiple streaming function result content types to one streaming chat message content type.
 
         This method combines the FunctionResultContent items from separate StreamingChatMessageContent messages,
@@ -583,7 +583,7 @@ class ResponsesAgentThreadActions:
             items.extend([item for item in message.items if isinstance(item, FunctionResultContent)])
 
         return [
-            StreamingResponseMessageContent(
+            StreamingChatMessageContent(
                 role=AuthorRole.TOOL,
                 name=name,
                 items=items,
@@ -622,7 +622,7 @@ class ResponsesAgentThreadActions:
             if not allowed_items:
                 continue
 
-            filtered_msg = ResponsesMessageContent(role=message.role, items=allowed_items)  # type: ignore
+            filtered_msg = ChatMessageContent(role=message.role, items=allowed_items)  # type: ignore
             original_role = message.role
             if original_role == AuthorRole.TOOL:
                 original_role = AuthorRole.ASSISTANT
@@ -665,7 +665,7 @@ class ResponsesAgentThreadActions:
                         rfrc_dict = {
                             "type": "function_call_output",
                             "output": str(content.result),
-                            "call_id": content.id or "",
+                            "call_id": content.call_id,
                         }
                         response_inputs.append(rfrc_dict)
 
@@ -705,12 +705,12 @@ class ResponsesAgentThreadActions:
         response: Response,
         ai_model_id: str | None = None,
         name: str | None = None,
-    ) -> "ResponsesMessageContent":
+    ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata = cls._get_metadata_from_response(response)
         items = cls._collect_items_from_output(response.output)
         role_str = response.output[0].role if (response.output and hasattr(response.output[0], "role")) else "assistant"
-        return ResponsesMessageContent(
+        return ChatMessageContent(
             inner_content=response,
             ai_model_id=ai_model_id,
             metadata=metadata,
@@ -723,7 +723,7 @@ class ResponsesAgentThreadActions:
     @classmethod
     def _create_output_item_done(
         cls: type[_T], agent: "OpenAIResponsesAgent", response: ResponseOutputItem
-    ) -> "ResponsesMessageContent":
+    ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata: dict[str, Any] = {}
         items: list[CMC_ITEM_TYPES] = []
@@ -734,7 +734,7 @@ class ResponsesAgentThreadActions:
         # Determine role (if none is found, default to 'assistant')
         role_str = response.role if (response and hasattr(response, "role")) else "assistant"
 
-        return ResponsesMessageContent(
+        return ChatMessageContent(
             inner_content=response,
             ai_model_id=agent.ai_model_id,
             metadata=metadata,
@@ -748,19 +748,19 @@ class ResponsesAgentThreadActions:
         cls: type[_T],
         agent: "OpenAIResponsesAgent",
         response_content_part: ResponseContentPartAddedEvent,
-    ) -> "StreamingResponseMessageContent":
+    ) -> "StreamingChatMessageContent":
         """Create a streaming chat message content object from a choice."""
-        # metadata = cls._get_metadata_from_response(response)
-        metadata = {}
-        from semantic_kernel.contents.streaming_response_message_content import (
-            StreamingResponseMessageContent,
+        # TODO(evmattso): add metadata support
+        metadata: dict[str, Any] = {}
+        from semantic_kernel.contents.streaming_chat_message_content import (
+            StreamingChatMessageContent,
         )
 
         items = []
         if isinstance(response_content_part.part, ResponseOutputText):
             items.extend(cls._collect_text_and_annotations([response_content_part.part]))
-        # TODO handle refusal
-        return StreamingResponseMessageContent(
+        # TODO(evmatso): handle refusal
+        return StreamingChatMessageContent(
             inner_content=response_content_part.part,
             name=agent.name,
             ai_model_id=agent.ai_model_id,
@@ -890,49 +890,3 @@ class ResponsesAgentThreadActions:
         return tools
 
     # endregion
-
-
-# def store_response_usage(self, response: Response) -> None:
-#     """Retrieve and aggregate usage data from the response object.
-
-#     Tracking attributes (`prompt_tokens`, `completion_tokens`, `total_tokens`) and
-#     instantiate or update the `response_usage` model with the same data.
-#     """
-#     # 1. Ensure the response has a usage attribute and it's not empty.
-#     usage_data = getattr(response, "usage", None)
-#     if not usage_data:
-#         return  # No usage info to store
-
-#     # 2. Convert to dict if needed; handle both dict-like and Pydantic model usage structures.
-#     if not isinstance(usage_data, dict):
-#         # If `response.usage` is already a pydantic model, we can use `.dict()`.
-#         usage_data = usage_data.dict()
-
-#     # 3. Parse the raw usage data into our strongly-typed `ResponseUsage` model.
-#     usage_obj = ResponseUsage(**usage_data)
-
-#     # 4. Either set or update the handler's `response_usage`.
-#     if self.response_usage is None:
-#         self.response_usage = usage_obj
-#     else:
-#         # If you already have a `response_usage`, you could aggregate further
-#         # or overwrite, depending on your desired logic. Below is an example of
-#         # adding the token counts together if you wish to accumulate usage over time.
-#         self.response_usage.input_tokens += usage_obj.input_tokens
-#         self.response_usage.output_tokens += usage_obj.output_tokens
-#         self.response_usage.total_tokens += usage_obj.total_tokens
-#         self.response_usage.input_tokens_details.cached_tokens += usage_obj.input_tokens_details.cached_tokens
-#         self.response_usage.output_tokens_details.reasoning_tokens += usage_obj.output_tokens_details.reasoning_tokens
-
-#     # 5. Update the overarching usage counters in the handler.
-#     self.prompt_tokens += usage_obj.input_tokens
-#     self.completion_tokens += usage_obj.output_tokens
-#     self.total_tokens += usage_obj.total_tokens
-
-#     # 6. (Optional) Log the stored usage data with relevant details for traceability.
-#     logger.info(
-#         f"OpenAI usage stored. "
-#         f"Prompt tokens: {self.prompt_tokens}, "
-#         f"Completion tokens: {self.completion_tokens}, "
-#         f"Total tokens: {self.total_tokens}"
-#     )

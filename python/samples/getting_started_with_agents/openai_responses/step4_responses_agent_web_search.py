@@ -32,8 +32,8 @@ async def main():
     agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
-        instructions="Answer questions from the user.",
-        name="Host",
+        instructions="Answer questions from the user about performing web searches for news.",
+        name="NewsSearcher",
         tools=[web_search_tool],
     )
 
@@ -44,26 +44,22 @@ async def main():
 
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")
-        # 4. Invoke the agent for the current message and print the response
-        first_chunk = True
-        async for response in agent.invoke_stream(messages=user_input, thread=thread):
-            thread = response.thread
-            if first_chunk:
-                print(f"# {response.name}: ", end="", flush=True)
-                first_chunk = False
-            print(response.content, end="", flush=True)
-        print()
+        response = await agent.get_response(messages=user_input, thread=thread)
+        print(f"# {response.name}: {response.content}")
+        thread = response.thread
 
     """
     You should see output similar to the following:
 
-    # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
-        light is scattered more than other colors because it travels in shorter, smaller waves.
-    # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
-        (about 186,282 miles per second).
-     """
+    # User: 'Find me news articles about the latest technology trends.'
+    # NewsSearcher: Recent developments in technology have highlighted several key trends shaping various industries:
+
+    **Artificial Intelligence (AI) Integration**: AI continues to revolutionize sectors by automating tasks, 
+        enhancing real-time analytics, and improving content delivery. At the 2025 NAB Show, AI's influence is 
+        evident across creator platforms, sports technology, streaming solutions, and cloud architectures. 
+        ([tvtechnology.com](https://www.tvtechnology.com/news/nab-show-2025-exhibitor-insight-black-box?utm_source=openai))
+    ...
+    """
 
 
 if __name__ == "__main__":

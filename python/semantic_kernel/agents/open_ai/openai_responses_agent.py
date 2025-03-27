@@ -3,9 +3,9 @@
 import logging
 import sys
 import uuid
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import AsyncIterable, Callable
 from copy import copy
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -31,21 +31,16 @@ from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
-from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.agents.open_ai.assistant_content_generation import create_chat_message, generate_message_content
-from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.responses_agent_thread_actions import ResponsesAgentThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
-from semantic_kernel.contents.streaming_response_message_content import StreamingResponseMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
-    AgentChatException,
     AgentInitializationException,
     AgentInvokeException,
     AgentThreadOperationException,
@@ -99,7 +94,7 @@ class ResponsesAgentThread(AgentThread):
         self._id = thread_id or f"thread_{uuid.uuid4().hex}"
         self._is_deleted = False
         self._enable_store = enable_store or False
-        self._response_id = None
+        self._response_id: str | None = None
 
     def __len__(self) -> int:
         """Returns the length of the chat history."""
@@ -186,116 +181,14 @@ class ResponsesAgentThread(AgentThread):
 
 # endregion
 
-# region Channel
-
-
-@experimental
-class ResponsesAgentChannel(AgentChannel):
-    """OpenAI Responses Agent Channel."""
-
-    def __init__(self, client: AsyncOpenAI, thread_id: str) -> None:
-        """Initialize the Responses Agent Channel."""
-        self.client = client
-        self.thread_id = thread_id
-
-    @override
-    async def receive(self, history: list["ChatMessageContent"]) -> None:
-        """Receive the conversation messages.
-
-        Args:
-            history: The conversation messages.
-        """
-        for message in history:
-            if any(isinstance(item, FunctionCallContent) for item in message.items):
-                continue
-            # TODO, update to correct method
-            await create_chat_message(self.client, self.thread_id, message)
-
-    @override
-    async def invoke(self, agent: "Agent", **kwargs: Any) -> AsyncIterable[tuple[bool, "ChatMessageContent"]]:
-        """Invoke the agent.
-
-        Args:
-            agent: The agent to invoke.
-            kwargs: The keyword arguments.
-
-        Yields:
-            tuple[bool, ChatMessageContent]: The conversation messages.
-        """
-        from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-
-        if not isinstance(agent, OpenAIAssistantAgent):
-            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")
-
-        async for is_visible, message in AssistantThreadActions.invoke(agent=agent, thread_id=self.thread_id, **kwargs):
-            yield is_visible, message
-
-    @override
-    async def invoke_stream(
-        self, agent: "Agent", messages: list[ChatMessageContent], **kwargs: Any
-    ) -> AsyncIterable["ChatMessageContent"]:
-        """Invoke the agent stream.
-
-        Args:
-            agent: The agent to invoke.
-            messages: The conversation messages.
-            kwargs: The keyword arguments.
-
-        Yields:
-            tuple[bool, StreamingChatMessageContent]: The conversation messages.
-        """
-        from semantic_kernel.agents.open_ai.open_ai_assistant_agent import OpenAIAssistantAgent
-
-        if not isinstance(agent, OpenAIAssistantAgent):
-            raise AgentChatException(f"Agent is not of the expected type {type(OpenAIAssistantAgent)}.")
-
-        async for message in AssistantThreadActions.invoke_stream(
-            agent=agent, thread_id=self.thread_id, messages=messages, **kwargs
-        ):
-            yield message
-
-    @override
-    async def get_history(self) -> AsyncIterable["ChatMessageContent"]:
-        """Get the conversation history.
-
-        Yields:
-            ChatMessageContent: The conversation history.
-        """
-        agent_names: dict[str, Any] = {}
-
-        thread_messages = await self.client.beta.threads.messages.list(
-            thread_id=self.thread_id, limit=100, order="desc"
-        )
-        for message in thread_messages.data:
-            assistant_name = None
-            if message.assistant_id and message.assistant_id not in agent_names:
-                agent = await self.client.beta.assistants.retrieve(message.assistant_id)
-                if agent.name:
-                    agent_names[message.assistant_id] = agent.name
-            assistant_name = agent_names.get(message.assistant_id) if message.assistant_id else message.assistant_id
-
-            content: ChatMessageContent = generate_message_content(str(assistant_name), message)
-
-            if len(content.items) > 0:
-                yield content
-
-    @override
-    async def reset(self) -> None:
-        """Reset the agent's thread."""
-        try:
-            await self.client.beta.threads.delete(thread_id=self.thread_id)
-        except Exception as e:
-            raise AgentChatException(f"Failed to delete thread: {e}")
-
-
-# endregion
-
 
 @experimental
 class OpenAIResponsesAgent(Agent):
     """OpenAI Responses Agent class.
 
     Provides the ability to interact with OpenAI's Responses API.
+
+    NOTE: The Responses Agent does not currently support AgentGroupChat.
     """
 
     # region Agent Initialization
@@ -314,8 +207,6 @@ class OpenAIResponsesAgent(Agent):
     store_enabled: bool = Field(default=True, description="Whether to store responses.")
     text: dict[str, Any] = Field(default_factory=dict)
     tools: list[ToolParam] = Field(default_factory=list)
-
-    channel_type: ClassVar[type[AgentChannel | None]] = ResponsesAgentChannel
 
     def __init__(
         self,
@@ -461,7 +352,7 @@ class OpenAIResponsesAgent(Agent):
             raise AgentInitializationException("The OpenAI API key is required.")
 
         if not openai_settings.responses_model_id:
-            raise AgentInitializationException("The OpenAI Response model ID is required.")
+            raise AgentInitializationException("The OpenAI Responses model ID is required.")
 
         merged_headers = dict(copy(default_headers)) if default_headers else {}
         if default_headers:
@@ -572,12 +463,12 @@ class OpenAIResponsesAgent(Agent):
     @staticmethod
     def configure_response_format(
         response_format: ResponseFormatUnion
-        | dict[Literal["type"] | Literal["text", "json_object"]]
+        | dict[Literal["type"], Literal["text", "json_object"]]
         | dict[str, Any]
         | type[BaseModel]
         | type
         | None = None,
-    ) -> dict | None:
+    ) -> dict[str, Any] | None:
         """Form the response format.
 
             {
@@ -606,49 +497,38 @@ class OpenAIResponsesAgent(Agent):
         Returns:
             The final dict containing `text.format` if JSON-based, or None if "auto".
         """
+        if response_format is None or response_format == "auto":
+            return None
+
+        # TODO(evmattso): improve typing in this method
         if isinstance(response_format, dict):
             resp_type = response_format.get("type", None)
 
             if resp_type == "json_object":
-                json_object_format = response_format  # type: ignore
-                if "name" not in json_object_format:
+                return {"type": "json_object"}
+            if resp_type == "json_schema":
+                json_schema = response_format.get("json_schema")  # type: ignore
+                if not isinstance(json_schema, dict):
                     raise AgentInitializationException(
-                        "json_object format must specify 'name' if your usage requires it."
+                        "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
                     )
-                configured_format = {"type": "json_object", "name": json_object_format["name"]}  # type: ignore
+                # We're assuming the response_format has already been provided in the correct format
+                return response_format  # type: ignore
 
-            elif resp_type == "json_schema":
-                json_schema_format = response_format  # type: ignore
-                if "schema" not in json_schema_format:
-                    raise AgentInitializationException("json_schema format dict is missing the 'schema' key.")
-                name = json_schema_format.get("name", "DefaultSchemaName")
-                strict = json_schema_format.get("strict", True)
-                configured_format = {
-                    "type": "json_schema",
-                    "name": name,
-                    "schema": json_schema_format["schema"],  # type: ignore
-                    "strict": strict,
-                }
-
-            elif resp_type == "text":
-                configured_format = {"type": "text"}
-
-            else:
-                raise AgentInitializationException(
-                    f"Encountered unexpected response_format type: {resp_type}. "
-                    "Allowed types are `json_object`, `json_schema`, `text`."
-                )
-        elif isinstance(response_format, type):
+            raise AgentInitializationException(
+                f"Encountered unexpected response_format type: {resp_type}. Allowed types are `json_object` "
+                " and `json_schema`."
+            )
+        if isinstance(response_format, type):
             if issubclass(response_format, BaseModel):
                 interim_format = type_to_text_format_param(response_format)
                 if interim_format["type"] != "json_schema":
                     raise AgentInitializationException("Only 'json_schema' is allowed from that helper.")
-                embedded = interim_format["json_schema"]  # type: ignore
                 configured_format = {
                     "type": "json_schema",
-                    "name": embedded.get("name", response_format.__name__),
-                    "schema": embedded["schema"],
-                    "strict": embedded.get("strict", True),
+                    "name": interim_format.get("name", response_format.__name__),
+                    "schema": interim_format.get("schema"),
+                    "strict": interim_format.get("strict", True),
                 }
             else:
                 # Build a schema from a plain Python class
@@ -663,127 +543,14 @@ class OpenAIResponsesAgent(Agent):
                 }
         else:
             raise AgentInitializationException(
-                "response_format must be a dict, a subclass of BaseModel, a Python class/type, or None"
+                "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
             )
 
         return {"format": configured_format}
 
-        # if response_format is None or response_format == "auto":
-        #     return None
-
-        # configured_format: dict[str, Any] = {}
-
-        # # 1) If given a dict:
-        # if isinstance(response_format, dict):
-        #     resp_type = response_format.get("type")
-        #     if resp_type == "json_object":
-        #         # Minimal validation. For the JSON object scenario,
-        #         # we only need to ensure the 'type' is 'json_object'
-        #         configured_format = {
-        #             "type": "json_object",
-        #             "name": response_format.get("name", "DefaultJsonObjectName"),
-        #         }
-        #     elif resp_type == "json_schema":
-        #         json_schema = response_format.get("json_schema")
-        #         if not isinstance(json_schema, dict):
-        #             raise AgentInitializationException(
-        #                 "If response_format has type 'json_schema', 'json_schema' must be a valid dictionary."
-        #             )
-        #         # Make sure we have a "name" set
-        #         name = response_format.get("name", "DefaultSchemaName")
-        #         # 'strict' can default to True if absent
-        #         strict = response_format.get("strict", True)
-
-        #         configured_format = {
-        #             "type": "json_schema",
-        #             "name": name,
-        #             "schema": json_schema,
-        #             "strict": strict,
-        #         }
-        #     else:
-        #         raise AgentInitializationException(
-        #             f"Encountered unexpected response_format type: {resp_type}. "
-        #             "Allowed types are `json_object` and `json_schema`."
-        #         )
-
-        # # 2) If given a type (class or pydantic model):
-        # elif isinstance(response_format, type):
-        #     # If it's a BaseModel subclass, introspect for schema
-        #     if issubclass(response_format, BaseModel):
-        #         interim_format = type_to_text_format_param(response_format)  # type: ignore
-        #         configured_format = {
-        #             "type": interim_format["type"],
-        #             "name": interim_format["json_schema"]["name"],
-        #             "schema": interim_format["json_schema"]["schema"],
-        #             "strict": interim_format["json_schema"].get("strict", True),
-        #         }
-        #     else:
-        #         # Build a schema from a plain Python class
-        #         generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
-        #         if generated_schema is None:
-        #             raise AgentInitializationException(f"Could not generate schema for the type {response_format}.")
-        #         configured_format = OpenAIResponsesAgent._generate_structured_output_response_format_schema(
-        #             name=response_format.__name__, schema=generated_schema
-        #         )
-        # else:
-        #     raise AgentInitializationException(
-        #         "response_format must be a dictionary, a subclass of BaseModel, a Python class/type, or None"
-        #     )
-
-        # return {"format": configured_format}
-
-    # endregion
-
-    # region Agent Channel Methods
-
-    def get_channel_keys(self) -> Iterable[str]:
-        """Get the channel keys.
-
-        Returns:
-            Iterable[str]: The channel keys.
-        """
-        # Distinguish from other channel types.
-        yield f"{OpenAIResponsesAgent.__name__}"
-
-        # Distinguish between different agent IDs
-        yield self.id
-
-        # Distinguish between agent names
-        yield self.name
-
-        # Distinguish between different API base URLs
-        yield str(self.client.base_url)
-
-    async def create_channel(self) -> AgentChannel:
-        """Create a channel."""
-        thread = await self.client.beta.threads.create()
-
-        return ResponsesAgentChannel(client=self.client, thread_id=thread.id)
-
     # endregion
 
     # region Invocation Methods
-
-    def _prepare_input_message(
-        self,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
-    ) -> ChatHistory:
-        """Prepare the input message for the agent.
-
-        Args:
-            messages: The messages to send to the agent.
-
-        Returns:
-            The chat history with the input messages.
-        """
-        if isinstance(messages, (str, ChatMessageContent)):
-            messages = [messages]
-
-        normalized_messages = [
-            ChatMessageContent(role=AuthorRole.USER, content=msg) if isinstance(msg, str) else msg for msg in messages
-        ]
-
-        return ChatHistory(messages=normalized_messages)
 
     @trace_agent_get_response
     @override
@@ -1015,7 +782,7 @@ class OpenAIResponsesAgent(Agent):
     async def invoke_stream(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -1028,7 +795,7 @@ class OpenAIResponsesAgent(Agent):
         | None = None,
         instructions_override: str | None = None,
         max_output_tokens: int | None = None,
-        output_messages: list[ChatMessageContent] | None = None,
+        on_complete: Callable[["ChatHistory"], None] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -1039,7 +806,7 @@ class OpenAIResponsesAgent(Agent):
         top_p: float | None = None,
         truncation: str | None = None,
         **kwargs: Any,
-    ) -> AsyncIterable[AgentResponseItem[StreamingResponseMessageContent]]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent.
 
         Args:
@@ -1054,7 +821,8 @@ class OpenAIResponsesAgent(Agent):
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_output_tokens: The maximum completion tokens.
-            output_messages: The messages to aggregate from agent responses.
+            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
+                These are full content messages formed from the streamed chunks.
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
@@ -1070,7 +838,7 @@ class OpenAIResponsesAgent(Agent):
             The chat message content.
         """
         thread = await self._ensure_thread_exists_with_messages(
-            messages=messages,
+            messages=messages,  # type: ignore
             thread=thread,
             construct_thread=lambda: ResponsesAgentThread(client=self.client, enable_store=self.store_enabled),
             expected_type=ResponsesAgentThread,
@@ -1105,6 +873,8 @@ class OpenAIResponsesAgent(Agent):
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
         assert function_choice_behavior is not None  # nosec
 
+        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+
         async for response in ResponsesAgentThreadActions.invoke_stream(
             agent=self,
             chat_history=chat_history,
@@ -1112,12 +882,38 @@ class OpenAIResponsesAgent(Agent):
             store_enabled=self.store_enabled,
             kernel=kernel,
             arguments=arguments,
-            output_messages=output_messages,
+            output_messages=collected_messages,
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
             response.metadata["thread_id"] = thread.id
-            await thread.on_new_message(response)
             yield AgentResponseItem(message=response, thread=thread)
+
+        if on_complete and collected_messages:
+            on_complete(ChatHistory(messages=collected_messages))
+
+    def _prepare_input_message(
+        self,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+    ) -> ChatHistory:
+        """Prepare the input message for the agent.
+
+        Args:
+            messages: The messages to send to the agent.
+
+        Returns:
+            The chat history with the input messages.
+        """
+        if messages is None:
+            messages = []
+
+        if isinstance(messages, (str, ChatMessageContent)):
+            messages = [messages]
+
+        normalized_messages = [
+            ChatMessageContent(role=AuthorRole.USER, content=msg) if isinstance(msg, str) else msg for msg in messages
+        ]
+
+        return ChatHistory(messages=normalized_messages)
 
     # endregion

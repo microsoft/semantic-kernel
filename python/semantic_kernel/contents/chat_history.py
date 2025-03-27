@@ -11,9 +11,8 @@ from defusedxml.ElementTree import XML, ParseError
 from pydantic import Field, field_validator, model_validator
 
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG, RESPONSE_MESSAGE_CONTENT_TAG
+from semantic_kernel.contents.const import CHAT_HISTORY_TAG, CHAT_MESSAGE_CONTENT_TAG
 from semantic_kernel.contents.kernel_content import KernelContent
-from semantic_kernel.contents.responses_message_content import ResponsesMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import ContentInitializationError, ContentSerializationError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -37,7 +36,7 @@ class ChatHistory(KernelBaseModel):
             before any other messages.
     """
 
-    messages: list[ChatMessageContent | ResponsesMessageContent] = Field(default_factory=list, kw_only=False)
+    messages: list[ChatMessageContent] = Field(default_factory=list, kw_only=False)
     system_message: str | None = Field(default=None, kw_only=False, repr=False)
 
     @model_validator(mode="before")
@@ -173,7 +172,7 @@ class ChatHistory(KernelBaseModel):
 
     def add_message(
         self,
-        message: ChatMessageContent | ResponsesMessageContent | dict[str, Any],
+        message: ChatMessageContent | dict[str, Any],
         encoding: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
@@ -188,7 +187,7 @@ class ChatHistory(KernelBaseModel):
             encoding (Optional[str]): The encoding of the message. Required if 'message' is a dict.
             metadata (Optional[dict[str, Any]]): Any metadata to attach to the message. Required if 'message' is a dict.
         """
-        if isinstance(message, (ChatMessageContent, ResponsesMessageContent)):
+        if isinstance(message, ChatMessageContent):
             self.messages.append(message)
             return
         if "role" not in message:
@@ -324,8 +323,6 @@ class ChatHistory(KernelBaseModel):
         for item in xml_prompt:
             if item.tag == CHAT_MESSAGE_CONTENT_TAG:
                 messages.append(ChatMessageContent.from_element(item))
-            elif item.tag == RESPONSE_MESSAGE_CONTENT_TAG:
-                messages.append(ResponsesMessageContent.from_element(item))
             elif item.tag == CHAT_HISTORY_TAG:
                 for message in item:
                     messages.append(ChatMessageContent.from_element(message))

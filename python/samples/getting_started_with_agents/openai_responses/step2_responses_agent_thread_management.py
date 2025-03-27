@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.agents import AzureResponsesAgent
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
@@ -14,12 +14,6 @@ associated with the thread. Therefore, client code does not need to maintain the
 conversation history.
 """
 
-# USER_INPUTS = [
-#     "Hello, I am John Doe.",
-#     "What is your name?",
-#     "What is my name?",
-# ]
-
 USER_INPUTS = [
     "Tell me a joke",
     "Explain why this is funny.",
@@ -29,13 +23,13 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client, model = AzureResponsesAgent.setup_resources()
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponsesAgent(
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
+    agent = AzureResponsesAgent(
         ai_model_id=model,
         client=client,
-        instructions="Answer questions about the world in one sentence.",
+        instructions="Answer questions about from the user.",
         name="Joker",
     )
 

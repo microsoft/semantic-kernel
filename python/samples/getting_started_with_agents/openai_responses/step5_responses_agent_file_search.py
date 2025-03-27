@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.agents import AzureResponsesAgent
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
@@ -19,7 +19,7 @@ conversation history.
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Who is the youngest employee?",
+    "By birthday, who is the youngest employee?",
     "Who works in sales?",
     "I have a customer request, who can help me?",
 ]
@@ -27,7 +27,7 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client, model = AzureResponsesAgent.setup_resources()
 
     pdf_file_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
@@ -41,10 +41,10 @@ async def main():
         file_ids=[file.id],
     )
 
-    file_search_tool = OpenAIResponsesAgent.configure_file_search_tool(vector_store.id)
+    file_search_tool = AzureResponsesAgent.configure_file_search_tool(vector_store.id)
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponsesAgent(
+    agent = AzureResponsesAgent(
         ai_model_id=model,
         client=client,
         instructions="Find answers to the user's questions in the provided file.",
@@ -55,7 +55,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponsesAgentThread = None
+    thread = None
 
     try:
         for user_input in USER_INPUTS:
@@ -70,14 +70,20 @@ async def main():
         await client.files.delete(file.id)
 
     """
-    You should see output similar to the following:
+    # User: 'By birthday, who is the youngest employee?'
+    # Agent: The youngest employee by birthday is Teodor Britton, born on January 9, 1997.
+    # User: 'Who works in sales?'
+    # Agent: The employees who work in sales are:
 
-    # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
-        light is scattered more than other colors because it travels in shorter, smaller waves.
-    # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
-        (about 186,282 miles per second).
+    - Mariam Jaslyn, Sales Representative
+    - Hicran Bea, Sales Manager
+    - Angelino Embla, Sales Representative.
+    # User: 'I have a customer request, who can help me?'
+    # Agent: For a customer request, you could reach out to the following people in the sales department:
+
+    - Mariam Jaslyn, Sales Representative
+    - Hicran Bea, Sales Manager
+    - Angelino Embla, Sales Representative.
      """
 
 
