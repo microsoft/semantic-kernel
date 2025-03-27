@@ -29,7 +29,7 @@ dependencies = [
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
-    "azure-identity ~= 1.13",
+    "azure-identity >= 1.13",
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
@@ -62,7 +62,6 @@ azure = [
     "azure-ai-projects >= 1.0.0b7",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
-    "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
