@@ -28,6 +28,10 @@ public abstract class AgentOrchestration
         //this.Id = $"{this.GetType().Name}_{Guid.NewGuid():N}";
         this.Id = Guid.NewGuid().ToString("N");
     }
+    /// <summary>
+    /// %%%
+    /// </summary>
+    public abstract bool IsComplete { get; }
 
     /// <summary>
     /// %%%

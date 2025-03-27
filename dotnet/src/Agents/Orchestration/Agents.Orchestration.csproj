@@ -42,7 +42,6 @@
   <ItemGroup>
     <Folder Include="Composed\" />
     <Folder Include="Extensions\" />
-    <Folder Include="Reciever\" />
   </ItemGroup>
 
 </Project>

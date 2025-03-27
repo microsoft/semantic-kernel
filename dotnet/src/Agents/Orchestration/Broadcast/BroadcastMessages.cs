@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
 /// <summary>
 /// Common messages used by the <see cref="BroadcastOrchestration"/>.
 /// </summary>
-public static class BroadcastMessages
+internal static class BroadcastMessages
 {
     /// <summary>
     /// %%% COMMENT

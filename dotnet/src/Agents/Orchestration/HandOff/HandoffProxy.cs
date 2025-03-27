@@ -3,16 +3,16 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
-using Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
+using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
 /// A <see cref="ManagedAgent"/> built around a <see cref="Agent"/>.
 /// </summary>
-internal sealed class BroadcastProxy : AgentProxy
+internal sealed class HandoffProxy : AgentProxy
 {
-    private readonly AgentType _recieverType;
+    private readonly AgentType _nextAgent;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentProxy"/> class.
@@ -20,20 +20,20 @@ internal sealed class BroadcastProxy : AgentProxy
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
-    /// <param name="recieverType">// %%%</param>
-    public BroadcastProxy(AgentId id, IAgentRuntime runtime, Agent agent, AgentType recieverType)
+    /// <param name="nextAgent">// %%%</param>
+    public HandoffProxy(AgentId id, IAgentRuntime runtime, Agent agent, AgentType nextAgent)
         : base(id, runtime, agent)
     {
-        this.RegisterHandler<BroadcastMessages.Task>(this.OnTaskAsync);
-        this._recieverType = recieverType;
+        this.RegisterHandler<HandoffMessages.Input>(this.OnHandoffAsync);
+        this._nextAgent = nextAgent;
     }
 
     /// <inheritdoc/>
-    private async ValueTask OnTaskAsync(BroadcastMessages.Task task, MessageContext context)
+    private async ValueTask OnHandoffAsync(HandoffMessages.Input message, MessageContext context)
     {
-        AgentResponseItem<ChatMessageContent>[] responses = await this.Agent.InvokeAsync([task.Message]).ToArrayAsync().ConfigureAwait(false);
+        AgentResponseItem<ChatMessageContent>[] responses = await this.Agent.InvokeAsync([message.Task]).ToArrayAsync().ConfigureAwait(false);
         AgentResponseItem<ChatMessageContent> response = responses.First();
-        await this.SendMessageAsync(response.Message.ToResult(), this._recieverType).ConfigureAwait(false); // %% CARDINALITY
+        await this.SendMessageAsync(message.Forward(response), this._nextAgent).ConfigureAwait(false); // %% CARDINALITY
         await response.Thread.DeleteAsync().ConfigureAwait(false);
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
+using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 
@@ -10,23 +11,18 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
 /// %%%
 /// </summary>
 /// <param name="results"></param>
-public delegate ValueTask BroadcastCompletedHandlerAsync(BroadcastMessages.Result[] results);
+public delegate ValueTask BroadcastCompletedHandlerAsync(ChatMessageContent[] results);
 
 /// <summary>
 /// %%%
 /// </summary>
-public class BroadcastOrchestration : AgentOrchestration
+public sealed class BroadcastOrchestration : AgentOrchestration
 {
-    internal sealed class Topics(string id) // %%% REVIEW
-    {
-        private const string Root = "BroadcastTopic";
-        public TopicId Task = new($"{Root}_{nameof(Task)}_{id}", id);
-        //public TopicId Result = new($"{Root}_{nameof(Result)}_{id}", id);
-    }
-
     private readonly BroadcastCompletedHandlerAsync _completionHandler;
     private readonly Agent[] _agents;
-    private readonly Topics _topics;
+    private readonly TopicId _topic;
+    private readonly ConcurrentQueue<ChatMessageContent> _results;
+    private int _resultCount;
 
     /// <summary>
     /// %%%
@@ -42,17 +38,17 @@ public class BroadcastOrchestration : AgentOrchestration
 
         this._agents = agents;
         this._completionHandler = completionHandler;
-        this._topics = new Topics(this.Id);
+        this._topic = new($"BroadcastTopic_{nameof(Task)}_{this.Id}", this.Id);
+        this._results = [];
     }
 
-    // ISCOMPLETE
-    // RESULTS
+    /// <inheritdoc />
+    public override bool IsComplete => this._resultCount == this._agents.Length;
 
     /// <inheritdoc />
     protected override async ValueTask MessageTaskAsync(ChatMessageContent message)
     {
-        BroadcastMessages.Task task = new() { Message = message };
-        await this.Runtime.PublishMessageAsync(task, this._topics.Task).ConfigureAwait(false);
+        await this.Runtime.PublishMessageAsync(message.ToTask(), this._topic).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -68,7 +64,7 @@ public class BroadcastOrchestration : AgentOrchestration
 
         await this.Runtime.RegisterAgentFactoryAsync(
             receiverType,
-            (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new BroadcastReciever(agentId, runtime, this.HandleResult))).ConfigureAwait(false);
+            (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new BroadcastReciever(agentId, runtime, this.HandleResultAsync))).ConfigureAwait(false);
     }
 
     private async ValueTask RegisterAgentAsync(Agent agent, AgentType receiverType)
@@ -78,12 +74,16 @@ public class BroadcastOrchestration : AgentOrchestration
             agentType,
             (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new BroadcastProxy(agentId, runtime, agent, receiverType))).ConfigureAwait(false);
 
-        await this.RegisterTopicsAsync(agentType, this._topics.Task).ConfigureAwait(false);
+        await this.RegisterTopicsAsync(agentType, this._topic).ConfigureAwait(false);
     }
 
-    private void HandleResult(BroadcastMessages.Result result)
+    private async ValueTask HandleResultAsync(BroadcastMessages.Result result)
     {
-        // %%% TODO: ???
-        Console.WriteLine(result);
+        this._results.Enqueue(result.Message);
+        Interlocked.Increment(ref this._resultCount);
+        if (this.IsComplete)
+        {
+            await this._completionHandler.Invoke(this._results.ToArray()).ConfigureAwait(false);
+        }
     }
 }

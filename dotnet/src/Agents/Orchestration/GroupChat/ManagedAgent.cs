@@ -2,9 +2,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
-using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
 /// <summary>
 /// A <see cref="ManagedAgent"/> that responds to a <see cref="ManagerAgent"/>.
@@ -30,9 +29,9 @@ public abstract class ManagedAgent : RuntimeAgent
     protected ManagedAgent(AgentId id, IAgentRuntime runtime, string description)
         : base(id, runtime, description)
     {
-        this.RegisterHandler<Messages.Group>(this.OnGroupMessageAsync);
-        this.RegisterHandler<Messages.Reset>(this.OnResetMessageAsync);
-        this.RegisterHandler<Messages.Speak>(this.OnSpeakMessageAsync);
+        this.RegisterHandler<GroupChatMessages.Group>(this.OnGroupMessageAsync);
+        this.RegisterHandler<GroupChatMessages.Reset>(this.OnResetMessageAsync);
+        this.RegisterHandler<GroupChatMessages.Speak>(this.OnSpeakMessageAsync);
     }
 
     /// <summary>
@@ -54,17 +53,17 @@ public abstract class ManagedAgent : RuntimeAgent
     /// <returns></returns>
     protected abstract ValueTask<ChatMessageContent> SpeakAsync();
 
-    private ValueTask OnGroupMessageAsync(Messages.Group message, MessageContext context)
+    private ValueTask OnGroupMessageAsync(GroupChatMessages.Group message, MessageContext context)
     {
         return this.RecieveMessageAsync(message.Message);
     }
 
-    private ValueTask OnResetMessageAsync(Messages.Reset message, MessageContext context)
+    private ValueTask OnResetMessageAsync(GroupChatMessages.Reset message, MessageContext context)
     {
         return this.ResetAsync();
     }
 
-    private async ValueTask OnSpeakMessageAsync(Messages.Speak message, MessageContext context)
+    private async ValueTask OnSpeakMessageAsync(GroupChatMessages.Speak message, MessageContext context)
     {
         ChatMessageContent response = await this.SpeakAsync().ConfigureAwait(false);
         await this.PublishMessageAsync(response.ToGroup(), GroupChatTopic).ConfigureAwait(false);

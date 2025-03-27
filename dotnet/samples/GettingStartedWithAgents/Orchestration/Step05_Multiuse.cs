@@ -4,6 +4,7 @@ using Microsoft.AgentRuntime.InProcess;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
+using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
@@ -11,10 +12,10 @@ namespace GettingStarted.Orchestration;
 /// <summary>
 /// %%%
 /// </summary>
-public class Step01_Broadcast(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step05_Multiuse(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public async Task UseBroadcastPatternAsync()
+    public async Task UseMultiplePatternsAsync()
     {
         // Define the agents
         // %%% STRUCTURED OUTPUT ???
@@ -45,22 +46,32 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseAgentsTest(output)
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        BroadcastOrchestration orchestration = new(runtime, BroadcastCompletedHandlerAsync, agent1, agent2, agent3);
+        BroadcastOrchestration broadcast = new(runtime, BroadcastCompletedHandlerAsync, agent2, agent3);
+        HandoffOrchestration handoff = new(runtime, HandoffCompletedHandlerAsync, agent1);
 
         // Start the runtime
         await runtime.StartAsync();
-        await orchestration.StartAsync(new ChatMessageContent(AuthorRole.User, "The quick brown fox jumps over the lazy dog"));
+        await broadcast.StartAsync(new ChatMessageContent(AuthorRole.User, "The quick brown fox jumps over the lazy dog"));
+        await handoff.StartAsync(new ChatMessageContent(AuthorRole.User, "The quick brown fox jumps over the lazy dog"));
         await runtime.RunUntilIdleAsync();
-        Console.WriteLine($"ISCOMPLETE = {orchestration.IsComplete}");
+
+        Console.WriteLine($"BROADCAST ISCOMPLETE = {broadcast.IsComplete}");
+        Console.WriteLine($"HANDOFF ISCOMPLETE = {handoff.IsComplete}");
 
         ValueTask BroadcastCompletedHandlerAsync(ChatMessageContent[] results)
         {
-            Console.WriteLine("RESULT:");
+            Console.WriteLine("BROADCAST RESULT:");
             for (int index = 0; index < results.Length; ++index)
             {
                 ChatMessageContent result = results[index];
                 Console.WriteLine($"#{index}: {result}");
             }
+            return ValueTask.CompletedTask;
+        }
+
+        ValueTask HandoffCompletedHandlerAsync(ChatMessageContent result)
+        {
+            Console.WriteLine($"HANDOFF RESULT: {result}");
             return ValueTask.CompletedTask;
         }
     }

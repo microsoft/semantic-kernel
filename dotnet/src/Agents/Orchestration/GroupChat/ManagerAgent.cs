@@ -2,10 +2,9 @@
 
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
-using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
 /// <summary>
 /// A <see cref="RuntimeAgent"/> that orchestrates a team of agents.
@@ -28,8 +27,8 @@ public abstract class ManagerAgent : RuntimeAgent
     {
         this.Chat = [];
         this.Team = team;
-        this.RegisterHandler<Messages.Task>(this.OnTaskMessageAsync);
-        this.RegisterHandler<Messages.Group>(this.OnGroupMessageAsync);
+        this.RegisterHandler<GroupChatMessages.Task>(this.OnTaskMessageAsync);
+        this.RegisterHandler<GroupChatMessages.Group>(this.OnGroupMessageAsync);
     }
 
     /// <summary>
@@ -40,7 +39,7 @@ public abstract class ManagerAgent : RuntimeAgent
     /// <summary>
     /// The input task.
     /// </summary>
-    protected Messages.Task Task { get; private set; } = Messages.Task.None;
+    protected GroupChatMessages.Task Task { get; private set; } = GroupChatMessages.Task.None;
 
     /// <summary>
     /// Metadata that describes team of agents being orchestrated.
@@ -52,7 +51,7 @@ public abstract class ManagerAgent : RuntimeAgent
     /// </summary>
     protected Task RequestAgentResponseAsync(TopicId agentTopic)
     {
-        return this.PublishMessageAsync(new Messages.Speak(), agentTopic); // %%% EXCEPTION: KeyNotFoundException/AggregateException
+        return this.PublishMessageAsync(new GroupChatMessages.Speak(), agentTopic); // %%% EXCEPTION: KeyNotFoundException/AggregateException
     }
 
     /// <summary>
@@ -77,7 +76,7 @@ public abstract class ManagerAgent : RuntimeAgent
     /// </remarks>
     protected abstract Task<TopicId?> SelectAgentAsync();
 
-    private async ValueTask OnTaskMessageAsync(Messages.Task message, MessageContext context)
+    private async ValueTask OnTaskMessageAsync(GroupChatMessages.Task message, MessageContext context)
     {
         this.Task = message;
         TopicId? agentTopic = await this.PrepareTaskAsync().ConfigureAwait(false);
@@ -87,7 +86,7 @@ public abstract class ManagerAgent : RuntimeAgent
         }
     }
 
-    private async ValueTask OnGroupMessageAsync(Messages.Group message, MessageContext context)
+    private async ValueTask OnGroupMessageAsync(GroupChatMessages.Group message, MessageContext context)
     {
         this.Chat.Add(message.Message);
         TopicId? agentTopic = await this.SelectAgentAsync().ConfigureAwait(false);

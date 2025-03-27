@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// Common messages used in the Magentic framework.
 /// </summary>
-public static class Messages
+public static class GroupChatMessages
 {
     /// <summary>
     /// %%% COMMENT
@@ -38,33 +38,6 @@ public static class Messages
     /// Signal the agent to respond.
     /// </summary>
     public sealed class Speak { }
-
-    /// <summary>
-    /// Report on internal task progress.
-    /// Include token usage for model interactions.
-    /// </summary>
-    public sealed class Progress
-    {
-        /// <summary>
-        /// Describes the type of progress.
-        /// </summary>
-        public string Label { get; init; } = string.Empty;
-
-        /// <summary>
-        /// The total token count.
-        /// </summary>
-        public int? TotalTokens { get; init; }
-
-        /// <summary>
-        /// The input token count.
-        /// </summary>
-        public int? InputTokens { get; init; }
-
-        /// <summary>
-        /// The output token count.
-        /// </summary>
-        public int? OutputTokens { get; init; }
-    }
 
     /// <summary>
     /// Defines the task to be performed.

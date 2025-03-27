@@ -3,7 +3,7 @@
 using Microsoft.AgentRuntime.InProcess;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
+using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
@@ -11,10 +11,10 @@ namespace GettingStarted.Orchestration;
 /// <summary>
 /// %%%
 /// </summary>
-public class Step01_Broadcast(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step03_GroupChat(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public async Task UseBroadcastPatternAsync()
+    public async Task UseGroupChatPatternAsync()
     {
         // Define the agents
         // %%% STRUCTURED OUTPUT ???
@@ -45,7 +45,7 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseAgentsTest(output)
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        BroadcastOrchestration orchestration = new(runtime, BroadcastCompletedHandlerAsync, agent1, agent2, agent3);
+        HandoffOrchestration orchestration = new(runtime, HandoffCompletedHandlerAsync, agent1, agent2, agent3);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -53,14 +53,9 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseAgentsTest(output)
         await runtime.RunUntilIdleAsync();
         Console.WriteLine($"ISCOMPLETE = {orchestration.IsComplete}");
 
-        ValueTask BroadcastCompletedHandlerAsync(ChatMessageContent[] results)
+        ValueTask HandoffCompletedHandlerAsync(ChatMessageContent result)
         {
-            Console.WriteLine("RESULT:");
-            for (int index = 0; index < results.Length; ++index)
-            {
-                ChatMessageContent result = results[index];
-                Console.WriteLine($"#{index}: {result}");
-            }
+            Console.WriteLine($"RESULT: {result}");
             return ValueTask.CompletedTask;
         }
     }
