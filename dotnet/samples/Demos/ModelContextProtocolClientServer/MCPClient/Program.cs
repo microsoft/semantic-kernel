@@ -96,7 +96,7 @@ internal sealed class Program
 #if DEBUG
         configuration = "Debug";
 #else
-        configuration = "Release";  
+        configuration = "Release";
 #endif
 
         return Path.Combine("..", "..", "..", "..", "MCPServer", "bin", configuration, "net8.0", "MCPServer.exe");
