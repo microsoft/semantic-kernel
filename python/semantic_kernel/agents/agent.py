@@ -4,7 +4,7 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Annotated, Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -13,6 +13,7 @@ from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMe
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel import Kernel
@@ -201,10 +202,35 @@ class Agent(KernelBaseModel, ABC):
             if not kernel:
                 kernel = Kernel()
             for plugin in plugins:
-                name = Agent._get_plugin_name(plugin)
-                kernel.add_plugin(plugin, plugin_name=name)
+                kernel.add_plugin(plugin)
             data["kernel"] = kernel
         return data
+
+    def model_post_init(self, __context: Any) -> None:
+        """Post initialization: create a kernel_function that calls this agent's get_response()."""
+
+        @kernel_function(name=self.name, description=self.description or self.instructions)
+        async def _as_kernel_function(
+            messages: Annotated[str | list[str], "The user messages for the agent."],
+            instructions_override: Annotated[str | None, "Override agent instructions."] = None,
+        ) -> Annotated[Any, "Agent response."]:
+            """A Minimal universal function for all agents.
+
+            Exposes 'messages' and 'instructions_override'.
+            Internally, we pass them to get_response() for whichever agent is calling it.
+            """
+            if isinstance(messages, str):
+                messages = [messages]
+
+            response_item = await self.get_response(
+                messages=messages,  # type: ignore
+                instructions_override=instructions_override if instructions_override else None,
+            )
+            return response_item.content
+
+        # Keep Pydantic happy with the "private" method, otherwise
+        # it will fail validating the model.
+        setattr(self, "_as_kernel_function", _as_kernel_function)
 
     @abstractmethod
     def get_response(

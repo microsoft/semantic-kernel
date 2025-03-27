@@ -198,6 +198,12 @@ public abstract class Agent
             throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
         }
 
+        // We have to explicitly call create here to ensure that the thread is created
+        // before we invoke using the thread. While threads will be created when
+        // notified of new messages, some agents support invoking without a message,
+        // and in that case no messages will be sent in the next step.
+        await thread.CreateAsync(cancellationToken).ConfigureAwait(false);
+
         // Notify the thread that new messages are available.
         foreach (var message in messages)
         {
