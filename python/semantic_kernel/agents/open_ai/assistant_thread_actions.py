@@ -554,7 +554,10 @@ class AssistantThreadActions:
 
     @classmethod
     async def get_messages(
-        cls: type[_T], client: AsyncOpenAI, thread_id: str, sort_order: Literal["asc", "desc"] = "desc"
+        cls: type[_T],
+        client: AsyncOpenAI,
+        thread_id: str,
+        sort_order: Literal["asc", "desc"] | None = None,
     ) -> AsyncIterable["ChatMessageContent"]:
         """Get messages from the thread.
 
@@ -572,7 +575,7 @@ class AssistantThreadActions:
         while True:
             messages = await client.beta.threads.messages.list(
                 thread_id=thread_id,
-                order=sort_order,
+                order=sort_order,  # type: ignore
                 after=last_id,
             )
 

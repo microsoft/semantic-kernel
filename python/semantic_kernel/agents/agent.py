@@ -236,7 +236,7 @@ class Agent(KernelBaseModel, ABC):
     def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
@@ -266,7 +266,7 @@ class Agent(KernelBaseModel, ABC):
     def invoke(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
@@ -291,7 +291,7 @@ class Agent(KernelBaseModel, ABC):
     def invoke_stream(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
@@ -379,12 +379,16 @@ class Agent(KernelBaseModel, ABC):
 
     async def _ensure_thread_exists_with_messages(
         self,
-        messages: str | ChatMessageContent | Sequence[str | ChatMessageContent],
+        *,
+        messages: str | ChatMessageContent | Sequence[str | ChatMessageContent] | None = None,
         thread: AgentThread | None,
         construct_thread: Callable[[], TThreadType],
         expected_type: type[TThreadType],
     ) -> TThreadType:
         """Ensure the thread exists with the provided message(s)."""
+        if messages is None:
+            messages = []
+
         if isinstance(messages, (str, ChatMessageContent)):
             messages = [messages]
 
