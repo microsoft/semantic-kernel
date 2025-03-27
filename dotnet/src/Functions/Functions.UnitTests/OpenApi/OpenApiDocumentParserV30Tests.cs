@@ -679,23 +679,23 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
     }
 
     [Fact]
-    public void ItCanVerifyPathServersNotInGlobalAreAddedToFinalList()
+    public void ItCanVerifyGlobalServersAreStoredCorrectly()
     {
         // Arrange
         var document = new OpenApiDocument
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://global-server.com", Description = "Global server" }
-                }
+            {
+                new() { Url = "https://global-server.com", Description = "Global server" }
+            }
         };
 
         var pathItem = new OpenApiPathItem
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://path-unique.com", Description = "Path unique server" }
-                },
+            {
+                new() { Url = "https://path-unique.com", Description = "Path unique server" }
+            },
             Operations = new Dictionary<OperationType, OpenApiOperation>
             {
                 [OperationType.Get] = new OpenApiOperation
@@ -708,35 +708,32 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         // Act
         var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
-        var servers = operations[0].Servers;
+        var operation = operations[0];
 
         // Assert
-        Assert.Equal(2, servers.Count);
-        Assert.Contains(servers, s => s.Url == "https://global-server.com");
-        Assert.Contains(servers, s => s.Url == "https://path-unique.com");
-
-        var pathServer = servers.Single(s => s.Url == "https://path-unique.com");
-        Assert.Equal("Path unique server", pathServer.Description);
+        Assert.Equal(1, operation.Servers.Count);
+        Assert.Contains(operation.Servers, s => s.Url == "https://global-server.com");
+        Assert.Equal("Global server", operation.Servers[0].Description);
     }
 
     [Fact]
-    public void ItCanVerifyPathServersOverrideGlobalServersWithSameUrl()
+    public void ItCanVerifyPathServersAreStoredCorrectly()
     {
         // Arrange
         var document = new OpenApiDocument
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://shared-server.com", Description = "Global server description" }
-                }
+            {
+                new() { Url = "https://global-server.com", Description = "Global server description" }
+            }
         };
 
         var pathItem = new OpenApiPathItem
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://shared-server.com", Description = "Path override description" }
-                },
+            {
+                new() { Url = "https://path-server.com", Description = "Path server description" }
+            },
             Operations = new Dictionary<OperationType, OpenApiOperation>
             {
                 [OperationType.Get] = new OpenApiOperation
@@ -749,41 +746,42 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         // Act
         var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
-        var servers = operations[0].Servers;
+        var operation = operations[0];
 
         // Assert
-        Assert.Equal(1, servers.Count);
-        var sharedServer = servers.Single(s => s.Url == "https://shared-server.com");
-        Assert.Equal("Path override description", sharedServer.Description);
+        Assert.Equal(1, operation.PathServers.Count);
+        var pathServer = operation.PathServers.Single();
+        Assert.Equal("https://path-server.com", pathServer.Url);
+        Assert.Equal("Path server description", pathServer.Description);
     }
 
     [Fact]
-    public void ItCanVerifyOperationServersNotInGlobalOrPathAreAddedToFinalList()
+    public void ItCanVerifyOperationServersAreStoredCorrectly()
     {
         // Arrange
         var document = new OpenApiDocument
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://global-server.com", Description = "Global server" }
-                }
+            {
+                new() { Url = "https://global-server.com", Description = "Global server" }
+            }
         };
 
         var pathItem = new OpenApiPathItem
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://path-server.com", Description = "Path server" }
-                },
+            {
+                new() { Url = "https://path-server.com", Description = "Path server" }
+            },
             Operations = new Dictionary<OperationType, OpenApiOperation>
             {
                 [OperationType.Get] = new OpenApiOperation
                 {
                     OperationId = "GetTest",
                     Servers = new List<OpenApiServer>
-                        {
-                            new() { Url = "https://operation-unique.com", Description = "Operation unique server" }
-                        },
+                    {
+                        new() { Url = "https://operation-server.com", Description = "Operation server" }
+                    },
                     Responses = new OpenApiResponses()
                 }
             }
@@ -791,49 +789,42 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         // Act
         var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
-        var servers = operations[0].Servers;
+        var operation = operations[0];
 
         // Assert
-        Assert.Equal(3, servers.Count);
-        Assert.Contains(servers, s => s.Url == "https://global-server.com");
-        Assert.Contains(servers, s => s.Url == "https://path-server.com");
-        Assert.Contains(servers, s => s.Url == "https://operation-unique.com");
-
-        var operationServer = servers.Single(s => s.Url == "https://operation-unique.com");
-        Assert.Equal("Operation unique server", operationServer.Description);
+        Assert.Equal(1, operation.OperationServers.Count);
+        var operationServer = operation.OperationServers.Single();
+        Assert.Equal("https://operation-server.com", operationServer.Url);
+        Assert.Equal("Operation server", operationServer.Description);
     }
 
     [Fact]
-    public void ItCanVerifyOperationServersOverrideGlobalAndPathServersWithSameUrl()
+    public void ItCanVerifyServerSelectorSelectsHighestPriorityServer()
     {
         // Arrange
         var document = new OpenApiDocument
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://global-shared.com", Description = "Global server" },
-                    new() { Url = "https://both-shared.com", Description = "Global both shared" }
-                }
+            {
+                new() { Url = "https://global-server.com", Description = "Global server" }
+            }
         };
 
         var pathItem = new OpenApiPathItem
         {
             Servers = new List<OpenApiServer>
-                {
-                    new() { Url = "https://path-shared.com", Description = "Path server" },
-                    new() { Url = "https://both-shared.com", Description = "Path both shared" }
-                },
+            {
+                new() { Url = "https://path-server.com", Description = "Path server" }
+            },
             Operations = new Dictionary<OperationType, OpenApiOperation>
             {
                 [OperationType.Get] = new OpenApiOperation
                 {
                     OperationId = "GetTest",
                     Servers = new List<OpenApiServer>
-                        {
-                            new() { Url = "https://global-shared.com", Description = "Operation override of global" },
-                            new() { Url = "https://path-shared.com", Description = "Operation override of path" },
-                            new() { Url = "https://both-shared.com", Description = "Operation override of both" }
-                        },
+                    {
+                        new() { Url = "https://operation-server.com", Description = "Operation server" }
+                    },
                     Responses = new OpenApiResponses()
                 }
             }
@@ -841,19 +832,198 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
 
         // Act
         var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
-        var servers = operations[0].Servers;
+        var operation = operations[0];
 
-        // Assert
-        Assert.Equal(3, servers.Count);
+        // Create a server selector as described in the review
+        RestApiServer SelectServer(RestApiOperation op)
+        {
+            if (op.OperationServers.Count > 0)
+            {
+                return op.OperationServers[0];
+            }
+            else if (op.PathServers.Count > 0)
+            {
+                return op.PathServers[0];
+            }
+            else if (op.Servers.Count > 0)
+            {
+                return op.Servers[0];
+            }
+            else
+            {
+                throw new InvalidOperationException("No servers available for selection.");
+            }
+        }
 
-        var globalSharedServer = servers.Single(s => s.Url == "https://global-shared.com");
-        Assert.Equal("Operation override of global", globalSharedServer.Description);
+        var selectedServer = SelectServer(operation);
 
-        var pathSharedServer = servers.Single(s => s.Url == "https://path-shared.com");
-        Assert.Equal("Operation override of path", pathSharedServer.Description);
+        // Assert - operation server should be selected with highest priority
+        Assert.Equal("https://operation-server.com", selectedServer.Url);
+        Assert.Equal("Operation server", selectedServer.Description);
+    }
 
-        var bothSharedServer = servers.Single(s => s.Url == "https://both-shared.com");
-        Assert.Equal("Operation override of both", bothSharedServer.Description);
+    [Fact]
+    public void ItCanVerifyServerSelectorFallsBackToPathServerWhenNoOperationServers()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+            {
+                new() { Url = "https://global-server.com", Description = "Global server" }
+            }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Servers = new List<OpenApiServer>
+            {
+                new() { Url = "https://path-server.com", Description = "Path server" }
+            },
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var operation = operations[0];
+
+        // Create a server selector as described in the review
+        RestApiServer SelectServer(RestApiOperation op)
+        {
+            if (op.OperationServers.Count > 0)
+            {
+                return op.OperationServers[0];
+            }
+            else if (op.PathServers.Count > 0)
+            {
+                return op.PathServers[0];
+            }
+            else if (op.Servers.Count > 0)
+            {
+                return op.Servers[0];
+            }
+            else
+            {
+                throw new InvalidOperationException("No servers available for selection.");
+            }
+        }
+
+        var selectedServer = SelectServer(operation);
+
+        // Assert - path server should be selected when no operation servers
+        Assert.Equal("https://path-server.com", selectedServer.Url);
+        Assert.Equal("Path server", selectedServer.Description);
+    }
+
+    [Fact]
+    public void ItCanVerifyServerSelectorFallsBackToGlobalServerWhenNoPathOrOperationServers()
+    {
+        // Arrange
+        var document = new OpenApiDocument
+        {
+            Servers = new List<OpenApiServer>
+            {
+                new() { Url = "https://global-server.com", Description = "Global server" }
+            }
+        };
+
+        var pathItem = new OpenApiPathItem
+        {
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var operation = operations[0];
+
+        // Create a server selector as described in the review
+        RestApiServer SelectServer(RestApiOperation op)
+        {
+            if (op.OperationServers.Count > 0)
+            {
+                return op.OperationServers[0];
+            }
+            else if (op.PathServers.Count > 0)
+            {
+                return op.PathServers[0];
+            }
+            else if (op.Servers.Count > 0)
+            {
+                return op.Servers[0];
+            }
+            else
+            {
+                throw new InvalidOperationException("No servers available for selection.");
+            }
+        }
+
+        var selectedServer = SelectServer(operation);
+
+        // Assert - global server should be selected when no path or operation servers
+        Assert.Equal("https://global-server.com", selectedServer.Url);
+        Assert.Equal("Global server", selectedServer.Description);
+    }
+
+    [Fact]
+    public void ItThrowsExceptionWhenNoServersAvailable()
+    {
+        // Arrange
+        var document = new OpenApiDocument();
+
+        var pathItem = new OpenApiPathItem
+        {
+            Operations = new Dictionary<OperationType, OpenApiOperation>
+            {
+                [OperationType.Get] = new OpenApiOperation
+                {
+                    OperationId = "GetTest",
+                    Responses = new OpenApiResponses()
+                }
+            }
+        };
+
+        // Act
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var operation = operations[0];
+
+        // Create a server selector as described in the review
+        RestApiServer SelectServer(RestApiOperation op)
+        {
+            if (op.OperationServers.Count > 0)
+            {
+                return op.OperationServers[0];
+            }
+            else if (op.PathServers.Count > 0)
+            {
+                return op.PathServers[0];
+            }
+            else if (op.Servers.Count > 0)
+            {
+                return op.Servers[0];
+            }
+            else
+            {
+                throw new InvalidOperationException("No servers available for selection.");
+            }
+        }
+
+        // Assert - should throw exception when no servers available
+        var exception = Assert.Throws<InvalidOperationException>(() => SelectServer(operation));
+        Assert.Equal("No servers available for selection.", exception.Message);
     }
 
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)

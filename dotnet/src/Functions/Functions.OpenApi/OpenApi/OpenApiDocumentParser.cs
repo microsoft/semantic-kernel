@@ -188,20 +188,13 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         try
         {
             var operations = new List<RestApiOperation>();
-
-            // Create servers collection from global document servers
             var globalServers = CreateRestApiOperationServers(document.Servers);
-
-            // Create servers collection from path-level servers
             var pathServers = CreateRestApiOperationServers(pathItem.Servers);
 
             foreach (var operationPair in pathItem.Operations)
             {
                 var method = operationPair.Key.ToString();
-
                 var operationItem = operationPair.Value;
-
-                // Create servers collection from operation-level servers
                 var operationServers = CreateRestApiOperationServers(operationItem.Servers);
 
                 // Skip the operation parsing and don't add it to the result operations list if it's explicitly excluded by the predicate.
@@ -214,7 +207,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 {
                     var operation = new RestApiOperation(
                     id: operationItem.OperationId,
-                    servers: MergeServers(globalServers, pathServers, operationServers),
+                    servers: globalServers,
                     path: path,
                     method: new HttpMethod(method),
                     description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
@@ -224,7 +217,9 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                     securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
                 )
                     {
-                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
+                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger),
+                        PathServers = pathServers,
+                        OperationServers = operationServers
                     };
 
                     operations.Add(operation);
@@ -612,48 +607,6 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
             this._logger.LogWarning("Parsing of '{Title}' OpenAPI document complete with the following errors: {Errors}", title, errors);
         }
-    }
-
-    /// <summary>
-    /// <param name="globalServers"></param>
-    /// <param name="pathServers"></param>
-    /// <param name="operationServers"></param>
-    /// <returns></returns>
-    /// </summary>
-    private static List<RestApiServer> MergeServers(List<RestApiServer> globalServers, List<RestApiServer> pathServers, List<RestApiServer> operationServers)
-    {
-        // Create a dictionary to store the merged servers, using URL as the key
-        var mergedServers = new Dictionary<string, RestApiServer>();
-
-        // Add global servers first (lowest precedence)
-        foreach (var server in globalServers)
-        {
-            if (server.Url != null)
-            {
-                mergedServers[server.Url] = server;
-            }
-        }
-
-        // Add path servers, overriding any global servers with the same URL
-        foreach (var server in pathServers)
-        {
-            if (server.Url != null)
-            {
-                mergedServers[server.Url] = server;
-            }
-        }
-
-        // Add operation servers, overriding any global or path servers with the same URL
-        foreach (var server in operationServers)
-        {
-            if (server.Url != null)
-            {
-                mergedServers[server.Url] = server;
-            }
-        }
-
-        // Return the merged servers as a list
-        return mergedServers.Values.ToList();
     }
 
     #endregion
