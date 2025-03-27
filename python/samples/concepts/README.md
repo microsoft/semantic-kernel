@@ -51,7 +51,7 @@
 - [OpenAI Assistant File Manipulation](./agents/openai_assistant/openai_assistant_file_manipulation.py)
 - [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
 - [OpenAI Assistant Retrieval](./agents/openai_assistant/openai_assistant_retrieval.py)
-- [OpenAI Assistant Streaming Chat History Callbacl](./agents/openai_assistant/openai_assistant_streaming_chat_history_callback.py)
+- [OpenAI Assistant Streaming Chat History Callback](./agents/openai_assistant/openai_assistant_streaming_chat_history_callback.py)
 - [OpenAI Assistant Streaming](./agents/openai_assistant/openai_assistant_streaming.py)
 - [OpenAI Assistant Structured Outputs](./agents/openai_assistant/openai_assistant_structured_outputs.py)
 - [OpenAI Assistant Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
