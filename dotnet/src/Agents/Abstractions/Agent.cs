@@ -180,7 +180,7 @@ public abstract class Agent
     /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
     /// <param name="options">Optional parameters for agent invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <returns>An async list of response items that each contain a <see cref="StreamingChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
     /// <remarks>
     /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
     /// </remarks>
@@ -202,7 +202,7 @@ public abstract class Agent
     /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
     /// <param name="options">Optional parameters for agent invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <returns>An async list of response items that each contain a <see cref="StreamingChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
     /// <remarks>
     /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
     /// </remarks>
