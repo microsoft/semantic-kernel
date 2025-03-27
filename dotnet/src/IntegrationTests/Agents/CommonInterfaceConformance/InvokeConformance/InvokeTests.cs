@@ -68,7 +68,7 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         var agent = this.Fixture.Agent;
 
         // Act
-        var asyncResults = agent.InvokeAsync([]);
+        var asyncResults = agent.InvokeAsync();
         var results = await asyncResults.ToListAsync();
 
         // Assert
