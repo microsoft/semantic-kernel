@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Data;
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
 /// <summary>
-/// Options used to construct an instance of <see cref="TavilyTextSearch"/>
+/// Options used to construct an instance of <see cref="TavilyTextSearch"/>.
 /// </summary>
 public sealed class TavilyTextSearchOptions
 {
@@ -24,8 +24,7 @@ public sealed class TavilyTextSearchOptions
     /// A basic search costs 1 API Credit, while an advanced search costs 2 API Credits.
     /// Available options: basic, advanced
     /// </summary>
-    // TODO Create an enum
-    public string? SearchDepth { get; set; }
+    public SearchDepth? SearchDepth { get; set; }
 
     /// <summary>
     /// The number of content chunks to retrieve from each source.
@@ -75,4 +74,21 @@ public sealed class TavilyTextSearchOptions
     /// <see cref="ITextSearchResultMapper" /> instance that can map a <see cref="TavilySearchResult"/> to a <see cref="TextSearchResult"/>
     /// </summary>
     public ITextSearchResultMapper? ResultMapper { get; init; } = null;
+}
+
+/// <summary>
+/// The depth of the search. advanced search is tailored to retrieve
+/// the most relevant sources and content snippets for your query,
+/// while basic search provides generic content snippets from each source.
+/// </summary>
+public enum SearchDepth
+{
+    /// <summary>
+    /// Basic search costs 1 API Credit.
+    /// </summary>
+    Basic,
+    /// <summary>
+    /// Advanced search costs 2 API Credits.
+    /// </summary>
+    Advanced
 }
