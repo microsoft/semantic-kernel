@@ -25,7 +25,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     public async Task BedrockAgentWithConfigurationAsync()
     {
         var text =
-            $"""
+            """
             type: bedrock_agent
             name: StoryAgent
             description: Store Telling Agent

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Agents;
 using Xunit;
 
@@ -112,5 +114,45 @@ public class AgentDefinitionYamlTests
         Assert.Equal(3, agentDefinition.Metadata.Authors?.Count);
         Assert.Equal(3, agentDefinition.Metadata.Tags?.Count);
         Assert.Equal("2025-02-21", agentDefinition.Metadata.ExtensionData["created"]);
+    }
+
+    /// <summary>
+    /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text.
+    /// </summary>
+    [Fact]
+    public void VerifyAgentDefinitionWithConfigurationFromYaml()
+    {
+        // Arrange
+        var text =
+            """
+            version: 1.0.0
+            type: chat_completion_agent
+            name: My Agent
+            description: Description of My Agent
+            instructions: Instructions for how My Agent works
+            model:
+                id: ${OpenAI:ChatModelId}
+                connection:
+                    api_key: ${OpenAI:ApiKey}
+            """;
+
+        var configData = new Dictionary<string, string?>
+        {
+            {"OpenAI:ChatModelId", "gpt-4o"},
+            {"OpenAI:ApiKey", "API-KEY"},
+        };
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(configData).Build();
+
+        // Act
+        var agentDefinition = AgentDefinitionYaml.FromYaml(text, configuration);
+
+        // Assert
+        Assert.NotNull(agentDefinition);
+        Assert.Equal("1.0.0", agentDefinition.Version);
+        Assert.Equal("chat_completion_agent", agentDefinition.Type);
+        Assert.Equal("My Agent", agentDefinition.Name);
+        Assert.Equal("Description of My Agent", agentDefinition.Description);
+        Assert.Equal("Instructions for how My Agent works", agentDefinition.Instructions);
+        Assert.NotNull(agentDefinition.Model);
     }
 }

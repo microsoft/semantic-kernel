@@ -52,6 +52,12 @@ public sealed class TestConfiguration
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
 
+    public static IConfiguration GetSection(string caller)
+    {
+        return s_instance?._configRoot.GetSection(caller) ??
+               throw new ConfigurationNotFoundException(section: caller);
+    }
+
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
         if (s_instance is null)

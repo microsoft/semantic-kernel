@@ -33,7 +33,7 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
@@ -41,7 +41,7 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
         {
             if (kernelAgentFactory.IsSupported(agentDefinition))
             {
-                var kernelAgent = await kernelAgentFactory.TryCreateAsync(kernel, agentDefinition, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
+                var kernelAgent = await kernelAgentFactory.TryCreateAsync(kernel, agentDefinition, agentCreationOptions, cancellationToken).ConfigureAwait(false);
                 if (kernelAgent is not null)
                 {
                     return kernelAgent;

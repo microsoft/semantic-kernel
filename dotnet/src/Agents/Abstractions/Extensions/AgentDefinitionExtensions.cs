@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -124,4 +128,87 @@ public static class AgentDefinitionExtensions
 
         return agentDefinition.Tools?.Any(tool => tool?.Type?.Equals(toolType, System.StringComparison.Ordinal) ?? false) ?? false;
     }
+
+    /// <summary>
+    /// Processes the properties of the specified <see cref="AgentDefinition" />, including nested objects and collections.
+    /// </summary>
+    /// <param name="agentDefinition">Instance of <see cref="AgentDefinition"/> to normalize.</param>
+    /// <param name="configuration">Instance of <see cref="IConfiguration"/> which provides the configuration values.</param>
+    public static void Normalize(this AgentDefinition agentDefinition, IConfiguration configuration)
+    {
+        Verify.NotNull(agentDefinition);
+
+        NormalizeObject(agentDefinition, configuration);
+    }
+
+    #region private
+    private static void NormalizeObject(object? obj, IConfiguration configuration)
+    {
+        if (obj is null)
+        {
+            return;
+        }
+
+        Type type = obj.GetType();
+        foreach (PropertyInfo property in type.GetProperties())
+        {
+            if (property.PropertyType == typeof(string))
+            {
+                string? value = property.GetValue(obj) as string;
+                if (RequiresNormalization(value))
+                {
+                    NormalizeString(obj, property, value!, configuration);
+                }
+            }
+            else if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            {
+                var dictionary = property.GetValue(obj) as IDictionary;
+                if (dictionary != null)
+                {
+                    foreach (DictionaryEntry entry in dictionary)
+                    {
+                        if (entry.Value is string stringValue)
+                        {
+                            if (RequiresNormalization(stringValue))
+                            {
+                                NormalizeString(obj, property, stringValue, configuration);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
+            {
+                // Process nested object  
+                var nestedObject = property.GetValue(obj);
+                NormalizeObject(nestedObject, configuration);
+            }
+            else if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
+            {
+                // Process collections  
+                var collection = property.GetValue(obj) as IEnumerable;
+                if (collection != null)
+                {
+                    foreach (var item in collection)
+                    {
+                        NormalizeObject(item, configuration);
+                    }
+                }
+            }
+        }
+    }
+
+    private static bool RequiresNormalization(string? value)
+    {
+        return !string.IsNullOrEmpty(value) && value.StartsWith("${", StringComparison.InvariantCulture) && value.EndsWith("}", StringComparison.InvariantCulture);
+    }
+
+    private static void NormalizeString(object instance, PropertyInfo property, string input, IConfiguration configuration)
+    {
+        string key = input.Substring(2, input.Length - 3);
+        string? value = configuration[key];
+        property.SetValue(instance, value);
+    }
+
+    #endregion
 }
