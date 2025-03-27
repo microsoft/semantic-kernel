@@ -35,14 +35,14 @@ public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
     }
 
     /// <inheritdoc/>
-    public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
+    public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage message)
     {
         if (this._grpcClient != null)
         {
             switch (externalTopicEvent)
             {
                 case DocumentGenerationProcess.DocGenerationTopics.RequestUserReview:
-                    var requestDocument = JsonSerializer.Deserialize<DocumentInfo>(eventData.EventData!.ToString()!);
+                    var requestDocument = JsonSerializer.Deserialize<DocumentInfo>(message.EventData!.ToString()!);
                     if (requestDocument != null)
                     {
                         await this._grpcClient.RequestUserReviewDocumentationFromProcessAsync(new()
@@ -50,13 +50,13 @@ public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
                             Title = requestDocument.Title,
                             AssistantMessage = "Document ready for user revision. Approve or reject document",
                             Content = requestDocument.Content,
-                            ProcessData = new() { ProcessId = eventData.ProcessId }
+                            ProcessData = new() { ProcessId = message.ProcessId }
                         });
                     }
                     return;
 
                 case DocumentGenerationProcess.DocGenerationTopics.PublishDocumentation:
-                    var publishedDocument = JsonSerializer.Deserialize<DocumentInfo>(eventData.EventData!.ToString()!);
+                    var publishedDocument = JsonSerializer.Deserialize<DocumentInfo>(message.EventData!.ToString()!);
                     if (publishedDocument != null)
                     {
                         await this._grpcClient.PublishDocumentationAsync(new()
@@ -64,7 +64,7 @@ public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
                             Title = publishedDocument.Title,
                             AssistantMessage = "Published Document Ready",
                             Content = publishedDocument.Content,
-                            ProcessData = new() { ProcessId = eventData.ProcessId }
+                            ProcessData = new() { ProcessId = message.ProcessId }
                         });
                     }
                     return;

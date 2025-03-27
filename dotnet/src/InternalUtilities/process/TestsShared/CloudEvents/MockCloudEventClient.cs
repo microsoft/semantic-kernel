@@ -47,11 +47,11 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     }
 
     /// <inheritdoc/>
-    public Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage eventData)
+    public Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage message)
     {
-        if (eventData != null)
+        if (message != null)
         {
-            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = eventData });
+            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = message });
         }
 
         return Task.CompletedTask;
