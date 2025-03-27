@@ -71,7 +71,7 @@ public sealed class AgentCompletionsController : ControllerBase
     {
         var thread = new ChatHistoryAgentThread(chatHistory);
         IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> content =
-            this._agent.InvokeAsync([], thread, options: new() { KernelArguments = arguments }, cancellationToken: cancellationToken);
+            this._agent.InvokeAsync(thread, options: new() { KernelArguments = arguments }, cancellationToken: cancellationToken);
 
         await foreach (ChatMessageContent item in content.ConfigureAwait(false))
         {
@@ -90,7 +90,7 @@ public sealed class AgentCompletionsController : ControllerBase
     {
         var thread = new ChatHistoryAgentThread(chatHistory);
         IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> content =
-            this._agent.InvokeStreamingAsync([], thread, options: new() { KernelArguments = arguments }, cancellationToken: cancellationToken);
+            this._agent.InvokeStreamingAsync(thread, options: new() { KernelArguments = arguments }, cancellationToken: cancellationToken);
 
         await foreach (StreamingChatMessageContent item in content.ConfigureAwait(false))
         {
