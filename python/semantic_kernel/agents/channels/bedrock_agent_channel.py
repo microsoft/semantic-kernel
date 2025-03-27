@@ -67,7 +67,7 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
         await self._ensure_last_message_is_user()
 
         async for response in agent.invoke(
-            input_text=self.messages[-1].content,
+            messages=self.messages[-1].content,
             thread=self.thread,
             sessionState=await self._parse_chat_history_to_session_state(),
         ):
@@ -105,7 +105,7 @@ class BedrockAgentChannel(AgentChannel, ChatHistory):
 
         full_message: list[StreamingChatMessageContent] = []
         async for response_chunk in agent.invoke_stream(
-            input_text=self.messages[-1].content,
+            messages=self.messages[-1].content,
             thread=self.thread,
             sessionState=await self._parse_chat_history_to_session_state(),
         ):

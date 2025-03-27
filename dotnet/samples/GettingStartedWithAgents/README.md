@@ -114,7 +114,7 @@ To set your secrets with .NET Secret Manager:
     dotnet user-secrets set "OpenAI:ApiKey" "..."
     ```
 
-5. Or Azure Open AI:
+5. Or Azure OpenAI:
 
     ```
     dotnet user-secrets set "AzureOpenAI:ChatDeploymentName" "gpt-4o"
@@ -136,7 +136,7 @@ To set your secrets with .NET Secret Manager:
     dotnet user-secrets set "BedrockAgent:FoundationModel" "..."
     ```
 
-> NOTE: Azure secrets will take precedence, if both Open AI and Azure Open AI secrets are defined, unless `ForceOpenAI` is set:
+> NOTE: Azure secrets will take precedence, if both Open AI and Azure OpenAI secrets are defined, unless `ForceOpenAI` is set:
 
 ```
 protected override bool ForceOpenAI => true;
