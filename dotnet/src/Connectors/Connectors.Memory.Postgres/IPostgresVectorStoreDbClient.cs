@@ -134,4 +134,7 @@ internal interface IPostgresVectorStoreDbClient
     IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, int limit,
         VectorSearchFilter? legacyFilter = default, Expression<Func<TRecord, bool>>? newFilter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
+
+    IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecords<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader,
+        QueryOptions<TRecord> options, CancellationToken cancellationToken = default);
 }

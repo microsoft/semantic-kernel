@@ -228,6 +228,43 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         return Task.FromResult(vectorSearchResults);
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        SqliteFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, options.Filter);
+        translator.Translate(appendWhere: false);
+
+        IReadOnlyList<VectorStoreRecordProperty> properties = options.IncludeVectors
+            ? this._propertyReader.Properties
+            : [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties];
+
+        var orderByPropertyName = this._propertyReader.GetOrderByProperty(options.OrderBy) is { } orderByProperty
+            ? this._propertyReader.StoragePropertyNamesMap[orderByProperty.DataModelPropertyName]
+            : null;
+
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectWhereCommand(
+            connection,
+            options,
+            this._dataTableName,
+            properties,
+            translator.Clause.ToString(),
+            translator.Parameters,
+            orderByPropertyName);
+
+        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return this.GetAndMapRecord(
+                "Query",
+                reader,
+                properties,
+                options.IncludeVectors);
+        }
+    }
+
     #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
 
     /// <inheritdoc />
@@ -696,7 +733,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     private TRecord GetAndMapRecord(
         string operationName,
         DbDataReader reader,
-        List<VectorStoreRecordProperty> properties,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
         bool includeVectors)
     {
         var storageModel = new Dictionary<string, object?>();

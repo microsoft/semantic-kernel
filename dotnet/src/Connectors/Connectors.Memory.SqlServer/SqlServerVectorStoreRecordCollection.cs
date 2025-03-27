@@ -504,4 +504,31 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection.Dispose();
         }
     }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        using SqlConnection connection = new(this._connectionString);
+        using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
+            options,
+            connection,
+            this._options.Schema,
+            this.CollectionName,
+            this._propertyReader.Properties,
+            this._propertyReader.StoragePropertyNamesMap,
+            this._propertyReader.GetOrderByProperty(options.OrderBy));
+
+        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+            cancellationToken, "QueryAsync", this.CollectionName).ConfigureAwait(false);
+
+        var vectorPropertyStoragePropertyNames = options.IncludeVectors ? this._propertyReader.VectorPropertyStoragePropertyNames : [];
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorPropertyStoragePropertyNames), mapperOptions);
+        }
+    }
 }

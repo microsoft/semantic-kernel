@@ -396,6 +396,54 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        var filter = new RedisFilterTranslator().Translate(options.Filter, this._propertyReader.JsonPropertyNamesMap);
+        var orderByField = this._propertyReader.GetOrderByProperty(options.OrderBy) switch
+        {
+            // Key properties are not supported for ordering as they are not part of the schema.
+            VectorStoreRecordKeyProperty keyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
+            VectorStoreRecordProperty dataProperty => this._propertyReader.GetJsonPropertyName(dataProperty.DataModelPropertyName),
+            null => null
+        };
+
+        Query query = new Query(filter)
+            .Limit(options.Skip, options.Top)
+            .Dialect(2);
+
+        if (orderByField is not null)
+        {
+            query = query.SetSortBy(orderByField, ascending: options.SortAscending);
+        }
+
+        var results = await this.RunOperationAsync(
+            "FT.SEARCH",
+            () => this._database
+                .FT()
+                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+
+        foreach (var document in results.Documents)
+        {
+            var retrievedHashEntries = this._propertyReader.DataPropertyStoragePropertyNames
+                .Concat(this._propertyReader.VectorPropertyStoragePropertyNames)
+                .Select(propertyName => new HashEntry(propertyName, document[propertyName]))
+                .ToArray();
+
+            // Convert to the caller's data model.
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this._collectionName,
+                "FT.SEARCH",
+                () =>
+                {
+                    return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(document.Id), retrievedHashEntries), new() { IncludeVectors = options.IncludeVectors });
+                });
+        }
+    }
+
     /// <summary>
     /// Prefix the key with the collection name if the option is set.
     /// </summary>

@@ -364,6 +364,49 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
+    internal static SqlCommand SelectWhere<TRecord>(
+        QueryOptions<TRecord> options,
+        SqlConnection connection, string? schema, string tableName,
+        IReadOnlyList<VectorStoreRecordProperty> properties,
+        IReadOnlyDictionary<string, string> storagePropertyNamesMap,
+        VectorStoreRecordProperty? orderByProperty)
+    {
+        SqlCommand command = connection.CreateCommand();
+
+        StringBuilder sb = new(200);
+        sb.AppendFormat("SELECT ");
+        sb.AppendColumnNames(properties, includeVectors: options.IncludeVectors);
+        sb.AppendLine();
+        sb.Append("FROM ");
+        sb.AppendTableName(schema, tableName);
+        sb.AppendLine();
+        if (options.Filter is not null)
+        {
+            int startParamIndex = command.Parameters.Count;
+
+            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, options.Filter, sb, startParamIndex: startParamIndex);
+            translator.Translate(appendWhere: true);
+            List<object> parameters = translator.ParameterValues;
+
+            foreach (object parameter in parameters)
+            {
+                command.AddParameter(property: null, $"@_{startParamIndex++}", parameter);
+            }
+            sb.AppendLine();
+        }
+        if (orderByProperty is not null)
+        {
+            sb.AppendFormat("ORDER BY [{0}] {1}", GetColumnName(orderByProperty), options.SortAscending ? "ASC" : "DESC");
+            sb.AppendLine();
+        }
+        // Negative Skip and Top values are rejected by the QueryOptions property setters.
+        // 0 is a legal value for OFFSET.
+        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, options.Top);
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
     internal static string GetColumnName(VectorStoreRecordProperty property)
         => property.StoragePropertyName ?? property.DataModelPropertyName;
 
@@ -479,11 +522,11 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    private static void AddParameter(this SqlCommand command, VectorStoreRecordProperty property, string name, object? value)
+    private static void AddParameter(this SqlCommand command, VectorStoreRecordProperty? property, string name, object? value)
     {
         switch (value)
         {
-            case null when property.PropertyType == typeof(byte[]):
+            case null when property is not null && property.PropertyType == typeof(byte[]):
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
                 break;
             case null:

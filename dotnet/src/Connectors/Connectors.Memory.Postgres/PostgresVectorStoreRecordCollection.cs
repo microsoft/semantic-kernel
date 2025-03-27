@@ -317,6 +317,27 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         });
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
+
+        await foreach (var dictionary in this._client.GetMatchingRecords(
+            this.CollectionName,
+            this._propertyReader,
+            options,
+            cancellationToken).ConfigureAwait(false))
+        {
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                PostgresConstants.DatabaseName,
+                this.CollectionName,
+                "Query",
+                () => this._mapper.MapFromStorageToDataModel(dictionary, mapperOptions));
+        }
+    }
+
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
         return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken);

@@ -278,6 +278,26 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    {
+        var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
+            .AsQueryable()
+            .Where(options.Filter);
+
+        if (options.OrderBy is not null)
+        {
+            records = options.SortAscending
+                ? records.OrderBy(options.OrderBy)
+                : records.OrderByDescending(options.OrderBy);
+        }
+
+        return records
+            .Skip(options.Skip)
+            .Take(options.Top)
+            .ToAsyncEnumerable();
+    }
+
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>

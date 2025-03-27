@@ -365,6 +365,28 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildQuery(
+            options,
+            this._propertyReader.GetOrderByProperty(options.OrderBy),
+            this.CollectionName,
+            this._propertyReader.KeyPropertyName,
+            s_jsonSerializerOptions,
+            this._propertyReader.JsonPropertyNamesMap,
+            this._propertyReader.VectorPropertyJsonNames,
+            this._propertyReader.DataPropertyJsonNames);
+
+        var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "QueryAsync", cancellationToken).ConfigureAwait(false);
+        await foreach (var record in results.Results.ConfigureAwait(false))
+        {
+            yield return record.Record;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";

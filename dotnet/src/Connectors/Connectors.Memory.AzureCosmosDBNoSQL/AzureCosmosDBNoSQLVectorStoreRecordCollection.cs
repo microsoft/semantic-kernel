@@ -399,6 +399,42 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(options.Filter, this._storagePropertyNames);
+
+        string? orderByField = this._propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty orderByProperty
+            ? this._storagePropertyNames[orderByProperty.DataModelPropertyName] : null;
+
+        var fields = new List<string>(options.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
+
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+            fields,
+            this._storagePropertyNames,
+            whereClause,
+            filterParameters,
+            orderByField,
+            options.SortAscending,
+            top: options.Top,
+            skip: options.Skip);
+
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
+
+        await foreach (var jsonObject in searchResults.ConfigureAwait(false))
+        {
+            var record = VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this.CollectionName,
+                "QueryAsync",
+                () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = options.IncludeVectors }));
+
+            yield return record;
+        }
+    }
+
+    /// <inheritdoc />
     public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";

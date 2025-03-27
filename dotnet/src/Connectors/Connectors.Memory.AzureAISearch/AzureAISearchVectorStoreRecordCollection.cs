@@ -381,6 +381,46 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(options);
+
+        SearchOptions searchOptions = new()
+        {
+            VectorSearch = new(),
+            Size = options.Top,
+            Skip = options.Skip,
+            Filter = new AzureAISearchFilterTranslator().Translate(options.Filter, this._propertyReader.StoragePropertyNamesMap),
+        };
+
+        // Filter out vector fields if requested.
+        if (!options.IncludeVectors)
+        {
+            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
+            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+        }
+
+        if (this._propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty property)
+        {
+            string name = this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName];
+            // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
+            // "The default is ascending order."
+            if (!options.SortAscending)
+            {
+                name += " desc";
+            }
+
+            searchOptions.OrderBy.Add(name);
+        }
+
+        VectorSearchResults<TRecord> vectorSearchResults = await this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false);
+        await foreach (var result in vectorSearchResults.Results.ConfigureAwait(false))
+        {
+            yield return result.Record;
+        }
+    }
+
+    /// <inheritdoc />
     public virtual Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchText);
