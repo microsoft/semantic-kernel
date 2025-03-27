@@ -211,7 +211,9 @@ async def test_invoke_tool_call_added(kernel_with_ai_service: tuple[Kernel, Chat
     assert messages[1].message.content == "Processed Message 2"
 
     thread: ChatHistoryAgentThread = messages[-1].thread
-    history = await thread.get_messages()
+    history = ChatHistory()
+    async for message in thread.get_messages():
+        history.add_message(message)
 
     assert len(history.messages) == 5
     assert history.messages[1].content == "Processed Message 1"

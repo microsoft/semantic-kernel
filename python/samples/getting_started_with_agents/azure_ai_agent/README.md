@@ -59,13 +59,13 @@ You can pass in a connection string (shown above) to create the client:
 
 ```python
 async with (
-        DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
-    ):
-        # operational logic
+    DefaultAzureCredential() as creds,
+    AzureAIAgent.create_client(
+        credential=creds,
+        conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
+    ) as client,
+):
+    # operational logic
 ```
 
 ### Creating an Agent Definition

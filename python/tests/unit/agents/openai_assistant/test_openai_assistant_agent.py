@@ -9,7 +9,9 @@ from pydantic import BaseModel, ValidationError
 from semantic_kernel.agents import OpenAIAssistantAgent
 from semantic_kernel.agents.open_ai.open_ai_assistant_agent import AssistantAgentThread
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -243,6 +245,52 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args, op
             results.append(item)
 
     assert len(results) == 1
+
+
+@pytest.mark.parametrize(
+    "arguments, include_args",
+    [
+        pytest.param({"extra_args": "extra_args"}, True),
+        pytest.param(None, False),
+    ],
+)
+async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
+    arguments, include_args, openai_client, assistant_definition
+):
+    agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
+    mock_thread = AsyncMock(spec=AssistantAgentThread)
+    results = []
+
+    final_chat_history = ChatHistory()
+
+    def handle_stream_completion(history: ChatHistory) -> None:
+        final_chat_history.messages.extend(history.messages)
+
+    # Fake collected messages
+    fake_message = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
+
+    async def fake_invoke(*args, output_messages=None, **kwargs):
+        if output_messages is not None:
+            output_messages.append(fake_message)
+        yield fake_message
+
+    kwargs = None
+    if include_args:
+        kwargs = arguments
+
+    with patch(
+        "semantic_kernel.agents.open_ai.assistant_thread_actions.AssistantThreadActions.invoke_stream",
+        side_effect=fake_invoke,
+    ):
+        async for item in agent.invoke_stream(
+            messages="test", thread=mock_thread, on_complete=handle_stream_completion, **(kwargs or {})
+        ):
+            results.append(item)
+
+    assert len(results) == 1
+    assert results[0].message.content == "fake content"
+    assert len(final_chat_history.messages) == 1
+    assert final_chat_history.messages[0].content == "fake content"
 
 
 def test_open_ai_assistant_agent_get_channel_keys(openai_client, assistant_definition):
