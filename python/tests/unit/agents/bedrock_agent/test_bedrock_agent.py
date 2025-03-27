@@ -466,7 +466,7 @@ async def test_bedrock_agent_get_response(
         mock_invoke_agent.return_value = bedrock_agent_non_streaming_simple_response
         mock_start.return_value = "test_session_id"
 
-        response = await agent.get_response(input_text="test_input_text", thread=thread)
+        response = await agent.get_response(messages="test_input_text", thread=thread)
         assert response.message.content == simple_response
 
         mock_invoke_agent.assert_called_once()
@@ -495,7 +495,7 @@ async def test_bedrock_agent_get_response_exception(
         mock_start.return_value = "test_session_id"
 
         with pytest.raises(AgentInvokeException):
-            await agent.get_response(input_text="test_input_text")
+            await agent.get_response(messages="test_input_text")
 
 
 # Test case to verify the invocation of BedrockAgent
