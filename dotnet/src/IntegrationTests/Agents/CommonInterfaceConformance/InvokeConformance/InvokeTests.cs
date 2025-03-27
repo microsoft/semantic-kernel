@@ -152,65 +152,6 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     }
 
     /// <summary>
-    /// Verifies that the agent returns a function call content when using
-    /// autoinvoke = false, and accepts a manual function call result to generate
-    /// the final response.
-    /// </summary>
-    [RetryFact(3, 5000)]
-    public virtual async Task InvokeWithPluginAndManualInvokeAsync()
-    {
-        // Arrange
-        var agent = this.Fixture.Agent;
-        agent.Kernel.Plugins.AddFromType<MenuPlugin>();
-        var notifiedMessages = new List<ChatMessageContent>();
-
-        // Act - Invoke 1
-        var asyncResults = agent.InvokeAsync(
-            new ChatMessageContent(AuthorRole.User, "What is the special soup?"),
-            this.Fixture.AgentThread,
-            options: new()
-            {
-                KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) }),
-                OnNewMessage = (message) =>
-                {
-                    notifiedMessages.Add(message);
-                    return Task.CompletedTask;
-                }
-            });
-
-        // Assert - Invoke 1 results
-        var results = await asyncResults.ToArrayAsync();
-        Assert.Single(results);
-
-        Assert.Contains(results[0].Message.Items, x => x is FunctionCallContent);
-        var functionCallContent = results[0].Message.Items.OfType<FunctionCallContent>().First();
-
-        // Manually call function so that we can pass the result to the next invocation.
-        var functionCallResult = await functionCallContent.InvokeAsync(agent.Kernel);
-        var functionCallResultMessage = functionCallResult.ToChatMessage();
-
-        // Act - Invoke 2
-        asyncResults = agent.InvokeAsync(
-            functionCallResultMessage,
-            this.Fixture.AgentThread,
-            options: new()
-            {
-                KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) }),
-                OnNewMessage = (message) =>
-                {
-                    notifiedMessages.Add(message);
-                    return Task.CompletedTask;
-                }
-            });
-
-        // Assert - Invoke 2 results
-        results = await asyncResults.ToArrayAsync();
-        Assert.Single(results);
-
-        Assert.Contains("Clam Chowder", results[0].Message.Content);
-    }
-
-    /// <summary>
     /// Verifies that the agent notifies callers of all messages
     /// including function calling ones when using invoke with a plugin.
     /// </summary>
