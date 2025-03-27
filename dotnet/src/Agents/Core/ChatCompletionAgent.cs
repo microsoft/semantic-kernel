@@ -17,13 +17,13 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents a <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
+/// Represents a <see cref="Agent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 /// <remarks>
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins
-/// (<see cref="KernelAgent.Arguments"/>).
+/// (<see cref="Agent.Arguments"/>).
 /// </remarks>
-public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
+public sealed class ChatCompletionAgent : ChatHistoryAgent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.

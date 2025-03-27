@@ -12,9 +12,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace SemanticKernel.Agents.UnitTests;
 
 /// <summary>
-/// Mock definition of <see cref="KernelAgent"/> with a <see cref="ChatHistoryKernelAgent"/> contract.
+/// Mock definition of <see cref="Agent"/> with a <see cref="ChatHistoryAgent"/> contract.
 /// </summary>
-internal sealed class MockAgent : ChatHistoryKernelAgent
+internal sealed class MockAgent : ChatHistoryAgent
 {
     public int InvokeCount { get; private set; }
 
