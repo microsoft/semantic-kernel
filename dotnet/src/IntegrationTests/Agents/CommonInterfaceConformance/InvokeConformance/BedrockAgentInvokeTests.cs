@@ -84,10 +84,4 @@ public class BedrockAgentInvokeTests() : InvokeTests(() => new BedrockAgentFixtu
     {
         return base.InvokeWithPluginNotifiesForAllMessagesAsync();
     }
-
-    [Fact(Skip = "This test is for manual verification.")]
-    public override Task InvokeWithPluginAndManualInvokeAsync()
-    {
-        return base.InvokeWithPluginAndManualInvokeAsync();
-    }
 }
