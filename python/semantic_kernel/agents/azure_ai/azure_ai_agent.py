@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import AsyncIterable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -29,6 +29,7 @@ from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgent
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
@@ -270,7 +271,7 @@ class AzureAIAgent(Agent):
     async def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
@@ -371,7 +372,7 @@ class AzureAIAgent(Agent):
     async def invoke(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
@@ -466,7 +467,7 @@ class AzureAIAgent(Agent):
     async def invoke_stream(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
@@ -474,7 +475,7 @@ class AzureAIAgent(Agent):
         instructions_override: str | None = None,
         kernel: Kernel | None = None,
         model: str | None = None,
-        output_messages: list[ChatMessageContent] | None = None,
+        on_complete: Callable[["ChatHistory"], None] | None = None,
         tools: list[ToolDefinition] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
@@ -498,8 +499,8 @@ class AzureAIAgent(Agent):
             instructions_override: Instructions to override the default instructions.
             kernel: The kernel to use for the agent.
             model: The model to use for the agent.
-            output_messages: The output messages received from the agent. These are full content messages
-                formed from the streamed chunks.
+            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
+                These are full content messages formed from the streamed chunks.
             tools: Tools for the agent.
             temperature: Temperature for the agent.
             top_p: Top p for the agent.
@@ -547,17 +548,21 @@ class AzureAIAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
+        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+
         async for message in AgentThreadActions.invoke_stream(
             agent=self,
             thread_id=thread.id,
-            output_messages=output_messages,
+            output_messages=collected_messages,
             kernel=kernel,
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
             message.metadata["thread_id"] = thread.id
-            await thread.on_new_message(message)
             yield AgentResponseItem(message=message, thread=thread)
+
+        if on_complete and collected_messages:
+            on_complete(ChatHistory(messages=collected_messages))
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.

@@ -19,6 +19,12 @@ public sealed class AzureAIInvocationOptions
     public string? ModelName { get; init; }
 
     /// <summary>
+    /// Gets the override instructions.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OverrideInstructions { get; init; }
+
+    /// <summary>
     /// Gets the additional instructions.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

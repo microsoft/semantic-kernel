@@ -2,12 +2,9 @@
 
 import logging
 import sys
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import AsyncIterable, Callable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
-
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
-from semantic_kernel.contents.utils.author_role import AuthorRole
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -27,14 +24,17 @@ from openai.types.beta.file_search_tool_param import FileSearchToolParam
 from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.agents import Agent
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.open_ai_assistant_channel import OpenAIAssistantChannel
 from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThreadActions
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentInitializationException,
     AgentInvokeException,
@@ -466,7 +466,7 @@ class OpenAIAssistantAgent(Agent):
     async def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
@@ -570,7 +570,7 @@ class OpenAIAssistantAgent(Agent):
     async def invoke(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
@@ -668,7 +668,7 @@ class OpenAIAssistantAgent(Agent):
     async def invoke_stream(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
@@ -679,7 +679,7 @@ class OpenAIAssistantAgent(Agent):
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
-        output_messages: list[ChatMessageContent] | None = None,
+        on_complete: Callable[[ChatHistory], None] | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning_effort: Literal["low", "medium", "high"] | None = None,
         response_format: "AssistantResponseFormatOptionParam | None" = None,
@@ -704,7 +704,8 @@ class OpenAIAssistantAgent(Agent):
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
             model: The model.
-            output_messages: Output messages.
+            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
+                These are full content messages formed from the streamed chunks.
             parallel_tool_calls: Parallel tool calls.
             reasoning_effort: The reasoning effort.
             response_format: The response format.
@@ -751,16 +752,20 @@ class OpenAIAssistantAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
+        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+
         async for message in AssistantThreadActions.invoke_stream(
             agent=self,
             thread_id=thread.id,
             kernel=kernel,
             arguments=arguments,
-            output_messages=output_messages,
+            output_messages=collected_messages,
             **run_level_params,  # type: ignore
         ):
             message.metadata["thread_id"] = thread.id
-            await thread.on_new_message(message)
             yield AgentResponseItem(message=message, thread=thread)
+
+        if on_complete and collected_messages:
+            on_complete(ChatHistory(messages=collected_messages))
 
     # endregion
