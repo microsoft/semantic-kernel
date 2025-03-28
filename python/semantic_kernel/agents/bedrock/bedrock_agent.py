@@ -262,7 +262,7 @@ class BedrockAgent(BedrockAgentBase):
     async def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
@@ -358,7 +358,7 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke(
         self,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
@@ -457,7 +457,7 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke_stream(
         self,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
