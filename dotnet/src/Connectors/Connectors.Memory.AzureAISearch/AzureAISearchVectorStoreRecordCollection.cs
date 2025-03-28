@@ -293,6 +293,10 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     public virtual Task DeleteBatchAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
+        if (!keys.Any())
+        {
+            return Task.CompletedTask;
+        }
 
         // Remove records.
         return this.RunOperationAsync(
@@ -317,6 +321,10 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     public virtual async IAsyncEnumerable<string> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
+        if (!records.Any())
+        {
+            yield break;
+        }
 
         // Create Options
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
