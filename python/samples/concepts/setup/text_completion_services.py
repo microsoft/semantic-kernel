@@ -20,6 +20,7 @@ class Services(str, Enum):
     BEDROCK = "bedrock"
     GOOGLE_AI = "google_ai"
     HUGGING_FACE = "huggingface"
+    GAUDI_HF = "gaudi_hf"
     OLLAMA = "ollama"
     ONNX = "onnx"
     VERTEX_AI = "vertex_ai"
@@ -40,6 +41,7 @@ def get_text_completion_service_and_request_settings(
         Services.BEDROCK: lambda: get_bedrock_text_completion_service_and_request_settings(),
         Services.GOOGLE_AI: lambda: get_google_ai_text_completion_service_and_request_settings(),
         Services.HUGGING_FACE: lambda: get_hugging_face_text_completion_service_and_request_settings(),
+        Services.GAUDI_HF: lambda: get_gaudi_hf_text_completion_service_and_request_settings(),
         Services.OLLAMA: lambda: get_ollama_text_completion_service_and_request_settings(),
         Services.ONNX: lambda: get_onnx_text_completion_service_and_request_settings(),
         Services.VERTEX_AI: lambda: get_vertex_ai_text_completion_service_and_request_settings(),
@@ -182,6 +184,20 @@ def get_hugging_face_text_completion_service_and_request_settings() -> tuple[
 
     return text_service, request_settings
 
+def get_gaudi_hf_text_completion_service_and_request_settings() -> tuple[
+    "TextCompletionClientBase", "PromptExecutionSettings"
+]:
+    """Return Gaudi HF text completion service and request settings."""
+    from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextCompletion
+    from semantic_kernel.connectors.ai.hugging_face.services.gaudi.utils import can_use_hpu
+
+    if not can_use_hpu():
+        raise ValueError("Gaudi HPU is not available")
+
+    text_service = HuggingFaceTextCompletion(ai_model_id="HuggingFaceM4/tiny-random-LlamaForCausalLM", use_hpu=True)
+    request_settings = HuggingFacePromptExecutionSettings()
+
+    return text_service, request_settings
 
 def get_ollama_text_completion_service_and_request_settings() -> tuple[
     "TextCompletionClientBase", "PromptExecutionSettings"

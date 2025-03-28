@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-.PHONY: help install install-uv install-python install-pre-commit install-sk clean build
+.PHONY: help install install-uv install-python install-pre-commit install-sk clean build install-gaudi
 .SILENT:  # not strictly required, but included per the original example
 all: install
 
@@ -27,6 +27,7 @@ help:
 	echo "  install-python       - install multiple python distributions"
 	echo "  install-sk           - install Semantic Kernel and all dependencies"
 	echo "  install-pre-commit   - install pre-commit hooks"
+	echo "  install-gaudi        - install for Gaudi HPU instances (skips PyTorch)"
 	echo "  clean                - remove the virtualenvs"
 	echo "  build                - build the project"
 	echo ""
@@ -94,6 +95,20 @@ install-sk:
 	uv venv --python $(PYTHON_VERSION)
 	echo "Installing Semantic Kernel and all dependencies"
 	uv sync --all-extras --dev --prerelease=if-necessary-or-explicit
+
+##############################
+#  INSTALL-GAUDI
+##############################
+.ONESHELL:
+install-gaudi:
+	echo "Installing for Gaudi HPU instances (skipping PyTorch)"
+	echo "Creating and activating venv for python $(PYTHON_VERSION)"
+	uv venv --python $(PYTHON_VERSION)
+	echo "Installing Semantic Kernel base dependencies (excluding PyTorch)"
+	uv pip install -e . --exclude torch
+	echo "Installing Gaudi extras (excluding PyTorch)"
+	uv pip install -e ".[gaudi]" --exclude torch
+	echo "Installation complete for Gaudi HPU instance"
 
 ##############################
 #  CLEAN

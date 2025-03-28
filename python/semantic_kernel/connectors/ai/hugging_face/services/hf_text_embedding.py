@@ -38,6 +38,7 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
         ai_model_id: str,
         device: int = -1,
         service_id: str | None = None,
+        use_hpu: bool = False,
     ) -> None:
         """Initializes a new instance of the HuggingFaceTextEmbedding class.
 
@@ -46,10 +47,18 @@ class HuggingFaceTextEmbedding(EmbeddingGeneratorBase):
                 https://huggingface.co/sentence-transformers
             device (int): Device to run the model on, -1 for CPU, 0+ for GPU. (optional)
             service_id (str): Service ID for the model. (optional)
+            use_hpu (bool): Whether to use Habana Gaudi HPU for inference. When True, the model will
+                be loaded and run on HPU using GaudiTextGenerationPipeline. (optional)
 
         Note that this model will be downloaded from the Hugging Face model hub.
         """
-        resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
+        if use_hpu:
+            from semantic_kernel.connectors.ai.hugging_face.services.gaudi.utils import can_use_hpu
+            if not can_use_hpu():
+                raise ServiceResponseException("Habana Gaudi HPU is not available")
+            resolved_device = "hpu"
+        else:
+            resolved_device = f"cuda:{device}" if device >= 0 and torch.cuda.is_available() else "cpu"
         super().__init__(
             ai_model_id=ai_model_id,
             service_id=service_id or ai_model_id,
