@@ -33,6 +33,39 @@ public static class BedrockAgentExtensions
     }
 
     /// <summary>
+    /// Creates an agent.
+    /// </summary>
+    /// <param name="client">The <see cref="AmazonBedrockAgentClient"/> instance.</param>
+    /// <param name="request">The <see cref="CreateAgentRequest"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
+    public static async Task<Amazon.BedrockAgent.Model.Agent> CreateAgentAndWaitAsync(
+        this AmazonBedrockAgentClient client,
+        CreateAgentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var createAgentResponse = await client.CreateAgentAsync(request, cancellationToken).ConfigureAwait(false);
+        // The agent will first enter the CREATING status.
+        // When the operation finishes, it will enter the NOT_PREPARED status.
+        // We need to wait for the agent to reach the NOT_PREPARED status before we can prepare it.
+        await client.WaitForAgentStatusAsync(createAgentResponse.Agent, AgentStatus.NOT_PREPARED, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return createAgentResponse.Agent;
+    }
+
+    /// <summary>
+    /// Creates an agent.
+    /// </summary>
+    /// <param name="client">The <see cref="AmazonBedrockAgentClient"/> instance.</param>
+    /// <param name="agent">The <see cref="Amazon.BedrockAgent.Model.Agent"/> instance.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> instance.</param>
+    public static async Task<Amazon.BedrockAgent.Model.Agent> PrepareAgentAndWaitAsync(
+        this AmazonBedrockAgentClient client,
+        Amazon.BedrockAgent.Model.Agent agent,
+        CancellationToken cancellationToken = default)
+    {
+        return await client.PrepareAgentAndWaitUntilPreparedAsync(agent, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Associates an agent with a knowledge base.
     /// </summary>
     /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
@@ -125,6 +158,20 @@ public static class BedrockAgentExtensions
         this BedrockAgent agent,
         CancellationToken cancellationToken = default)
     {
+        await agent.CreateKernelFunctionActionGroupAsync(agent.Kernel.ToFunctionSchema(), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Create a kernel function action group for the agent and prepare the agent.
+    /// </summary>
+    /// <param name="agent">The <see cref="BedrockAgent"/> instance.</param>
+    /// <param name="functionSchema">The details of the function schema for the action group.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    public static async Task CreateKernelFunctionActionGroupAsync(
+        this BedrockAgent agent,
+        FunctionSchema functionSchema,
+        CancellationToken cancellationToken = default)
+    {
         var createAgentActionGroupRequest = new CreateAgentActionGroupRequest
         {
             AgentId = agent.Id,
@@ -135,7 +182,7 @@ public static class BedrockAgentExtensions
             {
                 CustomControl = Amazon.BedrockAgent.CustomControlMethod.RETURN_CONTROL,
             },
-            FunctionSchema = agent.Kernel.ToFunctionSchema(),
+            FunctionSchema = functionSchema,
         };
 
         await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
