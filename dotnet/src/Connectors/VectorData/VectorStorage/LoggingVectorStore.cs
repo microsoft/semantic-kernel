@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.VectorData;
 /// A vector store that logs operations to an <see cref="ILogger"/>
 /// </summary>
 [Experimental("SKEXP0020")]
-public class LoggingVectorStore : IVectorStore
+public class LoggingVectorStore : DelegatingVectorStore
 {
     /// <summary>An <see cref="ILogger"/> instance used for all logging.</summary>
     private readonly ILogger _logger;
@@ -26,7 +26,7 @@ public class LoggingVectorStore : IVectorStore
     /// </summary>
     /// <param name="innerStore">The underlying <see cref="IVectorStore"/>.</param>
     /// <param name="logger">An <see cref="ILogger"/> instance that will be used for all logging.</param>
-    public LoggingVectorStore(IVectorStore innerStore, ILogger logger)
+    public LoggingVectorStore(IVectorStore innerStore, ILogger logger) : base(innerStore)
     {
         Verify.NotNull(innerStore);
         Verify.NotNull(logger);
@@ -36,18 +36,18 @@ public class LoggingVectorStore : IVectorStore
     }
 
     /// <inheritdoc/>
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) where TKey : notnull
+    public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         => new LoggingVectorStoreRecordCollection<TKey, TRecord>(
-            this._innerStore.GetCollection<TKey, TRecord>(name, vectorStoreRecordDefinition),
+            base.GetCollection<TKey, TRecord>(name, vectorStoreRecordDefinition),
             this._logger);
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(ListCollectionNamesAsync),
-            () => this._innerStore.ListCollectionNamesAsync(cancellationToken),
+            () => base.ListCollectionNamesAsync(cancellationToken),
             cancellationToken);
     }
 }
