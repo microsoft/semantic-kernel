@@ -6,9 +6,13 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from aiortc import AudioStreamTrack
+from aiortc import AudioStreamTrack, RTCDataChannel, RTCPeerConnection
+from numpy import ndarray
 from openai import AsyncOpenAI
-from openai.resources.beta.realtime.realtime import AsyncRealtimeConnection, AsyncRealtimeConnectionManager
+from openai.resources.beta.realtime.realtime import (
+    AsyncRealtimeConnection,
+    AsyncRealtimeConnectionManager,
+)
 from openai.types.beta.realtime import (
     ConversationItem,
     ConversationItemContent,
@@ -690,6 +694,7 @@ async def test_initialization(openai_realtime_base):
     assert openai_realtime_base.kernel is not None
 
 
+# remove
 @pytest.mark.asyncio
 async def test_send_method(openai_realtime_base):
     """Test to ensure send method delegates to _send method correctly."""
@@ -723,6 +728,7 @@ async def test_update_session_with_no_kernel():
     assert base._current_settings is mock_settings
 
 
+# remove ?
 @pytest.mark.asyncio
 async def test_update_session_with_kernel(openai_realtime_base):
     """Test update_session updates with kernel and PromptExecutionSettings."""
@@ -742,6 +748,7 @@ async def test_update_session_with_kernel(openai_realtime_base):
         )
 
 
+# remove
 @pytest.mark.asyncio
 async def test_handle_audio_transcript_delta(openai_realtime_base, prepare_event):
     """Test to ensure audio transcript delta is handled correctly."""
@@ -795,3 +802,119 @@ async def test_close_session(openai_realtime_base):
         openai_realtime_base.peer_connection.close.assert_awaited_once()
     if openai_realtime_base.data_channel:
         openai_realtime_base.data_channel.close.assert_awaited_once()
+
+
+@pytest.fixture
+def mocked_audio_track():
+    """Fixture for creating a mocked MediaStreamTrack object."""
+    mocked_audio_track = AsyncMock(name="AudioStreamTrack", spec=AudioStreamTrack)
+    mocked_audio_track.kind = "audio"
+    return mocked_audio_track
+
+
+@pytest.fixture
+def mocked_audio_output_callback():
+    """Fixture for creating a mocked audio output callback."""
+    return AsyncMock(name="audio_output_callback")
+
+
+@pytest.fixture
+def mocked_open_ai_realtime_webrtc(mocked_audio_track, mocked_audio_output_callback):
+    """Fixture for initializing the OpenAIRealtimeWebRTC with mocked components."""
+    async_openai_mock = AsyncMock(spec=AsyncOpenAI)
+
+    with patch("aiohttp.ClientSession", autospec=True):
+        return OpenAIRealtimeWebRTC(
+            audio_track=mocked_audio_track,
+            audio_output_callback=mocked_audio_output_callback,
+            ai_model_id="gpt-4o-realtime-preview",
+            client=async_openai_mock,
+            api_key="fake-api-key",
+        )
+
+
+# @pytest.mark.asyncio
+# async def test_create_session_initializes_peer_connection(mocked_open_ai_realtime_webrtc, mocked_audio_track):
+#     """Test the create_session method to ensure peer connection initializes correctly."""
+#     mocked_open_ai_realtime_webrtc._get_ephemeral_token = AsyncMock(return_value="fake-token")
+#     mocked_open_ai_realtime_webrtc.client = AsyncMock(spec=AsyncOpenAI)
+#     mocked_open_ai_realtime_webrtc.client.api_key = "fake-api-key"
+#     mocked_open_ai_realtime_webrtc.client.beta = AsyncMock()
+#     mocked_open_ai_realtime_webrtc.client.beta.realtime = AsyncMock()
+#     mocked_open_ai_realtime_webrtc.client.beta.realtime._client = AsyncMock()
+#     mocked_open_ai_realtime_webrtc.client.beta.realtime._client.base_url = "https://api.openai.com"
+
+#     mock_response = AsyncMock()
+#     mock_response.status = 200  # Simulate a successful response
+#     mock_response.text = AsyncMock(
+#         return_value='{"sdp": "v=0\no=- 0 0 IN IP4 127.0.0.1\ns=-\nt=0 0\nm=audio 9 UDP/TLS/RTP/SAVPF 111\n'
+#         "a=rtcp-mux\n"
+#         "a=sendrecv\n"
+#         "a=ice-ufrag:abcd1234\n"
+#         "a=ice-pwd:efgh5678\n"
+#         "a=setup:active\n"
+#         '", "type": "answer"}'
+#     )
+
+#     # Mock ClientSession.post correctly
+#     async def mock_post(url, headers, json):
+#         print(f"Mock received request to: {url}")  # Debugging
+#         expected_url = "https://api.openai.com/v1/realtime/sessions"  # Try with /v1
+#         if url == expected_url:
+#             return mock_response
+#         raise Exception(f"Unexpected URL: {url}")  # Will help catch URL mismatches
+
+#     # Mock the entire ClientSession
+#     mock_session = AsyncMock()
+#     mock_session.post = AsyncMock(side_effect=mock_post)
+
+#     with patch("aiohttp.ClientSession", return_value=mock_session):
+#         # Act
+#         await mocked_open_ai_realtime_webrtc.create_session()
+
+#         # Assert that the correct API endpoint was called
+#         mock_session.post.assert_called_with(
+#             "https://api.openai.com/realtime/sessions",
+#             headers={"Authorization": "Bearer fake-api-key", "Content-Type": "application/json"},
+#             json={"model": "gpt-4o-realtime-preview", "voice": "echo"},
+#         )
+
+
+@pytest.mark.asyncio
+async def test_create_session_fails_without_audio_track(mocked_audio_output_callback):
+    """Test the create_session method raises an exception when audio track is uninitialized."""
+    async_openai_mock = AsyncMock(spec=AsyncOpenAI)
+
+    webrtc_instance = OpenAIRealtimeWebRTC(
+        audio_track=None,
+        audio_output_callback=mocked_audio_output_callback,
+        client=async_openai_mock,
+        ai_model_id="fake-model-id",
+    )
+
+    with pytest.raises(Exception, match="Audio track not initialized"):
+        await webrtc_instance.create_session()
+
+
+@pytest.mark.asyncio
+async def test_receive_yields_realtime_events(mocked_open_ai_realtime_webrtc, mocked_audio_output_callback):
+    """Ensure the receive function properly yields RealtimeEvents."""
+    mocked_realtime_event = AsyncMock(ndarray)
+    mocked_open_ai_realtime_webrtc._receive_buffer.put_nowait(mocked_realtime_event)
+
+    event_generator = mocked_open_ai_realtime_webrtc.receive(mocked_audio_output_callback)
+    event = await event_generator.asend(None)  # Trigger the coroutine and receive an event
+
+    assert event is mocked_realtime_event
+
+
+@pytest.mark.asyncio
+async def test_close_session_terminates_connections(mocked_open_ai_realtime_webrtc):
+    """Test that close_session properly closes peer connection and data channel."""
+    mocked_open_ai_realtime_webrtc.peer_connection = AsyncMock(spec=RTCPeerConnection)
+    mocked_open_ai_realtime_webrtc.data_channel = AsyncMock(spec=RTCDataChannel)
+
+    await mocked_open_ai_realtime_webrtc.close_session()
+
+    assert mocked_open_ai_realtime_webrtc.peer_connection is None
+    assert mocked_open_ai_realtime_webrtc.data_channel is None

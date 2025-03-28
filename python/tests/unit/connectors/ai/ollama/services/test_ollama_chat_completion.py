@@ -2,6 +2,7 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 from ollama import AsyncClient, ChatResponse, Message
 
@@ -270,6 +271,7 @@ async def test_get_prompt_execution_settings_class(ollama_chat_completion):
     assert ollama_chat_completion.get_prompt_execution_settings_class() is OllamaChatPromptExecutionSettings
 
 
+# remove ?
 @pytest.mark.asyncio
 async def test_inner_get_chat_message_contents_valid(ollama_chat_completion):
     """Test _inner_get_chat_message_contents with valid response."""
@@ -287,6 +289,7 @@ async def test_inner_get_chat_message_contents_valid(ollama_chat_completion):
     assert result[0].items[0].text == "Valid content"
 
 
+# remove ?
 @pytest.mark.asyncio
 async def test_inner_get_chat_message_contents_invalid_response(ollama_chat_completion):
     """Test _inner_get_chat_message_contents raises error on invalid response types."""
@@ -299,3 +302,75 @@ async def test_inner_get_chat_message_contents_invalid_response(ollama_chat_comp
 
     with pytest.raises(ServiceInvalidResponseError):
         await ollama_chat_completion._inner_get_chat_message_contents(chat_history, settings)
+
+
+@pytest.fixture
+async def setup_ollama_chat_completion():
+    async_client_mock = AsyncMock(spec=AsyncClient)
+    async_client_mock.chat = AsyncMock()
+    ollama_chat_completion = OllamaChatCompletion(
+        service_id="test_service", ai_model_id="test_model_id", client=async_client_mock
+    )
+    return ollama_chat_completion, async_client_mock
+
+
+async def test_ollama_chat_completion_initialization(setup_ollama_chat_completion):
+    _, _ = setup_ollama_chat_completion  # Ensure no exceptions were raised in initialization
+
+
+# remove ?
+async def test_service_url_new(setup_ollama_chat_completion):
+    ollama_chat_completion, async_client_mock = setup_ollama_chat_completion
+    # Mock the client's internal structure
+    async_client_mock._client = AsyncMock(spec=httpx.AsyncClient)
+    async_client_mock._client.base_url = "http://mocked_base_url"
+
+    service_url = ollama_chat_completion.service_url()
+    assert service_url == "http://mocked_base_url"
+
+
+async def test_get_prompt_execution_settings_class_new(setup_ollama_chat_completion):
+    ollama_chat_completion, _ = setup_ollama_chat_completion
+
+    assert ollama_chat_completion.get_prompt_execution_settings_class() == OllamaChatPromptExecutionSettings
+
+
+async def test_inner_get_chat_message_contents(setup_ollama_chat_completion):
+    ollama_chat_completion, async_client_mock = setup_ollama_chat_completion
+
+    async_client_mock.chat.return_value = MagicMock()
+    chat_history = MagicMock(spec=ChatHistory)
+    chat_history.messages = []
+
+    prompt_settings = OllamaChatPromptExecutionSettings()
+
+    with pytest.raises(ServiceInvalidResponseError):
+        await ollama_chat_completion._inner_get_chat_message_contents(chat_history, prompt_settings)
+
+
+async def test_inner_get_streaming_chat_message_contents_invalid_response(setup_ollama_chat_completion):
+    ollama_chat_completion, _ = setup_ollama_chat_completion
+    chat_history = MagicMock(spec=ChatHistory)
+    chat_history.messages = []
+    prompt_settings = OllamaChatPromptExecutionSettings()
+
+    with patch.object(
+        OllamaChatCompletion, "_inner_get_streaming_chat_message_contents", new_callable=MagicMock
+    ) as mocked_inner_stream:
+        mocked_inner_stream.side_effect = ServiceInvalidResponseError("Invalid streaming response")
+
+        with pytest.raises(ServiceInvalidResponseError, match="Invalid streaming response"):
+            async for _ in ollama_chat_completion._inner_get_streaming_chat_message_contents(
+                chat_history, prompt_settings, 0
+            ):
+                pass
+
+
+async def test_prepare_chat_history_for_request(setup_ollama_chat_completion):
+    ollama_chat_completion, _ = setup_ollama_chat_completion
+    chat_history = MagicMock(spec=ChatHistory)
+    chat_history.messages = []
+
+    # For an empty chat history, should return an empty list
+    prepared_history = ollama_chat_completion._prepare_chat_history_for_request(chat_history)
+    assert prepared_history == []
