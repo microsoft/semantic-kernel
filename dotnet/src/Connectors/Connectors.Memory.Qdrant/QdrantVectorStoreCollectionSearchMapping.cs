@@ -53,7 +53,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
             }
 
             // Map datetime equality.
-            if (filterValue is DateTime || filterValue is DateTimeOffset)
+            if (filterValue is DateTime or DateTimeOffset)
             {
                 var dateTimeOffset = filterValue is DateTime dateTime
                     ? new DateTimeOffset(dateTime, TimeSpan.Zero)

@@ -69,9 +69,28 @@ internal class QdrantFilterTranslator
             if (this.TryTranslateFieldAccess(first, out var storagePropertyName)
                 && TryGetConstant(second, out var constantValue))
             {
-                var condition = constantValue is null
-                    ? new Condition { IsNull = new() { Key = storagePropertyName } }
-                    : new Condition
+                Condition condition;
+                if (constantValue is null)
+                {
+                    condition = new Condition { IsNull = new() { Key = storagePropertyName } };
+                }
+                else if (constantValue is DateTime or DateTimeOffset)
+                {
+                    var dateTimeOffset = constantValue is DateTime dateTime
+                        ? new DateTimeOffset(dateTime, TimeSpan.Zero)
+                        : (DateTimeOffset)constantValue;
+
+                    var range = new global::Qdrant.Client.Grpc.DatetimeRange
+                    {
+                        Gte = new Google.Protobuf.WellKnownTypes.Timestamp() { Seconds = dateTimeOffset.ToUnixTimeSeconds() },
+                        Lte = new Google.Protobuf.WellKnownTypes.Timestamp() { Seconds = dateTimeOffset.ToUnixTimeSeconds() },
+                    };
+
+                    condition = new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } };
+                }
+                else
+                {
+                    condition = new Condition
                     {
                         Field = new FieldCondition
                         {
@@ -87,6 +106,7 @@ internal class QdrantFilterTranslator
                             }
                         }
                     };
+                }
 
                 result = new Filter();
                 if (negated)
