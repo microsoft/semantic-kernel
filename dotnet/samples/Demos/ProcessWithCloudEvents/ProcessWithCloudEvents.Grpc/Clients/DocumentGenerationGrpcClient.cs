@@ -37,12 +37,12 @@ public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
     /// <inheritdoc/>
     public async Task EmitExternalEventAsync(string externalTopicEvent, KernelProcessProxyMessage message)
     {
-        if (this._grpcClient != null)
+        if (this._grpcClient != null && message.EventData != null)
         {
             switch (externalTopicEvent)
             {
                 case DocumentGenerationProcess.DocGenerationTopics.RequestUserReview:
-                    var requestDocument = JsonSerializer.Deserialize<DocumentInfo>(message.EventData!.ToString()!);
+                    var requestDocument = JsonSerializer.Deserialize<DocumentInfo>(message.EventData.ToString()!);
                     if (requestDocument != null)
                     {
                         await this._grpcClient.RequestUserReviewDocumentationFromProcessAsync(new()
@@ -56,7 +56,7 @@ public class DocumentGenerationGrpcClient : IExternalKernelProcessMessageChannel
                     return;
 
                 case DocumentGenerationProcess.DocGenerationTopics.PublishDocumentation:
-                    var publishedDocument = JsonSerializer.Deserialize<DocumentInfo>(message.EventData!.ToString()!);
+                    var publishedDocument = JsonSerializer.Deserialize<DocumentInfo>(message.EventData.ToString()!);
                     if (publishedDocument != null)
                     {
                         await this._grpcClient.PublishDocumentationAsync(new()
