@@ -44,5 +44,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Web\Tavily\" />
+  </ItemGroup>
 
 </Project>
