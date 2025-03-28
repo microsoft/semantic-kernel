@@ -79,11 +79,17 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         {
             chatHistory.Add(existingMessage);
         }
-        string agentName = this.GetDisplayName();
         var invokeResults = this.InternalInvokeAsync(
-            agentName,
+            this.GetDisplayName(),
             chatHistory,
-            (m) => this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken),
+            async (m) =>
+            {
+                await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
+                if (options?.OnNewMessage is not null)
+                {
+                    await options.OnNewMessage(m).ConfigureAwait(false);
+                }
+            },
             options?.KernelArguments,
             options?.Kernel,
             options?.AdditionalInstructions,
@@ -92,10 +98,27 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            // Do not add function call related messages as they will already be included in the chat history.
+            // 1. During AutoInvoke = true, the function call content is provided via the callback
+            // above, since it is not returned as part of the regular response to the user.
+            // 2. During AutoInvoke = false, the function call content is returned directly as a
+            // regular response here.
+            // 3. If the user Terminates the function call, via a filter, the function call content
+            // is also returned as part of the regular response here.
+            //
+            // In the first case, we don't want to add the function call content to the thread here
+            // since it should already have been added in the callback above.
+            // In the second case, we shouldn't add the function call content to the thread, since
+            // we don't know if the user will execute the call. They should add it themselves.
+            // In the third case, we don't want to add the function call content to the thread either,
+            // since the filter terminated the call, and therefore won't get executed.
             if (!result.Items.Any(i => i is FunctionCallContent || i is FunctionResultContent))
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
+
+                if (options?.OnNewMessage is not null)
+                {
+                    await options.OnNewMessage(result).ConfigureAwait(false);
+                }
             }
 
             yield return new(result, chatHistoryAgentThread);
@@ -143,7 +166,14 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         var invokeResults = this.InternalInvokeStreamingAsync(
             agentName,
             chatHistory,
-            (newMessage) => this.NotifyThreadOfNewMessage(chatHistoryAgentThread, newMessage, cancellationToken),
+            async (m) =>
+            {
+                await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
+                if (options?.OnNewMessage is not null)
+                {
+                    await options.OnNewMessage(m).ConfigureAwait(false);
+                }
+            },
             options?.KernelArguments,
             options?.Kernel,
             options?.AdditionalInstructions,

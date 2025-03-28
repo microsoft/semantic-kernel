@@ -315,7 +315,7 @@ class AgentThreadActions:
         model: str | None = None,
         max_prompt_tokens: int | None = None,
         max_completion_tokens: int | None = None,
-        output_messages: "list[ChatMessageContent] | None" = None,
+        output_messages: list[ChatMessageContent] | None = None,
         parallel_tool_calls: bool | None = None,
         response_format: AgentsApiResponseFormat
         | AgentsApiResponseFormatMode
@@ -474,11 +474,11 @@ class AgentThreadActions:
 
                         if action_result.function_result_streaming_content:
                             yield action_result.function_result_streaming_content
-                            if output_messages:
+                            if output_messages is not None:
                                 output_messages.append(action_result.function_result_streaming_content)
 
                         if action_result.function_call_streaming_content:
-                            if output_messages:
+                            if output_messages is not None:
                                 output_messages.append(action_result.function_call_streaming_content)
                             async for sub_content in cls._stream_tool_outputs(
                                 agent=agent,
@@ -502,7 +502,7 @@ class AgentThreadActions:
                                 )
                                 if message and hasattr(message, "content"):
                                     final_content = generate_message_content(agent.name, message, step)
-                                    if output_messages:
+                                    if output_messages is not None:
                                         output_messages.append(final_content)
                         return
 
@@ -553,7 +553,7 @@ class AgentThreadActions:
                         message = await cls._retrieve_message(agent=agent, thread_id=thread_id, message_id=msg_id)
                         if message and hasattr(message, "content"):
                             final_content = generate_message_content(agent.name, message, step)
-                            if output_messages:
+                            if output_messages is not None:
                                 output_messages.append(final_content)
                 return
             elif sub_event_type == AgentStreamEvent.THREAD_RUN_FAILED:
