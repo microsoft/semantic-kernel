@@ -220,26 +220,6 @@ public static class AgentDefinitionExtensions
                         }
                     }
                 }
-                else if (value is IList<object> listValue)
-                {
-                    if (listValue is not null)
-                    {
-                        for (int i = 0; i < listValue.Count; i++)
-                        {
-                            if (listValue[i] is string listValueString)
-                            {
-                                if (RequiresNormalization(listValueString))
-                                {
-                                    listValue[i] = GetNormalizedValue(listValueString, configuration);
-                                }
-                            }
-                            else
-                            {
-                                NormalizeObject(listValue[i], configuration);
-                            }
-                        }
-                    }
-                }
                 else
                 {
                     NormalizeObject(value, configuration);
