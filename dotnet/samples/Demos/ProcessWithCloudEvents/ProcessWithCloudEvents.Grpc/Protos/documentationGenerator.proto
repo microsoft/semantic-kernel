@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option csharp_namespace = "ProcessWithCloudEvents.Grpc.DocumentationGenerator";
+
+service GrpcDocumentationGeneration {  
+    rpc UserRequestFeatureDocumentation (FeatureDocumentationRequest) returns (ProcessData);
+    rpc RequestUserReviewDocumentationFromProcess (DocumentationContentRequest) returns (Empty);
+    rpc RequestUserReviewDocumentation (ProcessData) returns (stream DocumentationContentRequest);
+    rpc UserReviewedDocumentation (DocumentationApprovalRequest) returns (Empty);
+    rpc PublishDocumentation (DocumentationContentRequest) returns (Empty);
+    rpc ReceivePublishedDocumentation (ProcessData) returns (stream DocumentationContentRequest);
+}
+  
+message FeatureDocumentationRequest { 
+    string title = 1;
+    string userDescription = 2;
+    string content = 3;
+    string processId = 10;
+}
+ 
+message DocumentationContentRequest {
+    string title = 1;
+    string content = 2;
+    string assistantMessage = 3;
+    ProcessData processData = 10;
+}
+
+message DocumentationApprovalRequest {  
+    bool documentationApproved = 1;
+    string reason = 2;
+    ProcessData processData = 10;
+}
+
+message ProcessData {
+    string processId = 1;
+}
+  
+message Empty {}

@@ -33,8 +33,11 @@ public class KernelProcessStepExternalContext
         {
             throw new KernelException($"External message channel not configured for step with topic {processEventData.ExternalTopicName}");
         }
+        // External message must be serialized to be Dapr compatible.
+        // This assumes custom serialization was provided by overriding the .ToString method in case the data is a complex object
+        var externalMessageData = processEventData with { EventData = processEventData.EventData?.ToString() };
 
-        await this._externalMessageChannel.EmitExternalEventAsync(processEventData.ExternalTopicName, processEventData).ConfigureAwait(false);
+        await this._externalMessageChannel.EmitExternalEventAsync(processEventData.ExternalTopicName, externalMessageData).ConfigureAwait(false);
     }
 
     /// <summary>
