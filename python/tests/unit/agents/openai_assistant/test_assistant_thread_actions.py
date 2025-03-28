@@ -731,6 +731,7 @@ async def test_handle_streaming_requires_action_returns_result():
     dummy_tool_outputs = {"output": "value"}
     dummy_kernel = MagicMock()
     dummy_agent_name = "TestAgent"
+    dummy_args = {}
     with (
         patch(
             "semantic_kernel.agents.open_ai.assistant_thread_actions.get_function_call_contents",
@@ -752,6 +753,7 @@ async def test_handle_streaming_requires_action_returns_result():
             dummy_kernel,
             dummy_run,
             dummy_function_steps,  # type: ignore
+            dummy_args,
         )
         assert result is not None
         assert isinstance(result, FunctionActionResult)
@@ -766,11 +768,13 @@ async def test_handle_streaming_requires_action_returns_none():
     dummy_function_steps = {"step1": MagicMock()}
     dummy_kernel = MagicMock()
     dummy_agent_name = "TestAgent"
+    dummy_args = {}
     with patch("semantic_kernel.agents.open_ai.assistant_thread_actions.get_function_call_contents", return_value=None):
         result = await AssistantThreadActions._handle_streaming_requires_action(
             dummy_agent_name,
             dummy_kernel,
             dummy_run,
             dummy_function_steps,  # type: ignore
+            dummy_args,
         )
         assert result is None
