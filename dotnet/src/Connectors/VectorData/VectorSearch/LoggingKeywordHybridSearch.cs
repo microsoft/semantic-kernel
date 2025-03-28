@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -43,5 +44,15 @@ public class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<TRecord>
             this._logger,
             nameof(HybridSearchAsync),
             () => this._innerSearch.HybridSearchAsync(vector, keywords, options, cancellationToken));
+    }
+
+    /// <inheritdoc/>
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._innerSearch.GetService(serviceType, serviceKey);
     }
 }

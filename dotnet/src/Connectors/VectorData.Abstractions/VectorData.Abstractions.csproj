@@ -13,7 +13,7 @@
     <PackageVersion>9.0.0-preview.1.25161.1</PackageVersion>
     <AssemblyVersion>9.0.0.0</AssemblyVersion>
     <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
-    <PackageValidationBaselineVersion>9.0.0-preview.1.25078.1</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>9.0.0-preview.1.25161.1</PackageValidationBaselineVersion>
     <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
     <PackageId>$(AssemblyName)</PackageId>
     <PackageDescription>Abstractions for vector database access.
@@ -42,5 +42,6 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Diagnostics/IsExternalInit.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Diagnostics/ExperimentalAttribute.cs" />
   </ItemGroup>
 </Project>
