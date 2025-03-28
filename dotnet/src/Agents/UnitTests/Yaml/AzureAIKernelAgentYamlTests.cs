@@ -81,7 +81,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -130,7 +130,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -170,7 +170,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -206,7 +206,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -242,7 +242,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -293,7 +293,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -331,7 +331,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);

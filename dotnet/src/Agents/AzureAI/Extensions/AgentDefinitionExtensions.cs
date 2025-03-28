@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Azure.AI.Projects;
 using Azure.Core;
-using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 
@@ -128,7 +127,7 @@ internal static class AgentDefinitionExtensions
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 AIProjectClientOptions clientOptions = AzureAIClientProvider.CreateAzureClientOptions(httpClient);
 
-                var tokenCredential = kernel.Services.GetService<TokenCredential>() ?? new DefaultAzureCredential();
+                var tokenCredential = kernel.Services.GetRequiredService<TokenCredential>();
                 return new(connectionString, tokenCredential, clientOptions);
             }
         }
