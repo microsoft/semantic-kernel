@@ -411,6 +411,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
+        // Get the thread extensions context contributions
+        var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeAsync(),
@@ -423,6 +426,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 this.Client,
                 openAIAssistantAgentThread.Id!,
                 internalOptions,
+                extensionsContext,
                 this.Logger,
                 options?.Kernel ?? this.Kernel,
                 this.MergeArguments(options?.KernelArguments),
@@ -498,7 +502,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             kernel ??= this.Kernel;
             arguments = this.MergeArguments(arguments);
 
-            await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
+            await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this.Client, threadId, options, null, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
                 if (isVisible)
                 {
@@ -549,6 +553,9 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
+        // Get the thread extensions context contributions
+        var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+
         // Create options that use the RunCreationOptions from the options param if provided or
         // falls back to creating a new RunCreationOptions if additional instructions is provided
         // separately.
@@ -557,17 +564,28 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        // Invoke the Agent with the thread that we already added our message to.
+#pragma warning disable SKEXP0001 // ModelDiagnostics is marked experimental.
         var newMessagesReceiver = new ChatHistory();
-        var invokeResults = this.InvokeStreamingAsync(
-            openAIAssistantAgentThread.Id!,
-            internalOptions,
-            this.MergeArguments(options?.KernelArguments),
-            options?.Kernel ?? this.Kernel,
-            newMessagesReceiver,
+        var invokeResults = ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => InternalInvokeStreamingAsync(),
             cancellationToken);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore SKEXP0001 // ModelDiagnostics is marked experimental.
+
+        IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
+        {
+            return AssistantThreadActions.InvokeStreamingAsync(
+                this,
+                this.Client,
+                openAIAssistantAgentThread.Id!,
+                newMessagesReceiver,
+                internalOptions,
+                extensionsContext,
+                this.Logger,
+                options?.Kernel ?? this.Kernel,
+                this.MergeArguments(options?.KernelArguments),
+                cancellationToken);
+        }
 
         // Return the chunks to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -642,7 +660,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             kernel ??= this.Kernel;
             arguments = this.MergeArguments(arguments);
 
-            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
+            return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, null, this.Logger, kernel, arguments, cancellationToken);
         }
     }
 

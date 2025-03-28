@@ -109,15 +109,13 @@ public class UserPreferencesMemoryComponent : ThreadExtension
     }
 
     /// <inheritdoc/>
-    public override Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public override async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
         if (newMessage.Role == AuthorRole.User && !string.IsNullOrWhiteSpace(newMessage.Content))
         {
             // Don't wait for task to complete. Just run in the background.
-            var task = this.ExtractAndSaveMemoriesAsync(newMessage.Content, cancellationToken);
+            await this.ExtractAndSaveMemoriesAsync(newMessage.Content, cancellationToken).ConfigureAwait(false);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>

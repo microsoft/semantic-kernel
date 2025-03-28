@@ -34,6 +34,8 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     private OpenAIAssistantAgentThread? _serviceFailingAgentThread;
     private OpenAIAssistantAgentThread? _createdServiceFailingAgentThread;
 
+    public AssistantClient AssistantClient => this._assistantClient!;
+
     public override KernelAgent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
@@ -85,6 +87,7 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
     public override async Task InitializeAsync()
     {
+        AzureOpenAIConfiguration openAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
         AzureAIConfiguration configuration = this._configuration.GetSection("AzureAI").Get<AzureAIConfiguration>()!;
         var client = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(configuration.Endpoint));
         this._assistantClient = client.GetAssistantClient();
@@ -96,6 +99,14 @@ public class OpenAIAssistantAgentFixture : AgentFixture
                 instructions: "You are a helpful assistant.");
 
         var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.AddAzureOpenAIChatCompletion(
+            deploymentName: openAIConfiguration.ChatDeploymentName!,
+            endpoint: openAIConfiguration.Endpoint,
+            credentials: new AzureCliCredential());
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+            deploymentName: openAIConfiguration.EmbeddingModelId!,
+            endpoint: openAIConfiguration.Endpoint,
+            credential: new AzureCliCredential());
         Kernel kernel = kernelBuilder.Build();
 
         this._agent = new OpenAIAssistantAgent(this._assistant, this._assistantClient) { Kernel = kernel };
