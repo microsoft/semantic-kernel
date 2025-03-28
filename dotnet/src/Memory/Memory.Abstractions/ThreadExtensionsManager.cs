@@ -20,6 +20,22 @@ public class ThreadExtensionsManager
     public virtual IReadOnlyList<ThreadExtension> ThreadExtensions => this._threadExtensions;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="ThreadExtensionsManager"/> class.
+    /// </summary>
+    public ThreadExtensionsManager()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ThreadExtensionsManager"/> class with the specified thread extensions.
+    /// </summary>
+    /// <param name="threadExtensions">The thread extensions to add to the manager.</param>
+    public ThreadExtensionsManager(IEnumerable<ThreadExtension> threadExtensions)
+    {
+        this._threadExtensions.AddRange(threadExtensions);
+    }
+
+    /// <summary>
     /// Registers a new thread extensions.
     /// </summary>
     /// <param name="threadExtension">The thread extensions to register.</param>
@@ -32,12 +48,11 @@ public class ThreadExtensionsManager
     /// Called when a new thread is created.
     /// </summary>
     /// <param name="threadId">The ID of the new thread.</param>
-    /// <param name="inputText">The input text, typically a user ask.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public virtual async Task OnThreadCreateAsync(string threadId, string inputText, CancellationToken cancellationToken = default)
+    public virtual async Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnThreadCreateAsync(threadId, inputText, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnThreadCreatedAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -65,12 +80,12 @@ public class ThreadExtensionsManager
     /// <summary>
     /// Called just before the AI is invoked
     /// </summary>
-    /// <param name="newMessage">The most recent message that the AI is being invoked with.</param>
+    /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all thread extensions.</returns>
-    public virtual async Task<string> OnAIInvocationAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        var subContexts = await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnAIInvocationAsync(newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
+        var subContexts = await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnAIInvocationAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         return string.Join("\n", subContexts);
     }
 

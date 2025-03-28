@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net.Http;
@@ -41,6 +42,8 @@ public class MemZeroMemoryComponent : ThreadExtension
     /// <param name="scopeToThread">Indicates whether the scope is limited to the thread.</param>
     public MemZeroMemoryComponent(HttpClient httpClient, string? agentId = default, string? threadId = default, string? userId = default, bool scopeToThread = false)
     {
+        Verify.NotNull(httpClient);
+
         this._agentId = agentId;
         this._threadId = threadId;
         this._userId = userId;
@@ -49,28 +52,17 @@ public class MemZeroMemoryComponent : ThreadExtension
     }
 
     /// <inheritdoc/>
-    public override async Task OnThreadCreateAsync(string threadId, string? inputText = default, CancellationToken cancellationToken = default)
+    public override Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        if (!this._contextLoaded)
-        {
-            this._threadId ??= threadId;
-
-            var searchRequest = new SearchRequest
-            {
-                AgentId = this._agentId,
-                RunId = this._scopeToThread ? this._threadId : null,
-                UserId = this._userId,
-                Query = inputText ?? string.Empty
-            };
-            var responseItems = await this.SearchAsync(searchRequest).ConfigureAwait(false);
-            this._userInformation = string.Join("\n", responseItems);
-            this._contextLoaded = true;
-        }
+        this._threadId ??= threadId;
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>
     public override async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(newMessage);
+
         if (newMessage.Role == AuthorRole.User)
         {
             await this.CreateMemoryAsync(
@@ -92,14 +84,22 @@ public class MemZeroMemoryComponent : ThreadExtension
     }
 
     /// <inheritdoc/>
-    public override Task<string> OnAIInvocationAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public override async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("The following list contains facts about the user:\n" + this._userInformation);
+        Verify.NotNull(newMessages);
+
+        string input = string.Join("\n", newMessages.Where(m => m is not null).Select(m => m.Content));
+
+        await this.LoadContextAsync(this._threadId, input).ConfigureAwait(false);
+
+        return "The following list contains facts about the user:\n" + this._userInformation;
     }
 
     /// <inheritdoc/>
     public override void RegisterPlugins(Kernel kernel)
     {
+        Verify.NotNull(kernel);
+
         base.RegisterPlugins(kernel);
         kernel.Plugins.AddFromObject(this, "MemZeroMemory");
     }
@@ -113,6 +113,25 @@ public class MemZeroMemoryComponent : ThreadExtension
     public async Task ClearUserPreferencesAsync()
     {
         await this.ClearMemoryAsync().ConfigureAwait(false);
+    }
+
+    private async Task LoadContextAsync(string? threadId, string? inputText)
+    {
+        if (!this._contextLoaded)
+        {
+            this._threadId ??= threadId;
+
+            var searchRequest = new SearchRequest
+            {
+                AgentId = this._agentId,
+                RunId = this._scopeToThread ? this._threadId : null,
+                UserId = this._userId,
+                Query = inputText ?? string.Empty
+            };
+            var responseItems = await this.SearchAsync(searchRequest).ConfigureAwait(false);
+            this._userInformation = string.Join("\n", responseItems);
+            this._contextLoaded = true;
+        }
     }
 
     private async Task CreateMemoryAsync(CreateMemoryRequest createMemoryRequest)

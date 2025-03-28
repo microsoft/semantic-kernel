@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -27,6 +29,11 @@ public abstract class AgentThread
     public virtual bool IsDeleted { get; protected set; } = false;
 
     /// <summary>
+    /// Gets or sets the container for thread extension components that manages their lifecycle and interactions.
+    /// </summary>
+    public virtual ThreadExtensionsManager ThreadExtensionsManager { get; init; } = new ThreadExtensionsManager();
+
+    /// <summary>
     /// Creates the thread and returns the thread id.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -45,6 +52,8 @@ public abstract class AgentThread
         }
 
         this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        await this.ThreadExtensionsManager.OnThreadCreatedAsync(this.Id!, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -65,9 +74,22 @@ public abstract class AgentThread
             throw new InvalidOperationException("This thread cannot be deleted, since it has not been created.");
         }
 
+        await this.ThreadExtensionsManager.OnThreadDeleteAsync(this.Id!, cancellationToken).ConfigureAwait(false);
+
         await this.DeleteInternalAsync(cancellationToken).ConfigureAwait(false);
 
         this.IsDeleted = true;
+    }
+
+    /// <summary>
+    /// Called just before the AI is invoked
+    /// </summary>
+    /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A task that represents the asynchronous operation, containing the combined context from all thread extensions.</returns>
+    public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    {
+        return await this.ThreadExtensionsManager.OnAIInvocationAsync(newMessages, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -91,6 +113,8 @@ public abstract class AgentThread
         {
             await this.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        await this.ThreadExtensionsManager.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
 
         await this.OnNewMessageInternalAsync(newMessage, cancellationToken).ConfigureAwait(false);
     }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,10 +19,9 @@ public abstract class ThreadExtension
     /// For exmple, checking long term storage for any data that is relevant to the current session based on the input text.
     /// </remarks>
     /// <param name="threadId">The ID of the new thread.</param>
-    /// <param name="inputText">The input text, typically a user ask.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been loaded.</returns>
-    public virtual Task OnThreadCreateAsync(string threadId, string? inputText = default, CancellationToken cancellationToken = default)
+    public virtual Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -60,10 +60,10 @@ public abstract class ThreadExtension
     /// Implementers can load any additional context required at this time,
     /// but they should also return any context that should be passed to the AI.
     /// </summary>
-    /// <param name="newMessage">The most recent message that the AI is being invoked with.</param>
+    /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
-    public abstract Task<string> OnAIInvocationAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default);
+    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Register plugins required by this extension component on the provided <see cref="Kernel"/>.

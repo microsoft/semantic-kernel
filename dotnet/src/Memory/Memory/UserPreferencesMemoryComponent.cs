@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,7 +86,7 @@ public class UserPreferencesMemoryComponent : ThreadExtension
         """;
 
     /// <inheritdoc/>
-    public override async Task OnThreadCreateAsync(string threadId, string? inputText = default, CancellationToken cancellationToken = default)
+    public override async Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         if (!this._contextLoaded)
         {
@@ -120,7 +121,7 @@ public class UserPreferencesMemoryComponent : ThreadExtension
     }
 
     /// <inheritdoc/>
-    public override Task<string> OnAIInvocationAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public override Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
         return Task.FromResult("The following list contains facts about the user:\n" + this._userPreferences);
     }
@@ -128,6 +129,8 @@ public class UserPreferencesMemoryComponent : ThreadExtension
     /// <inheritdoc/>
     public override void RegisterPlugins(Kernel kernel)
     {
+        Verify.NotNull(kernel);
+
         base.RegisterPlugins(kernel);
         kernel.Plugins.AddFromObject(this, "UserPreferencesMemory");
     }

@@ -73,6 +73,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
+        // Get the thread extensions context contributions
+        var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+
         // Invoke Chat Completion with the updated chat history.
         var chatHistory = new ChatHistory();
         await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
@@ -92,7 +95,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             },
             options?.KernelArguments,
             options?.Kernel,
-            options?.AdditionalInstructions,
+            options?.AdditionalInstructions == null ? extensionsContext : options.AdditionalInstructions + Environment.NewLine + Environment.NewLine + extensionsContext,
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -156,6 +159,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
+        // Get the thread extensions context contributions
+        var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+
         // Invoke Chat Completion with the updated chat history.
         var chatHistory = new ChatHistory();
         await foreach (var existingMessage in chatHistoryAgentThread.GetMessagesAsync(cancellationToken).ConfigureAwait(false))
@@ -176,7 +182,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             },
             options?.KernelArguments,
             options?.Kernel,
-            options?.AdditionalInstructions,
+            options?.AdditionalInstructions == null ? extensionsContext : options.AdditionalInstructions + Environment.NewLine + Environment.NewLine + extensionsContext,
             cancellationToken);
 
         await foreach (var result in invokeResults.ConfigureAwait(false))
