@@ -509,6 +509,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelContextProtocolPlugin", "samples\Demos\ModelContextProtocolPlugin\ModelContextProtocolPlugin.csproj", "{801C9CE4-53AF-D2DB-E0D6-9A6BB47E9654}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProcessWithCloudEvents", "ProcessWithCloudEvents", "{70E69280-8DD8-463D-A94A-A1C0C4AA3A0B}"
+	ProjectSection(SolutionItems) = preProject
+		README.MD = README.MD
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithCloudEvents.Processes", "samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Processes\ProcessWithCloudEvents.Processes.csproj", "{31F6608A-FD36-F529-A5FC-C954A0B5E29E}"
 EndProject
