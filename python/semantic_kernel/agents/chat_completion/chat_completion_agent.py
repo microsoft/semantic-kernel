@@ -273,7 +273,10 @@ class ChatCompletionAgent(Agent):
             raise AgentInvokeException("No response from agent.")
 
         response = responses[-1]
-        await thread.on_new_message(response)
+        if response.role != AuthorRole.TOOL:
+            # Tool messages will be automatically added to the chat history by the auto function invocation loop,
+            # thus it's not considered a new message.
+            await thread.on_new_message(response)
         return AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
@@ -311,7 +314,10 @@ class ChatCompletionAgent(Agent):
         chat_history = await thread.get_messages()
 
         async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
-            await thread.on_new_message(response)
+            if response.role != AuthorRole.TOOL:
+                # Tool messages will be automatically added to the chat history by the auto function invocation loop,
+                # thus it's not considered a new message.
+                await thread.on_new_message(response)
             yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
@@ -399,6 +405,8 @@ class ChatCompletionAgent(Agent):
 
         await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
         if role != AuthorRole.TOOL:
+            # Tool messages will be automatically added to the chat history by the auto function invocation loop,
+            # thus it's not considered a new message.
             await thread.on_new_message(
                 ChatMessageContent(
                     role=role if role else AuthorRole.ASSISTANT, content="".join(response_builder), name=self.name

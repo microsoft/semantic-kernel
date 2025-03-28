@@ -19,30 +19,27 @@ class MathPlugin:
     @kernel_function(name="Add")
     def add(
         self,
-        input: Annotated[int, "the first number to add"],
-        amount: Annotated[int, "the second number to add"],
-    ) -> Annotated[int, "the output is a number"]:
+        input: Annotated[int | str, "The first number to add"],
+        amount: Annotated[int | str, "The second number to add"],
+    ) -> Annotated[int, "The result"]:
         """Returns the Addition result of the values provided."""
         if isinstance(input, str):
             input = int(input)
         if isinstance(amount, str):
             amount = int(amount)
-        return MathPlugin.add_or_subtract(input, amount, add=True)
+
+        return input + amount
 
     @kernel_function(name="Subtract")
     def subtract(
         self,
-        input: Annotated[int, "the first number"],
-        amount: Annotated[int, "the number to subtract"],
-    ) -> int:
+        input: Annotated[int | str, "The number to subtract from"],
+        amount: Annotated[int | str, "The number to subtract"],
+    ) -> Annotated[int, "The result"]:
         """Returns the difference of numbers provided."""
         if isinstance(input, str):
             input = int(input)
         if isinstance(amount, str):
             amount = int(amount)
-        return MathPlugin.add_or_subtract(input, amount, add=False)
 
-    @staticmethod
-    def add_or_subtract(input: int, amount: int, add: bool) -> int:
-        """Helper function to perform addition or subtraction based on the add flag."""
-        return input + amount if add else input - amount
+        return input - amount
