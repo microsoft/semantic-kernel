@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -23,19 +24,19 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantT
                 name: "Host");
 
         // Create a thread for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient);
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync(agent, threadId, "Hello");
-            await InvokeAgentAsync(agent, threadId, "What is the special soup and its price?");
-            await InvokeAgentAsync(agent, threadId, "What is the special drink and its price?");
-            await InvokeAgentAsync(agent, threadId, "Thank you");
+            await InvokeAgentAsync(agent, thread, "Hello");
+            await InvokeAgentAsync(agent, thread, "What is the special soup and its price?");
+            await InvokeAgentAsync(agent, thread, "What is the special drink and its price?");
+            await InvokeAgentAsync(agent, thread, "Thank you");
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
@@ -47,16 +48,16 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantT
         OpenAIAssistantAgent agent = await CreateAssistantAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());
 
         // Create a thread for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient);
 
         // Respond to user input
         try
         {
-            await InvokeAgentAsync(agent, threadId, "Create a beautiful red colored widget for me.");
+            await InvokeAgentAsync(agent, thread, "Create a beautiful red colored widget for me.");
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
@@ -78,13 +79,12 @@ public class Step02_Assistant_Plugins(ITestOutputHelper output) : BaseAssistantT
     }
 
     // Local function to invoke agent and display the conversation messages.
-    private async Task InvokeAgentAsync(OpenAIAssistantAgent agent, string threadId, string input)
+    private async Task InvokeAgentAsync(OpenAIAssistantAgent agent, AgentThread thread, string input)
     {
         ChatMessageContent message = new(AuthorRole.User, input);
-        await agent.AddChatMessageAsync(threadId, message);
         this.WriteAgentChatMessage(message);
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+        await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
         {
             this.WriteAgentChatMessage(response);
         }

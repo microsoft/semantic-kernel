@@ -5,8 +5,15 @@ from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions import kernel_function
+
+"""
+The following sample demonstrates how to create an Azure AI Agent
+and use it with streaming responses. The agent is configured to use
+a plugin that provides a list of specials from the menu and the price
+of the requested menu item.
+"""
 
 
 # Define a sample plugin for the sample
@@ -55,8 +62,10 @@ async def main() -> None:
             plugins=[MenuPlugin()],  # add the sample plugin to the agent
         )
 
-        # Create a new thread
-        thread = await client.agents.create_thread()
+        # Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         user_inputs = [
             "Hello",
@@ -67,21 +76,18 @@ async def main() -> None:
 
         try:
             for user_input in user_inputs:
-                # Add the user input as a chat message
-                await agent.add_chat_message(
-                    thread_id=thread.id,
-                    message=user_input,
-                )
                 print(f"# User: '{user_input}'")
                 first_chunk = True
-                async for content in agent.invoke_stream(thread_id=thread.id):
+                async for response in agent.invoke_stream(messages=user_input, thread=thread):
                     if first_chunk:
-                        print(f"# {content.role}: ", end="", flush=True)
+                        print(f"# {response.role}: ", end="", flush=True)
                         first_chunk = False
-                    print(content.content, end="", flush=True)
+                    print(response.content, end="", flush=True)
+                    thread = response.thread
                 print()
         finally:
-            await client.agents.delete_thread(thread.id)
+            # Cleanup: Delete the thread and agent
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
 

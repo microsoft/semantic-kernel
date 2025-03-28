@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -34,7 +35,7 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
         string fileId = await this.Client.UploadAssistantFileAsync(imageStream, "cat.jpg");
 
         // Create a thread for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -47,7 +48,7 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
             await this.Client.DeleteFileAsync(fileId);
         }
@@ -55,10 +56,9 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(ChatMessageContent message)
         {
-            await agent.AddChatMessageAsync(threadId, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
 from azure.ai.projects.models import (
     AgentsApiResponseFormat,
@@ -306,26 +306,25 @@ class AgentThreadActions:
         *,
         agent: "AzureAIAgent",
         thread_id: str,
-        messages: "list[ChatMessageContent] | None" = None,
-        arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
-        # Run-level parameters:
-        model: str | None = None,
-        instructions_override: str | None = None,
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
-        tools: list[ToolDefinition] | None = None,
-        temperature: float | None = None,
-        top_p: float | None = None,
+        arguments: KernelArguments | None = None,
+        instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
+        metadata: dict[str, str] | None = None,
+        model: str | None = None,
         max_prompt_tokens: int | None = None,
         max_completion_tokens: int | None = None,
-        truncation_strategy: TruncationObject | None = None,
+        output_messages: list[ChatMessageContent] | None = None,
+        parallel_tool_calls: bool | None = None,
         response_format: AgentsApiResponseFormat
         | AgentsApiResponseFormatMode
         | ResponseFormatJsonSchemaType
         | None = None,
-        parallel_tool_calls: bool | None = None,
-        metadata: dict[str, str] | None = None,
+        tools: list[ToolDefinition] | None = None,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        truncation_strategy: TruncationObject | None = None,
         **kwargs: Any,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Invoke the agent stream and yield ChatMessageContent continuously.
@@ -333,28 +332,29 @@ class AgentThreadActions:
         Args:
             agent: The agent to invoke.
             thread_id: The thread id.
-            messages: The messages.
-            arguments: The kernel arguments.
-            kernel: The kernel.
-            model: The model.
-            instructions_override: The instructions override.
             additional_instructions: The additional instructions.
             additional_messages: The additional messages to add to the thread. Only supports messages with
                 role = User or Assistant.
-                https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages
+                https://platform.openai.com/docs/api-reference/runs/createRun
+            arguments: The kernel arguments.
+            instructions_override: The instructions override.
+            kernel: The kernel.
+            metadata: The metadata.
+            model: The model.
+            max_prompt_tokens: The max prompt tokens.
+            max_completion_tokens: The max completion tokens.
+            output_messages: The output messages received from the agent. These are full content messages
+                formed from the streamed chunks.
+            parallel_tool_calls: Whether to configure parallel tool calls.
+            response_format: The response format.
             tools: The tools.
             temperature: The temperature.
             top_p: The top p.
-            max_prompt_tokens: The max prompt tokens.
-            max_completion_tokens: The max completion tokens.
             truncation_strategy: The truncation strategy.
-            response_format: The response format.
-            parallel_tool_calls: The parallel tool calls.
-            metadata: The metadata.
             kwargs: Additional keyword arguments.
 
         Returns:
-            An async iterable of streamed content.
+            An async iterable of StreamingChatMessageContent.
         """
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
@@ -402,7 +402,7 @@ class AgentThreadActions:
             stream=stream,
             agent=agent,
             thread_id=thread_id,
-            messages=messages,
+            output_messages=output_messages,
             kernel=kernel,
             function_steps=function_steps,
             active_messages=active_messages,
@@ -419,7 +419,7 @@ class AgentThreadActions:
         kernel: "Kernel",
         function_steps: dict[str, FunctionCallContent],
         active_messages: dict[str, RunStep],
-        messages: "list[ChatMessageContent] | None" = None,
+        output_messages: "list[ChatMessageContent] | None" = None,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Process events from the main stream and delegate tool output handling as needed."""
         while True:
@@ -474,19 +474,19 @@ class AgentThreadActions:
 
                         if action_result.function_result_streaming_content:
                             yield action_result.function_result_streaming_content
-                            if messages:
-                                messages.append(action_result.function_result_streaming_content)
+                            if output_messages is not None:
+                                output_messages.append(action_result.function_result_streaming_content)
 
                         if action_result.function_call_streaming_content:
-                            if messages:
-                                messages.append(action_result.function_call_streaming_content)
+                            if output_messages is not None:
+                                output_messages.append(action_result.function_call_streaming_content)
                             async for sub_content in cls._stream_tool_outputs(
                                 agent=agent,
                                 thread_id=thread_id,
                                 run=run,
                                 action_result=action_result,
                                 active_messages=active_messages,
-                                messages=messages,
+                                output_messages=output_messages,
                             ):
                                 if sub_content:
                                     yield sub_content
@@ -502,8 +502,8 @@ class AgentThreadActions:
                                 )
                                 if message and hasattr(message, "content"):
                                     final_content = generate_message_content(agent.name, message, step)
-                                    if messages:
-                                        messages.append(final_content)
+                                    if output_messages is not None:
+                                        output_messages.append(final_content)
                         return
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_FAILED:
@@ -529,7 +529,7 @@ class AgentThreadActions:
         run: ThreadRun,
         action_result: FunctionActionResult,
         active_messages: dict[str, RunStep],
-        messages: "list[ChatMessageContent] | None" = None,
+        output_messages: "list[ChatMessageContent] | None" = None,
     ) -> AsyncIterable["StreamingChatMessageContent"]:
         """Wrap the tool outputs stream as an async generator.
 
@@ -553,8 +553,8 @@ class AgentThreadActions:
                         message = await cls._retrieve_message(agent=agent, thread_id=thread_id, message_id=msg_id)
                         if message and hasattr(message, "content"):
                             final_content = generate_message_content(agent.name, message, step)
-                            if messages:
-                                messages.append(final_content)
+                            if output_messages is not None:
+                                output_messages.append(final_content)
                 return
             elif sub_event_type == AgentStreamEvent.THREAD_RUN_FAILED:
                 run_failed = cast(ThreadRun, sub_event_data)
@@ -632,15 +632,17 @@ class AgentThreadActions:
         cls: type[_T],
         client: "AIProjectClient",
         thread_id: str,
+        sort_order: Literal["asc", "desc"] = "desc",
     ) -> AsyncIterable["ChatMessageContent"]:
         """Get messages from a thread.
 
         Args:
             client: The client to use to get the messages.
             thread_id: The ID of the thread to get the messages from.
+            sort_order: The order to sort the messages in.
 
         Yields:
-            The messages from the thread.
+            An AsyncIterale of ChatMessageContent that includes the thread messages.
         """
         agent_names: dict[str, Any] = {}
         last_id: str | None = None
@@ -651,7 +653,7 @@ class AgentThreadActions:
                 thread_id=thread_id,
                 run_id=None,
                 limit=None,
-                order="desc",
+                order=sort_order,
                 after=last_id,
                 before=None,
             )
@@ -664,9 +666,9 @@ class AgentThreadActions:
                 assistant_name: str | None = None
 
                 if message.agent_id and message.agent_id.strip() and message.agent_id not in agent_names:
-                    assistant = await client.agents.get_agent(message.agent_id)
-                    if assistant.name and assistant.name.strip():
-                        agent_names[assistant.id] = assistant.name
+                    agent = await client.agents.get_agent(message.agent_id)
+                    if agent.name and agent.name.strip():
+                        agent_names[agent.id] = agent.name
 
                 assistant_name = agent_names.get(message.agent_id) or message.agent_id
 
