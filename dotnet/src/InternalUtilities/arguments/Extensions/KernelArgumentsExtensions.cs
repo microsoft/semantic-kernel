@@ -17,6 +17,7 @@ internal static class KernelArgumentsExtensions
     /// <summary>
     /// Provides a merged instance of <see cref="KernelArguments"/> with precedence for override arguments.
     /// </summary>
+    /// <param name="primaryArguments">Primary arguments to merge. This is the base set of arguments.</param>
     /// <param name="overrideArguments">The override arguments.</param>
     /// <remarks>
     /// This merge preserves original <see cref="PromptExecutionSettings"/> and <see cref="KernelArguments"/> parameters.
