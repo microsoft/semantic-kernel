@@ -20,6 +20,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_AzureAISearch"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Postgres"/></para>
 ///
 /// Redis supports two record storage types: Json and HashSet.
 /// Note the use of the <see cref="RedisStorageType"/> enum to specify the preferred storage type.
