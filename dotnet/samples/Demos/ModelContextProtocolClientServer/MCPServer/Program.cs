@@ -45,7 +45,10 @@ using var loggerFactory = LoggerFactory.Create(builder =>
 });
 
 // Build the kernel
-Kernel kernel = new();
+IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+kernelBuilder.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+Kernel kernel = kernelBuilder.Build();
 
 // Import a OpenAPI plugin defined weather.json OpenAPI/Swagger spec
 using Stream stream = EmbeddedResource.ReadAsStream("weather.json");
@@ -56,7 +59,6 @@ kernel.AutoFunctionInvocationFilters.Add(new ContentSafetyAutoFunctionInvocation
 
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 builder.Services
-    .AddSingleton<ILoggerFactory>(loggerFactory)
     .AddMcpServer()
     .WithStdioServerTransport()
     // Add kernel functions to the MCP server as MCP tools
