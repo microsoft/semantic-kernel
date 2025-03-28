@@ -10,7 +10,7 @@ using Xunit;
 
 namespace VectorData.UnitTests;
 
-public class LoggingVectorStoreTests
+public class LoggingVectorStoreTests : BaseLoggingTests
 {
     [Fact]
     public void ConstructorThrowsOnNullInnerStore()
@@ -56,8 +56,8 @@ public class LoggingVectorStoreTests
     {
         // Arrange
         var innerStore = new Mock<IVectorStore>();
-        var logger = new Mock<ILogger>().Object;
-        string[] names = ["col1", "col2"];
+        var logger = new FakeLogger();
+        string[] names = ["collection-1", "collection-2"];
         innerStore.Setup(s => s.ListCollectionNamesAsync(default))
                   .Returns(names.ToAsyncEnumerable());
         var decorator = new LoggingVectorStore(innerStore.Object, logger);
@@ -68,5 +68,10 @@ public class LoggingVectorStoreTests
         // Assert
         Assert.Equal(names, result);
         innerStore.Verify(s => s.ListCollectionNamesAsync(default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Trace, "Retrieved collection: 'collection-1'");
+        AssertLog(logger.Logs, LogLevel.Trace, "Retrieved collection: 'collection-2'");
+        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync completed.");
     }
 }
