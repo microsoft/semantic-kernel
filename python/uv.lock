@@ -5294,7 +5294,7 @@ requires-dist = [
     { name = "numpy", marker = "python_full_version >= '3.12'", specifier = ">=1.26.0" },
     { name = "ollama", marker = "extra == 'ollama'", specifier = "~=0.4" },
     { name = "onnxruntime-genai", marker = "python_full_version < '3.13' and extra == 'onnx'", specifier = "~=0.5" },
-    { name = "openai", specifier = "~=1.61" },
+    { name = "openai", specifier = ">=1.67" },
     { name = "openapi-core", specifier = ">=0.18,<0.20" },
     { name = "opentelemetry-api", specifier = "~=1.24" },
     { name = "opentelemetry-sdk", specifier = "~=1.24" },

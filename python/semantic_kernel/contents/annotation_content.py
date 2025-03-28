@@ -1,10 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+from enum import Enum
 from typing import Any, ClassVar, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
+from pydantic_settings import SettingsConfigDict
 
 from semantic_kernel.contents.const import ANNOTATION_CONTENT_TAG, ContentTypes
 from semantic_kernel.contents.kernel_content import KernelContent
@@ -13,6 +15,14 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 logger = logging.getLogger(__name__)
 
 _T = TypeVar("_T", bound="AnnotationContent")
+
+
+class CitationType(str, Enum):
+    """Citation type."""
+
+    URL_CITATION = "url_citation"
+    FILE_CITATION = "file_citation"
+    TEXT_CITATION = "text_citation"
 
 
 @experimental
@@ -26,6 +36,14 @@ class AnnotationContent(KernelContent):
     start_index: int | None = None
     end_index: int | None = None
     url: str | None = None
+    title: str | None = None
+    citation_type: CitationType | None = Field(None, alias="type")
+
+    model_config = SettingsConfigDict(
+        extra="ignore",
+        case_sensitive=False,
+        populate_by_name=True,
+    )
 
     def __str__(self) -> str:
         """Return the string representation of the annotation content."""

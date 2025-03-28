@@ -52,7 +52,6 @@ async def main():
             response = await agent.get_response(messages=user_input, thread=thread)
             print(f"# {response.name}: {response}")
             thread = response.thread
-
     finally:
         # 7. Clean up the resources
         await thread.delete() if thread else None

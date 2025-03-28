@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import Annotated
+from typing import Annotated, Any
 
 from azure.identity.aio import DefaultAzureCredential
+from pydantic import BaseModel
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions import kernel_function
@@ -14,9 +15,20 @@ questions about a sample menu using a Semantic Kernel Plugin.
 """
 
 
+class RequestContext(BaseModel):
+    id: str
+    content: str
+    event: Any
+
+
 # Define a sample plugin for the sample
 class MenuPlugin:
     """A sample Menu Plugin used for the concept sample."""
+
+    @kernel_function(description="Provides the weather")
+    def get_weather(self) -> Annotated[str, "Returns the weather."]:
+        """Provides the weather."""
+        return "The weather is sunny."
 
     @kernel_function(description="Provides a list of specials from the menu.")
     def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
@@ -35,7 +47,7 @@ class MenuPlugin:
 
 # Simulate a conversation with the agent
 USER_INPUTS = [
-    "Hello",
+    "What's the weather in Seattle?",
     "What is the special soup?",
     "How much does that cost?",
     "Thank you",

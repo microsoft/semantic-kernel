@@ -37,6 +37,7 @@ class FunctionCallContent(KernelContent):
     content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = Field(FUNCTION_CALL_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FUNCTION_CALL_CONTENT_TAG
     id: str | None
+    call_id: str | None = None
     index: int | None = None
     name: str | None = None
     function_name: str
@@ -54,6 +55,7 @@ class FunctionCallContent(KernelContent):
         plugin_name: str | None = None,
         arguments: str | Mapping[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        call_id: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Create function call content.
@@ -71,6 +73,7 @@ class FunctionCallContent(KernelContent):
                 Not used when 'name' is supplied.
             arguments (str | dict[str, Any] | None): The arguments of the function call.
             metadata (dict[str, Any] | None): The metadata of the function call.
+            call_id (str | None): The id of the call.
             kwargs (Any): Additional arguments.
         """
         if function_name and plugin_name and not name:
@@ -84,6 +87,7 @@ class FunctionCallContent(KernelContent):
             "inner_content": inner_content,
             "ai_model_id": ai_model_id,
             "id": id,
+            "call_id": call_id,
             "index": index,
             "name": name,
             "function_name": function_name or "",
@@ -116,8 +120,11 @@ class FunctionCallContent(KernelContent):
             raise ContentAdditionException("Function calls have different ids.")
         if self.index != other.index:
             raise ContentAdditionException("Function calls have different indexes.")
+        if self.call_id and other.call_id and self.call_id != other.call_id:
+            raise ContentAdditionException("Function calls have different call ids.")
         return FunctionCallContent(
             id=self.id or other.id,
+            call_id=self.call_id or other.call_id,
             index=self.index or other.index,
             name=self.name or other.name,
             arguments=self.combine_arguments(self.arguments, other.arguments),
@@ -223,6 +230,7 @@ class FunctionCallContent(KernelContent):
         return hash((
             self.tag,
             self.id,
+            self.call_id,
             self.index,
             self.name,
             self.function_name,

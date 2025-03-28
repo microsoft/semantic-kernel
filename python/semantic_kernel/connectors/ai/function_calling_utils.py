@@ -25,6 +25,7 @@ def update_settings_from_function_call_configuration(
     function_choice_configuration: "FunctionCallChoiceConfiguration",
     settings: "PromptExecutionSettings",
     type: "FunctionChoiceType",
+    is_response: bool = False,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
     if (
@@ -33,10 +34,16 @@ def update_settings_from_function_call_configuration(
         and hasattr(settings, "tools")
     ):
         settings.tool_choice = type
-        settings.tools = [
-            kernel_function_metadata_to_function_call_format(f)
-            for f in function_choice_configuration.available_functions
-        ]
+        if is_response:
+            settings.tools.extend([
+                kernel_function_metadata_to_response_function_call_format(f)
+                for f in function_choice_configuration.available_functions
+            ])
+        else:
+            settings.tools = [
+                kernel_function_metadata_to_function_call_format(f)
+                for f in function_choice_configuration.available_functions
+            ]
 
 
 def kernel_function_metadata_to_function_call_format(
@@ -55,6 +62,24 @@ def kernel_function_metadata_to_function_call_format(
                 },
                 "required": [p.name for p in metadata.parameters if p.is_required and p.include_in_function_choices],
             },
+        },
+    }
+
+
+def kernel_function_metadata_to_response_function_call_format(
+    metadata: "KernelFunctionMetadata",
+) -> dict[str, Any]:
+    """Convert the kernel function metadata to function calling format."""
+    return {
+        "type": "function",
+        "name": metadata.fully_qualified_name,
+        "description": metadata.description or "",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                param.name: param.schema_data for param in metadata.parameters if param.include_in_function_choices
+            },
+            "required": [p.name for p in metadata.parameters if p.is_required and p.include_in_function_choices],
         },
     }
 

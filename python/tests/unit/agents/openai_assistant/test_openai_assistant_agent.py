@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from openai import AsyncOpenAI
 from pydantic import BaseModel, ValidationError
 
 from semantic_kernel.agents import OpenAIAssistantAgent
@@ -44,7 +45,7 @@ async def test_open_ai_assistant_agent_init(openai_client, assistant_definition)
     kernel_plugin = KernelPlugin(name="expected_plugin_name", description="expected_plugin_description")
 
     agent = OpenAIAssistantAgent(
-        client=openai_client,
+        client=AsyncMock(spec=AsyncOpenAI),
         definition=assistant_definition,
         arguments=KernelArguments(test="test"),
         kernel=AsyncMock(spec=Kernel),
