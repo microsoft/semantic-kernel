@@ -40,10 +40,10 @@ public class Step01_ResponsesAgent(ITestOutputHelper output) : BaseResponsesAgen
         };
 
         ICollection<ChatMessageContent> messages =
-            [
+        [
             new ChatMessageContent(AuthorRole.User, "What is the capital of France?"),
             new ChatMessageContent(AuthorRole.User, "What is the capital of Ireland?")
-            ];
+        ];
 
         // Invoke the agent and output the response
         var responseItems = agent.InvokeAsync(messages);
@@ -64,12 +64,12 @@ public class Step01_ResponsesAgent(ITestOutputHelper output) : BaseResponsesAgen
         };
 
         string[] messages =
-            [
+        [
             "My name is Bob and my preferred language is French.",
             "What is the capital of France?",
             "What is the capital of Spain?",
             "What is the capital of Italy?"
-            ];
+        ];
 
         // Initial thread can be null as it will be automatically created
         AgentThread? agentThread = null;

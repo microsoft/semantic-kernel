@@ -23,11 +23,11 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         };
 
         ICollection<ChatMessageContent> messages =
-            [
+        [
             new ChatMessageContent(AuthorRole.User, "knock knock."),
             new ChatMessageContent(AuthorRole.Assistant, "Who's there?"),
             new ChatMessageContent(AuthorRole.User, "Orange.")
-            ];
+        ];
 
         // Invoke the agent and output the response
         var responseItems = agent.InvokeAsync(messages);
@@ -47,10 +47,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         };
 
         string[] messages =
-            [
+        [
             "Tell me a joke?",
             "Tell me another?",
-            ];
+        ];
 
         // Invoke the agent and output the response
         AgentThread? agentThread = null;
@@ -75,10 +75,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         };
 
         string[] messages =
-            [
+        [
             "Tell me a joke?",
             "Explain why this is funny.",
-            ];
+        ];
 
         // Invoke the agent and output the response
         AgentThread? agentThread = null;

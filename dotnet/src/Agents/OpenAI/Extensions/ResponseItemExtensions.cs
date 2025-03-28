@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
+[ExcludeFromCodeCoverage]
 internal static class ResponseItemExtensions
 {
     /// <summary>
