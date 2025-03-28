@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.SemanticKernel.Memory.Core</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Memory</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <EnablePackageValidation>false</EnablePackageValidation>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Memory Core</Title>
+    <Description>Semantic Kernel implementations for capturing, storing and retrieving memories.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsReleaseCandidate)' == 'true'">
+    <VersionSuffix>rc</VersionSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\Memory.Abstractions\Memory.Abstractions.csproj" />
+  </ItemGroup>
+</Project>
