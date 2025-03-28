@@ -4,7 +4,7 @@ Contains abstractions for accessing Vector Databases and Vector Indexes.
 
 ## Key Features
 
-- Interfaces for Vector Database implementations which are provided in other packages including `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
+- Interfaces for Vector Database implementation. Vector Database implementations are provided separately in other packages, for example  `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
 
 ## How to Use
 
@@ -22,14 +22,25 @@ The main types provided by this library are:
 
 ## Related Packages
 
+Vector Database utilities:
+
+- `Microsoft.Extensions.VectorData`
+
+Vector Database implementations:
+
 - `Microsoft.SemanticKernel.Connectors.AzureAISearch`
 - `Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB`
 - `Microsoft.SemanticKernel.Connectors.AzureCosmosNoSQL`
+- `Microsoft.SemanticKernel.Connectors.InMemory`
+- `Microsoft.SemanticKernel.Connectors.MongoDB`
 - `Microsoft.SemanticKernel.Connectors.Pinecone`
+- `Microsoft.SemanticKernel.Connectors.Postgres`
 - `Microsoft.SemanticKernel.Connectors.Qdrant`
 - `Microsoft.SemanticKernel.Connectors.Redis`
+- `Microsoft.SemanticKernel.Connectors.Sqlite`
+- `Microsoft.SemanticKernel.Connectors.SqlServer`
 - `Microsoft.SemanticKernel.Connectors.Weaviate`
 
 ## Feedback & Contributing
 
-Microsoft.Extensions.DependencyInjection.Abstractions is released as open source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/microsoft/semantic-kernel).
+Microsoft.Extensions.VectorData.Abstractions is released as open source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/microsoft/semantic-kernel).

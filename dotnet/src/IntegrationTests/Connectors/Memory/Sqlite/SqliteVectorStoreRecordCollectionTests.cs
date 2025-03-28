@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
@@ -245,7 +246,9 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         var record = CreateTestHotel(HotelId);
 
-        var commandData = fixture.Connection.CreateCommand();
+        using var connection = new SqliteConnection(fixture.ConnectionString);
+        await connection.OpenAsync();
+        var commandData = connection.CreateCommand();
 
         commandData.CommandText =
             $"INSERT INTO {collectionName} " +
@@ -262,7 +265,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         if (includeVectors)
         {
-            var commandVector = fixture.Connection.CreateCommand();
+            var commandVector = connection.CreateCommand();
 
             commandVector.CommandText =
                 $"INSERT INTO vec_{collectionName} " +

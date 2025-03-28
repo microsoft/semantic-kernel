@@ -72,9 +72,9 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
         // Prepare the SQL commands.
         var commandInfo = this._sqlBuilder.BuildCreateTableCommand(this._schema, tableName, properties, ifNotExists);
         var createIndexCommands =
-            PostgresVectorStoreRecordPropertyMapping.GetVectorIndexInfo(properties)
+            PostgresVectorStoreRecordPropertyMapping.GetIndexInfo(properties)
                 .Select(index =>
-                    this._sqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function, ifNotExists)
+                    this._sqlBuilder.BuildCreateIndexCommand(this._schema, tableName, index.column, index.kind, index.function, index.isVector, ifNotExists)
                 );
 
         // Execute the commands in a transaction.
@@ -82,7 +82,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-#if !NETSTANDARD2_0
+#if NET8_0_OR_GREATER
             var transaction = await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             await using (transaction)
 #else
@@ -99,7 +99,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
                     await indexCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 }
 
-#if !NETSTANDARD2_0
+#if NET8_0_OR_GREATER
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 #else
                 transaction.Commit();

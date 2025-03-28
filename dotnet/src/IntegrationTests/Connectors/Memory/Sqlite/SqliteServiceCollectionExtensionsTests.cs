@@ -69,29 +69,6 @@ public sealed class SqliteServiceCollectionExtensionsTests
         Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
     }
 
-    [Fact(Skip = SkipReason)]
-    public void ItClosesConnectionWhenDIServiceIsDisposed()
-    {
-        // Act
-        using var connection = new SqliteConnection("Data Source=:memory:");
-
-        this._serviceCollection.AddTransient<SqliteConnection>(_ => connection);
-
-        this._serviceCollection.AddSqliteVectorStore();
-
-        var serviceProvider = this._serviceCollection.BuildServiceProvider();
-
-        using (var scope = serviceProvider.CreateScope())
-        {
-            scope.ServiceProvider.GetRequiredService<IVectorStore>();
-
-            Assert.Equal(ConnectionState.Open, connection.State);
-        }
-
-        // Assert
-        Assert.Equal(ConnectionState.Closed, connection.State);
-    }
-
     #region private
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

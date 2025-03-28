@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// UpsertResponse
 /// See https://docs.pinecone.io/reference/upsert
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
 internal sealed class UpsertResponse
 {
     /// <summary>

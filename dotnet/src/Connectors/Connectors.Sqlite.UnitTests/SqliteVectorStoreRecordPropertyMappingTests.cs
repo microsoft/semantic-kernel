@@ -58,7 +58,7 @@ public sealed class SqliteVectorStoreRecordPropertyMappingTests
         var properties = new List<VectorStoreRecordProperty>()
         {
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("Data", typeof(int)),
+            new VectorStoreRecordDataProperty("Data", typeof(int)) { IsFilterable = true },
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.ManhattanDistance },
         };
 
@@ -77,16 +77,19 @@ public sealed class SqliteVectorStoreRecordPropertyMappingTests
         Assert.Equal("TEXT", columns[0].Type);
         Assert.True(columns[0].IsPrimary);
         Assert.Null(columns[0].Configuration);
+        Assert.False(columns[0].HasIndex);
 
         Assert.Equal("my_data", columns[1].Name);
         Assert.Equal("INTEGER", columns[1].Type);
         Assert.False(columns[1].IsPrimary);
         Assert.Null(columns[1].Configuration);
+        Assert.True(columns[1].HasIndex);
 
         Assert.Equal("Vector", columns[2].Name);
         Assert.Equal("FLOAT[4]", columns[2].Type);
         Assert.False(columns[2].IsPrimary);
         Assert.NotNull(columns[2].Configuration);
+        Assert.False(columns[2].HasIndex);
 
         Assert.Equal("l1", columns[2].Configuration!["distance_metric"]);
     }

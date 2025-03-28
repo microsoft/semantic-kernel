@@ -13,6 +13,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Qdrant.UnitTests;
 
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public sealed class QdrantMemoryBuilderExtensionsTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;

@@ -11,6 +11,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.SqlServer;
 /// <summary>
 /// Unit tests for <see cref="SqlServerMemoryStore"/> class.
 /// </summary>
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class SqlServerMemoryStoreTests : IAsyncLifetime
 {
     private const string? SkipReason = "Configure SQL Server or Azure SQL connection string and then set this to 'null'.";
@@ -339,7 +340,7 @@ public class SqlServerMemoryStoreTests : IAsyncLifetime
         await connection.OpenAsync();
         cmd.CommandText = $"""
             DECLARE tables_cursor CURSOR FOR
-            SELECT table_name 
+            SELECT table_name
             FROM information_schema.tables
             WHERE table_type = 'BASE TABLE'
                 AND table_schema = '{SchemaName}'

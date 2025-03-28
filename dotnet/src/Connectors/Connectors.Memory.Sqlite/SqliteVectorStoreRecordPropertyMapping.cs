@@ -66,7 +66,8 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
             var column = new SqliteColumn(propertyName, propertyType, isPrimary)
             {
-                Configuration = configuration
+                Configuration = configuration,
+                HasIndex = property is VectorStoreRecordDataProperty { IsFilterable: true }
             };
 
             columns.Add(column);

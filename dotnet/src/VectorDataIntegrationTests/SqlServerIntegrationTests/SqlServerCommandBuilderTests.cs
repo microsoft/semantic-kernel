@@ -112,6 +112,9 @@ public class SqlServerCommandBuilderTests
         [
             new VectorStoreRecordDataProperty("simpleName", typeof(string)),
             new VectorStoreRecordDataProperty("with space", typeof(int))
+            {
+                IsFilterable = true
+            }
         ];
         VectorStoreRecordVectorProperty[] vectorProperties =
         [
@@ -135,6 +138,7 @@ public class SqlServerCommandBuilderTests
         [embedding] VECTOR(10),
         PRIMARY KEY ([id])
         );
+        CREATE INDEX index_table_withspace ON [schema].[table]([with space]);
         END;
         """;
         if (ifNotExists)
