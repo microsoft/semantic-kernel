@@ -672,7 +672,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private Task InternalDeleteAsync<TKey>(SqliteConnection connection, TKey key, CancellationToken cancellationToken)
+    private Task InternalDeleteAsync<TKey>(SqliteConnection connection, TKey key, CancellationToken cancellationToken) where TKey : notnull
     {
         var condition = new SqliteWhereEqualsCondition(this._propertyReader.KeyPropertyStoragePropertyName, key);
 
