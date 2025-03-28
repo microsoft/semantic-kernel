@@ -9,12 +9,12 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.prompt_template import PromptTemplateConfig
 
 """
-The following sample demonstrates how to create a chat completion
+The following sample demonstrates how to create an Azure AI
 agent using Azure OpenAI within Semantic Kernel.
 It uses parameterized prompts and shows how to swap between
 "semantic-kernel," "jinja2," and "handlebars" template formats,
-This sample highlights the agent's chat history conversation
-is managed and how kernel arguments are passed in and used.
+This sample highlights the agent's prompt templates are managed 
+and how kernel arguments are passed in and used.
 """
 
 # Define the inputs and styles to be used in the agent
