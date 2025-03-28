@@ -16,6 +16,10 @@ public static class AgentDefinitionYaml
     /// <summary>
     /// Convert the given YAML text to a <see cref="AgentDefinition"/> model.
     /// </summary>
+    /// <remarks>
+    /// The <see cref="AgentDefinition"/> will be normalized by calling
+    /// <see cref="AgentDefinitionYaml.Normalize(AgentDefinition, IConfiguration?)"/> before being returned.
+    /// </remarks>
     /// <param name="text">YAML representation of the <see cref="AgentDefinition"/> to use to create the prompt function.</param>
     /// <param name="configuration">Optional instance of <see cref="IConfiguration"/> which can provide configuration settings.</param>
     public static AgentDefinition FromYaml(string text, IConfiguration? configuration = null)
@@ -30,13 +34,20 @@ public static class AgentDefinitionYaml
         return Normalize(agentDefinition, configuration);
     }
 
-    #region private
     /// <summary>
-    /// Update the input names to match dictionary keys in this <see cref="AgentDefinition"/> instance.
+    /// Normalizing the <see cref="AgentDefinition"/> makes the following changes:
+    /// <ul>
+    ///     <li>
+    ///     Update the input names to match dictionary keys in this <see cref="AgentInput"/> instance.
+    ///     </li>
+    ///     <li>
+    ///     All string properties that are delimited with "${" and "}" will be resolved as variables from the provided <see cref="IConfiguration"/>.
+    ///     </li>
+    /// </ul>
     /// </summary>
     /// <param name="agentDefinition">AgentDefinition instance to update.</param>
     /// <param name="configuration">Optional instance of <see cref="IConfiguration"/> which can provide configuration settings.</param>
-    private static AgentDefinition Normalize(AgentDefinition agentDefinition, IConfiguration? configuration)
+    public static AgentDefinition Normalize(AgentDefinition agentDefinition, IConfiguration? configuration)
     {
         Verify.NotNull(agentDefinition);
 
@@ -55,5 +66,4 @@ public static class AgentDefinitionYaml
 
         return agentDefinition!;
     }
-    #endregion
 }

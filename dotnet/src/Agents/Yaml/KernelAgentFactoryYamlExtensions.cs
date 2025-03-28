@@ -15,18 +15,17 @@ public static class KernelAgentFactoryYamlExtensions
     /// </summary>
     /// <param name="kernelAgentFactory">Kernel agent factory which will be used to create the agent</param>
     /// <param name="text">Text string containing the YAML representation of a kernel agent.</param>
-    /// <param name="kernel">Optional <see cref="Kernel"/> instance</param>
-    /// <param name="agentCreationOptions">Optional <see cref="AgentCreationOptions"/> instance</param>
+    /// <param name="options">Optional <see cref="AgentCreationOptions"/> instance</param>
     /// <param name="cancellationToken">Optional cancellation token</param>
-    public static async Task<KernelAgent?> CreateAgentFromYamlAsync(this KernelAgentFactory kernelAgentFactory, string text, Kernel? kernel = null, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
+    public static async Task<KernelAgent?> CreateAgentFromYamlAsync(this KernelAgentFactory kernelAgentFactory, string text, AgentCreationOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var agentDefinition = AgentDefinitionYaml.FromYaml(text, agentCreationOptions?.Configuration);
+        var agentDefinition = AgentDefinitionYaml.FromYaml(text, options?.Configuration);
         agentDefinition.Type ??= (kernelAgentFactory.Types.Count > 0 ? kernelAgentFactory.Types[0] : null);
 
         return await kernelAgentFactory.CreateAsync(
-            kernel ?? new Kernel(),
+            options?.Kernel ?? new Kernel(),
             agentDefinition,
-            agentCreationOptions,
+            options,
             cancellationToken).ConfigureAwait(false);
     }
 }

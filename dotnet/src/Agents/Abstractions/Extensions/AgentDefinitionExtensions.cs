@@ -149,50 +149,100 @@ public static class AgentDefinitionExtensions
             return;
         }
 
-        Type type = obj.GetType();
-        foreach (PropertyInfo property in type.GetProperties())
+        if (obj is IList<object> objList)
         {
-            if (property.PropertyType == typeof(string))
+            for (int i = 0; i < objList.Count; i++)
             {
-                string? value = property.GetValue(obj) as string;
-                if (RequiresNormalization(value))
+                if (objList[i] is string listValueString)
                 {
-                    NormalizeString(obj, property, value!, configuration);
+                    if (RequiresNormalization(listValueString))
+                    {
+                        objList[i] = GetNormalizedValue(listValueString, configuration);
+                    }
+                }
+                else
+                {
+                    NormalizeObject(objList[i], configuration);
                 }
             }
-            else if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        }
+        else if (obj is IEnumerable enumerableValue)
+        {
+            foreach (var enumerableItem in enumerableValue)
             {
-                var dictionary = property.GetValue(obj) as IDictionary;
-                if (dictionary != null)
+                NormalizeObject(enumerableItem, configuration);
+            }
+        }
+        else
+        {
+            Type type = obj.GetType();
+            foreach (PropertyInfo property in type.GetProperties())
+            {
+                if (!property.CanRead || !property.CanWrite)
                 {
-                    foreach (DictionaryEntry entry in dictionary)
+                    continue;
+                }
+
+                if (property.Name.Equals("Options", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("");
+                }
+
+                var value = property.GetValue(obj);
+                if (value is null)
+                {
+                    continue;
+                }
+
+                if (value is string stringValue)
+                {
+                    if (RequiresNormalization(stringValue))
                     {
-                        if (entry.Value is string stringValue)
+                        NormalizeString(obj, property, stringValue!, configuration);
+                    }
+                }
+                else if (value is IDictionary<string, object> dictionaryValue)
+                {
+                    foreach (var entryKey in dictionaryValue.Keys)
+                    {
+                        var entryValue = dictionaryValue[entryKey];
+                        if (entryValue is string entryStringValue)
                         {
-                            if (RequiresNormalization(stringValue))
+                            if (RequiresNormalization(entryStringValue))
                             {
-                                NormalizeString(obj, property, stringValue, configuration);
+                                var normalizedValue = GetNormalizedValue(entryStringValue, configuration);
+                                dictionaryValue[entryKey] = normalizedValue;
+                            }
+                        }
+                        else
+                        {
+                            NormalizeObject(entryValue, configuration);
+                        }
+                    }
+                }
+                else if (value is IList<object> listValue)
+                {
+                    if (listValue is not null)
+                    {
+                        for (int i = 0; i < listValue.Count; i++)
+                        {
+                            if (listValue[i] is string listValueString)
+                            {
+                                if (RequiresNormalization(listValueString))
+                                {
+                                    listValue[i] = GetNormalizedValue(listValueString, configuration);
+                                }
+                            }
+                            else
+                            {
+                                NormalizeObject(listValue[i], configuration);
                             }
                         }
                     }
                 }
-            }
-            else if (property.PropertyType.IsClass && property.PropertyType != typeof(string))
-            {
-                // Process nested object  
-                var nestedObject = property.GetValue(obj);
-                NormalizeObject(nestedObject, configuration);
-            }
-            else if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
-            {
-                // Process collections  
-                var collection = property.GetValue(obj) as IEnumerable;
-                if (collection != null)
+                else
                 {
-                    foreach (var item in collection)
-                    {
-                        NormalizeObject(item, configuration);
-                    }
+                    NormalizeObject(value, configuration);
                 }
             }
         }
@@ -205,10 +255,13 @@ public static class AgentDefinitionExtensions
 
     private static void NormalizeString(object instance, PropertyInfo property, string input, IConfiguration configuration)
     {
-        string key = input.Substring(2, input.Length - 3);
-        string? value = configuration[key];
-        property.SetValue(instance, value);
+        property.SetValue(instance, GetNormalizedValue(input, configuration));
     }
 
+    private static string GetNormalizedValue(string input, IConfiguration configuration)
+    {
+        string key = input.Substring(2, input.Length - 3);
+        return configuration[key] ?? input;
+    }
     #endregion
 }

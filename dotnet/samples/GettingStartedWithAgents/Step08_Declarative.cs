@@ -26,7 +26,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
         {
@@ -48,7 +48,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
         var configuration = TestConfiguration.GetSection(this.UseOpenAIConfig ? "OpenAI" : "AzureOpenAI");
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, agentCreationOptions: new() { Configuration = configuration });
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, options: new() { Configuration = configuration });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
         {
@@ -80,7 +80,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the special soup and how much does it cost?")))
         {
@@ -116,7 +116,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
         var kernelAgentFactory = new ChatCompletionAgentFactory();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel, new() { PromptTemplateFactory = promptTemplateFactory });
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, PromptTemplateFactory = promptTemplateFactory });
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Azure.AI.Projects;
+using Azure.Core;
+using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -26,21 +28,26 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     public async Task AzureAIAgentWithConfigurationAsync()
     {
         var text =
-            $"""
+            """
             type: foundry_agent
-            name: StoryAgent
-            description: Store Telling Agent
-            instructions: Tell a story suitable for children about the topic provided by the user.
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
               connection:
-                connection_string: {TestConfiguration.AzureAI.ConnectionString}
+                connection_string: ${AzureAI:ConnectionString}
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text);
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
+        var kernel = builder.Build();
 
-        await InvokeAgentAsync(agent!, "Cats and Dogs");
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        Assert.NotNull(agent);
+
+        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
 
     [Fact]
@@ -49,17 +56,18 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         var text =
             """
             type: foundry_agent
-            name: StoryAgent
-            description: Store Telling Agent
-            instructions: Tell a story suitable for children about the topic provided by the user.
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "Cats and Dogs");
+        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
 
     [Fact]
@@ -72,13 +80,14 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Use the code interpreter tool to answer questions which require code to be generated and executed.
             description: Agent with code interpreter tool.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
             tools:
               - type: code_interpreter
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
@@ -93,7 +102,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Use the provided functions to answer questions about the menu.
             description: This agent uses the provided functions to answer questions about the menu.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
               options:
                 temperature: 0.4
             tools:
@@ -115,7 +124,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
     }
@@ -130,7 +140,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Answer questions using Bing to provide grounding context.
             description: This agent answers questions using Bing to provide grounding context.
             model:
-              id: gpt-4o
+              id: ${TestConfiguration.AzureAI:ChatModelId}
               options:
                 temperature: 0.4
             tools:
@@ -144,7 +154,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?");
     }
@@ -159,7 +170,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Answer questions using available files to provide grounding context.
             description: This agent answers questions using available files to provide grounding context.
             model:
-              id: gpt-4o
+              id: ${TestConfiguration.AzureAI:ChatModelId}
               options:
                 temperature: 0.4
             tools:
@@ -174,7 +185,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");
@@ -190,7 +201,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Answer questions about the weather. For all other questions politely decline to answer.
             description: This agent answers question about the weather.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
               options:
                 temperature: 0.4
             tools:
@@ -264,7 +275,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
@@ -280,7 +291,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             instructions: Answer questions about the weather. For all other questions politely decline to answer.
             description: This agent answers question about the weather.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
               options:
                 temperature: 0.4
             tools:
@@ -331,7 +342,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
@@ -347,7 +358,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             description: A agent that generates a story about a topic.
             instructions: Tell a story about {{$topic}} that is {{$length}} sentences long.
             model:
-              id: gpt-4o-mini
+              id: ${AzureAI:ChatModelId}
             inputs:
                 topic:
                     description: The topic of the story.
@@ -365,7 +376,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel, promptTemplateFactory) as AzureAIAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()
@@ -388,7 +399,9 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         }
         finally
         {
-            await agent.Client.DeleteAgentAsync(agent.Id);
+            var azureaiAgent = agent as AzureAIAgent;
+            Assert.NotNull(azureaiAgent);
+            await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
 
             if (agentThread is not null)
             {

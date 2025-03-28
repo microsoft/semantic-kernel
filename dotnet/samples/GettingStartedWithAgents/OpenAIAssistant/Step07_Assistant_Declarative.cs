@@ -26,38 +26,38 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     public async Task OpenAIAssistantAgentWithConfigurationForOpenAIAsync()
     {
         var text =
-            $"""
+            """
             type: openai_assistant
-            name: StoryAgent
-            description: Store Telling Agent
-            instructions: Tell a story suitable for children about the topic provided by the user.
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
             model:
-              id: gpt-4o-mini
+              id: ${OpenAI:ChatModelId}
               connection:
                 type: openai
-                api_key: {TestConfiguration.OpenAI.ApiKey}
+                api_key: ${OpenAI:ApiKey}
             """;
         OpenAIAssistantAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Configuration = TestConfiguration.ConfigurationRoot });
 
-        await InvokeAgentAsync(agent!, "Cats and Dogs");
+        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
 
     [Fact]
     public async Task OpenAIAssistantAgentWithConfigurationForAzureOpenAIAsync()
     {
         var text =
-            $"""
+            """
             type: openai_assistant
-            name: StoryAgent
-            description: Store Telling Agent
-            instructions: Tell a story suitable for children about the topic provided by the user.
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
             model:
-              id: gpt-4o-mini
+              id: ${AzureOpenAI:ChatModelId}
               connection:
                 type: azure_openai
-                endpoint: {TestConfiguration.AzureOpenAI.Endpoint}
+                endpoint: ${AzureOpenAI:Endpoint}
             """;
         OpenAIAssistantAgentFactory factory = new();
 
@@ -65,9 +65,9 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
         var kernel = builder.Build();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, Configuration = TestConfiguration.ConfigurationRoot });
 
-        await InvokeAgentAsync(agent!, "Cats and Dogs");
+        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
 
     [Fact]
@@ -80,11 +80,11 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             description: Store Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
-              id: gpt-4o-mini
+              id: ${AzureOpenAI:ChatModelId}
             """;
         OpenAIAssistantAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -99,7 +99,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             description: A agent that generates a story about a topic.
             instructions: Tell a story about {{$topic}} that is {{$length}} sentences long.
             model:
-              id: gpt-4o-mini
+              id: ${AzureOpenAI:ChatModelId}
             inputs:
                 topic:
                     description: The topic of the story.
@@ -117,7 +117,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         OpenAIAssistantAgentFactory factory = new();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel, promptTemplateFactory) as OpenAIAssistantAgent;
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot, PromptTemplateFactory = promptTemplateFactory });
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()
@@ -140,7 +140,9 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         }
         finally
         {
-            await agent.Client.DeleteAssistantAsync(agent.Id);
+            var openaiAgent = agent as OpenAIAssistantAgent;
+            Assert.NotNull(openaiAgent);
+            await openaiAgent.Client.DeleteAssistantAsync(openaiAgent.Id);
 
             if (agentThread is not null)
             {

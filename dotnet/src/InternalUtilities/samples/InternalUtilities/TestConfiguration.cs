@@ -19,6 +19,7 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static IConfigurationRoot? ConfigurationRoot => s_instance?._configRoot;
     public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static OnnxConfig Onnx => LoadSection<OnnxConfig>();

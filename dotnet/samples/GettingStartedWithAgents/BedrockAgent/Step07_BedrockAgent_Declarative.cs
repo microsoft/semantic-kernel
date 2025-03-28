@@ -31,14 +31,14 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             description: Store Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
-              id: {TestConfiguration.BedrockAgent.FoundationModel}
+              id: ${BedrockAgent:FoundationModel}
               connection:
                 type: bedrock
-                agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
+                agent_resource_role_arn: ${BedrockAgent:AgentResourceRoleArn}
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Configuration = TestConfiguration.ConfigurationRoot });
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -47,22 +47,22 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     public async Task BedrockAgentWithCodeInterpreterAsync()
     {
         var text =
-            $"""
+            """
             type: bedrock_agent
             name: CodeInterpreterAgent
             instructions: Use the code interpreter tool to answer questions which require code to be generated and executed.
             description: Agent with code interpreter tool.
             model:
-              id: {TestConfiguration.BedrockAgent.FoundationModel}
+              id: ${BedrockAgent:FoundationModel}
               connection:
                 type: bedrock
-                agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
+                agent_resource_role_arn: ${BedrockAgent:AgentResourceRoleArn}
             tools:
               - type: code_interpreter
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that are less then the value of 101?");
     }
@@ -71,16 +71,16 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     public async Task BedrockAgentWithFunctionsAsync()
     {
         var text =
-            $"""
+            """
             type: bedrock_agent
             name: FunctionCallingAgent
             instructions: Use the provided functions to answer questions about the menu.
             description: This agent uses the provided functions to answer questions about the menu.
             model:
-              id: {TestConfiguration.BedrockAgent.FoundationModel}
+              id: ${BedrockAgent:FoundationModel}
               connection:
                 type: bedrock
-                agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
+                agent_resource_role_arn: ${BedrockAgent:AgentResourceRoleArn}
             tools:
               - id: Current
                 type: function
@@ -106,7 +106,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<WeatherPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
 
         await InvokeAgentAsync(agent!, "What is the current weather in Seattle and what is the weather forecast in Seattle?");
     }
@@ -115,25 +115,25 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     public async Task BedrockAgentWithKnowledgeBaseAsync()
     {
         var text =
-            $"""
+            """
             type: bedrock_agent
             name: KnowledgeBaseAgent
             instructions: Use the provided knowledge base to answer questions.
             description: This agent uses the provided knowledge base to answer questions.
             model:
-              id: {TestConfiguration.BedrockAgent.FoundationModel}
+              id: ${BedrockAgent:FoundationModel}
               connection:
                 type: bedrock
-                agent_resource_role_arn: {TestConfiguration.BedrockAgent.AgentResourceRoleArn}
+                agent_resource_role_arn: ${BedrockAgent:AgentResourceRoleArn}
             tools:
               - type: knowledge_base
                 description: You will find information here.
                 options:
-                  knowledge_base_id: {TestConfiguration.BedrockAgent.KnowledgeBaseId}
+                  knowledge_base_id: ${BedrockAgent:KnowledgeBaseId}
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
 
         await InvokeAgentAsync(agent!, "What is Semantic Kernel?");
     }

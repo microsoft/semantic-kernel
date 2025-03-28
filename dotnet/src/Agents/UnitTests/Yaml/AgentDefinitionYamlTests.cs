@@ -37,7 +37,7 @@ public class AgentDefinitionYamlTests
                     - blue
                 created: 2025-02-21
             model:
-                id: gpt-4o-mini
+                id: ${AzureAI:ChatModelId}
                 options:
                     temperature: 0.4
                     function_choice_behavior:
@@ -117,7 +117,8 @@ public class AgentDefinitionYamlTests
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text.
+    /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text
+    /// and values are resolved successfully from an <see cref="IConfiguration"/> instance.
     /// </summary>
     [Fact]
     public void VerifyAgentDefinitionWithConfigurationFromYaml()
@@ -127,19 +128,41 @@ public class AgentDefinitionYamlTests
             """
             version: 1.0.0
             type: chat_completion_agent
-            name: My Agent
+            name: ${OpenAI:AgentName}
             description: Description of My Agent
             instructions: Instructions for how My Agent works
             model:
-                id: ${OpenAI:ChatModelId}
+                id: ${BedrockAgent:ChatModelId}
                 connection:
-                    api_key: ${OpenAI:ApiKey}
+                    connection_string: ${AzureAI.ConnectionString}
+                    agent_resource_role_arn: ${BedrockAgent.AgentResourceRoleArn}
+            tools:
+              - type: file_search
+                description: Grounding with available files.
+                options:
+                  vector_store_ids:
+                    - ${OpenAI:VectorStoreId1}
+                    - ${OpenAI:VectorStoreId2}
+              - type: knowledge_base
+                description: You will find information here.
+                options:
+                  knowledge_base_id: ${BedrockAgent.KnowledgeBaseId}
+              - type: bing_grounding
+                options:
+                  tool_connections:
+                    - ${AzureAI.BingConnectionId}
             """;
 
         var configData = new Dictionary<string, string?>
         {
-            {"OpenAI:ChatModelId", "gpt-4o"},
-            {"OpenAI:ApiKey", "API-KEY"},
+            {"OpenAI:AgentName", "My Agent"},
+            {"OpenAI:VectorStoreId1", "VECTOR-STORE-ID-1"},
+            {"OpenAI:VectorStoreId2", "VECTOR-STORE-ID-2"},
+            {"AzureAI.ConnectionString", "CONNECTION-STRING"},
+            {"AzureAI.BingConnectionId", "BING-CONNECTION-ID"},
+            {"BedrockAgent:ChatModelId", "CHAT-MODEL-ID"},
+            {"BedrockAgent.AgentResourceRoleArn", "AGENT-RESOURCE-ROLE-ARN"},
+            {"BedrockAgent.KnowledgeBaseId", "KNOWLEDGE-BASE-ID"},
         };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(configData).Build();
 
@@ -153,6 +176,37 @@ public class AgentDefinitionYamlTests
         Assert.Equal("My Agent", agentDefinition.Name);
         Assert.Equal("Description of My Agent", agentDefinition.Description);
         Assert.Equal("Instructions for how My Agent works", agentDefinition.Instructions);
+
         Assert.NotNull(agentDefinition.Model);
+        Assert.Equal("CHAT-MODEL-ID", agentDefinition.Model.Id);
+        Assert.NotNull(agentDefinition.Model.Connection);
+        Assert.NotNull(agentDefinition.Model.Connection.ExtensionData);
+        Assert.Equal("CONNECTION-STRING", agentDefinition.Model.Connection.ExtensionData["connection_string"]);
+        Assert.Equal("AGENT-RESOURCE-ROLE-ARN", agentDefinition.Model.Connection.ExtensionData["agent_resource_role_arn"]);
+
+        Assert.NotNull(agentDefinition.Tools);
+
+        var fileSearch = agentDefinition.GetFirstToolDefinition("file_search");
+        Assert.NotNull(fileSearch);
+        Assert.NotNull(fileSearch.Options);
+        Assert.NotNull(fileSearch.Options!["vector_store_ids"]);
+        var vectorStoreIds = fileSearch.Options!["vector_store_ids"] as List<object>;
+        Assert.NotNull(vectorStoreIds);
+        Assert.Equal("VECTOR-STORE-ID-1", vectorStoreIds[0]);
+        Assert.Equal("VECTOR-STORE-ID-2", vectorStoreIds[1]);
+
+        var knowledgeBase = agentDefinition.GetFirstToolDefinition("knowledge_base");
+        Assert.NotNull(knowledgeBase);
+        Assert.NotNull(knowledgeBase.Options);
+        var knowledgeBaseId = knowledgeBase.Options!["knowledge_base_id"] as string;
+        Assert.Equal("KNOWLEDGE-BASE-ID", knowledgeBaseId);
+
+        var bingGrounding = agentDefinition.GetFirstToolDefinition("bing_grounding");
+        Assert.NotNull(bingGrounding);
+        Assert.NotNull(bingGrounding.Options);
+        Assert.NotNull(bingGrounding.Options!["tool_connections"]);
+        var toolConnections = bingGrounding.Options!["tool_connections"] as List<object>;
+        Assert.NotNull(toolConnections);
+        Assert.Equal("BING-CONNECTION-ID", toolConnections[0]);
     }
 }
