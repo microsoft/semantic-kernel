@@ -134,7 +134,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         // Assert
         Assert.Equal(replaceIfExists, command.CommandText.Contains("OR REPLACE"));
 
-        Assert.Contains($"INTO {TableName} (Id, Name, Age, Address)", command.CommandText);
+        Assert.Contains($"INTO [{TableName}] ([Id], [Name], [Age], [Address])", command.CommandText);
         Assert.Contains("VALUES (@Id0, @Name0, @Age0, @Address0)", command.CommandText);
         Assert.Contains("VALUES (@Id1, @Name1, @Age1, @Address1)", command.CommandText);
         Assert.Contains("RETURNING Id", command.CommandText);
@@ -184,11 +184,11 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectCommand(this._connection, TableName, columnNames, conditions, orderByPropertyName);
 
         // Assert
-        Assert.Contains("SELECT Id, Name, Age, Address", command.CommandText);
-        Assert.Contains($"FROM {TableName}", command.CommandText);
+        Assert.Contains("SELECT [Id],[Name],[Age],[Address]", command.CommandText);
+        Assert.Contains($"FROM [{TableName}]", command.CommandText);
 
-        Assert.Contains("Name = @Name0", command.CommandText);
-        Assert.Contains("Age IN (@Age0, @Age1, @Age2)", command.CommandText);
+        Assert.Contains("[Name] = @Name0", command.CommandText);
+        Assert.Contains("[Age] IN (@Age0, @Age1, @Age2)", command.CommandText);
 
         Assert.Equal(!string.IsNullOrWhiteSpace(orderByPropertyName), command.CommandText.Contains($"ORDER BY {orderByPropertyName}"));
 
@@ -239,13 +239,13 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
             orderByPropertyName);
 
         // Assert
-        Assert.Contains("SELECT LeftTable.Id, LeftTable.Name, RightTable.Age, RightTable.Address", command.CommandText);
-        Assert.Contains("FROM LeftTable", command.CommandText);
+        Assert.Contains("SELECT [LeftTable].[Id], [LeftTable].[Name], [RightTable].[Age], [RightTable].[Address]", command.CommandText);
+        Assert.Contains("FROM [LeftTable]", command.CommandText);
 
-        Assert.Contains("LEFT JOIN RightTable ON LeftTable.Id = RightTable.Id", command.CommandText);
+        Assert.Contains("LEFT JOIN [RightTable] ON [LeftTable].[Id] = [RightTable].[Id]", command.CommandText);
 
-        Assert.Contains("Name = @Name0", command.CommandText);
-        Assert.Contains("Age IN (@Age0, @Age1, @Age2)", command.CommandText);
+        Assert.Contains("[Name] = @Name0", command.CommandText);
+        Assert.Contains("[Age] IN (@Age0, @Age1, @Age2)", command.CommandText);
 
         Assert.Equal(!string.IsNullOrWhiteSpace(orderByPropertyName), command.CommandText.Contains($"ORDER BY {orderByPropertyName}"));
 
@@ -280,8 +280,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         // Assert
         Assert.Contains("DELETE FROM [TestTable]", command.CommandText);
 
-        Assert.Contains("Name = @Name0", command.CommandText);
-        Assert.Contains("Age IN (@Age0, @Age1, @Age2)", command.CommandText);
+        Assert.Contains("[Name] = @Name0", command.CommandText);
+        Assert.Contains("[Age] IN (@Age0, @Age1, @Age2)", command.CommandText);
 
         Assert.Equal("@Name0", command.Parameters[0].ParameterName);
         Assert.Equal("NameValue", command.Parameters[0].Value);
