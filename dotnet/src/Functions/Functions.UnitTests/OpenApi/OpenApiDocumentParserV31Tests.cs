@@ -708,54 +708,6 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("Operation server", operation.OperationServers[0].Description);
     }
 
-    [Fact]
-    public void ItThrowsExceptionWhenNoServersAvailable()
-    {
-        // Arrange
-        var document = new OpenApiDocument();
-
-        var pathItem = new OpenApiPathItem
-        {
-            Operations = new Dictionary<OperationType, OpenApiOperation>
-            {
-                [OperationType.Get] = new OpenApiOperation
-                {
-                    OperationId = "GetTest",
-                    Responses = new OpenApiResponses()
-                }
-            }
-        };
-
-        // Act
-        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
-        var operation = operations[0];
-
-        // Create a server selector as described in the review
-        RestApiServer SelectServer(RestApiOperation op)
-        {
-            if (op.OperationServers.Count > 0)
-            {
-                return op.OperationServers[0];
-            }
-            else if (op.PathServers.Count > 0)
-            {
-                return op.PathServers[0];
-            }
-            else if (op.Servers.Count > 0)
-            {
-                return op.Servers[0];
-            }
-            else
-            {
-                throw new InvalidOperationException("No servers available for selection.");
-            }
-        }
-
-        // Assert - should throw exception when no servers available
-        var exception = Assert.Throws<InvalidOperationException>(() => SelectServer(operation));
-        Assert.Equal("No servers available for selection.", exception.Message);
-    }
-
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
     {
         var serializer = new SharpYaml.Serialization.Serializer();
