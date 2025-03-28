@@ -688,7 +688,7 @@ internal sealed class VectorStoreRecordPropertyReader
             {
                 definitionProperties.Add(new VectorStoreRecordDataProperty(dataProperty.Name, dataProperty.PropertyType)
                 {
-                    IsFilterable = dataAttribute.IsFilterable,
+                    IsIndexed = dataAttribute.IsIndexed,
                     IsFullTextSearchable = dataAttribute.IsFullTextSearchable,
                     StoragePropertyName = dataAttribute.StoragePropertyName
                 });

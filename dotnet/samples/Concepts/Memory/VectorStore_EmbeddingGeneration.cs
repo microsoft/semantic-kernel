@@ -73,7 +73,7 @@ public class VectorStore_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         [VectorStoreRecordKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Category { get; set; }
 
         [VectorStoreRecordData]

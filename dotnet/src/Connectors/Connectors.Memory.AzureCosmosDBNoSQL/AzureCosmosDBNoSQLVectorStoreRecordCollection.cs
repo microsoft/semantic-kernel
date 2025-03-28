@@ -552,7 +552,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         // Process Data properties.
         foreach (var property in this._propertyReader.DataProperties)
         {
-            if (property.IsFilterable || property.IsFullTextSearchable)
+            if (property.IsIndexed || property.IsFullTextSearchable)
             {
                 indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = $"/{this._storagePropertyNames[property.DataModelPropertyName]}/?" });
             }

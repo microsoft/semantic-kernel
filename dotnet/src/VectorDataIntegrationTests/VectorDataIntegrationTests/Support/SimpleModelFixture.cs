@@ -53,8 +53,8 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
                     IndexKind = this.IndexKind
                 },
 
-                new VectorStoreRecordDataProperty(nameof(SimpleModel<TKey>.Number), typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty(nameof(SimpleModel<TKey>.Text), typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty(nameof(SimpleModel<TKey>.Number), typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty(nameof(SimpleModel<TKey>.Text), typeof(string)) { IsIndexed = true },
             ]
         };
 }

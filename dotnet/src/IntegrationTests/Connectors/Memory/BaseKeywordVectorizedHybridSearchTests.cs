@@ -301,7 +301,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
         {
             new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
             new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextSearchable = true },
-            new VectorStoreRecordDataProperty("Code", typeof(int)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
             new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
         }
     };

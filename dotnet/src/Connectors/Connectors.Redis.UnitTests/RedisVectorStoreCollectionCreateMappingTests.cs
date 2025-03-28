@@ -24,13 +24,13 @@ public class RedisVectorStoreCollectionCreateMappingTests
         {
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
 
-            new VectorStoreRecordDataProperty("FilterableString", typeof(string)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FilterableString", typeof(string)) { IsIndexed = true },
             new VectorStoreRecordDataProperty("FullTextSearchableString", typeof(string)) { IsFullTextSearchable = true },
-            new VectorStoreRecordDataProperty("FilterableStringEnumerable", typeof(string[])) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FilterableStringEnumerable", typeof(string[])) { IsIndexed = true },
             new VectorStoreRecordDataProperty("FullTextSearchableStringEnumerable", typeof(string[])) { IsFullTextSearchable = true },
 
-            new VectorStoreRecordDataProperty("FilterableInt", typeof(int)) { IsFilterable = true },
-            new VectorStoreRecordDataProperty("FilterableNullableInt", typeof(int)) { IsFilterable = true },
+            new VectorStoreRecordDataProperty("FilterableInt", typeof(int)) { IsIndexed = true },
+            new VectorStoreRecordDataProperty("FilterableNullableInt", typeof(int)) { IsIndexed = true },
 
             new VectorStoreRecordDataProperty("NonFilterableString", typeof(string)),
 

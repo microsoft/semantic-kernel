@@ -67,13 +67,13 @@ internal static class RedisVectorStoreCollectionCreateMapping
             }
 
             // Data property.
-            if (property is VectorStoreRecordDataProperty dataProperty && (dataProperty.IsFilterable || dataProperty.IsFullTextSearchable))
+            if (property is VectorStoreRecordDataProperty dataProperty && (dataProperty.IsIndexed || dataProperty.IsFullTextSearchable))
             {
                 var storageName = storagePropertyNames[dataProperty.DataModelPropertyName];
 
-                if (dataProperty.IsFilterable && dataProperty.IsFullTextSearchable)
+                if (dataProperty.IsIndexed && dataProperty.IsFullTextSearchable)
                 {
-                    throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' has both {nameof(VectorStoreRecordDataProperty.IsFilterable)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported by the Redis VectorStore.");
+                    throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' has both {nameof(VectorStoreRecordDataProperty.IsIndexed)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported by the Redis VectorStore.");
                 }
 
                 // Add full text search field index.
@@ -90,7 +90,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
                 }
 
                 // Add filter field index.
-                if (dataProperty.IsFilterable)
+                if (dataProperty.IsIndexed)
                 {
                     if (dataProperty.PropertyType == typeof(string))
                     {
@@ -106,7 +106,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     }
                     else
                     {
-                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFilterable)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
+                        throw new InvalidOperationException($"Property '{dataProperty.DataModelPropertyName}' is marked as {nameof(VectorStoreRecordDataProperty.IsIndexed)}, but the property type '{dataProperty.PropertyType}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
                     }
                 }
 

@@ -37,7 +37,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapFilterableStringDataFieldCreatesSimpleField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsFilterable = isFilterable };
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsIndexed = isFilterable };
         var storagePropertyName = "test_data";
 
         // Act
@@ -57,7 +57,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapFullTextSearchableStringDataFieldCreatesSearchableField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsFilterable = isFilterable, IsFullTextSearchable = true };
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(string)) { IsIndexed = isFilterable, IsFullTextSearchable = true };
         var storagePropertyName = "test_data";
 
         // Act
@@ -88,7 +88,7 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
     public void MapDataFieldCreatesSimpleField(bool isFilterable)
     {
         // Arrange
-        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(int)) { IsFilterable = isFilterable };
+        var dataProperty = new VectorStoreRecordDataProperty("testdata", typeof(int)) { IsIndexed = isFilterable };
         var storagePropertyName = "test_data";
 
         // Act
