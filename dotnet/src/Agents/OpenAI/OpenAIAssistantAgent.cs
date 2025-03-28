@@ -18,9 +18,9 @@ using OpenAI.Assistants;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Represents a <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
+/// Represents a <see cref="Agent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
-public sealed partial class OpenAIAssistantAgent : KernelAgent
+public sealed partial class OpenAIAssistantAgent : Agent
 {
     /// <summary>
     /// The metadata key that identifies code-interpreter content.
@@ -425,7 +425,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
                 internalOptions,
                 this.Logger,
                 options?.Kernel ?? this.Kernel,
-                this.MergeArguments(options?.KernelArguments),
+                options?.KernelArguments,
                 cancellationToken).ConfigureAwait(false))
             {
                 // The thread and the caller should be notified of all messages regardless of visibility.
@@ -496,8 +496,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
-
             await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
                 if (isVisible)
@@ -563,7 +561,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         var invokeResults = this.InvokeStreamingAsync(
             openAIAssistantAgentThread.Id!,
             internalOptions,
-            this.MergeArguments(options?.KernelArguments),
+            options?.KernelArguments,
             options?.Kernel ?? this.Kernel,
             newMessagesReceiver,
             cancellationToken);
@@ -640,8 +638,6 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
-
             return AssistantThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
         }
     }
@@ -678,7 +674,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken) =>
-        this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
+        this.RenderInstructionsAsync(kernel, arguments, cancellationToken);
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]

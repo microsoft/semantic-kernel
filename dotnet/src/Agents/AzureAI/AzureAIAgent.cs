@@ -16,9 +16,9 @@ using AAIP = Azure.AI.Projects;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// Provides a specialized <see cref="KernelAgent"/> based on an Azure AI agent.
+/// Provides a specialized <see cref="Agent"/> based on an Azure AI agent.
 /// </summary>
-public sealed partial class AzureAIAgent : KernelAgent
+public sealed partial class AzureAIAgent : Agent
 {
     /// <summary>
     /// Provides tool definitions used when associating a file attachment to an input message:
@@ -200,7 +200,7 @@ public sealed partial class AzureAIAgent : KernelAgent
                 options?.ToAzureAIInvocationOptions(),
                 this.Logger,
                 options?.Kernel ?? this.Kernel,
-                this.MergeArguments(options?.KernelArguments),
+                options?.KernelArguments,
                 cancellationToken).ConfigureAwait(false))
             {
                 // The thread and the caller should be notified of all messages regardless of visibility.
@@ -252,8 +252,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
-
             await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(this, this.Client, threadId, options, this.Logger, kernel, arguments, cancellationToken).ConfigureAwait(false))
             {
                 if (isVisible)
@@ -311,7 +309,7 @@ public sealed partial class AzureAIAgent : KernelAgent
         var invokeResults = this.InvokeStreamingAsync(
             azureAIAgentThread.Id!,
             options?.ToAzureAIInvocationOptions(),
-            this.MergeArguments(options?.KernelArguments),
+            options?.KernelArguments,
             options?.Kernel ?? this.Kernel,
             newMessagesReceiver,
             cancellationToken);
@@ -388,8 +386,6 @@ public sealed partial class AzureAIAgent : KernelAgent
         IAsyncEnumerable<StreamingChatMessageContent> InternalInvokeStreamingAsync()
         {
             kernel ??= this.Kernel;
-            arguments = this.MergeArguments(arguments);
-
             return AgentThreadActions.InvokeStreamingAsync(this, this.Client, threadId, messages, options, this.Logger, kernel, arguments, cancellationToken);
         }
     }
@@ -425,7 +421,7 @@ public sealed partial class AzureAIAgent : KernelAgent
 
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        return this.FormatInstructionsAsync(kernel, arguments, cancellationToken);
+        return this.RenderInstructionsAsync(kernel, arguments, cancellationToken);
     }
 
     /// <inheritdoc/>
