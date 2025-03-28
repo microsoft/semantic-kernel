@@ -240,7 +240,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     {
         ChatHistory chat = [];
 
-        string? instructions = await this.FormatInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        string? instructions = await this.RenderInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(instructions))
         {
@@ -267,7 +267,6 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 
@@ -317,7 +316,6 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
         (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
 

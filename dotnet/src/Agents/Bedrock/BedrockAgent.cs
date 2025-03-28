@@ -136,8 +136,7 @@ public sealed class BedrockAgent : Agent
         });
 
         // Invoke the agent
-        var arguments = this.MergeArguments(options?.KernelArguments);
-        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, arguments, cancellationToken);
+        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -180,8 +179,6 @@ public sealed class BedrockAgent : Agent
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var arguments = this.MergeArguments(options?.KernelArguments);
-
         // The provided thread is used to continue the conversation. If the thread is not provided and the session id is provided,
         // a new thread is created with the provided session id. If neither is provided, a new thread is created.
         if (thread is null && invokeAgentRequest.SessionId is not null)
@@ -200,7 +197,7 @@ public sealed class BedrockAgent : Agent
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
         // Invoke the agent
-        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, arguments, cancellationToken);
+        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -368,8 +365,7 @@ public sealed class BedrockAgent : Agent
         });
 
         // Invoke the agent
-        var arguments = this.MergeArguments(options?.KernelArguments);
-        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, arguments, cancellationToken);
+        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -413,8 +409,6 @@ public sealed class BedrockAgent : Agent
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var arguments = this.MergeArguments(options?.KernelArguments);
-
         // The provided thread is used to continue the conversation. If the thread is not provided and the session id is provided,
         // a new thread is created with the provided session id. If neither is provided, a new thread is created.
         if (thread is null && invokeAgentRequest.SessionId is not null)
@@ -432,7 +426,7 @@ public sealed class BedrockAgent : Agent
         invokeAgentRequest.SessionId = bedrockThread.Id;
         invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
 
-        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, arguments, cancellationToken);
+        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
 
         // The Bedrock agent service has the same API for both streaming and non-streaming responses.
         // We are invoking the same method as the non-streaming response with the streaming configuration set,

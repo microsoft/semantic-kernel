@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -51,7 +52,7 @@ public abstract class Agent
     /// <remarks>
     /// Also includes <see cref="PromptExecutionSettings"/>.
     /// </remarks>
-    public KernelArguments Arguments { get; init; } = [];
+    public KernelArguments? Arguments { get; init; }
 
     /// <summary>
     /// Gets the instructions for the agent (optional).
@@ -256,7 +257,7 @@ public abstract class Agent
     /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The formatted system instructions for the agent.</returns>
-    protected async Task<string?> FormatInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
+    protected async Task<string?> RenderInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
         if (this.Template is null)
         {
@@ -264,8 +265,10 @@ public abstract class Agent
             return this.Instructions;
         }
 
+        var mergedArguments = this.Arguments.Merge(arguments);
+
         // Use the provided template as the instructions
-        return await this.Template.RenderAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        return await this.Template.RenderAsync(kernel, mergedArguments, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -392,12 +395,18 @@ public abstract class Agent
     /// It allows for incremental addition or replacement of specific parameters while also preserving the ability
     /// to override the execution settings.
     /// </remarks>
-    protected KernelArguments MergeArguments(KernelArguments? arguments)
+    private KernelArguments MergeArguments(KernelArguments? arguments)
     {
         // Avoid merge when override arguments are not set.
         if (arguments == null)
         {
-            return this.Arguments;
+            return this.Arguments ?? [];
+        }
+
+        // Avoid merge when the Agent arguments are not set.
+        if (this.Arguments is null)
+        {
+            return arguments ?? [];
         }
 
         // Both instances are not null, merge with precedence for override arguments.

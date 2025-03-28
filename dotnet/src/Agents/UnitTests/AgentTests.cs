@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
@@ -225,29 +226,21 @@ public class AgentTests
     /// Verify ability to merge null <see cref="KernelArguments"/>.
     /// </summary>
     [Fact]
-    public void VerifyNullArgumentMerge()
+    public void VerifyNullArgumentMergeWhenRenderingPrompt()
     {
         // Arrange
-        MockAgent agentWithNoArguments = new();
+        KernelArguments? primaryArguments = null;
         // Act
-        KernelArguments arguments = agentWithNoArguments.MergeArguments(null);
+        KernelArguments arguments = primaryArguments.Merge(null);
         // Assert
         Assert.Empty(arguments);
 
         // Arrange
         KernelArguments overrideArguments = new() { { "test", 1 } };
         // Act
-        arguments = agentWithNoArguments.MergeArguments(overrideArguments);
+        arguments = primaryArguments.Merge(overrideArguments);
         // Assert
         Assert.StrictEqual(1, arguments.Count);
-
-        // Arrange
-        MockAgent agentWithEmptyArguments = new() { Arguments = new() };
-        // Act
-        arguments = agentWithEmptyArguments.MergeArguments(null);
-        // Assert
-        Assert.NotNull(arguments);
-        Assert.StrictEqual(agentWithEmptyArguments.Arguments, arguments);
     }
 
     /// <summary>
@@ -257,11 +250,11 @@ public class AgentTests
     public void VerifyArgumentParameterMerge()
     {
         // Arrange
-        MockAgent agentWithArguments = new() { Arguments = new() { { "a", 1 } } };
+        KernelArguments? primaryArguments = new() { { "a", 1 } };
         KernelArguments overrideArguments = new() { { "b", 2 } };
 
         // Act
-        KernelArguments? arguments = agentWithArguments.MergeArguments(overrideArguments);
+        KernelArguments? arguments = primaryArguments.Merge(overrideArguments);
 
         // Assert
         Assert.NotNull(arguments);
@@ -274,7 +267,7 @@ public class AgentTests
         overrideArguments["c"] = 3;
 
         // Act
-        arguments = agentWithArguments.MergeArguments(overrideArguments);
+        arguments = primaryArguments.Merge(overrideArguments);
 
         // Assert
         Assert.NotNull(arguments);
@@ -292,11 +285,12 @@ public class AgentTests
     {
         // Arrange
         FunctionChoiceBehavior autoInvoke = FunctionChoiceBehavior.Auto();
-        MockAgent agentWithSettings = new() { Arguments = new(new PromptExecutionSettings() { FunctionChoiceBehavior = autoInvoke }) };
-        KernelArguments overrideArgumentsNoSettings = new();
+        PromptExecutionSettings promptExecutionSettings = new() { FunctionChoiceBehavior = autoInvoke };
+        KernelArguments primaryArgument = new() { ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, promptExecutionSettings } } };
+        KernelArguments overrideArgumentsNoSettings = [];
 
         // Act
-        KernelArguments? arguments = agentWithSettings.MergeArguments(overrideArgumentsNoSettings);
+        KernelArguments? arguments = primaryArgument.Merge(overrideArgumentsNoSettings);
 
         // Assert
         Assert.NotNull(arguments);
@@ -309,7 +303,7 @@ public class AgentTests
         KernelArguments overrideArgumentsWithSettings = new(new PromptExecutionSettings() { FunctionChoiceBehavior = noInvoke });
 
         // Act
-        arguments = agentWithSettings.MergeArguments(overrideArgumentsWithSettings);
+        arguments = primaryArgument.Merge(overrideArgumentsWithSettings);
 
         // Assert
         Assert.NotNull(arguments);
