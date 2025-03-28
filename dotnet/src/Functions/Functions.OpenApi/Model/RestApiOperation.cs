@@ -66,6 +66,16 @@ public sealed class RestApiOperation
     public IList<RestApiServer> Servers { get; private set; }
 
     /// <summary>
+    ///  Path level servers.
+    /// </summary>
+    public IList<RestApiServer> PathServers { get; init; }
+
+    /// <summary>
+    /// Operation level servers.
+    /// </summary>
+    public IList<RestApiServer> OperationServers { get; init; }
+
+    /// <summary>
     /// The security requirements.
     /// </summary>
     public IList<RestApiSecurityRequirement> SecurityRequirements { get; private set; }
@@ -93,16 +103,6 @@ public sealed class RestApiOperation
         get => this._extensions;
         init => this._extensions = value;
     }
-
-    /// <summary>
-    ///  Path level servers.
-    /// </summary>
-    public List<RestApiServer> PathServers { get; internal set; }
-
-    /// <summary>
-    /// Operation level servers.
-    /// </summary>
-    public List<RestApiServer> OperationServers { get; internal set; }
 
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
