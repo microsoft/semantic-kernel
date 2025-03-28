@@ -50,8 +50,8 @@ async def main() -> None:
                 response = await agent.get_response(messages=user_input, thread=thread)
                 print(f"# {response.name}: {response}")
         finally:
-            # 5. Cleanup: Delete the thread and agent
-            await thread.delete() if thread else None
+            # 6. Cleanup: Delete the thread and agent
+            await client.agents.delete_thread(thread.id)
             # Do not clean up the agent so it can be used again
 
         """

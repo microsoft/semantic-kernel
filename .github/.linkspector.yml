@@ -9,11 +9,6 @@ ignorePatterns:
   - pattern: "./pulls"
   - pattern: "https:\/\/platform.openai.com"
   - pattern: "https:\/\/outlook.office.com/bookings"
-excludedFiles:
-  # Files that are temporarily excluded because they contain links that are temporarily unavailable.
-  - ./docs/decisions/0054-processes.md # Cannot reach https://docs.dapr.io/developing-applications/building-blocks/actors/actors-overview/. Status: 404" location:{path:"docs/decisions/0054-processes.md" 
-  - ./dotnet/src/Experimental/Process.IntegrationTestRunner.Dapr/README.md # Cannot reach https://docs.dapr.io/getting-started/install-dapr-selfhost/. Status: 404" location:{path:"dotnet/src/Experimental/Process.IntegrationTestRunner.Dapr/README.md" 
-  - ./python/DEV_SETUP.md # "Cannot reach https://code.visualstudio.com/docs/editor/workspaces. Status: 404"
 excludedDirs:
   # Folders which include links to localhost, since it's not ignored with regular expressions
   - ./python/samples/demos/telemetry

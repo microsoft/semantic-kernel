@@ -124,8 +124,17 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string vectorColumnName, string indexKind, string distanceFunction, bool ifNotExists)
+    public PostgresSqlCommandInfo BuildCreateIndexCommand(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
     {
+        var indexName = $"{tableName}_{columnName}_index";
+
+        if (!isVector)
+        {
+            return new PostgresSqlCommandInfo(commandText:
+                $@"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")}""{indexName}"" ON {schema}.""{tableName}"" (""{columnName}"");"
+            );
+        }
+
         // Only support creating HNSW index creation through the connector.
         var indexTypeName = indexKind switch
         {
@@ -145,11 +154,9 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
             _ => throw new NotSupportedException($"Distance function {distanceFunction} is not supported.")
         };
 
-        var indexName = $"{tableName}_{vectorColumnName}_index";
-
         return new PostgresSqlCommandInfo(
             commandText: $@"
-                CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{vectorColumnName}"" {indexOps});"
+                CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : "")} ""{indexName}"" ON {schema}.""{tableName}"" USING {indexTypeName} (""{columnName}"" {indexOps});"
         );
     }
 
