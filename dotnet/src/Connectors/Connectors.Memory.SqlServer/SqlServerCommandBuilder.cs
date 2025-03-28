@@ -50,6 +50,18 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine();
         sb.AppendLine(");"); // end the table definition
 
+        foreach (var dataProperty in dataProperties)
+        {
+            if (dataProperty.IsFilterable)
+            {
+                sb.AppendFormat("CREATE INDEX ");
+                sb.AppendIndexName(tableName, GetColumnName(dataProperty));
+                sb.AppendFormat(" ON ").AppendTableName(schema, tableName);
+                sb.AppendFormat("([{0}]);", GetColumnName(dataProperty));
+                sb.AppendLine();
+            }
+        }
+
         foreach (var vectorProperty in vectorProperties)
         {
             switch (vectorProperty.IndexKind)
@@ -470,6 +482,37 @@ internal static class SqlServerCommandBuilder
         emptyKeys = keyIndex == 0;
         sb.Length--; // remove the last comma
         return sb;
+    }
+
+    private static StringBuilder AppendIndexName(this StringBuilder sb, string tableName, string columnName)
+    {
+        int length = sb.Length;
+
+        // "Index names must start with a letter or an underscore (_)."
+        sb.Append("index");
+        sb.Append('_');
+        AppendAllowedOnly(tableName);
+        sb.Append('_');
+        AppendAllowedOnly(columnName);
+
+        if (sb.Length > length + SqlServerConstants.MaxIndexNameLength)
+        {
+            sb.Length = length + SqlServerConstants.MaxIndexNameLength;
+        }
+
+        return sb;
+
+        void AppendAllowedOnly(string value)
+        {
+            foreach (char c in value)
+            {
+                // Index names can include letters, numbers, and underscores.
+                if (char.IsLetterOrDigit(c) || c == '_')
+                {
+                    sb.Append(c);
+                }
+            }
+        }
     }
 
     private static SqlCommand CreateCommand(this SqlConnection connection, StringBuilder sb)

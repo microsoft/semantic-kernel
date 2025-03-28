@@ -199,21 +199,22 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     }
 
     /// <summary>
-    /// Returns information about vector indexes to create, validating that the dimensions of the vector are supported.
+    /// Returns information about indexes to create, validating that the dimensions of the vector are supported.
     /// </summary>
     /// <param name="properties">The properties of the vector store record.</param>
-    /// <returns>A list of tuples containing the column name, index kind, and distance function for each vector property.</returns>
+    /// <returns>A list of tuples containing the column name, index kind, and distance function for each property.</returns>
     /// <remarks>
     /// The default index kind is "Flat", which prevents the creation of an index.
     /// </remarks>
-    public static List<(string column, string kind, string function)> GetVectorIndexInfo(IReadOnlyList<VectorStoreRecordProperty> properties)
+    public static List<(string column, string kind, string function, bool isVector)> GetIndexInfo(IReadOnlyList<VectorStoreRecordProperty> properties)
     {
-        var vectorIndexesToCreate = new List<(string column, string kind, string function)>();
+        var vectorIndexesToCreate = new List<(string column, string kind, string function, bool isVector)>();
         foreach (var property in properties)
         {
+            var columnName = property.StoragePropertyName ?? property.DataModelPropertyName;
+
             if (property is VectorStoreRecordVectorProperty vectorProperty)
             {
-                var vectorColumnName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
                 var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
                 var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
 
@@ -231,8 +232,12 @@ internal static class PostgresVectorStoreRecordPropertyMapping
                         );
                     }
 
-                    vectorIndexesToCreate.Add((vectorColumnName, indexKind, distanceFunction));
+                    vectorIndexesToCreate.Add((columnName, indexKind, distanceFunction, isVector: true));
                 }
+            }
+            else if (property is VectorStoreRecordDataProperty { IsFilterable: true })
+            {
+                vectorIndexesToCreate.Add((columnName, "", "", isVector: false));
             }
         }
         return vectorIndexesToCreate;
