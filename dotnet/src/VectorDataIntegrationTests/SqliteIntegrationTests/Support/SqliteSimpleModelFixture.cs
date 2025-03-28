@@ -4,7 +4,8 @@ using VectorDataSpecificationTests.Support;
 
 namespace SqliteIntegrationTests.Support;
 
-public class SqliteSimpleModelFixture : SimpleModelFixture<string>
+public class SqliteSimpleModelFixture<TKey> : SimpleModelFixture<TKey>
+    where TKey : notnull
 {
     public override TestStore TestStore => SqliteTestStore.Instance;
 
