@@ -39,7 +39,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} (");
+        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}[{tableName}] (");
 
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
@@ -48,7 +48,8 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         {
             if (column.HasIndex)
             {
-                builder.AppendLine($"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName}_{column.Name}_index ON {tableName}({column.Name});");
+                builder.AppendLine();
+                builder.Append($"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}[{tableName}_{column.Name}_index] ON [{tableName}]([{column.Name}]);");
             }
         }
 
@@ -68,7 +69,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} USING {extensionName}(");
+        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}[{tableName}] USING {extensionName}(");
 
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
@@ -113,7 +114,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
                 records[recordIndex],
                 recordIndex);
 
-            builder.AppendLine($"INSERT{replacePlaceholder} INTO {tableName} ({string.Join(", ", columns)})");
+            builder.AppendLine($"INSERT{replacePlaceholder} INTO [{tableName}] ({string.Join(", ", columns)})");
             builder.AppendLine($"VALUES ({string.Join(", ", parameters)})");
             builder.AppendLine($"RETURNING {rowIdentifier};");
 
@@ -139,8 +140,14 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
 
-        builder.AppendLine($"SELECT {string.Join(", ", columnNames)}");
-        builder.AppendLine($"FROM {tableName}");
+        builder.Append("SELECT ");
+        foreach (var columnName in columnNames)
+        {
+            builder.AppendFormat("[{0}],", columnName);
+        }
+        builder.Length--; // Remove the last comma
+        builder.AppendLine();
+        builder.AppendLine($"FROM [{tableName}]");
 
         AppendWhereClauseIfExists(builder, whereClause);
         AppendOrderByIfExists(builder, orderByPropertyName);
@@ -166,15 +173,15 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         List<string> propertyNames =
         [
-            .. leftTablePropertyNames.Select(property => $"{leftTable}.{property}"),
-            .. rightTablePropertyNames.Select(property => $"{rightTable}.{property}"),
+            .. leftTablePropertyNames.Select(property => $"[{leftTable}].[{property}]"),
+            .. rightTablePropertyNames.Select(property => $"[{rightTable}].[{property}]"),
         ];
 
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, extraWhereFilter, extraParameters);
 
         builder.AppendLine($"SELECT {string.Join(", ", propertyNames)}");
-        builder.AppendLine($"FROM {leftTable} ");
-        builder.AppendLine($"LEFT JOIN {rightTable} ON {leftTable}.{joinColumnName} = {rightTable}.{joinColumnName}");
+        builder.AppendLine($"FROM [{leftTable}] ");
+        builder.AppendLine($"LEFT JOIN [{rightTable}] ON [{leftTable}].[{joinColumnName}] = [{rightTable}].[{joinColumnName}]");
 
         AppendWhereClauseIfExists(builder, whereClause);
         AppendOrderByIfExists(builder, orderByPropertyName);
@@ -301,7 +308,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         {
             if (record.TryGetValue(propertyName, out var value))
             {
-                columns.Add(propertyName);
+                columns.Add($"[{propertyName}]");
                 parameterNames.Add(GetParameterName(propertyName, index));
                 parameterValues.Add(value ?? DBNull.Value);
             }
