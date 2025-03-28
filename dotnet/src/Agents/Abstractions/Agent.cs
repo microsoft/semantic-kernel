@@ -59,7 +59,7 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync([], thread, options, cancellationToken);
+        return this.InvokeAsync((ICollection<ChatMessageContent>)[], thread, options, cancellationToken);
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync([], thread, options, cancellationToken);
+        return this.InvokeStreamingAsync((ICollection<ChatMessageContent>)[], thread, options, cancellationToken);
     }
 
     /// <summary>
