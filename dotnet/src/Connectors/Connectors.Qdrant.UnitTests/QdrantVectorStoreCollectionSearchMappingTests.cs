@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Moq;
 using Qdrant.Client.Grpc;
@@ -17,78 +15,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 /// </summary>
 public class QdrantVectorStoreCollectionSearchMappingTests
 {
-    [Theory]
-    [InlineData("string")]
-    [InlineData("int")]
-    [InlineData("bool")]
-    [InlineData("long")]
-
-    public void BuildFilterMapsEqualityClause(string type)
-    {
-        // Arrange.
-        object expected = type switch
-        {
-            "string" => "Value",
-            "int" => 1,
-            "bool" => true,
-            "long" => 1L,
-            _ => throw new InvalidOperationException()
-        };
-        var filter = new VectorSearchFilter().EqualTo("FieldName", expected);
-
-        // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
-
-        // Assert.
-        Assert.Single(actual.Must);
-        Assert.Equal("storage_FieldName", actual.Must.First().Field.Key);
-
-        var match = actual.Must.First().Field.Match;
-        object actualSearchValue = type switch
-        {
-            "string" => match.Keyword,
-            "int" => match.Integer,
-            "bool" => match.Boolean,
-            "long" => match.Integer,
-            _ => throw new InvalidOperationException()
-        };
-
-        if (type == "int")
-        {
-            // Qdrant uses long for integers so we have to cast the expected value to long.
-            Assert.Equal((long)(int)expected, actualSearchValue);
-        }
-        else
-        {
-            Assert.Equal(expected, actualSearchValue);
-        }
-    }
-
-    [Fact]
-    public void BuildFilterMapsTagContainsClause()
-    {
-        // Arrange.
-        var filter = new VectorSearchFilter().AnyTagEqualTo("FieldName", "Value");
-
-        // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
-
-        // Assert.
-        Assert.Single(actual.Must);
-        Assert.Equal("storage_FieldName", actual.Must.First().Field.Key);
-        Assert.Equal("Value", actual.Must.First().Field.Match.Keyword);
-    }
-
-    [Fact]
-    public void BuildFilterThrowsForUnknownFieldName()
-    {
-        // Arrange.
-        var filter = new VectorSearchFilter().EqualTo("FieldName", "Value");
-
-        // Act and Assert.
-        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, new Dictionary<string, string>()));
-    }
-
     [Fact]
     public void MapScoredPointToVectorSearchResultMapsResults()
     {

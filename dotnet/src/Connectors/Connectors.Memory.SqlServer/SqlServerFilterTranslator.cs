@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -14,11 +15,11 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
-        IReadOnlyDictionary<string, string> storagePropertyNames,
+        VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
         int startParamIndex)
-        : base(storagePropertyNames, lambdaExpression, sql)
+        : base(model, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
     }

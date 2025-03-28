@@ -10,21 +10,22 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 // https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure
 internal class WeaviateFilterTranslator
 {
-    private IReadOnlyDictionary<string, string> _storagePropertyNames = null!;
+    private VectorStoreRecordModel _model = null!;
     private ParameterExpression _recordParameter = null!;
     private readonly StringBuilder _filter = new();
 
-    internal string Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
+    internal string Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
     {
         Debug.Assert(this._filter.Length == 0);
 
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
@@ -225,11 +226,12 @@ internal class WeaviateFilterTranslator
     {
         if (expression is MemberExpression memberExpression && memberExpression.Expression == this._recordParameter)
         {
-            if (!this._storagePropertyNames.TryGetValue(memberExpression.Member.Name, out storagePropertyName))
+            if (!this._model.PropertyMap.TryGetValue(memberExpression.Member.Name, out var property))
             {
                 throw new InvalidOperationException($"Property name '{memberExpression.Member.Name}' provided as part of the filter clause is not a valid property name.");
             }
 
+            storagePropertyName = property.StorageName;
             return true;
         }
 

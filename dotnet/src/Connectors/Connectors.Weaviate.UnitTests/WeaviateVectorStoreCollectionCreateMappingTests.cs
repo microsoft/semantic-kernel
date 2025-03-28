@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Xunit;
@@ -17,19 +18,20 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItThrowsExceptionWithInvalidIndexKind()
     {
         // Arrange
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("PropertyName", typeof(ReadOnlyMemory<float>)) { IndexKind = "non-existent-index-kind" }
-        };
-
-        var storagePropertyNames = new Dictionary<string, string> { ["PropertyName"] = "propertyName" };
+        var model = new WeaviateModelBuilder()
+            .Build(
+                typeof(VectorStoreGenericDataModel<Guid>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { IndexKind = "non-existent-index-kind" }
+                    ]
+                });
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-            collectionName: "CollectionName",
-            dataProperties: [],
-            vectorProperties: vectorProperties,
-            storagePropertyNames: storagePropertyNames));
+        Assert.Throws<InvalidOperationException>(() => WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", model));
     }
 
     [Theory]
@@ -39,21 +41,21 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItReturnsCorrectSchemaWithValidIndexKind(string indexKind, string expectedIndexKind)
     {
         // Arrange
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("PropertyName", typeof(ReadOnlyMemory<float>)) { IndexKind = indexKind }
-        };
-
-        var storagePropertyNames = new Dictionary<string, string> { ["PropertyName"] = "propertyName" };
+        var model = new WeaviateModelBuilder()
+            .Build(
+                typeof(VectorStoreGenericDataModel<Guid>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { IndexKind = indexKind }
+                    ]
+                });
 
         // Act
-        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-            collectionName: "CollectionName",
-            dataProperties: [],
-            vectorProperties: vectorProperties,
-            storagePropertyNames: storagePropertyNames);
-
-        var actualIndexKind = schema.VectorConfigurations["propertyName"].VectorIndexType;
+        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", model);
+        var actualIndexKind = schema.VectorConfigurations["Vector"].VectorIndexType;
 
         // Assert
         Assert.Equal(expectedIndexKind, actualIndexKind);
@@ -63,19 +65,20 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItThrowsExceptionWithInvalidDistanceFunction()
     {
         // Arrange
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("PropertyName", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "non-existent-distance-function" }
-        };
-
-        var storagePropertyNames = new Dictionary<string, string> { ["PropertyName"] = "propertyName" };
+        var model = new WeaviateModelBuilder()
+            .Build(
+                typeof(VectorStoreGenericDataModel<Guid>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { DistanceFunction = "non-existent-distance-function" }
+                    ]
+                });
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-            collectionName: "CollectionName",
-            dataProperties: [],
-            vectorProperties: vectorProperties,
-            storagePropertyNames: storagePropertyNames));
+        Assert.Throws<InvalidOperationException>(() => WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", model));
     }
 
     [Theory]
@@ -87,21 +90,22 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItReturnsCorrectSchemaWithValidDistanceFunction(string distanceFunction, string expectedDistanceFunction)
     {
         // Arrange
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("PropertyName", typeof(ReadOnlyMemory<float>)) { DistanceFunction = distanceFunction }
-        };
-
-        var storagePropertyNames = new Dictionary<string, string> { ["PropertyName"] = "propertyName" };
+        var model = new WeaviateModelBuilder()
+            .Build(
+                typeof(VectorStoreGenericDataModel<Guid>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { DistanceFunction = distanceFunction }
+                    ]
+                });
 
         // Act
-        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-            collectionName: "CollectionName",
-            dataProperties: [],
-            vectorProperties: vectorProperties,
-            storagePropertyNames: storagePropertyNames);
+        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", model);
 
-        var actualDistanceFunction = schema.VectorConfigurations["propertyName"].VectorIndexConfig?.Distance;
+        var actualDistanceFunction = schema.VectorConfigurations["Vector"].VectorIndexConfig?.Distance;
 
         // Assert
         Assert.Equal(expectedDistanceFunction, actualDistanceFunction);
@@ -159,19 +163,22 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItMapsPropertyCorrectly(Type propertyType, string expectedPropertyType)
     {
         // Arrange
-        var dataProperties = new List<VectorStoreRecordDataProperty>
-        {
-            new("PropertyName", propertyType) { IsFilterable = true, IsFullTextSearchable = true }
-        };
-
-        var storagePropertyNames = new Dictionary<string, string> { ["PropertyName"] = "propertyName" };
+        var model = new WeaviateModelBuilder()
+            .Build(
+                typeof(VectorStoreGenericDataModel<Guid>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                        new VectorStoreRecordDataProperty("PropertyName", propertyType) { IsFilterable = true, IsFullTextSearchable = true },
+                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+                    ]
+                },
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Act
-        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-            collectionName: "CollectionName",
-            dataProperties: dataProperties,
-            vectorProperties: [],
-            storagePropertyNames: storagePropertyNames);
+        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(collectionName: "CollectionName", model);
 
         var property = schema.Properties[0];
 

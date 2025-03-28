@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Xunit;
 
@@ -28,49 +29,47 @@ public sealed class WeaviateGenericDataModelMapperTests
         }
     };
 
-    private static readonly VectorStoreRecordKeyProperty s_keyProperty = new("Key", typeof(Guid));
+    private static readonly VectorStoreRecordModel s_model = new WeaviateModelBuilder()
+        .Build(
+            typeof(VectorStoreGenericDataModel<Guid>),
+            new VectorStoreRecordDefinition
+            {
+                Properties =
+                [
+                    new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
 
-    private static readonly List<VectorStoreRecordDataProperty> s_dataProperties = new()
-    {
-        new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-        new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-        new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-        new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-        new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-        new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-        new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-        new VectorStoreRecordDataProperty("ShortDataProp", typeof(short)),
-        new VectorStoreRecordDataProperty("NullableShortDataProp", typeof(short?)),
-        new VectorStoreRecordDataProperty("ByteDataProp", typeof(byte)),
-        new VectorStoreRecordDataProperty("NullableByteDataProp", typeof(byte?)),
-        new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-        new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-        new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-        new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-        new VectorStoreRecordDataProperty("DecimalDataProp", typeof(decimal)),
-        new VectorStoreRecordDataProperty("NullableDecimalDataProp", typeof(decimal?)),
-        new VectorStoreRecordDataProperty("DateTimeDataProp", typeof(DateTime)),
-        new VectorStoreRecordDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
-        new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
-        new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
-        new VectorStoreRecordDataProperty("GuidDataProp", typeof(Guid)),
-        new VectorStoreRecordDataProperty("NullableGuidDataProp", typeof(Guid?)),
-        new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
-    };
+                    new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+                    new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
+                    new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
+                    new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
+                    new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+                    new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
+                    new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
+                    new VectorStoreRecordDataProperty("ShortDataProp", typeof(short)),
+                    new VectorStoreRecordDataProperty("NullableShortDataProp", typeof(short?)),
+                    new VectorStoreRecordDataProperty("ByteDataProp", typeof(byte)),
+                    new VectorStoreRecordDataProperty("NullableByteDataProp", typeof(byte?)),
+                    new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
+                    new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
+                    new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
+                    new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
+                    new VectorStoreRecordDataProperty("DecimalDataProp", typeof(decimal)),
+                    new VectorStoreRecordDataProperty("NullableDecimalDataProp", typeof(decimal?)),
+                    new VectorStoreRecordDataProperty("DateTimeDataProp", typeof(DateTime)),
+                    new VectorStoreRecordDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
+                    new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
+                    new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
+                    new VectorStoreRecordDataProperty("GuidDataProp", typeof(Guid)),
+                    new VectorStoreRecordDataProperty("NullableGuidDataProp", typeof(Guid?)),
+                    new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
 
-    private static readonly List<VectorStoreRecordVectorProperty> s_vectorProperties = new()
-    {
-        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-        new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-        new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>)),
-        new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?)),
-    };
-
-    private static readonly Dictionary<string, string> s_storagePropertyNames = s_dataProperties
-        .Select(l => l.DataModelPropertyName)
-        .Concat(s_vectorProperties.Select(l => l.DataModelPropertyName))
-        .Concat([s_keyProperty.DataModelPropertyName])
-        .ToDictionary(k => k, v => v);
+                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+                    new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>)),
+                    new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?))
+                ]
+            },
+            s_jsonSerializerOptions);
 
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
     private static readonly double[] s_doubleVector = [1.0f, 2.0f, 3.0f];
@@ -81,13 +80,7 @@ public sealed class WeaviateGenericDataModelMapperTests
     {
         // Arrange
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            s_keyProperty,
-            s_dataProperties,
-            s_vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new WeaviateGenericDataModelMapper("Collection", s_model, s_jsonSerializerOptions);
 
         var dataModel = new VectorStoreGenericDataModel<Guid>(key)
         {
@@ -133,34 +126,34 @@ public sealed class WeaviateGenericDataModelMapperTests
         // Assert
         Assert.Equal(key, (Guid?)storageModel["id"]);
         Assert.Equal("Collection", (string?)storageModel["class"]);
-        Assert.Equal("string", (string?)storageModel["properties"]?["StringDataProp"]);
-        Assert.Equal(true, (bool?)storageModel["properties"]?["BoolDataProp"]);
-        Assert.Equal(false, (bool?)storageModel["properties"]?["NullableBoolDataProp"]);
-        Assert.Equal(1, (int?)storageModel["properties"]?["IntDataProp"]);
-        Assert.Equal(2, (int?)storageModel["properties"]?["NullableIntDataProp"]);
-        Assert.Equal(3L, (long?)storageModel["properties"]?["LongDataProp"]);
-        Assert.Equal(4L, (long?)storageModel["properties"]?["NullableLongDataProp"]);
-        Assert.Equal((short)5, (short?)storageModel["properties"]?["ShortDataProp"]);
-        Assert.Equal((short)6, (short?)storageModel["properties"]?["NullableShortDataProp"]);
-        Assert.Equal((byte)7, (byte?)storageModel["properties"]?["ByteDataProp"]);
-        Assert.Equal((byte)8, (byte?)storageModel["properties"]?["NullableByteDataProp"]);
-        Assert.Equal(9.0f, (float?)storageModel["properties"]?["FloatDataProp"]);
-        Assert.Equal(10.0f, (float?)storageModel["properties"]?["NullableFloatDataProp"]);
-        Assert.Equal(11.0, (double?)storageModel["properties"]?["DoubleDataProp"]);
-        Assert.Equal(12.0, (double?)storageModel["properties"]?["NullableDoubleDataProp"]);
-        Assert.Equal(13.99m, (decimal?)storageModel["properties"]?["DecimalDataProp"]);
-        Assert.Equal(14.00m, (decimal?)storageModel["properties"]?["NullableDecimalDataProp"]);
-        Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0), (DateTime?)storageModel["properties"]?["DateTimeDataProp"]);
-        Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0), (DateTime?)storageModel["properties"]?["NullableDateTimeDataProp"]);
-        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), (DateTimeOffset?)storageModel["properties"]?["DateTimeOffsetDataProp"]);
-        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), (DateTimeOffset?)storageModel["properties"]?["NullableDateTimeOffsetDataProp"]);
-        Assert.Equal(new Guid("11111111-1111-1111-1111-111111111111"), (Guid?)storageModel["properties"]?["GuidDataProp"]);
-        Assert.Equal(new Guid("22222222-2222-2222-2222-222222222222"), (Guid?)storageModel["properties"]?["NullableGuidDataProp"]);
-        Assert.Equal(s_taglist, storageModel["properties"]?["TagListDataProp"]!.AsArray().GetValues<string>().ToArray());
-        Assert.Equal(s_floatVector, storageModel["vectors"]?["FloatVector"]!.AsArray().GetValues<float>().ToArray());
-        Assert.Equal(s_floatVector, storageModel["vectors"]?["NullableFloatVector"]!.AsArray().GetValues<float>().ToArray());
-        Assert.Equal(s_doubleVector, storageModel["vectors"]?["DoubleVector"]!.AsArray().GetValues<double>().ToArray());
-        Assert.Equal(s_doubleVector, storageModel["vectors"]?["NullableDoubleVector"]!.AsArray().GetValues<double>().ToArray());
+        Assert.Equal("string", (string?)storageModel["properties"]?["stringDataProp"]);
+        Assert.Equal(true, (bool?)storageModel["properties"]?["boolDataProp"]);
+        Assert.Equal(false, (bool?)storageModel["properties"]?["nullableBoolDataProp"]);
+        Assert.Equal(1, (int?)storageModel["properties"]?["intDataProp"]);
+        Assert.Equal(2, (int?)storageModel["properties"]?["nullableIntDataProp"]);
+        Assert.Equal(3L, (long?)storageModel["properties"]?["longDataProp"]);
+        Assert.Equal(4L, (long?)storageModel["properties"]?["nullableLongDataProp"]);
+        Assert.Equal((short)5, (short?)storageModel["properties"]?["shortDataProp"]);
+        Assert.Equal((short)6, (short?)storageModel["properties"]?["nullableShortDataProp"]);
+        Assert.Equal((byte)7, (byte?)storageModel["properties"]?["byteDataProp"]);
+        Assert.Equal((byte)8, (byte?)storageModel["properties"]?["nullableByteDataProp"]);
+        Assert.Equal(9.0f, (float?)storageModel["properties"]?["floatDataProp"]);
+        Assert.Equal(10.0f, (float?)storageModel["properties"]?["nullableFloatDataProp"]);
+        Assert.Equal(11.0, (double?)storageModel["properties"]?["doubleDataProp"]);
+        Assert.Equal(12.0, (double?)storageModel["properties"]?["nullableDoubleDataProp"]);
+        Assert.Equal(13.99m, (decimal?)storageModel["properties"]?["decimalDataProp"]);
+        Assert.Equal(14.00m, (decimal?)storageModel["properties"]?["nullableDecimalDataProp"]);
+        Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0), (DateTime?)storageModel["properties"]?["dateTimeDataProp"]);
+        Assert.Equal(new DateTime(2021, 1, 1, 0, 0, 0), (DateTime?)storageModel["properties"]?["nullableDateTimeDataProp"]);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), (DateTimeOffset?)storageModel["properties"]?["dateTimeOffsetDataProp"]);
+        Assert.Equal(new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero), (DateTimeOffset?)storageModel["properties"]?["nullableDateTimeOffsetDataProp"]);
+        Assert.Equal(new Guid("11111111-1111-1111-1111-111111111111"), (Guid?)storageModel["properties"]?["guidDataProp"]);
+        Assert.Equal(new Guid("22222222-2222-2222-2222-222222222222"), (Guid?)storageModel["properties"]?["nullableGuidDataProp"]);
+        Assert.Equal(s_taglist, storageModel["properties"]?["tagListDataProp"]!.AsArray().GetValues<string>().ToArray());
+        Assert.Equal(s_floatVector, storageModel["vectors"]?["floatVector"]!.AsArray().GetValues<float>().ToArray());
+        Assert.Equal(s_floatVector, storageModel["vectors"]?["nullableFloatVector"]!.AsArray().GetValues<float>().ToArray());
+        Assert.Equal(s_doubleVector, storageModel["vectors"]?["doubleVector"]!.AsArray().GetValues<double>().ToArray());
+        Assert.Equal(s_doubleVector, storageModel["vectors"]?["nullableDoubleVector"]!.AsArray().GetValues<double>().ToArray());
     }
 
     [Fact]
@@ -194,13 +187,7 @@ public sealed class WeaviateGenericDataModelMapperTests
             },
         };
 
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            keyProperty,
-            dataProperties,
-            vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new WeaviateGenericDataModelMapper("Collection", s_model, s_jsonSerializerOptions);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -216,50 +203,44 @@ public sealed class WeaviateGenericDataModelMapperTests
     {
         // Arrange
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            s_keyProperty,
-            s_dataProperties,
-            s_vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new WeaviateGenericDataModelMapper("Collection", s_model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject
         {
             ["id"] = key,
             ["properties"] = new JsonObject
             {
-                ["StringDataProp"] = "string",
-                ["BoolDataProp"] = true,
-                ["NullableBoolDataProp"] = false,
-                ["IntDataProp"] = 1,
-                ["NullableIntDataProp"] = 2,
-                ["LongDataProp"] = 3L,
-                ["NullableLongDataProp"] = 4L,
-                ["ShortDataProp"] = (short)5,
-                ["NullableShortDataProp"] = (short)6,
-                ["ByteDataProp"] = (byte)7,
-                ["NullableByteDataProp"] = (byte)8,
-                ["FloatDataProp"] = 9.0f,
-                ["NullableFloatDataProp"] = 10.0f,
-                ["DoubleDataProp"] = 11.0,
-                ["NullableDoubleDataProp"] = 12.0,
-                ["DecimalDataProp"] = 13.99m,
-                ["NullableDecimalDataProp"] = 14.00m,
-                ["DateTimeDataProp"] = new DateTime(2021, 1, 1),
-                ["NullableDateTimeDataProp"] = new DateTime(2021, 1, 1),
-                ["DateTimeOffsetDataProp"] = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
-                ["NullableDateTimeOffsetDataProp"] = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
-                ["GuidDataProp"] = new Guid("11111111-1111-1111-1111-111111111111"),
-                ["NullableGuidDataProp"] = new Guid("22222222-2222-2222-2222-222222222222"),
-                ["TagListDataProp"] = new JsonArray(s_taglist.Select(l => (JsonValue)l).ToArray())
+                ["stringDataProp"] = "string",
+                ["boolDataProp"] = true,
+                ["nullableBoolDataProp"] = false,
+                ["intDataProp"] = 1,
+                ["nullableIntDataProp"] = 2,
+                ["longDataProp"] = 3L,
+                ["nullableLongDataProp"] = 4L,
+                ["shortDataProp"] = (short)5,
+                ["nullableShortDataProp"] = (short)6,
+                ["byteDataProp"] = (byte)7,
+                ["nullableByteDataProp"] = (byte)8,
+                ["floatDataProp"] = 9.0f,
+                ["nullableFloatDataProp"] = 10.0f,
+                ["doubleDataProp"] = 11.0,
+                ["nullableDoubleDataProp"] = 12.0,
+                ["decimalDataProp"] = 13.99m,
+                ["nullableDecimalDataProp"] = 14.00m,
+                ["dateTimeDataProp"] = new DateTime(2021, 1, 1),
+                ["nullableDateTimeDataProp"] = new DateTime(2021, 1, 1),
+                ["dateTimeOffsetDataProp"] = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                ["nullableDateTimeOffsetDataProp"] = new DateTimeOffset(2022, 1, 1, 0, 0, 0, TimeSpan.Zero),
+                ["guidDataProp"] = new Guid("11111111-1111-1111-1111-111111111111"),
+                ["nullableGuidDataProp"] = new Guid("22222222-2222-2222-2222-222222222222"),
+                ["tagListDataProp"] = new JsonArray(s_taglist.Select(l => (JsonValue)l).ToArray())
             },
             ["vectors"] = new JsonObject
             {
-                ["FloatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
-                ["NullableFloatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
-                ["DoubleVector"] = new JsonArray(s_doubleVector.Select(l => (JsonValue)l).ToArray()),
-                ["NullableDoubleVector"] = new JsonArray(s_doubleVector.Select(l => (JsonValue)l).ToArray()),
+                ["floatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
+                ["nullableFloatVector"] = new JsonArray(s_floatVector.Select(l => (JsonValue)l).ToArray()),
+                ["doubleVector"] = new JsonArray(s_doubleVector.Select(l => (JsonValue)l).ToArray()),
+                ["nullableDoubleVector"] = new JsonArray(s_doubleVector.Select(l => (JsonValue)l).ToArray()),
             }
         };
 
@@ -321,22 +302,16 @@ public sealed class WeaviateGenericDataModelMapperTests
             ["id"] = key,
             ["properties"] = new JsonObject
             {
-                ["StringDataProp"] = null,
-                ["NullableIntDataProp"] = null,
+                ["stringDataProp"] = null,
+                ["nullableIntDataProp"] = null,
             },
             ["vectors"] = new JsonObject
             {
-                ["NullableFloatVector"] = null
+                ["nullableFloatVector"] = null
             }
         };
 
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            s_keyProperty,
-            s_dataProperties,
-            s_vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new WeaviateGenericDataModelMapper("Collection", s_model, s_jsonSerializerOptions);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -352,13 +327,7 @@ public sealed class WeaviateGenericDataModelMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            s_keyProperty,
-            s_dataProperties,
-            s_vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new WeaviateGenericDataModelMapper("Collection", s_model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject();
 
@@ -371,31 +340,26 @@ public sealed class WeaviateGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange
+        var recordDefinition = new VectorStoreRecordDefinition
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>))
+            ]
+        };
+
+        var model = new WeaviateModelBuilder().Build(typeof(VectorStoreGenericDataModel<Guid>), recordDefinition, s_jsonSerializerOptions);
+
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var keyProperty = new VectorStoreRecordKeyProperty("Key", typeof(Guid));
 
-        var dataProperties = new List<VectorStoreRecordDataProperty>
-        {
-            new("StringDataProp", typeof(string)),
-            new("NullableIntDataProp", typeof(int?)),
-        };
-
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("FloatVector", typeof(ReadOnlyMemory<float>))
-        };
-
-        var dataModel = new VectorStoreGenericDataModel<Guid>(key);
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            keyProperty,
-            dataProperties,
-            vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var record = new VectorStoreGenericDataModel<Guid>(key);
+        var sut = new WeaviateGenericDataModelMapper("Collection", model, s_jsonSerializerOptions);
 
         // Act
-        var storageModel = sut.MapFromDataToStorageModel(dataModel);
+        var storageModel = sut.MapFromDataToStorageModel(record);
 
         // Assert
         Assert.Equal(key, (Guid?)storageModel["id"]);
@@ -407,27 +371,22 @@ public sealed class WeaviateGenericDataModelMapperTests
     public void MapFromStorageToDataModelSkipsMissingProperties()
     {
         // Arrange
+        var recordDefinition = new VectorStoreRecordDefinition
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
+                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>))
+            ]
+        };
+
+        var model = new WeaviateModelBuilder().Build(typeof(VectorStoreGenericDataModel<Guid>), recordDefinition, s_jsonSerializerOptions);
+
         var key = new Guid("55555555-5555-5555-5555-555555555555");
-        var keyProperty = new VectorStoreRecordKeyProperty("Key", typeof(Guid));
 
-        var dataProperties = new List<VectorStoreRecordDataProperty>
-        {
-            new("StringDataProp", typeof(string)),
-            new("NullableIntDataProp", typeof(int?)),
-        };
-
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("FloatVector", typeof(ReadOnlyMemory<float>))
-        };
-
-        var sut = new WeaviateGenericDataModelMapper(
-            "Collection",
-            keyProperty,
-            dataProperties,
-            vectorProperties,
-            s_storagePropertyNames,
-            s_jsonSerializerOptions);
+        var sut = new WeaviateGenericDataModelMapper("Collection", model, s_jsonSerializerOptions);
 
         var storageModel = new JsonObject
         {

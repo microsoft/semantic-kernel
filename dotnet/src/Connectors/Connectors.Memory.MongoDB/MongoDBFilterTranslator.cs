@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -17,12 +18,12 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 // Information specific to vector search pre-filter: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter
 internal class MongoDBFilterTranslator
 {
-    private IReadOnlyDictionary<string, string> _storagePropertyNames = null!;
+    private VectorStoreRecordModel _model = null!;
     private ParameterExpression _recordParameter = null!;
 
-    internal BsonDocument Translate(LambdaExpression lambdaExpression, IReadOnlyDictionary<string, string> storagePropertyNames)
+    internal BsonDocument Translate(LambdaExpression lambdaExpression, VectorStoreRecordModel model)
     {
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
 
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
@@ -223,11 +224,12 @@ internal class MongoDBFilterTranslator
     {
         if (expression is MemberExpression memberExpression && memberExpression.Expression == this._recordParameter)
         {
-            if (!this._storagePropertyNames.TryGetValue(memberExpression.Member.Name, out storagePropertyName))
+            if (!this._model.PropertyMap.TryGetValue(memberExpression.Member.Name, out var property))
             {
                 throw new InvalidOperationException($"Property name '{memberExpression.Member.Name}' provided as part of the filter clause is not a valid property name.");
             }
 
+            storagePropertyName = property.StorageName;
             return true;
         }
 

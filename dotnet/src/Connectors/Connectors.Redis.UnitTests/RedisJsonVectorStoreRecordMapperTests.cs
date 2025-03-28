@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using Xunit;
 
@@ -19,7 +20,8 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key", JsonSerializerOptions.Default);
+        var keyProperty = new VectorStoreRecordKeyPropertyModel("Key", typeof(string));
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(keyProperty, JsonSerializerOptions.Default);
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -38,7 +40,8 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModelWithCustomSerializerOptions()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("key", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var keyProperty = new VectorStoreRecordKeyPropertyModel("Key", typeof(string)) { StorageName = "key" };
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(keyProperty, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Act.
         var actual = sut.MapFromDataToStorageModel(CreateModel("test key"));
@@ -57,7 +60,8 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("Key", JsonSerializerOptions.Default);
+        var keyProperty = new VectorStoreRecordKeyPropertyModel("Key", typeof(string));
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(keyProperty, JsonSerializerOptions.Default);
 
         // Act.
         var jsonObject = new JsonObject();
@@ -80,7 +84,8 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModelWithCustomSerializerOptions()
     {
         // Arrange.
-        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>("key", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var keyProperty = new VectorStoreRecordKeyPropertyModel("Key", typeof(string)) { StorageName = "key" };
+        var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(keyProperty, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Act.
         var jsonObject = new JsonObject();
