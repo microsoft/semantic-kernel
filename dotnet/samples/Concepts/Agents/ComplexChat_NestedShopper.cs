@@ -92,8 +92,10 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
         {{${{{KernelFunctionTerminationStrategy.DefaultHistoryVariableName}}}}}
         """;
 
-    [Fact]
-    public async Task NestedChatWithAggregatorAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task NestedChatWithAggregatorAgent(bool useChatClient)
     {
         Console.WriteLine($"! {Model}");
 
@@ -121,7 +123,7 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
                     new()
                     {
                         TerminationStrategy =
-                            new KernelFunctionTerminationStrategy(outerTerminationFunction, CreateKernelWithChatCompletion())
+                            new KernelFunctionTerminationStrategy(outerTerminationFunction, CreateKernelWithChatCompletion(useChatClient, out var chatClient))
                             {
                                 ResultParser =
                                     (result) =>
@@ -157,6 +159,8 @@ public class ComplexChat_NestedShopper(ITestOutputHelper output) : BaseAgentsTes
         {
             this.WriteAgentChatMessage(message);
         }
+
+        chatClient?.Dispose();
 
         async Task InvokeChatAsync(string input)
         {

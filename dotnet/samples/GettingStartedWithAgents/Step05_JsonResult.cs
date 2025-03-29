@@ -27,8 +27,10 @@ public class Step05_JsonResult(ITestOutputHelper output) : BaseAgentsTest(output
         }
         """;
 
-    [Fact]
-    public async Task UseKernelFunctionStrategiesWithJsonResultAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseKernelFunctionStrategiesWithJsonResult(bool useChatClient)
     {
         // Define the agents
         ChatCompletionAgent agent =
@@ -36,7 +38,7 @@ public class Step05_JsonResult(ITestOutputHelper output) : BaseAgentsTest(output
             {
                 Instructions = TutorInstructions,
                 Name = TutorName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Create a chat for agent interaction.
@@ -56,6 +58,8 @@ public class Step05_JsonResult(ITestOutputHelper output) : BaseAgentsTest(output
         await InvokeAgentAsync("The sunset is very colorful.");
         await InvokeAgentAsync("The sunset is setting over the mountains.");
         await InvokeAgentAsync("The sunset is setting over the mountains and filled the sky with a deep red flame, setting the clouds ablaze.");
+
+        chatClient?.Dispose();
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
