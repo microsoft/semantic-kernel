@@ -20,6 +20,7 @@ internal static class TypeExtensions
     /// <param name="resultType">The result type of the Nullable generic parameter.</param>
     /// <returns><c>true</c> if the result type was successfully retrieved; otherwise, <c>false</c>.</returns>
     /// TODO [@teresaqhoang]: Issue #4202 Cache Generic Types Extraction - Handlebars
+    [RequiresDynamicCode("Calls System.Type.MakeGenericType(params Type[])")]
     public static bool TryGetGenericResultType(this Type? returnType, out Type resultType)
     {
         resultType = typeof(object);
