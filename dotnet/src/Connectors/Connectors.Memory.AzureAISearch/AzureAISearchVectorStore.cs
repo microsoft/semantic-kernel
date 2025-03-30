@@ -85,7 +85,7 @@ public class AzureAISearchVectorStore : IVectorStore
 
     /// <summary>
     /// Helper method to get the next index name from the enumerator with a try catch around the move next call to convert
-    /// any <see cref="RequestFailedException"/> to <see cref="HttpOperationException"/>, since try catch is not supported
+    /// any <see cref="RequestFailedException"/> to <see cref="VectorStoreOperationException"/>, since try catch is not supported
     /// around a yield return.
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
