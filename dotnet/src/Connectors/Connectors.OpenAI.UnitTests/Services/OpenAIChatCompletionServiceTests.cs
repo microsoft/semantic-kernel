@@ -2013,7 +2013,6 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(Convert.ToBase64String(s_sampleAudioBytes), base64Audio);
     }
 
-    /*
     [Fact]
     public async Task ItHandlesAudioContentInResponseAsync()
     {
@@ -2021,26 +2020,28 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
 
         // Create a response with audio content
-        var responseJson = @"{
-            ""model"": ""gpt-4o"",
-            ""choices"": [
+        var responseJson = """
+        {
+            "model": "gpt-4o",
+            "choices": [
                 {
-                    ""message"": {
-                        ""role"": ""assistant"",
-                        ""content"": ""This is the text response."",
-                        ""audio"": {
-                            ""data"": ""AQIDBA==""
+                    "message": {
+                        "role": "assistant",
+                        "content": "This is the text response.",
+                        "audio": {
+                            "data": "AQIDBA=="
                         }
                     },
-                    ""finish_reason"": ""stop""
+                    "finish_reason": "stop"
                 }
             ],
-            ""usage"": {
-                ""prompt_tokens"": 10,
-                ""completion_tokens"": 20,
-                ""total_tokens"": 30
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 20,
+                "total_tokens": 30
             }
-        }";
+        }
+        """;
 
         this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
         { Content = new StringContent(responseJson) };
@@ -2065,7 +2066,82 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var audioContent = result.Items[1] as AudioContent;
         Assert.NotNull(audioContent);
-        Assert.Equal(s_sampleAudioBytes, audioContent.Data);
+        Assert.NotNull(audioContent.Data);
+        Assert.Equal(4, audioContent.Data.Value.Length);
+        Assert.Equal(s_sampleAudioBytes[0], audioContent.Data.Value.Span[0]);
+        Assert.Equal(s_sampleAudioBytes[1], audioContent.Data.Value.Span[1]);
+        Assert.Equal(s_sampleAudioBytes[2], audioContent.Data.Value.Span[2]);
+        Assert.Equal(s_sampleAudioBytes[3], audioContent.Data.Value.Span[3]);
     }
-    */
+
+    [Fact]
+    public async Task ItHandlesAudioContentWithMetadataInResponseAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-4o", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        // Create a response with audio content including metadata
+        var responseJson = """
+        {
+            "model": "gpt-4o",
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "This is the text response.",
+                        "audio": {
+                            "id": "audio-123456",
+                            "data": "AQIDBA==",
+                            "transcript": "This is the audio transcript.",
+                            "expires_at": 1698765432
+                        }
+                    },
+                    "finish_reason": "stop"
+                }
+            ],
+            "usage": {
+                "prompt_tokens": 10,
+                "completion_tokens": 20,
+                "total_tokens": 30
+            }
+        }
+        """;
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(responseJson) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseModalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
+            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)
+        };
+
+        // Act
+        var result = await chatCompletion.GetChatMessageContentAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("This is the text response.", result.Content);
+        Assert.Equal(2, result.Items.Count);
+
+        var textContent = result.Items[0] as TextContent;
+        Assert.NotNull(textContent);
+        Assert.Equal("This is the text response.", textContent.Text);
+
+        var audioContent = result.Items[1] as AudioContent;
+        Assert.NotNull(audioContent);
+        Assert.NotNull(audioContent.Data);
+        Assert.Equal(4, audioContent.Data.Value.Length);
+        Assert.Equal(s_sampleAudioBytes[0], audioContent.Data.Value.Span[0]);
+        Assert.Equal(s_sampleAudioBytes[1], audioContent.Data.Value.Span[1]);
+        Assert.Equal(s_sampleAudioBytes[2], audioContent.Data.Value.Span[2]);
+        Assert.Equal(s_sampleAudioBytes[3], audioContent.Data.Value.Span[3]);
+
+        // Verify audio metadata
+        Assert.NotNull(audioContent.Metadata);
+        Assert.Equal("audio-123456", audioContent.Metadata["Id"]);
+        Assert.Equal("This is the audio transcript.", audioContent.Metadata["Transcript"]);
+        Assert.NotNull(audioContent.Metadata["ExpiresAt"]);
+        // The ExpiresAt value is converted to a DateTime object, so we can't directly compare it to the Unix timestamp
+    }
 }
