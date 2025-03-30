@@ -256,7 +256,6 @@ def test_initialization_failure():
         mock_create.assert_called_once()
 
 
-@pytest.mark.asyncio
 async def test_service_url_returns_default_value_without_client(
     model_id,
 ):
@@ -265,14 +264,11 @@ async def test_service_url_returns_default_value_without_client(
     assert chat_service.service_url() == "http://127.0.0.1:11434"
 
 
-@pytest.mark.asyncio
 async def test_get_prompt_execution_settings_class(ollama_chat_completion):
     """Test getting the correct prompt execution settings class."""
     assert ollama_chat_completion.get_prompt_execution_settings_class() is OllamaChatPromptExecutionSettings
 
 
-# remove ?
-@pytest.mark.asyncio
 async def test_inner_get_chat_message_contents_valid(ollama_chat_completion):
     """Test _inner_get_chat_message_contents with valid response."""
     valid_message = Message(content="Valid content", role="user")
@@ -289,8 +285,6 @@ async def test_inner_get_chat_message_contents_valid(ollama_chat_completion):
     assert result[0].items[0].text == "Valid content"
 
 
-# remove ?
-@pytest.mark.asyncio
 async def test_inner_get_chat_message_contents_invalid_response(ollama_chat_completion):
     """Test _inner_get_chat_message_contents raises error on invalid response types."""
     invalid_response = MagicMock()
@@ -318,7 +312,6 @@ async def test_ollama_chat_completion_initialization(setup_ollama_chat_completio
     _, _ = setup_ollama_chat_completion  # Ensure no exceptions were raised in initialization
 
 
-# remove ?
 async def test_service_url_new(setup_ollama_chat_completion):
     ollama_chat_completion, async_client_mock = setup_ollama_chat_completion
     # Mock the client's internal structure
@@ -371,6 +364,5 @@ async def test_prepare_chat_history_for_request(setup_ollama_chat_completion):
     chat_history = MagicMock(spec=ChatHistory)
     chat_history.messages = []
 
-    # For an empty chat history, should return an empty list
     prepared_history = ollama_chat_completion._prepare_chat_history_for_request(chat_history)
     assert prepared_history == []

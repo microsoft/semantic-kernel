@@ -687,32 +687,21 @@ async def prepare_event():
     return _prepare_event
 
 
-@pytest.mark.asyncio
 async def test_initialization(openai_realtime_base):
     """Test to verify proper creation and defaults settings initialization of OpenAIRealtimeWebRTC."""
     assert openai_realtime_base.SUPPORTS_FUNCTION_CALLING is True
     assert openai_realtime_base.kernel is not None
 
 
-# remove
-@pytest.mark.asyncio
 async def test_send_method(openai_realtime_base):
     """Test to ensure send method delegates to _send method correctly."""
 
-    # Mock _send method
     openai_realtime_base._send = AsyncMock()
-
-    # Create a RealtimeTextEvent
     text_event = RealtimeTextEvent(service_type=SendEvents.CONVERSATION_ITEM_CREATE, text=TextContent(text="Hello"))
-
-    # Call the send method
     await openai_realtime_base.send(text_event)
-
-    # Assert _send was called correctly
     openai_realtime_base._send.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_update_session_with_no_kernel():
     """Test update_session without kernel argument provided and with PromptExecutionSettings."""
 
@@ -728,8 +717,6 @@ async def test_update_session_with_no_kernel():
     assert base._current_settings is mock_settings
 
 
-# remove ?
-@pytest.mark.asyncio
 async def test_update_session_with_kernel(openai_realtime_base):
     """Test update_session updates with kernel and PromptExecutionSettings."""
     with patch(
@@ -748,8 +735,6 @@ async def test_update_session_with_kernel(openai_realtime_base):
         )
 
 
-# remove
-@pytest.mark.asyncio
 async def test_handle_audio_transcript_delta(openai_realtime_base, prepare_event):
     """Test to ensure audio transcript delta is handled correctly."""
 
@@ -770,7 +755,6 @@ async def test_handle_audio_transcript_delta(openai_realtime_base, prepare_event
         assert event.event_type == "text"
 
 
-@pytest.mark.asyncio
 async def test_handle_unknown_event_type(prepare_event):
     """Test handling of an unknown/unexpected event type."""
 
@@ -787,7 +771,6 @@ async def test_handle_unknown_event_type(prepare_event):
         )
 
 
-@pytest.mark.asyncio
 async def test_close_session(openai_realtime_base):
     """Test session close functionality."""
     # Mock close method of peer connection and data channel
@@ -833,54 +816,66 @@ def mocked_open_ai_realtime_webrtc(mocked_audio_track, mocked_audio_output_callb
         )
 
 
-# @pytest.mark.asyncio
-# async def test_create_session_initializes_peer_connection(mocked_open_ai_realtime_webrtc, mocked_audio_track):
-#     """Test the create_session method to ensure peer connection initializes correctly."""
-#     mocked_open_ai_realtime_webrtc._get_ephemeral_token = AsyncMock(return_value="fake-token")
-#     mocked_open_ai_realtime_webrtc.client = AsyncMock(spec=AsyncOpenAI)
-#     mocked_open_ai_realtime_webrtc.client.api_key = "fake-api-key"
-#     mocked_open_ai_realtime_webrtc.client.beta = AsyncMock()
-#     mocked_open_ai_realtime_webrtc.client.beta.realtime = AsyncMock()
-#     mocked_open_ai_realtime_webrtc.client.beta.realtime._client = AsyncMock()
-#     mocked_open_ai_realtime_webrtc.client.beta.realtime._client.base_url = "https://api.openai.com"
+@patch("aiohttp.ClientSession.post")
+async def test_create_session_initializes_peer_connection(mock_post, mocked_open_ai_realtime_webrtc):
+    """Test the create_session method to ensure peer connection initializes correctly."""
 
-#     mock_response = AsyncMock()
-#     mock_response.status = 200  # Simulate a successful response
-#     mock_response.text = AsyncMock(
-#         return_value='{"sdp": "v=0\no=- 0 0 IN IP4 127.0.0.1\ns=-\nt=0 0\nm=audio 9 UDP/TLS/RTP/SAVPF 111\n'
-#         "a=rtcp-mux\n"
-#         "a=sendrecv\n"
-#         "a=ice-ufrag:abcd1234\n"
-#         "a=ice-pwd:efgh5678\n"
-#         "a=setup:active\n"
-#         '", "type": "answer"}'
-#     )
+    mock_post.return_value.__aenter__.return_value.text = AsyncMock(
+        return_value=(
+            "v=0\r\n"
+            "o=- 3952301147 3952301147 IN IP4 0.0.0.0\r\n"
+            "s=-\r\n"
+            "t=0 0\r\n"
+            "a=group:BUNDLE 0 1\r\n"
+            "a=msid-semantic:WMS *\r\n"
+            "m=audio 9 UDP/TLS/RTP/SAVPF 96 0 8\r\n"
+            "c=IN IP4 0.0.0.0\r\n"
+            "a=sendrecv\r\n"
+            "a=extmap:1 urn:ietf:params:rtp-hdrext:sdes:mid\r\n"
+            "a=extmap:2 urn:ietf:params:rtp-hdrext:ssrc-audio-level\r\n"
+            "a=mid:0\r\n"
+            "a=msid:cb09f50e-e695-4288-8d75-cb65cdbc1416 <MagicMock name='AudioStreamTrack.id' id='13114266080'>\r\n"
+            "a=rtcp:9 IN IP4 0.0.0.0\r\n"
+            "a=rtcp-mux\r\n"
+            "a=ssrc:1360920249 cname:bc7cf41e-0974-42a4-a47f-a7b3d7f19370\r\n"
+            "a=rtpmap:96 opus/48000/2\r\n"
+            "a=rtpmap:0 PCMU/8000\r\n"
+            "a=rtpmap:8 PCMA/8000\r\n"
+            "a=ice-ufrag:LZOR\r\n"
+            "a=ice-pwd:puTRy8Rdc9btpLEGh8pQ40\r\n"
+            "a=fingerprint:sha-256 9C:E7:82:2E:D0:82:56:ED:EE:45:41:8B:6D:55:01:F2:67:48:C4:51:D1:2C:E8:55:F7:21:0B:85:E2:39:32:63"
+            "\r\n"
+            "a=fingerprint:sha-384 C3:96:0F:4C:2F:92:53:8D:37:AB:4E:B7:E1:A4:CF:DE:2E:88:45:8E:EC:0D:67:CA:36:7F:CA:AC:CF:77:"
+            "70:69:71:8F:1D:86:58:71:A4:3D:2E:01:61:E9:55:87:61:F9\r\n"
+            "a=fingerprint:sha-512 59:C9:62:0B:A9:6A:A2:51:1B:D4:FD:64:AA:EB:F0:4B:F0:3B:A9:63:1E:CF:...\r\n"
+            "a=setup:active\r\n"
+            "m=application 9 DTLS/SCTP 5000\r\n"
+            "c=IN IP4 0.0.0.0\r\n"
+            "a=mid:1\r\n"
+            "a=sctpmap:5000 webrtc-datachannel 65535\r\n"
+            "a=max-message-size:65536\r\n"
+            "a=ice-ufrag:X8yT\r\n"
+            "a=ice-pwd:9XkLRk2g1mLvKPscP8J4hY\r\n"
+            "a=fingerprint:sha-256 9C:E7:82:2E:D0:82:56:ED:EE:45:41:8B:6D:55:01:F2:67:48:C4:51:D1:2C:E8:55:F7:21:0B:85:E2:39:32:63\r\n"
+            "a=setup:active\r\n"
+        )
+    )
 
-#     # Mock ClientSession.post correctly
-#     async def mock_post(url, headers, json):
-#         print(f"Mock received request to: {url}")  # Debugging
-#         expected_url = "https://api.openai.com/v1/realtime/sessions"  # Try with /v1
-#         if url == expected_url:
-#             return mock_response
-#         raise Exception(f"Unexpected URL: {url}")  # Will help catch URL mismatches
+    mock_post.return_value.__aenter__.return_value.status = 200
 
-#     # Mock the entire ClientSession
-#     mock_session = AsyncMock()
-#     mock_session.post = AsyncMock(side_effect=mock_post)
+    mocked_open_ai_realtime_webrtc._get_ephemeral_token = AsyncMock(return_value="fake-token")
+    mocked_open_ai_realtime_webrtc.client = AsyncMock(spec=AsyncOpenAI)
+    mocked_open_ai_realtime_webrtc.client.api_key = "fake-api-key"
+    mocked_open_ai_realtime_webrtc.client.beta = AsyncMock()
+    mocked_open_ai_realtime_webrtc.client.beta.realtime = AsyncMock()
+    mocked_open_ai_realtime_webrtc.client.beta.realtime._client = AsyncMock()
+    mocked_open_ai_realtime_webrtc.client.beta.realtime._client.base_url = "https://api.openai.com"
 
-#     with patch("aiohttp.ClientSession", return_value=mock_session):
-#         # Act
-#         await mocked_open_ai_realtime_webrtc.create_session()
-
-#         # Assert that the correct API endpoint was called
-#         mock_session.post.assert_called_with(
-#             "https://api.openai.com/realtime/sessions",
-#             headers={"Authorization": "Bearer fake-api-key", "Content-Type": "application/json"},
-#             json={"model": "gpt-4o-realtime-preview", "voice": "echo"},
-#         )
+    await mocked_open_ai_realtime_webrtc.create_session()
+    assert mocked_open_ai_realtime_webrtc.peer_connection is not None
+    assert mocked_open_ai_realtime_webrtc.data_channel is not None
 
 
-@pytest.mark.asyncio
 async def test_create_session_fails_without_audio_track(mocked_audio_output_callback):
     """Test the create_session method raises an exception when audio track is uninitialized."""
     async_openai_mock = AsyncMock(spec=AsyncOpenAI)
@@ -896,7 +891,6 @@ async def test_create_session_fails_without_audio_track(mocked_audio_output_call
         await webrtc_instance.create_session()
 
 
-@pytest.mark.asyncio
 async def test_receive_yields_realtime_events(mocked_open_ai_realtime_webrtc, mocked_audio_output_callback):
     """Ensure the receive function properly yields RealtimeEvents."""
     mocked_realtime_event = AsyncMock(ndarray)
@@ -908,7 +902,6 @@ async def test_receive_yields_realtime_events(mocked_open_ai_realtime_webrtc, mo
     assert event is mocked_realtime_event
 
 
-@pytest.mark.asyncio
 async def test_close_session_terminates_connections(mocked_open_ai_realtime_webrtc):
     """Test that close_session properly closes peer connection and data channel."""
     mocked_open_ai_realtime_webrtc.peer_connection = AsyncMock(spec=RTCPeerConnection)
