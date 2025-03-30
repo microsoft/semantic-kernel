@@ -478,13 +478,13 @@ internal partial class ClientCore
         };
 
         // Set response modalities if specified in the execution settings
-        if (executionSettings.ResponseModalities != null)
+        if (executionSettings.ResponseModalities is not null)
         {
             options.ResponseModalities = GetResponseModalities(executionSettings);
         }
 
         // Set audio options if specified in the execution settings
-        if (executionSettings.AudioOptions != null)
+        if (executionSettings.AudioOptions is not null)
         {
             options.AudioOptions = GetAudioOptions(executionSettings);
         }
@@ -1082,6 +1082,24 @@ internal partial class ClientCore
     /// </remarks>
     private static ChatResponseModalities GetResponseModalities(OpenAIPromptExecutionSettings executionSettings)
     {
+        static ChatResponseModalities ParseResponseModalitiesEnumerable(IEnumerable<string> responseModalitiesStrings)
+        {
+            ChatResponseModalities result = ChatResponseModalities.Default;
+            foreach (var modalityString in responseModalitiesStrings)
+            {
+                if (Enum.TryParse<ChatResponseModalities>(modalityString, true, out var parsedModality))
+                {
+                    result |= parsedModality;
+                }
+                else
+                {
+                    throw new NotSupportedException($"The provided response modalities '{modalityString}' is not supported.");
+                }
+            }
+
+            return result;
+        }
+
         if (executionSettings.ResponseModalities is null)
         {
             return ChatResponseModalities.Default;
@@ -1095,6 +1113,15 @@ internal partial class ClientCore
         if (executionSettings.ResponseModalities is IEnumerable<string> responseModalitiesStrings)
         {
             return ParseResponseModalitiesEnumerable(responseModalitiesStrings);
+        }
+
+        if (executionSettings.ResponseModalities is string responseModalitiesString)
+        {
+            if (Enum.TryParse<ChatResponseModalities>(responseModalitiesString, true, out var parsedResponseModalities))
+            {
+                return parsedResponseModalities;
+            }
+            throw new NotSupportedException($"The provided response modalities '{responseModalitiesString}' is not supported.");
         }
 
         if (executionSettings.ResponseModalities is JsonElement responseModalitiesElement)
@@ -1115,24 +1142,6 @@ internal partial class ClientCore
         }
 
         return ChatResponseModalities.Default;
-
-        static ChatResponseModalities ParseResponseModalitiesEnumerable(IEnumerable<string> responseModalitiesStrings)
-        {
-            ChatResponseModalities result = ChatResponseModalities.Default;
-            foreach (var modalityString in responseModalitiesStrings)
-            {
-                if (Enum.TryParse<ChatResponseModalities>(modalityString, true, out var parsedModality))
-                {
-                    result |= parsedModality;
-                }
-                else
-                {
-                    throw new NotSupportedException($"The provided response modalities '{modalityString}' is not supported.");
-                }
-            }
-
-            return result;
-        }
     }
 
     /// <summary>

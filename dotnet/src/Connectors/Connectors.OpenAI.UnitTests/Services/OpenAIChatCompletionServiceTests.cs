@@ -1739,7 +1739,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("response_modalities", out var property));
+        Assert.True(optionsJson.TryGetProperty("modalities", out var property));
         Assert.Equal(expectedJson, property.GetRawText());
     }
 
@@ -1768,7 +1768,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("response_modalities", out var property));
+        Assert.True(optionsJson.TryGetProperty("modalities", out var property));
         Assert.Equal(expectedJson, property.GetRawText());
     }
 
@@ -1793,7 +1793,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("audio_options", out var property));
+        Assert.True(optionsJson.TryGetProperty("audio", out var property));
         Assert.Equal(JsonValueKind.Object, property.ValueKind);
         Assert.Equal(expectedJson, property.GetRawText());
     }
@@ -1823,7 +1823,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
         Assert.NotNull(actualRequestContent);
         var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("audio_options", out var property));
+        Assert.True(optionsJson.TryGetProperty("audio", out var property));
         Assert.Equal(JsonValueKind.Object, property.ValueKind);
         Assert.Equal(expectedJson, property.GetRawText());
     }
@@ -1914,17 +1914,16 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
     public static TheoryData<object, string> ResponseModalitiesData => new()
     {
-        { ChatResponseModalities.Text, "\"text\"" },
-        { ChatResponseModalities.Audio, "\"audio\"" },
-        { ChatResponseModalities.Text | ChatResponseModalities.Audio, "\"text,audio\"" },
+        { ChatResponseModalities.Text, "[\"text\"]" },
+        { ChatResponseModalities.Audio, "[\"audio\"]" },
+        { ChatResponseModalities.Text | ChatResponseModalities.Audio, "[\"text\",\"audio\"]" },
         { new[] { "text" }, "[\"text\"]" },
         { new[] { "audio" }, "[\"audio\"]" },
         { new[] { "text", "audio" }, "[\"text\",\"audio\"]" },
-        { "Text", "\"text\"" },
-        { "Audio", "\"audio\"" },
-        { "Text, Audio", "\"text,audio\"" },
-        { JsonSerializer.Deserialize<JsonElement>("\"text\""), "\"text\"" },
-        { JsonSerializer.Deserialize<JsonElement>("\"audio\""), "\"audio\"" },
+        { "Text", "[\"text\"]" },
+        { "Audio", "[\"audio\"]" },
+        { JsonSerializer.Deserialize<JsonElement>("\"text\""), "[\"text\"]" },
+        { JsonSerializer.Deserialize<JsonElement>("\"audio\""), "[\"audio\"]" },
         { JsonSerializer.Deserialize<JsonElement>("[\"text\", \"audio\"]"), "[\"text\",\"audio\"]" },
     };
 
@@ -1966,130 +1965,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
     }
 #pragma warning restore CS8618, CA1812
 
-    // These test data definitions have been moved to the top of the file
-
     // Sample audio content for testing
     private static readonly byte[] s_sampleAudioBytes = { 0x01, 0x02, 0x03, 0x04 };
-
-    // Tests for ResponseModalities and AudioOptions properties
-    // These tests are commented out because the properties are not yet implemented in OpenAIPromptExecutionSettings
-    /*
-    [Theory]
-    [MemberData(nameof(ResponseModalitiesData))]
-    public async Task ItCreatesCorrectResponseModalitiesAsync(object responseModalities, string expectedJson)
-    {
-        // Arrange
-        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        { Content = new StringContent(ChatCompletionResponse) };
-
-        var settings = new OpenAIPromptExecutionSettings
-        {
-            ResponseModalities = responseModalities
-        };
-
-        // Act
-        await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, settings);
-
-        // Assert
-        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("response_modalities", out var property));
-        Assert.Equal(expectedJson, property.GetRawText());
-    }
-    */
-
-    /*
-    [Theory]
-    [MemberData(nameof(ResponseModalitiesData))]
-    public async Task ItCreatesCorrectResponseModalitiesStreamingAsync(object responseModalities, string expectedJson)
-    {
-        // Arrange
-        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        using var stream = File.OpenRead("TestData/chat_completion_streaming_test_response.txt");
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StreamContent(stream)
-        };
-
-        var settings = new OpenAIPromptExecutionSettings
-        {
-            ResponseModalities = responseModalities
-        };
-
-        // Act
-        var asyncEnumerable = chatCompletion.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest, settings);
-        await asyncEnumerable.GetAsyncEnumerator().MoveNextAsync();
-
-        // Assert
-        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("response_modalities", out var property));
-        Assert.Equal(expectedJson, property.GetRawText());
-    }
-    */
-
-    /*
-    [Theory]
-    [MemberData(nameof(AudioOptionsData))]
-    public async Task ItCreatesCorrectAudioOptionsAsync(object audioOptions, string expectedJson)
-    {
-        // Arrange
-        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-        { Content = new StringContent(ChatCompletionResponse) };
-
-        var settings = new OpenAIPromptExecutionSettings
-        {
-            AudioOptions = audioOptions
-        };
-
-        // Act
-        await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, settings);
-
-        // Assert
-        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("audio_options", out var property));
-        Assert.Equal(JsonValueKind.Object, property.ValueKind);
-        Assert.Equal(expectedJson, property.GetRawText());
-    }
-    */
-
-    /*
-    [Theory]
-    [MemberData(nameof(AudioOptionsData))]
-    public async Task ItCreatesCorrectAudioOptionsStreamingAsync(object audioOptions, string expectedJson)
-    {
-        // Arrange
-        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
-        using var stream = File.OpenRead("TestData/chat_completion_streaming_test_response.txt");
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StreamContent(stream)
-        };
-
-        var settings = new OpenAIPromptExecutionSettings
-        {
-            AudioOptions = audioOptions
-        };
-
-        // Act
-        var asyncEnumerable = chatCompletion.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest, settings);
-        await asyncEnumerable.GetAsyncEnumerator().MoveNextAsync();
-
-        // Assert
-        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
-        Assert.NotNull(actualRequestContent);
-        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
-        Assert.True(optionsJson.TryGetProperty("audio_options", out var property));
-        Assert.Equal(JsonValueKind.Object, property.ValueKind);
-        Assert.Equal(expectedJson, property.GetRawText());
-    }
-    */
 
     [Fact]
     public async Task ItSendsAudioContentCorrectlyAsync()
