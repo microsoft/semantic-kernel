@@ -17,14 +17,16 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Represents a <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class OpenAIResponsesAgent : KernelAgent
+public sealed class OpenAIResponseAgent : KernelAgent
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIResponsesAgent"/> class.
+    /// Initializes a new instance of the <see cref="OpenAIResponseAgent"/> class.
     /// </summary>
     /// <param name="client">The OpenAI provider for accessing the Responses API service.</param>
-    public OpenAIResponsesAgent(OpenAIResponseClient client)
+    public OpenAIResponseAgent(OpenAIResponseClient client)
     {
+        Verify.NotNull(client);
+
         this.Client = client;
     }
 
@@ -46,7 +48,7 @@ public sealed class OpenAIResponsesAgent : KernelAgent
         var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
             thread,
-            () => new OpenAIResponsesAgentThread(this.Client, this.StoreEnabled),
+            () => new OpenAIResponseAgentThread(this.Client, this.StoreEnabled),
             cancellationToken).ConfigureAwait(false);
 
         // Invoke responses with the updated chat history.
@@ -98,7 +100,7 @@ public sealed class OpenAIResponsesAgent : KernelAgent
     private async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync(
         string? agentName,
         ChatHistory history,
-        OpenAIResponsesAgentThread agentThread,
+        OpenAIResponseAgentThread agentThread,
         AgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

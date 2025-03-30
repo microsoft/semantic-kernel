@@ -4,25 +4,25 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace GettingStarted.OpenAIResponsesAgents;
+namespace GettingStarted.OpenAIResponseAgents;
 
 /// <summary>
-/// This example demonstrates using <see cref="OpenAIResponsesAgent"/>.
+/// This example demonstrates using <see cref="OpenAIResponseAgent"/>.
 /// </summary>
-public class Step01_ResponsesAgent(ITestOutputHelper output) : BaseResponsesAgentTest(output)
+public class Step01_OpenAIResponseAgent(ITestOutputHelper output) : BaseResponsesAgentTest(output)
 {
     [Fact]
     public async Task UseOpenAIResponseAgentAsync()
     {
         // Define the agent
-        OpenAIResponsesAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
         };
 
         // Invoke the agent and output the response
-        var responseItems = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the capital of France?"));
+        var responseItems = agent.InvokeAsync("What is the capital of France?");
         await foreach (ChatMessageContent responseItem in responseItems)
         {
             WriteAgentChatMessage(responseItem);
@@ -33,7 +33,7 @@ public class Step01_ResponsesAgent(ITestOutputHelper output) : BaseResponsesAgen
     public async Task UseOpenAIResponseAgentWithMessagesAsync()
     {
         // Define the agent
-        OpenAIResponsesAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French."
@@ -57,7 +57,7 @@ public class Step01_ResponsesAgent(ITestOutputHelper output) : BaseResponsesAgen
     public async Task UseOpenAIResponseAgentWithThreadedConversationAsync()
     {
         // Define the agent
-        OpenAIResponsesAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in the users preferred language.",

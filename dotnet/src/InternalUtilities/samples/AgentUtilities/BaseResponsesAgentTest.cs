@@ -7,7 +7,7 @@ using OpenAI;
 using OpenAI.Responses;
 
 /// <summary>
-/// Base class for samples that demonstrate the usage of <see cref="OpenAIResponsesAgent"/>.
+/// Base class for samples that demonstrate the usage of <see cref="OpenAIResponseAgent"/>.
 /// </summary>
 public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClient>
 {
@@ -28,7 +28,7 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
         this.Client = new(model: "gpt-4o", credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
     }
 
-    protected bool EnableLogging { get; set; } = false;
+    protected bool EnableLogging { get; set; } = true;
 
     /// <inheritdoc/>
     protected override OpenAIResponseClient Client { get; }

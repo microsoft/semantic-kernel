@@ -5,10 +5,10 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace GettingStarted.OpenAIResponsesAgents;
+namespace GettingStarted.OpenAIResponseAgents;
 
 /// <summary>
-/// This example demonstrates how to manage conversation state during a model interaction using <see cref="OpenAIResponsesAgent"/>.
+/// This example demonstrates how to manage conversation state during a model interaction using <see cref="OpenAIResponseAgent"/>.
 /// OpenAI provides a few ways to manage conversation state, which is important for preserving information across multiple messages or turns in a conversation.
 /// </summary>
 public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesAgentTest(output)
@@ -17,7 +17,7 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
     public async Task ManuallyConstructPastConversationAsync()
     {
         // Define the agent
-        OpenAIResponsesAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client)
         {
             StoreEnabled = false,
         };
@@ -38,10 +38,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
     }
 
     [Fact]
-    public async Task ManuallyManageConversationStateWithResponsesApiAsync()
+    public async Task ManuallyManageConversationStateWithResponsesChatCompletionApiAsync()
     {
         // Define the agent
-        OpenAIResponsesAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client)
         {
             StoreEnabled = false,
         };
@@ -66,10 +66,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
     }
 
     [Fact]
-    public async Task ManuallyManageConversationStateWithChatCompletionsApiAsync()
+    public async Task ManageConversationStateWithResponseApiAsync()
     {
         // Define the agent
-        OpenAIResponsesAgent agent = new(this.Client)
+        OpenAIResponseAgent agent = new(this.Client)
         {
             StoreEnabled = true,
         };
@@ -90,6 +90,21 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
                 agentThread = responseItem.Thread;
                 WriteAgentChatMessage(responseItem.Message);
             }
+        }
+
+        if (agentThread is not null)
+        {
+            var responseAgentThread = agentThread as OpenAIResponseAgentThread;
+            var threadMessages = responseAgentThread?.GetMessagesAsync();
+            if (threadMessages is not null)
+            {
+                await foreach (var threadMessage in threadMessages)
+                {
+                    WriteAgentChatMessage(threadMessage);
+                }
+            }
+
+            await agentThread.DeleteAsync();
         }
     }
 }

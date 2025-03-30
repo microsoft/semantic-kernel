@@ -15,18 +15,18 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// Represents a conversation thread for an OpenAI responses-based agent.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class OpenAIResponsesAgentThread : AgentThread
+public sealed class OpenAIResponseAgentThread : AgentThread
 {
     private readonly OpenAIResponseClient _client;
     private readonly ChatHistory _chatHistory = new();
     private bool _isDeleted = false;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIResponsesAgentThread"/> class.
+    /// Initializes a new instance of the <see cref="OpenAIResponseAgentThread"/> class.
     /// </summary>
     /// <param name="client">The agents client to use for interacting with responses.</param>
     /// <param name="enableStore">Enable storing messages on the server.</param>
-    public OpenAIResponsesAgentThread(OpenAIResponseClient client, bool enableStore = false)
+    public OpenAIResponseAgentThread(OpenAIResponseClient client, bool enableStore = false)
     {
         Verify.NotNull(client);
 
@@ -35,12 +35,12 @@ public sealed class OpenAIResponsesAgentThread : AgentThread
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OpenAIResponsesAgentThread"/> class that resumes an existing response.
+    /// Initializes a new instance of the <see cref="OpenAIResponseAgentThread"/> class that resumes an existing response.
     /// </summary>
     /// <param name="client">The agents client to use for interacting with responses.</param>
     /// <param name="id">The ID of an existing response to resume.</param>
     /// <param name="enableStore">Enable storing messages on the server.</param>
-    public OpenAIResponsesAgentThread(OpenAIResponseClient client, string id, bool enableStore = false)
+    public OpenAIResponseAgentThread(OpenAIResponseClient client, string id, bool enableStore = false)
     {
         Verify.NotNull(client);
         Verify.NotNull(id);
