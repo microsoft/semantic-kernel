@@ -56,10 +56,20 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
 
         foreach (var part in contentUpdate)
         {
-            // We only support text content for now.
             if (part.Kind == ChatMessageContentPartKind.Text)
             {
                 collection.Add(new TextContent(part.Text));
+            }
+            else if (part.Kind == ChatMessageContentPartKind.Image)
+            {
+                if (part.ImageUri != null)
+                {
+                    collection.Add(new ImageContent(part.ImageUri));
+                }
+                else if (part.ImageBytes != null && part.ImageBytesMediaType != null)
+                {
+                    collection.Add(new ImageContent(part.ImageBytes, part.ImageBytesMediaType));
+                }
             }
         }
 

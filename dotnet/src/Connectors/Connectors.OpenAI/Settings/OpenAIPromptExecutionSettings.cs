@@ -394,6 +394,60 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         }
     }
 
+    /// <summary>
+    /// Gets or sets the response modalities to use for the completion.
+    /// </summary>
+    /// <remarks>
+    /// Specifies the modalities to use for the response. This can be represented in several ways:
+    /// <list type="bullet">
+    /// <item><description>As a <see cref="ChatResponseModalities"/> flags enum: <c>ChatResponseModalities.Text | ChatResponseModalities.Audio</c></description></item>
+    /// <item><description>As an <see cref="IEnumerable{String}"/> of modality names: <c>new[] { "text", "audio" }</c></description></item>
+    /// <item><description>As a <see cref="string"/> representation: <c>"Text, Audio"</c></description></item>
+    /// <item><description>As a <see cref="JsonElement"/> containing either a string or an array of strings</description></item>
+    /// </list>
+    /// If this property is null, <see cref="ChatResponseModalities.Default"/> will be used, which typically means text-only responses.
+    /// When audio is enabled, you should also set the <see cref="AudioOptions"/> property.
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("response_modalities")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? ResponseModalities
+    {
+        get => this._responseModalities;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseModalities = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the audio options to use for the completion when audio modality is enabled.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to configure the output audio voice and format when the <see cref="ResponseModalities"/> property includes audio.
+    /// This can be represented in several ways:
+    /// <list type="bullet">
+    /// <item><description>As a <see cref="ChatAudioOptions"/> object: <c>new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)</c></description></item>
+    /// <item><description>As a <see cref="JsonElement"/> containing the serialized audio options</description></item>
+    /// <item><description>As a <see cref="string"/> containing the JSON representation of the audio options</description></item>
+    /// </list>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("audio_options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? AudioOptions
+    {
+        get => this._audioOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._audioOptions = value;
+        }
+    }
+
     /// <inheritdoc/>
     public override void Freeze()
     {
@@ -488,6 +542,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
             ReasoningEffort = this.ReasoningEffort,
             WebSearchOptions = this.WebSearchOptions,
+            ResponseModalities = this.ResponseModalities,
+            AudioOptions = this.AudioOptions,
         };
     }
 
@@ -512,6 +568,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private int? _topLogprobs;
     private bool? _store;
     private IDictionary<string, string>? _metadata;
+    private object? _responseModalities;
+    private object? _audioOptions;
 
     #endregion
 }
