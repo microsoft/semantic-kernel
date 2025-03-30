@@ -36,7 +36,7 @@ public static class InMemoryServiceCollectionExtensions
     /// <param name="options">Optional options to further configure the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(
+    public static IServiceCollection AddInMemoryVectorStoreRecordCollection<TKey, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)] TRecord>(
         this IServiceCollection services,
         string collectionName,
         InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
