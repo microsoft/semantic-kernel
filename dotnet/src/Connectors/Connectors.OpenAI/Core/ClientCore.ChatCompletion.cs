@@ -18,7 +18,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Text;
 using OpenAI.Chat;
-using OpenAIChatCompletion = OpenAI.Chat.ChatCompletion;
+using OAIChat = OpenAI.Chat;
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -92,7 +92,7 @@ internal partial class ClientCore
             unit: "{token}",
             description: "Number of tokens used");
 
-    protected virtual Dictionary<string, object?> GetChatCompletionMetadata(OpenAIChatCompletion completions)
+    protected virtual Dictionary<string, object?> GetChatCompletionMetadata(OAIChat.ChatCompletion completions)
     {
         return new Dictionary<string, object?>
         {
@@ -162,7 +162,7 @@ internal partial class ClientCore
             var chatOptions = this.CreateChatCompletionOptions(chatExecutionSettings, chatHistory, functionCallingConfig, kernel);
 
             // Make the request.
-            OpenAIChatCompletion? chatCompletion = null;
+            OAIChat.ChatCompletion? chatCompletion = null;
             OpenAIChatMessageContent chatMessageContent;
             using (var activity = this.StartCompletionActivity(chatHistory, chatExecutionSettings))
             {
@@ -187,7 +187,7 @@ internal partial class ClientCore
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false);
+                chatMessageContent = this.CreateChatMessageContent(chatOptions, chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false);
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
@@ -776,6 +776,7 @@ internal partial class ClientCore
                     {
                         TextContent textContent => ChatMessageContentPart.CreateTextPart(textContent.Text),
                         ImageContent imageContent => GetImageContentItem(imageContent),
+                        AudioContent audioContent => GetAudioContentItem(audioContent),
                         _ => throw new NotSupportedException($"Unsupported chat message content type '{item.GetType()}'.")
                     }))
                 { ParticipantName = message.AuthorName }
@@ -876,6 +877,31 @@ internal partial class ClientCore
         throw new ArgumentException($"{nameof(ImageContent)} must have either Data or a Uri.");
     }
 
+    private static ChatMessageContentPart GetAudioContentItem(AudioContent audioContent)
+    {
+        if (audioContent.Data is { IsEmpty: false } data)
+        {
+            return ChatMessageContentPart.CreateInputAudioPart(BinaryData.FromBytes(data), GetChatInputAudioFormat(audioContent.MimeType));
+        }
+
+        throw new ArgumentException($"{nameof(AudioContent)} must have Data bytes.");
+    }
+
+    private static ChatInputAudioFormat GetChatInputAudioFormat(string? mimeType)
+    {
+        if (string.IsNullOrWhiteSpace(mimeType))
+        {
+            return ChatInputAudioFormat.Mp3;
+        }
+
+        return mimeType.ToUpperInvariant() switch
+        {
+            "AUDIO/WAV" => ChatInputAudioFormat.Wav,
+            "AUDIO/MP3" => ChatInputAudioFormat.Mp3,
+            _ => throw new NotSupportedException($"Unsupported audio format '{mimeType}'. Supported formats are 'audio/wav' and 'audio/mp3'.")
+        };
+    }
+
     private static ChatImageDetailLevel? GetChatImageDetailLevel(ImageContent imageContent)
     {
         const string DetailLevelProperty = "ChatImageDetailLevel";
@@ -899,13 +925,68 @@ internal partial class ClientCore
         return null;
     }
 
-    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel, bool retainArgumentTypes)
+    private OpenAIChatMessageContent CreateChatMessageContent(OAIChat.ChatCompletionOptions options, OAIChat.ChatCompletion completion, string targetModel, bool retainArgumentTypes)
     {
         var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
+
+        if (completion.OutputAudio is ChatOutputAudio outputAudio)
+        {
+            var audioContent = new AudioContent(outputAudio.AudioBytes, GetAudioOutputMimeType(options.AudioOptions))
+            {
+                Metadata = new Dictionary<string, object?>
+                {
+                    [nameof(outputAudio.Id)] = outputAudio.Id,
+                    [nameof(outputAudio.Transcript)] = outputAudio.Transcript,
+                    [nameof(outputAudio.ExpiresAt)] = outputAudio.ExpiresAt,
+                }
+            };
+
+            message.Items.Add(audioContent);
+        }
 
         message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls, retainArgumentTypes));
 
         return message;
+    }
+
+    private static string? GetAudioOutputMimeType(ChatAudioOptions? audioOptions)
+    {
+        if (audioOptions is null)
+        {
+            return null;
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        {
+            return "audio/wav";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Mp3)
+        {
+            return "audio/mp3";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Opus)
+        {
+            return "audio/opus";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Wav)
+        {
+            return "audio/wav";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Flac)
+        {
+            return "audio/flac";
+        }
+
+        if (audioOptions.OutputAudioFormat == ChatOutputAudioFormat.Pcm16)
+        {
+            return "audio/pcm16";
+        }
+
+        throw new NotSupportedException($"Unsupported audio output format '{audioOptions.OutputAudioFormat}'. Supported formats are 'wav', 'mp3', 'opus', 'flac' and 'pcm16'.");
     }
 
     private OpenAIChatMessageContent CreateChatMessageContent(ChatMessageRole chatRole, string content, ChatToolCall[] toolCalls, FunctionCallContent[]? functionCalls, IReadOnlyDictionary<string, object?>? metadata, string? authorName)

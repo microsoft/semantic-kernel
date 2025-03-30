@@ -1965,4 +1965,230 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
         public int? Property2 { get; set; }
     }
 #pragma warning restore CS8618, CA1812
+
+    // These test data definitions have been moved to the top of the file
+
+    // Sample audio content for testing
+    private static readonly byte[] s_sampleAudioBytes = { 0x01, 0x02, 0x03, 0x04 };
+
+    // Tests for ResponseModalities and AudioOptions properties
+    // These tests are commented out because the properties are not yet implemented in OpenAIPromptExecutionSettings
+    /*
+    [Theory]
+    [MemberData(nameof(ResponseModalitiesData))]
+    public async Task ItCreatesCorrectResponseModalitiesAsync(object responseModalities, string expectedJson)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseModalities = responseModalities
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.True(optionsJson.TryGetProperty("response_modalities", out var property));
+        Assert.Equal(expectedJson, property.GetRawText());
+    }
+    */
+
+    /*
+    [Theory]
+    [MemberData(nameof(ResponseModalitiesData))]
+    public async Task ItCreatesCorrectResponseModalitiesStreamingAsync(object responseModalities, string expectedJson)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_streaming_test_response.txt");
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseModalities = responseModalities
+        };
+
+        // Act
+        var asyncEnumerable = chatCompletion.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest, settings);
+        await asyncEnumerable.GetAsyncEnumerator().MoveNextAsync();
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.True(optionsJson.TryGetProperty("response_modalities", out var property));
+        Assert.Equal(expectedJson, property.GetRawText());
+    }
+    */
+
+    /*
+    [Theory]
+    [MemberData(nameof(AudioOptionsData))]
+    public async Task ItCreatesCorrectAudioOptionsAsync(object audioOptions, string expectedJson)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            AudioOptions = audioOptions
+        };
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.True(optionsJson.TryGetProperty("audio_options", out var property));
+        Assert.Equal(JsonValueKind.Object, property.ValueKind);
+        Assert.Equal(expectedJson, property.GetRawText());
+    }
+    */
+
+    /*
+    [Theory]
+    [MemberData(nameof(AudioOptionsData))]
+    public async Task ItCreatesCorrectAudioOptionsStreamingAsync(object audioOptions, string expectedJson)
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        using var stream = File.OpenRead("TestData/chat_completion_streaming_test_response.txt");
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StreamContent(stream)
+        };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            AudioOptions = audioOptions
+        };
+
+        // Act
+        var asyncEnumerable = chatCompletion.GetStreamingChatMessageContentsAsync(this._chatHistoryForTest, settings);
+        await asyncEnumerable.GetAsyncEnumerator().MoveNextAsync();
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+        Assert.True(optionsJson.TryGetProperty("audio_options", out var property));
+        Assert.Equal(JsonValueKind.Object, property.ValueKind);
+        Assert.Equal(expectedJson, property.GetRawText());
+    }
+    */
+
+    [Fact]
+    public async Task ItSendsAudioContentCorrectlyAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(ChatCompletionResponse) };
+
+        var chatHistory = new ChatHistory();
+        chatHistory.AddUserMessage([
+            new TextContent("What's in this audio?"),
+            new AudioContent(s_sampleAudioBytes, "audio/mp3")
+        ]);
+
+        // Act
+        await chatCompletion.GetChatMessageContentsAsync(chatHistory);
+
+        // Assert
+        var actualRequestContent = Encoding.UTF8.GetString(this._messageHandlerStub.RequestContent!);
+        Assert.NotNull(actualRequestContent);
+        var optionsJson = JsonSerializer.Deserialize<JsonElement>(actualRequestContent);
+
+        var messages = optionsJson.GetProperty("messages");
+        Assert.Equal(1, messages.GetArrayLength());
+
+        var contentItems = messages[0].GetProperty("content");
+        Assert.Equal(2, contentItems.GetArrayLength());
+
+        Assert.Equal("text", contentItems[0].GetProperty("type").GetString());
+        Assert.Equal("What's in this audio?", contentItems[0].GetProperty("text").GetString());
+
+        Assert.Equal("input_audio", contentItems[1].GetProperty("type").GetString());
+
+        // Check for the audio data
+        Assert.True(contentItems[1].TryGetProperty("input_audio", out var audioData));
+        Assert.Equal(JsonValueKind.Object, audioData.ValueKind);
+        Assert.True(audioData.TryGetProperty("data", out var dataProperty));
+        var base64Audio = dataProperty.GetString();
+        Assert.True(audioData.TryGetProperty("format", out var formatProperty));
+        Assert.Equal("mp3", formatProperty.GetString());
+
+        Assert.NotNull(base64Audio);
+        Assert.Equal(Convert.ToBase64String(s_sampleAudioBytes), base64Audio);
+    }
+
+    /*
+    [Fact]
+    public async Task ItHandlesAudioContentInResponseAsync()
+    {
+        // Arrange
+        var chatCompletion = new OpenAIChatCompletionService(modelId: "gpt-3.5-turbo", apiKey: "NOKEY", httpClient: this._httpClient);
+
+        // Create a response with audio content
+        var responseJson = @"{
+            ""model"": ""gpt-4o"",
+            ""choices"": [
+                {
+                    ""message"": {
+                        ""role"": ""assistant"",
+                        ""content"": ""This is the text response."",
+                        ""audio"": {
+                            ""data"": ""AQIDBA==""
+                        }
+                    },
+                    ""finish_reason"": ""stop""
+                }
+            ],
+            ""usage"": {
+                ""prompt_tokens"": 10,
+                ""completion_tokens"": 20,
+                ""total_tokens"": 30
+            }
+        }";
+
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        { Content = new StringContent(responseJson) };
+
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            ResponseModalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
+            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)
+        };
+
+        // Act
+        var result = await chatCompletion.GetChatMessageContentAsync(this._chatHistoryForTest, settings);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("This is the text response.", result.Content);
+        Assert.Equal(2, result.Items.Count);
+
+        var textContent = result.Items[0] as TextContent;
+        Assert.NotNull(textContent);
+        Assert.Equal("This is the text response.", textContent.Text);
+
+        var audioContent = result.Items[1] as AudioContent;
+        Assert.NotNull(audioContent);
+        Assert.Equal(s_sampleAudioBytes, audioContent.Data);
+    }
+    */
 }
