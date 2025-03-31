@@ -341,7 +341,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             var collection = vectorStore.GetCollection<string, FunctionRecord>(collectionName);
             await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
 
-            await collection.UpsertBatchAsync(functionRecords, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
+            await collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken).ToListAsync(cancellationToken);
         }
 
         private static List<(KernelFunction Function, string TextToVectorize)> GetFunctionsData(KernelPluginCollection plugins)

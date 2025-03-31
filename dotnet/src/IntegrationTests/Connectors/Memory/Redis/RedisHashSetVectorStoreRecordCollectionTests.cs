@@ -168,7 +168,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetVectorStoreRecordCollection<RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
-        var results = sut.UpsertBatchAsync(
+        var results = sut.UpsertAsync(
             [
                 CreateTestHotel("HUpsertMany-1", 1),
                 CreateTestHotel("HUpsertMany-2", 2),
@@ -238,7 +238,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetBatchAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -296,7 +296,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         // Also include a non-existing key to test that the operation does not fail for these.
-        await sut.DeleteBatchAsync(["HRemoveMany-1", "HRemoveMany-2", "HRemoveMany-3", "HRemoveMany-4"]);
+        await sut.DeleteAsync(["HRemoveMany-1", "HRemoveMany-2", "HRemoveMany-3", "HRemoveMany-4"]);
 
         // Assert
         Assert.Null(await sut.GetAsync("HRemoveMany-1", new GetRecordOptions { IncludeVectors = true }));

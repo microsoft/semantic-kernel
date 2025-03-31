@@ -264,7 +264,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     {
         Verify.NotNull(key);
 
-        var retrievedPoints = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return retrievedPoints.FirstOrDefault();
     }
 
@@ -273,18 +273,18 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     {
         Verify.NotNull(key);
 
-        var retrievedPoints = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return retrievedPoints.FirstOrDefault();
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Num = key }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Uuid = key.ToString("D") }, options, cancellationToken);
     }
@@ -318,7 +318,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -332,7 +332,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -384,7 +384,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<ulong> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -407,7 +407,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken)
+    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(records);
 

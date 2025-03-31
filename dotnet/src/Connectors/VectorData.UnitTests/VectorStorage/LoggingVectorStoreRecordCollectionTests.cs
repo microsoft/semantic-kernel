@@ -120,15 +120,15 @@ public class LoggingVectorStoreRecordCollectionTests
         // Arrange
         var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
         var keys = new[] { "key1", "key2" };
-        innerCollection.Setup(c => c.DeleteBatchAsync(keys, default)).Returns(Task.CompletedTask);
+        innerCollection.Setup(c => c.DeleteAsync(keys, default)).Returns(Task.CompletedTask);
         var logger = new Mock<ILogger>().Object;
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
-        await decorator.DeleteBatchAsync(keys);
+        await decorator.DeleteAsync(keys);
 
         // Assert
-        innerCollection.Verify(c => c.DeleteBatchAsync(keys, default), Times.Once());
+        innerCollection.Verify(c => c.DeleteAsync(keys, default), Times.Once());
     }
 
     [Fact]
@@ -173,16 +173,16 @@ public class LoggingVectorStoreRecordCollectionTests
         var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
         var keys = new[] { "key1", "key2" };
         var records = new[] { new object(), new object() };
-        innerCollection.Setup(c => c.GetBatchAsync(keys, null, default)).Returns(records.ToAsyncEnumerable());
+        innerCollection.Setup(c => c.GetAsync(keys, null, default)).Returns(records.ToAsyncEnumerable());
         var logger = new Mock<ILogger>().Object;
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
-        var result = await decorator.GetBatchAsync(keys).ToListAsync();
+        var result = await decorator.GetAsync(keys).ToListAsync();
 
         // Assert
         Assert.Equal(records, result);
-        innerCollection.Verify(c => c.GetBatchAsync(keys, null, default), Times.Once());
+        innerCollection.Verify(c => c.GetAsync(keys, null, default), Times.Once());
     }
 
     [Fact]
@@ -210,16 +210,16 @@ public class LoggingVectorStoreRecordCollectionTests
         var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>();
         var records = new[] { new object(), new object() };
         var keys = new[] { "key1", "key2" };
-        innerCollection.Setup(c => c.UpsertBatchAsync(records, default)).Returns(keys.ToAsyncEnumerable());
+        innerCollection.Setup(c => c.UpsertAsync(records, default)).Returns(keys.ToAsyncEnumerable());
         var logger = new Mock<ILogger>().Object;
         var decorator = new LoggingVectorStoreRecordCollection<string, object>(innerCollection.Object, logger);
 
         // Act
-        var result = await decorator.UpsertBatchAsync(records).ToListAsync();
+        var result = await decorator.UpsertAsync(records).ToListAsync();
 
         // Assert
         Assert.Equal(keys, result);
-        innerCollection.Verify(c => c.UpsertBatchAsync(records, default), Times.Once());
+        innerCollection.Verify(c => c.UpsertAsync(records, default), Times.Once());
     }
 
     [Fact]

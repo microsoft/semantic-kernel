@@ -267,7 +267,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             Code = 3
         };
 
-        await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
+        await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
     }
 
@@ -291,7 +291,7 @@ public abstract class BaseKeywordVectorizedHybridSearchTests<TKey>
             Vector = vector
         };
 
-        await sut.UpsertBatchAsync([record1, record2]).ToListAsync();
+        await sut.UpsertAsync([record1, record2]).ToListAsync();
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
     }
 

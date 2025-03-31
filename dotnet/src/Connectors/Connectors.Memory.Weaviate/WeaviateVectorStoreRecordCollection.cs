@@ -224,7 +224,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         const string OperationName = "DeleteObjectBatch";
         const string ContainsAnyOperator = "ContainsAny";
@@ -274,7 +274,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetBatchAsync(
+    public virtual async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<Guid> keys,
         GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -295,13 +295,13 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <inheritdoc />
     public virtual async Task<Guid> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        return await this.UpsertBatchAsync([record], cancellationToken)
+        return await this.UpsertAsync([record], cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<Guid> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<Guid> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "UpsertCollectionObject";
 

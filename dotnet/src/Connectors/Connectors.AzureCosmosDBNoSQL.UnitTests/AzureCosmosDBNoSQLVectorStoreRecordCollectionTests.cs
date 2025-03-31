@@ -279,7 +279,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        await sut.DeleteBatchAsync(recordKeys);
+        await sut.DeleteAsync(recordKeys);
 
         // Assert
         foreach (var key in recordKeys)
@@ -389,7 +389,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.GetBatchAsync(["key1", "key2", "key3"]).ToListAsync();
+        var results = await sut.GetAsync(["key1", "key2", "key3"]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -444,7 +444,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2, hotel3]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]).ToListAsync();
 
         // Assert
         Assert.NotNull(results);

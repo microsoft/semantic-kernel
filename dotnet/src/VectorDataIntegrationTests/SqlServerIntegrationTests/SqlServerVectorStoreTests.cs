@@ -220,13 +220,13 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = Enumerable.Range(0, 10).Select(j => (float)(i + j)).ToArray()
             }).ToArray();
 
-            string[] keys = await collection.UpsertBatchAsync(inserted).ToArrayAsync();
+            string[] keys = await collection.UpsertAsync(inserted).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
             {
                 Assert.Equal(inserted[i].Id, keys[i]);
             }
 
-            TestModel[] received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+            TestModel[] received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
             {
                 AssertEquality(inserted[i], received[i]);
@@ -239,21 +239,21 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = i.Floats
             }).ToArray();
 
-            keys = await collection.UpsertBatchAsync(updated).ToArrayAsync();
+            keys = await collection.UpsertAsync(updated).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
             {
                 Assert.Equal(updated[i].Id, keys[i]);
             }
 
-            received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+            received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
             {
                 AssertEquality(updated[i], received[i]);
             }
 
-            await collection.DeleteBatchAsync(keys);
+            await collection.DeleteAsync(keys);
 
-            Assert.False(await collection.GetBatchAsync(keys).AnyAsync());
+            Assert.False(await collection.GetAsync(keys).AnyAsync());
         }
         finally
         {

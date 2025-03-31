@@ -55,7 +55,7 @@ var collectionName = "ExampleCollection";
 foreach (var factTextFile in Directory.GetFiles("Facts", "*.txt"))
 {
     var factContent = File.ReadAllText(factTextFile);
-    await collection.UpsertAsync(new()
+    await collection.UpsertAsync(new InformationItem()
     {
         Id = Guid.NewGuid().ToString(),
         Text = factContent,

@@ -78,12 +78,12 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc/>
-    public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
-            nameof(DeleteBatchAsync),
-            () => this._innerCollection.DeleteBatchAsync(keys, cancellationToken));
+            nameof(DeleteAsync),
+            () => this._innerCollection.DeleteAsync(keys, cancellationToken));
     }
 
     /// <inheritdoc/>
@@ -105,12 +105,12 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
-            nameof(GetBatchAsync),
-            () => this._innerCollection.GetBatchAsync(keys, options, cancellationToken),
+            nameof(GetAsync),
+            () => this._innerCollection.GetAsync(keys, options, cancellationToken),
             cancellationToken);
     }
 
@@ -124,12 +124,12 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
-            nameof(UpsertBatchAsync),
-            () => this._innerCollection.UpsertBatchAsync(records, cancellationToken),
+            nameof(UpsertAsync),
+            () => this._innerCollection.UpsertAsync(records, cancellationToken),
             cancellationToken);
     }
 

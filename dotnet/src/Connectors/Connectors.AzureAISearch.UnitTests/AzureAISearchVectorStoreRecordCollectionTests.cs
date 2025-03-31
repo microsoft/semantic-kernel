@@ -257,7 +257,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [TestRecordKey1, TestRecordKey2],
             new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
@@ -368,7 +368,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [TestRecordKey1, TestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -455,7 +455,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act.
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             [model1, model2],
             cancellationToken: this._testCancellationToken).ToListAsync();
 
