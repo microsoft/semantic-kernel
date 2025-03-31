@@ -206,20 +206,20 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                 try
                 {
                     var operation = new RestApiOperation(
-                    id: operationItem.OperationId,
-                    servers: globalServers,
-                    path: path,
-                    method: new HttpMethod(method),
-                    description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
-                    parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer)),
-                    payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
-                    responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
-                    securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
-                )
+                        id: operationItem.OperationId,
+                        servers: globalServers,
+                        pathServers: pathServers,
+                        operationServers: operationServers,
+                        path: path,
+                        method: new HttpMethod(method),
+                        description: string.IsNullOrEmpty(operationItem.Description) ? operationItem.Summary : operationItem.Description,
+                        parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer)),
+                        payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
+                        responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
+                        securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
+                    )
                     {
-                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger),
-                        PathServers = pathServers,
-                        OperationServers = operationServers
+                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger)
                     };
 
                     operations.Add(operation);

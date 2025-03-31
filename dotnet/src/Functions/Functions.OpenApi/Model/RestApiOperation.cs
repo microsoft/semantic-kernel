@@ -116,6 +116,8 @@ public sealed class RestApiOperation
     /// <param name="responses">The operation responses.</param>
     /// <param name="securityRequirements">The operation security requirements.</param>
     /// <param name="payload">The operation payload.</param>
+    /// <param name="pathServers">The path servers.</param>
+    /// <param name="operationServers">The operation servers.</param>
     internal RestApiOperation(
         string? id,
         IList<RestApiServer> servers,
@@ -125,7 +127,9 @@ public sealed class RestApiOperation
         IList<RestApiParameter> parameters,
         IDictionary<string, RestApiExpectedResponse> responses,
         IList<RestApiSecurityRequirement> securityRequirements,
-        RestApiPayload? payload = null)
+        RestApiPayload? payload = null,
+        IList<RestApiServer>? pathServers = null,
+        IList<RestApiServer>? operationServers = null)
     {
         this.Id = id;
         this.Servers = servers;
@@ -136,6 +140,8 @@ public sealed class RestApiOperation
         this.Responses = responses ?? new Dictionary<string, RestApiExpectedResponse>();
         this.SecurityRequirements = securityRequirements;
         this.Payload = payload;
+        this.PathServers = pathServers ?? new List<RestApiServer>();
+        this.OperationServers = operationServers ?? new List<RestApiServer>();
     }
 
     /// <summary>
