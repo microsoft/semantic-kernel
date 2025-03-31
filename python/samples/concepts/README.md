@@ -9,6 +9,7 @@
 - [Azure AI Agent as Kernel Function](./agents/azure_ai_agent/azure_ai_agent_as_kernel_function.py)
 - [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
 - [Azure AI Agent Chat History Callback](./agents/azure_ai_agent/azure_ai_agent_streaming_chat_history_callback.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 
