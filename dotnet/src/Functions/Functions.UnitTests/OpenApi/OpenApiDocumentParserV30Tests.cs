@@ -711,22 +711,22 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         };
 
         // Act
-        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, _logger);
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, this._logger);
         var operation = operations[0];
 
         // Assert
-        // Verify global servers
-        Assert.Equal(1, operation.Servers.Count);
+        // Verify servers
+        Assert.Single(operation.Servers);
         Assert.Equal("https://global-server.com", operation.Servers[0].Url);
         Assert.Equal("Global server", operation.Servers[0].Description);
 
         // Verify path servers
-        Assert.Equal(1, operation.PathServers.Count);
+        Assert.Single(operation.PathServers);
         Assert.Equal("https://path-server.com", operation.PathServers[0].Url);
         Assert.Equal("Path server", operation.PathServers[0].Description);
 
         // Verify operation servers
-        Assert.Equal(1, operation.OperationServers.Count);
+        Assert.Single(operation.OperationServers);
         Assert.Equal("https://operation-server.com", operation.OperationServers[0].Url);
         Assert.Equal("Operation server", operation.OperationServers[0].Description);
     }
