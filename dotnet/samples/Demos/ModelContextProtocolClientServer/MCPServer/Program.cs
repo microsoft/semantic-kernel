@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MCPServer;
 using MCPServer.Tools;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol;
@@ -16,6 +17,6 @@ var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
-    // Add kernel functions to the MCP server as MCP tools
-    .WithTools(kernel.Plugins.SelectMany(p => p.Select(f => f.AsAIFunction())));
+    // Add all functions from the kernel plugins to the MCP server as tools
+    .WithTools(kernel.Plugins);
 await builder.Build().RunAsync();
