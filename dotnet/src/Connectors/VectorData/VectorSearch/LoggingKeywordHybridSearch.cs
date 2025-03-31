@@ -61,16 +61,16 @@ public partial class LoggingKeywordHybridSearch<TRecord> : IKeywordHybridSearch<
 
     #region private
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked.")]
+    [LoggerMessage(LoggingEventIds.HybridSearchInvoked, LogLevel.Debug, "{OperationName} invoked.")]
     private partial void HybridSearchInvoked(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed.")]
+    [LoggerMessage(LoggingEventIds.HybridSearchCompleted, LogLevel.Debug, "{OperationName} completed.")]
     private partial void HybridSearchCompleted(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled.")]
+    [LoggerMessage(LoggingEventIds.HybridSearchCanceled, LogLevel.Debug, "{OperationName} canceled.")]
     private partial void HybridSearchCanceled(string operationName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed.")]
+    [LoggerMessage(LoggingEventIds.HybridSearchFailed, LogLevel.Error, "{OperationName} failed.")]
     private partial void HybridSearchFailed(string operationName, Exception exception);
 
     #endregion

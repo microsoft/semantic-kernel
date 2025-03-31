@@ -502,166 +502,166 @@ public partial class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     #region private
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CollectionExistsInvoked, LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
     private partial void CollectionExistsInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}. Collection exists: {CollectionExists}")]
+    [LoggerMessage(LoggingEventIds.CollectionExistsCompleted, LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}. Collection exists: {CollectionExists}")]
     private partial void CollectionExistsCompleted(string operationName, string collectionName, bool collectionExists);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CollectionExistsCanceled, LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
     private partial void CollectionExistsCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CollectionExistsFailed, LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
     private partial void CollectionExistsFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionInvoked, LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
     private partial void CreateCollectionInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionCompleted, LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
     private partial void CreateCollectionCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionCanceled, LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
     private partial void CreateCollectionCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionFailed, LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
     private partial void CreateCollectionFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionIfNotExistsInvoked, LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
     private partial void CreateCollectionIfNotExistsInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionIfNotExistsCompleted, LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
     private partial void CreateCollectionIfNotExistsCompleted(string operationName, string collectionName);
 
     [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
     private partial void CreateCollectionIfNotExistsCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.CreateCollectionIfNotExistsFailed, LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
     private partial void CreateCollectionIfNotExistsFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Key: {Key}.")]
+    [LoggerMessage(LoggingEventIds.DeleteInvokedSensitive, LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Key: {Key}.")]
     private partial void DeleteInvokedSensitive(string operationName, string collectionName, string? key);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Key: {Key}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCompletedSensitive, LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Key: {Key}.")]
     private partial void DeleteCompletedSensitive(string operationName, string collectionName, string? key);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteInvoked, LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
     private partial void DeleteInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCompleted, LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
     private partial void DeleteCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCanceled, LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
     private partial void DeleteCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteFailed, LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
     private partial void DeleteFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Keys: {Keys}.")]
+    [LoggerMessage(LoggingEventIds.DeleteBatchInvokedSensitive, LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Keys: {Keys}.")]
     private partial void DeleteBatchInvokedSensitive(string operationName, string collectionName, string? keys);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Keys: {Keys}.")]
+    [LoggerMessage(LoggingEventIds.DeleteBatchCompletedSensitive, LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Keys: {Keys}.")]
     private partial void DeleteBatchCompletedSensitive(string operationName, string collectionName, string? keys);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteBatchInvoked, LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
     private partial void DeleteBatchInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteBatchCompleted, LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
     private partial void DeleteBatchCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteBatchCanceled, LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
     private partial void DeleteBatchCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteBatchFailed, LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
     private partial void DeleteBatchFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCollectionInvoked, LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
     private partial void DeleteCollectionInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCollectionCompleted, LogLevel.Debug, "{OperationName} completed. CollectionName: {CollectionName}.")]
     private partial void DeleteCollectionCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCollectionCanceled, LogLevel.Debug, "{OperationName} canceled. CollectionName: {CollectionName}.")]
     private partial void DeleteCollectionCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.DeleteCollectionFailed, LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
     private partial void DeleteCollectionFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetInvoked, LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
     private partial void GetInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetCompleted, LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
     private partial void GetCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Key: {Key}.")]
+    [LoggerMessage(LoggingEventIds.GetInvokedSensitive, LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Key: {Key}.")]
     private partial void GetInvokedSensitive(string operationName, string collectionName, string? key);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Key: {Key}.")]
+    [LoggerMessage(LoggingEventIds.GetCompletedSensitive, LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Key: {Key}.")]
     private partial void GetCompletedSensitive(string operationName, string collectionName, string? key);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetCanceled, LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
     private partial void GetCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetFailed, LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
     private partial void GetFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetBatchInvoked, LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
     private partial void GetBatchInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetBatchCompleted, LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
     private partial void GetBatchCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Keys: {Keys}.")]
+    [LoggerMessage(LoggingEventIds.GetBatchInvokedSensitive, LogLevel.Trace, "{OperationName} invoked. Collection Name: {CollectionName}. Keys: {Keys}.")]
     private partial void GetBatchInvokedSensitive(string operationName, string collectionName, string? keys);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Keys: {Keys}.")]
+    [LoggerMessage(LoggingEventIds.GetBatchCompletedSensitive, LogLevel.Trace, "{OperationName} completed. Collection Name: {CollectionName}. Keys: {Keys}.")]
     private partial void GetBatchCompletedSensitive(string operationName, string collectionName, string? keys);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetBatchCanceled, LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
     private partial void GetBatchCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.GetBatchFailed, LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
     private partial void GetBatchFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertInvoked, LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
     private partial void UpsertInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertCompleted, LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
     private partial void UpsertCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} completed. Collection name: {CollectionName}. Key: {Key}.")]
+    [LoggerMessage(LoggingEventIds.UpsertCompletedSensitive, LogLevel.Trace, "{OperationName} completed. Collection name: {CollectionName}. Key: {Key}.")]
     private partial void UpsertCompletedSensitive(string operationName, string collectionName, string? key);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertCanceled, LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
     private partial void UpsertCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertFailed, LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
     private partial void UpsertFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertBatchInvoked, LogLevel.Debug, "{OperationName} invoked. Collection name: {CollectionName}.")]
     private partial void UpsertBatchInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertBatchCompleted, LogLevel.Debug, "{OperationName} completed. Collection name: {CollectionName}.")]
     private partial void UpsertBatchCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Trace, "{OperationName} completed. Collection name: {CollectionName}. Keys: {Keys}.")]
+    [LoggerMessage(LoggingEventIds.UpsertBatchCompletedSensitive, LogLevel.Trace, "{OperationName} completed. Collection name: {CollectionName}. Keys: {Keys}.")]
     private partial void UpsertBatchCompletedSensitive(string operationName, string collectionName, string keys);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertBatchCanceled, LogLevel.Debug, "{OperationName} canceled. Collection name: {CollectionName}.")]
     private partial void UpsertBatchCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.UpsertBatchFailed, LogLevel.Error, "{OperationName} failed. CollectionName: {CollectionName}.")]
     private partial void UpsertBatchFailed(string operationName, string collectionName, Exception exception);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchInvoked, LogLevel.Debug, "{OperationName} invoked. Collection Name: {CollectionName}.")]
     private partial void VectorizedSearchInvoked(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchCompleted, LogLevel.Debug, "{OperationName} completed. Collection Name: {CollectionName}.")]
     private partial void VectorizedSearchCompleted(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchCanceled, LogLevel.Debug, "{OperationName} canceled. Collection Name: {CollectionName}.")]
     private partial void VectorizedSearchCanceled(string operationName, string collectionName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchFailed, LogLevel.Error, "{OperationName} failed. Collection Name: {CollectionName}.")]
     private partial void VectorizedSearchFailed(string operationName, string collectionName, Exception exception);
 
     #endregion

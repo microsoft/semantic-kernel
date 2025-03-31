@@ -58,23 +58,19 @@ public partial class LoggingVectorizedSearch<TRecord> : IVectorizedSearch<TRecor
         }
     }
 
-    #region
-
     #region private
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchInvoked, LogLevel.Debug, "{OperationName} invoked.")]
     private partial void VectorizedSearchInvoked(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchCompleted, LogLevel.Debug, "{OperationName} completed.")]
     private partial void VectorizedSearchCompleted(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchCanceled, LogLevel.Debug, "{OperationName} canceled.")]
     private partial void VectorizedSearchCanceled(string operationName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed.")]
+    [LoggerMessage(LoggingEventIds.VectorizedSearchFailed, LogLevel.Error, "{OperationName} failed.")]
     private partial void VectorizedSearchFailed(string operationName, Exception exception);
-
-    #endregion
 
     #endregion
 }

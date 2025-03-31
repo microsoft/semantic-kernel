@@ -60,16 +60,16 @@ public partial class LoggingVectorizableTextSearch<TRecord> : IVectorizableTextS
 
     #region private
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked.")]
+    [LoggerMessage(LoggingEventIds.VectorizableTextSearchInvoked, LogLevel.Debug, "{OperationName} invoked.")]
     private partial void VectorizableTextSearchInvoked(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed.")]
+    [LoggerMessage(LoggingEventIds.VectorizableTextSearchCompleted, LogLevel.Debug, "{OperationName} completed.")]
     private partial void VectorizableTextSearchCompleted(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled.")]
+    [LoggerMessage(LoggingEventIds.VectorizableTextSearchCanceled, LogLevel.Debug, "{OperationName} canceled.")]
     private partial void VectorizableTextSearchCanceled(string operationName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed.")]
+    [LoggerMessage(LoggingEventIds.VectorizableTextSearchFailed, LogLevel.Error, "{OperationName} failed.")]
     private partial void VectorizableTextSearchFailed(string operationName, Exception exception);
 
     #endregion

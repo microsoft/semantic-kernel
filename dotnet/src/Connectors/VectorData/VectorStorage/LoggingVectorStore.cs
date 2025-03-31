@@ -105,16 +105,16 @@ public partial class LoggingVectorStore : IVectorStore
 
     #region private
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} invoked.")]
+    [LoggerMessage(LoggingEventIds.ListCollectionNamesInvoked, LogLevel.Debug, "{OperationName} invoked.")]
     private partial void ListCollectionNamesInvoked(string operationName);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} completed. Collections: {Collections}")]
+    [LoggerMessage(LoggingEventIds.ListCollectionNamesCompleted, LogLevel.Debug, "{OperationName} completed. Collections: {Collections}")]
     private partial void ListCollectionNamesCompleted(string operationName, string collections);
 
-    [LoggerMessage(LogLevel.Debug, "{OperationName} canceled.")]
+    [LoggerMessage(LoggingEventIds.ListCollectionNamesCanceled, LogLevel.Debug, "{OperationName} canceled.")]
     private partial void ListCollectionNamesCanceled(string operationName);
 
-    [LoggerMessage(LogLevel.Error, "{OperationName} failed.")]
+    [LoggerMessage(LoggingEventIds.ListCollectionNamesFailed, LogLevel.Error, "{OperationName} failed.")]
     private partial void ListCollectionNamesFailed(string operationName, Exception exception);
 
     #endregion
