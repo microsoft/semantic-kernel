@@ -101,8 +101,8 @@ public sealed class OpenAIResponseAgent : KernelAgent
         string? agentName,
         ChatHistory history,
         OpenAIResponseAgentThread agentThread,
-        AgentInvokeOptions? options = null,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        AgentInvokeOptions? options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var kernel = options?.Kernel ?? this.Kernel;
         var arguments = this.MergeArguments(options?.KernelArguments);
@@ -118,7 +118,7 @@ public sealed class OpenAIResponseAgent : KernelAgent
         var creationOptions = new ResponseCreationOptions()
         {
             EndUserId = this.GetDisplayName(),
-            Instructions = this.Instructions,
+            Instructions = $"{this.Instructions}\n{options?.AdditionalInstructions}",
             StoredOutputEnabled = agentThread.StoreEnabled,
         };
         if (agentThread.StoreEnabled && agentThread.Id != null)

@@ -49,7 +49,7 @@ public static class ChatContentMessageExtensions
             "user" => ResponseItem.CreateUserMessageItem(message.Content),
             "developer" => ResponseItem.CreateDeveloperMessageItem(message.Content),
             "assistant" => ResponseItem.CreateAssistantMessageItem(message.Content),
-            _ => throw new NotImplementedException(),
+            _ => throw new NotSupportedException($"Unsupported role {message.Role.Label}. Only system, user, developer or assistant roles are allowed."),
         };
     }
 }
