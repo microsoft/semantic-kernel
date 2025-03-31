@@ -61,7 +61,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
                 targetType == typeof(int) || targetType == typeof(int?) ?
                 (object)(int)payloadValue.IntegerValue :
                 (object)payloadValue.IntegerValue,
-            Value.KindOneofCase.StringValue => ConverStringValue(payloadValue.StringValue),
+            Value.KindOneofCase.StringValue => ConvertStringValue(payloadValue.StringValue),
             Value.KindOneofCase.DoubleValue =>
                 targetType == typeof(float) || targetType == typeof(float?) ?
                 (object)(float)payloadValue.DoubleValue :
@@ -74,7 +74,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
             _ => throw new VectorStoreRecordMappingException($"Unsupported grpc value kind {payloadValue.KindCase}."),
         };
 
-        object ConverStringValue(string stringValue)
+        object ConvertStringValue(string stringValue)
         {
             if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
             {
