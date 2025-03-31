@@ -83,6 +83,14 @@ async def main():
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent_definition.id)
 
+        """
+        Sample Output:
+
+        # User: 'The mass of the Mars is 6.4171E23 kg; the mass of the Earth is 5.972168E24 kg;'
+        # AuthorRole.ASSISTANT: planet=<Planets.Earth: 'Earth'> mass=5.972168e+24
+        # AuthorRole.ASSISTANT: planet=<Planets.Mars: 'Mars'> mass=6.4171e+23
+        """
+
 
 if __name__ == "__main__":
     asyncio.run(main())
