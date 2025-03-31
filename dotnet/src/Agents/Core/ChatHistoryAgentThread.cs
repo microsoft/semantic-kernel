@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Represents a conversation thread based on an instance of <see cref="ChatHistory"/> that is maanged inside this class.
 /// </summary>
-public sealed class ChatHistoryAgentThread : AgentThread
+public sealed class ChatHistoryAgentThread : AgentThread, IAgentThreadRetrievable
 {
     private readonly ChatHistory _chatHistory = new();
 

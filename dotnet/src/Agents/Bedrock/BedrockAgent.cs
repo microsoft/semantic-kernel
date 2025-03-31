@@ -115,6 +115,7 @@ public sealed class BedrockAgent : KernelAgent
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Ensure that the last message provided is a user message
@@ -193,6 +194,7 @@ public sealed class BedrockAgent : KernelAgent
             [],
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Configure the agent request with the provided options
@@ -347,6 +349,7 @@ public sealed class BedrockAgent : KernelAgent
             messages,
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Ensure that the last message provided is a user message
@@ -426,6 +429,7 @@ public sealed class BedrockAgent : KernelAgent
             [],
             thread,
             () => new BedrockAgentThread(this.RuntimeClient),
+            requiresThreadRetrieval: false,
             cancellationToken).ConfigureAwait(false);
 
         // Configure the agent request with the provided options

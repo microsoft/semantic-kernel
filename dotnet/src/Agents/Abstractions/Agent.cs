@@ -266,6 +266,7 @@ public abstract class Agent
 
     private ILogger? _logger;
 
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     /// <summary>
     /// Ensures that the thread exists, is of the expected type, and is active, plus adds the provided message to the thread.
     /// </summary>
@@ -273,13 +274,14 @@ public abstract class Agent
     /// <param name="messages">The messages to add to the thread once it is setup.</param>
     /// <param name="thread">The thread to create if it's null, validate it's type if not null, and start if it is not active.</param>
     /// <param name="constructThread">A callback to use to construct the thread if it's null.</param>
+    /// <param name="requiresThreadRetrieval">true if the thread must implement <see cref="IAgentThreadRetrievable"/> to allow message retrieval.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An async task that completes once all update are complete.</returns>
-    /// <exception cref="KernelException"></exception>
     protected virtual async Task<TThreadType> EnsureThreadExistsWithMessagesAsync<TThreadType>(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread,
         Func<TThreadType> constructThread,
+        bool requiresThreadRetrieval,
         CancellationToken cancellationToken)
         where TThreadType : AgentThread
     {
@@ -290,7 +292,12 @@ public abstract class Agent
 
         if (thread is not TThreadType concreteThreadType)
         {
-            throw new KernelException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
+            throw new InvalidOperationException($"{this.GetType().Name} currently only supports agent threads of type {nameof(TThreadType)}.");
+        }
+
+        if (requiresThreadRetrieval && thread is not IAgentThreadRetrievable)
+        {
+            throw new InvalidOperationException($"{this.GetType().Name} currently only supports agent threads that allow retrieving chat history via the {nameof(IAgentThreadRetrievable)} interface.");
         }
 
         // We have to explicitly call create here to ensure that the thread is created
@@ -307,6 +314,7 @@ public abstract class Agent
 
         return concreteThreadType;
     }
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>
     /// Notfiy the given thread that a new message is available.
