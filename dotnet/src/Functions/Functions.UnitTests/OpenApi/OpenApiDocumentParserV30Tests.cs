@@ -731,7 +731,6 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Equal("Operation server", operation.OperationServers[0].Description);
     }
 
-
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<JsonObject> transformer)
     {
         var json = JsonSerializer.Deserialize<JsonObject>(openApiDocument);
