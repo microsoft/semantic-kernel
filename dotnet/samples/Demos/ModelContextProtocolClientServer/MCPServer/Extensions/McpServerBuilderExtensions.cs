@@ -12,7 +12,7 @@ namespace MCPServer;
 public static class McpServerBuilderExtensions
 {
     /// <summary>
-    /// Adds all kernel plugins as tools to the server.
+    /// Adds all functions of the kernel plugins as tools to the server.
     /// </summary>
     /// <param name="builder">The builder instance.</param>
     /// <param name="plugins">The kernel plugins to add as tools to the server.</param>
