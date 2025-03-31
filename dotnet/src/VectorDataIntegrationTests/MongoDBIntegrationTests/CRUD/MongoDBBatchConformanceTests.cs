@@ -10,4 +10,3 @@ public class MongoDBBatchConformanceTests(MongoDBSimpleModelFixture fixture)
     : BatchConformanceTests<string>(fixture), IClassFixture<MongoDBSimpleModelFixture>
 {
 }
-

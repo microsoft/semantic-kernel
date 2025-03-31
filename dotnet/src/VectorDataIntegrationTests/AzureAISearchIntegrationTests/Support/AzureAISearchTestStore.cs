@@ -35,7 +35,7 @@ internal sealed class AzureAISearchTestStore : TestStore
 
         if (string.IsNullOrWhiteSpace(serviceUrl))
         {
-            throw new InvalidOperationException("Service URL is not configured, set AzureAISearch:ServiceUrl (and AzureAISearch:ApiKey if you will)");
+            throw new InvalidOperationException("Service URL is not configured, set AzureAISearch:ServiceUrl (and AzureAISearch:ApiKey if you want)");
         }
 
         this._client = string.IsNullOrWhiteSpace(apiKey)
