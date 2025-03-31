@@ -6,9 +6,6 @@ import uuid
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
-from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
-
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -17,6 +14,7 @@ else:
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents import Agent
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -24,6 +22,7 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
@@ -92,8 +91,12 @@ class ChatHistoryAgentThread(AgentThread):
         ):
             self._chat_history.add_message(new_message)
 
-    async def get_messages(self) -> AsyncGenerator[ChatMessageContent]:
-        """Retrieve the current chat history as a deep copy to avoid mutation."""
+    async def get_messages(self) -> AsyncIterable[ChatMessageContent]:
+        """Retrieve the current chat history.
+
+        Returns:
+            An async iterable of ChatMessageContent.
+        """
         if self._is_deleted:
             raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
         if self._id is None:
@@ -237,7 +240,7 @@ class ChatCompletionAgent(Agent):
     async def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -287,7 +290,7 @@ class ChatCompletionAgent(Agent):
     async def invoke(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -330,7 +333,7 @@ class ChatCompletionAgent(Agent):
     async def invoke_stream(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,

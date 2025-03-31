@@ -274,7 +274,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to create a thread.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to create a thread or use invoke without a thread to create a new one.")]
     public Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
         => this.CreateThreadAsync(options: null, cancellationToken);
 
@@ -285,7 +285,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to create a thread.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to create a thread or use invoke without a thread to create a new one.")]
     public Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
         => this.Client.CreateThreadAsync(
             options?.Messages,
@@ -301,7 +301,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to delete an existing thread.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to delete an existing thread.")]
     public async Task<bool> DeleteThreadAsync(
         string threadId,
         CancellationToken cancellationToken = default)
@@ -323,6 +323,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// This method only supports messages with <see href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages">role = User or Assistant</see>.
     /// </remarks>
+    [Obsolete("Pass messages directly to Invoke instead.")]
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
         return AssistantThreadActions.CreateMessageAsync(this.Client, threadId, message, cancellationToken);
@@ -334,6 +335,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous enumeration of messages.</returns>
+    [Obsolete("Use the OpenAIAssistantAgentThread to retrieve messages instead.")]
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
         return AssistantThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
@@ -361,10 +363,36 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+    public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeAsync(
+            messages,
+            thread,
+            options is null ?
+                null :
+                options is OpenAIAssistantAgentInvokeOptions openAIAssistantAgentInvokeOptions ? openAIAssistantAgentInvokeOptions : new OpenAIAssistantAgentInvokeOptions(options),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="messages">The messages to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameters for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="ChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        OpenAIAssistantAgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
@@ -375,24 +403,48 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        // Create options that include the additional instructions.
-        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
+        // Create options that use the RunCreationOptions from the options param if provided or
+        // falls back to creating a new RunCreationOptions if additional instructions is provided
+        // separately.
+        var internalOptions = options?.RunCreationOptions ?? (string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
         {
             AdditionalInstructions = options?.AdditionalInstructions,
-        };
+        });
 
-        // Invoke the Agent with the thread that we already added our message to.
-        var invokeResults = this.InvokeAsync(
-            openAIAssistantAgentThread.Id!,
-            internalOptions,
-            this.MergeArguments(options?.KernelArguments),
-            options?.Kernel ?? this.Kernel,
+        var invokeResults = ActivityExtensions.RunWithActivityAsync(
+            () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
+            () => InternalInvokeAsync(),
             cancellationToken);
+
+        async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
+        {
+            await foreach ((bool isVisible, ChatMessageContent message) in AssistantThreadActions.InvokeAsync(
+                this,
+                this.Client,
+                openAIAssistantAgentThread.Id!,
+                internalOptions,
+                this.Logger,
+                options?.Kernel ?? this.Kernel,
+                this.MergeArguments(options?.KernelArguments),
+                cancellationToken).ConfigureAwait(false))
+            {
+                // The thread and the caller should be notified of all messages regardless of visibility.
+                await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, message, cancellationToken).ConfigureAwait(false);
+                if (options?.OnNewMessage is not null)
+                {
+                    await options.OnNewMessage(message).ConfigureAwait(false);
+                }
+
+                if (isVisible)
+                {
+                    yield return message;
+                }
+            }
+        }
 
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, result, cancellationToken).ConfigureAwait(false);
             yield return new(result, openAIAssistantAgentThread);
         }
     }
@@ -428,6 +480,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    [Obsolete("Use InvokeAsync with AgentThread instead.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         RunCreationOptions? options,
@@ -456,10 +509,36 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     }
 
     /// <inheritdoc/>
-    public async override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+    public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
         AgentThread? thread = null,
         AgentInvokeOptions? options = null,
+        CancellationToken cancellationToken = default)
+    {
+        return this.InvokeStreamingAsync(
+            messages,
+            thread,
+            options is null ?
+                null :
+                options is OpenAIAssistantAgentInvokeOptions openAIAssistantAgentInvokeOptions ? openAIAssistantAgentInvokeOptions : new OpenAIAssistantAgentInvokeOptions(options),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Invoke the agent with the provided message and arguments.
+    /// </summary>
+    /// <param name="messages">The messages to pass to the agent.</param>
+    /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
+    /// <param name="options">Optional parameters for agent invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async list of response items that each contain a <see cref="StreamingChatMessageContent"/> and an <see cref="AgentThread"/>.</returns>
+    /// <remarks>
+    /// To continue this thread in the future, use an <see cref="AgentThread"/> returned in one of the response items.
+    /// </remarks>
+    public async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        OpenAIAssistantAgentInvokeOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
@@ -470,12 +549,15 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        // Create options that include the additional instructions.
-        var internalOptions = string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
+        // Create options that use the RunCreationOptions from the options param if provided or
+        // falls back to creating a new RunCreationOptions if additional instructions is provided
+        // separately.
+        var internalOptions = options?.RunCreationOptions ?? (string.IsNullOrWhiteSpace(options?.AdditionalInstructions) ? null : new RunCreationOptions()
         {
             AdditionalInstructions = options?.AdditionalInstructions,
-        };
+        });
 
+#pragma warning disable CS0618 // Type or member is obsolete
         // Invoke the Agent with the thread that we already added our message to.
         var newMessagesReceiver = new ChatHistory();
         var invokeResults = this.InvokeStreamingAsync(
@@ -485,6 +567,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
             options?.Kernel ?? this.Kernel,
             newMessagesReceiver,
             cancellationToken);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Return the chunks to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
@@ -496,6 +579,11 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
         foreach (var newMessage in newMessagesReceiver)
         {
             await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
+
+            if (options?.OnNewMessage is not null)
+            {
+                await options.OnNewMessage(newMessage).ConfigureAwait(false);
+            }
         }
     }
 
@@ -511,6 +599,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
         KernelArguments? arguments = null,
@@ -532,6 +621,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
         RunCreationOptions? options,

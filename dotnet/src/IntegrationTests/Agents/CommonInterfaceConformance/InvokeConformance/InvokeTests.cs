@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -55,6 +56,25 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         Assert.Single(results);
         var firstResult = results.First();
         Assert.Contains("Paris", firstResult.Message.Content);
+        Assert.NotNull(firstResult.Thread);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(firstResult.Thread);
+    }
+
+    [RetryFact(3, 5000)]
+    public virtual async Task InvokeWithoutMessageCreatesThreadAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+
+        // Act
+        var asyncResults = agent.InvokeAsync();
+        var results = await asyncResults.ToListAsync();
+
+        // Assert
+        Assert.Single(results);
+        var firstResult = results.First();
         Assert.NotNull(firstResult.Thread);
 
         // Cleanup
@@ -129,6 +149,50 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
             Assert.NotNull(result);
             Assert.Contains(questionAndAnswer.Item2, result.Message.Content);
         }
+    }
+
+    /// <summary>
+    /// Verifies that the agent notifies callers of all messages
+    /// including function calling ones when using invoke with a plugin.
+    /// </summary>
+    [Fact]
+    public virtual async Task InvokeWithPluginNotifiesForAllMessagesAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+        agent.Kernel.Plugins.AddFromType<MenuPlugin>();
+        var notifiedMessages = new List<ChatMessageContent>();
+
+        // Act
+        var asyncResults = agent.InvokeAsync(
+            new ChatMessageContent(AuthorRole.User, "What is the special soup?"),
+            this.Fixture.AgentThread,
+            options: new()
+            {
+                KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                OnNewMessage = (message) =>
+                {
+                    notifiedMessages.Add(message);
+                    return Task.CompletedTask;
+                }
+            });
+
+        // Assert
+        var results = await asyncResults.ToArrayAsync();
+        Assert.Single(results);
+        Assert.Contains("Clam Chowder", results[0].Message.Content);
+
+        Assert.Equal(3, notifiedMessages.Count);
+        Assert.Contains(notifiedMessages[0].Items, x => x is FunctionCallContent);
+        Assert.Contains(notifiedMessages[1].Items, x => x is FunctionResultContent);
+
+        var functionCallContent = notifiedMessages[0].Items.OfType<FunctionCallContent>().First();
+        var functionResultContent = notifiedMessages[1].Items.OfType<FunctionResultContent>().First();
+
+        Assert.Equal("GetSpecials", functionCallContent.FunctionName);
+        Assert.Equal("GetSpecials", functionResultContent.FunctionName);
+
+        Assert.Equal(results[0].Message.Content, notifiedMessages[2].Content);
     }
 
     public Task InitializeAsync()

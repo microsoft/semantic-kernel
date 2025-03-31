@@ -9,6 +9,8 @@
 - [Azure AI Agent as Kernel Function](./agents/azure_ai_agent/azure_ai_agent_as_kernel_function.py)
 - [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
+- [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
+- [Azure AI Agent Chat History Callback](./agents/azure_ai_agent/azure_ai_agent_streaming_chat_history_callback.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 
 #### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
@@ -50,6 +52,7 @@
 - [OpenAI Assistant File Manipulation](./agents/openai_assistant/openai_assistant_file_manipulation.py)
 - [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)
 - [OpenAI Assistant Retrieval](./agents/openai_assistant/openai_assistant_retrieval.py)
+- [OpenAI Assistant Streaming Chat History Callback](./agents/openai_assistant/openai_assistant_streaming_chat_history_callback.py)
 - [OpenAI Assistant Streaming](./agents/openai_assistant/openai_assistant_streaming.py)
 - [OpenAI Assistant Structured Outputs](./agents/openai_assistant/openai_assistant_structured_outputs.py)
 - [OpenAI Assistant Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
