@@ -69,28 +69,9 @@ internal class QdrantFilterTranslator
             if (this.TryTranslateFieldAccess(first, out var storagePropertyName)
                 && TryGetConstant(second, out var constantValue))
             {
-                Condition condition;
-                if (constantValue is null)
-                {
-                    condition = new Condition { IsNull = new() { Key = storagePropertyName } };
-                }
-                else if (constantValue is DateTime or DateTimeOffset)
-                {
-                    var dateTimeOffset = constantValue is DateTime dateTime
-                        ? new DateTimeOffset(dateTime, TimeSpan.Zero)
-                        : (DateTimeOffset)constantValue;
-
-                    var range = new global::Qdrant.Client.Grpc.DatetimeRange
-                    {
-                        Gte = new Google.Protobuf.WellKnownTypes.Timestamp() { Seconds = dateTimeOffset.ToUnixTimeSeconds() },
-                        Lte = new Google.Protobuf.WellKnownTypes.Timestamp() { Seconds = dateTimeOffset.ToUnixTimeSeconds() },
-                    };
-
-                    condition = new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } };
-                }
-                else
-                {
-                    condition = new Condition
+                var condition = constantValue is null
+                    ? new Condition { IsNull = new() { Key = storagePropertyName } }
+                    : new Condition
                     {
                         Field = new FieldCondition
                         {
@@ -101,12 +82,10 @@ internal class QdrantFilterTranslator
                                 int intValue => new Match { Integer = intValue },
                                 long longValue => new Match { Integer = longValue },
                                 bool boolValue => new Match { Boolean = boolValue },
-
                                 _ => throw new InvalidOperationException($"Unsupported filter value type '{constantValue.GetType().Name}'.")
                             }
                         }
                     };
-                }
 
                 result = new Filter();
                 if (negated)
