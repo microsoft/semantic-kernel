@@ -278,12 +278,7 @@ class ChatCompletionAgent(Agent):
         if not responses:
             raise AgentInvokeException("No response from agent.")
 
-        response = responses[-1]
-        if response.role != AuthorRole.TOOL:
-            # Tool messages will be automatically added to the chat history by the auto function invocation loop,
-            # thus it's not considered a new message.
-            await thread.on_new_message(response)
-        return AgentResponseItem(message=response, thread=thread)
+        return AgentResponseItem(message=responses[-1], thread=thread)
 
     @trace_agent_invocation
     @override
@@ -322,10 +317,6 @@ class ChatCompletionAgent(Agent):
             chat_history.add_message(message)
 
         async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
-            if response.role != AuthorRole.TOOL:
-                # Tool messages will be automatically added to the chat history by the auto function invocation loop,
-                # thus it's not considered a new message.
-                await thread.on_new_message(response)
             yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
@@ -415,8 +406,9 @@ class ChatCompletionAgent(Agent):
 
         await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
         if role != AuthorRole.TOOL:
-            # Tool messages will be automatically added to the chat history by the auto function invocation loop,
-            # thus it's not considered a new message.
+            # Tool messages will be automatically added to the chat history by the auto function invocation loop
+            # if it's the response (i.e. terminated by a filter), thus we need to avoid notifying the thread about
+            # them multiple times.
             await thread.on_new_message(
                 ChatMessageContent(
                     role=role if role else AuthorRole.ASSISTANT, content="".join(response_builder), name=self.name
@@ -474,6 +466,11 @@ class ChatCompletionAgent(Agent):
 
         for response in responses:
             response.name = self.name
+            if response.role != AuthorRole.TOOL:
+                # Tool messages will be automatically added to the chat history by the auto function invocation loop
+                # if it's the response (i.e. terminated by a filter),, thus we need to avoid notifying the thread about
+                # them multiple times.
+                await thread.on_new_message(response)
             yield response
 
     async def _prepare_agent_chat_history(
