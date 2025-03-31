@@ -4,8 +4,8 @@ import asyncio
 from semantic_kernel.agents import AzureResponsesAgent
 
 """
-The following sample demonstrates how to create an OpenAI assistant using either
-Azure OpenAI or OpenAI. The sample shows how to have the assistant answrer
+The following sample demonstrates how to create an OpenAI Responses Agent using either
+Azure OpenAI or OpenAI. The sample shows how to have the agent answer
 questions about the world.
 
 The interaction with the agent is via the `get_response` method, which sends a

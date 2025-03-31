@@ -6,8 +6,6 @@ from samples.concepts.setup.chat_completion_services import Services, get_chat_c
 from semantic_kernel import Kernel
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 
 # This sample shows how to create a chatbot using a kernel function.
 # This sample uses the following two main components:
@@ -70,20 +68,6 @@ chat_function = kernel.add_function(
     # take precedence given the same service id.
     # prompt_execution_settings=request_settings,
 )
-
-prompt_func = KernelFunctionFromPrompt(
-    function_name="test",
-    prompt="Hello world",
-)
-
-
-@kernel_function
-def get_weather(self, location: str) -> str:
-    """Get the weather for a given location."""
-    return f"The weather in {location} is sunny."
-
-
-kernel.add_functions(plugin_name="SomePlugin", functions=[prompt_func, get_weather])
 
 # Invoking a kernel function requires a service, so we add the chat completion service to the kernel.
 kernel.add_service(chat_completion_service)

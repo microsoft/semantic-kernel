@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
 
 """
-The following sample demonstrates how to create an OpenAI Response Agent.
+The following sample demonstrates how to create an OpenAI Responses Agent.
 The sample shows how to have the agent provide response using structured outputs.
 
 The interaction with the agent is via the `get_response` method, which sends a

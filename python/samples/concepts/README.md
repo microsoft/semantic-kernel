@@ -57,7 +57,7 @@
 - [OpenAI Assistant Templating Streaming](./agents/openai_assistant/openai_assistant_templating_streaming.py)
 - [OpenAI Assistant Vision Streaming](./agents/openai_assistant/openai_assistant_vision_streaming.py)
 
-#### [OpenAI Responses Agent](../../semantic_kernel/agents/open_ai/open_ai_responses_agent.py)
+#### [OpenAI Responses Agent](../../semantic_kernel/agents/open_ai/openai_responses_agent.py)
 
 - [OpenAI Responses Chat History Streaming](./agents/openai_responses/responses_agent_chat_history_callback_streaming.py)
 - [OpenAI Responses File Search Streaming](./agents/openai_responses/responses_agent_file_search_streaming.py)

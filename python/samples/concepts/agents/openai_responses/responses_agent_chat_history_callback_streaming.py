@@ -8,14 +8,14 @@ from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an OpenAI
-assistant using either Azure OpenAI or OpenAI. OpenAI Assistants
-allow for function calling, the use of file search and a
-code interpreter. Assistant Threads are used to manage the
+Responses Agent using either Azure OpenAI or OpenAI. The 
+Responses Agent allow for function calling, the use of file search and a
+web search tool. Responses Agent Threads are used to manage the
 conversation state, similar to a Semantic Kernel Chat History.
 Additionally, the invoke_stream configures a chat history callback 
 to receive the conversation history once the streaming invocation 
-is complete. This sample also demonstrates the Assistants Streaming
-capability and how to manage an Assistants chat history.
+is complete. This sample also demonstrates the Responses Agent Streaming
+capability and how to manage a Responses Agent chat history.
 """
 
 

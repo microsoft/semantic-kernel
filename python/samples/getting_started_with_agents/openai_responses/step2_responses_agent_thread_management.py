@@ -5,7 +5,7 @@ from semantic_kernel.agents import AzureResponsesAgent
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
-The sample shows how to have the assistant answer questions about the world.
+The sample shows how to have the agent answer questions about the world.
 
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation

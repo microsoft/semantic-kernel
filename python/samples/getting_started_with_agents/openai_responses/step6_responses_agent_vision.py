@@ -10,7 +10,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
 """
-The following sample demonstrates how to create an OpenAI Response Agent.
+The following sample demonstrates how to create an OpenAI Responses Agent.
 The sample shows how to have the agent answer questions about the provided images.
 
 The interaction with the agent is via the `get_response` method, which sends a

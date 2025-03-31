@@ -37,7 +37,7 @@ async def main():
         file = await client.files.create(file=file, purpose="assistants")
 
     vector_store = await client.vector_stores.create(
-        name="step4_assistant_file_search",
+        name="step4_responses_agent_file_search",
         file_ids=[file.id],
     )
 

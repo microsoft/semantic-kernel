@@ -23,7 +23,6 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.ai.response_usage import ResponseUsage
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
 from semantic_kernel.exceptions import ServiceResponseException
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
@@ -52,7 +51,6 @@ class OpenAIHandler(KernelBaseModel, ABC):
     prompt_tokens: int = 0
     completion_tokens: int = 0
     total_tokens: int = 0
-    response_usage: ResponseUsage | None = None
 
     async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
         """Send a request to the OpenAI API."""

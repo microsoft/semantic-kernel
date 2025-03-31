@@ -60,7 +60,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental
 class ResponsesAgentThreadActions:
-    """Response Agent Thread Actions class."""
+    """Responses Agent Thread Actions class."""
 
     polling_status: ClassVar[list[str]] = ["queued", "in_progress", "cancelling"]
     error_message_states: ClassVar[list[str]] = ["failed", "incomplete"]

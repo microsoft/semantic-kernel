@@ -25,7 +25,6 @@ def update_settings_from_function_call_configuration(
     function_choice_configuration: "FunctionCallChoiceConfiguration",
     settings: "PromptExecutionSettings",
     type: "FunctionChoiceType",
-    is_response: bool = False,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""
     if (
@@ -34,16 +33,10 @@ def update_settings_from_function_call_configuration(
         and hasattr(settings, "tools")
     ):
         settings.tool_choice = type
-        if is_response:
-            settings.tools.extend([
-                kernel_function_metadata_to_response_function_call_format(f)
-                for f in function_choice_configuration.available_functions
-            ])
-        else:
-            settings.tools = [
-                kernel_function_metadata_to_function_call_format(f)
-                for f in function_choice_configuration.available_functions
-            ]
+        settings.tools = [
+            kernel_function_metadata_to_function_call_format(f)
+            for f in function_choice_configuration.available_functions
+        ]
 
 
 def kernel_function_metadata_to_function_call_format(

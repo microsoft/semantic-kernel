@@ -81,7 +81,7 @@ class ResponsesAgentThread(AgentThread):
         thread_id: str | None = None,
         enable_store: bool | None = None,
     ) -> None:
-        """Initialize the ChatCompletionAgent Thread.
+        """Initialize the Responses Agent Thread.
 
         Args:
             client: The OpenAI client.
@@ -232,7 +232,7 @@ class OpenAIResponsesAgent(Agent):
         top_p: float | None = None,
         **kwargs: Any,
     ) -> None:
-        """Initialize an OpenAI Response Agent.
+        """Initialize an OpenAI Responses Agent.
 
         Args:
             ai_model_id: The AI model ID.
@@ -557,7 +557,7 @@ class OpenAIResponsesAgent(Agent):
     async def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -674,7 +674,7 @@ class OpenAIResponsesAgent(Agent):
     async def invoke(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,

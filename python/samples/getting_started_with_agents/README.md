@@ -61,10 +61,10 @@ Example|Description
 Example|Description
 ---|---
 [step1_responses_agent](../getting_started_with_agents/openai_responses/step1_responses_agent.py)|How to create and use an OpenAI Responses agent in the most simple way.
-[step2_responses_agent_thread_management](../getting_started_with_agents/openai_responses/step2_agent_thread_management.py)| How to create and use a `ResponsesAgentThread` agent to maintain conversation context.
+[step2_responses_agent_thread_management](../getting_started_with_agents/openai_responses/step2_responses_agent_thread_management.py)| How to create and use a `ResponsesAgentThread` agent to maintain conversation context.
 [step3_responses_agent_plugins](../getting_started_with_agents/openai_responses/step3_responses_agent_plugins.py)|How to create and use an OpenAI Responses agent with plugins.
 [step4_responses_agent_web_search](../getting_started_with_agents/openai_responses/step4_responses_agent_web_search.py)|How to use the web search preview tool with an OpenAI Responses agent.
-[step5_responses_agent_file_search](../getting_started_with_agents/openai_responses/step6_responses_agent_file_search.py)|How to use the file-search tool with an OpenAI Responses agent.
+[step5_responses_agent_file_search](../getting_started_with_agents/openai_responses/step5_responses_agent_file_search.py)|How to use the file-search tool with an OpenAI Responses agent.
 [step6_responses_agent_vision](../getting_started_with_agents/openai_responses/step6_responses_agent_vision.py)|How to provide an image as input to an OpenAI Responses agent.
 [step7_responses_agent_structured_outputs](../getting_started_with_agents/openai_responses/step7_responses_agent_structured_outputs.py)|How to use have an OpenAI Responses agent use structured outputs.
 
