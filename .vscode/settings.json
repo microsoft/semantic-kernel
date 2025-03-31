@@ -1,6 +1,8 @@
 {
   "prettier.enable": true,
-  "css.lint.validProperties": ["composes"],
+  "css.lint.validProperties": [
+    "composes"
+  ],
   "editor.formatOnType": true,
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
@@ -13,9 +15,13 @@
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
   "python.formatting.provider": "autopep8",
-  "python.formatting.autopep8Args": ["--max-line-length=120"],
+  "python.formatting.autopep8Args": [
+    "--max-line-length=120"
+  ],
   "notebook.output.textLineLimit": 500,
-  "python.analysis.extraPaths": ["./python/src"],
+  "python.analysis.extraPaths": [
+    "./python/src"
+  ],
   "javascript.updateImportsOnFileMove.enabled": "always",
   "search.exclude": {
     "**/node_modules": true,
@@ -93,7 +99,9 @@
   "java.debug.settings.onBuildFailureProceed": true,
   "java.compile.nullAnalysis.mode": "disabled",
   "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
-  "python.testing.pytestArgs": ["python/tests"],
+  "python.testing.pytestArgs": [
+    "python/tests"
+  ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true
 }
