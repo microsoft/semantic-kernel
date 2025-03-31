@@ -61,8 +61,8 @@ internal static class QdrantVectorStoreCollectionSearchMapping
 
                 var range = new global::Qdrant.Client.Grpc.DatetimeRange
                 {
-                    Gte = new Google.Protobuf.WellKnownTypes.Timestamp() { Seconds = dateTimeOffset.ToUnixTimeSeconds() },
-                    Lte = new Google.Protobuf.WellKnownTypes.Timestamp() { Seconds = dateTimeOffset.ToUnixTimeSeconds() },
+                    Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
                 };
 
                 filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } });

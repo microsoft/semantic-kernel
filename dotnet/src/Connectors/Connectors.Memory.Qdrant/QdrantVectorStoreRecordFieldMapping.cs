@@ -61,7 +61,8 @@ internal static class QdrantVectorStoreRecordFieldMapping
                 targetType == typeof(int) || targetType == typeof(int?) ?
                 (object)(int)payloadValue.IntegerValue :
                 (object)payloadValue.IntegerValue,
-            Value.KindOneofCase.StringValue => ConvertStringValue(payloadValue.StringValue),
+            Value.KindOneofCase.StringValue =>
+                ConvertStringValue(payloadValue.StringValue),
             Value.KindOneofCase.DoubleValue =>
                 targetType == typeof(float) || targetType == typeof(float?) ?
                 (object)(float)payloadValue.DoubleValue :
@@ -76,16 +77,12 @@ internal static class QdrantVectorStoreRecordFieldMapping
 
         object ConvertStringValue(string stringValue)
         {
-            if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
+            return targetType switch
             {
-                return DateTime.Parse(payloadValue.StringValue);
-            }
-            else if (targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?))
-            {
-                return DateTimeOffset.Parse(payloadValue.StringValue);
-            }
-
-            return payloadValue.StringValue;
+                Type t when t == typeof(DateTime) || t == typeof(DateTime?) => DateTime.Parse(payloadValue.StringValue),
+                Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => DateTimeOffset.Parse(payloadValue.StringValue),
+                _ => stringValue,
+            };
         }
     }
 
