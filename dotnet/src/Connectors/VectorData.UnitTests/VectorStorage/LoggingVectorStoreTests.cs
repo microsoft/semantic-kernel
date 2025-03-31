@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
@@ -33,18 +36,20 @@ public class LoggingVectorStoreTests : BaseLoggingTests
     }
 
     [Fact]
-    public void GetCollectionDelegatesToInnerStore()
+    public void GetCollectionReturnsLoggingDecorator()
     {
         // Arrange
         var innerStore = new Mock<IVectorStore>();
         var logger = new Mock<ILogger>().Object;
-        var collection = new Mock<IVectorStoreRecordCollection<string, object>>().Object;
+        var innerCollection = new Mock<IVectorStoreRecordCollection<string, object>>().Object;
+
         innerStore.Setup(s => s.GetCollection<string, object>("test", null))
-                  .Returns(collection);
-        var decorator = new LoggingVectorStore(innerStore.Object, logger);
+                  .Returns(innerCollection);
+
+        var store = new LoggingVectorStore(innerStore.Object, logger);
 
         // Act
-        var result = decorator.GetCollection<string, object>("test");
+        var result = store.GetCollection<string, object>("test");
 
         // Assert
         Assert.IsType<LoggingVectorStoreRecordCollection<string, object>>(result);
@@ -57,21 +62,85 @@ public class LoggingVectorStoreTests : BaseLoggingTests
         // Arrange
         var innerStore = new Mock<IVectorStore>();
         var logger = new FakeLogger();
-        string[] names = ["collection-1", "collection-2"];
+        var collectionNames = new[] { "collection1", "collection2" }.ToAsyncEnumerable();
+
         innerStore.Setup(s => s.ListCollectionNamesAsync(default))
-                  .Returns(names.ToAsyncEnumerable());
-        var decorator = new LoggingVectorStore(innerStore.Object, logger);
+                  .Returns(collectionNames);
+
+        var store = new LoggingVectorStore(innerStore.Object, logger);
 
         // Act
-        var result = await decorator.ListCollectionNamesAsync().ToListAsync();
+        var results = store.ListCollectionNamesAsync();
+        var resultList = await results.ToListAsync();
 
         // Assert
-        Assert.Equal(names, result);
+        Assert.Equal(new[] { "collection1", "collection2" }, resultList);
         innerStore.Verify(s => s.ListCollectionNamesAsync(default), Times.Once());
 
-        AssertLog(logger.Logs, LogLevel.Trace, "Retrieved collection: 'collection-1'");
-        AssertLog(logger.Logs, LogLevel.Trace, "Retrieved collection: 'collection-2'");
         AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync invoked.");
-        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync completed.");
+        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync completed. Collections: collection1,collection2");
+    }
+
+    [Fact]
+    public async Task ListCollectionNamesLogsCancellationAsync()
+    {
+        // Arrange
+        var innerStore = new Mock<IVectorStore>();
+        var logger = new FakeLogger();
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Setup the inner store to yield one item before cancellation
+        static async IAsyncEnumerable<string> CanceledEnumerable([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            yield return "collection1";
+            await Task.Delay(1, cancellationToken);
+            yield return "collection2";
+        }
+
+        innerStore.Setup(s => s.ListCollectionNamesAsync(cts.Token))
+                  .Returns(CanceledEnumerable(cts.Token));
+
+        var store = new LoggingVectorStore(innerStore.Object, logger);
+
+        // Act & Assert
+        var results = store.ListCollectionNamesAsync(cts.Token);
+        var enumerator = results.GetAsyncEnumerator(cts.Token);
+
+        Assert.True(await enumerator.MoveNextAsync());
+        Assert.Equal("collection1", enumerator.Current);
+
+        await AssertThrowsAsync<TaskCanceledException, bool>(enumerator.MoveNextAsync);
+
+        innerStore.Verify(s => s.ListCollectionNamesAsync(cts.Token), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync canceled.");
+    }
+
+    [Fact]
+    public async Task ListCollectionNamesLogsExceptionAsync()
+    {
+        // Arrange
+        var innerStore = new Mock<IVectorStore>();
+        var logger = new FakeLogger();
+
+        innerStore
+            .Setup(s => s.ListCollectionNamesAsync(default))
+            .Throws(new InvalidOperationException("Test exception"));
+
+        var store = new LoggingVectorStore(innerStore.Object, logger);
+
+        // Act & Assert
+        var exception = await AssertThrowsAsync<InvalidOperationException, List<string>>(() =>
+            store.ListCollectionNamesAsync().ToListAsync());
+
+        innerStore.Verify(s => s.ListCollectionNamesAsync(default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "ListCollectionNamesAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Error, "ListCollectionNamesAsync failed.", exception);
+
+        Assert.Equal("Test exception", logger.Logs[1].Exception?.Message);
     }
 }

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
@@ -59,5 +60,62 @@ public class LoggingKeywordHybridSearchTests : BaseLoggingTests
 
         AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync invoked.");
         AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync completed.");
+    }
+
+    [Fact]
+    public async Task HybridSearchLogsCancellationAsync()
+    {
+        // Arrange
+        var logger = new FakeLogger();
+
+        var vector = new float[] { 1.0f };
+        var keywords = new List<string> { "test" };
+        var options = new HybridSearchOptions<string>();
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var innerSearch = new Mock<IKeywordHybridSearch<string>>();
+        innerSearch.Setup(s => s.HybridSearchAsync(vector, keywords, options, cts.Token))
+                   .Returns(Task.FromCanceled<VectorSearchResults<string>>(cts.Token));
+
+        var decorator = new LoggingKeywordHybridSearch<string>(innerSearch.Object, logger);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TaskCanceledException>(() =>
+            decorator.HybridSearchAsync(vector, keywords, options, cts.Token));
+
+        innerSearch.Verify(s => s.HybridSearchAsync(vector, keywords, options, cts.Token), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync canceled.");
+    }
+
+    [Fact]
+    public async Task HybridSearchLogsExceptionAsync()
+    {
+        // Arrange
+        var logger = new FakeLogger();
+
+        var vector = new float[] { 1.0f };
+        var keywords = new List<string> { "test" };
+        var options = new HybridSearchOptions<string>();
+
+        var innerSearch = new Mock<IKeywordHybridSearch<string>>();
+        innerSearch.Setup(s => s.HybridSearchAsync(vector, keywords, options, default))
+                   .ThrowsAsync(new InvalidOperationException("Test exception"));
+
+        var decorator = new LoggingKeywordHybridSearch<string>(innerSearch.Object, logger);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            decorator.HybridSearchAsync(vector, keywords, options, default));
+
+        innerSearch.Verify(s => s.HybridSearchAsync(vector, keywords, options, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "HybridSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Error, "HybridSearchAsync failed.", exception);
+
+        Assert.Equal("Test exception", logger.Logs[1].Exception?.Message);
     }
 }

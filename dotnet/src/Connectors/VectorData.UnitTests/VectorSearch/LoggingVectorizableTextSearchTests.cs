@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
@@ -55,5 +56,59 @@ public class LoggingVectorizableTextSearchTests : BaseLoggingTests
 
         AssertLog(logger.Logs, LogLevel.Debug, "VectorizableTextSearchAsync invoked.");
         AssertLog(logger.Logs, LogLevel.Debug, "VectorizableTextSearchAsync completed.");
+    }
+
+    [Fact]
+    public async Task VectorizableTextSearchLogsCancellationAsync()
+    {
+        // Arrange
+        var innerSearch = new Mock<IVectorizableTextSearch<string>>();
+        var logger = new FakeLogger();
+        var searchText = "test";
+        var options = new VectorSearchOptions<string>();
+
+        using var cts = new CancellationTokenSource();
+
+        cts.Cancel();
+
+        innerSearch.Setup(s => s.VectorizableTextSearchAsync(searchText, options, cts.Token))
+                   .Returns(Task.FromCanceled<VectorSearchResults<string>>(cts.Token));
+
+        var decorator = new LoggingVectorizableTextSearch<string>(innerSearch.Object, logger);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<TaskCanceledException>(() =>
+            decorator.VectorizableTextSearchAsync(searchText, options, cts.Token));
+
+        innerSearch.Verify(s => s.VectorizableTextSearchAsync(searchText, options, cts.Token), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizableTextSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizableTextSearchAsync canceled.");
+    }
+
+    [Fact]
+    public async Task VectorizableTextSearchLogsExceptionAsync()
+    {
+        // Arrange
+        var innerSearch = new Mock<IVectorizableTextSearch<string>>();
+        var logger = new FakeLogger();
+        var searchText = "test";
+        var options = new VectorSearchOptions<string>();
+
+        innerSearch.Setup(s => s.VectorizableTextSearchAsync(searchText, options, default))
+                   .ThrowsAsync(new InvalidOperationException("Test exception"));
+
+        var decorator = new LoggingVectorizableTextSearch<string>(innerSearch.Object, logger);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            decorator.VectorizableTextSearchAsync(searchText, options, default));
+
+        innerSearch.Verify(s => s.VectorizableTextSearchAsync(searchText, options, default), Times.Once());
+
+        AssertLog(logger.Logs, LogLevel.Debug, "VectorizableTextSearchAsync invoked.");
+        AssertLog(logger.Logs, LogLevel.Error, "VectorizableTextSearchAsync failed.", exception);
+
+        Assert.Equal("Test exception", logger.Logs[1].Exception?.Message);
     }
 }
