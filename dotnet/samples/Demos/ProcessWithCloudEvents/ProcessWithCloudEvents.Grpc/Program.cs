@@ -2,6 +2,8 @@
 
 using Microsoft.SemanticKernel;
 using ProcessWithCloudEvents.Grpc.Clients;
+using ProcessWithCloudEvents.Grpc.Extensions;
+using ProcessWithCloudEvents.Grpc.Options;
 using ProcessWithCloudEvents.Grpc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,8 +20,11 @@ builder.Services.AddLogging((logging) =>
     logging.AddDebug();
 });
 
+var openAIOptions = config.GetValid<OpenAIOptions>(OpenAIOptions.SectionName);
+
 // Configure the Kernel with DI. This is required for dependency injection to work with processes.
 builder.Services.AddKernel();
+builder.Services.AddOpenAIChatCompletion(openAIOptions.ChatModelId, openAIOptions.ApiKey);
 
 builder.Services.AddSingleton<DocumentGenerationService>();
 // Injecting SK Process custom grpc client IExternalKernelProcessMessageChannel implementation

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using ProcessWithCloudEvents.Processes.Models;
 
 namespace ProcessWithCloudEvents.Processes.Steps;
@@ -36,29 +37,49 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
         public const string DocumentationGenerated = nameof(DocumentationGenerated);
     }
 
-    internal GenerateDocumentationState? _state = new();
+    internal GenerateDocumentationState _state = new();
+
+    private readonly string _systemPrompt =
+        """
+        Your job is to write high quality and engaging customer facing documentation for a new product from Contoso. You will be provide with information
+        about the product in the form of internal documentation, specs, and troubleshooting guides and you must use this information and
+        nothing else to generate the documentation. If suggestions are provided on the documentation you create, take the suggestions into account and
+        rewrite the documentation. Make sure the product sounds amazing.
+        """;
 
     /// <inheritdoc/>
     public override ValueTask ActivateAsync(KernelProcessStepState<GenerateDocumentationState> state)
     {
-        this._state = state.State;
+        this._state = state.State!;
+        this._state.ChatHistory ??= new ChatHistory(this._systemPrompt);
+
         return base.ActivateAsync(state);
     }
 
     /// <summary>
     /// Function that generates documentation from the <see cref="ProductInfo"/> provided
     /// </summary>
+    /// <param name="kernel">instance of <see cref="Kernel"/></param>
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
-    /// <param name="content">content to be used for document generation</param>
+    /// <param name="productInfo">content to be used for document generation</param>
     /// <returns></returns>
     [KernelFunction(Functions.GenerateDocs)]
-    public async Task OnGenerateDocumentationAsync(KernelProcessStepContext context, ProductInfo content)
+    public async Task GenerateDocumentationAsync(Kernel kernel, KernelProcessStepContext context, ProductInfo productInfo)
     {
+        Console.WriteLine($"[{nameof(GenerateDocumentationStep)}]:\tGenerating documentation for provided productInfo...");
+
+        // Add the new product info to the chat history
+        this._state.ChatHistory!.AddUserMessage($"Product Info:\n{productInfo.Title} - {productInfo.Content}");
+
+        // Get a response from the LLM
+        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var generatedDocumentationResponse = await chatCompletionService.GetChatMessageContentAsync(this._state.ChatHistory!);
+
         DocumentInfo generatedContent = new()
         {
             Id = Guid.NewGuid().ToString(),
-            Title = $"Generated document - {content.Title}",
-            Content = $"Generated {content.Content}",
+            Title = $"Generated document - {productInfo.Title}",
+            Content = generatedDocumentationResponse.Content!,
         };
 
         this._state!.LastGeneratedDocument = generatedContent;
@@ -69,18 +90,27 @@ public class GenerateDocumentationStep : KernelProcessStep<GenerateDocumentation
     /// <summary>
     /// Function that integrates suggestion into document content
     /// </summary>
+    /// <param name="kernel">instance of <see cref="Kernel"/></param>
     /// <param name="context">instance of <see cref="KernelProcessStepContext"/></param>
     /// <param name="suggestions">suggestions to be integrated into the document content</param>
     /// <returns></returns>
     [KernelFunction(Functions.ApplySuggestions)]
-    public async Task ApplySuggestionsAsync(KernelProcessStepContext context, string suggestions)
+    public async Task ApplySuggestionsAsync(Kernel kernel, KernelProcessStepContext context, string suggestions)
     {
-        // Simulating integrating suggestions into document content
+        Console.WriteLine($"[{nameof(GenerateDocumentationStep)}]:\tRewriting documentation with provided suggestions...");
+
+        // Add the new product info to the chat history
+        this._state.ChatHistory!.AddUserMessage($"Rewrite the documentation with the following suggestions:\n\n{suggestions}");
+
+        // Get a response from the LLM
+        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+        var generatedDocumentationResponse = await chatCompletionService.GetChatMessageContentAsync(this._state.ChatHistory!);
+
         DocumentInfo updatedContent = new()
         {
             Id = Guid.NewGuid().ToString(),
             Title = $"Revised - {this._state?.LastGeneratedDocument.Title}",
-            Content = $"{suggestions} + {this._state?.LastGeneratedDocument.Content}",
+            Content = generatedDocumentationResponse.Content!,
         };
 
         this._state!.LastGeneratedDocument = updatedContent;
@@ -99,4 +129,9 @@ public sealed class GenerateDocumentationState
     /// Last Document generated data
     /// </summary>
     public DocumentInfo LastGeneratedDocument { get; set; } = new();
+
+    /// <summary>
+    /// Chat history
+    /// </summary>
+    public ChatHistory? ChatHistory { get; set; }
 }

@@ -80,9 +80,9 @@ sequenceDiagram
     2. `UserRequestFeatureDocumentation` with Request Data:
         ```json
         {
-            "title": "100",
-            "userDescription": "100",
-            "content": "100",
+            "title": "some product title",
+            "userDescription": "some user description",
+            "content": "some product content",
             "processId": "100",
         }
         ```
@@ -109,9 +109,6 @@ sequenceDiagram
             }
         }
         ```
-
-
-
 
 ### Debugging
 
