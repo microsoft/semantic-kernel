@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
 using Azure.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -8,6 +7,7 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.Logging;
 
 namespace Memory;
 
@@ -15,7 +15,10 @@ namespace Memory;
 /// A simple example showing how to ingest data into a vector store and then use vector search to find related records to a given string
 /// with enabled telemetry.
 /// </summary>
-public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
+/// <remarks>
+/// Modify LogLevel parameter passed to base class in this example to see different set of logs based on log level.
+/// </remarks>
+public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output, logLevel: LogLevel.Debug)
 {
     [Fact]
     public async Task LoggingManualRegistrationAsync()
@@ -62,40 +65,6 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         await RunExampleAsync(textEmbeddingGenerationService, vectorStore);
     }
 
-    [Fact]
-    public async Task LoggingWithCustomSerializationAsync()
-    {
-        var serviceCollection = new ServiceCollection();
-
-        // Add an embedding generation service.
-        serviceCollection.AddAzureOpenAITextEmbeddingGeneration(
-            TestConfiguration.AzureOpenAIEmbeddings.DeploymentName,
-            TestConfiguration.AzureOpenAIEmbeddings.Endpoint,
-            new AzureCliCredential());
-
-        // Add InMemory vector store
-        serviceCollection.AddInMemoryVectorStore();
-
-        // Register InMemoryVectorStore with enabled logging.
-        serviceCollection
-            .AddVectorStore(s => s.GetRequiredService<InMemoryVectorStore>())
-            .UseLogging(this.LoggerFactory, configure =>
-            {
-                // Configure custom JSON serializer options for logging data.
-                configure.JsonSerializerOptions = new JsonSerializerOptions
-                {
-                    WriteIndented = false
-                };
-            });
-
-        var services = serviceCollection.BuildServiceProvider();
-
-        var vectorStore = services.GetRequiredService<IVectorStore>();
-        var textEmbeddingGenerationService = services.GetRequiredService<ITextEmbeddingGenerationService>();
-
-        await RunExampleAsync(textEmbeddingGenerationService, vectorStore);
-    }
-
     private async Task RunExampleAsync(
         ITextEmbeddingGenerationService textEmbeddingGenerationService,
         IVectorStore vectorStore)
@@ -131,26 +100,18 @@ public class VectorStore_Telemetry(ITestOutputHelper output) : BaseTest(output)
         Console.WriteLine();
 
         // Output:
-        // CollectionExistsAsync invoked.
-        // CollectionExistsAsync completed.
-        // Collection 'skglossary' exists: False
-        // Creating a collection 'skglossary'
-        // CreateCollectionAsync invoked.
-        // CreateCollectionAsync completed.
-        // Upserting a record in 'skglossary': {"Key":1,"Category":"External Definitions"...
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // Upserted record in 'skglossary' with key: 1
-        // Upserting a record in 'skglossary': {"Key":2,"Category":"Core Definitions"...
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // Upserted record in 'skglossary' with key: 2
-        // Upserting a record in 'skglossary': {"Key":3,"Category":"External Definitions"...
-        // UpsertAsync invoked.
-        // UpsertAsync completed.
-        // Upserted record in 'skglossary' with key: 3
-        // VectorizedSearchAsync invoked.
-        // VectorizedSearchAsync completed.
+        // CollectionExistsAsync invoked. Collection name: skglossary.
+        // CollectionExistsAsync completed. Collection name: skglossary.Collection exists: False
+        // CreateCollectionAsync invoked.Collection name: skglossary.
+        // CreateCollectionAsync completed. Collection name: skglossary.
+        // UpsertAsync invoked. Collection name: skglossary.
+        // UpsertAsync completed. Collection name: skglossary.
+        // UpsertAsync invoked. Collection name: skglossary.
+        // UpsertAsync completed. Collection name: skglossary.
+        // UpsertAsync invoked. Collection name: skglossary.
+        // UpsertAsync completed. Collection name: skglossary.
+        // VectorizedSearchAsync invoked. Collection Name: skglossary.
+        // VectorizedSearchAsync completed. Collection Name: skglossary.
 
         // Search string: What is an Application Programming Interface
         // Result: Application Programming Interface. A set of rules and specifications that allow software components to communicate and exchange data.

@@ -78,10 +78,13 @@ public abstract class BaseTest : TextWriter
         }
     }
 
-    protected BaseTest(ITestOutputHelper output, bool redirectSystemConsoleOutput = false)
+    protected BaseTest(
+        ITestOutputHelper output,
+        bool redirectSystemConsoleOutput = false,
+        LogLevel? logLevel = null)
     {
         this.Output = output;
-        this.LoggerFactory = new XunitLogger(output);
+        this.LoggerFactory = new XunitLogger(output, logLevel);
 
         IConfigurationRoot configRoot = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json", true)

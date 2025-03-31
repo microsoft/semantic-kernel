@@ -5,8 +5,10 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// A logger that writes to the Xunit test output
 /// </summary>
-internal sealed class XunitLogger(ITestOutputHelper output) : ILoggerFactory, ILogger, IDisposable
+internal sealed class XunitLogger(ITestOutputHelper output, LogLevel? logLevel = null) : ILoggerFactory, ILogger, IDisposable
 {
+    private readonly LogLevel? _logLevel = logLevel;
+
     private object? _scopeState;
 
     /// <inheritdoc/>
@@ -18,7 +20,7 @@ internal sealed class XunitLogger(ITestOutputHelper output) : ILoggerFactory, IL
     }
 
     /// <inheritdoc/>
-    public bool IsEnabled(LogLevel logLevel) => true;
+    public bool IsEnabled(LogLevel logLevel) => this._logLevel == null || this._logLevel <= logLevel;
 
     /// <inheritdoc/>
     public IDisposable BeginScope<TState>(TState state) where TState : notnull
