@@ -147,7 +147,7 @@ class FunctionResultContent(KernelContent):
             res = result
         return cls(
             id=function_call_content.id or "unknown",
-            call_id=function_call_content.call_id or "",
+            call_id=function_call_content.call_id if hasattr(function_call_content, "call_id") else None,
             inner_content=inner_content,
             result=res,
             function_name=function_call_content.function_name,

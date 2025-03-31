@@ -25,7 +25,9 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_response_function_call_format,
     merge_function_results,
 )
+from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -48,8 +50,6 @@ if TYPE_CHECKING:
     from openai.types.responses.tool_param import ToolParam
 
     from semantic_kernel.agents.open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
-    from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-    from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.kernel import Kernel
 
@@ -177,10 +177,6 @@ class ResponsesAgentThreadActions:
             if store_enabled:
                 thread.response_id = response.id
 
-            while response.status != "completed":
-                # handle a timeout here...
-                await asyncio.sleep(agent.polling_options.default_polling_interval.total_seconds())
-
             if response.status in cls.error_message_states:
                 error_message = ""
                 if response.error and response.error.message:
@@ -192,6 +188,10 @@ class ResponsesAgentThreadActions:
                     f"Run failed with status: `{response.status}` for agent `{agent.name}` "
                     f"with error: {error_message} or incomplete details: {incomplete_details}"
                 )
+
+            while response.status != "completed":
+                # handle a timeout here...
+                await asyncio.sleep(agent.polling_options.default_polling_interval.total_seconds())
 
             # Check if tool calls are required
             function_calls = cls._get_tool_calls_from_output(response.output)  # type: ignore
