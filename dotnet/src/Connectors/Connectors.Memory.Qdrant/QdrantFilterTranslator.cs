@@ -82,6 +82,7 @@ internal class QdrantFilterTranslator
                                 int intValue => new Match { Integer = intValue },
                                 long longValue => new Match { Integer = longValue },
                                 bool boolValue => new Match { Boolean = boolValue },
+
                                 _ => throw new InvalidOperationException($"Unsupported filter value type '{constantValue.GetType().Name}'.")
                             }
                         }
