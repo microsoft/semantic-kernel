@@ -82,16 +82,6 @@
       "source.fixAll": "never"
     }
   },
-  "emeraldwalk.runonsave": {
-    "commands": [
-      {
-        "match": "\\.java$",
-        "cmd": "java -Xmx128m -jar ${workspaceFolder}/java/utilities/google-java-format-1.17.0-all-deps.jar --replace --aosp ${file}"
-      }
-    ]
-  },
-  "java.debug.settings.onBuildFailureProceed": true,
-  "java.compile.nullAnalysis.mode": "disabled",
   "dotnet.defaultSolution": "dotnet\\SK-dotnet.sln",
   "python.testing.pytestArgs": ["python/tests"],
   "python.testing.unittestEnabled": false,
