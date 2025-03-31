@@ -83,7 +83,7 @@ public class ProofReadDocumentationStep : KernelProcessStep
         }
     }
 
-    private class ProofreadingResponse
+    private sealed class ProofreadingResponse
     {
         [Description("Specifies if the proposed documentation meets the expected standards for publishing.")]
         public bool MeetsExpectations { get; set; }
@@ -92,6 +92,6 @@ public class ProofReadDocumentationStep : KernelProcessStep
         public string Explanation { get; set; } = "";
 
         [Description("A lis of suggestions, may be empty if there no suggestions for improvement.")]
-        public List<string> Suggestions { get; set; } = new();
+        public List<string> Suggestions { get; set; } = [];
     }
 }
