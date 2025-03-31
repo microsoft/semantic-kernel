@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.SemanticKernel.Arguments.Extensions;
@@ -9,7 +8,6 @@ namespace Microsoft.SemanticKernel.Arguments.Extensions;
 /// <summary>
 /// Extensions for <see cref="KernelArguments"/>
 /// </summary>
-[ExcludeFromCodeCoverage]
 internal static class KernelArgumentsExtensions
 {
     private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
