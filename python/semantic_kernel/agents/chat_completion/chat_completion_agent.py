@@ -92,13 +92,14 @@ class ChatHistoryAgentThread(AgentThread):
         ):
             self._chat_history.add_message(new_message)
 
-    async def get_messages(self) -> ChatHistory:
-        """Retrieve the current chat history."""
+    async def get_messages(self) -> AsyncGenerator[ChatMessageContent]:
+        """Retrieve the current chat history as a deep copy to avoid mutation."""
         if self._is_deleted:
             raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
         if self._id is None:
             await self.create()
-        return self._chat_history
+        for message in self._chat_history.messages:
+            yield message
 
     async def reduce(self) -> ChatHistory | None:
         """Reduce the chat history to a smaller size."""
@@ -227,9 +228,9 @@ class ChatCompletionAgent(Agent):
         if thread.id is None:
             await thread.create()
 
-        chat_history = await thread.get_messages()
+        messages = [message async for message in thread.get_messages()]
 
-        return ChatHistoryChannel(messages=chat_history.messages, thread=thread)
+        return ChatHistoryChannel(messages=messages, thread=thread)
 
     @trace_agent_get_response
     @override
@@ -263,7 +264,9 @@ class ChatCompletionAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
+        chat_history = ChatHistory()
+        async for message in thread.get_messages():
+            chat_history.add_message(message)
 
         responses: list[ChatMessageContent] = []
         async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
@@ -311,7 +314,9 @@ class ChatCompletionAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
+        chat_history = ChatHistory()
+        async for message in thread.get_messages():
+            chat_history.add_message(message)
 
         async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
             if response.role != AuthorRole.TOOL:
@@ -352,7 +357,9 @@ class ChatCompletionAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
+        chat_history = ChatHistory()
+        async for message in thread.get_messages():
+            chat_history.add_message(message)
 
         if arguments is None:
             arguments = KernelArguments(**kwargs)

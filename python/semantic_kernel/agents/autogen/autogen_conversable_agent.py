@@ -3,7 +3,7 @@
 import logging
 import sys
 import uuid
-from collections.abc import AsyncIterable, Callable
+from collections.abc import AsyncGenerator, AsyncIterable, Callable
 from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -80,13 +80,14 @@ class AutoGenConversableAgentThread(AgentThread):
         ):
             self._chat_history.add_message(new_message)
 
-    async def get_messages(self) -> ChatHistory:
-        """Retrieve the current chat history."""
+    async def get_messages(self) -> AsyncGenerator[ChatMessageContent]:
+        """Retrieve the current chat history as a deep copy to avoid mutation."""
         if self._is_deleted:
             raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
         if self._id is None:
             await self.create()
-        return self._chat_history
+        for message in self._chat_history.messages:
+            yield message
 
     async def reduce(self) -> ChatHistory | None:
         """Reduce the chat history to a smaller size."""
@@ -153,10 +154,8 @@ class AutoGenConversableAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
-
         reply = await self.conversable_agent.a_generate_reply(
-            messages=[message.to_dict() for message in chat_history.messages],
+            messages=[message.to_dict() async for message in thread.get_messages()],
             **kwargs,
         )
 
@@ -208,14 +207,13 @@ class AutoGenConversableAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = await thread.get_messages()
-
         if recipient is not None:
             if not isinstance(recipient, AutoGenConversableAgent):
                 raise AgentInvokeException(
                     f"Invalid recipient type: {type(recipient)}. "
                     "Recipient must be an instance of AutoGenConversableAgent."
                 )
+            messages = [message async for message in thread.get_messages()]
 
             chat_result = await self.conversable_agent.a_initiate_chat(
                 recipient=recipient.conversable_agent,
@@ -225,7 +223,7 @@ class AutoGenConversableAgent(Agent):
                 max_turns=max_turns,
                 summary_method=summary_method,
                 summary_args=summary_args,
-                message=chat_history.messages[-1].content,  # type: ignore
+                message=messages[-1].content,  # type: ignore
                 **kwargs,
             )
 
@@ -240,7 +238,7 @@ class AutoGenConversableAgent(Agent):
                 )
         else:
             reply = await self.conversable_agent.a_generate_reply(
-                messages=[message.to_dict() for message in chat_history.messages],
+                messages=[message.to_dict() async for message in thread.get_messages()],
             )
 
             logger.info("Called AutoGenConversableAgent.a_generate_reply.")

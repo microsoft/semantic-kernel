@@ -56,8 +56,7 @@ async def main():
 
         # If reduced, print summary if present
         if is_reduced:
-            chat_history = await thread.get_messages()
-            for msg in chat_history.messages:
+            async for msg in thread.get_messages():
                 if msg.metadata and msg.metadata.get("__summary__"):
                     print(f"\tSummary: {msg.content}")
                     break
