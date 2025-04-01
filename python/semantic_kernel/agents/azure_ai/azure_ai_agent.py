@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import AsyncIterable, Callable, Iterable
+from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar
 
 if sys.version_info >= (3, 12):
@@ -29,7 +29,6 @@ from semantic_kernel.agents.azure_ai.azure_ai_agent_settings import AzureAIAgent
 from semantic_kernel.agents.azure_ai.azure_ai_channel import AzureAIChannel
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
-from semantic_kernel.contents import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
@@ -374,6 +373,7 @@ class AzureAIAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: Kernel | None = None,
         model: str | None = None,
@@ -397,6 +397,7 @@ class AzureAIAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The thread to use for the agent.
+            on_new_message: A callback function to handle intermediate steps of the agent's execution.
             arguments: The arguments for the agent.
             kernel: The kernel to use for the agent.
             model: The model to use for the agent.
@@ -457,9 +458,13 @@ class AzureAIAgent(Agent):
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+
+            if on_new_message:
+                await on_new_message(message)
+
             if is_visible:
-                message.metadata["thread_id"] = thread.id
-                await thread.on_new_message(message)
                 yield AgentResponseItem(message=message, thread=thread)
 
     @trace_agent_invocation
@@ -469,13 +474,13 @@ class AzureAIAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ThreadMessageOptions] | None = None,
         instructions_override: str | None = None,
         kernel: Kernel | None = None,
         model: str | None = None,
-        on_complete: Callable[["ChatHistory"], None] | None = None,
         tools: list[ToolDefinition] | None = None,
         temperature: float | None = None,
         top_p: float | None = None,
@@ -493,14 +498,14 @@ class AzureAIAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The thread to use for the agent.
+            on_new_message: A callback function to handle intermediate steps of the
+                            agent's execution as fully formed messages.
             arguments: The arguments for the agent.
             additional_instructions: Additional instructions for the agent.
             additional_messages: Additional messages for the agent.
             instructions_override: Instructions to override the default instructions.
             kernel: The kernel to use for the agent.
             model: The model to use for the agent.
-            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
-                These are full content messages formed from the streamed chunks.
             tools: Tools for the agent.
             temperature: Temperature for the agent.
             top_p: Top p for the agent.
@@ -548,7 +553,7 @@ class AzureAIAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
-        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+        collected_messages: list[ChatMessageContent] | None = [] if on_new_message else None
 
         async for message in AgentThreadActions.invoke_stream(
             agent=self,
@@ -561,8 +566,11 @@ class AzureAIAgent(Agent):
             message.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=message, thread=thread)
 
-        if on_complete and collected_messages:
-            on_complete(ChatHistory(messages=collected_messages))
+        for message in collected_messages or []:
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+            if on_new_message:
+                await on_new_message(message)
 
     def get_channel_keys(self) -> Iterable[str]:
         """Get the channel keys.
