@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
@@ -1484,7 +1485,7 @@ wheels = [
 
 [[package]]
 name = "google-cloud-aiplatform"
-version = "1.83.0"
+version = "1.85.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docstring-parser", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -1500,9 +1501,9 @@ dependencies = [
     { name = "shapely", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bf/e4/ab73a6dcf77d5ac0d245c5dd506e4494ad80fdb49193b1ea4c930708b1e9/google_cloud_aiplatform-1.83.0.tar.gz", hash = "sha256:cda870c2cce1682ef006f8b87f18cfa8927ff9daf3944aa4ff01f8e552e89928", size = 8756256 }
+sdist = { url = "https://files.pythonhosted.org/packages/36/44/395e85e58d6cc266213f5679f785b78eedca8b4d257048da19fa56b1e18b/google_cloud_aiplatform-1.85.0.tar.gz", hash = "sha256:8f4845f02c0fe77903342d250c7522f870333e2f9738ccd197c8e7cc3e95f11d", size = 8773739 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/a7/440d4d1cac03e6cde2f432bc78e0b109b732d4d0b58e6ae5dda9666af423/google_cloud_aiplatform-1.83.0-py2.py3-none-any.whl", hash = "sha256:fa33932af5d88ccf42f901f6ffdf8abee87f6db82ea17df713062dd41707a154", size = 7311467 },
+    { url = "https://files.pythonhosted.org/packages/7c/7b/b308cdc8d6cc58acc656c7e9d4eb753992b277b29d885ab1c39d3f14c650/google_cloud_aiplatform-1.85.0-py3-none-any.whl", hash = "sha256:5064519a81aa355bcba708795c0b122b08af90612eec1b2a3b892dbdb98a81b4", size = 7334994 },
 ]
 
 [[package]]
@@ -5315,7 +5316,7 @@ requires-dist = [
     { name = "defusedxml", specifier = "~=0.7" },
     { name = "faiss-cpu", marker = "extra == 'faiss'", specifier = ">=1.10.0" },
     { name = "flask-dapr", marker = "extra == 'dapr'", specifier = ">=1.14.0" },
-    { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "==1.83.0" },
+    { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "==1.85.0" },
     { name = "google-generativeai", marker = "extra == 'google'", specifier = "~=0.8" },
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = "~=6.29" },
     { name = "jinja2", specifier = "~=3.1" },
@@ -5356,6 +5357,7 @@ requires-dist = [
     { name = "websockets", specifier = ">=13,<16" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },
 ]
+provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "dapr", "faiss", "google", "hugging-face", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "usearch", "weaviate"]
 
 [package.metadata.requires-dev]
 dev = [

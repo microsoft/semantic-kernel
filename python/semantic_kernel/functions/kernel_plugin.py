@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -29,6 +28,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
+    from semantic_kernel.data.text_search import TextSearch
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger = logging.getLogger(__name__)
@@ -443,7 +443,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_search(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
@@ -464,7 +464,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_get_text_search_results(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
@@ -489,7 +489,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_get_search_results(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
