@@ -89,7 +89,7 @@ public class Tavily_TextSearch(ITestOutputHelper output) : BaseTest(output)
     /// Show how to create a <see cref="TavilyTextSearch"/> and use it to perform a text search.
     /// </summary>
     [Fact]
-    public async Task UsingTavilyTextSearchAndIncludeEverythingAsync()
+    public async Task UsingTavilyTextSearchAndIncludeEverything()
     {
         // Create a logging handler to output HTTP requests and responses
         LoggingHandler handler = new(new HttpClientHandler(), this.Output);
