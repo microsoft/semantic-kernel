@@ -12,7 +12,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPStdioServerExecutionSettings
+from semantic_kernel.connectors.mcp import MCPStdioClient
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -621,7 +621,7 @@ def test_import_plugin_from_openapi(kernel: Kernel):
 async def test_import_plugin_from_mcp(kernel: Kernel):
     mcp_server_path = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestMCPPlugin")
     mcp_server_file = "mcp_server.py"
-    settings = MCPStdioServerExecutionSettings(
+    settings = MCPStdioClient(
         command="uv",
         args=["--directory", mcp_server_path, "run", mcp_server_file],
     )

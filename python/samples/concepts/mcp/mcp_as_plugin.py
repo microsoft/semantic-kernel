@@ -1,17 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import TYPE_CHECKING
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPStdioServerExecutionSettings
+from semantic_kernel.connectors.mcp import MCPStdioClient, create_plugin_from_mcp_server
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.functions import KernelArguments
-
-if TYPE_CHECKING:
-    pass
 
 #####################################################################
 # This sample demonstrates how to build a conversational chatbot    #
@@ -110,15 +106,32 @@ async def main() -> None:
     # Find the NPX executable in the system PATH.
     import shutil
 
-    execution_settings = MCPStdioServerExecutionSettings(
-        command=shutil.which("npx"),
-        args=["-y", "@modelcontextprotocol/server-github"],
+    github_plugin = await create_plugin_from_mcp_server(
+        plugin_name="GitHub",
+        description="Github Plugin",
+        client=MCPStdioClient(
+            command=shutil.which("npx"),
+            args=["-y", "@modelcontextprotocol/server-github"],
+        ),
     )
-
-    await kernel.add_plugin_from_mcp(
-        plugin_name="TestMCP",
-        execution_settings=execution_settings,
+    kernel.add_plugin(github_plugin)
+    file_plugin = await create_plugin_from_mcp_server(
+        plugin_name="File",
+        description="File Plugin",
+        client=MCPStdioClient(
+            command="docker",
+            args=[
+                "run",
+                "-i",
+                "--rm",
+                "--mount",
+                "type=bind,src=/Users/edvan/Work,dst=/projects",
+                "mcp/filesystem",
+                "/projects",
+            ],
+        ),
     )
+    kernel.add_plugin(file_plugin)
     print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")
     chatting = True
     while chatting:

@@ -8,7 +8,7 @@ import pytest
 from pytest import raises
 
 from semantic_kernel.connectors.ai import PromptExecutionSettings
-from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPStdioServerExecutionSettings
+from semantic_kernel.connectors.mcp import MCPStdioClient
 from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.functions import kernel_function
@@ -511,7 +511,7 @@ def test_from_openapi():
 async def test_from_mcp():
     mcp_server_path = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestMCPPlugin")
     mcp_server_file = "mcp_server.py"
-    settings = MCPStdioServerExecutionSettings(
+    settings = MCPStdioClient(
         command="uv",
         args=["--directory", mcp_server_path, "run", mcp_server_file],
     )
