@@ -69,6 +69,7 @@ internal sealed class GeminiTokenCounterClient : ClientBase
     {
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(location);
+        Verify.ValidHostnameSegment(location);
         Verify.NotNullOrWhiteSpace(projectId);
 
         string versionSubLink = GetApiVersionSubLink(apiVersion);

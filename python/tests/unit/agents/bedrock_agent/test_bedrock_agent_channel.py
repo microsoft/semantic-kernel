@@ -1,17 +1,29 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import AsyncIterable
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
+import boto3
 import pytest
 
-from semantic_kernel.agents.agent import Agent
+from semantic_kernel.agents.agent import Agent, AgentResponseItem, AgentThread
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
 from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentChatException
+
+
+@pytest.fixture
+@patch.object(boto3, "client", return_value=Mock())
+def mock_channel(client):
+    from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgentThread
+
+    BedrockAgentChannel.model_rebuild()
+    thread = BedrockAgentThread(client, session_id="test_session_id")
+
+    return BedrockAgentChannel(thread=thread)
 
 
 class ConcreteAgent(Agent):
@@ -23,13 +35,6 @@ class ConcreteAgent(Agent):
 
     def invoke_stream(self, *args, **kwargs) -> AsyncIterable[StreamingChatMessageContent]:
         raise NotImplementedError
-
-
-@pytest.fixture
-def mock_channel():
-    from semantic_kernel.agents.channels.bedrock_agent_channel import BedrockAgentChannel
-
-    return BedrockAgentChannel()
 
 
 @pytest.fixture
@@ -168,9 +173,12 @@ async def test_invoke_inserts_placeholders_when_history_needs_to_alternate(mock_
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.ASSISTANT, content="Assistant 1"))
 
     # Mock agent.invoke to return an async generator
-    async def mock_invoke(session_id: str, input_text: str, sessionState=None, **kwargs):
+    async def mock_invoke(messages: str, thread: AgentThread, sessionState=None, **kwargs):
         # We just yield one message as if the agent responded
-        yield ChatMessageContent(role=AuthorRole.ASSISTANT, content="Mock Agent Response")
+        yield AgentResponseItem(
+            message=ChatMessageContent(role=AuthorRole.ASSISTANT, content="Mock Agent Response"),
+            thread=mock_channel.thread,
+        )
 
     mock_agent.invoke = mock_invoke
 
@@ -223,17 +231,23 @@ async def test_invoke_stream_appends_response_message(mock_channel, mock_agent):
     mock_channel.messages.append(ChatMessageContent(role=AuthorRole.USER, content="Last user message"))
 
     async def mock_invoke_stream(
-        session_id: str, input_text: str, sessionState=None, **kwargs
+        messages: str, thread: AgentThread, sessionState=None, **kwargs
     ) -> AsyncIterable[StreamingChatMessageContent]:
-        yield StreamingChatMessageContent(
-            role=AuthorRole.ASSISTANT,
-            choice_index=0,
-            content="Hello",
+        yield AgentResponseItem(
+            message=StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                choice_index=0,
+                content="Hello",
+            ),
+            thread=mock_channel.thread,
         )
-        yield StreamingChatMessageContent(
-            role=AuthorRole.ASSISTANT,
-            choice_index=0,
-            content=" World",
+        yield AgentResponseItem(
+            message=StreamingChatMessageContent(
+                role=AuthorRole.ASSISTANT,
+                choice_index=0,
+                content=" World",
+            ),
+            thread=mock_channel.thread,
         )
 
     mock_agent.invoke_stream = mock_invoke_stream
@@ -256,6 +270,7 @@ async def test_invoke_stream_appends_response_message(mock_channel, mock_agent):
 
 async def test_get_history(mock_channel, chat_history):
     """Test get_history yields messages in reverse order."""
+
     mock_channel.messages = chat_history
 
     reversed_history = [msg async for msg in mock_channel.get_history()]

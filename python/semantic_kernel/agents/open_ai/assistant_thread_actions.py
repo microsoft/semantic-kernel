@@ -5,7 +5,7 @@ import logging
 from collections.abc import AsyncIterable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
-from openai import AsyncOpenAI
+from openai import NOT_GIVEN, AsyncOpenAI, NotGiven
 from openai.types.beta.code_interpreter_tool import CodeInterpreterTool
 from openai.types.beta.file_search_tool import FileSearchTool
 from openai.types.beta.threads.run_create_params import AdditionalMessage, AdditionalMessageAttachment
@@ -133,12 +133,11 @@ class AssistantThreadActions:
         *,
         agent: "OpenAIAssistantAgent",
         thread_id: str,
-        arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
-        # Run-level parameters:
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
+        arguments: KernelArguments | None = None,
         instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
@@ -251,7 +250,9 @@ class AssistantThreadActions:
                     from semantic_kernel.contents.chat_history import ChatHistory
 
                     chat_history = ChatHistory()
-                    _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
+                    _ = await cls._invoke_function_calls(
+                        kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                    )
 
                     tool_outputs = cls._format_tool_outputs(fccs, chat_history)
                     await agent.client.beta.threads.runs.submit_tool_outputs(
@@ -346,17 +347,16 @@ class AssistantThreadActions:
         *,
         agent: "OpenAIAssistantAgent",
         thread_id: str,
-        arguments: KernelArguments | None = None,
-        kernel: "Kernel | None" = None,
-        # Run-level parameters:
         additional_instructions: str | None = None,
         additional_messages: "list[ChatMessageContent] | None" = None,
+        arguments: KernelArguments | None = None,
         instructions_override: str | None = None,
+        kernel: "Kernel | None" = None,
         max_completion_tokens: int | None = None,
         max_prompt_tokens: int | None = None,
-        messages: list["ChatMessageContent"] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
+        output_messages: list["ChatMessageContent"] | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning_effort: Literal["low", "medium", "high"] | None = None,
         response_format: "AssistantResponseFormatOptionParam | None" = None,
@@ -381,6 +381,8 @@ class AssistantThreadActions:
             messages: The messages that act as a receiver for completed messages.
             metadata: The metadata.
             model: The model.
+            output_messages: The output messages received from the agent. These are full content messages
+                formed from the streamed chunks.
             parallel_tool_calls: The parallel tool calls.
             reasoning_effort: The reasoning effort.
             response_format: The response format.
@@ -391,7 +393,7 @@ class AssistantThreadActions:
             kwargs: Additional keyword arguments.
 
         Returns:
-            An async iterable of tuple of the visibility of the message and the chat message content.
+            An async iterable of StreamingChatMessageContent.
         """
         arguments = KernelArguments() if arguments is None else KernelArguments(**arguments, **kwargs)
         kernel = kernel or agent.kernel
@@ -474,7 +476,11 @@ class AssistantThreadActions:
                     elif event.event == "thread.run.requires_action":
                         run = event.data
                         function_action_result = await cls._handle_streaming_requires_action(
-                            agent.name, kernel, run, function_steps
+                            agent.name,
+                            kernel,
+                            run,
+                            function_steps,
+                            arguments,
                         )
                         if function_action_result is None:
                             raise AgentInvokeException(
@@ -484,12 +490,12 @@ class AssistantThreadActions:
                         if function_action_result.function_result_streaming_content:
                             # Yield the function result content to the caller
                             yield function_action_result.function_result_streaming_content
-                            if messages is not None:
+                            if output_messages is not None:
                                 # Add the function result content to the messages list, if it exists
-                                messages.append(function_action_result.function_result_streaming_content)
+                                output_messages.append(function_action_result.function_result_streaming_content)
                         if function_action_result.function_call_streaming_content:
-                            if messages is not None:
-                                messages.append(function_action_result.function_call_streaming_content)
+                            if output_messages is not None:
+                                output_messages.append(function_action_result.function_call_streaming_content)
                             stream = agent.client.beta.threads.runs.submit_tool_outputs_stream(
                                 run_id=run.id,
                                 thread_id=thread_id,
@@ -510,8 +516,8 @@ class AssistantThreadActions:
 
                                 if message and message.content:
                                     content = generate_final_streaming_message_content(agent.name, message, step)
-                                    if messages is not None:
-                                        messages.append(content)
+                                    if output_messages is not None:
+                                        output_messages.append(content)
                         return
                     elif event.event == "thread.run.failed":
                         run = event.data  # type: ignore
@@ -533,6 +539,7 @@ class AssistantThreadActions:
         kernel: "Kernel",
         run: "Run",
         function_steps: dict[str, "FunctionCallContent"],
+        arguments: KernelArguments,
         **kwargs: Any,
     ) -> FunctionActionResult | None:
         """Handle the requires action event for a streaming run."""
@@ -542,7 +549,9 @@ class AssistantThreadActions:
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-            _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
+            _ = await cls._invoke_function_calls(
+                kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+            )
             function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
             return FunctionActionResult(
@@ -551,6 +560,53 @@ class AssistantThreadActions:
         return None
 
     # endregion
+
+    @classmethod
+    async def get_messages(
+        cls: type[_T],
+        client: AsyncOpenAI,
+        thread_id: str,
+        sort_order: Literal["asc", "desc"] | None = None,
+    ) -> AsyncIterable["ChatMessageContent"]:
+        """Get messages from the thread.
+
+        Args:
+            client: The client to use to get the messages.
+            thread_id: The ID of the thread to get the messages from.
+            sort_order: The sort order of the messages.
+
+        Returns:
+            An async iterable of ChatMessageContent.
+        """
+        agent_names: dict[str, Any] = {}
+        last_id: str | NotGiven = NOT_GIVEN
+
+        while True:
+            messages = await client.beta.threads.messages.list(
+                thread_id=thread_id,
+                order=sort_order,  # type: ignore
+                after=last_id,
+            )
+
+            if not messages:
+                break
+
+            for message in messages.data:
+                last_id = message.id
+
+                if message.assistant_id and message.assistant_id.strip() not in agent_names:
+                    agent = await client.beta.assistants.retrieve(message.assistant_id)
+                    if agent.name and agent.name.strip():
+                        agent_names[agent.id] = agent.name
+
+                assistant_name = agent_names.get(message.assistant_id or "", None) or message.assistant_id or message.id
+                content = generate_message_content(str(assistant_name), message)
+
+                if len(content.items) > 0:
+                    yield content
+
+            if not messages.has_more:
+                break
 
     @classmethod
     async def _retrieve_message(
@@ -578,11 +634,15 @@ class AssistantThreadActions:
 
     @classmethod
     async def _invoke_function_calls(
-        cls: type[_T], kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
+        cls: type[_T],
+        kernel: "Kernel",
+        fccs: list["FunctionCallContent"],
+        chat_history: "ChatHistory",
+        arguments: KernelArguments,
     ) -> list[Any]:
         """Invoke the function calls."""
         tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
+            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history, arguments=arguments)
             for function_call in fccs
         ]
         return await asyncio.gather(*tasks)

@@ -29,7 +29,7 @@ For more detailed technical information, refer to the [Assistants API](https://p
 OpenAI Assistant Agents are created in the following way:
 
 ```python
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents import OpenAIAssistantAgent
 
 # Create the client using OpenAI resources and configuration
 client, model = OpenAIAssistantAgent.setup_resources()
@@ -47,15 +47,14 @@ agent = OpenAIAssistantAgent(
     definition=definition,
 )
 
-# Define a thread and invoke the agent with the user input
-thread = await agent.client.beta.threads.create()
-
-# Add a message to the thread
-await agent.add_chat_message(thread_id=thread.id, message="Why is the sky blue?")
+# Define a thread
+thread = None
 
 # Invoke the agent
-async for content in agent.invoke(thread_id=thread.id):
+async for content in agent.invoke(messages="user input", thread=thread):
     print(f"# {content.role}: {content.content}")
+    # Grab the thread from the response to continue with the current context
+    thread = response.thread
 ```
 
 ### Semantic Kernel Azure Assistant Agents
@@ -71,7 +70,7 @@ AZURE_OPENAI_API_VERSION="2025-01-01-preview"
 Alternatively, you can pass the `api_version` parameter when creating an `AzureAssistantAgent`:
 
 ```python
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AzureAssistantAgent
 
 # Create the client using Azure OpenAI resources and configuration
 client, model = AzureAssistantAgent.setup_resources()
@@ -89,13 +88,12 @@ agent = AzureAssistantAgent(
     definition=definition,
 )
 
-# Define a thread and invoke the agent with the user input
-thread = await agent.client.beta.threads.create()
-
-# Add a message to the thread
-await agent.add_chat_message(thread_id=thread.id, message="Why is the sky blue?")
+# Define a thread
+thread = None
 
 # Invoke the agent
-async for content in agent.invoke(thread_id=thread.id):
+async for content in agent.invoke(messages="user input", thread=thread):
     print(f"# {content.role}: {content.content}")
+    # Grab the thread from the response to continue with the current context
+    thread = response.thread
 ```

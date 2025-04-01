@@ -2,9 +2,9 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
+from semantic_kernel.contents import AuthorRole
+from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an OpenAI
@@ -54,25 +54,27 @@ async def main():
         plugins=[MenuPlugin()],
     )
 
-    thread = await client.beta.threads.create()
+    # Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     user_inputs = ["Hello", "What is the special soup?", "What is the special drink?", "How much is that?", "Thank you"]
 
     try:
         for user_input in user_inputs:
-            await agent.add_chat_message(thread_id=thread.id, message=user_input)
-
             print(f"# {AuthorRole.USER}: '{user_input}'")
 
             first_chunk = True
-            async for content in agent.invoke_stream(thread_id=thread.id):
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                thread = response.thread
                 if first_chunk:
-                    print(f"# {content.role}: ", end="", flush=True)
+                    print(f"# {response.role}: ", end="", flush=True)
                     first_chunk = False
-                print(content.content, end="", flush=True)
+                print(response.content, end="", flush=True)
             print()
     finally:
-        await client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await client.beta.assistants.delete(assistant_id=agent.id)
 
 

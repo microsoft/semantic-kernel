@@ -3,12 +3,26 @@
 from collections.abc import AsyncIterable
 from unittest.mock import AsyncMock
 
+import pytest
+
+from semantic_kernel.agents.agent import AgentResponseItem
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
+
+
+@pytest.fixture
+def chat_history_channel() -> ChatHistoryChannel:
+    from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
+
+    ChatHistoryChannel.model_rebuild()
+
+    thread = ChatHistoryAgentThread()
+
+    return ChatHistoryChannel(thread=thread)
 
 
 class MockChatHistoryHandler:
@@ -40,13 +54,16 @@ class AsyncIterableMock:
         return self.async_gen()
 
 
-async def test_invoke():
-    channel = ChatHistoryChannel()
+async def test_invoke(chat_history_channel):
+    channel = chat_history_channel
     agent = AsyncMock(spec=MockChatHistoryHandler)
 
     async def mock_invoke(history: list[ChatMessageContent]):
         for message in history:
-            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+            yield AgentResponseItem(
+                message=ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"),
+                thread=channel.thread,
+            )
 
     agent.invoke.return_value = AsyncIterableMock(
         lambda: mock_invoke([ChatMessageContent(role=AuthorRole.USER, content="Initial message")])
@@ -56,7 +73,7 @@ async def test_invoke():
     channel.messages.append(initial_message)
 
     received_messages = []
-    async for is_visible, message in channel.invoke(agent):
+    async for is_visible, message in channel.invoke(agent, thread=channel.thread):
         received_messages.append(message)
         assert is_visible
 
@@ -64,15 +81,18 @@ async def test_invoke():
     assert "Processed: Initial message" in received_messages[0].content
 
 
-async def test_invoke_stream():
-    channel = ChatHistoryChannel()
+async def test_invoke_stream(chat_history_channel):
+    channel = chat_history_channel
     agent = AsyncMock(spec=MockChatHistoryHandler)
 
     async def mock_invoke(history: list[ChatMessageContent]):
         for message in history:
-            msg = ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
+            msg = AgentResponseItem(
+                message=ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"),
+                thread=channel.thread,
+            )
             yield msg
-            channel.add_message(msg)
+            channel.add_message(msg.message)
 
     agent.invoke_stream.return_value = AsyncIterableMock(
         lambda: mock_invoke([ChatMessageContent(role=AuthorRole.USER, content="Initial message")])
@@ -82,22 +102,30 @@ async def test_invoke_stream():
     channel.messages.append(initial_message)
 
     received_messages = []
-    async for message in channel.invoke_stream(agent, received_messages):
+    async for message in channel.invoke_stream(agent, thread=channel.thread, messages=received_messages):
         assert message is not None
 
     assert len(received_messages) == 1
     assert "Processed: Initial message" in received_messages[0].content
 
 
-async def test_invoke_leftover_in_queue():
-    channel = ChatHistoryChannel()
+async def test_invoke_leftover_in_queue(chat_history_channel):
+    channel = chat_history_channel
     agent = AsyncMock(spec=MockChatHistoryHandler)
 
     async def mock_invoke(history: list[ChatMessageContent]):
         for message in history:
-            yield ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}")
-        yield ChatMessageContent(
-            role=AuthorRole.SYSTEM, content="Final message", items=[FunctionResultContent(id="test_id", result="test")]
+            yield AgentResponseItem(
+                message=ChatMessageContent(role=AuthorRole.SYSTEM, content=f"Processed: {message.content}"),
+                thread=channel.thread,
+            )
+        yield AgentResponseItem(
+            message=ChatMessageContent(
+                role=AuthorRole.SYSTEM,
+                content="Final message",
+                items=[FunctionResultContent(id="test_id", result="test")],
+            ),
+            thread=channel.thread,
         )
 
     agent.invoke.return_value = AsyncIterableMock(
@@ -114,7 +142,7 @@ async def test_invoke_leftover_in_queue():
     channel.messages.append(initial_message)
 
     received_messages = []
-    async for is_visible, message in channel.invoke(agent):
+    async for is_visible, message in channel.invoke(agent, thread=channel.thread):
         received_messages.append(message)
         assert is_visible
         if len(received_messages) >= 3:
@@ -126,8 +154,8 @@ async def test_invoke_leftover_in_queue():
     assert received_messages[2].items[0].id == "test_id"
 
 
-async def test_receive():
-    channel = ChatHistoryChannel()
+async def test_receive(chat_history_channel):
+    channel = chat_history_channel
     history = [
         ChatMessageContent(role=AuthorRole.SYSTEM, content="test message 1"),
         ChatMessageContent(role=AuthorRole.USER, content="test message 2"),
@@ -142,8 +170,8 @@ async def test_receive():
     assert channel.messages[1].role == AuthorRole.USER
 
 
-async def test_get_history():
-    channel = ChatHistoryChannel()
+async def test_get_history(chat_history_channel):
+    channel = chat_history_channel
     history = [
         ChatMessageContent(role=AuthorRole.SYSTEM, content="test message 1"),
         ChatMessageContent(role=AuthorRole.USER, content="test message 2"),
@@ -159,8 +187,8 @@ async def test_get_history():
     assert messages[1].role == AuthorRole.SYSTEM
 
 
-async def test_reset_history():
-    channel = ChatHistoryChannel()
+async def test_reset_history(chat_history_channel):
+    channel = chat_history_channel
     history = [
         ChatMessageContent(role=AuthorRole.SYSTEM, content="test message 1"),
         ChatMessageContent(role=AuthorRole.USER, content="test message 2"),
@@ -180,8 +208,8 @@ async def test_reset_history():
     assert len(channel.messages) == 0
 
 
-async def test_receive_skips_file_references():
-    channel = ChatHistoryChannel()
+async def test_receive_skips_file_references(chat_history_channel):
+    channel = chat_history_channel
 
     file_ref_item = FileReferenceContent()
     streaming_file_ref_item = StreamingFileReferenceContent()

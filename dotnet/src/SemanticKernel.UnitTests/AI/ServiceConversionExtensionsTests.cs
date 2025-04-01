@@ -342,7 +342,7 @@ public class ServiceConversionExtensionsTests
 
         foreach (var f in config.Functions!)
         {
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await f.InvokeAsync(new())!);
+            await f.InvokeAsync(new());
         }
     }
 
@@ -351,7 +351,7 @@ public class ServiceConversionExtensionsTests
         public override string Name => name;
         protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
         {
-            throw new FormatException();
+            return Task.FromResult<object?>(null);
         }
     }
 
