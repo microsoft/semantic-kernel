@@ -1,12 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Optional parameters for agent creation.
+/// Optional parameters for agent creation used when create an <see cref="Agent"/>
+/// using an instance of <see cref="KernelAgentFactory"/>.
+/// <remarks>
+/// Implementors of <see cref="KernelAgentFactory"/> can extend this class to provide
+/// agent specific creation options.
+/// </remarks>
 /// </summary>
+[Experimental("SKEXP0110")]
 public class AgentCreationOptions
 {
     /// <summary>
