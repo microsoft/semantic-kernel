@@ -5,7 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
-#pragma warning disable CA1812 // Instantiated by reflection
+/// <summary>
+/// Represents an image result.
+/// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "API definition")]
 internal sealed class TavilyImageResult
 {
     /// <summary>
@@ -28,7 +31,9 @@ internal sealed class TavilyImageResult
     /// <param name="url">The url to the image</param>
     /// <param name="description">The description of the image</param>
     /// <exception cref="ArgumentNullException"></exception>
+#pragma warning disable CA1054 // URI-like parameters should not be strings
     public TavilyImageResult(string url, string description)
+#pragma warning restore CA1054 // URI-like parameters should not be strings
     {
         this.Url = url ?? throw new ArgumentNullException(nameof(url));
         this.Description = description ?? throw new ArgumentNullException(nameof(description));

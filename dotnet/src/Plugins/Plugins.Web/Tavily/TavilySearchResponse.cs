@@ -6,7 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 
-#pragma warning disable CA1812 // Instantiated by reflection
+/// <summary>
+/// Represents a search response.
+/// </summary>
 internal sealed class TavilySearchResponse
 {
     /// <summary>
@@ -57,6 +59,7 @@ internal sealed class TavilySearchResponse
     /// <summary>
     /// Initializes a new instance of the <see cref="TavilySearchResponse" /> class.
     /// </summary>
+    [JsonConstructorAttribute]
     internal TavilySearchResponse(
             string query,
             double responseTime,

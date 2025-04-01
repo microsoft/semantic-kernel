@@ -55,10 +55,11 @@ public sealed class TavilySearchResult
     /// <summary>
     /// Initializes a new instance of the <see cref="TavilySearchResult" /> class.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "API definition")]
     public TavilySearchResult(
         string title,
+#pragma warning disable CA1054 // URI-like parameters should not be strings
         string url,
+#pragma warning restore CA1054 // URI-like parameters should not be strings
         string content,
         double score,
         string? rawContent)
