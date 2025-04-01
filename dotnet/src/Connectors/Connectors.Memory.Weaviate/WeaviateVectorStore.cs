@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -89,14 +88,27 @@ public class WeaviateVectorStore : IVectorStore
     public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var request = new WeaviateGetCollectionsRequest().Build();
+        WeaviateGetCollectionsResponse collectionsResponse;
 
-        var response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
-        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
-        var collectionResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(responseContent);
-
-        if (collectionResponse?.Collections is not null)
+        try
         {
-            foreach (var collection in collectionResponse.Collections)
+            var httpResponse = await this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+            var httpResponseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+
+            collectionsResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(httpResponseContent)!;
+        }
+        catch (Exception e)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", e)
+            {
+                VectorStoreType = WeaviateConstants.DatabaseName,
+                OperationName = "ListCollectionNames"
+            };
+        }
+
+        if (collectionsResponse?.Collections is not null)
+        {
+            foreach (var collection in collectionsResponse.Collections)
             {
                 yield return collection.CollectionName;
             }

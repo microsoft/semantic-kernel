@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 
 from autogen import ConversableAgent, register_function
 
-from semantic_kernel.agents.autogen.autogen_conversable_agent import AutoGenConversableAgent
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 
@@ -50,6 +50,9 @@ async def main():
         },
     )
 
+    # Create a thread for use with the agent.
+    thread: AutoGenConversableAgentThread = None
+
     # Create a Semantic Kernel AutoGenConversableAgent based on the AutoGen ConversableAgent.
     assistant_agent = AutoGenConversableAgent(conversable_agent=assistant)
 
@@ -76,19 +79,26 @@ async def main():
     # Create a Semantic Kernel AutoGenConversableAgent based on the AutoGen ConversableAgent.
     user_proxy_agent = AutoGenConversableAgent(conversable_agent=user_proxy)
 
-    async for content in user_proxy_agent.invoke(
+    async for response in user_proxy_agent.invoke(
+        thread=thread,
         recipient=assistant_agent,
-        message="What is (44232 + 13312 / (232 - 32)) * 5?",
+        messages="What is (44232 + 13312 / (232 - 32)) * 5?",
         max_turns=10,
     ):
-        for item in content.items:
+        for item in response.items:
             match item:
                 case FunctionResultContent(result=r):
-                    print(f"# {content.role} - {content.name or '*'}: '{r}'")
+                    print(f"# {response.role} - {response.name or '*'}: '{r}'")
                 case FunctionCallContent(function_name=fn, arguments=arguments):
-                    print(f"# {content.role} - {content.name or '*'}: Function Name: '{fn}', Arguments: '{arguments}'")
+                    print(
+                        f"# {response.role} - {response.name or '*'}: Function Name: '{fn}', Arguments: '{arguments}'"  # noqa: E501
+                    )
                 case _:
-                    print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+                    print(f"# {response.role} - {response.name or '*'}: '{response}'")
+        thread = response.thread
+
+    # Cleanup: Delete the thread and agent
+    await thread.delete() if thread else None
 
 
 if __name__ == "__main__":

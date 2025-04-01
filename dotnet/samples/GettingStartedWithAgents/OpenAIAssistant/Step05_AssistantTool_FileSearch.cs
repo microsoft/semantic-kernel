@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Assistants;
@@ -38,9 +39,10 @@ public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAss
                 metadata: SampleMetadata);
 
         // Create a thread associated with a vector-store for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(
-                            vectorStoreId: vectorStoreId,
-                            metadata: SampleMetadata);
+        AgentThread thread = new OpenAIAssistantAgentThread(
+            this.AssistantClient,
+            vectorStoreId: vectorStoreId,
+            metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -51,7 +53,7 @@ public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAss
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
             await this.Client.DeleteVectorStoreAsync(vectorStoreId);
             await this.Client.DeleteFileAsync(fileId);
@@ -61,10 +63,9 @@ public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAss
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(threadId, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

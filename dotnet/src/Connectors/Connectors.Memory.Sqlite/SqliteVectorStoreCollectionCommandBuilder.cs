@@ -44,6 +44,14 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
 
+        foreach (var column in columns)
+        {
+            if (column.HasIndex)
+            {
+                builder.AppendLine($"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName}_{column.Name}_index ON {tableName}({column.Name});");
+            }
+        }
+
         var command = connection.CreateCommand();
 
         command.CommandText = builder.ToString();

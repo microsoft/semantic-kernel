@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -8,6 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register Data services on the <see cref="IKernelBuilder"/>.
 /// </summary>
+[Obsolete("The IKernelBuilder extensions are being obsoleted, call the appropriate function on the Services property of your IKernelBuilder")]
 public static class InMemoryKernelBuilderExtensions
 {
     /// <summary>

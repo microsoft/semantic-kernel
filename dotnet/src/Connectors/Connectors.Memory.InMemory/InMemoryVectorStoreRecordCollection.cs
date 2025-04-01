@@ -152,6 +152,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         this._internalCollections.TryRemove(this._collectionName, out _);
+        this._internalCollectionTypes.TryRemove(this._collectionName, out _);
         return Task.CompletedTask;
     }
 

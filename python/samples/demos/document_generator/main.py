@@ -14,9 +14,8 @@ from samples.demos.document_generator.agents.content_creation_agent import Conte
 from samples.demos.document_generator.agents.user_agent import UserAgent
 from samples.demos.document_generator.custom_selection_strategy import CustomSelectionStrategy
 from samples.demos.document_generator.custom_termination_strategy import CustomTerminationStrategy
-from semantic_kernel.agents.group_chat.agent_group_chat import AgentGroupChat
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.agents import AgentGroupChat
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
 
 TASK = """
 Create a blog post to share technical details about the Semantic Kernel AI connectors.

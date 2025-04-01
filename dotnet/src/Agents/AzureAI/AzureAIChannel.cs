@@ -47,7 +47,7 @@ internal sealed class AzureAIChannel(AgentsClient client, string threadId)
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return AgentThreadActions.GetMessagesAsync(client, threadId, cancellationToken);
+        return AgentThreadActions.GetMessagesAsync(client, threadId, null, cancellationToken);
     }
 
     /// <inheritdoc/>

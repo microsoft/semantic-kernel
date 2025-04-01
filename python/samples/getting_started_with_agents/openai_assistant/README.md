@@ -29,7 +29,7 @@ For more detailed technical information, refer to the [Assistants API](https://p
 OpenAI Assistant Agents are created in the following way:
 
 ```python
-from semantic_kernel.agents.open_ai import OpenAIAssistantAgent
+from semantic_kernel.agents import OpenAIAssistantAgent
 
 # Create the client using OpenAI resources and configuration
 client, model = OpenAIAssistantAgent.setup_resources()
@@ -71,7 +71,7 @@ AZURE_OPENAI_API_VERSION="2025-01-01-preview"
 Alternatively, you can pass the `api_version` parameter when creating an `AzureAssistantAgent`:
 
 ```python
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AzureAssistantAgent
 
 # Create the client using Azure OpenAI resources and configuration
 client, model = AzureAssistantAgent.setup_resources()
