@@ -1253,7 +1253,7 @@ public class KernelFunctionFromPromptTests
         {
             GetStreamingResponseResult = [
                 new MEAI.ChatResponseUpdate(MEAI.ChatRole.Assistant, "Hi! How can ") { RawRepresentation = rawRepresentation },
-                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?")  { RawRepresentation = rawRepresentation }
+                new MEAI.ChatResponseUpdate(role: null, content: "I assist you today?") { RawRepresentation = rawRepresentation }
             ]
         };
 
