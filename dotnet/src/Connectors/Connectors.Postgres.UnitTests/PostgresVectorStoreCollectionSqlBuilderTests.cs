@@ -86,12 +86,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => SqlBuilder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists));
-            Assert.Throws<NotSupportedException>(() => SqlBuilder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => SqlBuilder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => SqlBuilder.BuildCreateVectorIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
             return;
         }
 
-        var cmdInfo = SqlBuilder.BuildCreateVectorIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, ifNotExists);
+        var cmdInfo = SqlBuilder.BuildCreateVectorIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);
@@ -127,6 +127,20 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         }
         // Output
         this._output.WriteLine(cmdInfo.CommandText);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void TestBuildCreateNonVectorIndexCommand(bool ifNotExists)
+    {
+        var cmdInfo = SqlBuilder.BuildCreateVectorIndexCommand("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
+
+        var expectedCommandText = ifNotExists
+            ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\");"
+            : "CREATE INDEX \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\");";
+
+        Assert.Equal(expectedCommandText, cmdInfo.CommandText);
     }
 
     [Fact]

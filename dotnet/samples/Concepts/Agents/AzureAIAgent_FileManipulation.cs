@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
@@ -33,9 +32,7 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
                     }
                 });
         AzureAIAgent agent = new(definition, this.AgentsClient);
-
-        // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        AzureAIAgentThread thread = new(this.AgentsClient);
 
         // Respond to user input
         try
@@ -46,19 +43,18 @@ public class AzureAIAgent_FileManipulation(ITestOutputHelper output) : BaseAzure
         }
         finally
         {
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
             await this.AgentsClient.DeleteFileAsync(fileInfo.Id);
-            await chat.ResetAsync();
         }
 
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            chat.AddChatMessage(new(AuthorRole.User, input));
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
                 await this.DownloadContentAsync(response);

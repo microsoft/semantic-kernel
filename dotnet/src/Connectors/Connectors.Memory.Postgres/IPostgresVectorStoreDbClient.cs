@@ -129,7 +129,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="skip">The number of entries to skip.</param>
     /// <param name="includeVectors">If true, the vectors will be returned in the entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that the nearest matches to the <see cref="Vector"/>.</returns>
+    /// <returns>An asynchronous stream of result objects that the nearest matches to the <see cref="Vector"/>.</returns>
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, int limit,
         VectorSearchFilter? legacyFilter = default, Expression<Func<TRecord, bool>>? newFilter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);

@@ -548,7 +548,9 @@ async def test_assistant_thread_actions_stream(
 
     # Scenario A: Use only prompt template
     messages = []
-    async for content in AssistantThreadActions.invoke_stream(agent=agent, thread_id="thread_id", messages=messages):
+    async for content in AssistantThreadActions.invoke_stream(
+        agent=agent, thread_id="thread_id", output_messages=messages
+    ):
         assert content is not None
 
 
@@ -593,7 +595,9 @@ async def test_assistant_thread_actions_stream_run_fails(
     # Scenario A: Use only prompt template
     messages = []
     with pytest.raises(AgentInvokeException):
-        async for _ in AssistantThreadActions.invoke_stream(agent=agent, thread_id="thread_id", messages=messages):
+        async for _ in AssistantThreadActions.invoke_stream(
+            agent=agent, thread_id="thread_id", output_messages=messages
+        ):
             pass
 
 
@@ -643,7 +647,9 @@ async def test_assistant_thread_actions_stream_with_instructions(
 
     # Scenario A: Use only prompt template
     messages = []
-    async for content in AssistantThreadActions.invoke_stream(agent=agent, thread_id="thread_id", messages=messages):
+    async for content in AssistantThreadActions.invoke_stream(
+        agent=agent, thread_id="thread_id", output_messages=messages
+    ):
         assert content is not None
 
     assert len(messages) > 0, "Expected messages to be populated during the stream."
@@ -665,7 +671,7 @@ async def test_assistant_thread_actions_stream_with_instructions(
     async for content in AssistantThreadActions.invoke_stream(
         agent=agent,
         thread_id="thread_id",
-        messages=messages,
+        output_messages=messages,
         additional_instructions="My additional instructions",
     ):
         assert content is not None
@@ -725,6 +731,7 @@ async def test_handle_streaming_requires_action_returns_result():
     dummy_tool_outputs = {"output": "value"}
     dummy_kernel = MagicMock()
     dummy_agent_name = "TestAgent"
+    dummy_args = {}
     with (
         patch(
             "semantic_kernel.agents.open_ai.assistant_thread_actions.get_function_call_contents",
@@ -746,6 +753,7 @@ async def test_handle_streaming_requires_action_returns_result():
             dummy_kernel,
             dummy_run,
             dummy_function_steps,  # type: ignore
+            dummy_args,
         )
         assert result is not None
         assert isinstance(result, FunctionActionResult)
@@ -760,11 +768,13 @@ async def test_handle_streaming_requires_action_returns_none():
     dummy_function_steps = {"step1": MagicMock()}
     dummy_kernel = MagicMock()
     dummy_agent_name = "TestAgent"
+    dummy_args = {}
     with patch("semantic_kernel.agents.open_ai.assistant_thread_actions.get_function_call_contents", return_value=None):
         result = await AssistantThreadActions._handle_streaming_requires_action(
             dummy_agent_name,
             dummy_kernel,
             dummy_run,
             dummy_function_steps,  # type: ignore
+            dummy_args,
         )
         assert result is None

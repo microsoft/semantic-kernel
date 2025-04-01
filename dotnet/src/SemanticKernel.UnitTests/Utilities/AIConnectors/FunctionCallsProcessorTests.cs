@@ -768,7 +768,7 @@ public class FunctionCallsProcessorTests
     }
 
     [Fact]
-    public async Task ItShouldSerializeFunctionResultOfUnknowTypeAsync()
+    public async Task ItShouldSerializeFunctionResultOfUnknownTypeAsync()
     {
         // Arrange
         var function1 = KernelFunctionFactory.CreateFromMethod(() => { return new { a = 2, b = "test" }; }, "Function1");

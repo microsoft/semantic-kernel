@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// An implementation of a client for Postgres. This class is used to managing postgres database operations.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="PostgresDbClient"/> class.
+/// Initializes a new instance of the <see cref="PostgresVectorStoreDbClient"/> class.
 /// </remarks>
 /// <param name="dataSource">Postgres data source.</param>
 /// <param name="schema">Schema of collection tables.</param>
@@ -70,9 +70,9 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
         // Prepare the SQL commands.
         var commandInfo = SqlBuilder.BuildCreateTableCommand(this._schema, tableName, properties, ifNotExists);
         var createIndexCommands =
-            PostgresVectorStoreRecordPropertyMapping.GetVectorIndexInfo(properties)
+            PostgresVectorStoreRecordPropertyMapping.GetIndexInfo(properties)
                 .Select(index =>
-                    SqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function, ifNotExists)
+                    SqlBuilder.BuildCreateVectorIndexCommand(this._schema, tableName, index.column, index.kind, index.function, index.isVector, ifNotExists)
                 );
 
         // Execute the commands in a transaction.
