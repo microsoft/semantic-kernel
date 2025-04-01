@@ -39,7 +39,7 @@ internal sealed class Program
         string prompt = "What is the likely color of the sky in Boston today?";
 
         // Execute a prompt using the MCP tools. The AI model will automatically call the appropriate MCP tools to answer the prompt.
-        FunctionResult result = await kernel.InvokePromptAsync(prompt, new(executionSettings)).ConfigureAwait(false);
+        FunctionResult result = await kernel.InvokePromptAsync(prompt, new(executionSettings));
 
         Console.WriteLine(result);
 
