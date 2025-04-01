@@ -33,8 +33,10 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
         Consider suggestions when refining an idea.
         """;
 
-    [Fact]
-    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgentAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ChatWithOpenAIAssistantAgentAndChatCompletionAgent(bool useChatClient)
     {
         // Define the agents: one of each type
         ChatCompletionAgent agentReviewer =
@@ -42,7 +44,7 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
             {
                 Instructions = ReviewerInstructions,
                 Name = ReviewerName,
-                Kernel = this.CreateKernelWithChatCompletion(),
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         // Define the assistant
@@ -87,6 +89,8 @@ public class MixedChat_Agents(ITestOutputHelper output) : BaseAssistantTest(outp
         }
 
         Console.WriteLine($"\n[IS COMPLETED: {chat.IsComplete}]");
+
+        chatClient?.Dispose();
     }
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
