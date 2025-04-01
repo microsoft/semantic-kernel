@@ -22,7 +22,7 @@ namespace Memory;
 public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task ExampleAsync()
+    public async Task IngestDataAndUseHybridSearch()
     {
         // Create an embedding generation service.
         var textEmbeddingGenerationService = new AzureOpenAITextEmbeddingGenerationService(
