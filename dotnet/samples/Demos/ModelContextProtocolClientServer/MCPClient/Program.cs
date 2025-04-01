@@ -37,6 +37,7 @@ internal sealed class Program
         };
 
         string prompt = "What is the likely color of the sky in Boston today?";
+        Console.WriteLine(prompt);
 
         // Execute a prompt using the MCP tools. The AI model will automatically call the appropriate MCP tools to answer the prompt.
         FunctionResult result = await kernel.InvokePromptAsync(prompt, new(executionSettings));
@@ -65,9 +66,11 @@ internal sealed class Program
             throw new InvalidOperationException(message);
         }
 
+        string modelId = config["OpenAI:ChatModelId"] ?? "gpt-4o-mini";
+
         // Create kernel
         var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddOpenAIChatCompletion(serviceId: "openai", modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o-mini", apiKey: config["OpenAI:ApiKey"]!);
+        kernelBuilder.Services.AddOpenAIChatCompletion(serviceId: "openai", modelId: modelId, apiKey: apiKey);
 
         return kernelBuilder.Build();
     }
@@ -76,9 +79,9 @@ internal sealed class Program
     /// Creates an MCP client and connects it to the MCPServer server.
     /// </summary>
     /// <returns>An instance of <see cref="IMcpClient"/>.</returns>
-    private static async Task<IMcpClient> CreateMcpClientAsync()
+    private static Task<IMcpClient> CreateMcpClientAsync()
     {
-        var mcpClient = await McpClientFactory.CreateAsync(
+        return McpClientFactory.CreateAsync(
             new McpServerConfig()
             {
                 Id = "MCPServer",
@@ -95,8 +98,6 @@ internal sealed class Program
                 ClientInfo = new() { Name = "MCPClient", Version = "1.0.0" }
             }
         );
-
-        return mcpClient;
     }
 
     /// <summary>
@@ -126,7 +127,7 @@ internal sealed class Program
         Console.WriteLine("Available MCP tools:");
         foreach (var tool in tools)
         {
-            Console.WriteLine($"{tool.Name}: {tool.Description}");
+            Console.WriteLine($"- {tool.Name}: {tool.Description}");
         }
     }
 }
