@@ -57,7 +57,7 @@ internal sealed class TavilySearchResponse
     /// <summary>
     /// Initializes a new instance of the <see cref="TavilySearchResponse" /> class.
     /// </summary>
-    public TavilySearchResponse(
+    internal TavilySearchResponse(
             string query,
             double responseTime,
             IList<TavilySearchResult> results,
