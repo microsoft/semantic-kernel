@@ -5,11 +5,6 @@ from collections.abc import Callable
 from enum import Enum
 from typing import Final
 
-DEFAULT_FUNCTION_NAME: Final[str] = "search"
-DEFAULT_DESCRIPTION: Final[str] = (
-    "Perform a search for content related to the specified query and return string results"
-)
-
 
 class IndexKind(str, Enum):
     """Index kinds for similarity search.
@@ -104,3 +99,21 @@ DISTANCE_FUNCTION_DIRECTION_HELPER: Final[dict[DistanceFunction, Callable[[int |
     DistanceFunction.MANHATTAN: operator.le,
     DistanceFunction.HAMMING: operator.le,
 }
+DEFAULT_FUNCTION_NAME: Final[str] = "search"
+DEFAULT_DESCRIPTION: Final[str] = (
+    "Perform a search for content related to the specified query and return string results"
+)
+
+
+class TextSearchFunctions(str, Enum):
+    """Text search functions.
+
+    Attributes:
+        SEARCH: Search using a query.
+        GET_TEXT_SEARCH_RESULT: Get text search results.
+        GET_SEARCH_RESULT: Get search results.
+    """
+
+    SEARCH = "search"
+    GET_TEXT_SEARCH_RESULT = "get_text_search_result"
+    GET_SEARCH_RESULT = "get_search_result"

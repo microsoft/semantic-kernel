@@ -31,9 +31,6 @@ from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
 from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
-    DISTANCE_FUNCTION_DIRECTION_HELPER,
-    DistanceFunction,
-    IndexKind,
     VectorizableTextSearchMixin,
     VectorizedSearchMixin,
     VectorSearchFilter,
@@ -45,7 +42,8 @@ from semantic_kernel.data import (
     VectorTextSearchMixin,
     vectorstoremodel,
 )
-from semantic_kernel.data.record_definition.vector_store_record_utils import VectorStoreRecordUtils
+from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
+from semantic_kernel.data.vector_search import add_vector_to_records
 
 # This is a rather complex sample, showing how to use the vector store
 # with a number of different collections.
@@ -254,14 +252,12 @@ async def main(collection: str, use_azure_openai: bool):
         )
 
         print_with_color("Adding records!", Colors.CBLUE)
-        records = await VectorStoreRecordUtils(kernel).add_vector_to_records(
-            [record1, record2, record3], data_model_type=DataModel
-        )
+        records = await add_vector_to_records(kernel, [record1, record2, record3], data_model_type=DataModel)
         records = [record1, record2, record3]
         keys = await record_collection.upsert_batch(records)
         print(f"    Upserted {keys=}")
         print_with_color("Getting records!", Colors.CBLUE)
-        results = await record_collection.get_batch([record1.id, record2.id, record3.id])
+        results = await record_collection.get([record1.id, record2.id, record3.id])
         if results:
             [print_record(record=result) for result in results]
         else:

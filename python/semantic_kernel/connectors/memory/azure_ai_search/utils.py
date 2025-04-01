@@ -24,9 +24,9 @@ from semantic_kernel.connectors.memory.azure_ai_search.const import (
     TYPE_MAPPER_DATA,
     TYPE_MAPPER_VECTOR,
 )
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )

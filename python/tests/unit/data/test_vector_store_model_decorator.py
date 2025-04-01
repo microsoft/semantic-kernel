@@ -14,8 +14,8 @@ from semantic_kernel.data import (
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
-    vectorstoremodel,
 )
+from semantic_kernel.data.record_definition import vectorstoremodel
 from semantic_kernel.exceptions import VectorStoreModelException
 
 
