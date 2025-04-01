@@ -8,6 +8,7 @@ import pytest
 from pytest import raises
 
 from semantic_kernel.connectors.ai import PromptExecutionSettings
+from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPStdioServerExecutionSettings
 from semantic_kernel.connectors.openapi_plugin.openapi_parser import OpenApiParser
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 from semantic_kernel.functions import kernel_function
@@ -504,6 +505,26 @@ def test_from_openapi():
     assert plugin.name == "TestOpenAPIPlugin"
     assert plugin.functions.get("GetSecret") is not None
     assert plugin.functions.get("SetSecret") is not None
+
+
+@pytest.mark.asyncio
+async def test_from_mcp():
+    mcp_server_path = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestMCPPlugin")
+    mcp_server_file = "mcp_server.py"
+    settings = MCPStdioServerExecutionSettings(
+        command="uv",
+        args=["--directory", mcp_server_path, "run", mcp_server_file],
+    )
+
+    plugin = await KernelPlugin.from_mcp_server(
+        plugin_name="TestMCPPlugin",
+        execution_settings=settings,
+    )
+
+    assert plugin is not None
+    assert plugin.name == "TestMCPPlugin"
+    assert plugin.functions.get("get_secret") is not None
+    assert plugin.functions.get("set_secret") is not None
 
 
 def test_custom_spec_from_openapi():
