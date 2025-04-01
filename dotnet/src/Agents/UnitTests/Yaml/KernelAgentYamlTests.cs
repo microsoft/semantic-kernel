@@ -21,7 +21,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Yaml;
 
 /// <summary>
-/// Unit tests for <see cref="KernelAgentFactoryYamlExtensions"/>.
+/// Unit tests for <see cref="YamlKernelAgentFactoryExtensions"/>.
 /// </summary>
 public class KernelAgentYamlTests : IDisposable
 {

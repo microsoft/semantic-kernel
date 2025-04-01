@@ -44,7 +44,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
         var kernel = builder.Build();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
@@ -64,7 +64,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
@@ -86,7 +86,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
@@ -124,7 +124,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
@@ -154,7 +154,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?");
@@ -185,7 +185,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");
@@ -275,7 +275,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
@@ -342,7 +342,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             """;
         AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
@@ -376,7 +376,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()

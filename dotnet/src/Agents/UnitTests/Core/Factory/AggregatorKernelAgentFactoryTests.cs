@@ -42,7 +42,7 @@ public class AggregatorKernelAgentFactoryTests
     /// Verifies that the <see cref="AggregatorKernelAgentFactory"/> throws <see cref="KernelException"/> for an unknown agent type.
     /// </summary>
     [Fact]
-    public async Task ItReturnsNullForUnknowAgentTypeAsync()
+    public async Task ItReturnsNullForUnknownAgentTypeAsync()
     {
         // Arrange
         var agentDefinition = new AgentDefinition() { Type = "my-type-unknown", Name = "my-name-1", Description = "my-description-1", Instructions = "my-instructions-1" };

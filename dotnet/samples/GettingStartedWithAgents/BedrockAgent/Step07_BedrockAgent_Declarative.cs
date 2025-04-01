@@ -38,7 +38,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, configuration: TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
@@ -62,7 +62,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that are less then the value of 101?");
     }
@@ -106,7 +106,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<WeatherPlugin>();
         this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Seattle and what is the weather forecast in Seattle?");
     }
@@ -133,7 +133,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """;
         BedrockAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel, Configuration = TestConfiguration.ConfigurationRoot });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "What is Semantic Kernel?");
     }

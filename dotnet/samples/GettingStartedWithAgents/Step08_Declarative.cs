@@ -48,7 +48,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
         var configuration = TestConfiguration.GetSection(this.UseOpenAIConfig ? "OpenAI" : "AzureOpenAI");
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, options: new() { Configuration = configuration });
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, configuration: configuration);
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
         {
