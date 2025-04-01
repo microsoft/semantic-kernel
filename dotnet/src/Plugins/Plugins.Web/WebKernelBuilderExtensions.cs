@@ -63,7 +63,7 @@ public static class WebKernelBuilderExtensions
         string? serviceId = default)
     {
         Verify.NotNull(builder);
-        
+
         builder.Services.AddTavilyTextSearch(apiKey, options, serviceId);
 
         return builder;

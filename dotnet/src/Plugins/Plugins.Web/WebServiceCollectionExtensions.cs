@@ -79,7 +79,7 @@ public static class WebServiceCollectionExtensions
         string? serviceId = default)
     {
         Verify.NotNull(services);
-        
+
         services.AddKeyedSingleton<ITextSearch>(
             serviceId,
             (sp, _) =>
