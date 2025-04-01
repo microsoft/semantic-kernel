@@ -79,6 +79,9 @@ hugging_face = [
     "sentence-transformers >= 2.2,< 5.0",
     "torch == 2.6.0"
 ]
+mcp = [
+    "mcp ~= 1.5"
+]
 mongo = [
     "pymongo >= 4.8.0, < 4.12",
     "motor >= 3.3.2,< 3.8.0"
