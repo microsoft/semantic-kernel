@@ -180,7 +180,7 @@ async def test_invoke(kernel_with_ai_service: tuple[Kernel, ChatCompletionClient
     assert messages[0].message.content == "Processed Message"
 
 
-async def test_invoke_tool_call_added(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
+async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
     kernel, mock_ai_service_client = kernel_with_ai_service
     agent = ChatCompletionAgent(
         kernel=kernel,
@@ -211,15 +211,14 @@ async def test_invoke_tool_call_added(kernel_with_ai_service: tuple[Kernel, Chat
     assert messages[1].message.content == "Processed Message 2"
 
     thread: ChatHistoryAgentThread = messages[-1].thread
-    history = ChatHistory()
-    async for message in thread.get_messages():
-        history.add_message(message)
+    thread_messages = [message async for message in thread.get_messages()]
 
-    assert len(history.messages) == 3
-    assert history.messages[1].content == "Processed Message 1"
-    assert history.messages[2].content == "Processed Message 2"
-    assert history.messages[1].name == "TestAgent"
-    assert history.messages[2].name == "TestAgent"
+    assert len(thread_messages) == 3
+    assert thread_messages[0].content == "test"
+    assert thread_messages[1].content == "Processed Message 1"
+    assert thread_messages[2].content == "Processed Message 2"
+    assert thread_messages[1].name == "TestAgent"
+    assert thread_messages[2].name == "TestAgent"
 
 
 async def test_invoke_no_service_throws(kernel: Kernel):
