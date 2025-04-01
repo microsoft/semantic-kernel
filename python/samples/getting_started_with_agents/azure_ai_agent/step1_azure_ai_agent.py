@@ -4,7 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 
 """
 The following sample demonstrates how to create an Azure AI agent that answers
@@ -45,24 +45,23 @@ async def main() -> None:
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
-            # Optionally configure polling options
-            # polling_options=RunPollingOptions(run_polling_interval=timedelta(seconds=1)),
         )
 
-        # 3. Create a new thread on the Azure AI agent service
-        thread = await client.agents.create_thread()
+        # 3. Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         try:
             for user_input in USER_INPUTS:
-                # 4. Add the user input as a chat message
-                await agent.add_chat_message(thread_id=thread.id, message=user_input)
                 print(f"# User: {user_input}")
-                # 5. Invoke the agent for the specified thread for response
-                response = await agent.get_response(thread_id=thread.id)
+                # 4. Invoke the agent with the specified message for response
+                response = await agent.get_response(messages=user_input, thread=thread)
                 print(f"# {response.name}: {response}")
+                thread = response.thread
         finally:
             # 6. Cleanup: Delete the thread and agent
-            await client.agents.delete_thread(thread.id)
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
         """
@@ -70,7 +69,7 @@ async def main() -> None:
         # User: Hello, I am John Doe.
         # Assistant: Hello, John! How can I assist you today?
         # User: What is your name?
-        # Assistant: I’m here as your assistant, so you can just call me Assistant. How can I help you today?
+        # Assistant: I'm here as your assistant, so you can just call me Assistant. How can I help you today?
         # User: What is my name?
         # Assistant: Your name is John Doe. How can I assist you today, John?
         """

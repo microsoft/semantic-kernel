@@ -3,6 +3,7 @@
 using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -25,10 +26,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var responses = bedrockAgent.InvokeAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the weather in Seattle?",
+                new ChatMessageContent(AuthorRole.User, "What is the weather in Seattle?"),
                 null);
-            await foreach (var response in responses)
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -57,10 +57,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var responses = bedrockAgent.InvokeAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the special soup and how much does it cost?",
+                 new ChatMessageContent(AuthorRole.User, "What is the special soup and how much does it cost?"),
                 null);
-            await foreach (var response in responses)
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -88,10 +87,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var streamingResponses = bedrockAgent.InvokeStreamingAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the weather forecast in Seattle?",
+                new ChatMessageContent(AuthorRole.User, "What is the weather forecast in Seattle?"),
                 null);
-            await foreach (var response in streamingResponses)
+            await foreach (StreamingChatMessageContent response in streamingResponses)
             {
                 if (response.Content != null)
                 {
@@ -119,10 +117,9 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         try
         {
             var responses = bedrockAgent.InvokeAsync(
-                BedrockAgent.CreateSessionId(),
-                "What is the current weather in Seattle and what is the weather forecast in Seattle?",
+                new ChatMessageContent(AuthorRole.User, "What is the current weather in Seattle and what is the weather forecast in Seattle?"),
                 null);
-            await foreach (var response in responses)
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -146,10 +143,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
         kernel.Plugins.Add(KernelPluginFactory.CreateFromType<MenuPlugin>());
         // Create a new BedrockAgent instance with the agent model and the client
         // so that we can interact with the agent using Semantic Kernel contents.
-        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient)
-        {
-            Kernel = kernel,
-        };
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient);
         // Create the kernel function action group and prepare the agent for interaction
         await bedrockAgent.CreateKernelFunctionActionGroupAsync();
 

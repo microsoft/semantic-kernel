@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -186,7 +187,7 @@ internal partial class ClientCore
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel);
+                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false);
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
@@ -357,7 +358,7 @@ internal partial class ClientCore
                         ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
 
                     // Translate all entries into FunctionCallContent instances for diagnostics purposes.
-                    functionCallContents = this.GetFunctionCallContents(toolCalls).ToArray();
+                    functionCallContents = this.GetFunctionCallContents(toolCalls, functionCallingConfig.Options?.RetainArgumentTypes ?? false).ToArray();
                 }
                 finally
                 {
@@ -460,6 +461,7 @@ internal partial class ClientCore
     {
         var options = new ChatCompletionOptions
         {
+            WebSearchOptions = GetWebSearchOptions(executionSettings),
             MaxOutputTokenCount = executionSettings.MaxTokens,
             Temperature = (float?)executionSettings.Temperature,
             TopP = (float?)executionSettings.TopP,
@@ -548,6 +550,31 @@ internal partial class ClientCore
         }
 
         throw new NotSupportedException($"The provided reasoning effort '{effortLevelObject.GetType()}' is not supported.");
+    }
+
+    protected static ChatWebSearchOptions? GetWebSearchOptions(OpenAIPromptExecutionSettings executionSettings)
+    {
+        if (executionSettings.WebSearchOptions is null)
+        {
+            return null;
+        }
+
+        if (executionSettings.WebSearchOptions is ChatWebSearchOptions webSearchOptions)
+        {
+            return webSearchOptions;
+        }
+
+        if (executionSettings.WebSearchOptions is string webSearchOptionsString)
+        {
+            return ModelReaderWriter.Read<ChatWebSearchOptions>(BinaryData.FromString(webSearchOptionsString));
+        }
+
+        if (executionSettings.WebSearchOptions is JsonElement webSearchOptionsElement)
+        {
+            return ModelReaderWriter.Read<ChatWebSearchOptions>(BinaryData.FromString(webSearchOptionsElement.GetRawText()));
+        }
+
+        throw new NotSupportedException($"The provided web search options '{executionSettings.WebSearchOptions.GetType()}' is not supported.");
     }
 
     /// <summary>
@@ -860,11 +887,11 @@ internal partial class ClientCore
         return null;
     }
 
-    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel)
+    private OpenAIChatMessageContent CreateChatMessageContent(OpenAIChatCompletion completion, string targetModel, bool retainArgumentTypes)
     {
         var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
 
-        message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls));
+        message.Items.AddRange(this.GetFunctionCallContents(completion.ToolCalls, retainArgumentTypes));
 
         return message;
     }
@@ -884,7 +911,7 @@ internal partial class ClientCore
         return message;
     }
 
-    private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls)
+    private List<FunctionCallContent> GetFunctionCallContents(IEnumerable<ChatToolCall> toolCalls, bool retainArgumentTypes)
     {
         List<FunctionCallContent> result = [];
 
@@ -899,7 +926,7 @@ internal partial class ClientCore
                 try
                 {
                     arguments = JsonSerializer.Deserialize<KernelArguments>(toolCall.FunctionArguments);
-                    if (arguments is not null)
+                    if (arguments is { Count: > 0 } && !retainArgumentTypes)
                     {
                         // Iterate over copy of the names to avoid mutating the dictionary while enumerating it
                         var names = arguments.Names.ToArray();

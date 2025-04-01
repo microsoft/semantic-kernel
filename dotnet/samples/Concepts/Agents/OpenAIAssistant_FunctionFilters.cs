@@ -62,46 +62,42 @@ public class OpenAIAssistant_FunctionFilters(ITestOutputHelper output) : BaseAss
 
     private async Task InvokeAssistantAsync(OpenAIAssistantAgent agent)
     {
-        // Create a thread for the agent conversation.
-        AgentGroupChat chat = new();
+        OpenAIAssistantAgentThread agentThread = new(this.AssistantClient);
 
         try
         {
             // Respond to user input, invoking functions where appropriate.
             ChatMessageContent message = new(AuthorRole.User, "What is the special soup?");
-            chat.AddChatMessage(message);
-            await chat.InvokeAsync(agent).ToArrayAsync();
+            await agent.InvokeAsync(message, agentThread).ToArrayAsync();
 
             // Display the entire chat history.
-            ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
+            ChatMessageContent[] history = await agentThread.GetMessagesAsync(MessageCollectionOrder.Ascending).ToArrayAsync();
             this.WriteChatHistory(history);
         }
         finally
         {
-            await chat.ResetAsync();
+            await agentThread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
 
     private async Task InvokeAssistantStreamingAsync(OpenAIAssistantAgent agent)
     {
-        // Create a thread for the agent conversation.
-        AgentGroupChat chat = new();
+        OpenAIAssistantAgentThread agentThread = new(this.AssistantClient);
 
         try
         {
             // Respond to user input, invoking functions where appropriate.
             ChatMessageContent message = new(AuthorRole.User, "What is the special soup?");
-            chat.AddChatMessage(message);
-            await chat.InvokeStreamingAsync(agent).ToArrayAsync();
+            await agent.InvokeStreamingAsync(message, agentThread).ToArrayAsync();
 
             // Display the entire chat history.
-            ChatMessageContent[] history = await chat.GetChatMessagesAsync().Reverse().ToArrayAsync();
+            ChatMessageContent[] history = await agentThread.GetMessagesAsync(MessageCollectionOrder.Ascending).ToArrayAsync();
             this.WriteChatHistory(history);
         }
         finally
         {
-            await chat.ResetAsync();
+            await agentThread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }

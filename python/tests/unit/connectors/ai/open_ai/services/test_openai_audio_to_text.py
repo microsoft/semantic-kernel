@@ -2,7 +2,7 @@
 
 
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from openai import AsyncClient
@@ -63,18 +63,20 @@ def test_prompt_execution_settings_class(openai_unit_test_env) -> None:
     assert openai_audio_to_text.get_prompt_execution_settings_class() == OpenAIAudioToTextExecutionSettings
 
 
-@patch.object(AsyncTranscriptions, "create", return_value=Transcription(text="This is a test audio file."))
-async def test_get_text_contents(mock_transcription_create, openai_unit_test_env):
+async def test_get_text_contents(openai_unit_test_env):
     audio_content = AudioContent.from_audio_file(
         os.path.join(os.path.dirname(__file__), "../../../../../", "assets/sample_audio.mp3")
     )
 
-    openai_audio_to_text = OpenAIAudioToText()
+    with patch.object(AsyncTranscriptions, "create", new_callable=AsyncMock) as mock_transcription_create:
+        mock_transcription_create.return_value = Transcription(text="This is a test audio file.")
 
-    text_contents = await openai_audio_to_text.get_text_contents(audio_content)
-    assert len(text_contents) == 1
-    assert text_contents[0].text == "This is a test audio file."
-    assert text_contents[0].ai_model_id == openai_unit_test_env["OPENAI_AUDIO_TO_TEXT_MODEL_ID"]
+        openai_audio_to_text = OpenAIAudioToText()
+
+        text_contents = await openai_audio_to_text.get_text_contents(audio_content)
+        assert len(text_contents) == 1
+        assert text_contents[0].text == "This is a test audio file."
+        assert text_contents[0].ai_model_id == openai_unit_test_env["OPENAI_AUDIO_TO_TEXT_MODEL_ID"]
 
 
 async def test_get_text_contents_invalid_audio_content(openai_unit_test_env):

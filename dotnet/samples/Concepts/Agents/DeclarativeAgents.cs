@@ -31,7 +31,7 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
         Assert.NotNull(agent.Instructions);
         Assert.NotEmpty(agent.Instructions);
 
-        ChatHistory chatHistory = [new ChatMessageContent(AuthorRole.User, input)];
+        ChatHistoryAgentThread agentThread = new();
 
         var kernelArguments = new KernelArguments(new PromptExecutionSettings
         {
@@ -43,7 +43,7 @@ public class DeclarativeAgents(ITestOutputHelper output) : BaseAgentsTest(output
                 )
         });
 
-        var responses = await agent.InvokeAsync(chatHistory, kernelArguments).ToArrayAsync();
+        var responses = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input), agentThread, options: new() { KernelArguments = kernelArguments }).ToArrayAsync();
         Assert.NotEmpty(responses);
     }
 

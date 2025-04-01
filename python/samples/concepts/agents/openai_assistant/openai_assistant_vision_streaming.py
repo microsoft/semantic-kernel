@@ -3,11 +3,11 @@
 import asyncio
 import os
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, FileReferenceContent, ImageContent, TextContent
 
 """
-The following sample demonstrates how to create an OpenAI         
+The following sample demonstrates how to create an OpenAI
 assistant using either Azure OpenAI or OpenAI and leverage the
 multi-modal content types to have the assistant describe images
 and answer questions about them and provide streaming responses.
@@ -38,11 +38,13 @@ async def main():
         definition=definition,
     )
 
-    # Define a thread and invoke the agent with the user input
-    thread = await agent.client.beta.threads.create()
+    # Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     # Define a series of message with either ImageContent or FileReferenceContent
-    user_messages = {
+    user_inputs = {
         ChatMessageContent(
             role=AuthorRole.USER,
             items=[
@@ -69,23 +71,22 @@ async def main():
     }
 
     try:
-        for message in user_messages:
-            await agent.add_chat_message(thread_id=thread.id, message=message)
-
-            print(f"# User: '{message.items[0].text}'")  # type: ignore
+        for user_input in user_inputs:
+            print(f"# User: '{user_input.items[0].text}'")  # type: ignore
 
             first_chunk = True
-            async for content in agent.invoke_stream(thread_id=thread.id):
-                if content.role != AuthorRole.TOOL:
+            async for response in agent.invoke_stream(messages=user_input, thread=thread):
+                if response.role != AuthorRole.TOOL:
                     if first_chunk:
                         print("# Agent: ", end="", flush=True)
                         first_chunk = False
-                    print(content.content, end="", flush=True)
+                    print(response.content, end="", flush=True)
+                thread = response.thread
             print("\n")
 
     finally:
         await client.files.delete(file.id)
-        await agent.client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
 
