@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -143,12 +145,13 @@ public class LoggingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRec
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return LoggingExtensions.RunWithLoggingAsync(
             this._logger,
             nameof(UpsertBatchAsync),
-            () => this._innerCollection.QueryAsync(options, cancellationToken),
+            () => this._innerCollection.GetAsync(filter, top, options, cancellationToken),
             cancellationToken);
     }
 }

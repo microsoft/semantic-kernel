@@ -318,32 +318,40 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
 
         // Translate the filter now, so if it fails, we throw immediately.
-        var filter = new MongoDBFilterTranslator().Translate(options.Filter, this._storagePropertyNames);
+        var translatedFilter = new MongoDBFilterTranslator().Translate(filter, this._storagePropertyNames);
         SortDefinition<BsonDocument>? sortDefinition = null;
-
-        if (this._propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty sortProperty)
+        if (options.Sort.Expressions.Count > 0)
         {
-            var storageName = this._storagePropertyNames[sortProperty.DataModelPropertyName];
-            sortDefinition = options.SortAscending
-                ? Builders<BsonDocument>.Sort.Ascending(storageName)
-                : Builders<BsonDocument>.Sort.Descending(storageName);
+            sortDefinition = Builders<BsonDocument>.Sort.Combine(
+                options.Sort.Expressions.Select(pair =>
+                {
+                    var storageName = this._storagePropertyNames[this._propertyReader.GetOrderByProperty(pair.Key)!.DataModelPropertyName];
+
+                    return pair.Value
+                        ? Builders<BsonDocument>.Sort.Ascending(storageName)
+                        : Builders<BsonDocument>.Sort.Descending(storageName);
+                }));
         }
 
         using IAsyncCursor<BsonDocument> cursor = await this.RunOperationWithRetryAsync(
-            "QueryAsync",
+            "GetAsync",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
             async () =>
             {
-                return await this._mongoCollection.FindAsync(filter,
+                return await this._mongoCollection.FindAsync(translatedFilter,
                     new()
                     {
-                        Limit = options.Top,
+                        Limit = top,
                         Skip = options.Skip,
                         Sort = sortDefinition
                     },
@@ -358,7 +366,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 var record = VectorStoreErrorHandler.RunModelConversion(
                     DatabaseName,
                     this.CollectionName,
-                    "QueryAsync",
+                    "GetAsync",
                     () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
 
                 yield return record;

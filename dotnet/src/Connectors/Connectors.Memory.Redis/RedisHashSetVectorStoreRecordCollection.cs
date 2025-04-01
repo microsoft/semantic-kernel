@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -397,26 +398,32 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
 
-        var filter = new RedisFilterTranslator().Translate(options.Filter, this._propertyReader.JsonPropertyNamesMap);
-        var orderByField = this._propertyReader.GetOrderByProperty(options.OrderBy) switch
-        {
-            // Key properties are not supported for ordering as they are not part of the schema.
-            VectorStoreRecordKeyProperty keyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
-            VectorStoreRecordProperty dataProperty => this._propertyReader.GetJsonPropertyName(dataProperty.DataModelPropertyName),
-            null => null
-        };
+        options ??= new();
 
-        Query query = new Query(filter)
-            .Limit(options.Skip, options.Top)
+        var translatedFilter = new RedisFilterTranslator().Translate(filter, this._propertyReader.JsonPropertyNamesMap);
+        Query query = new Query(translatedFilter)
+            .Limit(options.Skip, top)
             .Dialect(2);
 
-        if (orderByField is not null)
+        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Expressions.Count switch
         {
-            query = query.SetSortBy(orderByField, ascending: options.SortAscending);
+            0 => null,
+            1 when options.Sort.Expressions[0].Key is VectorStoreRecordKeyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
+            1 => options.Sort.Expressions[0],
+            _ => throw new NotSupportedException("Redis does not support ordering by more than one property.")
+        };
+
+        if (sortExpression.HasValue)
+        {
+            query = query.SetSortBy(
+                field: this._propertyReader.GetJsonPropertyName(this._propertyReader.GetOrderByProperty(sortExpression.Value.Key)!.DataModelPropertyName),
+                ascending: sortExpression.Value.Value);
         }
 
         var results = await this.RunOperationAsync(

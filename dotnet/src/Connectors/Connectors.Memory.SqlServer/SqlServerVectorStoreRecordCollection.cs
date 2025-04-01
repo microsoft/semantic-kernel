@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -506,23 +507,29 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
 
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
+            filter,
+            top,
             options,
             connection,
             this._options.Schema,
             this.CollectionName,
             this._propertyReader.Properties,
             this._propertyReader.StoragePropertyNamesMap,
-            this._propertyReader.GetOrderByProperty(options.OrderBy));
+            options.Sort.Expressions.Select(pair => new KeyValuePair<VectorStoreRecordProperty, bool>(this._propertyReader.GetOrderByProperty<TRecord>(pair.Key)!, pair.Value)));
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-            cancellationToken, "QueryAsync", this.CollectionName).ConfigureAwait(false);
+            cancellationToken, "GetAsync", this.CollectionName).ConfigureAwait(false);
 
         var vectorPropertyStoragePropertyNames = options.IncludeVectors ? this._propertyReader.VectorPropertyStoragePropertyNames : [];
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };

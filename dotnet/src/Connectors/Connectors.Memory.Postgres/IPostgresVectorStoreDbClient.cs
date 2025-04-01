@@ -136,5 +136,5 @@ internal interface IPostgresVectorStoreDbClient
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
     IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecords<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader,
-        QueryOptions<TRecord> options, CancellationToken cancellationToken = default);
+        Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord> options, CancellationToken cancellationToken = default);
 }

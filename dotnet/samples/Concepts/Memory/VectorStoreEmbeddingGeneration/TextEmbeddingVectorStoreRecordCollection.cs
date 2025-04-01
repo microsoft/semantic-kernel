@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
@@ -126,9 +127,9 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        return this._decoratedVectorStoreRecordCollection.QueryAsync(options, cancellationToken);
+        return this._decoratedVectorStoreRecordCollection.GetAsync(filter, top, options, cancellationToken);
     }
 
     /// <inheritdoc />

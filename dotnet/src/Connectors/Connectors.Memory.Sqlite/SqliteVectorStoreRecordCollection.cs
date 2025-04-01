@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -229,30 +230,33 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
 
-        SqliteFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, options.Filter);
+        options ??= new();
+
+        SqliteFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, filter);
         translator.Translate(appendWhere: false);
 
         IReadOnlyList<VectorStoreRecordProperty> properties = options.IncludeVectors
             ? this._propertyReader.Properties
             : [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties];
 
-        var orderByPropertyName = this._propertyReader.GetOrderByProperty(options.OrderBy) is { } orderByProperty
-            ? this._propertyReader.StoragePropertyNamesMap[orderByProperty.DataModelPropertyName]
-            : null;
+        var orderByPropertyNames = options.Sort.Expressions
+            .Select(pair => new KeyValuePair<string, bool>(this._propertyReader.StoragePropertyNamesMap[this._propertyReader.GetOrderByProperty(pair.Key)!.DataModelPropertyName], pair.Value));
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectWhereCommand(
             connection,
+            top,
             options,
             this._dataTableName,
             properties,
             translator.Clause.ToString(),
             translator.Parameters,
-            orderByPropertyName);
+            orderByPropertyNames);
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))

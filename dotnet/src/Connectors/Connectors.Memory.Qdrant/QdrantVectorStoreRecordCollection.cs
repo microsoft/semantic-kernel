@@ -540,37 +540,49 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    /// <remarks>
-    /// In order to use <see cref="QueryOptions{TRecord}.OrderBy"/>, range index must be created first.
-    /// Check <see href="https://qdrant.tech/documentation/concepts/indexing/#payload-index"/> to see which payload schemas support Range conditions.
-    /// </remarks>
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
 
-        var filter = new QdrantFilterTranslator().Translate(options.Filter, this._propertyReader.StoragePropertyNamesMap);
+        options ??= new();
+
+        var translatedFilter = new QdrantFilterTranslator().Translate(filter, this._propertyReader.StoragePropertyNamesMap);
 
         // Specify whether to include vectors in the search results.
         WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
 
-        string? orderByName = this._propertyReader.GetOrderByProperty(options.OrderBy) switch
+        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Expressions.Count switch
         {
-            VectorStoreRecordKeyProperty => "id",
-            VectorStoreRecordDataProperty dataProperty => this._propertyReader.StoragePropertyNamesMap[dataProperty.DataModelPropertyName],
-            _ => null
+            0 => null,
+            1 => options.Sort.Expressions[0],
+            _ => throw new NotSupportedException("Qdrant does not support ordering by more than one property.")
         };
 
-        OrderBy? orderBy = orderByName is not null
-            ? new(orderByName) { Direction = options.SortAscending ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc }
-            : null;
+        OrderBy? orderBy = null;
+        if (sortExpression.HasValue)
+        {
+            var orderByName = this._propertyReader.GetOrderByProperty(sortExpression.Value.Key) switch
+            {
+                VectorStoreRecordKeyProperty => "id",
+                VectorStoreRecordDataProperty dataProperty => this._propertyReader.StoragePropertyNamesMap[dataProperty.DataModelPropertyName],
+                _ => throw new InvalidOperationException()
+            };
+
+            orderBy = new(orderByName)
+            {
+                Direction = sortExpression.Value.Value ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc
+            };
+        }
 
         var scrollResponse = await this.RunOperationAsync(
             "Scroll",
             () => this._qdrantClient.ScrollAsync(
                 this.CollectionName,
-                filter,
+                translatedFilter,
                 vectorsSelector,
-                limit: (uint)(options.Top + options.Skip),
+                limit: (uint)(top + options.Skip),
                 orderBy,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 

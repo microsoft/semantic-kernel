@@ -41,10 +41,21 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
                 throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string. The Azure AI Search VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
             }
 
-            return new SearchableField(storagePropertyName) { IsFilterable = dataProperty.IsFilterable };
+            return new SearchableField(storagePropertyName)
+            {
+                IsFilterable = dataProperty.IsFilterable,
+                // Sometimes the users ask to also OrderBy given filterable property, so we make it sortable.
+                IsSortable = dataProperty.IsFilterable
+            };
         }
 
-        return new SimpleField(storagePropertyName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.PropertyType)) { IsFilterable = dataProperty.IsFilterable };
+        var fieldType = AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.PropertyType);
+        return new SimpleField(storagePropertyName, fieldType)
+        {
+            IsFilterable = dataProperty.IsFilterable,
+            // Sometimes the users ask to also OrderBy given filterable property, so we make it sortable.
+            IsSortable = dataProperty.IsFilterable && !fieldType.IsCollection
+        };
     }
 
     /// <summary>

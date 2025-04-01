@@ -246,7 +246,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Fail("The test returns all results, and so is unreliable");
         }
 
-        var actual = await this.GetResults(filter, fixture.TestData.Count);
+        var actual = await this.GetResults(fixture.Collection, filter, fixture.TestData.Count);
 
         Assert.Equal(expected, actual, (e, a) =>
             e.Int == a.Int &&
@@ -254,9 +254,9 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             e.Int2 == a.Int2);
     }
 
-    protected virtual async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
+    protected virtual async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<TKey, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
     {
-        var results = await fixture.Collection.VectorizedSearchAsync(
+        var results = await collection.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 2, 3]),
             new()
             {
@@ -379,7 +379,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                 new()
                 {
                     Key = this.GenerateNextKey<TKey>(),
-                    Int = 123,
+                    Int = 9,
                     String = "foo",
                     Bool = true,
                     Int2 = 9,

@@ -280,11 +280,17 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
         var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
             .AsQueryable()
-            .Where(options.Filter);
+            .Where(filter);
 
         if (options.OrderBy is not null)
         {
@@ -295,7 +301,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return records
             .Skip(options.Skip)
-            .Take(options.Top)
+            .Take(top)
             .ToAsyncEnumerable();
     }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq.Expressions;
+using Microsoft.Extensions.VectorData;
 
 namespace VectorDataSpecificationTests.Filter;
 
@@ -9,10 +10,19 @@ public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture f
 {
     // Not all of the connectors allow to sort by the Key, so we sort by the Int.
     protected override List<FilterRecord> GetOrderedRecords(IQueryable<FilterRecord> filtered)
-        => filtered.OrderBy(r => r.Int).ToList();
+        => filtered.OrderBy(r => r.Int).ThenByDescending(r => r.String).ToList();
 
-    protected override async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
-        => (await fixture.Collection.QueryAsync(new() { Filter = filter, Top = top, OrderBy = r => r.Int }).ToListAsync());
+    protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<TKey, FilterRecord> collection,
+        Expression<Func<FilterRecord, bool>> filter, int top)
+    {
+        QueryOptions<FilterRecord> options = new();
+
+        options.Sort
+            .Ascending(r => r.Int)
+            .Descending(r => r.String);
+
+        return await collection.GetAsync(filter, top, options).ToListAsync();
+    }
 
     [Obsolete("Not used by derived types")]
     public sealed override Task Legacy_And() => Task.CompletedTask;
@@ -34,7 +44,7 @@ public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture f
 
         /// <summary>
         /// In contrary to the filter tests, the query uses random vectors,
-        /// just to make sure that the values don't matter for QueryAsync.
+        /// just to make sure that the values don't matter for GetAsync.
         /// </summary>
         protected override ReadOnlyMemory<float> GetVector(int count)
 #pragma warning disable CA5394 // Do not use insecure randomness

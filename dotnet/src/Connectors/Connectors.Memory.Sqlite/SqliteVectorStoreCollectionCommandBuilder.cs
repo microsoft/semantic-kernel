@@ -187,12 +187,13 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     internal static DbCommand BuildSelectWhereCommand<TRecord>(
         SqliteConnection connection,
+        int top,
         QueryOptions<TRecord> options,
         string table,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         string whereFilter,
         Dictionary<string, object> whereParameters,
-        string? orderByPropertyName = null)
+        IEnumerable<KeyValuePair<string, bool>> orderByPropertyNames)
     {
         StringBuilder builder = new(200);
 
@@ -209,12 +210,24 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendFormat("FROM {0}", table).AppendLine();
         builder.AppendFormat("WHERE {0}", whereClause).AppendLine();
 
-        if (orderByPropertyName is not null)
+        bool orderByClauseNotAdded = true;
+        foreach (var pair in orderByPropertyNames)
         {
-            builder.AppendFormat("ORDER BY {0} {1}", orderByPropertyName, options.SortAscending ? "ASC" : "DESC").AppendLine();
+            if (orderByClauseNotAdded)
+            {
+                builder.Append("ORDER BY ");
+                orderByClauseNotAdded = false;
+            }
+
+            builder.AppendFormat("[{0}] {1},", pair.Key, pair.Value ? "ASC" : "DESC");
+        }
+        if (!orderByClauseNotAdded)
+        {
+            builder.Length--; // remove the last comma
+            builder.AppendLine();
         }
 
-        builder.AppendFormat("LIMIT {0}", options.Top).AppendLine();
+        builder.AppendFormat("LIMIT {0}", top).AppendLine();
         builder.AppendFormat("OFFSET {0}", options.Skip).AppendLine();
 
         command.CommandText = builder.ToString();

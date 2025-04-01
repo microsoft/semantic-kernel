@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -399,11 +400,15 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
 
-        var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(options.Filter, this._storagePropertyNames);
+        options ??= new();
+
+        var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(filter, this._storagePropertyNames);
 
         string? orderByField = this._propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty orderByProperty
             ? this._storagePropertyNames[orderByProperty.DataModelPropertyName] : null;
@@ -417,7 +422,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             filterParameters,
             orderByField,
             options.SortAscending,
-            top: options.Top,
+            top: top,
             skip: options.Skip);
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
@@ -427,7 +432,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             var record = VectorStoreErrorHandler.RunModelConversion(
                 DatabaseName,
                 this.CollectionName,
-                "QueryAsync",
+                "GetAsync",
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = options.IncludeVectors }));
 
             yield return record;

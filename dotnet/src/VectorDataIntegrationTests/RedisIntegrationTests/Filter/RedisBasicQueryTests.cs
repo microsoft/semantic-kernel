@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using RedisIntegrationTests.Support;
@@ -13,6 +14,10 @@ namespace RedisIntegrationTests.Filter;
 public abstract class RedisBasicQueryTests(BasicQueryTests<string>.QueryFixture fixture)
     : BasicQueryTests<string>(fixture)
 {
+    protected override async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
+        // Redis does not support ordering by multiple properties, so we order the results manually.
+        => (await fixture.Collection.GetAsync(filter, top).ToListAsync()).OrderBy(r => r.Int).ThenByDescending(r => r.String).ToList();
+
     #region Equality with null
 
     public override Task Equal_with_null_reference_type()

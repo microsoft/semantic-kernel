@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -318,15 +319,21 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
 
         await foreach (var dictionary in this._client.GetMatchingRecords(
             this.CollectionName,
             this._propertyReader,
+            filter,
+            top,
             options,
             cancellationToken).ConfigureAwait(false))
         {

@@ -13,8 +13,8 @@ public class PineconeBasicQueryTests(PineconeBasicQueryTests.Fixture fixture)
     : BasicQueryTests<string>(fixture), IClassFixture<PineconeBasicQueryTests.Fixture>
 {
     protected override async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
-        // Pinecone doesn't support OrderBy in QueryAsync, so we have to sort the results manually
-        => (await fixture.Collection.QueryAsync(new() { Filter = filter, Top = top }).ToListAsync()).OrderBy(r => r.Int).ToList();
+        // Pinecone doesn't support OrderBy in GetAsync, so we have to sort the results manually
+        => (await fixture.Collection.GetAsync(filter, top).ToListAsync()).OrderBy(r => r.Int).ToList();
 
     // Specialized Pinecone syntax for NOT over Contains ($nin)
     [ConditionalFact]

@@ -78,8 +78,9 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
     /// </summary>
     public static string BuildQuery<TRecord>(
+        Expression<Func<TRecord, bool>> filter, int top,
         QueryOptions<TRecord> queryOptions,
-        VectorStoreRecordProperty? orderByProperty,
+        IEnumerable<KeyValuePair<VectorStoreRecordProperty, bool>> orderByProperties,
         string collectionName,
         string keyPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
@@ -91,30 +92,28 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
             string.Empty;
 
-        string? sortPath = orderByProperty switch
+        string sortPaths = string.Join(",", orderByProperties.Select(property =>
         {
-            VectorStoreRecordKeyProperty => "id",
-            VectorStoreRecordDataProperty dataProperty => storagePropertyNames[dataProperty.DataModelPropertyName],
-            _ => null
-        };
+            string? sortPath = property.Key switch
+            {
+                VectorStoreRecordKeyProperty key => "id",
+                _ => storagePropertyNames[property.Key.DataModelPropertyName],
+            };
 
-        var sort = orderByProperty is not null
-            ? $$"""
-            sort: {
-              path: ["{{sortPath}}"]
-              order: {{(queryOptions.SortAscending ? "asc" : "desc")}}
-            }
-            """ : string.Empty;
+            return $$"""{ path: ["{{sortPath}}"], order: {{(property.Value ? "asc" : "desc")}} }""";
+        }));
 
-        var filter = new WeaviateFilterTranslator().Translate(queryOptions.Filter, storagePropertyNames);
+        var sort = string.IsNullOrEmpty(sortPaths) ? string.Empty : $"sort: [ {sortPaths} ]";
+
+        var translatedFilter = new WeaviateFilterTranslator().Translate(filter, storagePropertyNames);
 
         return $$"""
         {
           Get {
             {{collectionName}} (
-              limit: {{queryOptions.Top}}
+              limit: {{top}}
               offset: {{queryOptions.Skip}}
-              where: {{filter}}
+              where: {{translatedFilter}}
               {{sort}}
             ) {
               {{string.Join(" ", dataPropertyStorageNames)}}

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -361,13 +362,19 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildQuery(
+            filter,
+            top,
             options,
-            this._propertyReader.GetOrderByProperty(options.OrderBy),
+            options.Sort.Expressions.Select(pair => new KeyValuePair<VectorStoreRecordProperty, bool>(this._propertyReader.GetOrderByProperty<TRecord>(pair.Key)!, pair.Value)),
             this.CollectionName,
             this._propertyReader.KeyPropertyName,
             s_jsonSerializerOptions,
@@ -375,7 +382,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             this._propertyReader.VectorPropertyJsonNames,
             this._propertyReader.DataPropertyJsonNames);
 
-        var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "QueryAsync", cancellationToken).ConfigureAwait(false);
+        var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken).ConfigureAwait(false);
         await foreach (var record in results.Results.ConfigureAwait(false))
         {
             yield return record.Record;

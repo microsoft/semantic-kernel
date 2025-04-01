@@ -424,7 +424,8 @@ FROM ({commandText}) AS subquery
     }
 
     internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
-        string schema, string tableName, VectorStoreRecordPropertyReader propertyReader, QueryOptions<TRecord> options)
+        string schema, string tableName, VectorStoreRecordPropertyReader propertyReader,
+        Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord> options)
     {
         StringBuilder query = new(200);
         query.Append("SELECT ");
@@ -439,7 +440,7 @@ FROM ({commandText}) AS subquery
         query.AppendLine();
         query.AppendFormat("FROM {0}.\"{1}\"", schema, tableName).AppendLine();
 
-        PostgresFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, options.Filter, startParamIndex: 1, query);
+        PostgresFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, filter, startParamIndex: 1, query);
         translator.Translate(appendWhere: true);
         query.AppendLine();
 
@@ -449,7 +450,7 @@ FROM ({commandText}) AS subquery
         }
 
         query.AppendFormat("OFFSET {0}", options.Skip).AppendLine();
-        query.AppendFormat("LIMIT {0}", options.Top).AppendLine();
+        query.AppendFormat("LIMIT {0}", top).AppendLine();
 
         return new PostgresSqlCommandInfo(query.ToString())
         {

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
@@ -377,11 +378,13 @@ internal static class SqlServerCommandBuilder
     }
 
     internal static SqlCommand SelectWhere<TRecord>(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
         QueryOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
         IReadOnlyList<VectorStoreRecordProperty> properties,
         IReadOnlyDictionary<string, string> storagePropertyNamesMap,
-        VectorStoreRecordProperty? orderByProperty)
+        IEnumerable<KeyValuePair<VectorStoreRecordProperty, bool>> orderByProperties)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -392,11 +395,11 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
-        if (options.Filter is not null)
+        if (filter is not null)
         {
             int startParamIndex = command.Parameters.Count;
 
-            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, options.Filter, sb, startParamIndex: startParamIndex);
+            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, filter, sb, startParamIndex: startParamIndex);
             translator.Translate(appendWhere: true);
             List<object> parameters = translator.ParameterValues;
 
@@ -406,14 +409,25 @@ internal static class SqlServerCommandBuilder
             }
             sb.AppendLine();
         }
-        if (orderByProperty is not null)
+        bool orderByClauseNotAdded = true;
+        foreach (var pair in orderByProperties)
         {
-            sb.AppendFormat("ORDER BY [{0}] {1}", GetColumnName(orderByProperty), options.SortAscending ? "ASC" : "DESC");
+            if (orderByClauseNotAdded)
+            {
+                sb.Append("ORDER BY ");
+                orderByClauseNotAdded = false;
+            }
+
+            sb.AppendFormat("[{0}] {1},", GetColumnName(pair.Key), pair.Value ? "ASC" : "DESC");
+        }
+        if (!orderByClauseNotAdded)
+        {
+            sb.Length--; // remove the last comma
             sb.AppendLine();
         }
         // Negative Skip and Top values are rejected by the QueryOptions property setters.
         // 0 is a legal value for OFFSET.
-        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, options.Top);
+        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
 
         command.CommandText = sb.ToString();
         return command;

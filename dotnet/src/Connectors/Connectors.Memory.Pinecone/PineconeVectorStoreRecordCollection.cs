@@ -388,17 +388,21 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TRecord> QueryAsync(QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(options);
-        if (options.OrderBy is not null)
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        if (options?.OrderBy is not null)
         {
             throw new NotSupportedException("OrderBy is not supported by the Pinecone connector.");
         }
 
+        options ??= new();
+
         Sdk.QueryRequest request = new()
         {
-            TopK = (uint)(options.Top + options.Skip),
+            TopK = (uint)(top + options.Skip),
             Namespace = this._options.IndexNamespace,
             IncludeValues = options.IncludeVectors,
             IncludeMetadata = true,
@@ -406,7 +410,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             // Since we are doing a query, we don't have a vector to provide, so we fake one.
             // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
             Vector = new ReadOnlyMemory<float>(new float[this._propertyReader.VectorProperty!.Dimensions!.Value]),
-            Filter = new PineconeFilterTranslator().Translate(options.Filter, this._propertyReader.StoragePropertyNamesMap),
+            Filter = new PineconeFilterTranslator().Translate(filter, this._propertyReader.StoragePropertyNamesMap),
         };
 
         Sdk.QueryResponse response = await this.RunIndexOperationAsync(

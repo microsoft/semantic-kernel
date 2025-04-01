@@ -3,7 +3,7 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.GetAsync"/>.
+/// Defines options for calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.GetAsync(TKey, Microsoft.Extensions.VectorData.GetRecordOptions?, System.Threading.CancellationToken)"/>.
 /// </summary>
 public class GetRecordOptions
 {
