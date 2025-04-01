@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from semantic_kernel.data import TextSearchFilter, VectorSearchFilter
-from semantic_kernel.data.search_filter import SearchFilter
+from semantic_kernel.data.text_search import SearchFilter
+from semantic_kernel.data.vector_search import VectorSearchFilter
 
 
 def test_filter():
@@ -34,7 +34,7 @@ def test_multiple_filters():
 
 
 def test_text_search_filter():
-    filter = TextSearchFilter.equal_to("field_name", "value")
+    filter = SearchFilter.equal_to("field_name", "value")
     assert len(filter.filters) == 1
     assert str(filter) == "(filter_clause_type='equal_to' field_name='field_name' value='value')"
 
