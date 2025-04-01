@@ -25,8 +25,8 @@ public static class WebKernelBuilderExtensions
         BingTextSearchOptions? options = null,
         string? serviceId = default)
     {
+        Verify.NotNull(builder);
         builder.Services.AddBingTextSearch(apiKey, options, serviceId);
-
         return builder;
     }
 
@@ -45,6 +45,7 @@ public static class WebKernelBuilderExtensions
         GoogleTextSearchOptions? options = null,
         string? serviceId = default)
     {
+        Verify.NotNull(builder);
         builder.Services.AddGoogleTextSearch(searchEngineId, apiKey, options, serviceId);
         return builder;
     }
@@ -63,9 +64,7 @@ public static class WebKernelBuilderExtensions
         string? serviceId = default)
     {
         Verify.NotNull(builder);
-
         builder.Services.AddTavilyTextSearch(apiKey, options, serviceId);
-
         return builder;
     }
 }
