@@ -130,7 +130,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         [VectorStoreRecordData]
         public required string Link { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

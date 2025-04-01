@@ -510,7 +510,7 @@ internal static class SqlServerCommandBuilder
         Type t when t == typeof(long) => "BIGINT",
         Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
         Type t when t == typeof(string) && property is VectorStoreRecordKeyProperty => "NVARCHAR(4000)",
-        Type t when t == typeof(string) && property is VectorStoreRecordDataProperty { IsFilterable: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is VectorStoreRecordDataProperty { IsIndexed: true } => "NVARCHAR(4000)",
         Type t when t == typeof(string) => "NVARCHAR(MAX)",
         Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
         Type t when t == typeof(bool) => "BIT",

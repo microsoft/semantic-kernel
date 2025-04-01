@@ -161,7 +161,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
         // Arrange
         var dataProperties = new List<VectorStoreRecordDataProperty>
         {
-            new("PropertyName", propertyType) { IsFilterable = true, IsFullTextSearchable = true }
+            new("PropertyName", propertyType) { IsIndexed = true, IsFullTextSearchable = true }
         };
 
         var storagePropertyNames = new Dictionary<string, string> { ["PropertyName"] = "propertyName" };

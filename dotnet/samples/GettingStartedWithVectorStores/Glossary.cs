@@ -16,7 +16,7 @@ internal sealed class Glossary
     [VectorStoreRecordKey]
     public string Key { get; set; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string Category { get; set; }
 
     [VectorStoreRecordData]

@@ -37,7 +37,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             {
                 Name = storagePropertyNames[property.DataModelPropertyName],
                 DataType = [MapType(property.PropertyType)],
-                IndexFilterable = property.IsFilterable,
+                IndexFilterable = property.IsIndexed,
                 IndexSearchable = property.IsFullTextSearchable
             });
         }

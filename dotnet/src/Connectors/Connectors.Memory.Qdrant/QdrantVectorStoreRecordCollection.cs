@@ -178,7 +178,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         }
 
         // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFilterable);
+        var dataProperties = this._propertyReader.DataProperties.Where(x => x.IsIndexed);
         foreach (var dataProperty in dataProperties)
         {
             var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
@@ -194,7 +194,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             }
             else
             {
-                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsFilterable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
             }
 
             await this.RunOperationAsync(
