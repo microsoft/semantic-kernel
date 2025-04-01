@@ -253,7 +253,7 @@ async def test_open_ai_assistant_agent_invoke_stream(arguments, include_args, op
         pytest.param(None, False),
     ],
 )
-async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
+async def test_open_ai_assistant_agent_invoke_stream_with_on_new_message_callback(
     arguments, include_args, openai_client, assistant_definition
 ):
     agent = OpenAIAssistantAgent(client=openai_client, definition=assistant_definition)
@@ -262,8 +262,8 @@ async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
 
     final_chat_history = ChatHistory()
 
-    def handle_stream_completion(history: ChatHistory) -> None:
-        final_chat_history.messages.extend(history.messages)
+    async def handle_stream_completion(message: ChatMessageContent) -> None:
+        final_chat_history.add_message(message)
 
     # Fake collected messages
     fake_message = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
@@ -282,7 +282,7 @@ async def test_open_ai_assistant_agent_invoke_stream_with_on_complete_callback(
         side_effect=fake_invoke,
     ):
         async for item in agent.invoke_stream(
-            messages="test", thread=mock_thread, on_complete=handle_stream_completion, **(kwargs or {})
+            messages="test", thread=mock_thread, on_new_message=handle_stream_completion, **(kwargs or {})
         ):
             results.append(item)
 
