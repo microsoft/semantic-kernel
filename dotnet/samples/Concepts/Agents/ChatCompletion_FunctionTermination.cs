@@ -55,8 +55,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
         }
     }
 
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync()
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
