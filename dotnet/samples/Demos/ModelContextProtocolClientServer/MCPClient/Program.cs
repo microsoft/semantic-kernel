@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ModelContextProtocol;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Configuration;
 using ModelContextProtocol.Protocol.Transport;
 
 namespace MCPClient;

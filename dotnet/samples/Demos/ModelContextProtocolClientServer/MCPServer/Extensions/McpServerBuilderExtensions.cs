@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using ModelContextProtocol.Configuration;
 using ModelContextProtocol.Server;
 
 namespace MCPServer;
