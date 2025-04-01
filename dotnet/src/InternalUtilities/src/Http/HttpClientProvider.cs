@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http;
 #if NET
 using System.Net.Security;
@@ -26,6 +27,12 @@ internal static class HttpClientProvider
     /// <returns>An instance of HttpClient.</returns>
     public static HttpClient GetHttpClient() => new(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
 
+    /// <summary>
+    /// Retrieves an instance of HttpClient.
+    /// </summary>
+    /// <param name="handler"></param>
+    /// <returns>An instance of HttpClient.</returns>
+    public static HttpClient GetHttpClient(HttpMessageHandler handler) => new(handler, disposeHandler: false);
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
