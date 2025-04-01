@@ -3,7 +3,6 @@
 using MCPServer;
 using MCPServer.Tools;
 using Microsoft.SemanticKernel;
-using ModelContextProtocol;
 
 // Create a kernel builder and add plugins
 IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
