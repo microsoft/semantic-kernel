@@ -90,17 +90,17 @@ public sealed class AzureOpenAIChatCompletionService : IChatCompletionService, I
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GetChatMessageContentsAsync(this._client.DeploymentName, chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatMessageContentsAsync(executionSettings?.ModelId ?? this._client.DeploymentName, chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GetStreamingChatMessageContentsAsync(this._client.DeploymentName, chatHistory, executionSettings, kernel, cancellationToken);
+        => this._client.GetStreamingChatMessageContentsAsync(executionSettings?.ModelId ?? this._client.DeploymentName, chatHistory, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextContentsAsync(this._client.DeploymentName, prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextContentsAsync(executionSettings?.ModelId ?? this._client.DeploymentName, prompt, executionSettings, kernel, cancellationToken);
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextStreamingContentsAsync(this._client.DeploymentName, prompt, executionSettings, kernel, cancellationToken);
+        => this._client.GetChatAsTextStreamingContentsAsync(executionSettings?.ModelId ?? this._client.DeploymentName, prompt, executionSettings, kernel, cancellationToken);
 }
