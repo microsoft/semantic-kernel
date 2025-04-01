@@ -61,9 +61,9 @@ internal sealed class Program
 
         if (config["OpenAI:ApiKey"] is not { } apiKey)
         {
-            string message = "Please provide a valid OpenAI:ApiKey to run this sample. See the associated README.md for more details.";
-            Console.Error.WriteLine(message);
-            throw new InvalidOperationException(message);
+            const string Message = "Please provide a valid OpenAI:ApiKey to run this sample. See the associated README.md for more details.";
+            Console.Error.WriteLine(Message);
+            throw new InvalidOperationException(Message);
         }
 
         string modelId = config["OpenAI:ChatModelId"] ?? "gpt-4o-mini";
