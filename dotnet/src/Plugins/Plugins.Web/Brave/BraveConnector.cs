@@ -69,7 +69,7 @@ public sealed class BraveConnector : IWebSearchEngineConnector
             throw new ArgumentOutOfRangeException(nameof(offset),offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
         }
 
-        Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}?q={query}&count={count}&offset={offset}");
+        Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
 
         this._logger.LogDebug("Sending request: {Uri}", uri);
 
@@ -82,20 +82,27 @@ public sealed class BraveConnector : IWebSearchEngineConnector
         // Sensitive data, logging as trace, disabled by default
         this._logger.LogTrace("Response content received: {Data}", json);
 
-        WebSearchResponse? data = JsonSerializer.Deserialize<WebSearchResponse>(json);
+        var data = JsonSerializer.Deserialize<BraveSearchResponse<BraveWebResult>>(json);
 
         List<T>? returnValues = null;
-        if (data?.WebPages?.Value is not null)
+        if (data?.Web?.Results is not null)
         {
             if (typeof(T) == typeof(string))
             {
-                WebPage[]? results = data?.WebPages?.Value;
-                returnValues = results?.Select(x => x.Snippet).ToList() as List<T>;
+                var results = data?.Web?.Results;
+                returnValues = results?.Select(x => x.Description).ToList() as List<T>;
+            }
+            else if (typeof(T) == typeof(BraveWebResult))
+            {
+                var results = data?.Web?.Results!;
+                returnValues = results.Take(count).ToList() as List<T>;
             }
             else if (typeof(T) == typeof(WebPage))
             {
-                List<WebPage>? webPages = [.. data.WebPages.Value];
-                returnValues = webPages.Take(count).ToList() as List<T>;
+                List<WebPage>? webPages = data.Web?.Results
+                    .Select(x => new WebPage() { Name = x.Title, Snippet = x.Description, Url = x.Url }).ToList();
+
+                returnValues = webPages!.Take(count).ToList() as List<T>;
             }
             else
             {
@@ -103,6 +110,30 @@ public sealed class BraveConnector : IWebSearchEngineConnector
             }
         }
 
+        if (data?.Videos?.Results is not null)
+        {
+            if (typeof(T) == typeof(string))
+            {
+                var results = data?.Videos?.Results;
+                returnValues = results?.Select(x => x.Description).ToList() as List<T>;
+            }
+            else if (typeof(T) == typeof(BraveWebResult))
+            {
+                var results = data?.Videos?.Results!;
+                returnValues = results.Take(count).ToList() as List<T>;
+            }
+            else if (typeof(T) == typeof(WebPage))
+            {
+                List<WebPage>? webPages = data.Videos?.Results
+                    .Select(x => new WebPage() { Name = x.Title, Snippet = x.Description, Url = x.Url }).ToList();
+
+                returnValues = webPages!.Take(count).ToList() as List<T>;
+            }
+            else
+            {
+                throw new NotSupportedException($"Type {typeof(T)} is not supported.");
+            }
+        }
         return
             returnValues is null ? [] :
             returnValues.Count <= count ? returnValues :
