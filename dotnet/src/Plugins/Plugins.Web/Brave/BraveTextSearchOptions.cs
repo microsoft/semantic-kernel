@@ -18,6 +18,10 @@ public sealed class BraveTextSearchOptions
     public Uri? Endpoint { get; init; } = null;
 
     /// <summary>
+    /// Use gzip Encoding to decrypt response data
+    /// </summary>
+    public bool UseGzip { get; set; } = true ;
+    /// <summary>
     /// The HTTP client to use for making requests.
     /// </summary>
     public HttpClient? HttpClient { get; init; } = null;
@@ -28,12 +32,12 @@ public sealed class BraveTextSearchOptions
     public ILoggerFactory? LoggerFactory { get; init; } = null;
 
     /// <summary>
-    /// <see cref="ITextSearchStringMapper" /> instance that can map a <see cref="BraveWebPage"/> to a <see cref="string"/>
+    /// <see cref="ITextSearchStringMapper" /> instance that can map a <see cref="BraveWebResult"/> to a <see cref="string"/>
     /// </summary>
     public ITextSearchStringMapper? StringMapper { get; init; } = null;
 
     /// <summary>
-    /// <see cref="ITextSearchResultMapper" /> instance that can map a <see cref="BraveWebPage"/> to a <see cref="TextSearchResult"/>
+    /// <see cref="ITextSearchResultMapper" /> instance that can map a <see cref="BraveWebResult"/> to a <see cref="TextSearchResult"/>
     /// </summary>
     public ITextSearchResultMapper? ResultMapper { get; init; } = null;
 }
