@@ -9,8 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ModelContextProtocol;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Configuration;
 using ModelContextProtocol.Protocol.Transport;
 
 namespace MCPClient;
@@ -52,7 +52,7 @@ internal sealed class Program
 
         // Retrieve and display the list of tools available on the MCP server
         Console.WriteLine("Available MCP tools:");
-        var tools = await mcpClient.GetAIFunctionsAsync().ConfigureAwait(false);
+        var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
         foreach (var tool in tools)
         {
             Console.WriteLine($"{tool.Name}: {tool.Description}");
