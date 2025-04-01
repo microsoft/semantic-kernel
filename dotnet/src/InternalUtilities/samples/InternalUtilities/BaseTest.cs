@@ -109,7 +109,7 @@ public abstract class BaseTest : TextWriter
                 openAIClient: new AzureOpenAIClient(
                     endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
                     credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey)),
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+                modelId: TestConfiguration.AzureOpenAI.ChatDeploymentName);
         }
         else
         {
@@ -117,7 +117,7 @@ public abstract class BaseTest : TextWriter
                 openAIClient: new AzureOpenAIClient(
                     endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
                     credential: new AzureCliCredential()),
-                modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+                modelId: TestConfiguration.AzureOpenAI.ChatDeploymentName);
         }
 
         var functionCallingChatClient = chatClient!.AsKernelFunctionInvokingChatClient();
