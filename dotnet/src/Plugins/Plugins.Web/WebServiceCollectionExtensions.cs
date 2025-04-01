@@ -78,6 +78,8 @@ public static class WebServiceCollectionExtensions
         TavilyTextSearchOptions? options = null,
         string? serviceId = default)
     {
+        Verify.NotNull(services);
+        
         services.AddKeyedSingleton<ITextSearch>(
             serviceId,
             (sp, obj) =>
