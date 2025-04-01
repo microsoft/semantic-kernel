@@ -21,9 +21,11 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OptionalOneOrMany
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPServerExecutionSettings
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -376,6 +378,32 @@ class KernelPlugin(KernelBaseModel):
                 openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
             ),
+        )
+
+    @experimental
+    @classmethod
+    async def from_mcp_server(
+        cls: type[_T],
+        plugin_name: str,
+        execution_settings: "MCPServerExecutionSettings",
+        description: str | None = None,
+    ) -> _T:
+        """Creates a plugin from an MCP server.
+
+        Args:
+            plugin_name: The name of the plugin.
+            execution_settings: The settings for the MCP server.
+            description: The description of the plugin.
+
+        Returns:
+            KernelPlugin: The created plugin.
+        """
+        from semantic_kernel.connectors.mcp.mcp_manager import create_function_from_mcp_server
+
+        return cls(
+            name=plugin_name,
+            description=description,
+            functions=await create_function_from_mcp_server(settings=execution_settings),
         )
 
     @classmethod
