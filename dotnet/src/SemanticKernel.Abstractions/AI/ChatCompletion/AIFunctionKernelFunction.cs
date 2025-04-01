@@ -66,7 +66,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
             return Array.Empty<KernelParameterMetadata>();
         }
 
-        HashSet<string>? requiredProperties = GetRequiredParameterNames(aiFunction.JsonSchema);
+        HashSet<string>? requiredParameters = GetRequiredParameterNames(aiFunction.JsonSchema);
 
         List<KernelParameterMetadata> kernelParams = [];
         var parameterInfos = aiFunction.UnderlyingMethod?.GetParameters().ToDictionary(p => p.Name!, StringComparer.Ordinal);
@@ -78,7 +78,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
             {
                 Description = param.Value.TryGetProperty("description", out JsonElement description) ? description.GetString() : null,
                 DefaultValue = param.Value.TryGetProperty("default", out JsonElement defaultValue) ? defaultValue : null,
-                IsRequired = requiredProperties?.Contains(param.Name) ?? false,
+                IsRequired = requiredParameters?.Contains(param.Name) ?? false,
                 ParameterType = paramInfo?.ParameterType,
                 Schema = param.Value.TryGetProperty("schema", out JsonElement schema)
                     ? new KernelJsonSchema(schema)
