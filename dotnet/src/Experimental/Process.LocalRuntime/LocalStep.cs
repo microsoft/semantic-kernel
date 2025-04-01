@@ -154,7 +154,14 @@ internal class LocalStep : IKernelProcessMessageChannel
                 functionParameters = this._inputs[message.FunctionName];
             }
 
-            functionParameters![kvp.Key] = kvp.Value;
+            if (kvp.Value is KernelProcessEventData proxyData)
+            {
+                functionParameters![kvp.Key] = proxyData.ToObject();
+            }
+            else
+            {
+                functionParameters![kvp.Key] = kvp.Value;
+            }
         }
     }
 

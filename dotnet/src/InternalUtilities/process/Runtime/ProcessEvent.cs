@@ -49,7 +49,7 @@ public record ProcessEvent
         {
             Namespace = eventNamespace,
             SourceId = kernelProcessEvent.Id,
-            Data = kernelProcessEvent.Data,
+            Data = kernelProcessEvent.Data != null ? KernelProcessEventData.FromObject(kernelProcessEvent.Data) : null,
             Visibility = kernelProcessEvent.Visibility,
             IsError = isError,
         };

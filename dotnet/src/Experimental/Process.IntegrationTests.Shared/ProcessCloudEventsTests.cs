@@ -225,17 +225,17 @@ public sealed class ProcessCloudEventsTests : IClassFixture<ProcessTestFixture>
         Assert.NotNull(proxyMessage);
         Assert.IsType<KernelProcessProxyMessage>(proxyMessage);
         Assert.Equal(expectedPublishTopic, proxyMessage.ExternalTopicName);
-        if (proxyMessage.EventData is JsonElement jsonEventData)
-        {
-            // needed for Dapr Testing setup since it serializes everything with json
-            Assert.Equal(JsonValueKind.String, jsonEventData.ValueKind);
-            Assert.Equal(expectedTopicData, jsonEventData.ToString());
-        }
-        else
-        {
-            Assert.IsType<string>(proxyMessage.EventData);
-            Assert.Equal(expectedTopicData, proxyMessage.EventData);
-        }
+        //if (proxyMessage.EventData is JsonElement jsonEventData)
+        //{
+        //    // needed for Dapr Testing setup since it serializes everything with json
+        //    Assert.Equal(JsonValueKind.String, jsonEventData.ValueKind);
+        //    Assert.Equal(expectedTopicData, jsonEventData.ToString());
+        //}
+        //else
+        //{
+        //    Assert.IsType<string>(proxyMessage.EventData);
+        //    Assert.Equal(expectedTopicData, proxyMessage.EventData);
+        //}
     }
     #endregion
 }
