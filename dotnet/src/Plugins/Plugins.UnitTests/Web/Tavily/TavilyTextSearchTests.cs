@@ -322,6 +322,20 @@ public sealed class TavilyTextSearchTests : IDisposable
         Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of topic,time_range,days,include_domain,exclude_domain (Parameter 'searchOptions')", e.Message);
     }
 
+    [Fact]
+    public async Task DoesNotBuildRequestForInvalidQueryAsync()
+    {
+        // Arrange
+        this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
+
+        // Create an ITextSearch instance using Tavily search
+        var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
+
+        // Act && Assert
+        var e = await Assert.ThrowsAsync<ArgumentNullException>(async () => await textSearch.GetSearchResultsAsync(null!));
+        Assert.Equal("Value cannot be null. (Parameter 'query')", e.Message);
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
