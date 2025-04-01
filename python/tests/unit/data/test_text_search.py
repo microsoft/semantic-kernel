@@ -9,17 +9,18 @@ from pydantic import BaseModel
 
 from semantic_kernel import Kernel
 from semantic_kernel.data import (
-    DEFAULT_DESCRIPTION,
-    DEFAULT_FUNCTION_NAME,
+    TextSearch,
+)
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
+from semantic_kernel.data.text_search import (
     KernelSearchResults,
     SearchOptions,
-    TextSearch,
     TextSearchOptions,
     TextSearchResult,
-    VectorSearchOptions,
     create_options,
     default_options_update_function,
 )
+from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata
 from semantic_kernel.utils.list_handler import desync_list
