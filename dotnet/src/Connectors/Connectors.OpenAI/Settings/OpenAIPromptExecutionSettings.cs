@@ -406,12 +406,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <item><description>As a <see cref="JsonElement"/> containing either a string or an array of strings</description></item>
     /// </list>
     /// If this property is null, <see cref="ChatResponseModalities.Default"/> will be used, which typically means text-only responses.
-    /// When audio is enabled, you should also set the <see cref="AudioOptions"/> property.
+    /// When audio is enabled, you should also set the <see cref="Audio"/> property.
     /// </remarks>
     [Experimental("SKEXP0010")]
-    [JsonPropertyName("response_modalities")]
+    [JsonPropertyName("modalities")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? ResponseModalities
+    public object? Modalities
     {
         get => this._responseModalities;
 
@@ -426,7 +426,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Gets or sets the audio options to use for the completion when audio modality is enabled.
     /// </summary>
     /// <remarks>
-    /// Use this property to configure the output audio voice and format when the <see cref="ResponseModalities"/> property includes audio.
+    /// Use this property to configure the output audio voice and format when the <see cref="Modalities"/> property includes audio.
     /// This can be represented in several ways:
     /// <list type="bullet">
     /// <item><description>As a <see cref="ChatAudioOptions"/> object: <c>new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)</c></description></item>
@@ -435,9 +435,9 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </list>
     /// </remarks>
     [Experimental("SKEXP0010")]
-    [JsonPropertyName("audio_options")]
+    [JsonPropertyName("audio")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? AudioOptions
+    public object? Audio
     {
         get => this._audioOptions;
 
@@ -542,8 +542,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
             ReasoningEffort = this.ReasoningEffort,
             WebSearchOptions = this.WebSearchOptions,
-            ResponseModalities = this.ResponseModalities,
-            AudioOptions = this.AudioOptions,
+            Modalities = this.Modalities,
+            Audio = this.Audio,
         };
     }
 

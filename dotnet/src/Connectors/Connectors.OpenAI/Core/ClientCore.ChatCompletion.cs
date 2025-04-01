@@ -187,7 +187,7 @@ internal partial class ClientCore
                     throw;
                 }
 
-                chatMessageContent = this.CreateChatMessageContent(chatOptions, chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false);
+                chatMessageContent = this.CreateChatMessageContent(chatCompletion, targetModel, functionCallingConfig.Options?.RetainArgumentTypes ?? false, chatOptions);
                 activity?.SetCompletionResponse([chatMessageContent], chatCompletion.Usage.InputTokenCount, chatCompletion.Usage.OutputTokenCount);
             }
 
@@ -478,13 +478,13 @@ internal partial class ClientCore
         };
 
         // Set response modalities if specified in the execution settings
-        if (executionSettings.ResponseModalities is not null)
+        if (executionSettings.Modalities is not null)
         {
             options.ResponseModalities = GetResponseModalities(executionSettings);
         }
 
         // Set audio options if specified in the execution settings
-        if (executionSettings.AudioOptions is not null)
+        if (executionSettings.Audio is not null)
         {
             options.AudioOptions = GetAudioOptions(executionSettings);
         }
@@ -925,7 +925,7 @@ internal partial class ClientCore
         return null;
     }
 
-    private OpenAIChatMessageContent CreateChatMessageContent(OAIChat.ChatCompletionOptions options, OAIChat.ChatCompletion completion, string targetModel, bool retainArgumentTypes)
+    private OpenAIChatMessageContent CreateChatMessageContent(OAIChat.ChatCompletion completion, string targetModel, bool retainArgumentTypes, OAIChat.ChatCompletionOptions options)
     {
         var message = new OpenAIChatMessageContent(completion, targetModel, this.GetChatCompletionMetadata(completion));
 
@@ -1100,22 +1100,22 @@ internal partial class ClientCore
             return result;
         }
 
-        if (executionSettings.ResponseModalities is null)
+        if (executionSettings.Modalities is null)
         {
             return ChatResponseModalities.Default;
         }
 
-        if (executionSettings.ResponseModalities is ChatResponseModalities responseModalities)
+        if (executionSettings.Modalities is ChatResponseModalities responseModalities)
         {
             return responseModalities;
         }
 
-        if (executionSettings.ResponseModalities is IEnumerable<string> responseModalitiesStrings)
+        if (executionSettings.Modalities is IEnumerable<string> responseModalitiesStrings)
         {
             return ParseResponseModalitiesEnumerable(responseModalitiesStrings);
         }
 
-        if (executionSettings.ResponseModalities is string responseModalitiesString)
+        if (executionSettings.Modalities is string responseModalitiesString)
         {
             if (Enum.TryParse<ChatResponseModalities>(responseModalitiesString, true, out var parsedResponseModalities))
             {
@@ -1124,7 +1124,7 @@ internal partial class ClientCore
             throw new NotSupportedException($"The provided response modalities '{responseModalitiesString}' is not supported.");
         }
 
-        if (executionSettings.ResponseModalities is JsonElement responseModalitiesElement)
+        if (executionSettings.Modalities is JsonElement responseModalitiesElement)
         {
             if (responseModalitiesElement.ValueKind == JsonValueKind.String &&
                 Enum.TryParse<ChatResponseModalities>(responseModalitiesElement.GetString(), true, out var parsedResponseModalities))
@@ -1138,7 +1138,7 @@ internal partial class ClientCore
                 return ParseResponseModalitiesEnumerable(modalitiesEnumeration);
             }
 
-            throw new NotSupportedException($"The provided response modalities '{executionSettings.ResponseModalities?.GetType()}' is not supported.");
+            throw new NotSupportedException($"The provided response modalities '{executionSettings.Modalities?.GetType()}' is not supported.");
         }
 
         return ChatResponseModalities.Default;
@@ -1159,12 +1159,12 @@ internal partial class ClientCore
     /// </remarks>
     private static ChatAudioOptions GetAudioOptions(OpenAIPromptExecutionSettings executionSettings)
     {
-        if (executionSettings.AudioOptions is ChatAudioOptions audioOptions)
+        if (executionSettings.Audio is ChatAudioOptions audioOptions)
         {
             return audioOptions;
         }
 
-        if (executionSettings.AudioOptions is JsonElement audioOptionsElement)
+        if (executionSettings.Audio is JsonElement audioOptionsElement)
         {
             var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsElement.GetRawText()));
             if (result != null)
@@ -1173,7 +1173,7 @@ internal partial class ClientCore
             }
         }
 
-        if (executionSettings.AudioOptions is string audioOptionsString)
+        if (executionSettings.Audio is string audioOptionsString)
         {
             var result = ModelReaderWriter.Read<ChatAudioOptions>(BinaryData.FromString(audioOptionsString));
             if (result != null)
@@ -1182,7 +1182,7 @@ internal partial class ClientCore
             }
         }
 
-        throw new NotSupportedException($"The provided audio options '{executionSettings.AudioOptions?.GetType()}' is not supported.");
+        throw new NotSupportedException($"The provided audio options '{executionSettings.Audio?.GetType()}' is not supported.");
     }
 
     /// <summary>

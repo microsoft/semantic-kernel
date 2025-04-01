@@ -1729,7 +1729,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var settings = new OpenAIPromptExecutionSettings
         {
-            ResponseModalities = responseModalities
+            Modalities = responseModalities
         };
 
         // Act
@@ -1757,7 +1757,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var settings = new OpenAIPromptExecutionSettings
         {
-            ResponseModalities = responseModalities
+            Modalities = responseModalities
         };
 
         // Act
@@ -1783,7 +1783,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var settings = new OpenAIPromptExecutionSettings
         {
-            AudioOptions = audioOptions
+            Audio = audioOptions
         };
 
         // Act
@@ -1812,7 +1812,7 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var settings = new OpenAIPromptExecutionSettings
         {
-            AudioOptions = audioOptions
+            Audio = audioOptions
         };
 
         // Act
@@ -2048,8 +2048,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var settings = new OpenAIPromptExecutionSettings
         {
-            ResponseModalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
-            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)
+            Modalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)
         };
 
         // Act
@@ -2112,8 +2112,8 @@ public sealed class OpenAIChatCompletionServiceTests : IDisposable
 
         var settings = new OpenAIPromptExecutionSettings
         {
-            ResponseModalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
-            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)
+            Modalities = ChatResponseModalities.Text | ChatResponseModalities.Audio,
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)
         };
 
         // Act

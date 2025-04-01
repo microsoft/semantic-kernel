@@ -171,8 +171,8 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         var chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
         var settings = new OpenAIPromptExecutionSettings
         {
-            ResponseModalities = ChatResponseModalities.Audio | ChatResponseModalities.Text,
-            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3)
+            Modalities = ChatResponseModalities.Audio | ChatResponseModalities.Text,
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3)
         };
 
         ChatHistory chatHistory = [];

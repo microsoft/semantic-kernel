@@ -53,8 +53,8 @@ public class OpenAI_ChatCompletionWithAudio(ITestOutputHelper output) : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var settings = new OpenAIPromptExecutionSettings
         {
-            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3),
-            ResponseModalities = ChatResponseModalities.Text | ChatResponseModalities.Audio
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3),
+            Modalities = ChatResponseModalities.Text | ChatResponseModalities.Audio
         };
 
         var chatHistory = new ChatHistory("You are a friendly assistant.");
@@ -104,8 +104,8 @@ public class OpenAI_ChatCompletionWithAudio(ITestOutputHelper output) : BaseTest
         var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
         var settings = new OpenAIPromptExecutionSettings
         {
-            AudioOptions = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3),
-            ResponseModalities = ChatResponseModalities.Text
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3),
+            Modalities = ChatResponseModalities.Text
         };
 
         var chatHistory = new ChatHistory("You are a friendly assistant.");
