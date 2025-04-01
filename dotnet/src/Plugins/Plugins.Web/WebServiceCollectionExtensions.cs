@@ -82,7 +82,7 @@ public static class WebServiceCollectionExtensions
         
         services.AddKeyedSingleton<ITextSearch>(
             serviceId,
-            (sp, obj) =>
+            (sp, _) =>
             {
                 var selectedOptions = options ?? sp.GetService<TavilyTextSearchOptions>();
 
