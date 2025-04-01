@@ -92,7 +92,6 @@ class VectorStoreRecordVectorField(VectorStoreRecordField):
 # region: Protocols
 
 
-@experimental
 @runtime_checkable
 class ToDictFunctionProtocol(Protocol):
     """Protocol for to_dict function.
@@ -108,7 +107,6 @@ class ToDictFunctionProtocol(Protocol):
     def __call__(self, record: Any, **kwargs: Any) -> Sequence[dict[str, Any]]: ...  # pragma: no cover  # noqa: D102
 
 
-@experimental
 @runtime_checkable
 class FromDictFunctionProtocol(Protocol):
     """Protocol for from_dict function.
@@ -124,7 +122,6 @@ class FromDictFunctionProtocol(Protocol):
     def __call__(self, records: Sequence[dict[str, Any]], **kwargs: Any) -> Any: ...  # noqa: D102
 
 
-@experimental
 @runtime_checkable
 class SerializeFunctionProtocol(Protocol):
     """Protocol for serialize function.
@@ -141,7 +138,6 @@ class SerializeFunctionProtocol(Protocol):
     def __call__(self, record: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
-@experimental
 @runtime_checkable
 class DeserializeFunctionProtocol(Protocol):
     """Protocol for deserialize function.
@@ -158,7 +154,6 @@ class DeserializeFunctionProtocol(Protocol):
     def __call__(self, records: Any, **kwargs: Any) -> Any: ...  # noqa: D102
 
 
-@experimental
 @runtime_checkable
 class SerializeMethodProtocol(Protocol):
     """Data model serialization protocol.
@@ -172,7 +167,6 @@ class SerializeMethodProtocol(Protocol):
         ...  # pragma: no cover
 
 
-@experimental
 @runtime_checkable
 class ToDictMethodProtocol(Protocol):
     """Class used internally to check if a model has a to_dict method."""
