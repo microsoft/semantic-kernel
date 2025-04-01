@@ -62,6 +62,8 @@ public static class WebKernelBuilderExtensions
         TavilyTextSearchOptions? options = null,
         string? serviceId = default)
     {
+        Verify.NotNull(builder);
+        
         builder.Services.AddTavilyTextSearch(apiKey, options, serviceId);
 
         return builder;
