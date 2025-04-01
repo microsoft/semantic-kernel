@@ -19,6 +19,7 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static IConfigurationRoot? ConfigurationRoot => s_instance?._configRoot;
     public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
@@ -51,6 +52,12 @@ public sealed class TestConfiguration
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
+
+    public static IConfiguration GetSection(string caller)
+    {
+        return s_instance?._configRoot.GetSection(caller) ??
+               throw new ConfigurationNotFoundException(section: caller);
+    }
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {

@@ -7,7 +7,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.AzureAI.Extensions;
 
 /// <summary>
-/// Unit tests for AgentDefinitionExtensions
+/// Unit tests for YamlAgentDefinitionExtensions
 /// </summary>
 public class AgentDefinitionExtensionsTests
 {

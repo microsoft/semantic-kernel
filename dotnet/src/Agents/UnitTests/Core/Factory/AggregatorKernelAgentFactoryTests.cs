@@ -42,7 +42,7 @@ public class AggregatorKernelAgentFactoryTests
     /// Verifies that the <see cref="AggregatorKernelAgentFactory"/> throws <see cref="KernelException"/> for an unknown agent type.
     /// </summary>
     [Fact]
-    public async Task ItReturnsNullForUnknowAgentTypeAsync()
+    public async Task ItReturnsNullForUnknownAgentTypeAsync()
     {
         // Arrange
         var agentDefinition = new AgentDefinition() { Type = "my-type-unknown", Name = "my-name-1", Description = "my-description-1", Instructions = "my-instructions-1" };
@@ -60,7 +60,7 @@ public class AggregatorKernelAgentFactoryTests
         {
         }
 
-        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-1"
                 ? null
@@ -80,7 +80,7 @@ public class AggregatorKernelAgentFactoryTests
         {
         }
 
-        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-2"
                 ? null
