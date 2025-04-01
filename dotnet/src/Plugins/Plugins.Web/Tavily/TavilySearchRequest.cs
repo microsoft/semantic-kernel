@@ -102,7 +102,7 @@ internal sealed class TavilySearchRequest
     /// <summary>
     /// Additional properties that are not explicitly defined in the schema.
     /// </summary>
-    [System.Text.Json.Serialization.JsonExtensionData]
+    [JsonExtensionData]
     public IDictionary<string, object> AdditionalProperties { get; set; } = new Dictionary<string, object>();
 
     /// <summary>
