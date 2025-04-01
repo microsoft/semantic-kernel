@@ -8,6 +8,13 @@ from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.functions import kernel_function
 
+"""
+The following sample demonstrates how to create an Azure AI Agent
+and use it with streaming responses. The agent is configured to use
+a plugin that provides a list of specials from the menu and the price
+of the requested menu item.
+"""
+
 
 # Define a sample plugin for the sample
 class MenuPlugin:

@@ -262,7 +262,7 @@ class BedrockAgent(BedrockAgentBase):
     async def get_response(
         self,
         *,
-        input_text: str,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         agent_alias: str | None = None,
         arguments: KernelArguments | None = None,
@@ -272,7 +272,7 @@ class BedrockAgent(BedrockAgentBase):
         """Get a response from the agent.
 
         Args:
-            input_text (str): The input text.
+            messages (str | ChatMessageContent | list[str | ChatMessageContent]): The messages.
             thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
@@ -282,8 +282,11 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             A chat message content with the response.
         """
+        if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
+            raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
+
         thread = await self._ensure_thread_exists_with_messages(
-            messages=[input_text],
+            messages=messages,
             thread=thread,
             construct_thread=lambda: BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client),
             expected_type=BedrockAgentThread,
@@ -302,7 +305,7 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("sessionState", {})
 
         for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            response = await self._invoke_agent(thread.id, input_text, agent_alias, **kwargs)
+            response = await self._invoke_agent(thread.id, messages, agent_alias, **kwargs)
 
             events: list[dict[str, Any]] = []
             for event in response.get("completion", []):
@@ -355,7 +358,7 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke(
         self,
-        input_text: str,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
@@ -366,7 +369,7 @@ class BedrockAgent(BedrockAgentBase):
         """Invoke an agent.
 
         Args:
-            input_text (str): The input text.
+            messages (str | ChatMessageContent | list[str | ChatMessageContent]): The messages.
             thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
@@ -376,8 +379,11 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of chat message content.
         """
+        if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
+            raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
+
         thread = await self._ensure_thread_exists_with_messages(
-            messages=[input_text],
+            messages=messages,
             thread=thread,
             construct_thread=lambda: BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client),
             expected_type=BedrockAgentThread,
@@ -396,7 +402,7 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("sessionState", {})
 
         for _ in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            response = await self._invoke_agent(thread.id, input_text, agent_alias, **kwargs)
+            response = await self._invoke_agent(thread.id, messages, agent_alias, **kwargs)
 
             events: list[dict[str, Any]] = []
             for event in response.get("completion", []):
@@ -451,7 +457,7 @@ class BedrockAgent(BedrockAgentBase):
     @override
     async def invoke_stream(
         self,
-        input_text: str,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         *,
         agent_alias: str | None = None,
@@ -462,7 +468,7 @@ class BedrockAgent(BedrockAgentBase):
         """Invoke an agent with streaming.
 
         Args:
-            input_text (str): The input text.
+            messages (str | ChatMessageContent | list[str | ChatMessageContent]): The messages.
             thread (AgentThread, optional): The thread. This is used to maintain the session state in the service.
             agent_alias (str, optional): The agent alias.
             arguments (KernelArguments, optional): The kernel arguments to override the current arguments.
@@ -472,8 +478,11 @@ class BedrockAgent(BedrockAgentBase):
         Returns:
             An async iterable of streaming chat message content
         """
+        if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
+            raise AgentInvokeException("Messages must be a string or a ChatMessageContent for BedrockAgent.")
+
         thread = await self._ensure_thread_exists_with_messages(
-            messages=[input_text],
+            messages=messages,
             thread=thread,
             construct_thread=lambda: BedrockAgentThread(bedrock_runtime_client=self.bedrock_runtime_client),
             expected_type=BedrockAgentThread,
@@ -492,7 +501,7 @@ class BedrockAgent(BedrockAgentBase):
         kwargs.setdefault("sessionState", {})
 
         for request_index in range(self.function_choice_behavior.maximum_auto_invoke_attempts):
-            response = await self._invoke_agent(thread.id, input_text, agent_alias, **kwargs)
+            response = await self._invoke_agent(thread.id, messages, agent_alias, **kwargs)
 
             all_function_call_messages: list[StreamingChatMessageContent] = []
             for event in response.get("completion", []):
