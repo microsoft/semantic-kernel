@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 /// <summary>
 /// Represents a search response.
 /// </summary>
+#pragma warning disable CA1812 // Instantiated by reflection
 internal sealed class TavilySearchResponse
 {
     /// <summary>

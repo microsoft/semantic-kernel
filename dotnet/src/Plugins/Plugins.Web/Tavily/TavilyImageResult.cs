@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Tavily;
 /// <summary>
 /// Represents an image result.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "API definition")]
+#pragma warning disable CA1812 // Instantiated by reflection
 internal sealed class TavilyImageResult
 {
     /// <summary>
