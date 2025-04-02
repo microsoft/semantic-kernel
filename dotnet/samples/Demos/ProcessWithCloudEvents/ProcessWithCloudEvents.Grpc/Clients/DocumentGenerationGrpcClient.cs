@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Text.Json;
 using Grpc.Net.Client;
 using Microsoft.SemanticKernel;
 using ProcessWithCloudEvents.Grpc.DocumentationGenerator;
