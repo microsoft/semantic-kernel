@@ -168,7 +168,7 @@ def get_parameters_from_tool(tool: Tool) -> list[KernelParameterMetadata]:
 @experimental
 async def create_plugin_from_mcp_server(
     plugin_name: str,
-    description: str,
+    description: str | None = None,
     server_config: MCPServerConfig | None = None,
     **kwargs: Any,
 ) -> KernelPlugin:
