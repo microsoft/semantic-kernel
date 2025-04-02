@@ -37,7 +37,7 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
     private readonly AmazonBedrockAgentClient _client = new();
     private readonly AmazonBedrockAgentRuntimeClient _runtimeClient = new();
 
-    public override Microsoft.SemanticKernel.Agents.KernelAgent Agent => this._agent!;
+    public override Microsoft.SemanticKernel.Agents.Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
