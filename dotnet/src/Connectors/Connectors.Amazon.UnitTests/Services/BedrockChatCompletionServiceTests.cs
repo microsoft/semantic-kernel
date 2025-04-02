@@ -270,6 +270,74 @@ public sealed class BedrockChatCompletionServiceTests
     }
 
     /// <summary>
+    /// Checks that the chat history with binary content is given the correct values through calling GetChatMessageContentsAsync.
+    /// </summary>
+    [Fact]
+    public async Task GetChatMessageContentsWithBinaryContentAsyncShouldHaveProperChatHistoryAsync()
+    {
+        // Arrange
+        string modelId = "amazon.titan-embed-text-v1:0";
+        var mockBedrockApi = new Mock<IAmazonBedrockRuntime>();
+        mockBedrockApi.Setup(m => m.DetermineServiceOperationEndpoint(It.IsAny<ConverseRequest>()))
+            .Returns(new Endpoint("https://bedrock-runtime.us-east-1.amazonaws.com")
+            {
+                URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
+            });
+
+        // Set up the mock ConverseAsync to return multiple responses
+        mockBedrockApi.SetupSequence(m => m.ConverseAsync(It.IsAny<ConverseRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(this.CreateConverseResponse("Here is the result.", ConversationRole.Assistant));
+
+        var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+        var chatHistory = CreateSampleChatHistoryWithBinaryContent();
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(chatHistory).ConfigureAwait(true);
+
+        // Assert
+        string? chatResult = result[0].Content;
+        Assert.NotNull(chatResult);
+
+        // Check the first result
+        Assert.Equal(AuthorRole.Assistant, result[0].Role);
+        Assert.Single(result[0].Items);
+        Assert.Equal("Here is the result.", result[0].Items[0].ToString());
+
+        // Check the chat history
+        Assert.Equal(6, chatHistory.Count); // Use the Count property to get the number of messages
+
+        Assert.Equal(AuthorRole.System, chatHistory[0].Role);
+        Assert.Equal("You are an AI Assistant", chatHistory[0].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.User, chatHistory[1].Role); // Use the indexer to access individual messages
+        Assert.Equal("Hello", chatHistory[1].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.Assistant, chatHistory[2].Role);
+        Assert.Equal("Hi", chatHistory[2].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.User, chatHistory[3].Role);
+        Assert.Equal("How are you?", chatHistory[3].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.Assistant, chatHistory[4].Role);
+        Assert.Equal("Fine, thanks. How can I help?", chatHistory[4].Items[0].ToString());
+
+        Assert.Equal(AuthorRole.User, chatHistory[5].Role);
+        Assert.Collection(chatHistory[5].Items,
+            c =>
+            {
+                Assert.IsType<TextContent>(c);
+                var item = (TextContent)c;
+                Assert.Equal("I need you to summarize these attachments.", item.Text);
+            },
+            c => Assert.IsType<ImageContent>(c),
+            c => Assert.IsType<PdfContent>(c),
+            c => Assert.IsType<DocxContent>(c),
+            c => Assert.IsType<ImageContent>(c)
+        );
+    }
+
+    /// <summary>
     /// Checks that error handling present for empty chat history.
     /// </summary>
     [Fact]
@@ -387,9 +455,36 @@ public sealed class BedrockChatCompletionServiceTests
         return chatHistory;
     }
 
-    private byte[] GetTestResponseAsBytes(string fileName)
+    private static ChatHistory CreateSampleChatHistoryWithBinaryContent()
+    {
+        var chatHistory = new ChatHistory();
+        chatHistory.AddSystemMessage("You are an AI Assistant");
+        chatHistory.AddUserMessage("Hello");
+        chatHistory.AddAssistantMessage("Hi");
+        chatHistory.AddUserMessage("How are you?");
+        chatHistory.AddAssistantMessage("Fine, thanks. How can I help?");
+        chatHistory.AddUserMessage(
+        [
+            new TextContent("I need you to summarize these attachments."),
+            new ImageContent(new Uri("https://example.com/image.jpg")),
+            new PdfContent(GetTestDataFileContentsAsBase64String("SemanticKernelCookBook.en.pdf", "application/pdf")),
+            new DocxContent(GetTestDataFileContentsAsBase64String("test-doc.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")),
+            new ImageContent(GetTestDataFileContentsAsBase64String("the-planner.png", "image/png")),
+        ]);
+        return chatHistory;
+    }
+
+    private byte[] GetTestResponseAsBytes(string fileName) => GetTestDataFileContentsAsBytes(fileName);
+
+    private static byte[] GetTestDataFileContentsAsBytes(string fileName)
     {
         return File.ReadAllBytes($"TestData/{fileName}");
+    }
+
+    private static string GetTestDataFileContentsAsBase64String(string fileName, string mimeType)
+    {
+        var content = Convert.ToBase64String(GetTestDataFileContentsAsBytes(fileName));
+        return $"data:{mimeType};base64,{content}";
     }
 
     private ConverseResponse CreateConverseResponse(string text, ConversationRole role)
