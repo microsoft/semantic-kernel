@@ -91,6 +91,40 @@ async def main():
         else:
             print(f"{msg.role}: {msg.content}")
 
+    """
+    Sample Output:
+
+    # AuthorRole.USER: 'Hello'
+    # Host: Hi there! How can I assist you with the menu today?
+    # AuthorRole.USER: 'What is the special soup?'
+    # Host: The special soup is Clam Chowder.
+    # AuthorRole.USER: 'What is the special drink?'
+    # Host: The special drink is Chai Tea.
+    # AuthorRole.USER: 'How much is that?'
+    # Host: Could you please specify the menu item you are asking about?
+    # AuthorRole.USER: 'Thank you'
+    # Host: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
+
+    Intermediate Steps:
+    AuthorRole.ASSISTANT: Hi there! How can I assist you with the menu today?
+    AuthorRole.ASSISTANT: 
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    AuthorRole.ASSISTANT: The special soup is Clam Chowder.
+    AuthorRole.ASSISTANT: 
+    Function Result:> 
+            Special Soup: Clam Chowder
+            Special Salad: Cobb Salad
+            Special Drink: Chai Tea
+            for function: MenuPlugin-get_specials
+    AuthorRole.ASSISTANT: The special drink is Chai Tea.
+    AuthorRole.ASSISTANT: Could you please specify the menu item you are asking about?
+    AuthorRole.ASSISTANT: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
+    """
+
 
 if __name__ == "__main__":
     asyncio.run(main())
