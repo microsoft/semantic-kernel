@@ -191,8 +191,8 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.NotNull(audioContent.Metadata["Transcript"]);
         Assert.Equal("audio/mp3", audioContent.MimeType);
         Assert.True(audioContent.Metadata.ContainsKey("Transcript"));
-        Assert.NotNull(audioContent.Metadata["Transcript"]);
-        Assert.NotEmpty(audioContent.Metadata["Transcript"]!.ToString());
+        Assert.NotNull(audioContent.Metadata["Transcript"]!);
+        Assert.NotEmpty(audioContent.Metadata!["Transcript"]!.ToString()!);
     }
 
     #region internals
