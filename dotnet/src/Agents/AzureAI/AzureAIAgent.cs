@@ -205,9 +205,9 @@ public sealed partial class AzureAIAgent : Agent
             {
                 // The thread and the caller should be notified of all messages regardless of visibility.
                 await this.NotifyThreadOfNewMessage(azureAIAgentThread, message, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(message).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(message).ConfigureAwait(false);
                 }
 
                 if (isVisible)
@@ -326,9 +326,9 @@ public sealed partial class AzureAIAgent : Agent
         {
             await this.NotifyThreadOfNewMessage(azureAIAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
 
-            if (options?.OnNewMessage is not null)
+            if (options?.OnIntermediateMessage is not null)
             {
-                await options.OnNewMessage(newMessage).ConfigureAwait(false);
+                await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
             }
         }
     }

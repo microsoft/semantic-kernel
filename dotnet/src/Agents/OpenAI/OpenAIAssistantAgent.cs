@@ -430,9 +430,9 @@ public sealed partial class OpenAIAssistantAgent : Agent
             {
                 // The thread and the caller should be notified of all messages regardless of visibility.
                 await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, message, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(message).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(message).ConfigureAwait(false);
                 }
 
                 if (isVisible)
@@ -578,9 +578,9 @@ public sealed partial class OpenAIAssistantAgent : Agent
         {
             await this.NotifyThreadOfNewMessage(openAIAssistantAgentThread, newMessage, cancellationToken).ConfigureAwait(false);
 
-            if (options?.OnNewMessage is not null)
+            if (options?.OnIntermediateMessage is not null)
             {
-                await options.OnNewMessage(newMessage).ConfigureAwait(false);
+                await options.OnIntermediateMessage(newMessage).ConfigureAwait(false);
             }
         }
     }
