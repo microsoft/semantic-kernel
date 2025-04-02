@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using xRetry;
 using Xunit;
 
@@ -18,11 +20,9 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.Invo
 /// </summary>
 public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyncLifetime
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    private AgentFixture _agentFixture;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    private AgentFixture? _agentFixture;
 
-    protected AgentFixture Fixture => this._agentFixture;
+    protected AgentFixture Fixture => this._agentFixture!;
 
     [RetryFact(3, 5000)]
     public virtual async Task InvokeReturnsResultAsync()
@@ -152,11 +152,11 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
     }
 
     /// <summary>
-    /// Verifies that the agent notifies callers of all messages
+    /// Verifies that the agent notifies callers via the callback on options of all messages
     /// including function calling ones when using invoke with a plugin.
     /// </summary>
     [Fact]
-    public virtual async Task InvokeWithPluginNotifiesForAllMessagesAsync()
+    public virtual async Task InvokeWithPluginNotifiesCallbackForAllMessagesAsync()
     {
         // Arrange
         var agent = this.Fixture.Agent;
@@ -195,6 +195,44 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
         Assert.Equal(results[0].Message.Content, notifiedMessages[2].Content);
     }
 
+    /// <summary>
+    /// Verifies that the agent notifies its thread of all messages
+    /// including function calling ones when using invoke with a plugin.
+    /// </summary>
+    [Fact]
+    public virtual async Task InvokeWithPluginNotifiesThreadForAllMessagesBaseAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+        agent.Kernel.Plugins.AddFromType<MenuPlugin>();
+
+        var requestMessage = new ChatMessageContent(AuthorRole.User, "What is the special soup?");
+
+        // Act
+        var asyncResults = agent.InvokeAsync(
+            requestMessage,
+            this.Fixture.MockCreatedAgentThread,
+            options: new()
+            {
+                KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            });
+
+        // Assert
+        var results = await asyncResults.ToArrayAsync();
+        Assert.Single(results);
+        Assert.Contains("Clam Chowder", results[0].Message.Content);
+
+        // Request message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(requestMessage, It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Function call message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.Is<ChatMessageContent>(mc => mc.Items.Any(i => i is FunctionCallContent)), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Function result message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.Is<ChatMessageContent>(mc => mc.Items.Any(i => i is FunctionResultContent)), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Final response message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(results[0], It.IsAny<CancellationToken>()), Times.Exactly(1));
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.IsAny<ChatMessageContent>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
+    }
+
     public Task InitializeAsync()
     {
         this._agentFixture = createAgentFixture();
@@ -203,6 +241,6 @@ public abstract class InvokeTests(Func<AgentFixture> createAgentFixture) : IAsyn
 
     public Task DisposeAsync()
     {
-        return this._agentFixture.DisposeAsync();
+        return this._agentFixture!.DisposeAsync();
     }
 }

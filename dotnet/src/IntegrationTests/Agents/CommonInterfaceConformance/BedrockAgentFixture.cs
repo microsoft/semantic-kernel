@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
@@ -13,12 +14,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
+using SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadMocks;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 
-internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
+public sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 {
     private readonly IConfigurationRoot _configuration = new ConfigurationBuilder()
         .AddJsonFile(path: "testsettings.json", optional: true, reloadOnChange: true)
@@ -31,17 +34,24 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
     private BedrockAgent? _agent;
     private BedrockAgentThread? _thread;
     private BedrockAgentThread? _createdThread;
+    private Mock<MockBedrockAgentThread>? _mockCreatedAgentThread;
     private BedrockAgentThread? _serviceFailingAgentThread;
     private BedrockAgentThread? _createdServiceFailingAgentThread;
     private AmazonBedrockAgentRuntimeClient? _serviceFailingAgentClient;
     private readonly AmazonBedrockAgentClient _client = new();
     private readonly AmazonBedrockAgentRuntimeClient _runtimeClient = new();
 
+    public AmazonBedrockAgentRuntimeClient AmazonBedrockAgentRuntimeClient => this._runtimeClient;
+
     public override Microsoft.SemanticKernel.Agents.KernelAgent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
     public override AgentThread CreatedAgentThread => this._createdThread!;
+
+    public override AgentThread MockCreatedAgentThread => this._mockCreatedAgentThread!.Object;
+
+    public override Mock<IMessageMockableAgentThread> MockableMessageCreatedAgentThread => this._mockCreatedAgentThread!.As<IMessageMockableAgentThread>();
 
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
@@ -120,6 +130,9 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 
         this._createdThread = new BedrockAgentThread(this._runtimeClient);
         await this._createdThread.CreateAsync();
+
+        this._mockCreatedAgentThread = new Mock<MockBedrockAgentThread>(this._runtimeClient, this._createdThread.Id) { CallBase = true };
+        this._mockCreatedAgentThread.Setup(x => x.MockableOnNewMessage(It.IsAny<ChatMessageContent>(), It.IsAny<CancellationToken>()));
 
         this._serviceFailingAgentClient = new AmazonBedrockAgentRuntimeClient(new BasicAWSCredentials("", ""));
         this._serviceFailingAgentThread = new BedrockAgentThread(this._serviceFailingAgentClient);

@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
+using SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadMocks;
 using SemanticKernel.IntegrationTests.TestSettings;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
@@ -25,12 +28,17 @@ public class ChatCompletionAgentFixture : AgentFixture
     private ChatCompletionAgent? _agent;
     private ChatHistoryAgentThread? _thread;
     private ChatHistoryAgentThread? _createdThread;
+    private Mock<MockChatHistoryAgentThread>? _mockCreatedAgentThread;
 
     public override KernelAgent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
     public override AgentThread CreatedAgentThread => this._createdThread!;
+
+    public override AgentThread MockCreatedAgentThread => this._mockCreatedAgentThread!.Object;
+
+    public override Mock<IMessageMockableAgentThread> MockableMessageCreatedAgentThread => this._mockCreatedAgentThread!.As<IMessageMockableAgentThread>();
 
     public override AgentThread ServiceFailingAgentThread => null!;
 
@@ -75,5 +83,8 @@ public class ChatCompletionAgentFixture : AgentFixture
         this._thread = new ChatHistoryAgentThread();
         this._createdThread = new ChatHistoryAgentThread();
         await this._createdThread.CreateAsync();
+
+        this._mockCreatedAgentThread = new Mock<MockChatHistoryAgentThread>() { CallBase = true };
+        this._mockCreatedAgentThread.Setup(x => x.MockableOnNewMessage(It.IsAny<ChatMessageContent>(), It.IsAny<CancellationToken>()));
     }
 }

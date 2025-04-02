@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.Bedrock;
 /// <summary>
 /// Represents a conversation thread for a Bedrock agent.
 /// </summary>
-public sealed class BedrockAgentThread : AgentThread
+public class BedrockAgentThread : AgentThread
 {
     private readonly AmazonBedrockAgentRuntimeClient _runtimeClient;
 

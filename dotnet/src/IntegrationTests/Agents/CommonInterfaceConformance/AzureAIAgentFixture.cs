@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Identity;
@@ -8,6 +9,8 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
+using SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadMocks;
 using SemanticKernel.IntegrationTests.TestSettings;
 using AAIP = Azure.AI.Projects;
 
@@ -27,14 +30,21 @@ public class AzureAIAgentFixture : AgentFixture
     private AzureAIAgent? _agent;
     private AzureAIAgentThread? _thread;
     private AzureAIAgentThread? _createdThread;
+    private Mock<MockAzureAIAgentThread>? _mockCreatedAgentThread;
     private AzureAIAgentThread? _serviceFailingAgentThread;
     private AzureAIAgentThread? _createdServiceFailingAgentThread;
+
+    public AAIP.AgentsClient AgentsClient => this._agentsClient!;
 
     public override KernelAgent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
     public override AgentThread CreatedAgentThread => this._createdThread!;
+
+    public override AgentThread MockCreatedAgentThread => this._mockCreatedAgentThread!.Object;
+
+    public override Mock<IMessageMockableAgentThread> MockableMessageCreatedAgentThread => this._mockCreatedAgentThread!.As<IMessageMockableAgentThread>();
 
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
@@ -108,6 +118,9 @@ public class AzureAIAgentFixture : AgentFixture
 
         this._createdThread = new AzureAIAgentThread(this._agentsClient);
         await this._createdThread.CreateAsync();
+
+        this._mockCreatedAgentThread = new Mock<MockAzureAIAgentThread>(this._agentsClient, this._createdThread.Id) { CallBase = true };
+        this._mockCreatedAgentThread.Setup(x => x.MockableOnNewMessage(It.IsAny<ChatMessageContent>(), It.IsAny<CancellationToken>()));
 
         var serviceFailingClient = AzureAIAgent.CreateAzureAIClient("swedencentral.api.azureml.ms;<subscription_id>;<resource_group_name>;<project_name>", new AzureCliCredential());
         this._serviceFailingAgentThread = new AzureAIAgentThread(serviceFailingClient.GetAgentsClient());

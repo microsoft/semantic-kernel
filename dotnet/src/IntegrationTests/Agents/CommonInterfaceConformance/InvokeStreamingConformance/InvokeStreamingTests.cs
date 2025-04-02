@@ -3,10 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using xRetry;
 using Xunit;
 
@@ -157,11 +159,11 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
     }
 
     /// <summary>
-    /// Verifies that the agent notifies callers of all messages
+    /// Verifies that the agent notifies callers via the callback on options of all messages
     /// including function calling ones when using invoke streaming with a plugin.
     /// </summary>
     [RetryFact(3, 10_000)]
-    public virtual async Task InvokeStreamingWithPluginNotifiesForAllMessagesAsync()
+    public virtual async Task InvokeStreamingWithPluginNotifiesCallbackForAllMessagesAsync()
     {
         // Arrange
         var agent = this.Fixture.Agent;
@@ -198,6 +200,44 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
         Assert.Equal("GetSpecials", functionResultContent.FunctionName);
 
         Assert.Contains("Clam Chowder", notifiedMessages[2].Content);
+    }
+
+    /// <summary>
+    /// Verifies that the agent notifies the thread of all messages
+    /// including function calling ones when using invoke streaming with a plugin.
+    /// </summary>
+    [RetryFact(3, 10_000)]
+    public virtual async Task InvokeStreamingWithPluginNotifiesThreadForAllMessagesAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+        agent.Kernel.Plugins.AddFromType<MenuPlugin>();
+
+        var requestMessage = new ChatMessageContent(AuthorRole.User, "What is the special soup?");
+
+        // Act
+        var asyncResults = agent.InvokeStreamingAsync(
+            requestMessage,
+            this.Fixture.MockCreatedAgentThread,
+            options: new()
+            {
+                KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+            });
+
+        // Assert
+        var results = await asyncResults.ToListAsync();
+        var resultString = string.Join(string.Empty, results.Select(x => x.Message.Content));
+        Assert.Contains("Clam Chowder", resultString);
+
+        // Request message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(requestMessage, It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Function call message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.Is<ChatMessageContent>(mc => mc.Items.Any(i => i is FunctionCallContent)), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Function result message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.Is<ChatMessageContent>(mc => mc.Items.Any(i => i is FunctionResultContent)), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        // Final response message.
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.Is<ChatMessageContent>(mc => mc.Content == resultString), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        this.Fixture.MockableMessageCreatedAgentThread.Verify(x => x.MockableOnNewMessage(It.IsAny<ChatMessageContent>(), It.IsAny<CancellationToken>()), Times.Exactly(4));
     }
 
     public Task InitializeAsync()

@@ -2,6 +2,7 @@
 
 using System;
 using System.ClientModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +10,9 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using OpenAI.Assistants;
+using SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentThreadMocks;
 using SemanticKernel.IntegrationTests.TestSettings;
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
@@ -31,14 +34,21 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     private OpenAIAssistantAgent? _agent;
     private OpenAIAssistantAgentThread? _thread;
     private OpenAIAssistantAgentThread? _createdThread;
+    private Mock<MockOpenAIAssistantAgentThread>? _mockCreatedAgentThread;
     private OpenAIAssistantAgentThread? _serviceFailingAgentThread;
     private OpenAIAssistantAgentThread? _createdServiceFailingAgentThread;
+
+    public AssistantClient? AssistantClient => this._assistantClient;
 
     public override KernelAgent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
     public override AgentThread CreatedAgentThread => this._createdThread!;
+
+    public override AgentThread MockCreatedAgentThread => this._mockCreatedAgentThread!.Object;
+
+    public override Mock<IMessageMockableAgentThread> MockableMessageCreatedAgentThread => this._mockCreatedAgentThread!.As<IMessageMockableAgentThread>();
 
     public override AgentThread ServiceFailingAgentThread => this._serviceFailingAgentThread!;
 
@@ -103,6 +113,9 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
         this._createdThread = new OpenAIAssistantAgentThread(this._assistantClient);
         await this._createdThread.CreateAsync();
+
+        this._mockCreatedAgentThread = new Mock<MockOpenAIAssistantAgentThread>(this._assistantClient, this._createdThread.Id) { CallBase = true };
+        this._mockCreatedAgentThread.Setup(x => x.MockableOnNewMessage(It.IsAny<ChatMessageContent>(), It.IsAny<CancellationToken>()));
 
         var serviceFailingClient = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri("https://localhost/failingserviceclient"));
         this._serviceFailingAgentThread = new OpenAIAssistantAgentThread(serviceFailingClient.GetAssistantClient());
