@@ -5,14 +5,14 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
+from semantic_kernel.connectors.memory.in_memory.in_memory_collection import InMemoryVectorCollection
+from semantic_kernel.data import VectorStore, VectorStoreRecordCollection, VectorStoreRecordDefinition
+from semantic_kernel.utils.feature_stage_decorator import experimental
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
-
-from semantic_kernel.connectors.memory.in_memory.in_memory_collection import InMemoryVectorCollection
-from semantic_kernel.data import VectorStore, VectorStoreRecordCollection, VectorStoreRecordDefinition
-from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
