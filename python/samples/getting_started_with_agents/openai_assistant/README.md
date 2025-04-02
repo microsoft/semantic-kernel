@@ -47,15 +47,19 @@ agent = OpenAIAssistantAgent(
     definition=definition,
 )
 
-# Define a thread and invoke the agent with the user input
-thread = await agent.client.beta.threads.create()
+# Define a thread to hold the conversation's context
+# If a thread is not created initially it will be created
+# and returned as part of the first response
+thread = None
 
-# Add a message to the thread
-await agent.add_chat_message(thread_id=thread.id, message="Why is the sky blue?")
+# Get the agent response
+response = await agent.get_response(messages="Why is the sky blue?", thread=thread)
+thread = response.thread
 
-# Invoke the agent
-async for content in agent.invoke(thread_id=thread.id):
-    print(f"# {content.role}: {content.content}")
+# or use the agent.invoke(...) method
+async for response in agent.invoke(messages="Why is the sky blue?", thread=thread):
+    print(f"# {response.role}: {response.content}")
+    thread = response.thread
 ```
 
 ### Semantic Kernel Azure Assistant Agents
@@ -89,13 +93,17 @@ agent = AzureAssistantAgent(
     definition=definition,
 )
 
-# Define a thread and invoke the agent with the user input
-thread = await agent.client.beta.threads.create()
+# Define a thread to hold the conversation's context
+# If a thread is not created initially it will be created
+# and returned as part of the first response
+thread = None
 
-# Add a message to the thread
-await agent.add_chat_message(thread_id=thread.id, message="Why is the sky blue?")
+# Get the agent response
+response = await agent.get_response(messages="Why is the sky blue?", thread=thread)
+thread = response.thread
 
-# Invoke the agent
-async for content in agent.invoke(thread_id=thread.id):
-    print(f"# {content.role}: {content.content}")
+# or use the agent.invoke(...) method
+async for response in agent.invoke(messages="Why is the sky blue?", thread=thread):
+    print(f"# {response.role}: {response.content}")
+    thread = response.thread
 ```
