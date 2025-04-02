@@ -6,8 +6,10 @@ from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from functools import partial
 from typing import Any
 
-from mcp import ClientSession, McpError, StdioServerParameters, stdio_client
+from mcp import McpError
+from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
+from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.types import Tool
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -157,11 +159,7 @@ def get_parameters_from_tool(tool: Tool) -> list[KernelParameterMetadata]:
             is_required=prop_name in required,
             type=prop_details.get("type"),
             default_value=prop_details.get("default", None),
-            schema_data=prop_details["items"]
-            if "items" in prop_details and prop_details["items"] is not None and isinstance(prop_details["items"], dict)
-            else {"type": f"{prop_details['type']}"}
-            if "type" in prop_details
-            else None,
+            schema_data=prop_details,
         )
         for prop_name, prop_details in properties.items()
     ]
