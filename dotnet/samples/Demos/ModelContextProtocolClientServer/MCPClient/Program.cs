@@ -129,5 +129,6 @@ internal sealed class Program
         {
             Console.WriteLine($"- {tool.Name}: {tool.Description}");
         }
+        Console.WriteLine();
     }
 }
