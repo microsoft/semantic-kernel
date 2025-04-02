@@ -222,7 +222,7 @@ async def test_invoke_with_function_calls(mock_agent, mock_chat_history, mock_th
         ):
             messages.append(msg)
 
-        assert len(messages) == 1, f"Expected exactly 1 message, got {len(messages)}"
+        assert len(messages) == 3, f"Expected exactly 3 messages, got {len(messages)}"
 
 
 async def test_invoke_stream_no_function_calls(mock_agent, mock_chat_history, mock_thread):

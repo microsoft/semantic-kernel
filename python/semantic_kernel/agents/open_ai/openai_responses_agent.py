@@ -688,7 +688,7 @@ class OpenAIResponsesAgent(Agent):
         max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
-        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
@@ -714,7 +714,8 @@ class OpenAIResponsesAgent(Agent):
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
             model: The model to override on a per-run basis.
-            on_new_message: A callback to receive the ChatHistory of full messages received from the agent.
+            on_intermediate_message: A callback to receive the ChatMessageContent of full messages received from the
+                agent. Can expose FunctionCallContent and FunctionResultContent to the caller.
             parallel_tool_calls: Parallel tool calls.
             reasoning: The reasoning effort.
             text: The response format.
@@ -775,8 +776,8 @@ class OpenAIResponsesAgent(Agent):
         ):
             response.metadata["thread_id"] = thread.id
             await thread.on_new_message(response)
-            if on_new_message:
-                await on_new_message(response)
+            if on_intermediate_message:
+                await on_intermediate_message(response)
 
             if is_visible:
                 yield AgentResponseItem(message=response, thread=thread)
@@ -799,7 +800,7 @@ class OpenAIResponsesAgent(Agent):
         | None = None,
         instructions_override: str | None = None,
         max_output_tokens: int | None = None,
-        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -825,8 +826,8 @@ class OpenAIResponsesAgent(Agent):
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_output_tokens: The maximum completion tokens.
-            on_new_message: A callback to receive the ChatHistory of full messages received from the agent.
-                These are full content messages formed from the streamed chunks.
+            on_intermediate_message: A callback to receive the ChatMessageContent of full messages received from the
+                agent. These are full content messages formed from the streamed chunks.
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
@@ -877,7 +878,7 @@ class OpenAIResponsesAgent(Agent):
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
         assert function_choice_behavior is not None  # nosec
 
-        collected_messages: list[ChatMessageContent] | None = [] if on_new_message else None
+        collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
         async for response in ResponsesAgentThreadActions.invoke_stream(
             agent=self,
@@ -896,8 +897,8 @@ class OpenAIResponsesAgent(Agent):
         for message in collected_messages or []:
             message.metadata["thread_id"] = thread.id
             await thread.on_new_message(message)
-            if on_new_message:
-                await on_new_message(message)
+            if on_intermediate_message:
+                await on_intermediate_message(message)
 
     def _prepare_input_message(
         self,

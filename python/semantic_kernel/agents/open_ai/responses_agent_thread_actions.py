@@ -200,6 +200,7 @@ class ResponsesAgentThreadActions:
                 break
 
             response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)
+            yield False, response_message
             chat_history.add_message(message=response_message)
 
             logger.info(f"processing {fc_count} tool calls in parallel.")
@@ -222,9 +223,10 @@ class ResponsesAgentThreadActions:
                 ],
             )
 
-            if any(result.terminate for result in results if result is not None):
-                for msg in merge_function_results(chat_history.messages[-len(results) :]):
-                    yield True, msg
+            terminate_flag = any(result.terminate for result in results if result is not None)
+            for msg in merge_function_results(chat_history.messages[-len(results) :]):
+                # Terminate flag should only be true when the filter's terminate is true
+                yield terminate_flag, msg
         else:
             # Do a final call, without function calling when the max has been reached.
             function_choice_behavior = FunctionChoiceBehavior.NoneInvoke()
@@ -357,6 +359,8 @@ class ResponsesAgentThreadActions:
                     match event:
                         case ResponseCreatedEvent():
                             logger.debug(f"Agent response created with ID: {event.response.id}")
+                            if store_enabled:
+                                thread.response_id = event.response.id
                         case ResponseOutputItemAddedEvent():
                             function_calls = cls._get_tool_calls_from_output([event.item])  # type: ignore
                             if function_calls:
@@ -411,6 +415,8 @@ class ResponsesAgentThreadActions:
                 return
 
             full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
+            # Yield FunctionCallContent
+            yield full_completion
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
@@ -449,10 +455,10 @@ class ResponsesAgentThreadActions:
                 msg = function_result_messages[0]
                 if output_messages is not None:
                     output_messages.append(msg)
-                yield msg
+                yield msg  # Always yield the first message if eligible
 
             if any(result.terminate for result in results if result is not None):
-                break
+                break  # Only break if any result has terminate=True
 
     # endregion
 

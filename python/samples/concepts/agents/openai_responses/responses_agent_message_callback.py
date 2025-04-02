@@ -70,11 +70,10 @@ async def main():
             async for response in agent.invoke(
                 messages=user_input,
                 thread=thread,
-                on_new_message=handle_intermediate_steps,
+                on_intermediate_message=handle_intermediate_steps,
             ):
                 thread = response.thread
-                print(f"# {response.name}: ", end="", flush=True)
-
+                print(f"# {response.name}: {response.content}")
     finally:
         await thread.delete() if thread else None
 
