@@ -1,25 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
-from typing import TYPE_CHECKING
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPStdioServerExecutionSettings
+from semantic_kernel.connectors.mcp import create_plugin_from_mcp_server
 from semantic_kernel.contents import ChatHistory
-from semantic_kernel.functions import KernelArguments
 
-if TYPE_CHECKING:
-    pass
-
-#####################################################################
-# This sample demonstrates how to build a conversational chatbot    #
-# using Semantic Kernel, featuring MCP Tools,                       #
-# non-streaming responses, and support for math and time plugins.   #
-# The chatbot is designed to interact with the user, call functions #
-# as needed, and return responses.                                  #
-#####################################################################
+"""
+This sample demonstrates how to build a conversational chatbot
+using Semantic Kernel, 
+it creates a Plugin from a MCP server config and adds it to the kernel.
+The chatbot is designed to interact with the user, call MCP tools 
+as needed, and return responses.
+"""
 
 # System message defining the behavior and persona of the chat bot.
 system_message = """
@@ -38,13 +33,6 @@ you will return a full answer to me as soon as possible.
 # Create and configure the kernel.
 kernel = Kernel()
 
-# Define a chat function (a template for how to handle user input).
-chat_function = kernel.add_function(
-    prompt="{{$chat_history}}{{$user_input}}",
-    plugin_name="ChatBot",
-    function_name="Chat",
-)
-
 # You can select from the following chat completion services that support function calling:
 # - Services.OPENAI
 # - Services.AZURE_OPENAI
@@ -58,16 +46,13 @@ chat_function = kernel.add_function(
 # - Services.VERTEX_AI
 # - Services.DEEPSEEK
 # Please make sure you have configured your environment correctly for the selected chat completion service.
-chat_completion_service, request_settings = get_chat_completion_service_and_request_settings(Services.AZURE_OPENAI)
+chat_service, settings = get_chat_completion_service_and_request_settings(Services.OPENAI)
 
 # Configure the function choice behavior. Here, we set it to Auto, where auto_invoke=True by default.
 # With `auto_invoke=True`, the model will automatically choose and call functions as needed.
-request_settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"excluded_plugins": ["ChatBot"]})
+settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
-kernel.add_service(chat_completion_service)
-
-# Pass the request settings to the kernel arguments.
-arguments = KernelArguments(settings=request_settings)
+kernel.add_service(chat_service)
 
 # Create a chat history to store the system message, initial messages, and the conversation.
 history = ChatHistory()
@@ -89,36 +74,25 @@ async def chat() -> bool:
         print("\n\nExiting chat...")
         return False
 
-    arguments["user_input"] = user_input
-    arguments["chat_history"] = history
-
-    # Handle non-streaming responses
-    result = await kernel.invoke(chat_function, arguments=arguments)
-
-    # Update the chat history with the user's input and the assistant's response
+    history.add_user_message(user_input)
+    result = await chat_service.get_chat_message_content(history, settings, kernel=kernel)
     if result:
         print(f"Mosscap:> {result}")
-        history.add_user_message(user_input)
-        history.add_message(result.value[0])  # Capture the full context of the response
+        history.add_message(result)
 
     return True
 
 
 async def main() -> None:
     # Make sure to have NPX installed and available in your PATH.
-
     # Find the NPX executable in the system PATH.
-    import shutil
-
-    execution_settings = MCPStdioServerExecutionSettings(
-        command=shutil.which("npx"),
+    github_plugin = await create_plugin_from_mcp_server(
+        plugin_name="GitHub",
+        description="Github Plugin",
+        command="npx",
         args=["-y", "@modelcontextprotocol/server-github"],
     )
-
-    await kernel.add_plugin_from_mcp(
-        plugin_name="TestMCP",
-        execution_settings=execution_settings,
-    )
+    kernel.add_plugin(github_plugin)
     print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")
     chatting = True
     while chatting:

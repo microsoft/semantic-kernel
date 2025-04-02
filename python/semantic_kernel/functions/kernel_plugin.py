@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 from pydantic import Field, StringConstraints
 
-from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -21,14 +20,13 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.types import KERNEL_FUNCTION_TYPE
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.kernel_types import OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.validation import PLUGIN_NAME_REGEX
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.mcp.mcp_server_execution_settings import MCPServerExecutionSettings
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
+    from semantic_kernel.data.text_search import TextSearch
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger = logging.getLogger(__name__)
@@ -380,32 +378,6 @@ class KernelPlugin(KernelBaseModel):
             ),
         )
 
-    @experimental
-    @classmethod
-    async def from_mcp_server(
-        cls: type[_T],
-        plugin_name: str,
-        execution_settings: "MCPServerExecutionSettings",
-        description: str | None = None,
-    ) -> _T:
-        """Creates a plugin from an MCP server.
-
-        Args:
-            plugin_name: The name of the plugin.
-            execution_settings: The settings for the MCP server.
-            description: The description of the plugin.
-
-        Returns:
-            KernelPlugin: The created plugin.
-        """
-        from semantic_kernel.connectors.mcp.mcp_manager import create_function_from_mcp_server
-
-        return cls(
-            name=plugin_name,
-            description=description,
-            functions=await create_function_from_mcp_server(settings=execution_settings),
-        )
-
     @classmethod
     def from_python_file(
         cls: type[_T],
@@ -443,7 +415,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_search(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
@@ -464,7 +436,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_get_text_search_results(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
@@ -489,7 +461,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_get_search_results(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,

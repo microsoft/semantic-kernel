@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
@@ -1484,7 +1485,7 @@ wheels = [
 
 [[package]]
 name = "google-cloud-aiplatform"
-version = "1.83.0"
+version = "1.86.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docstring-parser", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -1500,9 +1501,9 @@ dependencies = [
     { name = "shapely", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "typing-extensions", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bf/e4/ab73a6dcf77d5ac0d245c5dd506e4494ad80fdb49193b1ea4c930708b1e9/google_cloud_aiplatform-1.83.0.tar.gz", hash = "sha256:cda870c2cce1682ef006f8b87f18cfa8927ff9daf3944aa4ff01f8e552e89928", size = 8756256 }
+sdist = { url = "https://files.pythonhosted.org/packages/56/78/a9fd14966ff5c44db1d36dd5db9c44513a106adafd2570d928589754d049/google_cloud_aiplatform-1.86.0.tar.gz", hash = "sha256:45fff84c75c6f66105efa1c6caf0ea87fddc85298c834ee38f4163cf793510c4", size = 8999957 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/a7/440d4d1cac03e6cde2f432bc78e0b109b732d4d0b58e6ae5dda9666af423/google_cloud_aiplatform-1.83.0-py2.py3-none-any.whl", hash = "sha256:fa33932af5d88ccf42f901f6ffdf8abee87f6db82ea17df713062dd41707a154", size = 7311467 },
+    { url = "https://files.pythonhosted.org/packages/e5/01/a204dce0e40e1bdfb7de7a28f9db56e9bdf738e31f3cdf89f8601171b76a/google_cloud_aiplatform-1.86.0-py2.py3-none-any.whl", hash = "sha256:fcd155a0e77fdc12a5c477af92fa0b7e8ea1b1d1fcece35ad07f160008dedc7e", size = 7519175 },
 ]
 
 [[package]]
@@ -2510,7 +2511,7 @@ wheels = [
 
 [[package]]
 name = "mcp"
-version = "1.5.0"
+version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -2522,9 +2523,9 @@ dependencies = [
     { name = "starlette", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "uvicorn", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6d/c9/c55764824e893fdebe777ac7223200986a275c3191dba9169f8eb6d7c978/mcp-1.5.0.tar.gz", hash = "sha256:5b2766c05e68e01a2034875e250139839498c61792163a7b221fc170c12f5aa9", size = 159128 }
+sdist = { url = "https://files.pythonhosted.org/packages/95/d2/f587cb965a56e992634bebc8611c5b579af912b74e04eb9164bd49527d21/mcp-1.6.0.tar.gz", hash = "sha256:d9324876de2c5637369f43161cd71eebfd803df5a95e46225cab8d280e366723", size = 200031 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c1/d1/3ff566ecf322077d861f1a68a1ff025cad337417bd66ad22a7c6f7dfcfaf/mcp-1.5.0-py3-none-any.whl", hash = "sha256:51c3f35ce93cb702f7513c12406bbea9665ef75a08db909200b07da9db641527", size = 73734 },
+    { url = "https://files.pythonhosted.org/packages/10/30/20a7f33b0b884a9d14dd3aa94ff1ac9da1479fe2ad66dd9e2736075d2506/mcp-1.6.0-py3-none-any.whl", hash = "sha256:7bd24c6ea042dbec44c754f100984d186620d8b841ec30f1b19eda9b93a634d0", size = 76077 },
 ]
 
 [[package]]
@@ -5315,11 +5316,11 @@ requires-dist = [
     { name = "defusedxml", specifier = "~=0.7" },
     { name = "faiss-cpu", marker = "extra == 'faiss'", specifier = ">=1.10.0" },
     { name = "flask-dapr", marker = "extra == 'dapr'", specifier = ">=1.14.0" },
-    { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "==1.83.0" },
+    { name = "google-cloud-aiplatform", marker = "extra == 'google'", specifier = "==1.86.0" },
     { name = "google-generativeai", marker = "extra == 'google'", specifier = "~=0.8" },
     { name = "ipykernel", marker = "extra == 'notebooks'", specifier = "~=6.29" },
     { name = "jinja2", specifier = "~=3.1" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = "~=1.5" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = "~=1.6" },
     { name = "milvus", marker = "sys_platform != 'win32' and extra == 'milvus'", specifier = ">=2.3,<2.3.8" },
     { name = "mistralai", marker = "extra == 'mistralai'", specifier = ">=1.2,<2.0" },
     { name = "motor", marker = "extra == 'mongo'", specifier = ">=3.3.2,<3.8.0" },
@@ -5338,7 +5339,7 @@ requires-dist = [
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgres'", specifier = "~=3.2" },
     { name = "pyarrow", marker = "extra == 'usearch'", specifier = ">=12.0,<20.0" },
     { name = "pybars4", specifier = "~=0.9" },
-    { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.11" },
+    { name = "pydantic", specifier = ">=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12" },
     { name = "pydantic-settings", specifier = "~=2.0" },
     { name = "pymilvus", marker = "extra == 'milvus'", specifier = ">=2.3,<2.6" },
     { name = "pymongo", marker = "extra == 'mongo'", specifier = ">=4.8.0,<4.12" },
@@ -5346,7 +5347,7 @@ requires-dist = [
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = "~=5.0" },
     { name = "redisvl", marker = "extra == 'redis'", specifier = ">=0.3.6" },
     { name = "scipy", specifier = ">=1.15.1" },
-    { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<4.0" },
+    { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<5.0" },
     { name = "torch", marker = "extra == 'hugging-face'", specifier = "==2.6.0" },
     { name = "transformers", extras = ["torch"], marker = "extra == 'hugging-face'", specifier = "~=4.28" },
     { name = "types-redis", marker = "extra == 'redis'", specifier = "~=4.6.0.20240425" },
@@ -5356,6 +5357,7 @@ requires-dist = [
     { name = "websockets", specifier = ">=13,<16" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },
 ]
+provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "dapr", "faiss", "google", "hugging-face", "mcp", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "usearch", "weaviate"]
 
 [package.metadata.requires-dev]
 dev = [
