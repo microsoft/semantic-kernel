@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ModelContextProtocol;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Configuration;
 using ModelContextProtocol.Protocol.Transport;
 
 namespace MCPClient;
@@ -19,20 +18,70 @@ internal sealed class Program
 {
     public static async Task Main(string[] args)
     {
+        // Create an MCP client
+        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+
+        // Retrieve and display the list provided by the MCP server
+        IList<McpClientTool> tools = await mcpClient.ListToolsAsync();
+        DisplayTools(tools);
+
+        // Create a kernel and register the MCP tools
+        Kernel kernel = CreateKernelWithChatCompletionService();
+        kernel.Plugins.AddFromFunctions("Tools", tools.Select(aiFunction => aiFunction.AsKernelFunction()));
+
+        // Enable automatic function calling
+        OpenAIPromptExecutionSettings executionSettings = new()
+        {
+            Temperature = 0,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
+        };
+
+        string prompt = "What is the likely color of the sky in Boston today?";
+        Console.WriteLine(prompt);
+
+        // Execute a prompt using the MCP tools. The AI model will automatically call the appropriate MCP tools to answer the prompt.
+        FunctionResult result = await kernel.InvokePromptAsync(prompt, new(executionSettings));
+
+        Console.WriteLine(result);
+
+        // The expected output is: The likely color of the sky in Boston today is gray, as it is currently rainy.
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="Kernel"/> with the OpenAI chat completion service registered.
+    /// </summary>
+    /// <returns>An instance of <see cref="Kernel"/>.</returns>
+    private static Kernel CreateKernelWithChatCompletionService()
+    {
         // Load and validate configuration
-        var config = new ConfigurationBuilder()
+        IConfigurationRoot config = new ConfigurationBuilder()
             .AddUserSecrets<Program>()
             .AddEnvironmentVariables()
             .Build();
 
         if (config["OpenAI:ApiKey"] is not { } apiKey)
         {
-            Console.Error.WriteLine("Please provide a valid OpenAI:ApiKey to run this sample. See the associated README.md for more details.");
-            return;
+            const string Message = "Please provide a valid OpenAI:ApiKey to run this sample. See the associated README.md for more details.";
+            Console.Error.WriteLine(Message);
+            throw new InvalidOperationException(Message);
         }
 
-        // Create an MCP client
-        await using var mcpClient = await McpClientFactory.CreateAsync(
+        string modelId = config["OpenAI:ChatModelId"] ?? "gpt-4o-mini";
+
+        // Create kernel
+        var kernelBuilder = Kernel.CreateBuilder();
+        kernelBuilder.Services.AddOpenAIChatCompletion(serviceId: "openai", modelId: modelId, apiKey: apiKey);
+
+        return kernelBuilder.Build();
+    }
+
+    /// <summary>
+    /// Creates an MCP client and connects it to the MCPServer server.
+    /// </summary>
+    /// <returns>An instance of <see cref="IMcpClient"/>.</returns>
+    private static Task<IMcpClient> CreateMcpClientAsync()
+    {
+        return McpClientFactory.CreateAsync(
             new McpServerConfig()
             {
                 Id = "MCPServer",
@@ -48,40 +97,7 @@ internal sealed class Program
             {
                 ClientInfo = new() { Name = "MCPClient", Version = "1.0.0" }
             }
-         );
-
-        // Retrieve and display the list of tools available on the MCP server
-        Console.WriteLine("Available MCP tools:");
-        var tools = await mcpClient.GetAIFunctionsAsync().ConfigureAwait(false);
-        foreach (var tool in tools)
-        {
-            Console.WriteLine($"{tool.Name}: {tool.Description}");
-        }
-
-        // Prepare and build kernel with the MCP tools as Kernel functions
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Plugins.AddFromFunctions("Tools", tools.Select(aiFunction => aiFunction.AsKernelFunction()));
-        kernelBuilder.Services
-            .AddLogging(c => c.AddDebug().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace))
-            .AddOpenAIChatCompletion(serviceId: "openai", modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o-mini", apiKey: apiKey);
-
-        Kernel kernel = kernelBuilder.Build();
-
-        // Enable automatic function calling
-        OpenAIPromptExecutionSettings executionSettings = new()
-        {
-            Temperature = 0,
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
-        };
-
-        // Execute a prompt using the MCP tools. The AI model will automatically call the appropriate MCP tools to answer the prompt.
-        var prompt = "What is the likely color of the sky in Boston today?";
-        var result = await kernel.InvokePromptAsync(prompt, new(executionSettings)).ConfigureAwait(false);
-        Console.WriteLine($"\n\n{prompt}\n{result}");
-
-        // The expected output is:
-        // What is the likely color of the sky in Boston today?
-        // The likely color of the sky in Boston today is gray, as it is currently rainy.
+        );
     }
 
     /// <summary>
@@ -100,5 +116,18 @@ internal sealed class Program
 #endif
 
         return Path.Combine("..", "..", "..", "..", "MCPServer", "bin", configuration, "net8.0", "MCPServer.exe");
+    }
+
+    /// <summary>
+    /// Displays the list of available MCP tools.
+    /// </summary>
+    /// <param name="tools">The list of the tools to display.</param>
+    private static void DisplayTools(IList<McpClientTool> tools)
+    {
+        Console.WriteLine("Available MCP tools:");
+        foreach (var tool in tools)
+        {
+            Console.WriteLine($"- {tool.Name}: {tool.Description}");
+        }
     }
 }
