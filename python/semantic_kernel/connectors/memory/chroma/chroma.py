@@ -3,29 +3,21 @@
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, ClassVar, Generic, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, ClassVar, Generic
 
 from chromadb import Client, Collection, QueryResult
 from chromadb.api import ClientAPI
 from chromadb.config import Settings
 
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.record_definition import VectorStoreRecordDataField, VectorStoreRecordDefinition
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorSearchResult,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreModelValidationError,
@@ -33,10 +25,13 @@ from semantic_kernel.exceptions.vector_store_exceptions import (
 )
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
 logger = logging.getLogger(__name__)
 
-TKey = TypeVar("TKey", bound="str")
-TModel = TypeVar("TModel")
 
 DISTANCE_FUNCTION_MAP = {
     DistanceFunction.COSINE_SIMILARITY: "cosine",
@@ -47,8 +42,8 @@ DISTANCE_FUNCTION_MAP = {
 
 @experimental
 class ChromaCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """Chroma vector store collection."""
@@ -107,13 +102,24 @@ class ChromaCollection(
         Args:
             kwargs: Additional arguments are passed to the metadata parameter of the create_collection method.
         """
-        if self.data_model_definition.vector_fields and self.data_model_definition.vector_fields[0].distance_function:
-            if self.data_model_definition.vector_fields[0].distance_function not in DISTANCE_FUNCTION_MAP:
+        if self.data_model_definition.vector_fields:
+            if (
+                self.data_model_definition.vector_fields[0].index_kind
+                and self.data_model_definition.vector_fields[0].index_kind != "hnsw"
+            ):
+                raise VectorStoreInitializationException(
+                    f"Index kind {self.data_model_definition.vector_fields[0].index_kind} is not supported."
+                )
+            distance_func = (
+                self.data_model_definition.vector_fields[0].distance_function
+                or DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
+            )
+            if distance_func not in DISTANCE_FUNCTION_MAP:
                 raise VectorStoreInitializationException(
                     f"Distance function {self.data_model_definition.vector_fields[0].distance_function} is not "
                     "supported."
                 )
-            kwargs["hnsw:space"] = DISTANCE_FUNCTION_MAP[self.data_model_definition.vector_fields[0].distance_function]
+            kwargs["hnsw:space"] = DISTANCE_FUNCTION_MAP[distance_func]
         if kwargs:
             self.client.create_collection(name=self.collection_name, metadata=kwargs)
         else:
@@ -131,17 +137,12 @@ class ChromaCollection(
                 f"Failed to delete collection {self.collection_name} with error: {e}"
             ) from e
 
-    async def _validate_data_model(self):
+    def _validate_data_model(self):
         super()._validate_data_model()
         if len(self.data_model_definition.vector_fields) > 1:
             raise VectorStoreModelValidationError(
                 "Chroma only supports one vector field, but "
                 f"{len(self.data_model_definition.vector_fields)} were provided."
-            )
-        if self.data_model_definition.vector_fields[0].index_kind != "hnsw":
-            raise VectorStoreModelValidationError(
-                "Chroma only supports hnsw index kind, but "
-                f"{self.data_model_definition.vector_fields[0].index_kind} was provided."
             )
 
     @override

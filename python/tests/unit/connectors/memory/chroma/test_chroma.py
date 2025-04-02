@@ -6,8 +6,7 @@ import pytest
 from chromadb.api import ClientAPI
 
 from semantic_kernel.connectors.memory.chroma.chroma import ChromaCollection, ChromaStore
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 
 
 @pytest.fixture
@@ -78,7 +77,7 @@ async def test_chroma_collection_delete_collection(chroma_collection, mock_clien
 async def test_chroma_collection_upsert(chroma_collection, mock_client):
     records = [{"id": "1", "vector": [0.1, 0.2, 0.3, 0.4, 0.5], "content": "test document"}]
     ids = await chroma_collection.upsert(records)
-    assert ids == "1"
+    assert ids == ["1"]
     mock_client.get_collection().add.assert_called_once()
 
 

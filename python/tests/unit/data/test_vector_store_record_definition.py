@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from pydantic import ValidationError
 from pytest import raises
 
 from semantic_kernel.data import (
@@ -7,7 +8,7 @@ from semantic_kernel.data import (
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
 )
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
 from semantic_kernel.exceptions import VectorStoreModelException
 
 
@@ -32,7 +33,7 @@ def test_no_fields_fail():
 
 
 def test_no_name_fields_fail():
-    with raises(VectorStoreModelException):
+    with raises(ValidationError):
         VectorStoreRecordDefinition(fields={None: VectorStoreRecordKeyField()})  # type: ignore
     with raises(VectorStoreModelException):
         VectorStoreRecordDefinition(fields={"": VectorStoreRecordKeyField()})
