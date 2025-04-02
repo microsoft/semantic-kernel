@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -8,8 +7,28 @@ from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool
 from semantic_kernel.connectors.mcp import MCPSsePlugin, MCPStdioPlugin, MCPWebsocketPlugin
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 
-if TYPE_CHECKING:
-    pass
+
+@pytest.fixture
+def list_tool_calls() -> ListToolsResult:
+    return ListToolsResult(
+        tools=[
+            Tool(
+                name="func1",
+                description="func1",
+                inputSchema={
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                    "required": ["name"],
+                },
+            ),
+            Tool(
+                name="func2",
+                description="func2",
+                inputSchema={},
+            ),
+        ]
+    )
 
 
 @pytest.fixture
