@@ -370,7 +370,7 @@ public sealed class PromptyTests
                 configuration:
                     type: azure_openai_beta
                 parameters:
-                    logprobs: !!bool true
+                    logprobs: true
                     top_logprobs: 2
                     top_p: 1.0
                     user: Bob

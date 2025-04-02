@@ -35,6 +35,7 @@ public class PromptExecutionSettings
     /// When provided, this service identifier will be the key in a dictionary collection of execution settings for both <see cref="KernelArguments"/> and <see cref="PromptTemplateConfig"/>.
     /// If not provided the service identifier will be the default value in <see cref="DefaultServiceId"/>.
     /// </remarks>
+    [Experimental("SKEXP0001")]
     [JsonPropertyName("service_id")]
     public string? ServiceId
     {

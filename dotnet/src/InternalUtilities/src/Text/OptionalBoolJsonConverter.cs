@@ -46,6 +46,10 @@ internal sealed class OptionalBoolJsonConverter : JsonConverter<bool?>
         {
             return false;
         }
+        else if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
 
         throw new ArgumentException($"Invalid token type found '{reader.TokenType}', expected a boolean value.");
     }
