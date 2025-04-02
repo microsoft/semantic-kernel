@@ -18,16 +18,21 @@ internal static class PromptRegistry
     /// <param name="definition">The prompt definition to register.</param>
     public static void RegisterPrompt(PromptDefinition definition)
     {
+        if (s_definitions.ContainsKey(definition.Prompt.Name))
+        {
+            throw new ArgumentException($"A prompt with the name '{definition.Prompt.Name}' is already registered.");
+        }
+
         s_definitions[definition.Prompt.Name] = definition;
     }
 
     /// <summary>
-    /// Gets the handler for the `Get` prompt requests.
+    /// Handles the `Get` prompt requests.
     /// </summary>
     /// <param name="context">The request context.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the `Get` prompt request.</returns>
-    public static async Task<GetPromptResult> GetHandlerForGetPromptRequestsAsync(RequestContext<GetPromptRequestParams> context, CancellationToken cancellationToken)
+    public static async Task<GetPromptResult> HandlerGetPromptRequestsAsync(RequestContext<GetPromptRequestParams> context, CancellationToken cancellationToken)
     {
         // Make sure the prompt name is provided
         if (context.Params?.Name is not string { } promptName || string.IsNullOrEmpty(promptName))
@@ -46,12 +51,12 @@ internal static class PromptRegistry
     }
 
     /// <summary>
-    /// Gets the handler for the `List` prompt requests.
+    /// Handles the `List` prompt requests.
     /// </summary>
     /// <param name="context">Context of the request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the `List` prompt request.</returns>
-    public static Task<ListPromptsResult> GetHandlerForListPromptRequestsAsync(RequestContext<ListPromptsRequestParams> context, CancellationToken cancellationToken)
+    public static Task<ListPromptsResult> HandlerListPromptRequestsAsync(RequestContext<ListPromptsRequestParams> context, CancellationToken cancellationToken)
     {
         return Task.FromResult(new ListPromptsResult
         {

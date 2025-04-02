@@ -23,6 +23,6 @@ builder.Services
     // Add all functions from the kernel plugins to the MCP server as tools
     .WithTools(kernel.Plugins)
     // Register prompt handlers
-    .WithListPromptsHandler(PromptRegistry.GetHandlerForListPromptRequestsAsync)
-    .WithGetPromptHandler(PromptRegistry.GetHandlerForGetPromptRequestsAsync);
+    .WithListPromptsHandler(PromptRegistry.HandlerListPromptRequestsAsync)
+    .WithGetPromptHandler(PromptRegistry.HandlerGetPromptRequestsAsync);
 await builder.Build().RunAsync();

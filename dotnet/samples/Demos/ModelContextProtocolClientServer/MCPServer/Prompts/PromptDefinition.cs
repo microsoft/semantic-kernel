@@ -76,7 +76,7 @@ internal sealed class PromptDefinition
     /// <summary>
     /// Handles the prompt request by rendering the prompt.
     /// </summary>
-    /// <param name="context">The prompt request context.</param>
+    /// <param name="context">The MCP request context.</param>
     /// <param name="promptTemplateConfig">The prompt template configuration.</param>
     /// <param name="promptTemplate">The prompt template.</param>
     /// <param name="kernel">The kernel to render the prompt.</param>
