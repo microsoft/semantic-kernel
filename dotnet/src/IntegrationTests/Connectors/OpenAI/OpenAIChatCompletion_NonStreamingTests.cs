@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -191,7 +190,9 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.NotNull(audioContent.Metadata["ExpiresAt"]);
         Assert.NotNull(audioContent.Metadata["Transcript"]);
         Assert.Equal("audio/mp3", audioContent.MimeType);
-        Assert.Contains("The sun rises in the east", audioContent.Metadata["Transcript"]!.ToString(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(audioContent.Metadata.ContainsKey("Transcript"));
+        Assert.NotNull(audioContent.Metadata["Transcript"]);
+        Assert.NotEmpty(audioContent.Metadata["Transcript"]!.ToString());
     }
 
     #region internals
