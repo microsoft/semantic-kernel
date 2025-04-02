@@ -194,6 +194,29 @@ def get_hugging_face_text_embedding_service_and_request_settings() -> tuple[
 
     return embedding_service, request_settings
 
+def get_gaudi_text_embedding_service_and_request_settings() -> tuple[
+    "EmbeddingGeneratorBase", "PromptExecutionSettings"
+]:
+    """Return HuggingFace Gaudi-optimized text embedding service and request settings.
+
+    The service credentials can be read by 3 ways:
+    1. Via the constructor
+    2. Via the environment variables
+    3. Via an environment file
+
+    The request settings control the behavior of the service. The default settings are sufficient to get started.
+    However, you can adjust the settings to suit your needs.
+    Note: Some of the settings are NOT meant to be set by the user.
+    Please refer to the Semantic Kernel Python documentation for more information:
+    https://learn.microsoft.com/en-us/python/api/semantic-kernel/semantic_kernel?view=semantic-kernel
+    """
+    from semantic_kernel.connectors.ai.hugging_face import HuggingFacePromptExecutionSettings, HuggingFaceTextEmbedding
+
+    embedding_service = HuggingFaceTextEmbedding(ai_model_id="sentence-transformers/all-MiniLM-L6-v2", use_hpu=True)
+    request_settings = HuggingFacePromptExecutionSettings()
+
+    return embedding_service, request_settings
+
 
 def get_google_ai_text_embedding_service_and_request_settings() -> tuple[
     "EmbeddingGeneratorBase", "PromptExecutionSettings"
