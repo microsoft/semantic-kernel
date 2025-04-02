@@ -16,22 +16,20 @@ from azure.identity.aio import DefaultAzureCredential
 from pydantic import SecretStr, ValidationError, field_validator
 
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchResult,
+)
+from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorSearchExecutionException,
@@ -265,8 +263,8 @@ async def _get_mssql_connection(settings: SqlSettings) -> "Connection":
 
 @experimental
 class SqlServerCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """SQL collection implementation."""
