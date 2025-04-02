@@ -98,7 +98,6 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/>s when invoked as part of the <see cref="AIFunction"/>'s invocation.
     /// </param>
     /// <returns>An enumerable of <see cref="AIFunction"/> instances, one for each <see cref="KernelFunction"/> in this plugin.</returns>
-    [Experimental("SKEXP0001")]
     public IEnumerable<AIFunction> AsAIFunctions(Kernel? kernel = null)
     {
         foreach (KernelFunction function in this)

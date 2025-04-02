@@ -509,7 +509,6 @@ public abstract class KernelFunction
     /// The <see cref="Kernel"/> instance to pass to the <see cref="KernelFunction"/> when it's invoked as part of the <see cref="AIFunction"/>'s invocation.
     /// </param>
     /// <returns>An instance of <see cref="AIFunction"/> that, when invoked, will in turn invoke the current <see cref="KernelFunction"/>.</returns>
-    [Experimental("SKEXP0001")]
     public AIFunction AsAIFunction(Kernel? kernel = null)
     {
         return new KernelAIFunction(this, kernel);
