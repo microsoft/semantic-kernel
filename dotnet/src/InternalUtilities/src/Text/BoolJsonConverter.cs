@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -13,6 +14,7 @@ namespace Microsoft.SemanticKernel.Text;
 /// Serializing a <see cref="PromptExecutionSettings"/> instance without this converter will throw a 'System.Text.Json.JsonException : The JSON value could not be converted to System.Nullable'
 /// if there are any bool properties.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal sealed class BoolJsonConverter : JsonConverter<bool>
 {
     /// <inheritdoc/>
