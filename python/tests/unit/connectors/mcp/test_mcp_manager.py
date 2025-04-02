@@ -6,7 +6,7 @@ from mcp import ClientSession
 from mcp.types import ListToolsResult, Tool
 
 from semantic_kernel.connectors.mcp import (
-    MCPClient,
+    MCPServerConfig,
     MCPToolParameters,
     _create_kernel_function_from_mcp_server_tool,
     _create_kernel_function_from_mcp_server_tools,
@@ -61,7 +61,7 @@ def test_create_kernel_function_from_mcp_server_tool_wrong_schema():
         },
     )
 
-    test_settings = MCPClient(session=MagicMock(spec=ClientSession))
+    test_settings = MCPServerConfig(session=MagicMock(spec=ClientSession))
     with pytest.raises(ServiceInvalidTypeError):
         _create_kernel_function_from_mcp_server_tool(test_tool, test_settings)
 
@@ -78,7 +78,7 @@ def test_create_kernel_function_from_mcp_server_tool_missing_required():
         },
     )
 
-    test_settings = MCPClient(session=MagicMock(spec=ClientSession))
+    test_settings = MCPServerConfig(session=MagicMock(spec=ClientSession))
     with pytest.raises(ServiceInvalidTypeError):
         _create_kernel_function_from_mcp_server_tool(test_tool, test_settings)
 
@@ -96,7 +96,7 @@ def test_create_kernel_function_from_mcp_server_tool():
         },
     )
 
-    test_settings = MCPClient(session=MagicMock(spec=ClientSession))
+    test_settings = MCPServerConfig(session=MagicMock(spec=ClientSession))
     result = _create_kernel_function_from_mcp_server_tool(test_tool, test_settings)
     assert result.name == "test_tool"
     assert result.description == "This is a test tool"
@@ -123,7 +123,7 @@ def test_create_kernel_function_from_mcp_server_tools():
     test_list_tools_result = ListToolsResult(
         tools=[test_tool, test_tool],
     )
-    test_settings = MCPClient(session=MagicMock(spec=ClientSession))
+    test_settings = MCPServerConfig(session=MagicMock(spec=ClientSession))
 
     results = _create_kernel_function_from_mcp_server_tools(test_list_tools_result, test_settings)
     assert len(results) == 2
@@ -154,7 +154,7 @@ async def test_create_function_from_mcp_server():
     # Mock the ServerSession
     mock_session = MagicMock(spec=ClientSession)
     mock_session.list_tools = AsyncMock(return_value=test_list_tools_result)
-    settings = MCPClient(session=mock_session)
+    settings = MCPServerConfig(session=mock_session)
 
     results = await create_function_from_mcp_server(settings=settings)
 

@@ -5,9 +5,9 @@ import pytest
 from mcp import ClientSession
 
 from semantic_kernel.connectors.mcp import (
-    MCPClient,
-    MCPSseClient,
-    MCPStdioClient,
+    MCPServerConfig,
+    MCPSseServerConfig,
+    MCPStdioServerConfig,
 )
 from semantic_kernel.exceptions.kernel_exceptions import KernelPluginInvalidConfigurationError
 
@@ -16,7 +16,7 @@ from semantic_kernel.exceptions.kernel_exceptions import KernelPluginInvalidConf
 async def test_mcp_client_session_settings_initialize():
     # Test if Client can insert it's own Session
     mock_session = MagicMock(spec=ClientSession)
-    settings = MCPClient(session=mock_session)
+    settings = MCPServerConfig(session=mock_session)
     async with settings.get_session() as session:
         assert session is mock_session
 
@@ -39,7 +39,7 @@ async def test_mcp_sse_server_settings_initialize_session():
         # Make the mock_sse_client return an AsyncMock for the context manager
         mock_sse_client.return_value = mock_generator
 
-        settings = MCPSseClient(url="http://localhost:8080/sse")
+        settings = MCPSseServerConfig(url="http://localhost:8080/sse")
 
         # Test the `get_session` method with ClientSession mock
         async with settings.get_session() as session:
@@ -64,7 +64,7 @@ async def test_mcp_stdio_server_settings_initialize_session():
         # Make the mock_sse_client return an AsyncMock for the context manager
         mock_stdio_client.return_value = mock_generator
 
-        settings = MCPStdioClient(
+        settings = MCPStdioServerConfig(
             command="echo",
             args=["Hello"],
         )
@@ -91,7 +91,7 @@ async def test_mcp_stdio_server_settings_failed_initialize_session():
         # Make the mock_stdio_client return an AsyncMock for the context manager
         mock_stdio_client.return_value = mock_generator
 
-        settings = MCPStdioClient(
+        settings = MCPStdioServerConfig(
             command="echo",
             args=["Hello"],
         )
