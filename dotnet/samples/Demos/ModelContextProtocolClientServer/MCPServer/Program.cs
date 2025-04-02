@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using MCPServer;
-using MCPServer.Resources;
 using MCPServer.Tools;
 using Microsoft.SemanticKernel;
 
