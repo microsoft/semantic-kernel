@@ -200,10 +200,10 @@ class ResponsesAgentThreadActions:
             # Check if tool calls are required
             function_calls = cls._get_tool_calls_from_output(response.output)  # type: ignore
             if (fc_count := len(function_calls)) == 0:
-                yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)
+                yield True, cls._create_response_message_content(response, agent.ai_model_id, agent.name)  # type: ignore
                 break
 
-            response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)
+            response_message = cls._create_response_message_content(response, agent.ai_model_id, agent.name)  # type: ignore
             yield False, response_message
             chat_history.add_message(message=response_message)
 
