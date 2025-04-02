@@ -167,16 +167,23 @@ def get_parameters_from_tool(tool: Tool) -> list[KernelParameterMetadata]:
 
 @experimental
 async def create_plugin_from_mcp_server(
-    plugin_name: str, description: str, server_config: MCPServerConfig | None = None, **kwargs: Any
+    plugin_name: str,
+    description: str,
+    server_config: MCPServerConfig | None = None,
+    **kwargs: Any,
 ) -> KernelPlugin:
-    """Creates a KernelPlugin from an MCP server.
+    """Creates a KernelPlugin from a MCP server config.
 
     Args:
         plugin_name: The name of the plugin.
         description: The description of the plugin.
         server_config: The MCP client to use for communication,
             should be a MCPStdioServerConfig or MCPSseServerConfig.
+            If not supplied, it will be created from the kwargs.
         kwargs: Any extra arguments to pass to the plugin creation.
+
+    Returns:
+        KernelPlugin: The created plugin, this should then be passed to the kernel or a agent.
 
     """
     if server_config is None:
