@@ -21,7 +21,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """
             type: chat_completion_agent
             name: StoryAgent
-            description: Store Telling Agent
+            description: Story Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
