@@ -189,6 +189,7 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// </summary>
     [JsonPropertyName("audio_timestamp")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonConverter(typeof(BoolJsonConverter))]
     public bool? AudioTimestamp
     {
         get => this._audioTimestamp;

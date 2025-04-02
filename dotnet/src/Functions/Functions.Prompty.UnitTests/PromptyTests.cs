@@ -16,7 +16,7 @@ using Xunit;
 
 namespace SemanticKernel.Functions.Prompty.UnitTests;
 
-public sealed class PromptyTest
+public sealed class PromptyTests
 {
     [Fact]
     public void ChatPromptyTest()
@@ -128,7 +128,7 @@ public sealed class PromptyTest
         // Arrange
         Kernel kernel = new();
         var chatPromptyPath = Path.Combine("TestData", "chat.prompty");
-        ManifestEmbeddedFileProvider manifestEmbeddedProvider = new(typeof(PromptyTest).Assembly);
+        ManifestEmbeddedFileProvider manifestEmbeddedProvider = new(typeof(PromptyTests).Assembly);
 
         // Act
         var kernelFunction = kernel.CreateFunctionFromPromptyFile(chatPromptyPath,
@@ -355,6 +355,50 @@ public sealed class PromptyTest
         // Assert
         Assert.NotNull(kernelFunction);
         Assert.Equal(expectedVariables, kernelFunction.Metadata.Parameters.Select(p => p.Name));
+    }
+
+    [Fact]
+    public void ItShouldLoadExecutionSettings()
+    {
+        // Arrange
+        const string Prompty = """
+            ---
+            name: SomePrompt
+            description: This is the description.
+            model:
+                api: chat
+                configuration:
+                    type: azure_openai_beta
+                parameters:
+                    logprobs: !!bool true
+                    top_logprobs: 2
+                    top_p: 1.0
+                    user: Bob
+                    stop_sequences:
+                      - END
+                      - COMPLETE
+                    token_selection_biases:
+                      1: 2
+                      3: 4
+            ---
+            Abc---def
+            """;
+
+        // Act
+        var kernelFunction = new Kernel().CreateFunctionFromPrompty(Prompty);
+        PromptExecutionSettings executionSettings = kernelFunction.ExecutionSettings!["default"];
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        Assert.NotNull(executionSettings);
+        var openaiExecutionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(executionSettings);
+        Assert.NotNull(openaiExecutionSettings);
+        Assert.True(openaiExecutionSettings.Logprobs);
+        Assert.Equal(2, openaiExecutionSettings.TopLogprobs);
+        Assert.Equal(1.0, openaiExecutionSettings.TopP);
+        Assert.Equal("Bob", openaiExecutionSettings.User);
+        Assert.Equal(["END", "COMPLETE"], openaiExecutionSettings.StopSequences);
+        Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, openaiExecutionSettings.TokenSelectionBiases);
     }
 
     private sealed class EchoTextGenerationService : ITextGenerationService

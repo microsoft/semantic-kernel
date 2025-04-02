@@ -91,6 +91,7 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
     /// The past/present kv tensors are shared and allocated once to max_length (cuda only)
     /// </summary>
     [JsonPropertyName("past_present_share_buffer")]
+    [JsonConverter(typeof(BoolJsonConverter))]
     public bool? PastPresentShareBuffer { get; set; }
 
     /// <summary>
@@ -145,5 +146,6 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
     /// Do random sampling
     /// </summary>
     [JsonPropertyName("do_sample")]
+    [JsonConverter(typeof(BoolJsonConverter))]
     public bool? DoSample { get; set; }
 }

@@ -64,6 +64,86 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+    [Fact]
+    public void ItCanCreateOpenAIPromptExecutionSettingsFromPromptExecutionSettings()
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7 },
+                { "top_p", 0.7 },
+                { "frequency_penalty", 0.7 },
+                { "presence_penalty", 0.7 },
+                { "stop_sequences", new string[] { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
+                { "max_tokens", 128 },
+                { "logprobs", true },
+                { "seed", 123456 },
+                { "top_logprobs", 5 },
+            }
+        };
+
+        // Act
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItCanCreateOpenAIPromptExecutionSettingsFromPromptExecutionSettingsWithIncorrectTypes()
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", "0.7" },
+                { "top_p", "0.7" },
+                { "frequency_penalty", "0.7" },
+                { "presence_penalty", "0.7" },
+                { "stop_sequences", new List<object> { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "token_selection_biases", new Dictionary<string, object>() { { "1", "2" }, { "3", "4" } } },
+                { "max_tokens", "128" },
+                { "logprobs", "true" },
+                { "seed", "123456" },
+                { "top_logprobs", "5" },
+            }
+        };
+
+        // Act
+        OpenAIPromptExecutionSettings executionSettings = OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("123")]
+    [InlineData("Foo")]
+    [InlineData(1)]
+    [InlineData(1.0)]
+    public void ItCannotCreateOpenAIPromptExecutionSettingsWithInvalidBoolValues(object value)
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "logprobs", value }
+            }
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => OpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings));
+    }
+
+    #region private
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
@@ -79,4 +159,5 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(true, executionSettings.Logprobs);
         Assert.Equal(5, executionSettings.TopLogprobs);
     }
+    #endregion
 }
