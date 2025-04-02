@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Text;
 
+#pragma warning disable CA1812 // Instantiated via JsonConverterAttribute
+
 /// <summary>
 /// Deserializes a bool from a string. This is useful when deserializing a <see cref="PromptExecutionSettings"/> instance that contains bool properties.
 /// Serializing a <see cref="PromptExecutionSettings"/> instance without this converter will throw a 'System.Text.Json.JsonException : The JSON value could not be converted to System.Nullable'
