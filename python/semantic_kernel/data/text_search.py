@@ -2,37 +2,236 @@
 
 import json
 import logging
-from abc import abstractmethod
-from collections.abc import Callable, Sequence
+import sys
+from abc import ABC, abstractmethod
+from collections.abc import AsyncIterable, Callable, Mapping, Sequence
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import Annotated, Any, ClassVar, Generic, Protocol, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
-from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.search_options import SearchOptions
-from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search.utils import (
-    OptionsUpdateFunctionType,
-    create_options,
-    default_options_update_function,
-)
-from semantic_kernel.data.vector_search.const import TextSearchFunctions
+from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME, TextSearchFunctions
 from semantic_kernel.exceptions import TextSearchException
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_parameter_metadata import KernelParameterMetadata
+from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
-if TYPE_CHECKING:
-    from semantic_kernel.data.search_options import SearchOptions
-    from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
 
+TSearchResult = TypeVar("TSearchResult")
+TSearchFilter = TypeVar("TSearchFilter", bound="SearchFilter")
 TMapInput = TypeVar("TMapInput")
 
 logger = logging.getLogger(__name__)
+
+# region: Filters
+
+
+@experimental
+class FilterClauseBase(ABC, KernelBaseModel):
+    """A base for all filter clauses."""
+
+    filter_clause_type: ClassVar[str] = "FilterClauseBase"
+    field_name: str
+    value: Any
+
+    def __str__(self) -> str:
+        """Return a string representation of the filter clause."""
+        return f"filter_clause_type='{self.filter_clause_type}' field_name='{self.field_name}' value='{self.value}'"
+
+
+@experimental
+class AnyTagsEqualTo(FilterClauseBase):
+    """A filter clause for a any tags equals comparison.
+
+    Args:
+        field_name: The name of the field containing the list of tags.
+        value: The value to compare against the list of tags.
+    """
+
+    filter_clause_type: ClassVar[str] = "any_tags_equal_to"
+
+
+@experimental
+class EqualTo(FilterClauseBase):
+    """A filter clause for an equals comparison.
+
+    Args:
+        field_name: The name of the field to compare.
+        value: The value to compare against the field.
+
+    """
+
+    filter_clause_type: ClassVar[str] = "equal_to"
+
+
+@experimental
+class SearchFilter:
+    """A filter clause for a search."""
+
+    def __init__(self) -> None:
+        """Initialize a new instance of SearchFilter."""
+        self.filters: list[FilterClauseBase] = []
+        self.group_type = "AND"
+        self.equal_to = self.__equal_to
+
+    def __equal_to(self, field_name: str, value: str) -> Self:
+        """Add an equals filter clause."""
+        self.filters.append(EqualTo(field_name=field_name, value=value))
+        return self
+
+    @classmethod
+    def equal_to(cls: type[TSearchFilter], field_name: str, value: str) -> TSearchFilter:
+        """Add an equals filter clause."""
+        filter = cls()
+        filter.equal_to(field_name, value)
+        return filter
+
+    def __str__(self) -> str:
+        """Return a string representation of the filter."""
+        return f"{f' {self.group_type} '.join(f'({f!s})' for f in self.filters)}"
+
+
+# region: Options
+
+
+@experimental
+class SearchOptions(ABC, KernelBaseModel):
+    """Options for a search."""
+
+    filter: SearchFilter = Field(default_factory=SearchFilter)
+    include_total_count: bool = False
+
+
+@experimental
+class TextSearchOptions(SearchOptions):
+    """Options for a text search."""
+
+    top: Annotated[int, Field(gt=0)] = 5
+    skip: Annotated[int, Field(ge=0)] = 0
+
+
+# region: Results
+
+
+@experimental
+class KernelSearchResults(KernelBaseModel, Generic[TSearchResult]):
+    """The result of a kernel search."""
+
+    results: AsyncIterable[TSearchResult]
+    total_count: int | None = None
+    metadata: Mapping[str, Any] | None = None
+
+
+@experimental
+class TextSearchResult(KernelBaseModel):
+    """The result of a text search."""
+
+    name: str | None = None
+    value: str | None = None
+    link: str | None = None
+
+
+# region: Options functions
+
+
+class OptionsUpdateFunctionType(Protocol):
+    """Type definition for the options update function in Text Search."""
+
+    def __call__(
+        self,
+        query: str,
+        options: "SearchOptions",
+        parameters: list["KernelParameterMetadata"] | None = None,
+        **kwargs: Any,
+    ) -> tuple[str, "SearchOptions"]:
+        """Signature of the function."""
+        ...  # pragma: no cover
+
+
+def create_options(
+    options_class: type["SearchOptions"],
+    options: "SearchOptions | None",
+    **kwargs: Any,
+) -> "SearchOptions":
+    """Create search options.
+
+    If options are supplied, they are checked for the right type, and the kwargs are used to update the options.
+
+    If options are not supplied, they are created from the kwargs.
+    If that fails, an empty options object is returned.
+
+    Args:
+        options_class: The class of the options.
+        options: The existing options to update.
+        **kwargs: The keyword arguments to use to create the options.
+
+    Returns:
+        SearchOptions: The options.
+
+    Raises:
+        ValidationError: If the options are not valid.
+
+    """
+    # no options give, so just try to create from kwargs
+    if not options:
+        return options_class.model_validate(kwargs)
+    # options are the right class, just update based on kwargs
+    if isinstance(options, options_class):
+        for key, value in kwargs.items():
+            if key in options.model_fields:
+                setattr(options, key, value)
+        return options
+    # options are not the right class, so create new options
+    # first try to dump the existing, if this doesn't work for some reason, try with kwargs only
+    inputs = {}
+    try:
+        inputs = options.model_dump(exclude_none=True, exclude_defaults=True, exclude_unset=True)
+    except Exception:
+        # This is very unlikely to happen, but if it does, we will just create new options.
+        # one reason this could happen is if a different class is passed that has no model_dump method
+        logger.warning("Options are not valid. Creating new options from just kwargs.")
+    inputs.update(kwargs)
+    return options_class.model_validate(kwargs)
+
+
+def default_options_update_function(
+    query: str, options: "SearchOptions", parameters: list["KernelParameterMetadata"] | None = None, **kwargs: Any
+) -> tuple[str, "SearchOptions"]:
+    """The default options update function.
+
+    This function is used to update the query and options with the kwargs.
+    You can supply your own version of this function to customize the behavior.
+
+    Args:
+        query: The query.
+        options: The options.
+        parameters: The parameters to use to create the options.
+        **kwargs: The keyword arguments to use to update the options.
+
+    Returns:
+        tuple[str, SearchOptions]: The updated query and options
+
+    """
+    for param in parameters or []:
+        assert param.name  # nosec, when used param name is always set
+        if param.name in {"query", "top", "skip"}:
+            continue
+        if param.name in kwargs:
+            options.filter.equal_to(param.name, kwargs[param.name])
+        if param.default_value:
+            options.filter.equal_to(param.name, param.default_value)
+
+    return query, options
+
+
+# region: Text Search
 
 
 @experimental
