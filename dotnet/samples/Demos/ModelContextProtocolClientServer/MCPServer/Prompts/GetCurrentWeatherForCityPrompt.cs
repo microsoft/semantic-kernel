@@ -12,6 +12,11 @@ namespace MCPServer.Prompts;
 /// </summary>
 internal static class GetCurrentWeatherForCityPrompt
 {
+    /// <summary>
+    /// The SK handlebars prompt template is embedded in the class for the convenience and simplicity of the demo.
+    /// For non-demo scenarios, the JSON prompt template can be stored in a separate file so it can be versioned and updated independently.
+    /// The GetCurrentWeatherForCityPrompt class itself can be generalized to use with any prompt template and accept the template name as a parameter.
+    /// </summary>
     private static readonly PromptTemplateConfig s_promptTemplateConfig = PromptTemplateConfig.FromJson("""
     {
         "name": "GetCurrentWeatherForCity",
