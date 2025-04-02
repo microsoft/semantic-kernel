@@ -43,7 +43,7 @@ async def main():
 
     file_search_tool = AzureResponsesAgent.configure_file_search_tool(vector_store.id)
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = AzureResponsesAgent(
         ai_model_id=model,
         client=client,

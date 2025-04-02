@@ -65,6 +65,7 @@
 - [OpenAI Responses Message Callback](./agents/openai_responses/responses_agent_message_callback.py)
 - [OpenAI Responses File Search Streaming](./agents/openai_responses/responses_agent_file_search_streaming.py)
 - [OpenAI Responses Plugins Streaming](./agents/openai_responses/responses_agent_plugins_streaming.py)
+- [OpenAI Responses Reuse Existing Thread ID](./agents/openai_responses/responses_agent_reuse_existing_thread_id.py)
 - [OpenAI Responses Web Search Streaming](./agents/openai_responses/responses_agent_web_search_streaming.py)
 
 ### Audio - Using services that support audio-to-text and text-to-audio conversion

@@ -50,7 +50,7 @@ async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
     client, model = OpenAIResponsesAgent.setup_resources()
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,

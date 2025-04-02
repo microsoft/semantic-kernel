@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import OpenAIResponsesAgent
+from semantic_kernel.agents import AzureResponsesAgent
 from semantic_kernel.contents import AuthorRole, FunctionCallContent, FunctionResultContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
@@ -46,10 +46,10 @@ async def handle_intermediate_steps(message: ChatMessageContent) -> None:
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    client, model = AzureResponsesAgent.setup_resources()
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponsesAgent(
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
+    agent = AzureResponsesAgent(
         ai_model_id=model,
         client=client,
         name="Host",

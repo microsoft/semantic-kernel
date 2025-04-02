@@ -2,7 +2,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.agents import AzureResponsesAgent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -48,11 +48,11 @@ USER_INPUTS = [
 
 
 async def main():
-    # 1. Create the client using Azure OpenAI resources and configuration
-    client, model = OpenAIResponsesAgent.setup_resources()
+    # 1. Create the client using OpenAI resources and configuration
+    client, model = AzureResponsesAgent.setup_resources()
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
-    agent = OpenAIResponsesAgent(
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
+    agent = AzureResponsesAgent(
         ai_model_id=model,
         client=client,
         instructions="Answer questions about the menu.",
@@ -63,7 +63,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponsesAgentThread = None
+    thread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")

@@ -6,12 +6,6 @@ from collections.abc import AsyncIterable, Awaitable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
-
 from openai import AsyncOpenAI
 from openai.lib._parsing._responses import type_to_text_format_param
 from openai.types.responses.computer_tool_param import ComputerToolParam
@@ -55,6 +49,11 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_invocation,
 )
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -194,9 +193,7 @@ class OpenAIResponsesAgent(Agent):
 
     ai_model_id: str
     client: AsyncOpenAI
-    function_choice_behavior: FunctionChoiceBehavior | None = Field(
-        default_factory=lambda: FunctionChoiceBehavior.Auto()
-    )
+    function_choice_behavior: FunctionChoiceBehavior = Field(default_factory=lambda: FunctionChoiceBehavior.Auto())
     instruction_role: str = Field(default="developer")
     metadata: dict[str, Any] = Field(default_factory=dict)
     temperature: float | None = Field(default=None)

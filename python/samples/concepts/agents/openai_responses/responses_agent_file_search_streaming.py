@@ -2,7 +2,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 
 """
@@ -27,7 +27,7 @@ USER_INPUTS = [
 
 
 async def main():
-    # 1. Create the client using Azure OpenAI resources and configuration
+    # 1. Create the client using OpenAI resources and configuration
     client, model = OpenAIResponsesAgent.setup_resources()
 
     pdf_file_path = os.path.join(
@@ -44,7 +44,7 @@ async def main():
 
     file_search_tool = OpenAIResponsesAgent.configure_file_search_tool(vector_store.id)
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
@@ -56,7 +56,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponsesAgentThread = None
+    thread = None
 
     response_chunks: list[StreamingChatMessageContent] = []
     for user_input in USER_INPUTS:

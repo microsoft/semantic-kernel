@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
@@ -21,13 +21,13 @@ maintain the conversation history if conversation context is desired.
 
 
 async def main():
-    # 1. Create the client using Azure OpenAI resources and configuration
+    # 1. Create the client using OpenAI resources and configuration
     client, model = OpenAIResponsesAgent.setup_resources()
 
     # 2. Define a file path for an image that will be used in the conversation
     file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "cat.jpg")
 
-    # 3. Create a Semantic Kernel agent for the OpenAI Response API
+    # 3. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
@@ -38,7 +38,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponsesAgentThread = None
+    thread = None
 
     # 4. Define a list of user messages that include text and image content for the vision task
     user_messages = [

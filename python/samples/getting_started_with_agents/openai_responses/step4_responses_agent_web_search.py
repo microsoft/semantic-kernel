@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents import OpenAIResponsesAgent, ResponsesAgentThread
+from semantic_kernel.agents import OpenAIResponsesAgent
 
 """
 The following sample demonstrates how to create an OpenAI Responses Agent.
@@ -23,13 +23,13 @@ USER_INPUTS = [
 
 
 async def main():
-    # 1. Create the client using Azure OpenAI resources and configuration
+    # 1. Create the client using OpenAI resources and configuration
     # Note: the Azure OpenAI Responses API does not yet support the web search tool.
     client, model = OpenAIResponsesAgent.setup_resources()
 
     web_search_tool = OpenAIResponsesAgent.configure_web_search_tool()
 
-    # 2. Create a Semantic Kernel agent for the OpenAI Response API
+    # 2. Create a Semantic Kernel agent for the OpenAI Responses API
     agent = OpenAIResponsesAgent(
         ai_model_id=model,
         client=client,
@@ -41,7 +41,7 @@ async def main():
     # 3. Create a thread for the agent
     # If no thread is provided, a new thread will be
     # created and returned with the initial response
-    thread: ResponsesAgentThread = None
+    thread = None
 
     for user_input in USER_INPUTS:
         print(f"# User: '{user_input}'")
