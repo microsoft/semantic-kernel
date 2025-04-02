@@ -35,6 +35,8 @@ def mock_agent():
     agent.metadata = {}
     agent.format_instructions = AsyncMock(return_value="base instructions")
     agent.kernel = MagicMock()
+    agent.polling_options.run_polling_timeout.total_seconds.return_value = 5
+    agent.polling_options.default_polling_interval.total_seconds.return_value = 1
     return agent
 
 

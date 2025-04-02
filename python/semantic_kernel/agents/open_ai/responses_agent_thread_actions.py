@@ -189,9 +189,13 @@ class ResponsesAgentThreadActions:
                     f"with error: {error_message} or incomplete details: {incomplete_details}"
                 )
 
-            while response.status != "completed":
-                # handle a timeout here...
-                await asyncio.sleep(agent.polling_options.default_polling_interval.total_seconds())
+            try:
+                response = await asyncio.wait_for(
+                    cls._poll_until_completed(agent, response),
+                    timeout=agent.polling_options.run_polling_timeout.total_seconds(),
+                )
+            except asyncio.TimeoutError:
+                raise AgentInvokeException("Polling timed out before completion.")
 
             # Check if tool calls are required
             function_calls = cls._get_tool_calls_from_output(response.output)  # type: ignore
@@ -487,6 +491,13 @@ class ResponsesAgentThreadActions:
         )
         if response is None:
             raise AgentInvokeException("Response is None")
+        return response
+
+    @classmethod
+    async def _poll_until_completed(cls: type[_T], agent: "OpenAIResponsesAgent", response: Response):
+        while response.status != "completed":
+            await asyncio.sleep(agent.polling_options.default_polling_interval.total_seconds())
+            response = await agent.client.responses.retrieve(response.id)
         return response
 
     @classmethod
