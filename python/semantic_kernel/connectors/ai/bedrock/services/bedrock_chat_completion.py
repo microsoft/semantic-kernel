@@ -176,10 +176,31 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     ) -> Any:
         messages: list[dict[str, Any]] = []
 
+        tool_message_buffer = None
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 continue
-            messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+            # If there are multiple tool responses, Bedrock expects one message
+            # with multiple content blocks, one for each response.
+            if message.role == AuthorRole.TOOL:
+                if tool_message_buffer is None:
+                    tool_message_buffer = MESSAGE_CONVERTERS[message.role](message)
+                else:
+                    tool_message_buffer["content"].extend(
+                        (MESSAGE_CONVERTERS[message.role](message)).get("content", [])
+                    )
+            else:
+                # If a non-tool message is encountered, flush the buffer
+                if tool_message_buffer:
+                    messages.append(tool_message_buffer)
+                    tool_message_buffer = None
+
+                messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+        # Flush any remaining tool messages buffer
+        if tool_message_buffer:
+            messages.append(tool_message_buffer)
 
         return messages
 
@@ -188,31 +209,10 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     def _prepare_system_messages_for_request(self, chat_history: "ChatHistory") -> Any:
         messages: list[dict[str, Any]] = []
 
-        tool_message_buffer = None
         for message in chat_history.messages:
             if message.role != AuthorRole.SYSTEM:
                 continue
-
-            # If there are multiple tool responses, Bedrock expects one message
-            # with multiple content blocks, one for each response.
-            if message.role == AuthorRole.TOOL:
-                if tool_message_buffer is None:
-                    # Start buffering tool messages
-                    tool_message_buffer = MESSAGE_CONVERTERS[message.role](message)
-                    tool_message_buffer["items"] = tool_message_buffer.get("items", [])
-                else:
-                    # Merge consecutive tool messages
-                    tool_message_buffer["items"].extend(MESSAGE_CONVERTERS[message.role](message).get("items", []))
-            else:
-                # If a non-tool message is encountered, flush the buffer
-                if tool_message_buffer:
-                    messages.append(tool_message_buffer)
-                    tool_message_buffer = None
-                messages.append(MESSAGE_CONVERTERS[message.role](message))
-
-        # Flush any remaining tool message buffer
-        if tool_message_buffer:
-            messages.append(tool_message_buffer)
+            messages.append(MESSAGE_CONVERTERS[message.role](message))
 
         return messages
 
