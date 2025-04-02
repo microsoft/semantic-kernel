@@ -14,7 +14,7 @@ kernelBuilder.Plugins.AddFromType<WeatherUtils>();
 Kernel kernel = kernelBuilder.Build();
 
 // Register prompts
-PromptRegistry.RegisterPrompt(GetCurrentWeatherForCityPrompt.GetDefinition(kernel));
+PromptRegistry.RegisterPrompt(KernelPrompt.GetDefinition(PromptResource.ReadAsString("getCurrentWeatherForCity.json"), kernel));
 
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 builder.Services
