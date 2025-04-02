@@ -111,7 +111,7 @@ public class AzureAIAgent_Streaming(ITestOutputHelper output) : BaseAzureAgentTe
 
         bool isFirst = false;
         bool isCode = false;
-        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread, new AgentInvokeOptions() { OnNewMessage = OnNewMessage }))
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread, new AgentInvokeOptions() { OnIntermediateMessage = OnNewMessage }))
         {
             if (string.IsNullOrEmpty(response.Content))
             {

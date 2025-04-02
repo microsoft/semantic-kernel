@@ -26,7 +26,7 @@ public class ChatCompletionAgentFixture : AgentFixture
     private ChatHistoryAgentThread? _thread;
     private ChatHistoryAgentThread? _createdThread;
 
-    public override KernelAgent Agent => this._agent!;
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 

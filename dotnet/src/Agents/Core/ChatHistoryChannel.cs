@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents an <see cref="AgentChannel"/> specialization that acts upon a <see cref="ChatHistoryKernelAgent"/>.
+/// Represents an <see cref="AgentChannel"/> specialization that acts upon a <see cref="ChatHistoryAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
 internal sealed class ChatHistoryChannel : AgentChannel
@@ -35,7 +35,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (agent is not ChatHistoryKernelAgent historyAgent)
+        if (agent is not ChatHistoryAgent historyAgent)
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
@@ -95,7 +95,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (agent is not ChatHistoryKernelAgent historyAgent)
+        if (agent is not ChatHistoryAgent historyAgent)
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }

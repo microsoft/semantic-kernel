@@ -107,7 +107,7 @@ public class OpenAIAssistant_Streaming(ITestOutputHelper output) : BaseAssistant
 
         bool isFirst = false;
         bool isCode = false;
-        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread, new() { OnNewMessage = OnNewMessage }))
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread, new() { OnIntermediateMessage = OnNewMessage }))
         {
             if (string.IsNullOrEmpty(response.Content))
             {
