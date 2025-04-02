@@ -28,7 +28,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             """
             type: bedrock_agent
             name: StoryAgent
-            description: Store Telling Agent
+            description: Story Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
               id: ${BedrockAgent:FoundationModel}
