@@ -41,32 +41,6 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
         await InvokeAgentAsync(agent, 50);
     }
 
-    /// <summary>
-    /// Demonstrate the use of <see cref="ChatHistoryTruncationReducer"/> when using
-    /// <see cref="AgentGroupChat"/> to invoke a <see cref="ChatCompletionAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task TruncatedChatReductionAsync()
-    {
-        // Define the agent
-        ChatCompletionAgent agent = CreateTruncatingAgent(10, 10);
-
-        await InvokeChatAsync(agent, 50);
-    }
-
-    /// <summary>
-    /// Demonstrate the use of <see cref="ChatHistorySummarizationReducer"/> when using
-    /// <see cref="AgentGroupChat"/> to invoke a <see cref="ChatCompletionAgent"/>.
-    /// </summary>
-    [Fact]
-    public async Task SummarizedChatReductionAsync()
-    {
-        // Define the agent
-        ChatCompletionAgent agent = CreateSummarizingAgent(10, 10);
-
-        await InvokeChatAsync(agent, 50);
-    }
-
     // Proceed with dialog by directly invoking the agent and explicitly managing the history.
     private async Task InvokeAgentAsync(ChatCompletionAgent agent, int messageCount)
     {
@@ -102,48 +76,6 @@ public class ChatCompletion_HistoryReducer(ITestOutputHelper output) : BaseTest(
                     ++summaryIndex;
                 }
             }
-        }
-    }
-
-    // Proceed with dialog with AgentGroupChat.
-    private async Task InvokeChatAsync(ChatCompletionAgent agent, int messageCount)
-    {
-        AgentGroupChat chat = new();
-
-        int lastHistoryCount = 0;
-
-        int index = 1;
-        while (index <= messageCount)
-        {
-            // Provide user input
-            chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, $"{index}"));
-            Console.WriteLine($"# {AuthorRole.User}: '{index}'");
-
-            // Invoke and display assistant response
-            await foreach (ChatMessageContent message in chat.InvokeAsync(agent))
-            {
-                Console.WriteLine($"# {message.Role} - {message.AuthorName ?? "*"}: '{message.Content}'");
-            }
-
-            index += 2;
-
-            // Display the message count of the chat-history for visibility into reduction
-            // Note: Messages provided in descending order (newest first)
-            ChatMessageContent[] history = await chat.GetChatMessagesAsync(agent).ToArrayAsync();
-            Console.WriteLine($"@ Message Count: {history.Length}\n");
-
-            // Display summary messages (if present) if reduction has occurred
-            if (history.Length < lastHistoryCount)
-            {
-                int summaryIndex = history.Length - 1;
-                while (history[summaryIndex].Metadata?.ContainsKey(ChatHistorySummarizationReducer.SummaryMetadataKey) ?? false)
-                {
-                    Console.WriteLine($"\tSummary: {history[summaryIndex].Content}");
-                    --summaryIndex;
-                }
-            }
-
-            lastHistoryCount = history.Length;
         }
     }
 

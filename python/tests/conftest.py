@@ -12,22 +12,20 @@ import pandas as pd
 from pydantic import BaseModel
 from pytest import fixture
 
-from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
-    OpenAIEmbeddingPromptExecutionSettings,
-)
-from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.connectors.ai.open_ai import OpenAIEmbeddingPromptExecutionSettings
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.contents.chat_history import ChatHistory
-    from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-    from semantic_kernel.functions.kernel_function import KernelFunction
-    from semantic_kernel.kernel import Kernel
+    from semantic_kernel import Kernel
+    from semantic_kernel.contents import ChatHistory
+    from semantic_kernel.filters import FunctionInvocationContext
+    from semantic_kernel.functions import KernelFunction
     from semantic_kernel.services.ai_service_client_base import AIServiceClientBase
 
 
