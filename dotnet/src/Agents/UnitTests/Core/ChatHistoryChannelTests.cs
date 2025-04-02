@@ -17,13 +17,13 @@ public class ChatHistoryChannelTests
 {
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> throws if passed an agent that
-    /// does not implement <see cref="ChatHistoryKernelAgent"/>.
+    /// does not implement <see cref="ChatHistoryAgent"/>.
     /// </summary>
     [Fact]
-    public async Task VerifyAgentIsChatHistoryKernelAgentAsync()
+    public async Task VerifyAgentIsChatHistoryAgentAsync()
     {
         // Arrange
-        Mock<Agent> agent = new(); // Not a ChatHistoryKernelAgent
+        Mock<Agent> agent = new(); // Not a ChatHistoryAgent
         ChatHistoryChannel channel = new();
 
         // Act & Assert
