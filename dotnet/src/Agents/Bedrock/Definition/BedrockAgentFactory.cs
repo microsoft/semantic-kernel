@@ -9,10 +9,10 @@ using Amazon.BedrockAgentRuntime;
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
 /// <summary>
-/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="BedrockAgent"/>.
+/// Provides a <see cref="AgentFactory"/> which creates instances of <see cref="BedrockAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
-public sealed class BedrockAgentFactory : KernelAgentFactory
+public sealed class BedrockAgentFactory : AgentFactory
 {
     /// <summary>
     /// The type of the Bedrock agent.
@@ -30,7 +30,7 @@ public sealed class BedrockAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Name);

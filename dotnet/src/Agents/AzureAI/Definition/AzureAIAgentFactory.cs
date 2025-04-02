@@ -8,10 +8,10 @@ using Azure.AI.Projects;
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 /// <summary>
-/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
+/// Provides a <see cref="AgentFactory"/> which creates instances of <see cref="AzureAIAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
-public sealed class AzureAIAgentFactory : KernelAgentFactory
+public sealed class AzureAIAgentFactory : AgentFactory
 {
     /// <summary>
     /// The type of the Azure AI agent.
@@ -27,7 +27,7 @@ public sealed class AzureAIAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);

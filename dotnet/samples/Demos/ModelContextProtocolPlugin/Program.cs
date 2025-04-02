@@ -34,7 +34,7 @@ await using var mcpClient = await McpClientFactory.CreateAsync(
     new() { ClientInfo = new() { Name = "GitHub", Version = "1.0.0" } }).ConfigureAwait(false);
 
 // Retrieve the list of tools available on the GitHub server
-var tools = await mcpClient.GetAIFunctionsAsync().ConfigureAwait(false);
+var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 foreach (var tool in tools)
 {
     Console.WriteLine($"{tool.Name}: {tool.Description}");

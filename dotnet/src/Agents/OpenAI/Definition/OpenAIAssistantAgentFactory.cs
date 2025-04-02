@@ -8,11 +8,11 @@ using OpenAI.Assistants;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
+/// Provides a <see cref="AgentFactory"/> which creates instances of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
 [ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
-public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
+public sealed class OpenAIAssistantAgentFactory : AgentFactory
 {
     /// <summary>
     /// The type of the OpenAI assistant agent.
@@ -28,13 +28,13 @@ public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);
         Verify.NotNull(agentDefinition.Model.Id);
 
-        KernelAgent? kernelAgent = null;
+        Agent? agent = null;
         if (this.IsSupported(agentDefinition))
         {
             var client = agentDefinition.GetOpenAIClient(kernel);
@@ -43,7 +43,7 @@ public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
             var assistantCreationOptions = agentDefinition.CreateAssistantCreationOptions();
             Assistant model = await assistantClient.CreateAssistantAsync(agentDefinition.Model.Id, assistantCreationOptions, cancellationToken).ConfigureAwait(false);
 
-            kernelAgent = new OpenAIAssistantAgent(model, assistantClient)
+            agent = new OpenAIAssistantAgent(model, assistantClient)
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
@@ -51,6 +51,6 @@ public sealed class OpenAIAssistantAgentFactory : KernelAgentFactory
             };
         }
 
-        return kernelAgent;
+        return agent;
     }
 }

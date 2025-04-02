@@ -8,23 +8,23 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Provides a <see cref="KernelAgentFactory"/> which aggregates multiple kernel agent factories.
+/// Provides a <see cref="AgentFactory"/> which aggregates multiple kernel agent factories.
 /// </summary>
 [Experimental("SKEXP0110")]
-public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
+public sealed class AggregatorKernelAgentFactory : AgentFactory
 {
-    private readonly KernelAgentFactory[] _kernelAgentFactories;
+    private readonly AgentFactory[] _kernelAgentFactories;
 
     /// <summary>Initializes the instance.</summary>
-    /// <param name="kernelAgentFactories">Ordered <see cref="KernelAgentFactory"/> instances to aggregate.</param>
+    /// <param name="kernelAgentFactories">Ordered <see cref="AgentFactory"/> instances to aggregate.</param>
     /// <remarks>
-    /// Where multiple <see cref="KernelAgentFactory"/> instances are provided, the first factory that supports the <see cref="AgentDefinition"/> will be used.
+    /// Where multiple <see cref="AgentFactory"/> instances are provided, the first factory that supports the <see cref="AgentDefinition"/> will be used.
     /// </remarks>
-    public AggregatorKernelAgentFactory(params KernelAgentFactory[] kernelAgentFactories) : base(kernelAgentFactories.SelectMany(f => f.Types).ToArray())
+    public AggregatorKernelAgentFactory(params AgentFactory[] kernelAgentFactories) : base(kernelAgentFactories.SelectMany(f => f.Types).ToArray())
     {
         Verify.NotNullOrEmpty(kernelAgentFactories);
 
-        foreach (KernelAgentFactory kernelAgentFactory in kernelAgentFactories)
+        foreach (AgentFactory kernelAgentFactory in kernelAgentFactories)
         {
             Verify.NotNull(kernelAgentFactory, nameof(kernelAgentFactories));
         }
@@ -33,7 +33,7 @@ public sealed class AggregatorKernelAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 

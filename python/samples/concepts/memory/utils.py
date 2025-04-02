@@ -1,12 +1,9 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-
 from typing import TypeVar
 
 from samples.concepts.resources.utils import Colors, print_with_color
-from semantic_kernel.data import (
-    VectorSearchResult,
-)
+from semantic_kernel.data import VectorSearchResult
 
 _T = TypeVar("_T")
 

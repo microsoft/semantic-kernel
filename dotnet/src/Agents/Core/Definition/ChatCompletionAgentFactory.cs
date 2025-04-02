@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Provides a <see cref="KernelAgentFactory"/> which creates instances of <see cref="ChatCompletionAgent"/>.
+/// Provides a <see cref="AgentFactory"/> which creates instances of <see cref="ChatCompletionAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
-public sealed class ChatCompletionAgentFactory : KernelAgentFactory
+public sealed class ChatCompletionAgentFactory : AgentFactory
 {
     /// <summary>
     /// The type of the chat completion agent.
@@ -26,14 +26,14 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
     }
 
     /// <inheritdoc/>
-    public override Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
-        ChatCompletionAgent? kernelAgent = null;
+        ChatCompletionAgent? agent = null;
         if (this.IsSupported(agentDefinition))
         {
-            kernelAgent = new ChatCompletionAgent()
+            agent = new ChatCompletionAgent()
             {
                 Name = agentDefinition.Name,
                 Description = agentDefinition.Description,
@@ -45,6 +45,6 @@ public sealed class ChatCompletionAgentFactory : KernelAgentFactory
             };
         }
 
-        return Task.FromResult<KernelAgent?>(kernelAgent);
+        return Task.FromResult<Agent?>(agent);
     }
 }

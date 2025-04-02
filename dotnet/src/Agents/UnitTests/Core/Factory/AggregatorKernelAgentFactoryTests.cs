@@ -25,7 +25,7 @@ public class AggregatorKernelAgentFactoryTests
         var agentDefinition1 = new AgentDefinition() { Type = "my-type-1", Name = "my-name-1", Description = "my-description-1", Instructions = "my-instructions-1" };
         var agentDefinition2 = new AgentDefinition() { Type = "my-type-2", Name = "my-name-2", Description = "my-description-2", Instructions = "my-instructions-2" };
         var kernel = new Kernel();
-        var target = new AggregatorKernelAgentFactory(new MyKernelAgentFactory1(), new MyKernelAgentFactory2());
+        var target = new AggregatorKernelAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
 
         // Act
         var result1 = await target.CreateAsync(kernel, agentDefinition1);
@@ -33,9 +33,9 @@ public class AggregatorKernelAgentFactoryTests
 
         // Assert
         Assert.NotNull(result1);
-        Assert.True(result1 is MyKernelAgent1);
+        Assert.True(result1 is MyAgent1);
         Assert.NotNull(result2);
-        Assert.True(result2 is MyKernelAgent2);
+        Assert.True(result2 is MyAgent2);
     }
 
     /// <summary>
@@ -47,24 +47,24 @@ public class AggregatorKernelAgentFactoryTests
         // Arrange
         var agentDefinition = new AgentDefinition() { Type = "my-type-unknown", Name = "my-name-1", Description = "my-description-1", Instructions = "my-instructions-1" };
         var kernel = new Kernel();
-        var target = new AggregatorKernelAgentFactory(new MyKernelAgentFactory1(), new MyKernelAgentFactory2());
+        var target = new AggregatorKernelAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
 
         // Act & Assert
         await Assert.ThrowsAsync<KernelException>(async () => await target.CreateAsync(kernel, agentDefinition));
     }
 
     #region private
-    private sealed class MyKernelAgentFactory1 : KernelAgentFactory
+    private sealed class MyAgentFactory1 : AgentFactory
     {
-        public MyKernelAgentFactory1() : base(["my-type-1"])
+        public MyAgentFactory1() : base(["my-type-1"])
         {
         }
 
-        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+        public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-1"
                 ? null
-                : (KernelAgent)await Task.FromResult(new MyKernelAgent1()
+                : (Agent)await Task.FromResult(new MyAgent1()
                 {
                     Name = agentDefinition.Name,
                     Description = agentDefinition.Description,
@@ -74,17 +74,17 @@ public class AggregatorKernelAgentFactoryTests
         }
     }
 
-    private sealed class MyKernelAgentFactory2 : KernelAgentFactory
+    private sealed class MyAgentFactory2 : AgentFactory
     {
-        public MyKernelAgentFactory2() : base(["my-type-2"])
+        public MyAgentFactory2() : base(["my-type-2"])
         {
         }
 
-        public override async Task<KernelAgent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+        public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
         {
             return agentDefinition.Type != "my-type-2"
                 ? null
-                : (KernelAgent)await Task.FromResult(new MyKernelAgent2()
+                : (Agent)await Task.FromResult(new MyAgent2()
                 {
                     Name = agentDefinition.Name,
                     Description = agentDefinition.Description,
@@ -94,9 +94,9 @@ public class AggregatorKernelAgentFactoryTests
         }
     }
 
-    private sealed class MyKernelAgent1 : KernelAgent
+    private sealed class MyAgent1 : Agent
     {
-        public MyKernelAgent1()
+        public MyAgent1()
         {
         }
 
@@ -126,9 +126,9 @@ public class AggregatorKernelAgentFactoryTests
         }
     }
 
-    private sealed class MyKernelAgent2 : KernelAgent
+    private sealed class MyAgent2 : Agent
     {
-        public MyKernelAgent2()
+        public MyAgent2()
         {
         }
 
