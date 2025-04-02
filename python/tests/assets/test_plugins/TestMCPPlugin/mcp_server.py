@@ -23,12 +23,6 @@ def echo_prompt(message: str) -> str:
     return f"Please process this message: {message}"
 
 
-@mcp.tool()
-def get_names() -> str:
-    """Mocks Get Names"""
-    return "Names: name1, name2, name3"
-
-
 if __name__ == "__main__":
     # Initialize and run the server
     mcp.run(transport="stdio")
