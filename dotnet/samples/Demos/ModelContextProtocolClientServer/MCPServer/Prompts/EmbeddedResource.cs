@@ -5,17 +5,17 @@ using System.Reflection;
 namespace MCPServer.Prompts;
 
 /// <summary>
-/// Reads embedded prompt from resources.
+/// Reads embedded resources.
 /// </summary>
-public static class PromptResource
+public static class EmbeddedResource
 {
-    private static readonly string? s_namespace = typeof(PromptResource).Namespace;
+    private static readonly string? s_namespace = typeof(EmbeddedResource).Namespace;
 
     internal static string ReadAsString(string fileName)
     {
         // Get the current assembly. Note: this class is in the same assembly where the embedded resources are stored.
         Assembly assembly =
-            typeof(PromptResource).GetTypeInfo().Assembly ??
+            typeof(EmbeddedResource).GetTypeInfo().Assembly ??
             throw new InvalidOperationException($"[{s_namespace}] {fileName} assembly not found");
 
         // Resources are mapped like types, using the namespace and appending "." (dot) and the file name
