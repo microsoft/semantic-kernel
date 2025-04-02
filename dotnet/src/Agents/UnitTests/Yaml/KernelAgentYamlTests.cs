@@ -21,7 +21,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Yaml;
 
 /// <summary>
-/// Unit tests for <see cref="KernelAgentFactoryYamlExtensions"/>.
+/// Unit tests for <see cref="YamlKernelAgentFactoryExtensions"/>.
 /// </summary>
 public class KernelAgentYamlTests : IDisposable
 {
@@ -119,7 +119,7 @@ public class KernelAgentYamlTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="ChatCompletionAgentFactory"/>
+    /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="ChatCompletionAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateChatCompletionAgentAsync()
@@ -141,7 +141,7 @@ public class KernelAgentYamlTests : IDisposable
         ChatCompletionAgentFactory factory = new();
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -153,7 +153,7 @@ public class KernelAgentYamlTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="OpenAIAssistantAgentFactory"/>
+    /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateOpenAIAssistantAsync()
@@ -175,7 +175,7 @@ public class KernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -187,7 +187,7 @@ public class KernelAgentYamlTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="AzureAIAgentFactory"/>
+    /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="AzureAIAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateAzureAIAgentAsync()
@@ -209,7 +209,7 @@ public class KernelAgentYamlTests : IDisposable
         this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, this._kernel);
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
 
         // Assert
         Assert.NotNull(agent);

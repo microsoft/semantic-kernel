@@ -26,7 +26,29 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
+
+        await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
+        {
+            this.WriteAgentChatMessage(response);
+        }
+    }
+
+    [Fact]
+    public async Task ChatCompletionAgentWithConfigurationAsync()
+    {
+        Kernel kernel = this.CreateKernelWithChatCompletion();
+
+        var text =
+            """
+            type: chat_completion_agent
+            name: StoryAgent
+            description: Store Telling Agent
+            instructions: Tell a story suitable for children about the topic provided by the user.
+            """;
+        var kernelAgentFactory = new ChatCompletionAgentFactory();
+        var configuration = TestConfiguration.GetSection(this.UseOpenAIConfig ? "OpenAI" : "AzureOpenAI");
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, configuration: configuration);
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
         {
@@ -58,7 +80,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             """;
         var kernelAgentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the special soup and how much does it cost?")))
         {
@@ -94,7 +116,7 @@ public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
         var kernelAgentFactory = new ChatCompletionAgentFactory();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel, promptTemplateFactory);
+        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, PromptTemplateFactory = promptTemplateFactory });
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()

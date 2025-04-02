@@ -55,7 +55,7 @@ public class Step09_MultiAgent_Declarative : BaseAgentsTest
             instructions: Tell a story suitable for children about the topic provided by the user.
             """;
 
-        var agent = await this._kernelAgentFactory.CreateAgentFromYamlAsync(text, kernel);
+        var agent = await this._kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
         {

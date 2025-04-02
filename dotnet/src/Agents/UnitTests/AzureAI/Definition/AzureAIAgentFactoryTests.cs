@@ -50,7 +50,7 @@ public class AzureAIAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="AzureAIAgentFactory"/>
+    /// Verify can create an instance of <see cref="Agent"/> using <see cref="AzureAIAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateAzureAIAgentAsync()

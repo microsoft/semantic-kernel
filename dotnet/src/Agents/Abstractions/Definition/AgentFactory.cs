@@ -44,16 +44,16 @@ public abstract class AgentFactory
     /// </summary>
     /// <param name="kernel">Kernel instance to associate with the agent.</param>
     /// <param name="agentDefinition">Definition of the agent to create.</param>
-    /// <param name="promptTemplateFactory">Optional prompt template factory.</param>
+    /// <param name="agentCreationOptions">Options used when creating the agent.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <return>The created <see cref="Agent"/>, if null the agent type is not supported.</return>
-    public async Task<Agent> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public async Task<Agent> CreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
         Verify.NotNull(agentDefinition);
 
-        var agent = await this.TryCreateAsync(kernel, agentDefinition, promptTemplateFactory, cancellationToken).ConfigureAwait(false);
-        return (Agent?)agent ?? throw new KernelException($"Agent type {agentDefinition.Type} is not supported.");
+        var kernelAgent = await this.TryCreateAsync(kernel, agentDefinition, agentCreationOptions, cancellationToken).ConfigureAwait(false);
+        return (Agent?)kernelAgent ?? throw new KernelException($"Agent type {agentDefinition.Type} is not supported.");
     }
 
     /// <summary>
@@ -61,8 +61,8 @@ public abstract class AgentFactory
     /// </summary>
     /// <param name="kernel">Kernel instance to associate with the agent.</param>
     /// <param name="agentDefinition">Definition of the agent to create.</param>
-    /// <param name="promptTemplateFactory">Optional prompt template factory.</param>
+    /// <param name="agentCreationOptions">Options used when creating the agent.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <return>The created <see cref="Agent"/>, if null the agent type is not supported.</return>
-    public abstract Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default);
+    public abstract Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default);
 }

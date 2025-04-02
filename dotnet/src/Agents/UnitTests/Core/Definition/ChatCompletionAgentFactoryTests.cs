@@ -13,7 +13,7 @@ namespace SemanticKernel.Agents.UnitTests.Core.Definition;
 public class ChatCompletionAgentFactoryTests
 {
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="ChatCompletionAgentFactory"/>
+    /// Verify can create an instance of <see cref="Agent"/> using <see cref="ChatCompletionAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateChatCompletionAgentAsync()

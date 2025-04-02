@@ -48,7 +48,7 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// Verify can create an instance of <see cref="KernelAgent"/> using <see cref="OpenAIAssistantAgentFactory"/>
+    /// Verify can create an instance of <see cref="Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
     /// </summary>
     [Fact]
     public async Task VerifyCanCreateOpenAIAssistantAsync()

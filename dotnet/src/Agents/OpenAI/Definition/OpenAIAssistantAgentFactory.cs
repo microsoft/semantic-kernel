@@ -28,7 +28,7 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
     }
 
     /// <inheritdoc/>
-    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, IPromptTemplateFactory? promptTemplateFactory = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
         Verify.NotNull(agentDefinition.Model);
@@ -47,7 +47,7 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
-                Template = agentDefinition.GetPromptTemplate(kernel, promptTemplateFactory),
+                Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
             };
         }
 
