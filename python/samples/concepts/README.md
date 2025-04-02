@@ -59,7 +59,8 @@
 
 #### [OpenAI Responses Agent](../../semantic_kernel/agents/open_ai/openai_responses_agent.py)
 
-- [OpenAI Responses Chat History Streaming](./agents/openai_responses/responses_agent_chat_history_callback_streaming.py)
+- [OpenAI Responses Message Callback Streaming](./agents/openai_responses/responses_agent_message_callback_streaming.py)
+- [OpenAI Responses Message Callback](./agents/openai_responses/responses_agent_message_callback.py)
 - [OpenAI Responses File Search Streaming](./agents/openai_responses/responses_agent_file_search_streaming.py)
 - [OpenAI Responses Plugins Streaming](./agents/openai_responses/responses_agent_plugins_streaming.py)
 - [OpenAI Responses Web Search Streaming](./agents/openai_responses/responses_agent_web_search_streaming.py)
@@ -162,6 +163,7 @@
 
 - [Cycles with Fan-In](./processes/cycles_with_fan_in.py)
 - [Nested Process](./processes/nested_process.py)
+- [Plan and Execute](./processes/plan_and_execute.py)
 
 ### PromptTemplates - Using [`Templates`](https://github.com/microsoft/semantic-kernel/blob/main/python/semantic_kernel/prompt_template/prompt_template_base.py) with parametrization for `Prompt` rendering
 

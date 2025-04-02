@@ -24,6 +24,7 @@ USER_INPUTS = [
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
+    # Note: the Azure OpenAI Responses API does not yet support the web search tool.
     client, model = OpenAIResponsesAgent.setup_resources()
 
     web_search_tool = OpenAIResponsesAgent.configure_web_search_tool()

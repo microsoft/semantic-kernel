@@ -3,7 +3,8 @@ import asyncio
 from typing import Annotated
 
 from semantic_kernel.agents import OpenAIResponsesAgent
-from semantic_kernel.contents import AuthorRole, ChatHistory, FunctionCallContent, FunctionResultContent
+from semantic_kernel.contents import AuthorRole, FunctionCallContent, FunctionResultContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -12,10 +13,8 @@ Responses Agent using either Azure OpenAI or OpenAI. The
 Responses Agent allow for function calling, the use of file search and a
 web search tool. Responses Agent Threads are used to manage the
 conversation state, similar to a Semantic Kernel Chat History.
-Additionally, the invoke_stream configures a chat history callback 
-to receive the conversation history once the streaming invocation 
-is complete. This sample also demonstrates the Responses Agent Streaming
-capability and how to manage a Responses Agent chat history.
+Additionally, the invoke configures a message callback 
+to receive the conversation messages during invocation.
 """
 
 
@@ -38,11 +37,11 @@ class MenuPlugin:
         return "$9.99"
 
 
-final_chat_history = ChatHistory()
+intermediate_steps: list[ChatMessageContent] = []
 
 
-def handle_stream_completion(history: ChatHistory) -> None:
-    final_chat_history.messages.extend(history.messages)
+async def handle_intermediate_steps(message: ChatMessageContent) -> None:
+    intermediate_steps.append(message)
 
 
 async def main():
@@ -68,25 +67,20 @@ async def main():
     try:
         for user_input in user_inputs:
             print(f"# {AuthorRole.USER}: '{user_input}'")
-
-            first_chunk = True
-            async for response in agent.invoke_stream(
+            async for response in agent.invoke(
                 messages=user_input,
                 thread=thread,
-                on_complete=handle_stream_completion,
+                on_new_message=handle_intermediate_steps,
             ):
                 thread = response.thread
-                if first_chunk:
-                    print(f"# {response.name}: ", end="", flush=True)
-                    first_chunk = False
-                print(response.content, end="", flush=True)
-            print()
+                print(f"# {response.name}: ", end="", flush=True)
+
     finally:
         await thread.delete() if thread else None
 
     # Print the final chat history
-    print("\nFinal chat history:")
-    for msg in final_chat_history.messages:
+    print("\nIntermediate Steps:")
+    for msg in intermediate_steps:
         if any(isinstance(item, FunctionResultContent) for item in msg.items):
             for fr in msg.items:
                 if isinstance(fr, FunctionResultContent):

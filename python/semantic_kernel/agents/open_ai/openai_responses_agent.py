@@ -2,8 +2,7 @@
 
 import logging
 import sys
-import uuid
-from collections.abc import AsyncIterable, Callable
+from collections.abc import AsyncIterable, Awaitable, Callable
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -72,29 +71,29 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @experimental
 class ResponsesAgentThread(AgentThread):
-    """OpenAI Responses Agent Thread class."""
+    """Azure OpenAI and OpenAI Responses Agent Thread class."""
 
     def __init__(
         self,
         client: AsyncOpenAI,
         chat_history: ChatHistory | None = None,
-        thread_id: str | None = None,
-        enable_store: bool | None = None,
+        previous_response_id: str | None = None,
+        enable_store: bool | None = True,
     ) -> None:
         """Initialize the Responses Agent Thread.
 
         Args:
             client: The OpenAI client.
             chat_history: The chat history for the thread. If None, a new ChatHistory instance will be created.
-            thread_id: The ID of the thread. If None, a new thread will be created.
-            enable_store: Whether to enable storing the thread. If None, it will be set to False.
+            previous_response_id: The previous response ID of the thread. This is used when creating a new thread
+                to continue the conversation.
+            enable_store: Whether to enable storing the thread. If None, it will be set to True.
         """
         self._client = client
         self._chat_history = ChatHistory() if chat_history is None else chat_history
-        self._id = thread_id or f"thread_{uuid.uuid4().hex}"
         self._is_deleted = False
-        self._enable_store = enable_store or False
-        self._response_id: str | None = None
+        self._enable_store = enable_store or True
+        self._response_id: str | None = previous_response_id
 
     def __len__(self) -> int:
         """Returns the length of the chat history."""
@@ -689,6 +688,7 @@ class OpenAIResponsesAgent(Agent):
         max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
+        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
@@ -714,6 +714,7 @@ class OpenAIResponsesAgent(Agent):
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
             model: The model to override on a per-run basis.
+            on_new_message: A callback to receive the ChatHistory of full messages received from the agent.
             parallel_tool_calls: Parallel tool calls.
             reasoning: The reasoning effort.
             text: The response format.
@@ -772,9 +773,12 @@ class OpenAIResponsesAgent(Agent):
             function_choice_behavior=function_choice_behavior,
             **response_level_params,  # type: ignore
         ):
+            response.metadata["thread_id"] = thread.id
+            await thread.on_new_message(response)
+            if on_new_message:
+                await on_new_message(response)
+
             if is_visible:
-                response.metadata["thread_id"] = thread.id
-                await thread.on_new_message(response)
                 yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
@@ -795,7 +799,7 @@ class OpenAIResponsesAgent(Agent):
         | None = None,
         instructions_override: str | None = None,
         max_output_tokens: int | None = None,
-        on_complete: Callable[["ChatHistory"], None] | None = None,
+        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -821,7 +825,7 @@ class OpenAIResponsesAgent(Agent):
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_output_tokens: The maximum completion tokens.
-            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
+            on_new_message: A callback to receive the ChatHistory of full messages received from the agent.
                 These are full content messages formed from the streamed chunks.
             metadata: The metadata.
             model: The model to override on a per-run basis.
@@ -873,7 +877,7 @@ class OpenAIResponsesAgent(Agent):
         function_choice_behavior = function_choice_behavior or self.function_choice_behavior
         assert function_choice_behavior is not None  # nosec
 
-        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+        collected_messages: list[ChatMessageContent] | None = [] if on_new_message else None
 
         async for response in ResponsesAgentThreadActions.invoke_stream(
             agent=self,
@@ -889,8 +893,11 @@ class OpenAIResponsesAgent(Agent):
             response.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=response, thread=thread)
 
-        if on_complete and collected_messages:
-            on_complete(ChatHistory(messages=collected_messages))
+        for message in collected_messages or []:
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+            if on_new_message:
+                await on_new_message(message)
 
     def _prepare_input_message(
         self,

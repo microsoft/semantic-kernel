@@ -33,6 +33,7 @@ class Reasoning(BaseModel):
 
 async def main():
     # 1. Create the client using Azure OpenAI resources and configuration
+    # Note: the Azure OpenAI Responses API does not yet support structured outputs.
     client, model = OpenAIResponsesAgent.setup_resources()
 
     # 2. Create a Semantic Kernel agent for the OpenAI Response API

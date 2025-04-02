@@ -16,8 +16,10 @@ conversation history.
 """
 
 USER_INPUTS = [
+    "Hi, my name is John Doe.",
     "Why is the sky blue?",
     "What is the speed of light?",
+    "What is my name?",
 ]
 
 
@@ -37,17 +39,21 @@ async def main():
         print(f"# User: '{user_input}'")
         # 3. Invoke the agent for the current message and print the response
         response = await agent.get_response(messages=user_input)
+        # We are not using a thread for context, so there will be no memory
         print(f"# {response.name}: {response.content}")
 
     """
     You should see output similar to the following:
 
+    # User: 'Hi, my name is John Doe.'
+    # Expert: Hello, John Doe! How can I assist you today?
     # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
-        light is scattered more than other colors because it travels in shorter, smaller waves.
+    # Expert: The sky appears blue because of Rayleigh scattering, where shorter blue light wavelengths are scattered 
+        more than other colors by the gases in Earth's atmosphere.
     # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
-        (about 186,282 miles per second).
+    # Expert: The speed of light in a vacuum is approximately 299,792 kilometers per second (km/s).
+    # User: 'What is my name?'
+    # Expert: I'm sorry, I can't determine your name from our conversation.
      """
 
 
