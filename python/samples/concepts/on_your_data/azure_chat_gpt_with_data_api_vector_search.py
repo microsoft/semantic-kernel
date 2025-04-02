@@ -43,7 +43,9 @@ azure_ai_search_settings["embeddingDependency"] = {
 azure_ai_search_settings["query_type"] = "vector"
 
 # Create the data source settings
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+az_source = AzureAISearchDataSource.from_azure_ai_search_settings(
+    azure_ai_search_settings=azure_ai_search_settings,
+)
 extra = ExtraBody(data_sources=[az_source])
 service_id = "chat-gpt"
 req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_body=extra)
