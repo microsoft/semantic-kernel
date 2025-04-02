@@ -2,7 +2,6 @@
 
 using System.Globalization;
 using System.Linq.Expressions;
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 
 namespace VectorDataSpecificationTests.Support;
