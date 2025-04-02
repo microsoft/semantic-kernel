@@ -13,17 +13,17 @@ namespace Microsoft.SemanticKernel.Text;
 /// Serializing a <see cref="PromptExecutionSettings"/> instance without this converter will throw a 'System.Text.Json.JsonException : The JSON value could not be converted to System.Nullable'
 /// if there are any bool properties.
 /// </summary>
-internal sealed class BoolJsonConverter : JsonConverter<bool>
+internal sealed class OptionalBoolJsonConverter : JsonConverter<bool?>
 {
     /// <inheritdoc/>
-    public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override bool? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
         {
             string? value = reader.GetString();
             if (value is null)
             {
-                return false;
+                return null;
             }
             if (value.Equals("true", StringComparison.OrdinalIgnoreCase))
             {
@@ -49,8 +49,15 @@ internal sealed class BoolJsonConverter : JsonConverter<bool>
     }
 
     /// <inheritdoc/>
-    public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, bool? value, JsonSerializerOptions options)
     {
-        writer.WriteBooleanValue((bool)value);
+        if (value is null)
+        {
+            writer.WriteNullValue();
+        }
+        else
+        {
+            writer.WriteBooleanValue((bool)value);
+        }
     }
 }

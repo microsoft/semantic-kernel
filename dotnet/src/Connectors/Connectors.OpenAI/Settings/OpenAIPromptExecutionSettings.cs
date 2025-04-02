@@ -304,7 +304,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [Experimental("SKEXP0010")]
     [JsonPropertyName("logprobs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonConverter(typeof(BoolJsonConverter))]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Logprobs
     {
         get => this._logprobs;
@@ -356,7 +356,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [Experimental("SKEXP0010")]
     [JsonPropertyName("store")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    [JsonConverter(typeof(BoolJsonConverter))]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Store
     {
         get => this._store;
