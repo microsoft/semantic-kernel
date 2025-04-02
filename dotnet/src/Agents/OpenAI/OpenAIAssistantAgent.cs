@@ -89,7 +89,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// An assistant removed by other means will result in an exception when invoked.
     /// </remarks>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to manage the Assistant definition lifecycle.")]
+    [Obsolete("Use the OpenAI.Assistants.AssistantClient to manage the Assistant definition lifecycle. This method will be removed after May 1st 2025.")]
     public bool IsDeleted { get; private set; }
 
     /// <summary>
@@ -114,7 +114,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantFromTemplateAsync).")]
+    [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantFromTemplateAsync). This method will be removed after May 1st 2025.")]
     public static async Task<OpenAIAssistantAgent> CreateFromTemplateAsync(
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
@@ -164,7 +164,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantAsync).")]
+    [Obsolete("Use the OpenAI.Assistants.AssistantClient to create an assistant (CreateAssistantAsync). This method will be removed after May 1st 2025.")]
     public static async Task<OpenAIAssistantAgent> CreateAsync(
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
@@ -202,7 +202,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of <see cref="OpenAIAssistantDefinition"/> objects.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to query for assistant definitions (GetAssistantsAsync).")]
+    [Obsolete("Use the OpenAI.Assistants.AssistantClient to query for assistant definitions (GetAssistantsAsync). This method will be removed after May 1st 2025.")]
     public static async IAsyncEnumerable<OpenAIAssistantDefinition> ListDefinitionsAsync(
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
@@ -230,7 +230,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="OpenAIAssistantAgent"/> instance.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to retrieve an assistant definition (GetAssistantsAsync).")]
+    [Obsolete("Use the OpenAI.Assistants.AssistantClient to retrieve an assistant definition (GetAssistantsAsync). This method will be removed after May 1st 2025.")]
     public static async Task<OpenAIAssistantAgent> RetrieveAsync(
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         OpenAIClientProvider clientProvider,
@@ -274,7 +274,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAIAssistantAgentThread to create a thread or use invoke without a thread to create a new one.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to create a thread or use invoke without a thread to create a new one. This method will be removed after May 1st 2025.")]
     public Task<string> CreateThreadAsync(CancellationToken cancellationToken = default)
         => this.CreateThreadAsync(options: null, cancellationToken);
 
@@ -285,7 +285,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAIAssistantAgentThread to create a thread or use invoke without a thread to create a new one.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to create a thread or use invoke without a thread to create a new one. This method will be removed after May 1st 2025.")]
     public Task<string> CreateThreadAsync(OpenAIThreadCreationOptions? options, CancellationToken cancellationToken = default)
         => this.Client.CreateThreadAsync(
             options?.Messages,
@@ -301,7 +301,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The thread identifier.</returns>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAIAssistantAgentThread to delete an existing thread.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to delete an existing thread. This method will be removed after May 1st 2025.")]
     public async Task<bool> DeleteThreadAsync(
         string threadId,
         CancellationToken cancellationToken = default)
@@ -323,7 +323,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// This method only supports messages with <see href="https://platform.openai.com/docs/api-reference/runs/createRun#runs-createrun-additional_messages">role = User or Assistant</see>.
     /// </remarks>
-    [Obsolete("Pass messages directly to Invoke instead.")]
+    [Obsolete("Pass messages directly to Invoke instead. This method will be removed after May 1st 2025.")]
     public Task AddChatMessageAsync(string threadId, ChatMessageContent message, CancellationToken cancellationToken = default)
     {
         return AssistantThreadActions.CreateMessageAsync(this.Client, threadId, message, cancellationToken);
@@ -335,7 +335,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous enumeration of messages.</returns>
-    [Obsolete("Use the OpenAIAssistantAgentThread to retrieve messages instead.")]
+    [Obsolete("Use the OpenAIAssistantAgentThread to retrieve messages instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId, CancellationToken cancellationToken = default)
     {
         return AssistantThreadActions.GetMessagesAsync(this.Client, threadId, null, cancellationToken);
@@ -350,7 +350,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// An assistant-based agent is not usable after deletion.
     /// </remarks>
     [Experimental("SKEXP0110")]
-    [Obsolete("Use the OpenAI.Assistants.AssistantClient to remove or otherwise modify the Assistant definition.")]
+    [Obsolete("Use the OpenAI.Assistants.AssistantClient to remove or otherwise modify the Assistant definition. This method will be removed after May 1st 2025.")]
     public async Task<bool> DeleteAsync(CancellationToken cancellationToken = default)
     {
         if (!this.IsDeleted)
@@ -460,7 +460,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         KernelArguments? arguments = null,
@@ -480,7 +480,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string threadId,
         RunCreationOptions? options,
@@ -599,7 +599,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
         KernelArguments? arguments = null,
@@ -621,7 +621,7 @@ public sealed partial class OpenAIAssistantAgent : KernelAgent
     /// <remarks>
     /// The "arguments" parameter is not currently used by the agent, but is provided for future extensibility.
     /// </remarks>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string threadId,
         RunCreationOptions? options,

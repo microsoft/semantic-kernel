@@ -218,7 +218,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="invokeAgentRequest">The request to send to the agent.</param>
     /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         InvokeAgentRequest invokeAgentRequest,
         KernelArguments? arguments,
@@ -284,7 +284,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         string sessionId,
         string message,
@@ -462,7 +462,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="agentAliasId">The alias id of the agent to use. The default is the working draft alias id.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="ChatMessageContent"/>.</returns>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         string sessionId,
         string message,
@@ -492,7 +492,7 @@ public sealed class BedrockAgent : KernelAgent
     /// <param name="arguments">The arguments to use when invoking the agent.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> of <see cref="StreamingChatMessageContent"/>.</returns>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         InvokeAgentRequest invokeAgentRequest,
         KernelArguments? arguments,
