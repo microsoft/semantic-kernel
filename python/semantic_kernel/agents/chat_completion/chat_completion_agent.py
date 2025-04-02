@@ -272,7 +272,14 @@ class ChatCompletionAgent(Agent):
             chat_history.add_message(message)
 
         responses: list[ChatMessageContent] = []
-        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
+        async for response in self._inner_invoke(
+            thread,
+            chat_history,
+            None,
+            arguments,
+            kernel,
+            **kwargs,
+        ):
             responses.append(response)
 
         if not responses:

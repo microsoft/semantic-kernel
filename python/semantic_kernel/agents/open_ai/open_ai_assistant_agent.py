@@ -770,7 +770,7 @@ class OpenAIAssistantAgent(Agent):
             message.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=message, thread=thread)
 
-        for message in collected_messages or []:
+        for message in collected_messages or []:  # type: ignore
             message.metadata["thread_id"] = thread.id
             await thread.on_new_message(message)
             if on_new_message:
