@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Azure;
+using Azure.Identity;
 using Azure.Search.Documents.Indexes;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -32,12 +33,15 @@ internal sealed class AzureAISearchTestStore : TestStore
     {
         (string? serviceUrl, string? apiKey) = (AzureAISearchTestEnvironment.ServiceUrl, AzureAISearchTestEnvironment.ApiKey);
 
-        if (string.IsNullOrWhiteSpace(serviceUrl) || string.IsNullOrWhiteSpace(apiKey))
+        if (string.IsNullOrWhiteSpace(serviceUrl))
         {
-            throw new InvalidOperationException("Service URL and API key are not configured, set AzureAISearch:ServiceUrl and AzureAISearch:ApiKey");
+            throw new InvalidOperationException("Service URL is not configured, set AzureAISearch:ServiceUrl (and AzureAISearch:ApiKey if you want)");
         }
 
-        this._client = new SearchIndexClient(new Uri(serviceUrl), new AzureKeyCredential(apiKey));
+        this._client = string.IsNullOrWhiteSpace(apiKey)
+            ? new SearchIndexClient(new Uri(serviceUrl), new DefaultAzureCredential())
+            : new SearchIndexClient(new Uri(serviceUrl), new AzureKeyCredential(apiKey));
+
         this._defaultVectorStore = new(this._client);
 
         return Task.CompletedTask;

@@ -59,13 +59,13 @@ You can pass in a connection string (shown above) to create the client:
 
 ```python
 async with (
-        DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
-    ):
-        # operational logic
+    DefaultAzureCredential() as creds,
+    AzureAIAgent.create_client(
+        credential=creds,
+        conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
+    ) as client,
+):
+    # operational logic
 ```
 
 ### Creating an Agent Definition
@@ -112,7 +112,7 @@ By default, the polling interval is 250 ms. You can slow it down to 1 second (or
 ```python
 # Required imports
 from datetime import timedelta
-from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
+from semantic_kernel.agents.run_polling_options import RunPollingOptions
 
 # Configure the polling options as part of the `AzureAIAgent`
 agent = AzureAIAgent(
