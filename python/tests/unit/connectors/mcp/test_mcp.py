@@ -9,7 +9,7 @@ from semantic_kernel.connectors.mcp import MCPSsePlugin, MCPStdioPlugin, MCPWebs
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 
 if TYPE_CHECKING:
-    from semantic_kernel import Kernel
+    pass
 
 
 @pytest.fixture
