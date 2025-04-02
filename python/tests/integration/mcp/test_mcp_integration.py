@@ -27,13 +27,12 @@ async def test_from_mcp(kernel: "Kernel"):
 
     assert plugin is not None
     assert plugin.name == "TestMCPPlugin"
-    assert plugin.functions.get("get_name") is not None
-    assert plugin.functions["get_name"].parameters[0].name == "name"
-    assert plugin.functions["get_name"].parameters[0].type_ == "string"
-    assert plugin.functions["get_name"].parameters[0].is_required
-    assert plugin.functions.get("set_name") is not None
+    assert len(plugin.functions) == 2
 
     kernel.add_plugin(plugin)
 
-    result = await plugin.functions["get_name"].invoke(kernel, arguments=KernelArguments(name="test"))
-    assert "test: Test" in result.value
+    result = await plugin.functions["echo_tool"].invoke(kernel, arguments=KernelArguments(message="test"))
+    assert "Tool echo: test" in result.value[0].text
+
+    result = await plugin.functions["echo_prompt"].invoke(kernel, arguments=KernelArguments(message="test"))
+    assert "test" in result.value[0].content

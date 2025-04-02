@@ -2,6 +2,7 @@
 
 import logging
 from abc import abstractmethod
+from collections.abc import AsyncGenerator
 from contextlib import _AsyncGeneratorContextManager, asynccontextmanager
 from functools import partial
 from typing import Any
@@ -10,9 +11,20 @@ from mcp import McpError
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
-from mcp.types import Tool
+from mcp.types import CallToolResult, EmbeddedResource, Prompt, PromptMessage, TextResourceContents, Tool
+from mcp.types import (
+    ImageContent as MCPImageContent,
+)
+from mcp.types import (
+    TextContent as MCPTextContent,
+)
 from pydantic import BaseModel, ConfigDict, Field
 
+from semantic_kernel.contents.binary_content import BinaryContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.text_content import TextContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions import KernelFunctionFromMethod
@@ -22,6 +34,46 @@ from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger = logging.getLogger(__name__)
+
+
+def mcp_prompt_message_to_semantic_kernel_type(
+    mcp_type: PromptMessage,
+) -> ChatMessageContent:
+    """Convert a MCP container type to a Semantic Kernel type."""
+    return ChatMessageContent(
+        role=AuthorRole(mcp_type.role),
+        items=[mcp_type_to_semantic_kernel_type(mcp_type.content)],
+        inner_content=mcp_type,
+    )
+
+
+def mcp_call_tool_result_to_semantic_kernel_type(
+    mcp_type: CallToolResult,
+) -> list[TextContent | ImageContent | BinaryContent]:
+    """Convert a MCP container type to a Semantic Kernel type."""
+    return [mcp_type_to_semantic_kernel_type(item) for item in mcp_type.content]
+
+
+def mcp_type_to_semantic_kernel_type(
+    mcp_type: MCPImageContent | MCPTextContent | EmbeddedResource,
+) -> TextContent | ImageContent | BinaryContent:
+    """Convert a MCP type to a Semantic Kernel type."""
+    if isinstance(mcp_type, MCPTextContent):
+        return TextContent(text=mcp_type.text, inner_content=mcp_type)
+    if isinstance(mcp_type, MCPImageContent):
+        return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
+
+    if isinstance(mcp_type.resource, TextResourceContents):
+        return TextContent(
+            text=mcp_type.resource.text,
+            inner_content=mcp_type,
+            metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
+        )
+    return BinaryContent(
+        data=mcp_type.resource.blob,
+        inner_content=mcp_type,
+        metadata=mcp_type.annotations.model_dump() if mcp_type.annotations else {},
+    )
 
 
 class MCPServerConfig(BaseModel):
@@ -53,16 +105,28 @@ class MCPServerConfig(BaseModel):
         """Get an MCP client."""
         pass
 
-    async def call_tool(self, tool_name: str, **kwargs: Any) -> Any:
+    async def call_tool(self, tool_name: str, **kwargs: Any) -> list[TextContent | ImageContent | BinaryContent]:
         """Call a tool with the given arguments."""
         try:
             async with self.get_session() as session:
-                result = await session.call_tool(tool_name, arguments=kwargs)
-                return result.model_dump_json(include=("content",))
+                return mcp_call_tool_result_to_semantic_kernel_type(
+                    await session.call_tool(tool_name, arguments=kwargs)
+                )
         except McpError:
             raise
         except Exception as ex:
             raise FunctionExecutionException(f"Failed to call tool '{tool_name}'.") from ex
+
+    async def get_prompt(self, prompt_name: str, **kwargs: Any) -> list[ChatMessageContent]:
+        """Call a prompt with the given arguments."""
+        try:
+            async with self.get_session() as session:
+                prompt_result = await session.get_prompt(prompt_name, arguments=kwargs)
+                return [mcp_prompt_message_to_semantic_kernel_type(message) for message in prompt_result.messages]
+        except McpError:
+            raise
+        except Exception as ex:
+            raise FunctionExecutionException(f"Failed to call prompt '{prompt_name}'.") from ex
 
 
 class MCPStdioServerConfig(MCPServerConfig):
@@ -142,7 +206,24 @@ class MCPSseServerConfig(MCPServerConfig):
 
 
 @experimental
-def get_parameters_from_tool(tool: Tool) -> list[KernelParameterMetadata]:
+def get_parameter_from_mcp_prompt(prompt: Prompt) -> list[KernelParameterMetadata]:
+    """Creates a MCPFunction instance from a prompt."""
+    # Check if 'properties' is missing or not a dictionary
+    if not prompt.arguments:
+        return []
+    return [
+        KernelParameterMetadata(
+            name=prompt_argument.name,
+            description=prompt_argument.description,
+            is_required=True,
+            type_object=str,
+        )
+        for prompt_argument in prompt.arguments
+    ]
+
+
+@experimental
+def get_parameters_from_mcp_tool(tool: Tool) -> list[KernelParameterMetadata]:
     """Creates an MCPFunction instance from a tool."""
     properties = tool.inputSchema.get("properties", None)
     required = tool.inputSchema.get("required", None)
@@ -167,7 +248,7 @@ async def create_plugin_from_mcp_server(
     description: str | None = None,
     server_config: MCPServerConfig | None = None,
     **kwargs: Any,
-) -> KernelPlugin:
+) -> tuple[KernelPlugin, MCPServerConfig]:
     """Creates a KernelPlugin from a MCP server config.
 
     Args:
@@ -180,6 +261,7 @@ async def create_plugin_from_mcp_server(
 
     Returns:
         KernelPlugin: The created plugin, this should then be passed to the kernel or a agent.
+        MCPServerConfig: The server config used to create the plugin.
 
     """
     if server_config is None:
@@ -202,16 +284,66 @@ async def create_plugin_from_mcp_server(
                 "Failed to create MCP server configuration, please provide a valid server_config or kwargs."
             )
     async with server_config.get_session() as session:
-        return KernelPlugin(
-            name=plugin_name,
+        try:
+            tool_list = await session.list_tools()
+        except Exception:
+            tool_list = None
+        tools = [
+            KernelFunctionFromMethod(
+                method=kernel_function(name=tool.name, description=tool.description)(
+                    partial(server_config.call_tool, tool.name)
+                ),
+                parameters=get_parameters_from_mcp_tool(tool),
+            )
+            for tool in (tool_list.tools if tool_list else [])
+        ]
+        try:
+            prompt_list = await session.list_prompts()
+        except Exception:
+            prompt_list = None
+        prompts = [
+            KernelFunctionFromMethod(
+                method=kernel_function(name=prompt.name, description=prompt.description)(
+                    partial(server_config.get_prompt, prompt.name)
+                ),
+                parameters=get_parameter_from_mcp_prompt(prompt),
+            )
+            for prompt in (prompt_list.prompts if prompt_list else [])
+        ]
+        return (KernelPlugin(name=plugin_name, description=description, functions=tools + prompts), server_config)
+
+
+@asynccontextmanager
+async def mcp_server_as_plugin(
+    plugin_name: str,
+    description: str | None = None,
+    server_config: MCPServerConfig | None = None,
+    **kwargs: Any,
+) -> AsyncGenerator[KernelPlugin, None]:
+    """Creates a KernelPlugin from a MCP server config.
+
+    Args:
+        plugin_name: The name of the plugin.
+        description: The description of the plugin.
+        server_config: The MCP client to use for communication,
+            should be a MCPStdioServerConfig or MCPSseServerConfig.
+            If not supplied, it will be created from the kwargs.
+        kwargs: Any extra arguments to pass to the plugin creation.
+
+    Yields:
+        KernelPlugin: The created plugin, this should then be passed to the kernel or a agent.
+
+    """
+    server = None
+    try:
+        plugin, server = await create_plugin_from_mcp_server(
+            plugin_name=plugin_name,
             description=description,
-            functions=[
-                KernelFunctionFromMethod(
-                    method=kernel_function(name=tool.name, description=tool.description)(
-                        partial(server_config.call_tool, tool.name)
-                    ),
-                    parameters=get_parameters_from_tool(tool),
-                )
-                for tool in (await session.list_tools()).tools
-            ],
+            server_config=server_config,
+            **kwargs,
         )
+        yield plugin
+    finally:
+        # Close the session if it was created in this context
+        if server and server.session:
+            await server.session.__aexit__()

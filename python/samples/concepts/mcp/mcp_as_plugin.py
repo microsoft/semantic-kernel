@@ -5,7 +5,7 @@ import asyncio
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.mcp import create_plugin_from_mcp_server
+from semantic_kernel.connectors.mcp import mcp_server_as_plugin
 from semantic_kernel.contents import ChatHistory
 
 """
@@ -86,17 +86,23 @@ async def chat() -> bool:
 async def main() -> None:
     # Make sure to have NPX installed and available in your PATH.
     # Find the NPX executable in the system PATH.
-    github_plugin = await create_plugin_from_mcp_server(
-        plugin_name="GitHub",
+    # github_plugin, _ = await create_plugin_from_mcp_server(
+    #     plugin_name="GitHub",
+    #     description="Github Plugin",
+    #     command="npx",
+    #     args=["-y", "@modelcontextprotocol/server-github"],
+    # )
+    async with mcp_server_as_plugin(
+        plugin_name="Github",
         description="Github Plugin",
         command="npx",
         args=["-y", "@modelcontextprotocol/server-github"],
-    )
-    kernel.add_plugin(github_plugin)
-    print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")
-    chatting = True
-    while chatting:
-        chatting = await chat()
+    ) as github_plugin:
+        kernel.add_plugin(github_plugin)
+        print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")
+        chatting = True
+        while chatting:
+            chatting = await chat()
 
 
 if __name__ == "__main__":

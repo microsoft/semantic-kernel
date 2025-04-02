@@ -2,27 +2,25 @@
 
 from mcp.server.fastmcp import FastMCP
 
-# Create an MCP server
-mcp = FastMCP("DemoServerForTesting", "This is a demo server for testing purposes.")
+mcp = FastMCP("Echo")
+
+
+@mcp.resource("echo://{message}")
+def echo_resource(message: str) -> str:
+    """Echo a message as a resource"""
+    return f"Resource echo: {message}"
 
 
 @mcp.tool()
-def get_name(name: str) -> str:
-    """Mocks Get Name"""
-    secret_value = "Test"
-    return f"{name}: {secret_value}"
+def echo_tool(message: str) -> str:
+    """Echo a message as a tool"""
+    return f"Tool echo: {message}"
 
 
-@mcp.tool()
-def set_name(name: str, value: str) -> str:
-    """Mocks Set Name"""
-    return f"Value for {name} Set"
-
-
-@mcp.tool()
-def get_names() -> str:
-    """Mocks Get Names"""
-    return "Names: name1, name2, name3"
+@mcp.prompt()
+def echo_prompt(message: str) -> str:
+    """Create an echo prompt"""
+    return f"Please process this message: {message}"
 
 
 if __name__ == "__main__":
