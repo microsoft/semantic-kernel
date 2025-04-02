@@ -15,9 +15,9 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.const import (
     INDEX_KIND_MAPPING,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import VectorStoreModelException

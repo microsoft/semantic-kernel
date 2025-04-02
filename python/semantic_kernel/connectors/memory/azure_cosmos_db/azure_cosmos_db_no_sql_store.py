@@ -4,22 +4,21 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from azure.cosmos.aio import CosmosClient
 
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_base import AzureCosmosDBNoSQLBase
 from semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_no_sql_collection import (
     AzureCosmosDBNoSQLCollection,
 )
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreOperationException
 from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 TModel = TypeVar("TModel")
 
