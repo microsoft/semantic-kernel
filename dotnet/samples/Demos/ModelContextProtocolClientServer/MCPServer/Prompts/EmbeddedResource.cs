@@ -19,7 +19,7 @@ public static class EmbeddedResource
             throw new InvalidOperationException($"[{s_namespace}] {fileName} assembly not found");
 
         // Resources are mapped like types, using the namespace and appending "." (dot) and the file name
-        string resourceName = $"{s_namespace}." + fileName;
+        string resourceName = $"{s_namespace}.{fileName}";
 
         Stream stream =
             assembly.GetManifestResourceStream(resourceName) ??
