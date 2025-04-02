@@ -55,7 +55,8 @@ class MCPServerConfig(BaseModel):
         """Call a tool with the given arguments."""
         try:
             async with self.get_session() as session:
-                return await session.call_tool(tool_name, arguments=kwargs)
+                result = await session.call_tool(tool_name, arguments=kwargs)
+                return result.model_dump_json(include=("content",))
         except McpError:
             raise
         except Exception as ex:
@@ -126,8 +127,9 @@ class MCPSseServerConfig(MCPServerConfig):
         """Get an MCP SSE client."""
         args: dict[str, Any] = {
             "url": self.url,
-            "headers": self.headers,
         }
+        if self.headers:
+            args["headers"] = self.headers
         if self.timeout is not None:
             args["timeout"] = self.timeout
         if self.sse_read_timeout is not None:

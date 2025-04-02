@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
-from mcp import ClientSession
+from mcp import ClientSession, StdioServerParameters
 
 from semantic_kernel.connectors.mcp import (
     MCPSseServerConfig,
@@ -105,7 +105,7 @@ async def test_mcp_stdio_server_config_failed_get_session():
 
 
 async def test_from_mcp(kernel: "Kernel"):
-    mcp_server_path = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestMCPPlugin")
+    mcp_server_path = os.path.join(os.path.dirname(__file__), "../../../assets/test_plugins", "TestMCPPlugin")
     mcp_server_file = "mcp_server.py"
     config = MCPStdioServerConfig(
         command="uv",
@@ -121,9 +121,57 @@ async def test_from_mcp(kernel: "Kernel"):
     assert plugin is not None
     assert plugin.name == "TestMCPPlugin"
     assert plugin.functions.get("get_name") is not None
+    assert plugin.functions["get_name"].parameters[0].name == "name"
+    assert plugin.functions["get_name"].parameters[0].type_ == "string"
+    assert plugin.functions["get_name"].parameters[0].is_required
     assert plugin.functions.get("set_name") is not None
 
     kernel.add_plugin(plugin)
 
     result = await plugin.functions["get_name"].invoke(kernel, arguments=KernelArguments(name="test"))
-    assert result.value == "test: Test"
+    assert "test: Test" in result.value
+
+
+@patch("semantic_kernel.connectors.mcp.stdio_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_with_kwargs_stdio(mock_session, mock_client):
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+
+    mock_generator = MagicMock()
+    # Make the mock_stdio_client return an AsyncMock for the context manager
+    mock_generator.__aenter__.return_value = (mock_read, mock_write)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write)
+
+    # Make the mock_stdio_client return an AsyncMock for the context manager
+    mock_client.return_value = mock_generator
+    await create_plugin_from_mcp_server(
+        plugin_name="TestMCPPlugin",
+        description="Test MCP Plugin",
+        command="uv",
+        args=["--directory", "path", "run", "file.py"],
+    )
+    mock_client.assert_called_once_with(
+        server=StdioServerParameters(command="uv", args=["--directory", "path", "run", "file.py"])
+    )
+
+
+@patch("semantic_kernel.connectors.mcp.sse_client")
+@patch("semantic_kernel.connectors.mcp.ClientSession")
+async def test_with_kwargs_sse(mock_session, mock_client):
+    mock_read = MagicMock()
+    mock_write = MagicMock()
+
+    mock_generator = MagicMock()
+    # Make the mock_stdio_client return an AsyncMock for the context manager
+    mock_generator.__aenter__.return_value = (mock_read, mock_write)
+    mock_generator.__aexit__.return_value = (mock_read, mock_write)
+
+    # Make the mock_stdio_client return an AsyncMock for the context manager
+    mock_client.return_value = mock_generator
+    await create_plugin_from_mcp_server(
+        plugin_name="TestMCPPlugin",
+        description="Test MCP Plugin",
+        url="http://localhost:8080/sse",
+    )
+    mock_client.assert_called_once_with(url="http://localhost:8080/sse")
