@@ -51,7 +51,7 @@ public class Step09_MultiAgent_Declarative : BaseAgentsTest
             """
             type: chat_completion_agent
             name: StoryAgent
-            description: Store Telling Agent
+            description: Story Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             """;
 
