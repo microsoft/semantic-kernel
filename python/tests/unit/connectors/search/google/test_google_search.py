@@ -11,13 +11,8 @@ from semantic_kernel.connectors.search.google.google_search_response import (
     GoogleSearchResponse,
 )
 from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.exceptions import (
-    ServiceInitializationError,
-    ServiceInvalidRequestError,
-)
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, TextSearchOptions
+from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
 @pytest.fixture

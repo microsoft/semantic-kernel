@@ -157,12 +157,8 @@ class AutoGenConversableAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = ChatHistory()
-        async for message in thread.get_messages():
-            chat_history.add_message(message)
-
         reply = await self.conversable_agent.a_generate_reply(
-            messages=[message.to_dict() for message in chat_history.messages],
+            messages=[message.to_dict() async for message in thread.get_messages()],
             **kwargs,
         )
 
@@ -214,10 +210,6 @@ class AutoGenConversableAgent(Agent):
         )
         assert thread.id is not None  # nosec
 
-        chat_history = ChatHistory()
-        async for message in thread.get_messages():
-            chat_history.add_message(message)
-
         if recipient is not None:
             if not isinstance(recipient, AutoGenConversableAgent):
                 raise AgentInvokeException(
@@ -225,6 +217,7 @@ class AutoGenConversableAgent(Agent):
                     "Recipient must be an instance of AutoGenConversableAgent."
                 )
 
+            messages = [message async for message in thread.get_messages()]
             chat_result = await self.conversable_agent.a_initiate_chat(
                 recipient=recipient.conversable_agent,
                 clear_history=clear_history,
@@ -233,7 +226,7 @@ class AutoGenConversableAgent(Agent):
                 max_turns=max_turns,
                 summary_method=summary_method,
                 summary_args=summary_args,
-                message=chat_history.messages[-1].content,  # type: ignore
+                message=messages[-1].content,  # type: ignore
                 **kwargs,
             )
 
@@ -248,7 +241,7 @@ class AutoGenConversableAgent(Agent):
                 )
         else:
             reply = await self.conversable_agent.a_generate_reply(
-                messages=[message.to_dict() for message in chat_history.messages],
+                messages=[message.to_dict() async for message in thread.get_messages()],
             )
 
             logger.info("Called AutoGenConversableAgent.a_generate_reply.")
