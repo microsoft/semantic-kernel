@@ -53,8 +53,13 @@ public sealed record KernelProcessEventData
     /// </summary>
     /// <param name="obj">object to be serialized</param>
     /// <returns>instance of <see cref="KernelProcessEventData"/></returns>
-    public static KernelProcessEventData FromObject(object obj)
+    public static KernelProcessEventData? FromObject(object? obj)
     {
+        if (obj == null)
+        {
+            return null;
+        }
+
         Verify.NotNull(obj.GetType());
         Verify.NotNull(obj.GetType().AssemblyQualifiedName);
 

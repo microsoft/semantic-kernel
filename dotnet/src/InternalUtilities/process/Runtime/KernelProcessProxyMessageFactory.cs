@@ -22,7 +22,7 @@ internal static class KernelProcessProxyMessageFactory
             ProcessId = processId,
             TriggerEventId = triggerEventName,
             ExternalTopicName = publishTopic,
-            EventData = data != null ? KernelProcessEventData.FromObject(data) : null,
+            EventData = data != null ? data as KernelProcessEventData : null
         };
 
         return newMessage;

@@ -21,7 +21,7 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     /// <summary>
     /// Captures cloud events emitted for testing
     /// </summary>
-    public List<MockCloudEventData> CloudEvents { get; set; } = [];
+    public List<KernelProcessProxyMessage> CloudEvents { get; set; } = [];
 
     private static MockCloudEventClient? s_instance = null;
 
@@ -51,7 +51,7 @@ public class MockCloudEventClient : IExternalKernelProcessMessageChannel
     {
         if (message != null)
         {
-            this.CloudEvents.Add(new() { TopicName = externalTopicEvent, Data = message });
+            this.CloudEvents.Add(message);
         }
 
         return Task.CompletedTask;
