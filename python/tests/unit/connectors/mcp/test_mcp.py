@@ -1,5 +1,4 @@
 # Copyright (c) Microsoft. All rights reserved.
-from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -12,8 +11,28 @@ from semantic_kernel.connectors.mcp import (
 )
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 
-if TYPE_CHECKING:
-    pass
+
+@pytest.fixture
+def list_tool_calls() -> ListToolsResult:
+    return ListToolsResult(
+        tools=[
+            Tool(
+                name="func1",
+                description="func1",
+                inputSchema={
+                    "properties": {
+                        "name": {"type": "string"},
+                    },
+                    "required": ["name"],
+                },
+            ),
+            Tool(
+                name="func2",
+                description="func2",
+                inputSchema={},
+            ),
+        ]
+    )
 
 
 async def test_mcp_server_config_session_initialize():
@@ -104,7 +123,7 @@ async def test_mcp_stdio_server_config_failed_get_session():
 
 @patch("semantic_kernel.connectors.mcp.stdio_client")
 @patch("semantic_kernel.connectors.mcp.ClientSession")
-async def test_with_kwargs_stdio(mock_session, mock_client):
+async def test_with_kwargs_stdio(mock_session, mock_client, list_tool_calls):
     mock_read = MagicMock()
     mock_write = MagicMock()
 
@@ -115,20 +134,7 @@ async def test_with_kwargs_stdio(mock_session, mock_client):
 
     # Make the mock_stdio_client return an AsyncMock for the context manager
     mock_client.return_value = mock_generator
-    mock_session.return_value.__aenter__.return_value.list_tools.return_value = ListToolsResult(
-        tools=[
-            Tool(
-                name="get_name",
-                description="Get Name",
-                inputSchema={
-                    "properties": {
-                        "name": {"type": "string"},
-                    },
-                    "required": ["name"],
-                },
-            )
-        ]
-    )
+    mock_session.return_value.__aenter__.return_value.list_tools.return_value = list_tool_calls
     plugin = await create_plugin_from_mcp_server(
         plugin_name="TestMCPPlugin",
         description="Test MCP Plugin",
@@ -141,14 +147,16 @@ async def test_with_kwargs_stdio(mock_session, mock_client):
     assert plugin is not None
     assert plugin.name == "TestMCPPlugin"
     assert plugin.description == "Test MCP Plugin"
-    assert plugin.functions.get("get_name") is not None
-    assert plugin.functions["get_name"].parameters[0].name == "name"
-    assert plugin.functions["get_name"].parameters[0].is_required
+    assert plugin.functions.get("func1") is not None
+    assert plugin.functions["func1"].parameters[0].name == "name"
+    assert plugin.functions["func1"].parameters[0].is_required
+    assert plugin.functions.get("func2") is not None
+    assert len(plugin.functions["func2"].parameters) == 0
 
 
 @patch("semantic_kernel.connectors.mcp.sse_client")
 @patch("semantic_kernel.connectors.mcp.ClientSession")
-async def test_with_kwargs_sse(mock_session, mock_client):
+async def test_with_kwargs_sse(mock_session, mock_client, list_tool_calls):
     mock_read = MagicMock()
     mock_write = MagicMock()
 
@@ -159,20 +167,7 @@ async def test_with_kwargs_sse(mock_session, mock_client):
 
     # Make the mock_stdio_client return an AsyncMock for the context manager
     mock_client.return_value = mock_generator
-    mock_session.return_value.__aenter__.return_value.list_tools.return_value = ListToolsResult(
-        tools=[
-            Tool(
-                name="get_name",
-                description="Get Name",
-                inputSchema={
-                    "properties": {
-                        "name": {"type": "string"},
-                    },
-                    "required": ["name"],
-                },
-            )
-        ]
-    )
+    mock_session.return_value.__aenter__.return_value.list_tools.return_value = list_tool_calls
     plugin = await create_plugin_from_mcp_server(
         plugin_name="TestMCPPlugin",
         description="Test MCP Plugin",
@@ -182,6 +177,8 @@ async def test_with_kwargs_sse(mock_session, mock_client):
     assert plugin is not None
     assert plugin.name == "TestMCPPlugin"
     assert plugin.description == "Test MCP Plugin"
-    assert plugin.functions.get("get_name") is not None
-    assert plugin.functions["get_name"].parameters[0].name == "name"
-    assert plugin.functions["get_name"].parameters[0].is_required
+    assert plugin.functions.get("func1") is not None
+    assert plugin.functions["func1"].parameters[0].name == "name"
+    assert plugin.functions["func1"].parameters[0].is_required
+    assert plugin.functions.get("func2") is not None
+    assert len(plugin.functions["func2"].parameters) == 0

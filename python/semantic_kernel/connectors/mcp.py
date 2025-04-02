@@ -13,7 +13,7 @@ from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.types import Tool
 from pydantic import BaseModel, ConfigDict, Field
 
-from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError, ServiceInvalidTypeError
+from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions import KernelFunctionFromMethod
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
@@ -147,12 +147,8 @@ def get_parameters_from_tool(tool: Tool) -> list[KernelParameterMetadata]:
     properties = tool.inputSchema.get("properties", None)
     required = tool.inputSchema.get("required", None)
     # Check if 'properties' is missing or not a dictionary
-    if properties is None or not isinstance(properties, dict):
-        raise ServiceInvalidTypeError("""Could not parse tool properties,
-            please ensure your server returns properties as a dictionary and required as an array.""")
-    if required is None or not isinstance(required, list):
-        raise ServiceInvalidTypeError("""Could not parse tool required fields,
-            please ensure your server returns required as an array.""")
+    if not properties:
+        return []
     return [
         KernelParameterMetadata(
             name=prop_name,
