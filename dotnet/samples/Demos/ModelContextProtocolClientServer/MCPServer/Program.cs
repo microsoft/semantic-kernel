@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using MCPServer;
+using MCPServer.Prompts;
 using MCPServer.Tools;
 using Microsoft.SemanticKernel;
 
@@ -12,10 +13,16 @@ kernelBuilder.Plugins.AddFromType<WeatherUtils>();
 // Build the kernel
 Kernel kernel = kernelBuilder.Build();
 
+// Register prompts
+PromptRegistry.RegisterPrompt(GetCurrentWeatherForCityPrompt.GetDefinition(kernel));
+
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
     // Add all functions from the kernel plugins to the MCP server as tools
-    .WithTools(kernel.Plugins);
+    .WithTools(kernel.Plugins)
+    // Register prompt handlers
+    .WithListPromptsHandler(PromptRegistry.GetHandlerForListPromptRequestsAsync)
+    .WithGetPromptHandler(PromptRegistry.GetHandlerForGetPromptRequestsAsync);
 await builder.Build().RunAsync();
