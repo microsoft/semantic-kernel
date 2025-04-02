@@ -151,7 +151,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             new(templateConfig, templateFactory)
             {
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments =
+                Arguments = new()
                     {
                         { "topic", "Dog" },
                         { "length", "3" },
