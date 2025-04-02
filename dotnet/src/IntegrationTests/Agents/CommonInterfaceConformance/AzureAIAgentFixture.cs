@@ -36,7 +36,7 @@ public class AzureAIAgentFixture : AgentFixture
 
     public AAIP.AgentsClient AgentsClient => this._agentsClient!;
 
-    public override KernelAgent Agent => this._agent!;
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 

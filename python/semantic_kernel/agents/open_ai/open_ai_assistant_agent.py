@@ -6,6 +6,8 @@ from collections.abc import AsyncIterable, Callable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
+from typing_extensions import deprecated
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -440,6 +442,9 @@ class OpenAIAssistantAgent(Agent):
 
     # region Message Handling
 
+    @deprecated(
+        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
+    )
     async def add_chat_message(
         self, thread_id: str, message: "str | ChatMessageContent", **kwargs: Any
     ) -> "Message | None":

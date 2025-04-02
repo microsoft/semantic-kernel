@@ -12,13 +12,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents a <see cref="KernelAgent"/> specialization bound to a <see cref="ChatHistoryChannel"/>.
+/// Represents a <see cref="Agent"/> specialization bound to a <see cref="ChatHistoryChannel"/>.
 /// </summary>
 /// <remarks>
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins
-/// (<see cref="KernelAgent.Arguments"/>).
+/// (<see cref="Agent.Arguments"/>).
 /// </remarks>
-public abstract class ChatHistoryKernelAgent : KernelAgent
+public abstract class ChatHistoryAgent : Agent
 {
     /// <summary>
     /// Gets an optional <see cref="IChatHistoryReducer"/> to reduce the history.

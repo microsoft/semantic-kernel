@@ -30,7 +30,7 @@ public class ChatCompletionAgentFixture : AgentFixture
     private ChatHistoryAgentThread? _createdThread;
     private Mock<MockChatHistoryAgentThread>? _mockCreatedAgentThread;
 
-    public override KernelAgent Agent => this._agent!;
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 
