@@ -6,21 +6,21 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from pydantic import model_validator
 
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.text_search.text_search import TextSearch
-from semantic_kernel.data.text_search.text_search_result import TextSearchResult
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.text_search import KernelSearchResults, TextSearch, TextSearchResult
+from semantic_kernel.data.vector_search import (
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorTextSearchMixin,
+)
+from semantic_kernel.data.vector_storage import TModel
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreInitializationException
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 
 if TYPE_CHECKING:
-    from semantic_kernel.data.search_options import SearchOptions
+    from semantic_kernel.data.text_search import SearchOptions
 
-TModel = TypeVar("TModel")
 _T = TypeVar("_T", bound="VectorStoreTextSearch")
 
 
@@ -31,7 +31,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
     Otherwise the search executes in the following order depending on which store was set:
     1. vectorizable_text_search
     2. vector_text_search
-    3. vectorized_search (after calling the embedding service)
+    3. vectorized_search (after calling a embedding service)
 
     Args:
         vectorizable_text_search: A vector store record collection with a method to search for vectorizable text.
@@ -147,7 +147,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
 
     async def _execute_search(
         self, query: str, options: "SearchOptions | None", **kwargs: Any
-    ) -> KernelSearchResults[VectorSearchResult[TModel]]:
+    ) -> "KernelSearchResults[VectorSearchResult[TModel]]":
         """Internal method to execute the search."""
         if self.vectorizable_text_search:
             return await self.vectorizable_text_search.vectorizable_text_search(
