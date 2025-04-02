@@ -28,7 +28,7 @@ public class AgentInvokeOptions
         this.KernelArguments = options.KernelArguments;
         this.Kernel = options.Kernel;
         this.AdditionalInstructions = options.AdditionalInstructions;
-        this.OnNewMessage = options.OnNewMessage;
+        this.OnIntermediateMessage = options.OnIntermediateMessage;
     }
 
     /// <summary>
@@ -56,5 +56,5 @@ public class AgentInvokeOptions
     /// when invoking the agent with streaming.
     /// </para>
     /// </remarks>
-    public Func<ChatMessageContent, Task>? OnNewMessage { get; init; } = null;
+    public Func<ChatMessageContent, Task>? OnIntermediateMessage { get; init; } = null;
 }
