@@ -8,9 +8,9 @@ using Plugins;
 namespace GettingStarted;
 
 /// <summary>
-/// This example demonstrates how to declaratively create instances of <see cref="KernelAgent"/>.
+/// This example demonstrates how to declaratively create instances of <see cref="Agent"/>.
 /// </summary>
-public class Step08_Declarative(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
     public async Task ChatCompletionAgentWithKernelAsync()

@@ -14,11 +14,11 @@ using OpenAI;
 namespace GettingStarted;
 
 /// <summary>
-/// This example demonstrates how to declaratively create instances of <see cref="KernelAgent"/>.
+/// This example demonstrates how to declaratively create instances of <see cref="Microsoft.SemanticKernel.Agents.Agent"/>.
 /// </summary>
-public class Step09_MultiAgent_Declarative : BaseAgentsTest
+public class Step10_MultiAgent_Declarative : BaseAgentsTest
 {
-    public Step09_MultiAgent_Declarative(ITestOutputHelper output) : base(output)
+    public Step10_MultiAgent_Declarative(ITestOutputHelper output) : base(output)
     {
         var openaiClient =
            this.UseOpenAIConfig ?

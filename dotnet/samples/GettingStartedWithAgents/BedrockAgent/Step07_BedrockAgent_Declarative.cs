@@ -163,7 +163,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(KernelAgent agent, string input)
+    private async Task InvokeAgentAsync(Agent agent, string input)
     {
         AgentThread? agentThread = null;
         try

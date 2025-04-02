@@ -157,7 +157,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// <summary>
     /// Invoke the agent with the user input.
     /// </summary>
-    private async Task InvokeAgentAsync(KernelAgent agent, string input)
+    private async Task InvokeAgentAsync(Agent agent, string input)
     {
         AgentThread? agentThread = null;
         try
