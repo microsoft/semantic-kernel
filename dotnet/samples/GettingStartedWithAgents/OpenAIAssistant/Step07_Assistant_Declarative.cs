@@ -77,7 +77,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             """
             type: openai_assistant
             name: StoryAgent
-            description: Store Telling Agent
+            description: Story Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             model:
               id: ${AzureOpenAI:ChatModelId}
