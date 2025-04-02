@@ -410,9 +410,6 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(filter, this._storagePropertyNames);
 
-        string? orderByField = this._propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty orderByProperty
-            ? this._storagePropertyNames[orderByProperty.DataModelPropertyName] : null;
-
         var fields = new List<string>(options.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
 
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
@@ -420,8 +417,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             this._storagePropertyNames,
             whereClause,
             filterParameters,
-            orderByField,
-            options.SortAscending,
+            options.Sort.Expressions.Select(pair => new KeyValuePair<VectorStoreRecordProperty, bool>(this._propertyReader.GetOrderByProperty<TRecord>(pair.Key)!, pair.Value)),
             top: top,
             skip: options.Skip);
 

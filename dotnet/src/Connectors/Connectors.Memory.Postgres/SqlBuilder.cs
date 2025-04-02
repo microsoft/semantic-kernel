@@ -444,9 +444,23 @@ FROM ({commandText}) AS subquery
         translator.Translate(appendWhere: true);
         query.AppendLine();
 
-        if (propertyReader.GetOrderByProperty(options.OrderBy) is VectorStoreRecordProperty orderByProperty)
+        bool orderByClauseNotAdded = true;
+        for (int i = 0; i < options.Sort.Expressions.Count; i++)
         {
-            query.AppendFormat("ORDER BY \"{0}\" {1}", orderByProperty.StoragePropertyName ?? orderByProperty.DataModelPropertyName, options.SortAscending ? "ASC" : "DESC").AppendLine();
+            var pair = options.Sort.Expressions[i];
+            if (orderByClauseNotAdded)
+            {
+                query.Append("ORDER BY ");
+                orderByClauseNotAdded = false;
+            }
+
+            VectorStoreRecordProperty property = propertyReader.GetOrderByProperty(pair.Key)!;
+            query.AppendFormat("\"{0}\" {1},", property.StoragePropertyName ?? property.DataModelPropertyName, pair.Value ? "ASC" : "DESC");
+        }
+        if (!orderByClauseNotAdded)
+        {
+            query.Length--; // remove the last comma
+            query.AppendLine();
         }
 
         query.AppendFormat("OFFSET {0}", options.Skip).AppendLine();

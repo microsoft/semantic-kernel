@@ -14,9 +14,18 @@ namespace RedisIntegrationTests.Filter;
 public abstract class RedisBasicQueryTests(BasicQueryTests<string>.QueryFixture fixture)
     : BasicQueryTests<string>(fixture)
 {
-    protected override async Task<List<FilterRecord>> GetResults(Expression<Func<FilterRecord, bool>> filter, int top)
-        // Redis does not support ordering by multiple properties, so we order the results manually.
-        => (await fixture.Collection.GetAsync(filter, top).ToListAsync()).OrderBy(r => r.Int).ThenByDescending(r => r.String).ToList();
+    // Redis does not support ordering by multiple fields, so we order by only one field.
+    protected override List<FilterRecord> GetOrderedRecords(IQueryable<FilterRecord> filtered)
+        => filtered.OrderBy(r => r.Int2).ToList();
+
+    protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<string, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
+    {
+        QueryOptions<FilterRecord> options = new();
+
+        options.Sort.Ascending(r => r.Int2);
+
+        return await collection.GetAsync(filter, top, options).ToListAsync();
+    }
 
     #region Equality with null
 

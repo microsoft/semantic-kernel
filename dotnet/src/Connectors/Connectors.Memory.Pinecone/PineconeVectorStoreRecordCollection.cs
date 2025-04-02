@@ -393,9 +393,9 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        if (options?.OrderBy is not null)
+        if (options?.Sort.Expressions.Count > 0)
         {
-            throw new NotSupportedException("OrderBy is not supported by the Pinecone connector.");
+            throw new NotSupportedException("Pinecone does not support ordering.");
         }
 
         options ??= new();

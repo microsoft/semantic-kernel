@@ -123,8 +123,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         List<string> fields,
         Dictionary<string, string> storagePropertyNames,
         string whereClause, Dictionary<string, object?> filterParameters,
-        string? orderByArgument,
-        bool ascending,
+        IEnumerable<KeyValuePair<VectorStoreRecordProperty, bool>> orderByProperties,
         int top,
         int skip)
     {
@@ -144,15 +143,20 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         builder.AppendLine($"FROM {tableVariableName}");
         builder.Append("WHERE ").AppendLine(whereClause);
 
-        if (!string.IsNullOrEmpty(orderByArgument))
+        bool orderByClauseNotAdded = true;
+        foreach (var pair in orderByProperties)
         {
-            builder.AppendFormat("ORDER BY {0}.{1}", tableVariableName, orderByArgument);
-
-            if (!ascending)
+            if (orderByClauseNotAdded)
             {
-                builder.Append(" DESC");
+                builder.Append("ORDER BY ");
+                orderByClauseNotAdded = false;
             }
 
+            builder.AppendFormat("{0}.{1} {2},", tableVariableName, storagePropertyNames[pair.Key.DataModelPropertyName], pair.Value ? "ASC" : "DESC");
+        }
+        if (!orderByClauseNotAdded)
+        {
+            builder.Length--; // remove the last comma
             builder.AppendLine();
         }
 

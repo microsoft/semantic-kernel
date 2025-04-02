@@ -292,11 +292,22 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             .AsQueryable()
             .Where(filter);
 
-        if (options.OrderBy is not null)
+        if (options.Sort.Expressions.Count > 0)
         {
-            records = options.SortAscending
-                ? records.OrderBy(options.OrderBy)
-                : records.OrderByDescending(options.OrderBy);
+            var first = options.Sort.Expressions[0];
+            var sorted = first.Value
+                    ? records.OrderBy(first.Key)
+                    : records.OrderByDescending(first.Key);
+
+            for (int i = 1; i < options.Sort.Expressions.Count; i++)
+            {
+                var next = options.Sort.Expressions[i];
+                sorted = next.Value
+                    ? sorted.ThenBy(next.Key)
+                    : sorted.ThenByDescending(next.Key);
+            }
+
+            records = sorted;
         }
 
         return records
