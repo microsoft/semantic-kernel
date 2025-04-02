@@ -82,7 +82,7 @@ async def main():
             async for response in agent.invoke_stream(
                 messages=user_input,
                 thread=thread,
-                on_new_message=handle_streaming_intermediate_steps,
+                on_intermediate_message=handle_streaming_intermediate_steps,
             ):
                 thread = response.thread
                 if first_chunk:

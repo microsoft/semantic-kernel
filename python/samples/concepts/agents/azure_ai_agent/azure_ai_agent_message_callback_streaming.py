@@ -92,7 +92,7 @@ async def main() -> None:
                 async for response in agent.invoke_stream(
                     messages=user_input,
                     thread=thread,
-                    on_new_message=handle_streaming_intermediate_steps,
+                    on_intermediate_message=handle_streaming_intermediate_steps,
                 ):
                     if first_chunk:
                         print(f"# {response.role}: ", end="", flush=True)

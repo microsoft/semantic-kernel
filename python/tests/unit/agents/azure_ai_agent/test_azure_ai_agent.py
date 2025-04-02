@@ -136,7 +136,7 @@ async def test_azure_ai_agent_invoke_stream_with_on_new_message_callback(ai_proj
         side_effect=fake_invoke,
     ):
         async for item in agent.invoke_stream(
-            messages="message", thread=thread, on_new_message=handle_stream_completion
+            messages="message", thread=thread, on_intermediate_message=handle_stream_completion
         ):
             results.append(item)
 

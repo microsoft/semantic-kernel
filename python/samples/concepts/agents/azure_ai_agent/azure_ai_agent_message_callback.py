@@ -93,7 +93,7 @@ async def main() -> None:
                 async for response in agent.invoke(
                     messages=user_input,
                     thread=thread,
-                    on_new_message=handle_intermediate_steps,
+                    on_intermediate_message=handle_intermediate_steps,
                 ):
                     print(f"# Agent: {response}")
                     thread = response.thread

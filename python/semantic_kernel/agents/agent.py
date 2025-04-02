@@ -268,7 +268,7 @@ class Agent(KernelBaseModel, ABC):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
-        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
@@ -277,15 +277,15 @@ class Agent(KernelBaseModel, ABC):
         stream of ChatMessageContent objects to the caller. The reason for returning a stream
         is to allow for future extensions to the agent's capabilities, such as multi-modality.
 
-        To get the intermediate steps of the agent's execution, use the on_new_message callback
-        to handle new messages.
+        To get the intermediate steps of the agent's execution, use the on_intermediate_message callback
+        to handle those messages.
 
         Note: A ChatMessageContent object contains an entire message.
 
         Args:
             messages: The message(s) to send to the agent.
             thread: The conversation thread associated with the message(s).
-            on_new_message: A callback function to handle intermediate steps of the agent's execution.
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -299,7 +299,7 @@ class Agent(KernelBaseModel, ABC):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
-        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
@@ -308,15 +308,15 @@ class Agent(KernelBaseModel, ABC):
         agent's execution as a stream of StreamingChatMessageContent objects to the caller.
 
         To get the intermediate steps of the agent's execution as fully formed messages,
-        use the on_new_message callback.
+        use the on_intermediate_message callback.
 
         Note: A StreamingChatMessageContent object contains a chunk of a message.
 
         Args:
             messages: The message(s) to send to the agent.
             thread: The conversation thread associated with the message(s).
-            on_new_message: A callback function to handle intermediate steps of the
-                            agent's execution as fully formed messages.
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             kwargs: Additional keyword arguments.
 
         Yields:

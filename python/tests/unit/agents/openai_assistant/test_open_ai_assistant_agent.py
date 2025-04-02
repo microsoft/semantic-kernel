@@ -282,7 +282,7 @@ async def test_open_ai_assistant_agent_invoke_stream_with_on_new_message_callbac
         side_effect=fake_invoke,
     ):
         async for item in agent.invoke_stream(
-            messages="test", thread=mock_thread, on_new_message=handle_stream_completion, **(kwargs or {})
+            messages="test", thread=mock_thread, on_intermediate_message=handle_stream_completion, **(kwargs or {})
         ):
             results.append(item)
 

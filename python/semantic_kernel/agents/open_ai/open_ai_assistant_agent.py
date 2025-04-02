@@ -571,7 +571,7 @@ class OpenAIAssistantAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
-        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
@@ -596,7 +596,7 @@ class OpenAIAssistantAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The Agent Thread to use.
-            on_new_message: A callback function to handle intermediate steps of the agent's execution.
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             arguments: The kernel arguments.
             instructions_override: The instructions override.
             kernel: The kernel to use as an override.
@@ -662,8 +662,8 @@ class OpenAIAssistantAgent(Agent):
             response.metadata["thread_id"] = thread.id
             await thread.on_new_message(response)
 
-            if on_new_message:
-                await on_new_message(response)
+            if on_intermediate_message:
+                await on_intermediate_message(response)
 
             if is_visible:
                 yield AgentResponseItem(message=response, thread=thread)
@@ -675,7 +675,7 @@ class OpenAIAssistantAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
-        on_new_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
         arguments: KernelArguments | None = None,
@@ -700,8 +700,8 @@ class OpenAIAssistantAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The Agent Thread to use.
-            on_new_message: A callback function to handle intermediate steps of the
-                            agent's execution as fully formed messages.
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             arguments: The kernel arguments.
@@ -757,7 +757,7 @@ class OpenAIAssistantAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
-        collected_messages: list[ChatMessageContent] | None = [] if on_new_message else None
+        collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
         async for message in AssistantThreadActions.invoke_stream(
             agent=self,
@@ -773,7 +773,7 @@ class OpenAIAssistantAgent(Agent):
         for message in collected_messages or []:  # type: ignore
             message.metadata["thread_id"] = thread.id
             await thread.on_new_message(message)
-            if on_new_message:
-                await on_new_message(message)
+            if on_intermediate_message:
+                await on_intermediate_message(message)
 
     # endregion
