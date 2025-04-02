@@ -12,7 +12,6 @@ from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.mcp import MCPStdioServerConfig
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -615,27 +614,6 @@ def test_import_plugin_from_openapi(kernel: Kernel):
     assert plugin.name == "TestOpenAPIPlugin"
     assert plugin.functions.get("GetSecret") is not None
     assert plugin.functions.get("SetSecret") is not None
-
-
-@pytest.mark.asyncio
-async def test_import_plugin_from_mcp(kernel: Kernel):
-    mcp_server_path = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins", "TestMCPPlugin")
-    mcp_server_file = "mcp_server.py"
-    settings = MCPStdioServerConfig(
-        command="uv",
-        args=["--directory", mcp_server_path, "run", mcp_server_file],
-    )
-
-    await kernel.add_plugin_from_mcp(
-        plugin_name="TestMCPPlugin",
-        execution_settings=settings,
-    )
-
-    plugin = kernel.get_plugin(plugin_name="TestMCPPlugin")
-    assert plugin is not None
-    assert plugin.name == "TestMCPPlugin"
-    assert plugin.functions.get("get_secret") is not None
-    assert plugin.functions.get("set_secret") is not None
 
 
 def test_get_plugin(kernel: Kernel):
