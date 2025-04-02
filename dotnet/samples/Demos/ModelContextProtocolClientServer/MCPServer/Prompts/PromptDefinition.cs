@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace MCPServer.Prompts;
 
 /// <summary>
 /// Represents a prompt definition.
 /// </summary>
-internal class PromptDefinition
+internal sealed class PromptDefinition
 {
     /// <summary>
     /// Gets or sets the prompt.

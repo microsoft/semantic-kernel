@@ -26,7 +26,7 @@ public static class EmbeddedResource
             throw new InvalidOperationException($"{resourceName} resource not found");
 
         // Return the resource content, in text format.
-        using StreamReader reader = new StreamReader(stream);
+        using StreamReader reader = new(stream);
         return reader.ReadToEnd();
     }
 }
