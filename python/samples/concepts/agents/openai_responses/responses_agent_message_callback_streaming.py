@@ -109,7 +109,7 @@ async def main():
     # AuthorRole.USER: 'What is the special drink?'
     # Host: The special drink is Chai Tea.
     # AuthorRole.USER: 'How much is that?'
-    # Host: Could you please specify the menu item you are asking about?
+    # Host: The Chai Tea is $9.99. Would you like to know more about the menu?
     # AuthorRole.USER: 'Thank you'
     # Host: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
 
