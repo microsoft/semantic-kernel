@@ -11,9 +11,7 @@ from openai.lib._parsing._responses import type_to_text_format_param
 from openai.types.responses.computer_tool_param import ComputerToolParam
 from openai.types.responses.file_search_tool_param import FileSearchToolParam, RankingOptions
 from openai.types.responses.response_format_text_config_param import ResponseFormatText
-from openai.types.responses.response_format_text_json_schema_config_param import (
-    ResponseFormatTextJSONSchemaConfigParam,
-)
+from openai.types.responses.response_format_text_json_schema_config_param import ResponseFormatTextJSONSchemaConfigParam
 from openai.types.responses.response_text_config_param import ResponseTextConfigParam
 from openai.types.responses.tool_param import ToolParam
 from openai.types.responses.web_search_tool_param import UserLocation, WebSearchToolParam
@@ -672,6 +670,7 @@ class OpenAIResponsesAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
@@ -685,7 +684,6 @@ class OpenAIResponsesAgent(Agent):
         max_output_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
-        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning: Literal["low", "medium", "high"] | None = None,
         temperature: float | None = None,
@@ -700,6 +698,7 @@ class OpenAIResponsesAgent(Agent):
         Args:
             messages: The messages to send to the agent.
             thread: The thread to use for the agent.
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             arguments: The kernel arguments.
             kernel: The kernel.
             include: Additional output data to include in the response.
@@ -711,8 +710,6 @@ class OpenAIResponsesAgent(Agent):
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
             model: The model to override on a per-run basis.
-            on_intermediate_message: A callback to receive the ChatMessageContent of full messages received from the
-                agent. Can expose FunctionCallContent and FunctionResultContent to the caller.
             parallel_tool_calls: Parallel tool calls.
             reasoning: The reasoning effort.
             text: The response format.
@@ -786,6 +783,7 @@ class OpenAIResponsesAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         function_choice_behavior: FunctionChoiceBehavior | None = None,
@@ -797,7 +795,6 @@ class OpenAIResponsesAgent(Agent):
         | None = None,
         instructions_override: str | None = None,
         max_output_tokens: int | None = None,
-        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
         parallel_tool_calls: bool | None = None,
@@ -814,6 +811,8 @@ class OpenAIResponsesAgent(Agent):
         Args:
             messages: The messages to send to the agent.
             thread: The thread to use for the agent.
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             arguments: The kernel arguments.
             kernel: The kernel.
             include: Additional output data to include in the response.
@@ -823,8 +822,6 @@ class OpenAIResponsesAgent(Agent):
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             max_output_tokens: The maximum completion tokens.
-            on_intermediate_message: A callback to receive the ChatMessageContent of full messages received from the
-                agent. These are full content messages formed from the streamed chunks.
             metadata: The metadata.
             model: The model to override on a per-run basis.
             parallel_tool_calls: Parallel tool calls.
