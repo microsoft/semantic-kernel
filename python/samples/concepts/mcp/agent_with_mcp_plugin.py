@@ -44,7 +44,7 @@ async def main():
             thread: ChatHistoryAgentThread = None
 
             print(f"# User: {user_input}")
-            # 4. Invoke the agent for a response
+            # 3. Invoke the agent for a response
             response = await agent.get_response(messages=user_input, thread=thread)
             print(f"# {response.name}: {response} ")
             thread = response.thread

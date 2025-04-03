@@ -311,7 +311,7 @@ class MCPSsePlugin(MCPPluginBase):
     ) -> None:
         """Initialize the MCP sse plugin.
 
-                The arguments are used to create a sse client.
+        The arguments are used to create a sse client.
         see mcp.client.sse.sse_client for more details.
 
         Any extra arguments passed to the constructor will be passed to the
