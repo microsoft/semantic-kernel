@@ -35,7 +35,6 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
@@ -47,7 +46,6 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@release_candidate
 class ChatHistoryAgentThread(AgentThread):
     """Chat History Agent Thread class."""
 
@@ -113,7 +111,6 @@ class ChatHistoryAgentThread(AgentThread):
         return await self._chat_history.reduce()
 
 
-@release_candidate
 class ChatCompletionAgent(Agent):
     """A Chat Completion Agent based on ChatCompletionClientBase."""
 
