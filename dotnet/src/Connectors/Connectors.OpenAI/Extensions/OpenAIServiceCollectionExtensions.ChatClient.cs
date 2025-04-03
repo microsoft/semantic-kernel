@@ -3,6 +3,7 @@
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,14 +14,16 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel;
 
-#pragma warning disable IDE0039 // Use local function
-
 /// <summary>
 /// Sponsor extensions class for <see cref="IServiceCollection"/>.
 /// </summary>
+[Experimental("SKEXP0010")]
 public static class OpenAIChatClientServiceCollectionExtensions
 {
-    #region Chat Completion
+    /// <summary>
+    /// White space constant.
+    /// </summary>
+    private const string SingleSpace = " ";
 
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
@@ -148,10 +151,4 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         return options;
     }
-
-    /// <summary>
-    /// White space constant.
-    /// </summary>
-    private const string SingleSpace = " ";
-    #endregion
 }

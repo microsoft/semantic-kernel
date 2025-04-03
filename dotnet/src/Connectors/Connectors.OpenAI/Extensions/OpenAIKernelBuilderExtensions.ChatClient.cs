@@ -10,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Sponsor extensions class for <see cref="IKernelBuilder"/>.
 /// </summary>
+[Experimental("SKEXP0010")]
 public static class OpenAIChatClientKernelBuilderExtensions
 {
     #region Chat Completion
@@ -79,7 +80,6 @@ public static class OpenAIChatClientKernelBuilderExtensions
     /// <param name="serviceId">A local identifier for the given AI service</param>
     /// <param name="httpClient">The HttpClient to use with this service.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
-    [Experimental("SKEXP0010")]
     public static IKernelBuilder AddOpenAIChatClient(
         this IKernelBuilder builder,
         string modelId,

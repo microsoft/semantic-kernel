@@ -186,6 +186,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
+        options?.AdditionalProperties?.TryGetValue(KernelFunctionInvocationContext.KernelKey, out var kernel);
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
@@ -254,7 +255,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, kernel, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
             if (UpdateOptionsForMode(modeAndMessages.Mode, ref options!, response.ChatThreadId))
@@ -504,15 +505,16 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <param name="options">The options used for the response being processed.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing the auto function invocations.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<(ContinueMode Mode, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions options, List<Microsoft.Extensions.AI.FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
+        List<ChatMessage> messages, ChatOptions options, List<Microsoft.Extensions.AI.FunctionCallContent> functionCallContents, int iteration, Kernel kernel, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
-        Debug.Assert(functionCallContents.Count > 0, "Expecteded at least one function call.");
+        Debug.Assert(functionCallContents.Count > 0, "Expected at least one function call.");
 
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
         if (functionCallContents.Count == 1)
@@ -694,13 +696,12 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     }
 
     /// <summary>Invokes the function asynchronously.</summary>
-    /// <param name="context">
-    /// The function invocation context detailing the function to be invoked and its arguments along with additional request information.
-    /// </param>
+    /// <param name="context">The function invocation context detailing the function to be invoked and its arguments along with additional request information.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing the auto function invocations.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-    internal async Task<object?> InvokeFunctionAsync(KernelFunctionInvocationContext context, CancellationToken cancellationToken)
+    internal async Task<object?> InvokeFunctionAsync(KernelFunctionInvocationContext context, Kernel kernel, CancellationToken cancellationToken)
     {
         Verify.NotNull(context);
 
@@ -724,6 +725,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         try
         {
             CurrentContext = context;
+            context = this.OnAutoFunctionInvocationAsync(kernel, context, )
             result = await context.Function.InvokeAsync(context.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)

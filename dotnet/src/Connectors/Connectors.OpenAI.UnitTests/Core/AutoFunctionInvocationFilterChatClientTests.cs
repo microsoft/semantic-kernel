@@ -15,12 +15,12 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.OpenAI.UnitTests.Core;
 
-public sealed class AutoFunctionInvocationFilterTests : IDisposable
+public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 {
     private readonly MultipleHttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
-    public AutoFunctionInvocationFilterTests()
+    public AutoFunctionInvocationFilterChatClientTests()
     {
         this._messageHandlerStub = new MultipleHttpMessageHandlerStub();
 
@@ -758,10 +758,7 @@ public sealed class AutoFunctionInvocationFilterTests : IDisposable
         builder.Plugins.Add(plugin);
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
 
-        builder.Services.AddSingleton<IChatCompletionService, OpenAIChatCompletionService>((serviceProvider) =>
-        {
-            return new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
-        });
+        builder.AddOpenAIChatClient("model-id", "test-api-key", "organization-id", httpClient: this._httpClient);
 
         return builder.Build();
     }
