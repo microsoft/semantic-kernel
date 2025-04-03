@@ -13,6 +13,11 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 public sealed class RestApiServer
 {
     /// <summary>
+    /// Description of the server.
+    /// </summary>
+    public string? Description { get; }
+
+    /// <summary>
     /// A URL to the target host. This URL supports Server Variables and MAY be relative,
     /// to indicate that the host location is relative to the location where the OpenAPI document is being served.
     /// Variable substitutions will be made when a variable is named in {brackets}.
@@ -31,12 +36,14 @@ public sealed class RestApiServer
     /// </summary>
     /// <param name="url">URL to the target host</param>
     /// <param name="variables">Substitution variables for the server's URL template</param>
+    /// <param name="description">Description of the server</param>
 #pragma warning disable CA1054 // URI-like parameters should not be strings
-    internal RestApiServer(string? url = null, IDictionary<string, RestApiServerVariable>? variables = null)
+    internal RestApiServer(string? url = null, IDictionary<string, RestApiServerVariable>? variables = null, string? description = null)
 #pragma warning restore CA1054 // URI-like parameters should not be strings
     {
         this.Url = string.IsNullOrEmpty(url) ? null : url;
         this.Variables = variables ?? new Dictionary<string, RestApiServerVariable>();
+        this.Description = description;
     }
 
     /// <summary>
