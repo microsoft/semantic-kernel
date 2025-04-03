@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from typing_extensions import deprecated
 
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -67,6 +69,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@release_candidate
 class AssistantAgentThread(AgentThread):
     """An OpenAI Assistant Agent Thread class."""
 
@@ -158,6 +161,7 @@ class AssistantAgentThread(AgentThread):
             yield message
 
 
+@release_candidate
 class OpenAIAssistantAgent(Agent):
     """OpenAI Assistant Agent class.
 
