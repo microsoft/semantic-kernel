@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -6,6 +7,9 @@ from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool
 
 from semantic_kernel.connectors.mcp import MCPSsePlugin, MCPStdioPlugin, MCPWebsocketPlugin
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
+
+if TYPE_CHECKING:
+    from semantic_kernel import Kernel
 
 
 @pytest.fixture
