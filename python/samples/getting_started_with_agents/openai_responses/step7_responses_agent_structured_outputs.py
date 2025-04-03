@@ -54,25 +54,43 @@ async def main():
         print(f"# User: {str(user_input)}")  # type: ignore
         # 5. Invoke the agent with the current chat history and print the response
         response = await agent.get_response(messages=user_input, thread=thread)
-        reasoned_result = Reasoning.model_validate(json.loads(str(response.content)))
-        print(f"# {response.name}:\n\n{reasoned_result.model_dump_json(indent=4)}")
+        reasoned_result = Reasoning.model_validate_json(response.message.content)
+        print(f"# {response.name}:\n\n{json.dumps(reasoned_result.model_dump(), indent=4, ensure_ascii=False)}")
         thread = response.thread
 
     # 6. Clean up the thread
     await thread.delete() if thread else None
 
     """
-    You should see output similar to the following:
+    # User: how can I solve 8x + 7y = -23, and 4x=12?
+    # StructuredOutputsAgent:
 
-    # User: Describe this image.
-    # Agent: The image depicts a bustling scene of Times Square in New York City...
-
-    # User: What is the main color in this image?
-    # Agent: The main color in the image is blue.
-
-    # User: Is there an animal in this image?
-    # Agent: Yes, there is a cat in the image.
-     """
+    {
+        "steps": [
+            {
+                "explanation": "First, solve the equation 4x = 12 to find the value of x.",
+                "output": "4x = 12\nx = 12 / 4\nx = 3"
+            },
+            {
+                "explanation": "Substitute x = 3 into the first equation 8x + 7y = -23.",
+                "output": "8(3) + 7y = -23"
+            },
+            {
+                "explanation": "Perform the multiplication and simplify the equation.",
+                "output": "24 + 7y = -23"
+            },
+            {
+                "explanation": "Subtract 24 from both sides to isolate the term with y.",
+                "output": "7y = -23 - 24\n7y = -47"
+            },
+            {
+                "explanation": "Divide by 7 to solve for y.",
+                "output": "y = -47 / 7\ny = -6.71 (rounded to two decimal places)"
+            }
+        ],
+        "final_answer": "x = 3 and y = -6.71 (rounded to two decimal places)"
+    }
+    """
 
 
 if __name__ == "__main__":
