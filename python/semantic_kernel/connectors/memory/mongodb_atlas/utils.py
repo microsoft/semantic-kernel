@@ -4,9 +4,9 @@ from numpy import array
 from pymongo.operations import SearchIndexModel
 
 from semantic_kernel.connectors.memory.mongodb_atlas.const import DISTANCE_FUNCTION_MAPPING
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError

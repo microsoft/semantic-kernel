@@ -1,0 +1,13 @@
+﻿{
+  "name": "GetCurrentWeatherForCity",
+  "description": "Provides current weather information for a specified city.",
+  "template_format": "handlebars",
+  "template": "What is the weather in {{city}} as of {{DateTimeUtils-GetCurrentDateTimeInUtc}}?",
+  "input_variables": [
+    {
+      "name": "city",
+      "description": "The city for which to get the weather.",
+      "is_required": true
+    }
+  ]
+}

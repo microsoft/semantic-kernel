@@ -15,9 +15,9 @@ from semantic_kernel.data import (
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
-    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.vector_search import add_vector_to_records
 
 model_fields = VectorStoreRecordDefinition(
     container_mode=True,
@@ -51,7 +51,7 @@ async def main():
 
         # create the dataframe and add the embeddings
         df = pd.DataFrame(records)
-        df = await VectorStoreRecordUtils(kernel).add_vector_to_records(df, None, data_model_definition=model_fields)
+        df = await add_vector_to_records(kernel, df, None, data_model_definition=model_fields)
         print("Records with embeddings:")
         print(df.shape)
         print(df.head(5))

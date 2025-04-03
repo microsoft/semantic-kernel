@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ModelContextProtocol;
 using ModelContextProtocol.Client;
+using ModelContextProtocol.Protocol.Types;
 
 var config = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
@@ -20,7 +22,7 @@ if (config["OpenAI:ApiKey"] is not { } apiKey)
 
 // Create an MCPClient for the GitHub server
 await using var mcpClient = await McpClientFactory.CreateAsync(
-    new()
+    new McpServerConfig()
     {
         Id = "github",
         Name = "GitHub",
@@ -31,10 +33,17 @@ await using var mcpClient = await McpClientFactory.CreateAsync(
             ["arguments"] = "-y @modelcontextprotocol/server-github",
         }
     },
-    new() { ClientInfo = new() { Name = "GitHub", Version = "1.0.0" } }).ConfigureAwait(false);
+    new McpClientOptions()
+    {
+        ClientInfo = new Implementation()
+        {
+            Name = "GitHub",
+            Version = "1.0.0"
+        }
+    }).ConfigureAwait(false);
 
 // Retrieve the list of tools available on the GitHub server
-var tools = await mcpClient.GetAIFunctionsAsync().ConfigureAwait(false);
+var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);
 foreach (var tool in tools)
 {
     Console.WriteLine($"{tool.Name}: {tool.Description}");
@@ -45,7 +54,6 @@ var builder = Kernel.CreateBuilder();
 builder.Services
     .AddLogging(c => c.AddDebug().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace))
     .AddOpenAIChatCompletion(
-        serviceId: "openai",
         modelId: config["OpenAI:ChatModelId"] ?? "gpt-4o-mini",
         apiKey: apiKey);
 Kernel kernel = builder.Build();

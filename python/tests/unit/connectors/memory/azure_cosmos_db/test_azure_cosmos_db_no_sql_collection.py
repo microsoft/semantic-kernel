@@ -429,7 +429,7 @@ async def test_azure_cosmos_db_no_sql_get(
     collection_name: str,
 ) -> None:
     """Test the retrieval of a document from a cosmos DB NoSQL collection."""
-    vector_collection = AzureCosmosDBNoSQLCollection(
+    vector_collection: AzureCosmosDBNoSQLCollection[str, data_model_type] = AzureCosmosDBNoSQLCollection(
         data_model_type=data_model_type,
         collection_name=collection_name,
     )

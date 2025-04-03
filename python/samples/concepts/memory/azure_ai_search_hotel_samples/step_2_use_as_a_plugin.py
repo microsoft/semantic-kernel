@@ -2,8 +2,20 @@
 
 
 import asyncio
-from collections.abc import Coroutine
+from collections.abc import Awaitable, Callable
 from typing import Any
+
+from step_0_data_model import HotelSampleClass
+
+from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIChatCompletion,
+    OpenAIChatPromptExecutionSettings,
+    OpenAITextEmbedding,
+)
+from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
+from semantic_kernel.contents import ChatHistory
 
 ###
 # The data model used for this sample is based on the hotel data model from the Azure AI Search samples.
@@ -16,26 +28,12 @@ from typing import Any
 # This sample assumes the index is deployed, and the vectors have been filled.
 # Use the step_1_interact_with_the_collection.py sample, with `first_run = True` to fill the vectors.
 ###
-from step_0_data_model import HotelSampleClass
-
-from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.open_ai import (
-    OpenAIChatCompletion,
-    OpenAIChatPromptExecutionSettings,
-    OpenAITextEmbedding,
-)
-from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchCollection
-from semantic_kernel.contents import ChatHistory
 from semantic_kernel.data import (
     VectorSearchFilter,
     VectorSearchOptions,
-    VectorStoreRecordUtils,
 )
-from semantic_kernel.data.search_options import SearchOptions
-from semantic_kernel.data.text_search.vector_store_text_search import VectorStoreTextSearch
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
+from semantic_kernel.data.text_search import SearchOptions
+from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import (
     KernelArguments,
     KernelParameterMetadata,
@@ -50,15 +48,15 @@ service_id = "chat"
 kernel.add_service(OpenAIChatCompletion(service_id=service_id))
 embeddings = OpenAITextEmbedding(service_id="embedding", ai_model_id="text-embedding-3-small")
 kernel.add_service(embeddings)
-vectorizer = VectorStoreRecordUtils(kernel)
 
 # Create a Text Search object, with a Azure AI Search collection.
 # using the `from_vector_text_search` method means that this plugin will only use text search.
 # You can also choose to use the `from_vectorized_search` method to use vector search.
 # Or the `from_vectorizable_text_search` method if the collection is setup to vectorize incoming texts.
-text_search = VectorStoreTextSearch.from_vector_text_search(
-    AzureAISearchCollection[HotelSampleClass](collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass)
+collection = AzureAISearchCollection[str, HotelSampleClass](
+    collection_name=COLLECTION_NAME, data_model_type=HotelSampleClass
 )
+text_search = collection.create_text_search_from_vector_text_search()
 
 
 # Before we create the plugin, we want to create a function that will help the plugin work the way we want it to.
@@ -195,7 +193,9 @@ arguments = KernelArguments(settings=execution_settings)
 # This allows us to see what parameters are being passed to the plugin.
 # And this gives us a way to debug the search experience and if necessary tweak the parameters and descriptions.
 @kernel.filter(filter_type=FilterTypes.FUNCTION_INVOCATION)
-async def log_search_filter(context: FunctionInvocationContext, next: Coroutine[FunctionInvocationContext, Any, None]):
+async def log_search_filter(
+    context: FunctionInvocationContext, next: Callable[[FunctionInvocationContext], Awaitable[None]]
+):
     if context.function.plugin_name == "azure_ai_search":
         print(f"Calling Azure AI Search ({context.function.name}) with arguments:")
         for arg in context.arguments:

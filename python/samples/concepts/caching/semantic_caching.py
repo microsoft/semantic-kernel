@@ -7,25 +7,22 @@ from dataclasses import dataclass, field
 from typing import Annotated
 from uuid import uuid4
 
+from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_text_embedding import OpenAITextEmbedding
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAITextEmbedding
 from semantic_kernel.connectors.memory.in_memory.in_memory_store import InMemoryVectorStore
-from semantic_kernel.data.record_definition import vectorstoremodel
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data import (
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorStore,
+    VectorStoreRecordCollection,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.filters.functions.function_invocation_context import FunctionInvocationContext
-from semantic_kernel.filters.prompts.prompt_render_context import PromptRenderContext
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.kernel import Kernel
+from semantic_kernel.filters import FilterTypes, FunctionInvocationContext, PromptRenderContext
+from semantic_kernel.functions import FunctionResult
 
 COLLECTION_NAME = "llm_responses"
 RECORD_ID_KEY = "cache_record_id"

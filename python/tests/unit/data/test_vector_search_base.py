@@ -5,8 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearchBase, VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreModelDeserializationException
 
 

@@ -15,17 +15,15 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.connectors.memory.in_memory import InMemoryVectorCollection
 from semantic_kernel.data import (
-    DISTANCE_FUNCTION_DIRECTION_HELPER,
-    DistanceFunction,
-    IndexKind,
     VectorSearchFilter,
     VectorSearchOptions,
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
-    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
+from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
+from semantic_kernel.data.vector_search import add_vector_to_records
 
 # This is the most basic example of a vector store and collection
 # For a more complex example, using different collection types, see "complex_memory.py"
@@ -115,9 +113,7 @@ async def main():
 
         # First add vectors to the records
         print_with_color("Adding records!", Colors.CBLUE)
-        records_with_embedding = await VectorStoreRecordUtils(kernel).add_vector_to_records(
-            records, data_model_type=DataModel
-        )
+        records_with_embedding = await add_vector_to_records(kernel, records, data_model_type=DataModel)
         # Next upsert them to the store.
         keys = await record_collection.upsert_batch(records_with_embedding)
         print(f"    Upserted {keys=}")

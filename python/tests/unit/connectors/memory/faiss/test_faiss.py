@@ -5,14 +5,13 @@ from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.faiss import FaissCollection, FaissStore
 from semantic_kernel.data import (
-    DistanceFunction,
-    VectorSearchFilter,
-    VectorSearchOptions,
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
+from semantic_kernel.data.const import DistanceFunction
+from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 

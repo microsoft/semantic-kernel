@@ -7,7 +7,7 @@ from typing import Any
 from psycopg_pool import AsyncConnectionPool
 
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordField,
     VectorStoreRecordVectorField,
 )

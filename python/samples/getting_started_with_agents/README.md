@@ -8,6 +8,7 @@ This project contains a step by step guide to get started with _Semantic Kernel 
 - For the use of OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.4.0.
 - For the use of Agent Group Chat, the minimum allowed Semantic kernel pypi version is 1.6.0.
 - For the use of Streaming OpenAI Assistant agents, the minimum allowed Semantic Kernel pypi version is 1.11.0
+- For the use of OpenAI Responses agents, the minimum allowed Semantic Kernel pypi version is 1.27.0.
 
 #### Source
 
@@ -32,16 +33,6 @@ Example|Description
 [step9_chat_completion_agent_logging](../getting_started_with_agents/chat_completion/step9_chat_completion_agent_logging.py)|How to enable logging for agents.
 [step10_chat_completion_agent_structured_outputs](../getting_started_with_agents/chat_completion/step10_chat_completion_agent_structured_outputs.py)|How to use have a chat completion agent use structured outputs
 
-## OpenAI Assistant Agent
-
-Example|Description
----|---
-[step1_assistant](../getting_started_with_agents/openai_assistant/step1_assistant.py)|How to create and use an OpenAI Assistant agent.
-[step2_assistant_plugins](../getting_started_with_agents/openai_assistant/step2_assistant_plugins.py)| How to create and use an OpenAI Assistant agent with plugins.
-[step3_assistant_vision](../getting_started_with_agents/openai_assistant/step3_assistant_vision.py)|How to provide an image as input to an Open AI Assistant agent.
-[step4_assistant_tool_code_interpreter](../getting_started_with_agents/openai_assistant/step4_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an Open AI Assistant agent.
-[step5_assistant_tool_file_search](../getting_started_with_agents/openai_assistant/step5_assistant_tool_file_search.py)|How to use the file-search tool for an Open AI Assistant agent.
-
 ## Azure AI Agent
 
 Example|Description
@@ -54,6 +45,28 @@ Example|Description
 [step6_azure_ai_agent_openapi](../getting_started_with_agents/azure_ai_agent/step6_azure_ai_agent_openapi.py)|How to use the Open API tool for an Azure AI  agent.
 
 _Note: For details on configuring an Azure AI Agent, please see [here](../getting_started_with_agents/azure_ai_agent/README.md)._
+
+## OpenAI Assistant Agent
+
+Example|Description
+---|---
+[step1_assistant](../getting_started_with_agents/openai_assistant/step1_assistant.py)|How to create and use an OpenAI Assistant agent.
+[step2_assistant_plugins](../getting_started_with_agents/openai_assistant/step2_assistant_plugins.py)| How to create and use an OpenAI Assistant agent with plugins.
+[step3_assistant_vision](../getting_started_with_agents/openai_assistant/step3_assistant_vision.py)|How to provide an image as input to an OpenAI Assistant agent.
+[step4_assistant_tool_code_interpreter](../getting_started_with_agents/openai_assistant/step4_assistant_tool_code_interpreter.py)|How to use the code-interpreter tool for an OpenAI Assistant agent.
+[step5_assistant_tool_file_search](../getting_started_with_agents/openai_assistant/step5_assistant_tool_file_search.py)|How to use the file-search tool for an OpenAI Assistant agent.
+
+## OpenAI Responses Agent
+
+Example|Description
+---|---
+[step1_responses_agent](../getting_started_with_agents/openai_responses/step1_responses_agent.py)|How to create and use an OpenAI Responses agent in the most simple way.
+[step2_responses_agent_thread_management](../getting_started_with_agents/openai_responses/step2_responses_agent_thread_management.py)| How to create and use a `ResponsesAgentThread` agent to maintain conversation context.
+[step3_responses_agent_plugins](../getting_started_with_agents/openai_responses/step3_responses_agent_plugins.py)|How to create and use an OpenAI Responses agent with plugins.
+[step4_responses_agent_web_search](../getting_started_with_agents/openai_responses/step4_responses_agent_web_search.py)|How to use the web search preview tool with an OpenAI Responses agent.
+[step5_responses_agent_file_search](../getting_started_with_agents/openai_responses/step5_responses_agent_file_search.py)|How to use the file-search tool with an OpenAI Responses agent.
+[step6_responses_agent_vision](../getting_started_with_agents/openai_responses/step6_responses_agent_vision.py)|How to provide an image as input to an OpenAI Responses agent.
+[step7_responses_agent_structured_outputs](../getting_started_with_agents/openai_responses/step7_responses_agent_structured_outputs.py)|How to use have an OpenAI Responses agent use structured outputs.
 
 ## Configuring the Kernel
 

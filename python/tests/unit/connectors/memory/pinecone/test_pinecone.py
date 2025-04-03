@@ -16,8 +16,7 @@ from pytest import fixture, mark, raises
 
 from semantic_kernel.connectors.memory.pinecone import PineconeStore
 from semantic_kernel.connectors.memory.pinecone._pinecone import PineconeCollection
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreInitializationException
 
 BASE_PATH_ASYNCIO = "pinecone.PineconeAsyncio"

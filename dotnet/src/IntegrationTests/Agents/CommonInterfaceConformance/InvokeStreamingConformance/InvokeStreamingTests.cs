@@ -175,7 +175,7 @@ public abstract class InvokeStreamingTests(Func<AgentFixture> createAgentFixture
             options: new()
             {
                 KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
-                OnNewMessage = (message) =>
+                OnIntermediateMessage = (message) =>
                 {
                     notifiedMessages.Add(message);
                     return Task.CompletedTask;

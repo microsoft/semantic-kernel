@@ -17,6 +17,6 @@ internal sealed class DateTimeUtils
     [KernelFunction, Description("Retrieves the current date time in UTC.")]
     public static string GetCurrentDateTimeInUtc()
     {
-        return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        return DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
     }
 }

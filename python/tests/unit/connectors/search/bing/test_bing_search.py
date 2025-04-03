@@ -8,10 +8,7 @@ import pytest
 from semantic_kernel.connectors.search.bing.bing_search import BingSearch
 from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse, BingWebPages
 from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
-from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+from semantic_kernel.data.text_search import KernelSearchResults, SearchFilter, TextSearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -246,7 +243,7 @@ async def test_search_equal_to_filter(bing_search, async_client_mock, mock_bing_
     """Test that search properly sets params with an EqualTo filter."""
 
     # Arrange
-    my_filter = TextSearchFilter.equal_to(field_name="freshness", value="Day")
+    my_filter = SearchFilter.equal_to(field_name="freshness", value="Day")
     options = TextSearchOptions(filter=my_filter)
 
     # Act
@@ -269,7 +266,7 @@ async def test_search_not_recognized_filter(bing_search, async_client_mock, mock
 
     # Arrange
     # 'customProperty' is presumably not in QUERY_PARAMETERS
-    my_filter = TextSearchFilter.equal_to(field_name="customProperty", value="customValue")
+    my_filter = SearchFilter.equal_to(field_name="customProperty", value="customValue")
     options = TextSearchOptions(filter=my_filter)
 
     # Act

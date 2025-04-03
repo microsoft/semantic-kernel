@@ -18,6 +18,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_AzureAISearch"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Postgres"/></para>
 /// </summary>
 public class VectorStore_VectorSearch_MultiStore_InMemory(ITestOutputHelper output) : BaseTest(output)
 {

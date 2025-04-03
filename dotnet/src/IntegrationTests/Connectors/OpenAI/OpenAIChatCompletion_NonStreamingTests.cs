@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -158,6 +160,39 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         var chatCompletion = Assert.IsType<ChatCompletion>(result.InnerContent);
         Assert.NotNull(chatCompletion);
         Assert.NotEmpty(chatCompletion.Annotations);
+    }
+
+    [Fact]
+    public async Task ChatCompletionWithAudioInputAndOutputAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel(modelIdOverride: "gpt-4o-audio-preview");
+        var chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
+        var settings = new OpenAIPromptExecutionSettings
+        {
+            Modalities = ChatResponseModalities.Audio | ChatResponseModalities.Text,
+            Audio = new ChatAudioOptions(ChatOutputAudioVoice.Shimmer, ChatOutputAudioFormat.Mp3)
+        };
+
+        ChatHistory chatHistory = [];
+        chatHistory.Add(new Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User, [
+            new AudioContent(File.ReadAllBytes("TestData/test_audio.wav"), mimeType: "audio/wav")
+        ]));
+
+        // Act
+        var result = await chatService.GetChatMessageContentAsync(chatHistory, settings);
+
+        // Assert
+        var audioContent = Assert.IsType<AudioContent>(result.Items.FirstOrDefault(i => i is AudioContent));
+        Assert.NotNull(audioContent);
+        Assert.NotNull(audioContent.Metadata);
+        Assert.NotNull(audioContent.Metadata["Id"]);
+        Assert.NotNull(audioContent.Metadata["ExpiresAt"]);
+        Assert.NotNull(audioContent.Metadata["Transcript"]);
+        Assert.Equal("audio/mp3", audioContent.MimeType);
+        Assert.True(audioContent.Metadata.ContainsKey("Transcript"));
+        Assert.NotNull(audioContent.Metadata["Transcript"]!);
+        Assert.NotEmpty(audioContent.Metadata!["Transcript"]!.ToString()!);
     }
 
     #region internals

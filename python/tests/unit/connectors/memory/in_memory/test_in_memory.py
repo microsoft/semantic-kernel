@@ -5,8 +5,7 @@ from pytest import fixture, mark
 from semantic_kernel.connectors.memory.in_memory.in_memory_collection import InMemoryVectorCollection
 from semantic_kernel.connectors.memory.in_memory.in_memory_store import InMemoryVectorStore
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 
 
 @fixture

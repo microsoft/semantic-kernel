@@ -46,6 +46,29 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 throw new InvalidOperationException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
             }
 
+            // Get the storage name for the field.
+            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
+            {
+                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
+            }
+
+            // Map datetime equality.
+            if (filterValue is DateTime or DateTimeOffset)
+            {
+                var dateTimeOffset = filterValue is DateTime dateTime
+                    ? new DateTimeOffset(dateTime, TimeSpan.Zero)
+                    : (DateTimeOffset)filterValue;
+
+                var range = new global::Qdrant.Client.Grpc.DatetimeRange
+                {
+                    Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                };
+
+                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } });
+                continue;
+            }
+
             // Map each type of filter value to the appropriate Qdrant match type.
             var match = filterValue switch
             {
@@ -55,12 +78,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 bool boolValue => new Match { Boolean = boolValue },
                 _ => throw new InvalidOperationException($"Unsupported filter value type '{filterValue.GetType().Name}'.")
             };
-
-            // Get the storage name for the field.
-            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
-            {
-                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
-            }
 
             filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, Match = match } });
         }

@@ -21,7 +21,7 @@ internal static class KernelExtensions
     /// <summary>
     /// Access an agent as a keyed service.
     /// </summary>
-    public static TAgent GetAgent<TAgent>(this Kernel kernel, string key) where TAgent : KernelAgent =>
+    public static TAgent GetAgent<TAgent>(this Kernel kernel, string key) where TAgent : Agent =>
         kernel.Services.GetRequiredKeyedService<TAgent>(key);
 
     /// <summary>

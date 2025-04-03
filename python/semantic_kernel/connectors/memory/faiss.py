@@ -4,11 +4,6 @@ import sys
 from collections.abc import MutableMapping, Sequence
 from typing import TYPE_CHECKING, Any, Generic
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 import faiss
 import numpy as np
 from pydantic import Field
@@ -16,23 +11,25 @@ from pydantic import Field
 from semantic_kernel.connectors.memory.in_memory.in_memory_collection import (
     IN_MEMORY_SCORE_KEY,
     InMemoryVectorCollection,
-    TKey,
-    TModel,
 )
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import VectorSearchOptions, VectorSearchResult
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore
 from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
 
 if TYPE_CHECKING:
-    from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +159,7 @@ class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TMod
                     f"use <collection>.indexes[{vector_field}].train, "
                     "see faiss docs for more details."
                 )
-            self.indexes[vector_field].add(vectors)
+            self.indexes[vector_field].add(vectors)  # type: ignore[call-arg]
             start = len(self.indexes_key_map[vector_field])
             for i, record in enumerate(records):
                 key = record[self.data_model_definition.key_field.name]
@@ -207,7 +204,7 @@ class FaissCollection(InMemoryVectorCollection[TKey, TModel], Generic[TKey, TMod
             filtered_records = self._get_filtered_records(options)
             np_vector = np.array(vector, dtype=np.float32).reshape(1, -1)
             # then do the actual vector search
-            distances, indexes = self.indexes[field].search(np_vector, min(options.top, self.indexes[field].ntotal))
+            distances, indexes = self.indexes[field].search(np_vector, min(options.top, self.indexes[field].ntotal))  # type: ignore[call-arg]
             # we then iterate through the results, the order is the order of relevance
             # (less or most distance, dependant on distance metric used)
             for i, index in enumerate(indexes[0]):

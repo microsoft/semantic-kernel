@@ -2,44 +2,41 @@
 
 import sys
 from collections.abc import AsyncIterable, Callable, Mapping, Sequence
-from typing import Any, ClassVar, Generic, TypeVar
+from typing import Any, ClassVar, Generic
+
+from pydantic import Field
+
+from semantic_kernel.connectors.memory.in_memory.const import DISTANCE_FUNCTION_MAP
+from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
+from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDefinition,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, FilterClauseBase, KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorTextSearchMixin,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
+from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.utils.list_handler import empty_generator
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
-from pydantic import Field
-
-from semantic_kernel.connectors.memory.in_memory.const import DISTANCE_FUNCTION_MAP
-from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.filter_clauses.filter_clause_base import FilterClauseBase
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
-    VectorStoreRecordVectorField,
-)
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
-from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.list_handler import empty_generator
-
-TKey = TypeVar("TKey", bound=str | int | float)
-TModel = TypeVar("TModel")
 
 IN_MEMORY_SCORE_KEY = "in_memory_search_score"
 
 
 class InMemoryVectorCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorTextSearchMixin[TModel],
-    VectorizedSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorTextSearchMixin[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """In Memory Collection."""
