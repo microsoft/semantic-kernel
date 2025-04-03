@@ -5,7 +5,7 @@ import asyncio
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
-from semantic_kernel.connectors.mcp import mcp_server_as_plugin
+from semantic_kernel.connectors.mcp import MCPStdioPlugin
 from semantic_kernel.contents import ChatHistory
 
 """
@@ -14,6 +14,16 @@ using Semantic Kernel,
 it creates a Plugin from a MCP server config and adds it to the kernel.
 The chatbot is designed to interact with the user, call MCP tools 
 as needed, and return responses.
+
+To run this sample, make sure to run:
+`pip install semantic-kernel[mcp]`
+
+or install the mcp package manually.
+
+In addition, different MCP Stdio servers need different commands to run.
+For example, the Github plugin requires `npx`, others use `uvx` or `docker`.
+
+Make sure those are available in your PATH.
 """
 
 # System message defining the behavior and persona of the chat bot.
@@ -69,7 +79,6 @@ async def chat() -> bool:
     except (KeyboardInterrupt, EOFError):
         print("\n\nExiting chat...")
         return False
-
     if user_input.lower().strip() == "exit":
         print("\n\nExiting chat...")
         return False
@@ -84,21 +93,25 @@ async def chat() -> bool:
 
 
 async def main() -> None:
-    # Make sure to have NPX installed and available in your PATH.
-    # Find the NPX executable in the system PATH.
-    # github_plugin, _ = await create_plugin_from_mcp_server(
-    #     plugin_name="GitHub",
-    #     description="Github Plugin",
-    #     command="npx",
-    #     args=["-y", "@modelcontextprotocol/server-github"],
-    # )
-    async with mcp_server_as_plugin(
-        plugin_name="Github",
+    # Create a plugin from the MCP server config and add it to the kernel.
+    # The MCP server plugin is defined using the MCPStdioPlugin class.
+    # The command and args are specific to the MCP server you want to run.
+    # For example, the Github MCP Server uses `npx` to run the server.
+    # There is also a MCPSsePlugin, which takes a URL.
+    async with MCPStdioPlugin(
+        name="Github",
         description="Github Plugin",
         command="npx",
         args=["-y", "@modelcontextprotocol/server-github"],
     ) as github_plugin:
+        # instead of using this async context manager, you can also use:
+        # await github_plugin.connect()
+        # and then await github_plugin.close() at the end of the program.
+
+        # Add the plugin to the kernel.
         kernel.add_plugin(github_plugin)
+
+        # Start the chat loop.
         print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")
         chatting = True
         while chatting:
