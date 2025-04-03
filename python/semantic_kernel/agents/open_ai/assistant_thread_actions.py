@@ -41,7 +41,7 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -63,7 +63,7 @@ _T = TypeVar("_T", bound="AssistantThreadActions")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@release_candidate
 class AssistantThreadActions:
     """Assistant Thread Actions class."""
 
