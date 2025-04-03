@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 import sys
 from abc import abstractmethod
@@ -7,11 +8,12 @@ from contextlib import AsyncExitStack, _AsyncGeneratorContextManager
 from functools import partial
 from typing import Any
 
-from mcp import McpError
+from mcp import McpError, types
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.client.websocket import websocket_client
+from mcp.server.lowlevel import Server
 from mcp.types import CallToolResult, EmbeddedResource, Prompt, PromptMessage, TextResourceContents, Tool
 from mcp.types import (
     ImageContent as MCPImageContent,
@@ -20,6 +22,7 @@ from mcp.types import (
     TextContent as MCPTextContent,
 )
 
+from semantic_kernel import Kernel
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -390,3 +393,109 @@ class MCPWebsocketPlugin(MCPPluginBase):
         if self._client_kwargs:
             args.update(self._client_kwargs)
         return websocket_client(**args)
+
+
+def create_mcp_server_from_kernel(
+    kernel: Kernel,
+    server_name: str = "Semantic Kernel MCP Server",
+) -> Server:
+    """Create an MCP server from a kernel instance.
+
+    Args:
+        kernel: The kernel instance to use.
+        server_name: The name of the server.
+
+    Returns:
+        The MCP server instance, it is a instance of
+        mcp.server.lowlevel.Server
+
+    """
+    server = Server(server_name)
+
+    @server.list_prompts()
+    async def list_prompts() -> list[types.Prompt]:
+        """List all prompts in the kernel."""
+        prompts = [
+            types.Prompt(
+                name=func.fully_qualified_name,
+                description=func.description,
+                arguments=[
+                    types.PromptArgument(name=param.name, description=param.description, required=param.is_required)
+                    for param in func.parameters
+                    if param.name
+                ],
+            )
+            for func in kernel.get_full_list_of_function_metadata()
+            if func.is_prompt
+        ]
+        logger.info(f"Prompts: {prompts}")
+        await asyncio.sleep(0.0)
+        return prompts
+
+    @server.get_prompt()
+    async def get_prompt(*args: Any, **kwargs: Any) -> types.GetPromptResult:
+        """Get a prompt from the kernel."""
+        prompt_name = args[0]
+        arguments = args[1]
+        logger.warning(f"Prompt Name: {prompt_name}, Arguments: {arguments}")
+        prompt = kernel.get_function_from_fully_qualified_function_name(prompt_name)
+        if prompt is None:
+            raise ValueError(f"Prompt {prompt_name} not found")
+        result = await prompt.invoke(kernel=kernel, **arguments)
+        if result:
+            logger.warning(f"Prompt Result: {result}")
+            cmc = result.value[0]
+            return types.GetPromptResult(
+                messages=[
+                    types.PromptMessage(role=cmc.role.value, content=types.TextContent(type="text", text=cmc.content))
+                ]
+            )
+        raise McpError(
+            error=types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message=f"Prompt {prompt_name} returned no result",
+            ),
+        )
+
+    @server.list_tools()
+    async def list_functions_as_tools() -> list[types.Tool]:
+        """List all tools in the kernel."""
+        tools = [
+            types.Tool(
+                name=func.fully_qualified_name,
+                description=func.description,
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        param.name: param.schema_data for param in func.parameters if param.name and param.schema_data
+                    },
+                    "required": [param.name for param in func.parameters if param.name and param.is_required],
+                },
+            )
+            for func in kernel.get_full_list_of_function_metadata()
+            if not func.is_prompt
+        ]
+        logger.info(f"Tools: {tools}")
+        await asyncio.sleep(0.0)
+        return tools
+
+    @server.call_tool()
+    async def call_function_as_tool(*args: Any, **kwargs: Any) -> list[types.TextContent]:
+        """Call a tool in the kernel."""
+        logger.warning(f"Arguments: {args}, Keyword Arguments: {kwargs}")
+        full_name = args[0]
+        invoke_args = args[1]
+        function = kernel.get_function_from_fully_qualified_function_name(full_name)
+        if function is None:
+            raise ValueError(f"Function {full_name} not found")
+        result = await function.invoke(kernel=kernel, **invoke_args)
+        if result:
+            return [types.TextContent(type="text", text=str(result.value))]
+        raise McpError(
+            error=types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message=f"Function {full_name} returned no result",
+            ),
+        )
+
+    return server
