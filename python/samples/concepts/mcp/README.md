@@ -37,3 +37,10 @@ pip install semantic-kernel[mcp]
 cd python/samples/concepts/mcp
 python mcp_as_plugin.py
 ```
+
+or:
+
+```bash
+cd python/samples/concepts/mcp
+python agent_with_mcp_plugin.py
+```
