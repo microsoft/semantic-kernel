@@ -29,6 +29,7 @@ from semantic_kernel.connectors.memory.pinecone import PineconeCollection
 from semantic_kernel.connectors.memory.postgres import PostgresCollection
 from semantic_kernel.connectors.memory.qdrant import QdrantCollection
 from semantic_kernel.connectors.memory.redis import RedisHashsetCollection, RedisJsonCollection
+from semantic_kernel.connectors.memory.sql_server import SqlServerCollection
 from semantic_kernel.connectors.memory.weaviate import WeaviateCollection
 from semantic_kernel.data import (
     VectorizableTextSearchMixin,
@@ -120,7 +121,7 @@ collection_name = "test"
 # Depending on the vector database, the index kind and distance function may need to be adjusted
 # since not all combinations are supported by all databases.
 # The values below might need to be changed for your collection to work.
-distance_function = DistanceFunction.EUCLIDEAN_SQUARED_DISTANCE
+distance_function = DistanceFunction.COSINE_DISTANCE
 index_kind = IndexKind.FLAT
 DataModel = get_data_model("array", index_kind, distance_function)
 
@@ -147,11 +148,14 @@ DataModel = get_data_model("array", index_kind, distance_function)
 #   The chroma collection is currently only available for in-memory versions
 #   Client-Server mode and Chroma Cloud are not yet supported.
 #   More info on Chroma here: https://docs.trychroma.com/docs/overview/introduction
+# - faiss: Faiss - in-memory with optimized indexes.
+# - pinecone: Pinecone
+# - sql_server: SQL Server, can connect to any SQL Server compatible database, like Azure SQL.
 # This is represented as a mapping from the collection name to a
 # function which returns the collection.
 # Using a function allows for lazy initialization of the collection,
 # so that settings for unused collections do not cause validation errors.
-collections: dict[str, Callable[[], VectorStoreRecordCollection[str, DataModel]]] = {
+collections: dict[str, Callable[[], VectorStoreRecordCollection]] = {
     "ai_search": lambda: AzureAISearchCollection[str, DataModel](
         data_model_type=DataModel,
     ),
@@ -203,6 +207,10 @@ collections: dict[str, Callable[[], VectorStoreRecordCollection[str, DataModel]]
     "pinecone": lambda: PineconeCollection[str, DataModel](
         collection_name=collection_name,
         data_model_type=DataModel,
+    ),
+    "sql_server": lambda: SqlServerCollection[str, DataModel](
+        data_model_type=DataModel,
+        collection_name=collection_name,
     ),
 }
 
