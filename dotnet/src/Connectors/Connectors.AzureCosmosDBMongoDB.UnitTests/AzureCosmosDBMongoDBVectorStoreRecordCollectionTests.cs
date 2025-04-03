@@ -489,6 +489,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             expectedPropertyName: "bson_hotel_name");
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -564,6 +565,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         Assert.Equal(RecordKey, result.HotelId);
         Assert.Equal("Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [MemberData(nameof(VectorizedSearchVectorTypeData))]

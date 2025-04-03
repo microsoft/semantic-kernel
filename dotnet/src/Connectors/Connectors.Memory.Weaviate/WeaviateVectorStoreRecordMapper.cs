@@ -8,7 +8,9 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject>
+#pragma warning restore CS0618
 {
     private readonly string _collectionName;
     private readonly VectorStoreRecordModel _model;

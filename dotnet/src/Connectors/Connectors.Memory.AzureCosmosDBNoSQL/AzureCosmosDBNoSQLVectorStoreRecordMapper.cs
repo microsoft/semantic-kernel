@@ -11,8 +11,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// Class for mapping between a json node stored in Azure CosmosDB NoSQL and the consumer data model.
 /// </summary>
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(VectorStoreRecordKeyPropertyModel keyProperty, JsonSerializerOptions? jsonSerializerOptions)
     : IVectorStoreRecordMapper<TRecord, JsonObject>
+#pragma warning restore CS0618
 {
     private readonly VectorStoreRecordKeyPropertyModel _keyProperty = keyProperty;
 

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
@@ -13,6 +14,7 @@ public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the MongoDB BSON object.
     /// </summary>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, BsonDocument>? BsonDocumentCustomMapper { get; init; } = null;
 
     /// <summary>

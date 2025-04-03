@@ -48,7 +48,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     private readonly MongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -597,6 +599,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         throw new VectorStoreOperationException("Retry logic failed.");
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
@@ -614,6 +617,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
     }
+#pragma warning restore CS0618
 
     private static Array VerifyVectorParam<TVector>(TVector vector)
     {

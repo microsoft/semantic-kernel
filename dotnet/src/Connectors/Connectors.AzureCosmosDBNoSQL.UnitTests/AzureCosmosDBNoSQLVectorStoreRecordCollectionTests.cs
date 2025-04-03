@@ -455,6 +455,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key3", results[2]);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -537,6 +538,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(RecordKey, result.HotelId);
         Assert.Equal("Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task VectorizedSearchReturnsValidRecordAsync()

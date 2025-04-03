@@ -51,7 +51,9 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -418,6 +420,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
     {
         if (this._options.JsonObjectCustomMapper is not null)
@@ -434,6 +437,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         return new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._model, s_jsonSerializerOptions);
     }
+#pragma warning restore CS0618
 
     private static void VerifyVectorParam<TVector>(TVector vector)
     {

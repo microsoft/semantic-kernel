@@ -236,6 +236,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 5, 6, 7, 8 }, actual[1].Vector!.Value.ToArray());
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task CanGetRecordWithCustomMapperAsync()
     {
@@ -284,6 +285,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                     It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
                 Times.Once);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData(true)]
@@ -375,6 +377,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             Times.Once);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task CanUpsertRecordWithCustomMapperAsync()
     {
@@ -414,6 +417,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x == model)),
                 Times.Once);
     }
+#pragma warning restore CS0618
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
@@ -511,6 +515,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -536,6 +541,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, HashEntriesCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>() });
     }
+#pragma warning restore CS0618
 
     private RedisHashSetVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {

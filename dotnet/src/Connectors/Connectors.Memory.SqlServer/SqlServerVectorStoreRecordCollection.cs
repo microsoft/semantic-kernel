@@ -26,7 +26,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordModel _model;
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -49,6 +51,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         this.CollectionName = name;
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._options = options is null
             ? s_defaultOptions
             : new()
@@ -59,6 +62,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             };
 
         this._mapper = this._options.Mapper ?? new RecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc/>

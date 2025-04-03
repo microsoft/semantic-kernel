@@ -13,8 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// A mapper class that handles the conversion between data models and storage models for Postgres vector store.
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
     : IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>
+#pragma warning restore CS0618
 {
     public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
     {

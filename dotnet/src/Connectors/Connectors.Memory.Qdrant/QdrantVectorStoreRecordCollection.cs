@@ -54,7 +54,9 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
@@ -91,7 +93,9 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         this._model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.PointStructCustomMapper ?? new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc />

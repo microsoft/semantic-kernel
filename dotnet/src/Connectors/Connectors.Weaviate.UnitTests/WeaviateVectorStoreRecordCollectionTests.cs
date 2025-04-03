@@ -349,6 +349,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal("Test Name 2", jsonObject2["properties"]?["hotelName"]?.GetValue<string>());
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -427,6 +428,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal(id, result.HotelId);
         Assert.Equal("Test Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData(true, "http://test-endpoint/schema", "Bearer fake-key")]

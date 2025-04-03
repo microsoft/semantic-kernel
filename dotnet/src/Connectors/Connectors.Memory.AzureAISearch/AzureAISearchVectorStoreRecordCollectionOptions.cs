@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Azure.Search.Documents.Indexes;
@@ -18,6 +19,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, the default mapper that is provided by the Azure AI Search client SDK will be used.
     /// </remarks>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 
     /// <summary>

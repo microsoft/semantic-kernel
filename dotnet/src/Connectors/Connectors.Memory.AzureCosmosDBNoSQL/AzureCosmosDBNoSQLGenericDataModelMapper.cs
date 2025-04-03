@@ -12,8 +12,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure CosmosDB NoSQL.
 /// </summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class AzureCosmosDBNoSQLGenericDataModelMapper(VectorStoreRecordModel model, JsonSerializerOptions jsonSerializerOptions)
     : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, JsonObject>
+#pragma warning restore CS0618
 {
     /// <summary>A default <see cref="JsonSerializerOptions"/> for serialization/deserialization of vector properties.</summary>
     private static readonly JsonSerializerOptions s_vectorJsonSerializerOptions = new()
