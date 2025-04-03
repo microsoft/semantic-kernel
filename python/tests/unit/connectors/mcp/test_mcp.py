@@ -42,13 +42,14 @@ async def test_mcp_plugin_session_not_initialize():
     # Test if Client can insert it's own Session
     mock_session = AsyncMock(spec=ClientSession)
     mock_session._request_id = 0
+    mock_session.initialize = AsyncMock()
     async with MCPSsePlugin(name="test", session=mock_session, url="http://localhost:8080/sse") as plugin:
         assert plugin.session is mock_session
         assert mock_session.initialize.called_once
 
 
 async def test_mcp_plugin_session_initialized():
-    # Test if Client can insert it's own Session
+    # Test if Client can insert it's own initialized Session
     mock_session = AsyncMock(spec=ClientSession)
     mock_session._request_id = 1
     mock_session.initialize = AsyncMock()
