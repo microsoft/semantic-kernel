@@ -402,11 +402,10 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         await stack(invocation_context)
 
         frc = FunctionResultContent.from_function_call_content_and_result(
-            function_call_content=function_call, result=invocation_context.function_result
+            function_call_content=function_call,
+            result=invocation_context.function_result,
         )
-
         is_streaming = any(isinstance(message, StreamingChatMessageContent) for message in chat_history.messages)
-
         message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
 
         chat_history.add_message(message=message)
