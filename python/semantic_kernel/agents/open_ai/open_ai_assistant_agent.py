@@ -46,7 +46,6 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -68,7 +67,6 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@release_candidate
 class AssistantAgentThread(AgentThread):
     """An OpenAI Assistant Agent Thread class."""
 
@@ -160,7 +158,6 @@ class AssistantAgentThread(AgentThread):
             yield message
 
 
-@release_candidate
 class OpenAIAssistantAgent(Agent):
     """OpenAI Assistant Agent class.
 
