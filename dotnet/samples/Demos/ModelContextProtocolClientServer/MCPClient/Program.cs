@@ -21,10 +21,25 @@ internal sealed class Program
     public static async Task Main(string[] args)
     {
         // Use the MCP tools with the Semantic Kernel
-        await UseMCPToolsWithSKAsync();
+        //await UseMCPToolsWithSKAsync();
 
         // Use the MCP tools and MCP prompt with the Semantic Kernel
-        await UseMCPToolsAndPromptWithSKAsync();
+        //await UseMCPToolsAndPromptWithSKAsync();
+
+        await ExperimentWithMCPResourceAsync();
+    }
+
+    private static async Task ExperimentWithMCPResourceAsync()
+    {
+        Console.WriteLine($"Running the {nameof(ExperimentWithMCPResourceAsync)} sample.");
+
+        // Create an MCP client
+        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+
+        IList<Resource> resources = await mcpClient.ListResourcesAsync();
+        DisplayResources(resources);
+
+        ReadResourceResult resourceResult = await mcpClient.ReadResourceAsync("doc://pdf/1.pdf");
     }
 
     /// <summary>
@@ -223,6 +238,16 @@ internal sealed class Program
         foreach (var prompt in prompts)
         {
             Console.WriteLine($"- {prompt.Name}: {prompt.Description}");
+        }
+        Console.WriteLine();
+    }
+
+    private static void DisplayResources(IList<Resource> resources)
+    {
+        Console.WriteLine("Available MCP resources:");
+        foreach (var resource in resources)
+        {
+            Console.WriteLine($"- {resource.Name}: {resource.Description}");
         }
         Console.WriteLine();
     }
