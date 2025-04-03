@@ -137,7 +137,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [testKey1, testKey2],
             new()
             {
@@ -201,7 +201,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [testKey1, testKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -255,7 +255,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             [record1, record2],
             cancellationToken: this._testCancellationToken).ToListAsync();
 

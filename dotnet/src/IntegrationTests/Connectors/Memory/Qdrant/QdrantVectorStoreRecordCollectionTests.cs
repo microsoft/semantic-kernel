@@ -289,7 +289,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetBatchAsync([11, 15, 12], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync([11, 15, 12], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -348,7 +348,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         // Act.
         // Also delete a non-existing key to test that the operation does not fail for these.
-        await sut.DeleteBatchAsync([20, 21]);
+        await sut.DeleteAsync([20, 21]);
 
         // Assert.
         Assert.Null(await sut.GetAsync(20));

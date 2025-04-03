@@ -226,7 +226,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupRetrieveMock(testRecordKeys.Select(x => CreateRetrievedPoint(hasNamedVectors, x)).ToList());
 
         // Act.
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             testRecordKeys,
             new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
@@ -369,7 +369,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupDeleteMocks();
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [UlongTestRecordKey1, UlongTestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -398,7 +398,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupDeleteMocks();
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [s_guidTestRecordKey1, s_guidTestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -454,7 +454,7 @@ public class QdrantVectorStoreRecordCollectionTests
         var models = testRecordKeys.Select(x => CreateModel(x, true));
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             models,
             cancellationToken: this._testCancellationToken).ToListAsync();
 
