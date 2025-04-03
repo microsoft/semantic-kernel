@@ -78,15 +78,19 @@ async def main():
         print()
 
     """
-    You should see output similar to the following:
+    Sample Output:
 
-    # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
-        light is scattered more than other colors because it travels in shorter, smaller waves.
-    # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
-        (about 186,282 miles per second).
-     """
+    # AuthorRole.USER: 'Hello'
+    # Host: Hi there! How can I assist you with the menu today?
+    # AuthorRole.USER: 'What is the special soup?'
+    # Host: The special soup is Clam Chowder.
+    # AuthorRole.USER: 'What is the special drink?'
+    # Host: The special drink is Chai Tea.
+    # AuthorRole.USER: 'How much is that?'
+    # Host: The Chai Tea is $9.99. Would you like to know more about the menu?
+    # AuthorRole.USER: 'Thank you'
+    # Host: You're welcome! If you have any questions about the menu or need assistance, feel free to ask.
+    """
 
 
 if __name__ == "__main__":
