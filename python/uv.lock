@@ -5381,7 +5381,7 @@ requires-dist = [
     { name = "pyodbc", marker = "extra == 'sql'", specifier = ">=5.2" },
     { name = "qdrant-client", marker = "extra == 'qdrant'", specifier = "~=1.9" },
     { name = "redis", extras = ["hiredis"], marker = "extra == 'redis'", specifier = "~=5.0" },
-    { name = "redisvl", marker = "extra == 'redis'", specifier = ">=0.3.6" },
+    { name = "redisvl", marker = "extra == 'redis'", specifier = "~=0.4" },
     { name = "scipy", specifier = ">=1.15.1" },
     { name = "sentence-transformers", marker = "extra == 'hugging-face'", specifier = ">=2.2,<5.0" },
     { name = "torch", marker = "extra == 'hugging-face'", specifier = "==2.6.0" },

@@ -117,7 +117,7 @@ qdrant = [
 redis = [
     "redis[hiredis] ~= 5.0",
     "types-redis ~= 4.6.0.20240425",
-    "redisvl >= 0.3.6",
+    "redisvl ~= 0.4"
 ]
 usearch = [
     "usearch ~= 2.16",

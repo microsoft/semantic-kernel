@@ -45,7 +45,7 @@ async def test_mcp_plugin_session_not_initialize():
     mock_session.initialize = AsyncMock()
     async with MCPSsePlugin(name="test", session=mock_session, url="http://localhost:8080/sse") as plugin:
         assert plugin.session is mock_session
-        assert mock_session.initialize.called_once
+        assert mock_session.initialize.called
 
 
 async def test_mcp_plugin_session_initialized():
