@@ -11,6 +11,7 @@ from mcp import McpError
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
+from mcp.client.websocket import websocket_client
 from mcp.types import CallToolResult, EmbeddedResource, Prompt, PromptMessage, TextResourceContents, Tool
 from mcp.types import (
     ImageContent as MCPImageContent,
@@ -348,3 +349,44 @@ class MCPSsePlugin(MCPPluginBase):
         if self._client_kwargs:
             args.update(self._client_kwargs)
         return sse_client(**args)
+
+
+class MCPWebsocketPlugin(MCPPluginBase):
+    """MCP websocket server configuration."""
+
+    def __init__(
+        self,
+        name: str,
+        url: str,
+        session: ClientSession | None = None,
+        description: str | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the MCP websocket plugin.
+
+                The arguments are used to create a websocket client.
+        see mcp.client.websocket.websocket_client for more details.
+
+        Any extra arguments passed to the constructor will be passed to the
+        websocket client constructor.
+
+        Args:
+            name: The name of the plugin.
+            url: The URL of the MCP server.
+            session: The session to use for the MCP connection.
+            description: The description of the plugin.
+            kwargs: Any extra arguments to pass to the websocket client.
+
+        """
+        super().__init__(name, description, session)
+        self.url = url
+        self._client_kwargs = kwargs
+
+    def get_mcp_client(self) -> _AsyncGeneratorContextManager[Any, None]:
+        """Get an MCP websocket client."""
+        args: dict[str, Any] = {
+            "url": self.url,
+        }
+        if self._client_kwargs:
+            args.update(self._client_kwargs)
+        return websocket_client(**args)
