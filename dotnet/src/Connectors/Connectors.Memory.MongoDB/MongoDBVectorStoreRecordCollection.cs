@@ -248,16 +248,34 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     {
         Verify.NotNull(records);
 
-        var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        const string OperationName = "BulkWrite.ReplaceOne";
 
-        foreach (var result in results)
+        var replacements = records.Select(r => CreateReplaceOne(r, OperationName));
+
+        await this.RunOperationAsync(OperationName, async () =>
         {
-            if (result is not null)
-            {
-                yield return result;
-            }
+            using var session = await this._mongoDatabase.Client.StartSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await this._mongoCollection.BulkWriteAsync(session, replacements.Select(r => r.Model), cancellationToken: cancellationToken).ConfigureAwait(false);
+        }).ConfigureAwait(false);
+
+        foreach (var result in replacements)
+        {
+            yield return result.Key;
         }
+    }
+
+    private (ReplaceOneModel<BsonDocument> Model, string Key) CreateReplaceOne(TRecord record, string operationName)
+    {
+        var storageModel = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            operationName,
+            () => this._mapper.MapFromDataToStorageModel(record));
+
+        var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
+        var filter = this.GetFilterById(key);
+
+        return (new ReplaceOneModel<BsonDocument>(filter, storageModel) { IsUpsert = true }, key);
     }
 
     /// <inheritdoc />
@@ -339,7 +357,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 #pragma warning restore CS0618
 
         // Constructing a query to fetch "skip + top" total items
-        // to perform skip logic locally, since skip option is not part of API. 
+        // to perform skip logic locally, since skip option is not part of API.
         var itemsAmount = searchOptions.Skip + searchOptions.Top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
@@ -378,7 +396,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     private async Task CreateIndexesAsync(string collectionName, CancellationToken cancellationToken)
     {
         var indexCursor = await this._mongoCollection.Indexes.ListAsync(cancellationToken).ConfigureAwait(false);
-        var indexes = indexCursor.ToList(cancellationToken).Select(index => index["name"].ToString()) ?? [];
+        var indexes = indexCursor.ToList(cancellationToken).Select(index => index["name"].ToString()).ToList() ?? [];
 
         var indexArray = new BsonArray();
 

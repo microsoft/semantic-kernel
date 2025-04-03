@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Xunit;
 
@@ -38,14 +37,17 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateCollectionAsync()
     {
+        var newCollection = Guid.NewGuid().ToString();
+
         // Arrange
-        var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotel>(fixture.MongoDatabase, newCollection);
 
         // Act
         await sut.CreateCollectionAsync();
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
+        await sut.DeleteCollectionAsync();
     }
 
     [Theory(Skip = SkipReason)]
@@ -66,7 +68,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
 
-        var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotel>(fixture.MongoDatabase, collectionName);
+        var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotel>(fixture.MongoDatabase, collectionName, options);
 
         var record = this.CreateTestHotel(HotelId);
 
@@ -202,6 +204,38 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         Assert.NotNull(getResult);
         Assert.Equal("Updated name", getResult.HotelName);
         Assert.Equal(10, getResult.HotelRating);
+    }
+
+    [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertRecordBatchAsync()
+    {
+        // Arrange
+        const string HotelId = "55555555-5555-5555-5555-5555555555";
+        var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        var records = Enumerable.Range(0, 10).Select(i => CreateTestHotel(HotelId + i.ToString("x2"))).ToList();
+        await foreach (var upsertKey in sut.UpsertBatchAsync(records))
+        {
+            var getResult = await sut.GetAsync(upsertKey);
+            Assert.NotNull(getResult);
+            Assert.StartsWith(HotelId, getResult.HotelId);
+        }
+
+        // Act
+        foreach (var record in records)
+        {
+            record.HotelName = "Updated name";
+            record.HotelRating = 10;
+        }
+
+        // Assert
+        await foreach (var upsertKey in sut.UpsertBatchAsync(records))
+        {
+            var getResult = await sut.GetAsync(upsertKey);
+            Assert.NotNull(getResult);
+            Assert.Equal("Updated name", getResult.HotelName);
+            Assert.Equal(10, getResult.HotelRating);
+        }
     }
 
     [Fact(Skip = SkipReason)]
