@@ -12,10 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\dotnetOnlyWorkflow1.yaml" />
     <None Remove="Resources\workflow1.yaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources\dotnetOnlyWorkflow1.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\workflow1.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

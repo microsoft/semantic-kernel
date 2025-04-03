@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using YamlDotNet.Serialization;
 
-namespace WorkflowEngine.Models;
+namespace Microsoft.SemanticKernel;
 
 public class WorkflowWrapper
 {

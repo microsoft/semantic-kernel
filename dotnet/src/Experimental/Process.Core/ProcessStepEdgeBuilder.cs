@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process edge.
 /// </summary>
-public sealed class ProcessStepEdgeBuilder
+public class ProcessStepEdgeBuilder
 {
     internal ProcessFunctionTargetBuilder? Target { get; set; }
 

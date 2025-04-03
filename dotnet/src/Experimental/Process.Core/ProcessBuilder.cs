@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
@@ -22,6 +23,8 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
+
+    private readonly List<EventListener> _eventListeners = [];
 
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
@@ -156,9 +159,23 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <param name="name">The name of the step. This parameter is optional.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
+    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null, string? id = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name);
+        ProcessStepBuilder<TStep> stepBuilder = new(name, id: id);
+
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process.
+    /// </summary>
+    /// <param name="stepType">The step Type.<param>
+    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
+    public ProcessStepBuilder AddStepFromType(Type stepType, string? name = null, IReadOnlyList<string>? aliases = null, string? id = null)
+    {
+        ProcessStepBuilderTyped stepBuilder = new(stepType, name, id);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -260,21 +277,20 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
-    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
-    /// step inside the process for a given external event.
+    /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
     /// </summary>
     /// <param name="eventId">The Id of the external event.</param>
-    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
     public ProcessEdgeBuilder OnInputEvent(string eventId)
     {
         return new ProcessEdgeBuilder(this, eventId);
     }
 
     /// <summary>
-    /// Provides an instance of <see cref="ProcessStepEdgeBuilder"/> for defining an edge to a
+    /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an edge to a
     /// step that responds to an unhandled process error.
     /// </summary>
-    /// <returns>An instance of <see cref="ProcessStepEdgeBuilder"/></returns>
+    /// <returns>An instance of <see cref="ProcessEdgeBuilder"/></returns>
     /// <remarks>
     /// To target a specific error source, use the <see cref="ProcessStepBuilder.OnFunctionError"/> on the step.
     /// </remarks>
@@ -332,5 +348,99 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
     }
 
+    public static async Task<KernelProcess?> ReadFromStringAsync(string processString)
+    {
+        Verify.NotNullOrWhiteSpace(processString);
+
+        try
+        {
+            var workflow = WorkflowSerializer.DeserializeFromYaml(processString);
+            var builder = new WorkflowBuilder();
+            var process = await builder.BuildProcessAsync(workflow).ConfigureAwait(false);
+
+            return process;
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException("Failed to deserialize the process string.", ex);
+        }
+    }
+
+    public ListenForBuilder ListenFor()
+    {
+        return new ListenForBuilder();
+    }
     #endregion
+}
+
+public class ListenForBuilder
+{
+    public ListenForTargetBuilder Message(string type, ProcessStepBuilder from)
+    {
+        Verify.NotNullOrWhiteSpace(type, nameof(type));
+        Verify.NotNull(from, nameof(from));
+
+        return new ListenForTargetBuilder([new() { MessageType = type, Source = from }]);
+    }
+
+    public ListenForTargetBuilder AllOf(List<MessageSource> messageSources)
+    {
+        Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
+        return new ListenForTargetBuilder(messageSources);
+    }
+}
+
+public class ListenForTargetBuilder
+{
+    private readonly List<MessageSource> _messageSources = new();
+
+    public ListenForTargetBuilder(List<MessageSource> messageSources)
+    {
+        Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
+        this._messageSources = messageSources;
+    }
+
+    public ListenForTargetBuilder SendTo(ProcessStepBuilder destination)
+    {
+        Verify.NotNull(destination, nameof(destination));
+
+        foreach (var messageSource in this._messageSources)
+        {
+            if (messageSource.Source == null)
+            {
+                throw new InvalidOperationException("Source step cannot be null.");
+            }
+
+            // Create a new event listener for the source messages and the destination step
+            var eventListener = new ProcessEventListenerBuilder(this._messageSources, destination.Id);
+
+            // Link all the source steps to the event listener
+            messageSource.Source.OnEvent(messageSource.MessageType)
+                .SendEventTo(new ProcessFunctionTargetBuilder(eventListener));
+        }
+
+        return new ListenForTargetBuilder(this._messageSources);
+    }
+}
+
+public class MessageSource
+{
+    public string MessageType { get; set; }
+
+    public ProcessStepBuilder Source { get; set; }
+}
+
+// TODO: Move to Core
+public class EventListener
+{
+    public EventListener(string? id = null)
+    {
+        this.Id = id ?? Guid.NewGuid().ToString();
+    }
+
+    public string Id { get; }
+
+    public List<MessageSource> MessageSources = [];
+
+    public string DestinationId = "";
 }

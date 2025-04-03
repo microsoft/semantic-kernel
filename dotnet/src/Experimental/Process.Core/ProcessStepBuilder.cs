@@ -214,13 +214,14 @@ public abstract class ProcessStepBuilder
     /// Initializes a new instance of the <see cref="ProcessStepBuilder"/> class.
     /// </summary>
     /// <param name="name">The name of the step.</param>
-    protected ProcessStepBuilder(string name)
+    /// <param name="id">Optional: The Id of the step.</param>
+    protected ProcessStepBuilder(string name, string? id = null)
     {
         this.Name ??= name;
         Verify.NotNullOrWhiteSpace(name);
 
         this.FunctionsDict = [];
-        this.Id = Guid.NewGuid().ToString("n");
+        this.Id = id ?? Guid.NewGuid().ToString("n");
         this._eventNamespace = $"{this.Name}_{this.Id}";
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
     }
@@ -229,21 +230,28 @@ public abstract class ProcessStepBuilder
 /// <summary>
 /// Provides functionality for incrementally defining a process step.
 /// </summary>
-public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : KernelProcessStep
+public class ProcessStepBuilderTyped : ProcessStepBuilder
 {
     /// <summary>
     /// The initial state of the step. This may be null if the step does not have any state.
     /// </summary>
     private object? _initialState;
 
+    private readonly Type _stepType;
+
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
+    /// <param name="stepType">The <see cref="Type"/> of the step.</param>
     /// <param name="name">Optional: The name of the step.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    internal ProcessStepBuilder(string? name = null, object? initialState = default)
-        : base(name ?? typeof(TStep).Name)
+    /// <param name="id">Optional: The Id of the step.</param>
+    internal ProcessStepBuilderTyped(Type stepType, string? name = null, object? initialState = default, string? id = null)
+        : base(name ?? stepType.Name, id)
     {
+        Verify.NotNull(stepType);
+
+        this._stepType = stepType;
         this.FunctionsDict = this.GetFunctionMetadataMap();
         this._initialState = initialState;
     }
@@ -255,9 +263,9 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : Kernel
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessStepState? stateObject = null;
-        KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(typeof(TStep));
+        KernelProcessStepMetadataAttribute stepMetadataAttributes = KernelProcessStepMetadataFactory.ExtractProcessStepMetadataFromType(this._stepType);
 
-        if (typeof(TStep).TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
+        if (this._stepType.TryGetSubtypeOfStatefulStep(out Type? genericStepType) && genericStepType is not null)
         {
             // The step is a subclass of KernelProcessStep<>, so we need to extract the generic type argument
             // and create an instance of the corresponding KernelProcessStepState<>.
@@ -301,14 +309,31 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilder where TStep : Kernel
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Then build the step with the edges and state.
-        var builtStep = new KernelProcessStepInfo(typeof(TStep), stateObject, builtEdges);
+        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges);
         return builtStep;
     }
 
     /// <inheritdoc/>
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
-        var metadata = KernelFunctionMetadataFactory.CreateFromType(typeof(TStep));
+        var metadata = KernelFunctionMetadataFactory.CreateFromType(this._stepType);
         return metadata.ToDictionary(m => m.Name, m => m);
+    }
+}
+
+/// <summary>
+/// Provides functionality for incrementally defining a process step.
+/// </summary>
+public class ProcessStepBuilder<TStep> : ProcessStepBuilderTyped where TStep : KernelProcessStep
+{
+    /// <summary>
+    /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
+    /// </summary>
+    /// <param name="name">Optional: The name of the step.</param>
+    /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
+    /// <param name="id">Optional: The Id of the step.</param>
+    internal ProcessStepBuilder(string? name = null, object? initialState = default, string? id = null)
+        : base(typeof(TStep), name, initialState, id)
+    {
     }
 }

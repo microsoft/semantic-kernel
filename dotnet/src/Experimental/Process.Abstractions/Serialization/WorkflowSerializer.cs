@@ -6,9 +6,8 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
-using WorkflowEngine.Models;
 
-namespace WorkflowEngine.Serialization;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Helper class for serializing and deserializing workflows
@@ -22,13 +21,20 @@ public static class WorkflowSerializer
     /// <returns>The deserialized workflow</returns>
     public static Workflow DeserializeFromYaml(string yaml)
     {
-        var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(UnderscoredNamingConvention.Instance)
-            .IgnoreUnmatchedProperties()
-            .Build();
+        try
+        {
+            var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
 
-        var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
-        return wrapper?.Workflow;
+            var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
+            return wrapper?.Workflow;
+        }
+        catch (System.Exception ex)
+        {
+            throw;
+        }
     }
 
     /// <summary>
