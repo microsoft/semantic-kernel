@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol;
 using ModelContextProtocol.Client;
@@ -70,3 +71,23 @@ OpenAIPromptExecutionSettings executionSettings = new()
 var prompt = "Summarize the last four commits to the microsoft/semantic-kernel repository?";
 var result = await kernel.InvokePromptAsync(prompt, new(executionSettings)).ConfigureAwait(false);
 Console.WriteLine($"\n\n{prompt}\n{result}");
+
+// Define the agent
+ChatCompletionAgent agent =
+new()
+{
+    Instructions = "Answer questions about GitGub repositories.",
+    Name = "GitHubAgent",
+    Kernel = kernel,
+    Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+};
+
+/// Create the chat history thread to capture the agent interaction.
+AgentThread thread = new ChatHistoryAgentThread();
+
+// Respond to user input, invoking functions where appropriate.
+Console.WriteLine($"\n\nResponse from GitHubAgent:");
+await foreach (ChatMessageContent response in agent.InvokeAsync("Summarize the last four commits to the microsoft/semantic-kernel repository?", thread))
+{
+    Console.WriteLine(response.Content);
+}
