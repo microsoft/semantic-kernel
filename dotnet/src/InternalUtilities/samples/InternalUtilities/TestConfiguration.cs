@@ -35,6 +35,7 @@ public sealed class TestConfiguration
     public static PineconeConfig Pinecone => LoadSection<PineconeConfig>();
     public static BingConfig Bing => LoadSection<BingConfig>();
     public static GoogleConfig Google => LoadSection<GoogleConfig>();
+    public static TavilyConfig Tavily => LoadSection<TavilyConfig>();
     public static GithubConfig Github => LoadSection<GithubConfig>();
     public static PostgresConfig Postgres => LoadSection<PostgresConfig>();
     public static RedisConfig Redis => LoadSection<RedisConfig>();
@@ -176,6 +177,12 @@ public sealed class TestConfiguration
         public string SearchEngineId { get; set; }
     }
 
+    public class TavilyConfig
+    {
+        public string Endpoint { get; set; } = "https://api.tavily.com/search";
+        public string ApiKey { get; set; }
+    }
+
     public class GithubConfig
     {
         public string PAT { get; set; }
@@ -244,6 +251,8 @@ public sealed class TestConfiguration
         public string EmbeddingModelId { get; set; }
         public string Location { get; set; }
         public string ProjectId { get; set; }
+        public string? ClientId { get; set; }
+        public string? ClientSecret { get; set; }
         public GeminiConfig Gemini { get; set; }
 
         public class GeminiConfig

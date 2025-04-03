@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using MongoDBIntegrationTests.Support;
+using CosmosMongoDBIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
 
-namespace MongoDBIntegrationTests.Filter;
+namespace CosmosMongoDBIntegrationTests.Filter;
 
 public class CosmosMongoBasicFilterTests(CosmosMongoBasicFilterTests.Fixture fixture)
     : BasicFilterTests<string>(fixture), IClassFixture<CosmosMongoBasicFilterTests.Fixture>

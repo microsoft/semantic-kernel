@@ -81,7 +81,7 @@ public class BedrockAgentChannel : AgentChannel<BedrockAgent>
             InputText = this._history.Last().Content,
             SessionState = this.ParseHistoryToSessionState(),
         };
-        await foreach (var message in agent.InvokeAsync(invokeAgentRequest, null, cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent message in agent.InvokeAsync(invokeAgentRequest, null, null, cancellationToken).ConfigureAwait(false))
         {
             if (message.Content is not null)
             {
@@ -111,7 +111,7 @@ public class BedrockAgentChannel : AgentChannel<BedrockAgent>
             InputText = this._history.Last().Content,
             SessionState = this.ParseHistoryToSessionState(),
         };
-        await foreach (var message in agent.InvokeStreamingAsync(invokeAgentRequest, null, cancellationToken).ConfigureAwait(false))
+        await foreach (StreamingChatMessageContent message in agent.InvokeStreamingAsync(invokeAgentRequest, null, null, cancellationToken).ConfigureAwait(false))
         {
             if (message.Content is not null)
             {

@@ -25,16 +25,16 @@ classifiers = [
 dependencies = [
     "aiohttp ~= 3.8",
     "cloudevents ~=1.0",
-    "pydantic >=2.0,<2.11,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3",
+    "pydantic >=2.0,!=2.10.0,!=2.10.1,!=2.10.2,!=2.10.3,<2.12",
     "pydantic-settings ~= 2.0",
     "defusedxml ~= 0.7",
     # azure identity
-    "azure-identity ~= 1.13",
+    "azure-identity >= 1.13",
     # embeddings
     "numpy >= 1.25.0; python_version < '3.12'",
     "numpy >= 1.26.0; python_version >= '3.12'",
     # openai connector
-    "openai ~= 1.61",
+    "openai >= 1.67",
     # openapi and swagger
     "openapi_core >= 0.18,<0.20",
     "websockets >= 13, < 16",
@@ -62,14 +62,13 @@ azure = [
     "azure-ai-projects >= 1.0.0b7",
     "azure-core-tracing-opentelemetry >= 1.0.0b11",
     "azure-search-documents >= 11.6.0b4",
-    "azure-identity ~= 1.13",
     "azure-cosmos ~= 4.7"
 ]
 chroma = [
     "chromadb >= 0.5,< 0.7"
 ]
 google = [
-    "google-cloud-aiplatform == 1.83.0",
+    "google-cloud-aiplatform == 1.86.0",
     "google-generativeai ~= 0.8"
 ]
 faiss = [
@@ -77,7 +76,7 @@ faiss = [
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
-    "sentence-transformers >= 2.2,< 4.0",
+    "sentence-transformers >= 2.2,< 5.0",
     "torch == 2.6.0"
 ]
 mongo = [
@@ -138,6 +137,9 @@ dapr = [
 realtime = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
+]
+sql = [
+    "pyodbc >= 5.2"
 ]
 
 [tool.uv]

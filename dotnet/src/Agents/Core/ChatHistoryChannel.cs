@@ -14,7 +14,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents an <see cref="AgentChannel"/> specialization that acts upon a <see cref="ChatHistoryKernelAgent"/>.
+/// Represents an <see cref="AgentChannel"/> specialization that acts upon a <see cref="ChatHistoryAgent"/>.
 /// </summary>
 [Experimental("SKEXP0110")]
 internal sealed class ChatHistoryChannel : AgentChannel
@@ -35,7 +35,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
         Agent agent,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (agent is not ChatHistoryKernelAgent historyAgent)
+        if (agent is not ChatHistoryAgent historyAgent)
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
@@ -51,7 +51,9 @@ internal sealed class ChatHistoryChannel : AgentChannel
         Queue<ChatMessageContent> messageQueue = [];
 
         ChatMessageContent? yieldMessage = null;
+#pragma warning disable CS0618 // Type or member is obsolete
         await foreach (ChatMessageContent responseMessage in historyAgent.InvokeAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             // Capture all messages that have been included in the mutated the history.
             for (int messageIndex = messageCount; messageIndex < this._history.Count; messageIndex++)
@@ -93,7 +95,7 @@ internal sealed class ChatHistoryChannel : AgentChannel
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Agent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (agent is not ChatHistoryKernelAgent historyAgent)
+        if (agent is not ChatHistoryAgent historyAgent)
         {
             throw new KernelException($"Invalid channel binding for agent: {agent.Id} ({agent.GetType().FullName})");
         }
@@ -103,7 +105,9 @@ internal sealed class ChatHistoryChannel : AgentChannel
 
         int messageCount = this._history.Count;
 
+#pragma warning disable CS0618 // Type or member is obsolete
         await foreach (StreamingChatMessageContent streamingMessage in historyAgent.InvokeStreamingAsync(this._history, null, null, cancellationToken).ConfigureAwait(false))
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             yield return streamingMessage;
         }

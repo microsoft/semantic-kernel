@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 """
@@ -39,18 +39,20 @@ async def main():
     # Note: We still need to create the kernel function action group on the service side.
     await bedrock_agent.create_kernel_function_action_group()
 
-    session_id = BedrockAgent.create_session_id()
+    thread: BedrockAgentThread = None
 
     try:
         # Invoke the agent
         async for response in bedrock_agent.invoke(
-            session_id=session_id,
-            input_text="What is the weather in Seattle?",
+            messages="What is the weather in Seattle?",
+            thread=thread,
         ):
             print(f"Response:\n{response}")
+            thread = response.thread
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()
+        await thread.delete() if thread else None
 
     # Sample output (using anthropic.claude-3-haiku-20240307-v1:0):
     # Response:

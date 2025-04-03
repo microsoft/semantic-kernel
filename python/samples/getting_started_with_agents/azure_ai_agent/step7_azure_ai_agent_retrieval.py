@@ -4,7 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentThread
 
 """
 The following sample demonstrates how to use an already existing
@@ -25,11 +25,11 @@ async def main() -> None:
         DefaultAzureCredential() as creds,
         AzureAIAgent.create_client(credential=creds) as client,
     ):
-        # 1. Retrieve the agent definition based on the `assistant_id`
-        # Replace the "your-assistant-id" with the actual assistant ID
+        # 1. Retrieve the agent definition based on the `agent_id`
+        # Replace the "your-agent-id" with the actual agent ID
         # you want to use.
         agent_definition = await client.agents.get_agent(
-            assistant_id="your-assistant-id",
+            agent_id="your-agent-id",
         )
 
         # 2. Create a Semantic Kernel agent for the Azure AI agent
@@ -38,26 +38,26 @@ async def main() -> None:
             definition=agent_definition,
         )
 
-        # 3. Create a new thread on the Azure AI agent service
-        thread = await client.agents.create_thread()
+        # 3. Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread: AzureAIAgentThread = None
 
         try:
             for user_input in USER_INPUTS:
-                # 4. Add the user input as a chat message
-                await agent.add_chat_message(thread_id=thread.id, message=user_input)
                 print(f"# User: '{user_input}'")
-                # 5. Invoke the agent for the specified thread for response
-                response = await agent.get_response(thread_id=thread.id)
+                # 4. Invoke the agent for the specified thread for response
+                response = await agent.get_response(messages=user_input, thread=thread)
                 print(f"# {response.name}: {response}")
         finally:
-            # 6. Cleanup: Delete the thread and agent
-            await client.agents.delete_thread(thread.id)
-            # Do not clean up the assistant so it can be used again
+            # 5. Cleanup: Delete the thread and agent
+            await thread.delete() if thread else None
+            # Do not clean up the agent so it can be used again
 
         """
         Sample Output:
         # User: 'Why is the sky blue?'
-        # Agent: The sky appears blue because molecules in the Earth's atmosphere scatter sunlight, 
+        # Agent: The sky appears blue because molecules in the Earth's atmosphere scatter sunlight,
         and blue light is scattered more than other colors due to its shorter wavelength.
         """
 

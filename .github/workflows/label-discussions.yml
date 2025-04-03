@@ -1,0 +1,107 @@
+name: Label Discussions
+
+on:
+  discussion:
+    types:
+      - created
+
+jobs:
+  label_discussions:
+    runs-on: ubuntu-latest
+    permissions:
+      discussions: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Always add "triage" label
+        if: >
+          github.event.discussion.node_id != '' &&
+          (github.event.discussion.category.name == 'General' ||
+           github.event.discussion.category.name == 'Ideas' ||
+           github.event.discussion.category.name == 'Q&A')
+        uses: octokit/graphql-action@v2.x
+        with:
+          query: |
+            mutation($labelableId: ID!) {
+              addLabelsToLabelable(
+                input: {
+                  labelableId: $labelableId
+                  labelIds: ["LA_kwDOJDJ_Yc8AAAABU2klmQ"]
+                }
+              ) {
+                clientMutationId
+              }
+            }
+          variables: |
+            {
+              "labelableId": "${{ github.event.discussion.node_id }}"
+            }
+
+      - name: Conditionally add "python" label
+        if: >
+          github.event.discussion.node_id != '' &&
+          (github.event.discussion.category.name == 'General' ||
+           github.event.discussion.category.name == 'Ideas' ||
+           github.event.discussion.category.name == 'Q&A') &&
+          (contains(github.event.discussion.body, 'python') ||
+           contains(github.event.discussion.body, 'Python') ||
+           contains(github.event.discussion.title, 'python') ||
+           contains(github.event.discussion.title, 'Python'))
+        uses: octokit/graphql-action@v2.x
+        with:
+          query: |
+            mutation($labelableId: ID!) {
+              addLabelsToLabelable(
+                input: {
+                  labelableId: $labelableId
+                  labelIds: ["LA_kwDOJDJ_Yc8AAAABO0f2Lg"]
+                }
+              ) {
+                clientMutationId
+              }
+            }
+          variables: |
+            {
+              "labelableId": "${{ github.event.discussion.node_id }}"
+            }
+
+      - name: Conditionally add ".NET" label
+        if: >
+          github.event.discussion.node_id != '' &&
+          (github.event.discussion.category.name == 'General' ||
+           github.event.discussion.category.name == 'Ideas' ||
+           github.event.discussion.category.name == 'Q&A') &&
+          (contains(github.event.discussion.body, '.net') ||
+           contains(github.event.discussion.body, '.NET') ||
+           contains(github.event.discussion.title, '.net') ||
+           contains(github.event.discussion.title, '.NET') ||
+           contains(github.event.discussion.body, 'dotnet') ||
+           contains(github.event.discussion.body, 'DotNet') ||
+           contains(github.event.discussion.title, 'dotnet') ||
+           contains(github.event.discussion.title, 'DotNet') ||
+           contains(github.event.discussion.body, 'c#') ||
+           contains(github.event.discussion.body, 'C#') ||
+           contains(github.event.discussion.title, 'c#') ||
+           contains(github.event.discussion.title, 'C#') ||
+           contains(github.event.discussion.body, 'csharp') ||
+           contains(github.event.discussion.body, 'CSharp') ||
+           contains(github.event.discussion.title, 'csharp') ||
+           contains(github.event.discussion.title, 'CSharp'))
+        uses: octokit/graphql-action@v2.x
+        with:
+          query: |
+            mutation($labelableId: ID!) {
+              addLabelsToLabelable(
+                input: {
+                  labelableId: $labelableId
+                  labelIds: ["LA_kwDOJDJ_Yc8AAAABN_r7Lw"]
+                }
+              ) {
+                clientMutationId
+              }
+            }
+          variables: |
+            {
+              "labelableId": "${{ github.event.discussion.node_id }}"
+            }

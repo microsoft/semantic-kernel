@@ -7,6 +7,9 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class SqlServerConstants
 {
+    // The actual number is actually higher (2_100), but we want to avoid any kind of "off by one" errors.
+    internal const int MaxParameterCount = 2_000;
+
     internal static readonly HashSet<Type> SupportedKeyTypes =
     [
         typeof(int), // INT 

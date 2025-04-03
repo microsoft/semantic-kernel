@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import uuid
 from collections.abc import AsyncGenerator, AsyncIterable
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -13,6 +14,7 @@ else:
 from pydantic import Field, model_validator
 
 from semantic_kernel.agents import Agent
+from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.agents.channels.chat_history_channel import ChatHistoryChannel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -20,10 +22,15 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelServiceNotFoundError
-from semantic_kernel.exceptions.agent_exceptions import AgentInitializationException, AgentInvokeException
+from semantic_kernel.exceptions.agent_exceptions import (
+    AgentInitializationException,
+    AgentInvokeException,
+    AgentThreadOperationException,
+)
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
@@ -38,6 +45,72 @@ if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@release_candidate
+class ChatHistoryAgentThread(AgentThread):
+    """Chat History Agent Thread class."""
+
+    def __init__(self, chat_history: ChatHistory | None = None, thread_id: str | None = None) -> None:
+        """Initialize the ChatCompletionAgent Thread.
+
+        Args:
+            chat_history: The chat history for the thread. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+        """
+        super().__init__()
+
+        self._chat_history = chat_history or ChatHistory()
+        self._thread_id = thread_id or f"thread_{uuid.uuid4().hex}"
+        self._is_deleted = False
+
+    def __len__(self) -> int:
+        """Returns the length of the chat history."""
+        return len(self._chat_history)
+
+    @override
+    async def _create(self) -> str:
+        """Starts the thread and returns its ID."""
+        return self._thread_id
+
+    @override
+    async def _delete(self) -> None:
+        """Ends the current thread."""
+        self._chat_history.clear()
+
+    @override
+    async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
+        """Called when a new message has been contributed to the chat."""
+        if isinstance(new_message, str):
+            new_message = ChatMessageContent(role=AuthorRole.USER, content=new_message)
+
+        if (
+            not new_message.metadata
+            or "thread_id" not in new_message.metadata
+            or new_message.metadata["thread_id"] != self._id
+        ):
+            self._chat_history.add_message(new_message)
+
+    async def get_messages(self) -> AsyncIterable[ChatMessageContent]:
+        """Retrieve the current chat history.
+
+        Returns:
+            An async iterable of ChatMessageContent.
+        """
+        if self._is_deleted:
+            raise AgentThreadOperationException("Cannot retrieve chat history, since the thread has been deleted.")
+        if self._id is None:
+            await self.create()
+        for message in self._chat_history.messages:
+            yield message
+
+    async def reduce(self) -> ChatHistory | None:
+        """Reduce the chat history to a smaller size."""
+        if self._id is None:
+            raise AgentThreadOperationException("Cannot reduce chat history, since the thread is not currently active.")
+        if not isinstance(self._chat_history, ChatHistoryReducer):
+            return None
+        return await self._chat_history.reduce()
 
 
 @release_candidate
@@ -137,86 +210,155 @@ class ChatCompletionAgent(Agent):
         self.kernel.add_service(self.service, overwrite=True)
         return self
 
+    async def create_channel(
+        self, chat_history: ChatHistory | None = None, thread_id: str | None = None
+    ) -> AgentChannel:
+        """Create a ChatHistoryChannel.
+
+        Args:
+            chat_history: The chat history for the channel. If None, a new ChatHistory instance will be created.
+            thread_id: The ID of the thread. If None, a new thread will be created.
+
+        Returns:
+            An instance of AgentChannel.
+        """
+        from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatHistoryAgentThread
+
+        ChatHistoryChannel.model_rebuild()
+
+        thread = ChatHistoryAgentThread(chat_history=chat_history, thread_id=thread_id)
+
+        if thread.id is None:
+            await thread.create()
+
+        messages = [message async for message in thread.get_messages()]
+
+        return ChatHistoryChannel(messages=messages, thread=thread)
+
     @trace_agent_get_response
     @override
     async def get_response(
         self,
-        history: ChatHistory,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> ChatMessageContent:
+    ) -> AgentResponseItem[ChatMessageContent]:
         """Get a response from the agent.
 
         Args:
-            history: The chat history.
-            arguments: The kernel arguments. (optional)
-            kernel: The kernel instance. (optional)
-            kwargs: The keyword arguments. (optional)
+            messages: The input chat message content either as a string, ChatMessageContent or
+                a list of strings or ChatMessageContent.
+            thread: The thread to use for agent invocation.
+            arguments: The kernel arguments.
+            kernel: The kernel instance.
+            kwargs: The keyword arguments.
 
         Returns:
-            A chat message content.
+            An AgentResponseItem of type ChatMessageContent.
         """
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: ChatHistoryAgentThread(),
+            expected_type=ChatHistoryAgentThread,
+        )
+        assert thread.id is not None  # nosec
+
+        chat_history = ChatHistory()
+        async for message in thread.get_messages():
+            chat_history.add_message(message)
+
         responses: list[ChatMessageContent] = []
-        async for response in self._inner_invoke(history, arguments, kernel, **kwargs):
+        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
             responses.append(response)
 
         if not responses:
             raise AgentInvokeException("No response from agent.")
 
-        return responses[0]
+        return AgentResponseItem(message=responses[-1], thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke(
         self,
-        history: ChatHistory,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[ChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the chat history handler.
 
         Args:
-            history: The chat history.
+            messages: The input chat message content either as a string, ChatMessageContent or
+                a list of strings or ChatMessageContent.
+            thread: The thread to use for agent invocation.
             arguments: The kernel arguments.
             kernel: The kernel instance.
             kwargs: The keyword arguments.
 
         Returns:
-            An async iterable of ChatMessageContent.
+            An async iterable of AgentResponseItem of type ChatMessageContent.
         """
-        async for response in self._inner_invoke(history, arguments, kernel, **kwargs):
-            yield response
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: ChatHistoryAgentThread(),
+            expected_type=ChatHistoryAgentThread,
+        )
+        assert thread.id is not None  # nosec
+
+        chat_history = ChatHistory()
+        async for message in thread.get_messages():
+            chat_history.add_message(message)
+
+        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
+            yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
     @override
     async def invoke_stream(
         self,
-        history: ChatHistory,
+        *,
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
+        thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
-    ) -> AsyncIterable[StreamingChatMessageContent]:
+    ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the chat history handler in streaming mode.
 
         Args:
-            history: The chat history.
+            messages: The chat message content either as a string, ChatMessageContent or
+                a list of str or ChatMessageContent.
+            thread: The thread to use for agent invocation.
             arguments: The kernel arguments.
             kernel: The kernel instance.
             kwargs: The keyword arguments.
 
         Returns:
-            An async generator of StreamingChatMessageContent.
+            An async generator of AgentResponseItem of type StreamingChatMessageContent.
         """
+        thread = await self._ensure_thread_exists_with_messages(
+            messages=messages,
+            thread=thread,
+            construct_thread=lambda: ChatHistoryAgentThread(),
+            expected_type=ChatHistoryAgentThread,
+        )
+        assert thread.id is not None  # nosec
+
+        chat_history = ChatHistory()
+        async for message in thread.get_messages():
+            chat_history.add_message(message)
+
         if arguments is None:
             arguments = KernelArguments(**kwargs)
         else:
             arguments.update(kwargs)
-
-        # Add the chat history to the args in the event that it is needed for prompt template configuration
-        if "chat_history" not in arguments:
-            arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
@@ -230,14 +372,10 @@ class ChatCompletionAgent(Agent):
             settings.function_choice_behavior = self.function_choice_behavior
 
         agent_chat_history = await self._prepare_agent_chat_history(
-            history=history,
+            history=chat_history,
             kernel=kernel,
             arguments=arguments,
         )
-
-        # Remove the chat history from the arguments, potentially used for the prompt,
-        # to avoid passing it to the service
-        arguments.pop("chat_history", None)
 
         message_count_before_completion = len(agent_chat_history)
 
@@ -264,11 +402,14 @@ class ChatCompletionAgent(Agent):
                 role = response.role
                 response.name = self.name
                 response_builder.append(response.content)
-                yield response
+                yield AgentResponseItem(message=response, thread=thread)
 
-        self._capture_mutated_messages(history, agent_chat_history, message_count_before_completion)
+        await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
         if role != AuthorRole.TOOL:
-            history.add_message(
+            # Tool messages will be automatically added to the chat history by the auto function invocation loop
+            # if it's the response (i.e. terminated by a filter), thus we need to avoid notifying the thread about
+            # them multiple times.
+            await thread.on_new_message(
                 ChatMessageContent(
                     role=role if role else AuthorRole.ASSISTANT, content="".join(response_builder), name=self.name
                 )
@@ -276,6 +417,7 @@ class ChatCompletionAgent(Agent):
 
     async def _inner_invoke(
         self,
+        thread: ChatHistoryAgentThread,
         history: ChatHistory,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
@@ -286,10 +428,6 @@ class ChatCompletionAgent(Agent):
             arguments = KernelArguments(**kwargs)
         else:
             arguments.update(kwargs)
-
-        # Add the chat history to the args in the event that it is needed for prompt template configuration
-        if "chat_history" not in arguments:
-            arguments["chat_history"] = history
 
         kernel = kernel or self.kernel
         arguments = self._merge_arguments(arguments)
@@ -308,10 +446,6 @@ class ChatCompletionAgent(Agent):
             arguments=arguments,
         )
 
-        # Remove the chat history from the arguments, potentially used for the prompt,
-        # to avoid passing it to the service
-        arguments.pop("chat_history", None)
-
         message_count_before_completion = len(agent_chat_history)
 
         logger.debug(f"[{type(self).__name__}] Invoking {type(chat_completion_service).__name__}.")
@@ -328,10 +462,15 @@ class ChatCompletionAgent(Agent):
             f"with message count: {message_count_before_completion}."
         )
 
-        self._capture_mutated_messages(history, agent_chat_history, message_count_before_completion)
+        await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
 
         for response in responses:
             response.name = self.name
+            if response.role != AuthorRole.TOOL:
+                # Tool messages will be automatically added to the chat history by the auto function invocation loop
+                # if it's the response (i.e. terminated by a filter),, thus we need to avoid notifying the thread about
+                # them multiple times.
+                await thread.on_new_message(response)
             yield response
 
     async def _prepare_agent_chat_history(
@@ -363,9 +502,11 @@ class ChatCompletionAgent(Agent):
 
         return chat_completion_service, settings
 
-    def _capture_mutated_messages(self, caller_chat_history: ChatHistory, agent_chat_history: ChatHistory, start: int):
+    async def _capture_mutated_messages(
+        self, agent_chat_history: ChatHistory, start: int, thread: ChatHistoryAgentThread
+    ) -> None:
         """Capture mutated messages related function calling/tools."""
         for message_index in range(start, len(agent_chat_history)):
             message = agent_chat_history[message_index]  # type: ignore
             message.name = self.name
-            caller_chat_history.add_message(message)
+            await thread.on_new_message(message)

@@ -38,7 +38,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
         // Create the agent
         OpenAIAssistantAgent agent = new(assistant, this.AssistantClient)
         {
-            Arguments =
+            Arguments = new()
             {
                 {"style", "haiku"}
             },
@@ -105,7 +105,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
         // Create the agent
         OpenAIAssistantAgent agent = new(assistant, this.AssistantClient, plugins: null, templateFactory, templateFormat)
         {
-            Arguments =
+            Arguments = new()
             {
                 {"style", "haiku"}
             },
@@ -117,7 +117,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
     private async Task InvokeAssistantAgentWithTemplateAsync(OpenAIAssistantAgent agent)
     {
         // Create a thread for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
+        OpenAIAssistantAgentThread thread = new(this.AssistantClient, metadata: SampleMetadata);
 
         try
         {
@@ -125,7 +125,6 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
             foreach ((string input, string? style) in s_inputs)
             {
                 ChatMessageContent request = new(AuthorRole.User, input);
-                await agent.AddChatMessageAsync(threadId, request);
                 this.WriteAgentChatMessage(request);
 
                 KernelArguments? arguments = null;
@@ -135,7 +134,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
                     arguments = new() { { "style", style } };
                 }
 
-                await foreach (ChatMessageContent message in agent.InvokeAsync(threadId, arguments))
+                await foreach (ChatMessageContent message in agent.InvokeAsync(request, thread, options: new() { KernelArguments = arguments }))
                 {
                     this.WriteAgentChatMessage(message);
                 }
@@ -143,7 +142,7 @@ public class OpenAIAssistant_Templating(ITestOutputHelper output) : BaseAssistan
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }

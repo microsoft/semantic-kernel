@@ -5,7 +5,7 @@ import os
 
 from autogen import ConversableAgent
 
-from semantic_kernel.agents.autogen.autogen_conversable_agent import AutoGenConversableAgent
+from semantic_kernel.agents import AutoGenConversableAgent, AutoGenConversableAgentThread
 
 """
 The following sample demonstrates how to use the AutoGenConversableAgent to create a conversation between two agents
@@ -17,6 +17,8 @@ https://microsoft.github.io/autogen/0.2/docs/tutorial/introduction#roles-and-con
 
 
 async def main():
+    thread: AutoGenConversableAgentThread = None
+
     cathy = ConversableAgent(
         "cathy",
         system_message="Your name is Cathy and you are a part of a duo of comedians.",
@@ -51,10 +53,14 @@ async def main():
 
     joe_autogen_agent = AutoGenConversableAgent(conversable_agent=joe)
 
-    async for content in cathy_autogen_agent.invoke(
-        recipient=joe_autogen_agent, message="Tell me a joke about the stock market.", max_turns=3
+    async for response in cathy_autogen_agent.invoke(
+        recipient=joe_autogen_agent, message="Tell me a joke about the stock market.", thread=thread, max_turns=3
     ):
-        print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
+        print(f"# {response.role} - {response.name or '*'}: '{response}'")
+        thread = response.thread
+
+    # Cleanup: Delete the thread and agent
+    await thread.delete() if thread else None
 
 
 if __name__ == "__main__":
