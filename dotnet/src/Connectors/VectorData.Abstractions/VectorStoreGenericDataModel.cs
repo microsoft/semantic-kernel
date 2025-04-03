@@ -8,13 +8,29 @@ namespace Microsoft.Extensions.VectorData;
 /// Represents a generic data model that can be used to store and retrieve any data from a vector store.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
-/// <param name="key">The key of the record.</param>
-public sealed class VectorStoreGenericDataModel<TKey>(TKey key)
+public sealed class VectorStoreGenericDataModel<TKey>
 {
+    /// <summary>
+    /// Constructs a new <see cref="VectorStoreGenericDataModel{TKey}"/>.
+    /// </summary>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    public VectorStoreGenericDataModel()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    {
+    }
+
+    /// <summary>
+    /// Constructs a new <see cref="VectorStoreGenericDataModel{TKey}"/>.
+    /// </summary>
+    public VectorStoreGenericDataModel(TKey key)
+    {
+        this.Key = key;
+    }
+
     /// <summary>
     /// Gets or sets the key of the record.
     /// </summary>
-    public TKey Key { get; set; } = key;
+    public TKey Key { get; set; }
 
     /// <summary>
     /// Gets or sets a dictionary of data items stored in the record.

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Postgres;
 using Pgvector;
 using Xunit;
@@ -51,7 +52,9 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             ]
         };
 
-        var cmdInfo = builder.BuildCreateTableCommand("public", "testcollection", recordDefinition.Properties, ifNotExists: ifNotExists);
+        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(VectorStoreGenericDataModel<int>), recordDefinition);
+
+        var cmdInfo = builder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("public.\"testcollection\" (", cmdInfo.CommandText);
@@ -292,10 +295,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             ]
         };
 
+        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(VectorStoreGenericDataModel<int>), recordDefinition);
+
         var key = 123;
 
         // Act
-        var cmdInfo = builder.BuildGetCommand("public", "testcollection", recordDefinition.Properties, key, includeVectors: true);
+        var cmdInfo = builder.BuildGetCommand("public", "testcollection", model, key, includeVectors: true);
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
@@ -339,8 +344,10 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         var keys = new List<long> { 123, 124 };
 
+        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(VectorStoreGenericDataModel<int>), recordDefinition);
+
         // Act
-        var cmdInfo = builder.BuildGetBatchCommand("public", "testcollection", recordDefinition.Properties, keys, includeVectors: true);
+        var cmdInfo = builder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);

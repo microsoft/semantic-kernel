@@ -28,37 +28,24 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         }
     };
 
-    private readonly WeaviateVectorStoreRecordMapper<WeaviateHotel> _sut;
-
-    public WeaviateVectorStoreRecordMapperTests()
-    {
-        var storagePropertyNames = new Dictionary<string, string>
-        {
-            ["HotelId"] = "hotelId",
-            ["HotelName"] = "hotelName",
-            ["Tags"] = "tags",
-            ["DescriptionEmbedding"] = "descriptionEmbedding",
-        };
-
-        var dataProperties = new List<VectorStoreRecordDataProperty>
-        {
-            new("HotelName", typeof(string)),
-            new("Tags", typeof(List<string>))
-        };
-
-        var vectorProperties = new List<VectorStoreRecordVectorProperty>
-        {
-            new("DescriptionEmbedding", typeof(ReadOnlyMemory<float>))
-        };
-
-        this._sut = new WeaviateVectorStoreRecordMapper<WeaviateHotel>(
+    private readonly WeaviateVectorStoreRecordMapper<WeaviateHotel> _sut =
+        new(
             "CollectionName",
-            new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-            dataProperties,
-            vectorProperties,
-            storagePropertyNames,
+            new WeaviateModelBuilder()
+            .Build(
+                typeof(VectorStoreGenericDataModel<Guid>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
+                        new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                        new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                        new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>))
+                    ]
+                },
+                s_jsonSerializerOptions),
             s_jsonSerializerOptions);
-    }
 
     [Fact]
     public void MapFromDataToStorageModelReturnsValidObject()

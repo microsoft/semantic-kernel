@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
 using NRedisStack.Search.Literals.Enums;
@@ -25,31 +26,30 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     /// <summary>The name of this database for telemetry purposes.</summary>
     private const string DatabaseName = "Redis";
 
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(string)
-    ];
+    internal static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
 
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(string),
-        typeof(int),
-        typeof(uint),
-        typeof(long),
-        typeof(ulong),
-        typeof(double),
-        typeof(float),
-        typeof(bool),
-        typeof(int?),
-        typeof(uint?),
-        typeof(long?),
-        typeof(ulong?),
-        typeof(double?),
-        typeof(float?),
-        typeof(bool?)
-    ];
+        SupportedKeyPropertyTypes = [typeof(string)],
+
+        SupportedDataPropertyTypes =
+        [
+            typeof(string),
+            typeof(int),
+            typeof(uint),
+            typeof(long),
+            typeof(ulong),
+            typeof(double),
+            typeof(float),
+            typeof(bool)
+        ],
+
+        SupportedEnumerableDataPropertyElementTypes = [],
+
+        SupportedVectorPropertyTypes = s_supportedVectorTypes
+    };
 
     /// <summary>A set of types that vectors on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedVectorTypes =
@@ -72,8 +72,8 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     /// <summary>Optional configuration options for this class.</summary>
     private readonly RedisHashSetVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>An array of the names of all the data properties that are part of the Redis payload as RedisValue objects, i.e. all properties except the key and vector properties.</summary>
     private readonly RedisValue[] _dataStoragePropertyNameRedisValues;
@@ -96,51 +96,19 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.HashEntriesCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
         this._collectionName = collectionName;
         this._options = options ?? new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = false,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = true
-            });
-
-        // Validate property types.
-        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
-        this._propertyReader.VerifyDataProperties(s_supportedDataTypes, supportEnumerable: false);
-        this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+        this._model = new VectorStoreRecordModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
         // Lookup storage property names.
-        this._dataStoragePropertyNameRedisValues = this._propertyReader.DataPropertyStoragePropertyNames
-            .Select(RedisValue.Unbox)
-            .ToArray();
-
-        this._dataStoragePropertyNamesWithScore = [.. this._propertyReader.DataPropertyStoragePropertyNames, "vector_score"];
+        this._dataStoragePropertyNameRedisValues = this._model.DataProperties.Select(p => RedisValue.Unbox(p.StorageName)).ToArray();
+        this._dataStoragePropertyNamesWithScore = [.. this._model.DataProperties.Select(p => p.StorageName), "vector_score"];
 
         // Assign Mapper.
-        if (this._options.HashEntriesCustomMapper is not null)
-        {
-            // Custom Mapper.
-            this._mapper = this._options.HashEntriesCustomMapper;
-        }
-        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
-        {
-            // Generic data model mapper.
-            this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>)new RedisHashSetGenericDataModelMapper(this._propertyReader.Properties);
-        }
-        else
-        {
-            // Default Mapper.
-            this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._propertyReader);
-        }
+        this._mapper = this._options.HashEntriesCustomMapper ?? new RedisHashSetVectorStoreRecordMapper<TRecord>(this._model);
     }
 
     /// <inheritdoc />
@@ -173,7 +141,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._propertyReader.Properties, this._propertyReader.StoragePropertyNamesMap, useDollarPrefix: false);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: false);
 
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
@@ -350,7 +318,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         Verify.NotNull(vector);
 
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
 
         // Build query & search.
         var selectFields = internalOptions.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
@@ -358,8 +326,8 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
             internalOptions,
-            this._propertyReader.StoragePropertyNamesMap,
-            this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName),
+            this._model,
+            vectorProperty,
             selectFields);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
@@ -370,8 +338,8 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         // Loop through result and convert to the caller's data model.
         var mappedResults = results.Documents.Select(result =>
         {
-            var retrievedHashEntries = this._propertyReader.DataPropertyStoragePropertyNames
-                .Concat(this._propertyReader.VectorPropertyStoragePropertyNames)
+            var retrievedHashEntries = this._model.DataProperties.Select(p => p.StorageName)
+                .Concat(this._model.VectorProperties.Select(p => p.StorageName))
                 .Select(propertyName => new HashEntry(propertyName, result[propertyName]))
                 .ToArray();
 
@@ -386,7 +354,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
                 });
 
             // Process the score of the result item.
-            var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+            var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
             var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 

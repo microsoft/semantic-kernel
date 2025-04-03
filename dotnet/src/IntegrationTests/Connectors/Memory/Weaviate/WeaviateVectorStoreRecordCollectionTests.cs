@@ -380,7 +380,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 { "HotelName", "Generic Mapper Hotel" },
                 { "Description", "This is a generic mapper hotel" },
                 { "Tags", new List<string> { "generic" } },
-                { "parking_is_included", false },
+                { "ParkingIncluded", false },
                 { "Timestamp", new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero) },
                 { "HotelRating", 3.6f }
             },
@@ -399,7 +399,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
         Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
         Assert.Equal(new List<string> { "generic" }, localGetResult.Data["Tags"]);
-        Assert.False((bool?)localGetResult.Data["parking_is_included"]);
+        Assert.False((bool?)localGetResult.Data["ParkingIncluded"]);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), localGetResult.Data["Timestamp"]);
         Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
@@ -474,7 +474,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)),
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)),
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),

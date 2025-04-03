@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
 using Azure;
 using Azure.Identity;
 using Azure.Search.Documents.Indexes;
@@ -45,5 +46,19 @@ internal sealed class AzureAISearchTestStore : TestStore
         this._defaultVectorStore = new(this._client);
 
         return Task.CompletedTask;
+    }
+
+    public override async Task WaitForDataAsync<TKey, TRecord>(
+        IVectorStoreRecordCollection<TKey, TRecord> collection,
+        int recordCount,
+        Expression<Func<TRecord, bool>>? filter = null,
+        int vectorSize = 3)
+    {
+        await base.WaitForDataAsync(collection, recordCount, filter, vectorSize);
+
+        // There seems to be some asynchronicity/race condition specific to Azure AI Search which isn't taken care
+        // of by the generic retry loop in the base implementation.
+        // TODO: Investigate this and remove
+        await Task.Delay(TimeSpan.FromMilliseconds(1000));
     }
 }

@@ -512,32 +512,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector2!.Value.ToArray());
     }
 
-    /// <summary>
-    /// Tests that the collection can be created even if the definition and the type do not match.
-    /// In this case, the expectation is that a custom mapper will be provided to map between the
-    /// schema as defined by the definition and the different data model.
-    /// </summary>
-    [Fact]
-    public void CanCreateCollectionWithMismatchedDefinitionAndType()
-    {
-        // Arrange.
-        var definition = new VectorStoreRecordDefinition()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
-            }
-        };
-
-        // Act.
-        var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
-            this._redisDatabaseMock.Object,
-            TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, JsonNodeCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>() });
-    }
-
     private RedisJsonVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
         return new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(

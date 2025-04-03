@@ -9,6 +9,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using NRedisStack.Json.DataTypes;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
@@ -25,23 +26,30 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Redis";
+    internal static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
 
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(string)
-    ];
+        SupportedKeyPropertyTypes = [typeof(string)],
+        SupportedDataPropertyTypes = null, // TODO: Validate data property types
+        SupportedEnumerableDataPropertyElementTypes = null,
+        SupportedVectorPropertyTypes = s_supportedVectorTypes,
 
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
+        UsesExternalSerializer = true
+    };
+
+    internal static readonly HashSet<Type> s_supportedVectorTypes =
     [
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<double>),
         typeof(ReadOnlyMemory<float>?),
         typeof(ReadOnlyMemory<double>?)
     ];
+
+    /// <summary>The name of this database for telemetry purposes.</summary>
+    private const string DatabaseName = "Redis";
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -55,8 +63,8 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     /// <summary>Optional configuration options for this class.</summary>
     private readonly RedisJsonVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>An array of the storage names of all the data properties that are part of the Redis payload, i.e. all properties except the key and vector properties.</summary>
     private readonly string[] _dataStoragePropertyNames;
@@ -79,31 +87,17 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.JsonNodeCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._database = database;
         this._collectionName = collectionName;
         this._options = options ?? new RedisJsonVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = false,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = true,
-                JsonSerializerOptions = this._jsonSerializerOptions
-            });
-
-        // Validate property types.
-        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
-        this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+        this._model = new VectorStoreRecordJsonModelBuilder(ModelBuildingOptions)
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._jsonSerializerOptions);
 
         // Lookup storage property names.
-        this._dataStoragePropertyNames = this._propertyReader.DataPropertyJsonNames.ToArray();
+        this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
 
         // Assign Mapper.
         if (this._options.JsonNodeCustomMapper is not null)
@@ -114,14 +108,14 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
         {
             // Generic data model mapper.
-            this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>)new RedisJsonGenericDataModelMapper(
-                this._propertyReader.Properties,
-                this._jsonSerializerOptions);
+            this._mapper = (new RedisJsonGenericDataModelMapper(
+                this._model.Properties,
+                this._jsonSerializerOptions) as IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>)!;
         }
         else
         {
             // Default Mapper.
-            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._propertyReader.KeyPropertyJsonName, this._jsonSerializerOptions);
+            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._jsonSerializerOptions);
         }
     }
 
@@ -155,7 +149,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
-        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._propertyReader.Properties, this._propertyReader.JsonPropertyNamesMap, useDollarPrefix: true);
+        var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: true);
 
         // Create the index creation params.
         // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
@@ -395,15 +389,15 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         Verify.NotNull(vector);
 
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
 
         // Build query & search.
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
             internalOptions,
-            this._propertyReader.JsonPropertyNamesMap,
-            this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName),
+            this._model,
+            vectorProperty,
             null);
         var results = await this.RunOperationAsync(
             "FT.SEARCH",
@@ -428,7 +422,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
                 });
 
             // Process the score of the result item.
-            var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+            var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
             var distanceFunction = RedisVectorStoreCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
             var score = RedisVectorStoreCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
 

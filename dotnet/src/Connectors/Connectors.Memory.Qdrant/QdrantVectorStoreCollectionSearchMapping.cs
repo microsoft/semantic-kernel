@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -17,10 +18,10 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// Build a Qdrant <see cref="Filter"/> from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
     /// <param name="basicVectorSearchFilter">The <see cref="VectorSearchFilter"/> to build a Qdrant <see cref="Filter"/> from.</param>
-    /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
+    /// <param name="model">The model.</param>
     /// <returns>The Qdrant <see cref="Filter"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the provided filter contains unsupported types, values or unknown properties.</exception>
-    public static Filter BuildFromLegacyFilter(VectorSearchFilter basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
+    public static Filter BuildFromLegacyFilter(VectorSearchFilter basicVectorSearchFilter, VectorStoreRecordModel model)
     {
         var filter = new Filter();
 
@@ -47,7 +48,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
             }
 
             // Get the storage name for the field.
-            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
+            if (!model.PropertyMap.TryGetValue(fieldName, out var property))
             {
                 throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
             }
@@ -65,7 +66,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                     Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
                 };
 
-                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } });
+                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = property.StorageName, DatetimeRange = range } });
                 continue;
             }
 
@@ -79,7 +80,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 _ => throw new InvalidOperationException($"Unsupported filter value type '{filterValue.GetType().Name}'.")
             };
 
-            filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, Match = match } });
+            filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = property.StorageName, Match = match } });
         }
 
         return filter;
