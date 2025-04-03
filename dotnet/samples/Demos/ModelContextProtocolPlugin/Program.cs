@@ -86,7 +86,7 @@ new()
 AgentThread thread = new ChatHistoryAgentThread();
 
 // Respond to user input, invoking functions where appropriate.
-Console.WriteLine($"\n\nResponse from GitHubAgent:");
+Console.WriteLine("\n\nResponse from GitHubAgent:");
 await foreach (ChatMessageContent response in agent.InvokeAsync("Summarize the last four commits to the microsoft/semantic-kernel repository?", thread))
 {
     Console.WriteLine(response.Content);
