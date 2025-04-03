@@ -40,6 +40,9 @@ internal sealed class KernelFunctionInvocationContext
     {
     }
 
+    /// <summary>Chat response information</summary>
+    public ChatResponse? Response { get; set; }
+
     /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
     public Microsoft.Extensions.AI.FunctionCallContent CallContent
     {
