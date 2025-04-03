@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins
 /// (<see cref="Agent.Arguments"/>).
 /// </remarks>
+[Experimental("SKEXP0110")]
 public abstract class ChatHistoryAgent : Agent
 {
     /// <summary>
