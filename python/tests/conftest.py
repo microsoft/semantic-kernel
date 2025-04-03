@@ -254,6 +254,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     env_vars = {
         "OPENAI_API_KEY": "test_api_key",
         "OPENAI_ORG_ID": "test_org_id",
+        "OPENAI_RESPONSES_MODEL_ID": "test_responses_model_id",
         "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
         "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
