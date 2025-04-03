@@ -31,9 +31,9 @@ The reverse, using Semantic Kernel as a server, is not yet implemented, but will
 pip install semantic-kernel[mcp]
 ```
 
-6. Run the sample:
+5. Run the sample:
 
 ```bash
-cd samples/concepts/mcp
+cd python/samples/concepts/mcp
 python mcp_as_plugin.py
 ```
