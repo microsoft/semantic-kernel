@@ -3,7 +3,7 @@
 import logging
 import sys
 import uuid
-from collections.abc import AsyncGenerator, AsyncIterable
+from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
 if sys.version_info >= (3, 12):
@@ -272,7 +272,14 @@ class ChatCompletionAgent(Agent):
             chat_history.add_message(message)
 
         responses: list[ChatMessageContent] = []
-        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
+        async for response in self._inner_invoke(
+            thread,
+            chat_history,
+            None,
+            arguments,
+            kernel,
+            **kwargs,
+        ):
             responses.append(response)
 
         if not responses:
@@ -287,6 +294,7 @@ class ChatCompletionAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
@@ -297,6 +305,7 @@ class ChatCompletionAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The thread to use for agent invocation.
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             arguments: The kernel arguments.
             kernel: The kernel instance.
             kwargs: The keyword arguments.
@@ -316,7 +325,14 @@ class ChatCompletionAgent(Agent):
         async for message in thread.get_messages():
             chat_history.add_message(message)
 
-        async for response in self._inner_invoke(thread, chat_history, arguments, kernel, **kwargs):
+        async for response in self._inner_invoke(
+            thread,
+            chat_history,
+            on_intermediate_message,
+            arguments,
+            kernel,
+            **kwargs,
+        ):
             yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
@@ -326,6 +342,7 @@ class ChatCompletionAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
@@ -336,6 +353,8 @@ class ChatCompletionAgent(Agent):
             messages: The chat message content either as a string, ChatMessageContent or
                 a list of str or ChatMessageContent.
             thread: The thread to use for agent invocation.
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             arguments: The kernel arguments.
             kernel: The kernel instance.
             kwargs: The keyword arguments.
@@ -404,7 +423,13 @@ class ChatCompletionAgent(Agent):
                 response_builder.append(response.content)
                 yield AgentResponseItem(message=response, thread=thread)
 
-        await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
+        await self._capture_mutated_messages(
+            agent_chat_history,
+            message_count_before_completion,
+            thread,
+            on_intermediate_message,
+        )
+
         if role != AuthorRole.TOOL:
             # Tool messages will be automatically added to the chat history by the auto function invocation loop
             # if it's the response (i.e. terminated by a filter), thus we need to avoid notifying the thread about
@@ -419,6 +444,7 @@ class ChatCompletionAgent(Agent):
         self,
         thread: ChatHistoryAgentThread,
         history: ChatHistory,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         kernel: "Kernel | None" = None,
         **kwargs: Any,
@@ -462,7 +488,12 @@ class ChatCompletionAgent(Agent):
             f"with message count: {message_count_before_completion}."
         )
 
-        await self._capture_mutated_messages(agent_chat_history, message_count_before_completion, thread)
+        await self._capture_mutated_messages(
+            agent_chat_history,
+            message_count_before_completion,
+            thread,
+            on_intermediate_message,
+        )
 
         for response in responses:
             response.name = self.name
@@ -503,10 +534,17 @@ class ChatCompletionAgent(Agent):
         return chat_completion_service, settings
 
     async def _capture_mutated_messages(
-        self, agent_chat_history: ChatHistory, start: int, thread: ChatHistoryAgentThread
+        self,
+        agent_chat_history: ChatHistory,
+        start: int,
+        thread: ChatHistoryAgentThread,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
     ) -> None:
         """Capture mutated messages related function calling/tools."""
         for message_index in range(start, len(agent_chat_history)):
             message = agent_chat_history[message_index]  # type: ignore
             message.name = self.name
             await thread.on_new_message(message)
+
+            if on_intermediate_message:
+                await on_intermediate_message(message)
