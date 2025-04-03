@@ -34,20 +34,24 @@ internal static class SqlServerCommandBuilder
         sb.AppendTableName(schema, tableName);
         sb.AppendLine(" (");
         string keyColumnName = GetColumnName(keyProperty);
-        sb.AppendFormat("[{0}] {1} NOT NULL,", keyColumnName, Map(keyProperty));
+        sb.AppendEscaped(keyColumnName);
+        sb.AppendFormat(" {0} NOT NULL,", Map(keyProperty));
         sb.AppendLine();
         for (int i = 0; i < dataProperties.Count; i++)
         {
-            sb.AppendFormat("[{0}] {1},", GetColumnName(dataProperties[i]), Map(dataProperties[i]));
+            sb.AppendEscaped(GetColumnName(dataProperties[i]));
+            sb.AppendFormat(" {0},", Map(dataProperties[i]));
             sb.AppendLine();
         }
         for (int i = 0; i < vectorProperties.Count; i++)
         {
-            sb.AppendFormat("[{0}] VECTOR({1}),", GetColumnName(vectorProperties[i]), vectorProperties[i].Dimensions);
+            sb.AppendEscaped(GetColumnName(vectorProperties[i]));
+            sb.AppendFormat(" VECTOR({0}),", vectorProperties[i].Dimensions);
             sb.AppendLine();
         }
-        sb.AppendFormat("PRIMARY KEY ([{0}])", keyColumnName);
-        sb.AppendLine();
+        sb.Append("PRIMARY KEY (");
+        sb.AppendEscaped(keyColumnName);
+        sb.AppendLine(")");
         sb.AppendLine(");"); // end the table definition
 
         foreach (var dataProperty in dataProperties)
@@ -57,8 +61,9 @@ internal static class SqlServerCommandBuilder
                 sb.AppendFormat("CREATE INDEX ");
                 sb.AppendIndexName(tableName, GetColumnName(dataProperty));
                 sb.AppendFormat(" ON ").AppendTableName(schema, tableName);
-                sb.AppendFormat("([{0}]);", GetColumnName(dataProperty));
-                sb.AppendLine();
+                sb.Append('(');
+                sb.AppendEscaped(GetColumnName(dataProperty));
+                sb.AppendLine(");");
             }
         }
 
@@ -140,14 +145,18 @@ internal static class SqlServerCommandBuilder
         sb.Append(") AS s (");
         sb.AppendColumnNames(properties);
         sb.AppendLine(")");
-        sb.AppendFormat("ON (t.[{0}] = s.[{0}])", GetColumnName(keyProperty)).AppendLine();
+        sb.Append("ON (t.").AppendEscaped(GetColumnName(keyProperty));
+        sb.Append(" = s.").AppendEscaped(GetColumnName(keyProperty));
+        sb.AppendLine(")");
         sb.AppendLine("WHEN MATCHED THEN");
         sb.Append("UPDATE SET ");
         foreach (VectorStoreRecordProperty property in properties)
         {
             if (property != keyProperty) // don't update the key
             {
-                sb.AppendFormat("t.[{0}] = s.[{0}],", GetColumnName(property));
+                sb.Append("t.").AppendEscaped(GetColumnName(property));
+                sb.Append(" = s.").AppendEscaped(GetColumnName(property));
+                sb.Append(',');
             }
         }
         --sb.Length; // remove the last comma
@@ -161,7 +170,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("VALUES (");
         sb.AppendColumnNames(properties, prefix: "s.");
         sb.AppendLine(")");
-        sb.AppendFormat("OUTPUT inserted.[{0}];", GetColumnName(keyProperty));
+        sb.Append("OUTPUT inserted.").AppendEscaped(GetColumnName(keyProperty)).Append(';');
 
         command.CommandText = sb.ToString();
         return command;
@@ -208,14 +217,18 @@ internal static class SqlServerCommandBuilder
         sb.Append(") AS s ("); // s stands for source
         sb.AppendColumnNames(properties);
         sb.AppendLine(")");
-        sb.AppendFormat("ON (t.[{0}] = s.[{0}])", GetColumnName(keyProperty)).AppendLine();
+        sb.Append("ON (t.").AppendEscaped(GetColumnName(keyProperty));
+        sb.Append(" = s.").AppendEscaped(GetColumnName(keyProperty));
+        sb.AppendLine(")");
         sb.AppendLine("WHEN MATCHED THEN");
         sb.Append("UPDATE SET ");
         foreach (VectorStoreRecordProperty property in properties)
         {
             if (property != keyProperty) // don't update the key
             {
-                sb.AppendFormat("t.[{0}] = s.[{0}],", GetColumnName(property));
+                sb.Append("t.").AppendEscaped(GetColumnName(property));
+                sb.Append(" = s.").AppendEscaped(GetColumnName(property));
+                sb.Append(',');
             }
         }
         --sb.Length; // remove the last comma
@@ -228,8 +241,8 @@ internal static class SqlServerCommandBuilder
         sb.Append("VALUES (");
         sb.AppendColumnNames(properties, prefix: "s.");
         sb.AppendLine(")");
-        sb.AppendFormat("OUTPUT inserted.[{0}] INTO @InsertedKeys (KeyColumn);", GetColumnName(keyProperty));
-        sb.AppendLine();
+        sb.Append("OUTPUT inserted.").AppendEscaped(GetColumnName(keyProperty));
+        sb.AppendLine(" INTO @InsertedKeys (KeyColumn);");
 
         // The SELECT statement returns the keys of the inserted rows.
         sb.Append("SELECT KeyColumn FROM @InsertedKeys;");
@@ -248,7 +261,7 @@ internal static class SqlServerCommandBuilder
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
-        sb.AppendFormat(" WHERE [{0}] = ", GetColumnName(keyProperty));
+        sb.Append(" WHERE ").AppendEscaped(GetColumnName(keyProperty)).Append(" = ");
         sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
         command.AddParameter(keyProperty, keyParamName, key);
 
@@ -263,7 +276,7 @@ internal static class SqlServerCommandBuilder
         StringBuilder sb = new(100);
         sb.Append("DELETE FROM ");
         sb.AppendTableName(schema, tableName);
-        sb.AppendFormat(" WHERE [{0}] IN (", GetColumnName(keyProperty));
+        sb.Append(" WHERE ").AppendEscaped(GetColumnName(keyProperty)).Append(" IN (");
         sb.AppendKeyParameterList(keys, command, keyProperty, out bool emptyKeys);
         sb.Append(')'); // close the IN clause
 
@@ -293,7 +306,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, collectionName);
         sb.AppendLine();
-        sb.AppendFormat("WHERE [{0}] = ", GetColumnName(keyProperty));
+        sb.Append("WHERE ").AppendEscaped(GetColumnName(keyProperty)).Append(" = ");
         sb.AppendParameterName(keyProperty, ref paramIndex, out string keyParamName);
         command.AddParameter(keyProperty, keyParamName, key);
 
@@ -315,7 +328,7 @@ internal static class SqlServerCommandBuilder
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
         sb.AppendLine();
-        sb.AppendFormat("WHERE [{0}] IN (", GetColumnName(keyProperty));
+        sb.Append("WHERE ").AppendEscaped(GetColumnName(keyProperty)).Append(" IN (");
         sb.AppendKeyParameterList(keys, command, keyProperty, out bool emptyKeys);
         sb.Append(')'); // close the IN clause
 
@@ -346,8 +359,9 @@ internal static class SqlServerCommandBuilder
         sb.AppendFormat("SELECT ");
         sb.AppendColumnNames(properties, includeVectors: options.IncludeVectors);
         sb.AppendLine(",");
-        sb.AppendFormat("VECTOR_DISTANCE('{0}', {1}, CAST(@vector AS VECTOR({2}))) AS [score]",
-            distanceMetric, GetColumnName(vectorProperty), vector.Length);
+        sb.AppendFormat("VECTOR_DISTANCE('{0}', ", distanceMetric);
+        sb.AppendEscaped(GetColumnName(vectorProperty));
+        sb.AppendFormat(", CAST(@vector AS VECTOR({0}))) AS [score]", vector.Length);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
@@ -411,25 +425,29 @@ internal static class SqlServerCommandBuilder
         return sb;
     }
 
-    internal static StringBuilder AppendTableName(this StringBuilder sb, string? schema, string tableName)
+    internal static StringBuilder AppendEscaped(this StringBuilder sb, string value)
     {
-        // If the column name contains a ], then escape it by doubling it.
+        // If the value contains a ], then escape it by doubling it.
         // "Name with [brackets]" becomes [Name with [brackets]]].
 
         sb.Append('[');
         int index = sb.Length; // store the index, so we replace ] only for the appended part
+        sb.Append(value);
+        sb.Replace("]", "]]", index, value.Length); // replace the ] for value (escape it)
+        sb.Append(']');
 
+        return sb;
+    }
+
+    internal static StringBuilder AppendTableName(this StringBuilder sb, string? schema, string tableName)
+    {
         if (!string.IsNullOrEmpty(schema))
         {
-            sb.Append(schema);
-            sb.Replace("]", "]]", index, schema!.Length); // replace the ] for schema
-            sb.Append("].[");
-            index = sb.Length;
+            sb.AppendEscaped(schema!);
+            sb.Append('.');
         }
 
-        sb.Append(tableName);
-        sb.Replace("]", "]]", index, tableName.Length);
-        sb.Append(']');
+        sb.AppendEscaped(tableName);
 
         return sb;
     }
@@ -452,7 +470,8 @@ internal static class SqlServerCommandBuilder
                 sb.Append(prefix);
             }
             // Use square brackets to escape column names.
-            sb.AppendFormat("[{0}],", GetColumnName(property));
+            sb.AppendEscaped(GetColumnName(property));
+            sb.Append(',');
             any = true;
         }
 

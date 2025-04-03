@@ -10,7 +10,7 @@ namespace VectorDataSpecificationTests.CRUD;
 public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) where TKey : notnull
 {
     [ConditionalFact]
-    public async Task GetAsyncThrowsArgumentNullExceptionForNullKey()
+    public virtual async Task GetAsyncThrowsArgumentNullExceptionForNullKey()
     {
         ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.GetAsync(default!));
         Assert.Equal("key", ex.ParamName);
