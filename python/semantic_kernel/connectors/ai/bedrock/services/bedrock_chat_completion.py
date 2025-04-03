@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import os
 import sys
 from collections.abc import AsyncGenerator, Callable
 from functools import partial
 from typing import TYPE_CHECKING, Any, ClassVar
-
-import os
 
 import boto3
 
@@ -181,10 +180,31 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
     ) -> Any:
         messages: list[dict[str, Any]] = []
 
+        tool_message_buffer = None
         for message in chat_history.messages:
             if message.role == AuthorRole.SYSTEM:
                 continue
-            messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+            # If there are multiple tool responses, Bedrock expects one message
+            # with multiple content blocks, one for each response.
+            if message.role == AuthorRole.TOOL:
+                if tool_message_buffer is None:
+                    tool_message_buffer = MESSAGE_CONVERTERS[message.role](message)
+                else:
+                    tool_message_buffer["content"].extend(
+                        (MESSAGE_CONVERTERS[message.role](message)).get("content", [])
+                    )
+            else:
+                # If a non-tool message is encountered, flush the buffer
+                if tool_message_buffer:
+                    messages.append(tool_message_buffer)
+                    tool_message_buffer = None
+
+                messages.append(MESSAGE_CONVERTERS[message.role](message))
+
+        # Flush any remaining tool messages buffer
+        if tool_message_buffer:
+            messages.append(tool_message_buffer)
 
         return messages
 
@@ -237,7 +257,7 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         if os.getenv("BEDROCK_GUARDRAIL_ID", "") and os.getenv("BEDROCK_GUARDRAIL_VERSION", ""):
             prepared_settings["guardrailConfig"] = {
                 "guardrailIdentifier": os.getenv("BEDROCK_GUARDRAIL_ID"),
-                "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION")
+                "guardrailVersion": os.getenv("BEDROCK_GUARDRAIL_VERSION"),
             }
 
         return prepared_settings
