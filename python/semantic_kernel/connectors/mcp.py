@@ -425,8 +425,9 @@ def create_mcp_server_from_kernel(
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a kernel instance.
 
-    This function automatically create a MCP server from a kernel instance.
-    It will expose all functions in the kernel as tools and prompts.
+    This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
+    configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
+
     You can specify which functions to expose as tools and prompts by passing
     the `prompt_functions` and `tool_functions` arguments.
     These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
@@ -450,7 +451,7 @@ def create_mcp_server_from_kernel(
         mcp.server.lowlevel.Server
 
     """
-    server_args = {
+    server_args: dict[str, Any] = {
         "name": server_name,
         "version": version,
         "instructions": instructions,
@@ -459,7 +460,7 @@ def create_mcp_server_from_kernel(
         server_args["lifespan"] = lifespan
     if kwargs:
         server_args.update(kwargs)
-    server = Server(**server_args)
+    server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
 
     @server.list_prompts()
     async def _list_prompts() -> list[types.Prompt]:
