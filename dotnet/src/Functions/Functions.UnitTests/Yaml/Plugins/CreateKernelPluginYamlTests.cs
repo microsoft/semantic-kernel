@@ -37,7 +37,7 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
 
             string yamlFile1Path = Path.Combine(plugin1Directory, $"{nameof(YAML)}.yaml");
             string yamlFile2Path = Path.Combine(plugin1Directory, $"{nameof(YAMLWithCustomSettings)}.yaml");
-            string yamlFile3Path = Path.Combine(plugin2Directory, $"{nameof(YAMLNoExecutionSettings)}.yaml");
+            string yamlFile3Path = Path.Combine(plugin2Directory, $"{nameof(YAMLNoExecutionSettings)}.yml");
 
             File.WriteAllText(yamlFile1Path, YAML);
             File.WriteAllText(yamlFile2Path, YAMLWithCustomSettings);
