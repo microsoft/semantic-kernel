@@ -78,7 +78,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
         };
 
         // Act
@@ -87,6 +86,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             CollectionName,
             VectorPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
             this._model);
 
@@ -104,7 +104,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             IncludeVectors = true
         };
 
@@ -114,6 +113,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             CollectionName,
             VectorPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
             this._model);
 
@@ -131,7 +131,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             OldFilter = new VectorSearchFilter()
                 .EqualTo("HotelName", "Test Name")
                 .AnyTagEqualTo("Tags", "t1")
@@ -143,6 +142,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             CollectionName,
             VectorPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
             this._model);
 
@@ -158,7 +158,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             OldFilter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
         };
 
@@ -168,6 +167,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             CollectionName,
             VectorPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
             this._model));
     }
@@ -179,7 +179,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             OldFilter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
         };
 
@@ -189,6 +188,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             CollectionName,
             VectorPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
             this._model));
     }

@@ -175,4 +175,12 @@ internal static partial class Verify
             throw new ArgumentException($"The location '{hostNameSegment}' is not valid. Location must start and end with alphanumeric characters and can contain hyphens and underscores.", paramName);
         }
     }
+
+    internal static void NotLessThan(int value, int limit, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+    {
+        if (value < limit)
+        {
+            throw new ArgumentOutOfRangeException(paramName, $"{paramName} must be greater than or equal to {limit}.");
+        }
+    }
 }

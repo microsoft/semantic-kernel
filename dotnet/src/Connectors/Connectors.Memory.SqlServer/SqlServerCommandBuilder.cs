@@ -330,6 +330,7 @@ internal static class SqlServerCommandBuilder
         SqlConnection connection, string? schema, string tableName,
         VectorStoreRecordVectorPropertyModel vectorProperty,
         VectorStoreRecordModel model,
+        int top,
         VectorSearchOptions<TRecord> options,
         ReadOnlyMemory<float> vector)
     {
@@ -367,7 +368,7 @@ internal static class SqlServerCommandBuilder
         sb.AppendLine();
         // Negative Skip and Top values are rejected by the VectorSearchOptions property setters.
         // 0 is a legal value for OFFSET.
-        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, options.Top);
+        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
 
         command.CommandText = sb.ToString();
         return command;

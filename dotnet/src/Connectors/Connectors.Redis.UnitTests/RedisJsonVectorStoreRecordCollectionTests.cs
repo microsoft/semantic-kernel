@@ -468,12 +468,12 @@ public class RedisJsonVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            top: 5,
             new()
             {
                 IncludeVectors = true,
                 OldFilter = filter,
                 VectorProperty = r => r.Vector1,
-                Top = 5,
                 Skip = 2
             });
 

@@ -452,11 +452,11 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            top: 5,
             new()
             {
                 IncludeVectors = includeVectors,
                 OldFilter = filter,
-                Top = 5,
                 Skip = 2
             });
 

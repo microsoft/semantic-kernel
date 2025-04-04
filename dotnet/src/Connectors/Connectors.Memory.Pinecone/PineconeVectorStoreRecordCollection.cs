@@ -306,9 +306,10 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
@@ -330,7 +331,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         Sdk.QueryRequest request = new()
         {
-            TopK = (uint)(options.Top + options.Skip),
+            TopK = (uint)(top + options.Skip),
             Namespace = this._options.IndexNamespace,
             IncludeValues = options.IncludeVectors,
             IncludeMetadata = true,

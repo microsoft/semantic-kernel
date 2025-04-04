@@ -317,9 +317,10 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var internalOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
@@ -329,6 +330,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
+            top,
             internalOptions,
             this._model,
             vectorProperty,
