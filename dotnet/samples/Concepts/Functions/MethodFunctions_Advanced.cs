@@ -46,7 +46,7 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
         var kernelFunction = functions[nameof(Plugin.FunctionWithInvocationSettingsAttribute)];
 
         // Access the custom attribute the underlying method is annotated with
-        var invocationSettingsAttribute = kernelFunction.UnderlyingMethod!.GetCustomAttribute<InvocationSettingsAttribute>();
+        var invocationSettingsAttribute = kernelFunction.InnerMethod!.GetCustomAttribute<InvocationSettingsAttribute>();
 
         Console.WriteLine($"Priority: {invocationSettingsAttribute?.Priority}");
     }

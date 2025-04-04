@@ -299,11 +299,11 @@ public sealed class KernelFunctionFromMethodTests2
         var kernelFunction = KernelFunctionFactory.CreateFromMethod(methodInfo, target);
 
         // Assert
-        Assert.NotNull(kernelFunction.UnderlyingMethod);
+        Assert.NotNull(kernelFunction.InnerMethod);
 
-        Assert.Equal(methodInfo, kernelFunction.UnderlyingMethod);
+        Assert.Equal(methodInfo, kernelFunction.InnerMethod);
 
-        Assert.NotNull(kernelFunction.UnderlyingMethod.GetCustomAttribute<CustomAttribute>());
+        Assert.NotNull(kernelFunction.InnerMethod.GetCustomAttribute<CustomAttribute>());
     }
 
     private interface IExampleService;
