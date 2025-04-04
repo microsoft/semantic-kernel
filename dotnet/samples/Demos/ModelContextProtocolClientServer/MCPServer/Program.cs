@@ -31,7 +31,7 @@ builder.Services
 
     .AddResourceTemplate(
         template: new() { UriTemplate = "doc://{type}/{filename}", Name = "test-template-name" },
-        handler: async (context, arguments, services, cancellationToken) =>
+        handler: async (context, arguments, cancellationToken) =>
         {
             // Simulate some processing
             await Task.Delay(1000, cancellationToken);

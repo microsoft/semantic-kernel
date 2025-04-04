@@ -13,7 +13,7 @@ internal static class ResourceRegistry
 {
     private static readonly Dictionary<string, ResourceDefinition> s_resourceDefinitions = [];
 
-    private static readonly Dictionary<string, ResourceTemplateDefinition> s_resourceTemplateDefinitions = [];
+    private static readonly IList<ResourceTemplateDefinition> s_resourceTemplateDefinitions = [];
 
     /// <summary>
     /// Registers a resource definition.
@@ -35,19 +35,19 @@ internal static class ResourceRegistry
     /// <param name="definition">The resource template definition to register.</param>
     public static void RegisterResourceTemplate(ResourceTemplateDefinition definition)
     {
-        if (s_resourceDefinitions.ContainsKey(definition.ResourceTemplate.UriTemplate))
+        if (s_resourceTemplateDefinitions.Any(d => d.ResourceTemplate.UriTemplate == definition.ResourceTemplate.UriTemplate))
         {
             throw new ArgumentException($"A resource template with the uri template '{definition.ResourceTemplate.UriTemplate}' is already registered.");
         }
 
-        s_resourceTemplateDefinitions[definition.ResourceTemplate.UriTemplate] = definition;
+        s_resourceTemplateDefinitions.Add(definition);
     }
 
     internal static Task<ListResourceTemplatesResult> HandleListResourceTemplatesRequestAsync(RequestContext<ListResourceTemplatesRequestParams> context, CancellationToken cancellationToken)
     {
         return Task.FromResult(new ListResourceTemplatesResult
         {
-            ResourceTemplates = [.. s_resourceTemplateDefinitions.Values.Select(d => d.ResourceTemplate)]
+            ResourceTemplates = [.. s_resourceTemplateDefinitions.Select(d => d.ResourceTemplate)]
         });
     }
 
@@ -74,61 +74,16 @@ internal static class ResourceRegistry
         }
 
         // Look up in registered resource templates
-        if (s_resourceTemplateDefinitions.TryGetValue(resourceUri, out ResourceTemplateDefinition? resourceTemplateDefinition))
+        foreach (var resourceTemplateDefinition in s_resourceTemplateDefinitions)
         {
-            return resourceTemplateDefinition.Handler(context, cancellationToken);
+            if (resourceTemplateDefinition.IsMatch(resourceUri))
+            {
+                var args = resourceTemplateDefinition.GetArguments(resourceUri);
+
+                return resourceTemplateDefinition.Handler(context, args, cancellationToken);
+            }
         }
 
         throw new ArgumentException($"No handler found for the resource uri '{resourceUri}'.");
-
-        //// Invoke the handler
-        //return await definition.Handler(context, cancellationToken);
-
-        //List<ResourceContents> contents = [];
-
-        //if (context.Params?.Uri == "r1://r1")
-        //{
-        //    contents.Add(new TextResourceContents()
-        //    {
-        //        Uri = "r1://r1",
-        //        MimeType = "plain/text",
-        //        Text = "Test resource content",
-        //    });
-        //}
-
-        //if (context.Params?.Uri == "r2://r2")
-        //{
-        //    contents.Add(new BlobResourceContents()
-        //    {
-        //        Uri = "r2://r2",
-        //        MimeType = "application/octet-stream",
-        //        Blob = Convert.ToBase64String(Encoding.UTF8.GetBytes("base 64 encoded string"))
-        //    });
-        //}
-
-        //if (context.Params?.Uri == "r1://test")
-        //{
-        //    contents.Add(new TextResourceContents()
-        //    {
-        //        Uri = "r1://test",
-        //        Text = "Test resource",
-        //        MimeType = "plain/text",
-        //    });
-        //}
-
-        //if (context.Params?.Uri == "r2://test")
-        //{
-        //    contents.Add(new BlobResourceContents()
-        //    {
-        //        Uri = "r2://test",
-        //        MimeType = "application/octet-stream",
-        //        Blob = Convert.ToBase64String(Encoding.UTF8.GetBytes("base 64 encoded string"))
-        //    });
-        //}
-
-        //return await Task.FromResult(new ReadResourceResult()
-        //{
-        //    Contents = contents
-        //});
     }
 }
