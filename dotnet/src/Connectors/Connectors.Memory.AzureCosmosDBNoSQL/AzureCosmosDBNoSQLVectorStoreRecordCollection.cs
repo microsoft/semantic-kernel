@@ -300,6 +300,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -307,6 +308,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         const string ScorePropertyName = "SimilarityScore";
 
         this.VerifyVectorType(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
@@ -321,7 +323,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             ScorePropertyName,
             searchOptions.OldFilter,
             searchOptions.Filter,
-            searchOptions.Top,
+            top,
             searchOptions.Skip,
             searchOptions.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -337,12 +339,13 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
 
         this.VerifyVectorType(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
@@ -358,7 +361,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             ScorePropertyName,
             searchOptions.OldFilter,
             searchOptions.Filter,
-            searchOptions.Top,
+            top,
             searchOptions.Skip,
             searchOptions.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete

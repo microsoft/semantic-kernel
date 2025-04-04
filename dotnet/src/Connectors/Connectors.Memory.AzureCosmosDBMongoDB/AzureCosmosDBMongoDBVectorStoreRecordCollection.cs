@@ -242,10 +242,12 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         Array vectorArray = vector switch
         {
@@ -273,7 +275,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = searchOptions.Skip + top;
 
         var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(vectorProperty.IndexKind);
 

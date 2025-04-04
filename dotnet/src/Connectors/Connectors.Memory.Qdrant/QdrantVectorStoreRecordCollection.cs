@@ -445,9 +445,10 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
@@ -481,7 +482,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 query: query,
                 usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
-                limit: (ulong)internalOptions.Top,
+                limit: (ulong)top,
                 offset: (ulong)internalOptions.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
@@ -499,9 +500,10 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
@@ -565,7 +567,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 this.CollectionName,
                 prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
                 query: fusionQuery,
-                limit: (ulong)internalOptions.Top,
+                limit: (ulong)top,
                 offset: (ulong)internalOptions.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);

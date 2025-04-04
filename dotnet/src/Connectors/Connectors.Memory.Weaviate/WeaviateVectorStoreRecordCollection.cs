@@ -275,12 +275,14 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorSearch";
 
         VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
@@ -290,6 +292,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             this.CollectionName,
             vectorProperty.StorageName,
             s_jsonSerializerOptions,
+            top,
             searchOptions,
             this._model);
 
@@ -297,11 +300,12 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
 
         VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
@@ -309,6 +313,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildHybridSearchQuery(
             vector,
+            top,
             string.Join(" ", keywords),
             this.CollectionName,
             this._model,

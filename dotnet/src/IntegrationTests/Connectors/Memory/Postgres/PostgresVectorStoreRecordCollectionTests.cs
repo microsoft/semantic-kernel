@@ -367,7 +367,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), new()
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
         {
             IncludeVectors = includeVectors
         });
@@ -405,10 +405,9 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), new()
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
-            Top = 5,
             OldFilter = new([
                 new EqualToFilterClause("HotelRating", 2.5f)
             ])
@@ -438,10 +437,9 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), new()
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
-            Top = 5,
             OldFilter = new([
                 new AnyTagEqualToFilterClause("Tags", "tag2")
             ])
