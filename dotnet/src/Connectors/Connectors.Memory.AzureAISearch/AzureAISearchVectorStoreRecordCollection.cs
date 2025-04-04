@@ -52,7 +52,9 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject>? _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -80,6 +82,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         this._model = new VectorStoreRecordJsonModelBuilder(AzureAISearchConstants.s_modelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.JsonSerializerOptions);
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         // Resolve mapper.
         // First, if someone has provided a custom mapper, use that.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
@@ -92,6 +95,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             this._mapper = new AzureAISearchGenericDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, JsonObject>;
         }
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc />

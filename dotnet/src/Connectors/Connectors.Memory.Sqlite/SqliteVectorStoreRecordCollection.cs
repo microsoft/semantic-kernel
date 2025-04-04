@@ -34,7 +34,9 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     private readonly SqliteVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -130,7 +132,9 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             }
         }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.DictionaryCustomMapper ?? new SqliteVectorStoreRecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc />

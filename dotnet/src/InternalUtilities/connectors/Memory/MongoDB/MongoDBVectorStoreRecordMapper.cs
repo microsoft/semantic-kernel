@@ -13,7 +13,9 @@ using MongoDB.Bson.Serialization.Conventions;
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 [ExcludeFromCodeCoverage]
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class MongoDBVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, BsonDocument>
+#pragma warning restore CS0618
 {
     /// <summary>A key property info of the data model.</summary>
     private readonly PropertyInfo? _keyClrProperty;

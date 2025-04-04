@@ -10,6 +10,8 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace GettingStartedWithVectorStores;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// Example that shows how you can use custom mappers if you wish the data model and storage schema to differ.
 /// </summary>

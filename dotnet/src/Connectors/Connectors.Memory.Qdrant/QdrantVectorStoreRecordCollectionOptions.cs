@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
 
@@ -22,6 +23,7 @@ public sealed class QdrantVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, a default mapper that uses json as an intermediary to allow automatic mapping to a wide variety of types will be used.
     /// </remarks>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, PointStruct>? PointStructCustomMapper { get; init; } = null;
 
     /// <summary>

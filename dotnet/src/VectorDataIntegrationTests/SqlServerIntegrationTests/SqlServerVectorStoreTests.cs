@@ -150,6 +150,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [ConditionalFact]
     public async Task CustomMapper()
     {
@@ -201,6 +202,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             await collection.DeleteCollectionAsync();
         }
     }
+#pragma warning restore CS0618
 
     [ConditionalFact]
     public async Task BatchCRUD()
@@ -467,6 +469,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private sealed class TestModelMapper : IVectorStoreRecordMapper<TestModel, IDictionary<string, object?>>
     {
         internal bool MapFromDataToStorageModel_WasCalled { get; set; }
@@ -499,4 +502,5 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             };
         }
     }
+#pragma warning restore CS0618
 }

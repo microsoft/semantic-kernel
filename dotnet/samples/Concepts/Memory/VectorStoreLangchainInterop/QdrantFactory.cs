@@ -7,6 +7,8 @@ using Qdrant.Client.Grpc;
 
 namespace Memory.VectorStoreLangchainInterop;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// Contains a factory method that can be used to create a Qdrant vector store that is compatible with datasets ingested using Langchain.
 /// </summary>
