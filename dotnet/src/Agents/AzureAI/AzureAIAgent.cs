@@ -93,7 +93,7 @@ public sealed partial class AzureAIAgent : Agent
     }
 
     /// <summary>
-    /// %%%
+    /// The Agent SDK client.
     /// </summary>
     public AgentsClient Client { get; }
 

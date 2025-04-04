@@ -1,0 +1,54 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents.Service;
+using Microsoft.SemanticKernel.ChatCompletion;
+
+namespace Microsoft.SemanticKernel.Agents.Template;
+
+/// <summary>
+/// An example <see cref="ServiceAgent"/> based on chat-completion API.
+/// </summary>s
+[ServiceAgentProvider<ChatServiceAgentProvider>()]
+public sealed class ChatServiceAgent : ComposedServiceAgent
+{
+    private const string AgentDescription =
+        """
+        An example agent that talks like a pirate.
+        """;
+
+    private const string AgentInstructions =
+        """
+        Repeat the most recent user input in the voice of a pirate.
+        """;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatServiceAgent"/> class.
+    /// </summary>
+    public ChatServiceAgent()
+    {
+        this.Description = AgentDescription;
+    }
+
+    /// <inheritdoc/>
+    protected override Task<Agent> CreateAgentAsync()
+    {
+        ChatCompletionAgent agent =
+            new ()
+            {
+                Name = this.Name,
+                Description = AgentDescription,
+                Instructions = AgentInstructions,
+                Kernel = this.Kernel,
+                Arguments =
+                    this.Arguments ??
+                    new KernelArguments(
+                        new PromptExecutionSettings()
+                        {
+                            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                        }),
+            };
+
+        return Task.FromResult<Agent>(agent);
+    }
+}

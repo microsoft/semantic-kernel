@@ -114,7 +114,7 @@ internal static class AgentThreadActions
 
                 assistantName ??= message.AssistantId;
 
-                ChatMessageContent content = GenerateMessageContent(assistantName, message);
+                ChatMessageContent content = message.ToChatMessageContent(assistantName);
 
                 if (content.Items.Count > 0)
                 {
@@ -274,7 +274,7 @@ internal static class AgentThreadActions
 
                     if (message is not null)
                     {
-                        ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, completedStep);
+                        ChatMessageContent content = message.ToChatMessageContent(agent.GetName(), completedStep);
 
                         if (content.Items.Count > 0)
                         {
@@ -524,7 +524,7 @@ internal static class AgentThreadActions
 
                         if (message != null)
                         {
-                            ChatMessageContent content = GenerateMessageContent(agent.GetName(), message, step);
+                            ChatMessageContent content = message.ToChatMessageContent(agent.GetName(), step);
                             messages?.Add(content);
                         }
                     }
@@ -553,55 +553,6 @@ internal static class AgentThreadActions
         while (run?.Status != RunStatus.Completed);
 
         logger.LogAzureAIAgentCompletedRun(nameof(InvokeAsync), run?.Id ?? "Failed", threadId);
-    }
-
-    private static ChatMessageContent GenerateMessageContent(string? assistantName, ThreadMessage message, RunStep? completedStep = null)
-    {
-        AuthorRole role = new(message.Role.ToString());
-
-        Dictionary<string, object?>? metadata =
-            new()
-            {
-                { nameof(ThreadMessage.CreatedAt), message.CreatedAt },
-                { nameof(ThreadMessage.AssistantId), message.AssistantId },
-                { nameof(ThreadMessage.ThreadId), message.ThreadId },
-                { nameof(ThreadMessage.RunId), message.RunId },
-                { nameof(MessageContentUpdate.MessageId), message.Id },
-            };
-
-        if (completedStep != null)
-        {
-            metadata[nameof(RunStepDetailsUpdate.StepId)] = completedStep.Id;
-            metadata[nameof(RunStep.Usage)] = completedStep.Usage;
-        }
-
-        ChatMessageContent content =
-            new(role, content: null)
-            {
-                AuthorName = assistantName,
-                Metadata = metadata,
-            };
-
-        foreach (MessageContent itemContent in message.ContentItems)
-        {
-            // Process text content
-            if (itemContent is MessageTextContent textContent)
-            {
-                content.Items.Add(new TextContent(textContent.Text));
-
-                foreach (MessageTextAnnotation annotation in textContent.Annotations)
-                {
-                    content.Items.Add(GenerateAnnotationContent(annotation));
-                }
-            }
-            // Process image content
-            else if (itemContent is MessageImageFileContent imageContent)
-            {
-                content.Items.Add(new FileReferenceContent(imageContent.FileId));
-            }
-        }
-
-        return content;
     }
 
     private static StreamingChatMessageContent GenerateStreamingMessageContent(string? assistantName, MessageContentUpdate update)
@@ -663,27 +614,6 @@ internal static class AgentThreadActions
         }
 
         return content.Items.Count > 0 ? content : null;
-    }
-
-    private static AnnotationContent GenerateAnnotationContent(MessageTextAnnotation annotation)
-    {
-        string? fileId = null;
-
-        if (annotation is MessageTextFileCitationAnnotation fileCitationAnnotation)
-        {
-            fileId = fileCitationAnnotation.FileId;
-        }
-        else if (annotation is MessageTextFilePathAnnotation filePathAnnotation)
-        {
-            fileId = filePathAnnotation.FileId;
-        }
-
-        return
-            new(annotation.Text)
-            {
-                Quote = annotation.Text,
-                FileId = fileId,
-            };
     }
 
     private static StreamingAnnotationContent GenerateStreamingAnnotationContent(TextAnnotationUpdate annotation)
