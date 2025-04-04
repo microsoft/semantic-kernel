@@ -10,6 +10,8 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace GettingStartedWithVectorStores;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// Example that shows how you can use custom mappers if you wish the data model and storage schema to differ.
 /// </summary>
@@ -78,10 +80,7 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
         // Search the vector store.
         var searchResult = await collection.VectorizedSearchAsync(
             searchVector,
-            new()
-            {
-                Top = 1
-            });
+            top: 1);
         var searchResultItem = await searchResult.Results.FirstAsync();
 
         // Write the search result with its score to the console.

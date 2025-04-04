@@ -93,11 +93,11 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Vector = orthogonalVector,
         };
 
-        await sut.UpsertBatchAsync([baseRecord, oppositeRecord, orthogonalRecord]).ToListAsync();
+        await sut.UpsertAsync([baseRecord, oppositeRecord, orthogonalRecord]).ToListAsync();
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
-        var searchResult = await sut.VectorizedSearchAsync(baseVector);
+        var searchResult = await sut.VectorizedSearchAsync(baseVector, top: 3);
 
         // Assert
         var results = await searchResult.Results.ToListAsync();

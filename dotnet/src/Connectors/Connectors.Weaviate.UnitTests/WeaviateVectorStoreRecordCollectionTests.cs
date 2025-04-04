@@ -32,7 +32,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -195,7 +195,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        await sut.DeleteBatchAsync(ids);
+        await sut.DeleteAsync(ids);
 
         // Assert
         var request = JsonSerializer.Deserialize<WeaviateDeleteObjectBatchRequest>(this._messageHandlerStub.RequestContent);
@@ -261,7 +261,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.GetBatchAsync([id1, id2]).ToListAsync();
+        var results = await sut.GetAsync([id1, id2]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -329,7 +329,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2]).ToListAsync();
 
         // Assert
         Assert.Contains(id1, results);
@@ -349,6 +349,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal("Test Name 2", jsonObject2["properties"]?["hotelName"]?.GetValue<string>());
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -427,6 +428,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal(id, result.HotelId);
         Assert.Equal("Test Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData(true, "http://test-endpoint/schema", "Bearer fake-key")]
@@ -503,7 +505,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(vector, new()
+        var actual = await sut.VectorizedSearchAsync(vector, top: 3, new()
         {
             IncludeVectors = includeVectors
         });
@@ -545,7 +547,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3)).Results.ToListAsync());
     }
 
     [Fact]
@@ -558,6 +560,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await (await sut.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>([1f, 2f, 3f]),
+                top: 3,
                 new() { VectorProperty = r => "non-existent-property" }))
                 .Results.ToListAsync());
     }

@@ -58,10 +58,7 @@ public class Step5_Use_GenericDataModel(ITestOutputHelper output, VectorStoresFi
         // Search the generic data model collection and get the single most relevant result.
         var searchResult = await genericDataModelCollection.VectorizedSearchAsync(
             searchVector,
-            new()
-            {
-                Top = 1,
-            });
+            top: 1);
         var searchResultItems = await searchResult.Results.ToListAsync();
 
         // Write the search result with its score to the console.

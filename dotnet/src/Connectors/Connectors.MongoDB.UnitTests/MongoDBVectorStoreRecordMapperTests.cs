@@ -32,7 +32,7 @@ public sealed class MongoDBVectorStoreRecordMapperTests
             ]
         };
 
-        this._sut = new(new VectorStoreRecordPropertyReader(typeof(MongoDBHotelModel), definition, null));
+        this._sut = new(new MongoDBModelBuilder().Build(typeof(MongoDBHotelModel), definition));
     }
 
     [Fact]

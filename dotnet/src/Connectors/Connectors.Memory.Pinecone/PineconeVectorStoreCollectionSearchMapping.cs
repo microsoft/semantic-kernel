@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -17,10 +18,10 @@ internal static class PineconeVectorStoreCollectionSearchMapping
     /// Build a Pinecone <see cref="Metadata"/> from a set of filter clauses.
     /// </summary>
     /// <param name="filterClauses">The filter clauses to build the Pinecone <see cref="Metadata"/> from.</param>
-    /// <param name="storagePropertyNamesMap">A mapping from property name to the name under which the property would be stored.</param>
+    /// <param name="model">The model.</param>
     /// <returns>The Pinecone <see cref="Metadata"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown for invalid property names, value types or filter clause types.</exception>
-    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, IReadOnlyDictionary<string, string> storagePropertyNamesMap)
+    public static Metadata BuildSearchFilter(IEnumerable<FilterClause>? filterClauses, VectorStoreRecordModel model)
     {
         var metadataMap = new Metadata();
 
@@ -33,7 +34,7 @@ internal static class PineconeVectorStoreCollectionSearchMapping
         {
             if (filterClause is EqualToFilterClause equalToFilterClause)
             {
-                if (!storagePropertyNamesMap.TryGetValue(equalToFilterClause.FieldName, out var storagePropertyName))
+                if (!model.PropertyMap.TryGetValue(equalToFilterClause.FieldName, out var property))
                 {
                     throw new InvalidOperationException($"Property '{equalToFilterClause.FieldName}' is not a valid property name.");
                 }
@@ -49,7 +50,7 @@ internal static class PineconeVectorStoreCollectionSearchMapping
                     _ => throw new NotSupportedException($"Unsupported filter value type '{equalToFilterClause.Value.GetType().Name}'.")
                 };
 
-                metadataMap.Add(storagePropertyName, metadataValue);
+                metadataMap.Add(property.StorageName, metadataValue);
             }
             else
             {

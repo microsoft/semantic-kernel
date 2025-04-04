@@ -9,6 +9,8 @@ using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 namespace Memory.VectorStoreLangchainInterop;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// Contains a factory method that can be used to create an Azure AI Search vector store that is compatible with datasets ingested using Langchain.
 /// </summary>

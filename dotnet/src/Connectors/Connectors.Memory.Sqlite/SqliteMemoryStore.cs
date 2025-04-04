@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics.Tensors;
@@ -16,13 +15,15 @@ using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
+#pragma warning disable SKEXP0001 // IMemoryStore is experimental (but we're obsoleting)
+
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.
 /// </summary>
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and SqliteVectorStore")]
 public class SqliteMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>

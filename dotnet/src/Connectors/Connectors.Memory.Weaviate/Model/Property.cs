@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and WeaviateVectorStore")]
 internal sealed class Property
 {
     public string? Name { get; set; }

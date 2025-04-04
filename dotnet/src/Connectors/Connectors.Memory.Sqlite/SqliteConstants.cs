@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -12,6 +13,18 @@ internal static class SqliteConstants
     /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
     /// </summary>
     public const string VectorSearchExtensionName = "vec0";
+
+    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
+
+        SupportedKeyPropertyTypes = SqliteConstants.SupportedKeyTypes,
+        SupportedDataPropertyTypes = SqliteConstants.SupportedDataTypes,
+        SupportedEnumerableDataPropertyElementTypes = [],
+        SupportedVectorPropertyTypes = SqliteConstants.SupportedVectorTypes
+    };
 
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
     public static readonly HashSet<Type> SupportedKeyTypes =
@@ -24,25 +37,16 @@ internal static class SqliteConstants
     public static readonly HashSet<Type> SupportedDataTypes =
     [
         typeof(int),
-        typeof(int?),
         typeof(long),
-        typeof(long?),
         typeof(ulong),
-        typeof(ulong?),
         typeof(short),
-        typeof(short?),
         typeof(ushort),
-        typeof(ushort?),
         typeof(string),
         typeof(bool),
-        typeof(bool?),
         typeof(float),
-        typeof(float?),
         typeof(double),
-        typeof(double?),
         typeof(decimal),
-        typeof(decimal?),
-        typeof(byte[]),
+        typeof(byte[])
     ];
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>

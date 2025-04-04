@@ -86,9 +86,9 @@ public abstract class TestStore
         {
             var results = await collection.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(vector),
+                top: recordCount,
                 new()
                 {
-                    Top = recordCount,
                     // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
                     // so filtered searches show empty results. Add a filter to the seed data check below.
                     Filter = filter

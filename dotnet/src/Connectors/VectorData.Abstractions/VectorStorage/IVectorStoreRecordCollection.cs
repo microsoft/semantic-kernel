@@ -11,6 +11,9 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
 /// <typeparam name="TRecord">The record data model to use for adding, updating, and retrieving data from the store.</typeparam>
+/// <remarks>
+/// <para>Unless otherwise documented, implementations of this interface can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
+/// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -75,7 +78,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
-    IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a record from the vector store. Does not guarantee that the collection exists.
@@ -98,7 +101,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// If any record can't be deleted for any other reason, the operation throws. Some records might have already been deleted while others might not have, so the entire operation should be retried.
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason other than that a record does not exist.</exception>
-    Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default);
+    Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Upserts a record into the vector store. Does not guarantee that the collection exists.
@@ -113,7 +116,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Upserts a group of records into the vector store. Does not guarantee that the collection exists.
+    /// Upserts a batch of records into the vector store. Does not guarantee that the collection exists.
     ///     If the record already exists, it is updated.
     ///     If the record does not exist, it is created.
     /// </summary>
@@ -125,5 +128,5 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
-    IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 }

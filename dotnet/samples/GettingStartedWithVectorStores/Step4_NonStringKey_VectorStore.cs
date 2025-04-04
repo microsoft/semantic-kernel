@@ -133,9 +133,9 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
 
         /// <inheritdoc />
-        public Task DeleteBatchAsync(IEnumerable<TPublicKey> keys, CancellationToken cancellationToken = default)
+        public Task DeleteAsync(IEnumerable<TPublicKey> keys, CancellationToken cancellationToken = default)
         {
-            return this._collection.DeleteBatchAsync(keys.Select(this._publicToInternalKeyMapper), cancellationToken);
+            return this._collection.DeleteAsync(keys.Select(this._publicToInternalKeyMapper), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -157,9 +157,9 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
 
         /// <inheritdoc />
-        public IAsyncEnumerable<TPublicRecord> GetBatchAsync(IEnumerable<TPublicKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+        public IAsyncEnumerable<TPublicRecord> GetAsync(IEnumerable<TPublicKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
         {
-            var internalRecords = this._collection.GetBatchAsync(keys.Select(this._publicToInternalKeyMapper), options, cancellationToken);
+            var internalRecords = this._collection.GetAsync(keys.Select(this._publicToInternalKeyMapper), options, cancellationToken);
             return internalRecords.Select(this._internalToPublicRecordMapper);
         }
 
@@ -172,10 +172,10 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<TPublicKey> UpsertBatchAsync(IEnumerable<TPublicRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<TPublicKey> UpsertAsync(IEnumerable<TPublicRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var internalRecords = records.Select(this._publicToInternalRecordMapper);
-            var internalKeys = this._collection.UpsertBatchAsync(internalRecords, cancellationToken);
+            var internalKeys = this._collection.UpsertAsync(internalRecords, cancellationToken);
             await foreach (var internalKey in internalKeys.ConfigureAwait(false))
             {
                 yield return this._internalToPublicKeyMapper(internalKey);

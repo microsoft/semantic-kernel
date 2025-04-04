@@ -12,7 +12,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Http;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -24,52 +24,6 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Weaviate";
-
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(Guid)
-    ];
-
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-        typeof(ReadOnlyMemory<double>),
-        typeof(ReadOnlyMemory<double>?)
-    ];
-
-    /// <summary>A set of types that data properties on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedDataTypes =
-    [
-        typeof(string),
-        typeof(bool),
-        typeof(bool?),
-        typeof(int),
-        typeof(int?),
-        typeof(long),
-        typeof(long?),
-        typeof(short),
-        typeof(short?),
-        typeof(byte),
-        typeof(byte?),
-        typeof(float),
-        typeof(float?),
-        typeof(double),
-        typeof(double?),
-        typeof(decimal),
-        typeof(decimal?),
-        typeof(DateTime),
-        typeof(DateTime?),
-        typeof(DateTimeOffset),
-        typeof(DateTimeOffset?),
-        typeof(Guid),
-        typeof(Guid?)
-    ];
-
     /// <summary>Default JSON serializer options.</summary>
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -93,11 +47,13 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <summary>Optional configuration options for this class.</summary>
     private readonly WeaviateVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -136,21 +92,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         this.CollectionName = collectionName;
         this._options = options ?? new();
         this._apiKey = this._options.ApiKey;
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = false,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = true,
-                JsonSerializerOptions = s_jsonSerializerOptions
-            });
-
-        // Validate property types.
-        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
-        this._propertyReader.VerifyDataProperties(s_supportedDataTypes, supportEnumerable: true);
-        this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
+        this._model = new WeaviateModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
 
         // Assign mapper.
         this._mapper = this.InitializeMapper();
@@ -180,11 +122,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         return this.RunOperationAsync(OperationName, () =>
         {
-            var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-                this.CollectionName,
-                this._propertyReader.DataProperties,
-                this._propertyReader.VectorProperties,
-                this._propertyReader.JsonPropertyNamesMap);
+            var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(this.CollectionName, this._model);
 
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
@@ -228,7 +166,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         const string OperationName = "DeleteObjectBatch";
         const string ContainsAnyOperator = "ContainsAny";
@@ -270,7 +208,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                WeaviateConstants.DatabaseName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
@@ -278,7 +216,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetBatchAsync(
+    public virtual async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<Guid> keys,
         GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -299,20 +237,20 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <inheritdoc />
     public virtual async Task<Guid> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        return await this.UpsertBatchAsync([record], cancellationToken)
+        return await this.UpsertAsync([record], cancellationToken)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<Guid> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<Guid> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "UpsertCollectionObject";
 
         var responses = await this.RunOperationAsync(OperationName, async () =>
         {
             var jsonObjects = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                WeaviateConstants.DatabaseName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -337,60 +275,52 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorSearch";
 
         VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
-
-        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
-        var fields = this._propertyReader.DataPropertyJsonNames;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildSearchQuery(
             vector,
             this.CollectionName,
-            vectorPropertyName,
-            this._propertyReader.KeyPropertyName,
+            vectorProperty.StorageName,
             s_jsonSerializerOptions,
+            top,
             searchOptions,
-            this._propertyReader.JsonPropertyNamesMap,
-            this._propertyReader.VectorPropertyJsonNames,
-            this._propertyReader.DataPropertyJsonNames);
+            this._model);
 
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
 
         VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
-
-        var vectorPropertyName = this._propertyReader.GetJsonPropertyName(vectorProperty.DataModelPropertyName);
-        var textDataPropertyName = this._propertyReader.GetJsonPropertyName(textDataProperty.DataModelPropertyName);
-        var fields = this._propertyReader.DataPropertyJsonNames;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(searchOptions.AdditionalProperty);
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildHybridSearchQuery(
             vector,
+            top,
             string.Join(" ", keywords),
             this.CollectionName,
-            vectorPropertyName,
-            this._propertyReader.KeyPropertyName,
-            textDataPropertyName,
+            this._model,
+            vectorProperty,
+            textDataProperty,
             s_jsonSerializerOptions,
-            searchOptions,
-            this._propertyReader.JsonPropertyNamesMap,
-            this._propertyReader.VectorPropertyJsonNames,
-            this._propertyReader.DataPropertyJsonNames);
+            searchOptions);
 
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
@@ -409,7 +339,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = WeaviateConstants.DatabaseName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -420,7 +350,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                WeaviateConstants.DatabaseName,
                 this.CollectionName,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -440,14 +370,14 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
         }
 
-        return this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken);
+        return this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
     }
 
     private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
 
@@ -463,14 +393,16 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
     private async Task<TResponse?> ExecuteRequestWithNotFoundHandlingAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        try
-        {
-            return await this.ExecuteRequestAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
-        }
-        catch (HttpOperationException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return default;
         }
+
+        var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
+
+        return responseModel;
     }
 
     private async Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
@@ -483,7 +415,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = WeaviateConstants.DatabaseName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -493,6 +425,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
     {
         if (this._options.JsonObjectCustomMapper is not null)
@@ -502,25 +435,14 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>))
         {
-            var mapper = new WeaviateGenericDataModelMapper(
-                this.CollectionName,
-                this._propertyReader.KeyProperty,
-                this._propertyReader.DataProperties,
-                this._propertyReader.VectorProperties,
-                this._propertyReader.JsonPropertyNamesMap,
-                s_jsonSerializerOptions);
+            var mapper = new WeaviateGenericDataModelMapper(this.CollectionName, this._model, s_jsonSerializerOptions);
 
             return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
         }
 
-        return new WeaviateVectorStoreRecordMapper<TRecord>(
-            this.CollectionName,
-            this._propertyReader.KeyProperty,
-            this._propertyReader.DataProperties,
-            this._propertyReader.VectorProperties,
-            this._propertyReader.JsonPropertyNamesMap,
-            s_jsonSerializerOptions);
+        return new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._model, s_jsonSerializerOptions);
     }
+#pragma warning restore CS0618
 
     private static void VerifyVectorParam<TVector>(TVector vector)
     {
@@ -528,11 +450,11 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         var vectorType = vector.GetType();
 
-        if (!s_supportedVectorTypes.Contains(vectorType))
+        if (!WeaviateModelBuilder.s_supportedVectorTypes.Contains(vectorType))
         {
             throw new NotSupportedException(
                 $"The provided vector type {vectorType.FullName} is not supported by the Weaviate connector. " +
-                $"Supported types are: {string.Join(", ", s_supportedVectorTypes.Select(l => l.FullName))}");
+                $"Supported types are: {string.Join(", ", WeaviateModelBuilder.s_supportedVectorTypes.Select(l => l.FullName))}");
         }
     }
 

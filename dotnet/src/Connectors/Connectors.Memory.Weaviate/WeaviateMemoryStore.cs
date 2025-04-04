@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -21,6 +20,8 @@ using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+#pragma warning disable SKEXP0001 // IMemoryStore is experimental (but we're obsoleting)
+
 /// <summary>
 /// An implementation of <see cref="IMemoryStore" /> for Weaviate.
 /// </summary>
@@ -29,7 +30,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and WeaviateVectorStore")]
 public partial class WeaviateMemoryStore : IMemoryStore
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
 {

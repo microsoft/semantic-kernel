@@ -1,0 +1,22 @@
+<Project>
+  <!--
+    Contains shared utilities which do not depend on various external dependencies.
+    Used by the Microsoft.Extensions.VectorData connectors which do not reference SemanticKernel.Core.
+  -->
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/*.cs" Link="Shared/System/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/*.cs" Link="Shared/Data/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Linq/*.cs" Link="Shared/Linq/%(Filename)%(Extension)" />
+
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/DynamicallyAccessedMembersAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
+
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/HttpClientProvider.cs" Link="Shared/Http/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/HttpHeaderConstant.cs" Link="Shared/Http/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

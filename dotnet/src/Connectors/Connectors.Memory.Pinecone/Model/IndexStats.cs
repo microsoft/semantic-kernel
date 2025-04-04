@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Index parameters.
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
 public class IndexStats
 {
     /// <summary>

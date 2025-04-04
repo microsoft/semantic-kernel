@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
+using System;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// Supported distance metrics are {L2, IP, COSINE}. The default value is "COSINE".
 /// <see href="https://redis.io/docs/interact/search-and-query/search/vectors/"/>
 /// </summary>
-[Experimental("SKEXP0020")]
+[Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and RedisVectorStore")]
 public enum VectorDistanceMetric
 {
     /// <summary>

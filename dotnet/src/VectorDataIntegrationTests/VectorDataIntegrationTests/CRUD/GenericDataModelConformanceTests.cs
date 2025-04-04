@@ -12,7 +12,7 @@ public abstract class GenericDataModelConformanceTests<TKey>(GenericDataModelFix
     [ConditionalFact]
     public async Task GetAsyncThrowsArgumentNullExceptionForNullKey()
     {
-        ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.GetAsync(default!));
+        ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.GetAsync((TKey)default!));
         Assert.Equal("key", ex.ParamName);
     }
 

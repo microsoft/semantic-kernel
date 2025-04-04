@@ -1,49 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRecordMapper<TRecord, JsonObject>
+#pragma warning restore CS0618
 {
     private readonly string _collectionName;
-
-    private readonly string _keyProperty;
-
-    private readonly IReadOnlyList<string> _dataProperties;
-
-    private readonly IReadOnlyList<string> _vectorProperties;
-
-    private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
-
+    private readonly VectorStoreRecordModel _model;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     public WeaviateVectorStoreRecordMapper(
         string collectionName,
-        VectorStoreRecordKeyProperty keyProperty,
-        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
-        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
-        IReadOnlyDictionary<string, string> storagePropertyNames,
+        VectorStoreRecordModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.NotNull(keyProperty);
-        Verify.NotNull(dataProperties);
-        Verify.NotNull(vectorProperties);
-        Verify.NotNull(storagePropertyNames);
-        Verify.NotNull(jsonSerializerOptions);
-
         this._collectionName = collectionName;
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
         this._jsonSerializerOptions = jsonSerializerOptions;
-
-        this._keyProperty = this._storagePropertyNames[keyProperty.DataModelPropertyName];
-        this._dataProperties = dataProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
-        this._vectorProperties = vectorProperties.Select(property => this._storagePropertyNames[property.DataModelPropertyName]).ToList();
     }
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel)
@@ -56,30 +36,33 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         var weaviateObjectModel = new JsonObject
         {
             { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
-            { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._keyProperty]!.DeepClone() },
+            // The key property in Weaviate is always named 'id'.
+            // But the external JSON serializer used just above isn't aware of that, and will produce a JSON object with another name, taking into
+            // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
+            { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._model.KeyProperty.TemporaryStorageName!]!.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
             { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },
         };
 
         // Populate data properties.
-        foreach (var property in this._dataProperties)
+        foreach (var property in this._model.DataProperties)
         {
-            var node = jsonNodeDataModel[property];
+            var node = jsonNodeDataModel[property.StorageName];
 
             if (node is not null)
             {
-                weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![property] = node.DeepClone();
+                weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![property.StorageName] = node.DeepClone();
             }
         }
 
         // Populate vector properties.
-        foreach (var property in this._vectorProperties)
+        foreach (var property in this._model.VectorProperties)
         {
-            var node = jsonNodeDataModel[property];
+            var node = jsonNodeDataModel[property.StorageName];
 
             if (node is not null)
             {
-                weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![property] = node.DeepClone();
+                weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![property.StorageName] = node.DeepClone();
             }
         }
 
@@ -90,33 +73,37 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
     {
         Verify.NotNull(storageModel);
 
+        // TemporaryStorageName gets populated in the model builder once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
+        Debug.Assert(this._model.KeyProperty.TemporaryStorageName is not null);
+
         // Transform Weaviate object model to data model.
         var jsonNodeDataModel = new JsonObject
         {
-            { this._keyProperty, storageModel[WeaviateConstants.ReservedKeyPropertyName]?.DeepClone() },
+            // See comment above on TemporaryStorageName
+            { this._model.KeyProperty.TemporaryStorageName!, storageModel[WeaviateConstants.ReservedKeyPropertyName]?.DeepClone() },
         };
 
         // Populate data properties.
-        foreach (var property in this._dataProperties)
+        foreach (var property in this._model.DataProperties)
         {
-            var node = storageModel[WeaviateConstants.ReservedDataPropertyName]?[property];
+            var node = storageModel[WeaviateConstants.ReservedDataPropertyName]?[property.StorageName];
 
             if (node is not null)
             {
-                jsonNodeDataModel[property] = node.DeepClone();
+                jsonNodeDataModel[property.StorageName] = node.DeepClone();
             }
         }
 
         // Populate vector properties.
         if (options.IncludeVectors)
         {
-            foreach (var property in this._vectorProperties)
+            foreach (var property in this._model.VectorProperties)
             {
-                var node = storageModel[WeaviateConstants.ReservedVectorPropertyName]?[property];
+                var node = storageModel[WeaviateConstants.ReservedVectorPropertyName]?[property.StorageName];
 
                 if (node is not null)
                 {
-                    jsonNodeDataModel[property] = node.DeepClone();
+                    jsonNodeDataModel[property.StorageName] = node.DeepClone();
                 }
             }
         }

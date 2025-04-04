@@ -4,13 +4,14 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Connectors.SqlServer</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net8.0;net462</TargetFrameworks>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
+  <!-- <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/RestrictedInternalUtilities.props" /> -->
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -23,10 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\VectorData.Abstractions\VectorData.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

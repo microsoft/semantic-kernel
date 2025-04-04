@@ -16,11 +16,13 @@ public interface IVectorizedSearch<TRecord>
     /// </summary>
     /// <typeparam name="TVector">The type of the vector.</typeparam>
     /// <param name="vector">The vector to search the store with.</param>
+    /// <param name="top">The maximum number of results to return.</param>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the vector search, including their result scores.</returns>
     Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         VectorSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 }

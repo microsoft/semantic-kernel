@@ -12,6 +12,8 @@ using StackExchange.Redis;
 
 namespace Memory;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// An example showing how to ingest data into a vector store using <see cref="RedisVectorStore"/> with a custom mapper.
 /// In this example, the storage model differs significantly from the data model, so a custom mapper is used to map between the two.

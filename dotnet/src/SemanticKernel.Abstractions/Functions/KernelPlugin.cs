@@ -29,7 +29,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
     /// <exception cref="ArgumentException"><paramref name="name"/> is an invalid plugin name.</exception>
     protected KernelPlugin(string name, string? description = null)
     {
-        Verify.ValidPluginName(name);
+        KernelVerify.ValidPluginName(name);
 
         this.Name = name;
         this.Description = !string.IsNullOrWhiteSpace(description) ? description! : "";

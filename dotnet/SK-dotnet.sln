@@ -107,11 +107,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{958AD708-F04
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics", "{29E7D971-1308-4171-9872-E8E4669A1134}"
 	ProjectSection(SolutionItems) = preProject
+		src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs = src\InternalUtilities\src\Diagnostics\ActivityExtensions.cs
 		src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs = src\InternalUtilities\src\Diagnostics\CompilerServicesAttributes.cs
 		src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs = src\InternalUtilities\src\Diagnostics\DynamicallyAccessedMembersAttribute.cs
 		src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs = src\InternalUtilities\src\Diagnostics\ExceptionExtensions.cs
 		src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs = src\InternalUtilities\src\Diagnostics\ExperimentalAttribute.cs
 		src\InternalUtilities\src\Diagnostics\IsExternalInit.cs = src\InternalUtilities\src\Diagnostics\IsExternalInit.cs
+		src\InternalUtilities\src\Diagnostics\KernelVerify.cs = src\InternalUtilities\src\Diagnostics\KernelVerify.cs
+		src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs = src\InternalUtilities\src\Diagnostics\LoggingExtensions.cs
 		src\InternalUtilities\src\Diagnostics\NullableAttributes.cs = src\InternalUtilities\src\Diagnostics\NullableAttributes.cs
 		src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresDynamicCodeAttribute.cs
 		src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs = src\InternalUtilities\src\Diagnostics\RequiresUnreferencedCodeAttribute.cs

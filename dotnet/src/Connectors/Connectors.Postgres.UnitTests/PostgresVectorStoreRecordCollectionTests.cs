@@ -72,7 +72,7 @@ public class PostgresVectorStoreRecordCollectionTests
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<ulong>>(this._postgresClientMock.Object, TestCollectionName, options));
+        Assert.Throws<NotSupportedException>(() => new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<ulong>>(this._postgresClientMock.Object, TestCollectionName, options));
     }
 
     [Fact]
