@@ -179,7 +179,7 @@ class AutoGenConversableAgent(Agent):
         cache: "AbstractCache | None" = None,
         max_turns: int | None = None,
         summary_method: str | Callable | None = ConversableAgent.DEFAULT_SUMMARY_METHOD,
-        summary_args: dict | None = {},
+        summary_args: dict | None = None,
         **kwargs: Any,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """A direct `invoke` method for the ConversableAgent.
@@ -209,6 +209,9 @@ class AutoGenConversableAgent(Agent):
             expected_type=AutoGenConversableAgentThread,
         )
         assert thread.id is not None  # nosec
+
+        if summary_args is None:
+            summary_args = {}
 
         if recipient is not None:
             if not isinstance(recipient, AutoGenConversableAgent):
