@@ -32,10 +32,10 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
     }
 
     /// <summary>
-    /// This example shows how to access the custom <see cref="InvocationSettingsAttribute"/> attribute the native method wrapped by Kernel Function is annotated with.
+    /// This example shows how to access the custom <see cref="InvocationSettingsAttribute"/> attribute the inner method wrapped by Kernel Function is annotated with.
     /// </summary>
     [Fact]
-    public async Task AccessNativeMethodAttributes()
+    public async Task AccessInnerMethodAttributes()
     {
         // Import the plugin containing the method with the InvocationSettingsAttribute custom attribute
         var kernel = new Kernel();
