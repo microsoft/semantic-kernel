@@ -36,7 +36,7 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
         Verify.NotNull(target, nameof(target));
 
         // Create a new event listener for the source messages and the destination step
-        var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id);
+        var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id, id: Guid.NewGuid().ToString("n"));
 
         // Add the listener to the process builder
         this._processBuilder.AddListenerStep(eventListener);

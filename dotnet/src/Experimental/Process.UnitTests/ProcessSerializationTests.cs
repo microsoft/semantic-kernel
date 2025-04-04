@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -45,6 +46,12 @@ public class ProcessSerializationTests
 
         // Assert
         Assert.NotNull(process);
+
+        var eventListenerSteps = process.Steps.Where(s => s is KernelProcessEventListener);
+        Assert.Single(eventListenerSteps);
+
+        KernelProcessEventListener eventListenerStep = (eventListenerSteps.First() as KernelProcessEventListener)!;
+        Assert.Single(eventListenerStep.Edges);
     }
 
     /// <summary>

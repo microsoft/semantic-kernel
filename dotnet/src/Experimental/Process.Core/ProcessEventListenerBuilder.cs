@@ -24,7 +24,7 @@ internal class ProcessEventListenerBuilder : ProcessStepBuilder
 
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
-        var state = new KernelProcessStepState("EventListener", this.Id);
+        var state = new KernelProcessStepState("EventListener", "V1", id: this.Id);
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
         var builtSources = this.MessageSources
             .Select(sourceBuilder => new KernelProcessMessageSource(sourceBuilder.MessageType, sourceBuilder.Source.Id))
