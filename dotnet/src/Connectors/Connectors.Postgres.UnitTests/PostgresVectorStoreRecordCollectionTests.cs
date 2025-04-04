@@ -22,6 +22,7 @@ public class PostgresVectorStoreRecordCollectionTests
     public PostgresVectorStoreRecordCollectionTests()
     {
         this._postgresClientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
+        this._postgresClientMock.Setup(l => l.DatabaseName).Returns("TestDatabase");
     }
 
     [Fact]

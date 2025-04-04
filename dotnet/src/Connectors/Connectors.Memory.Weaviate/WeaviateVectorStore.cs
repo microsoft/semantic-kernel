@@ -18,6 +18,9 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// </remarks>
 public class WeaviateVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary><see cref="HttpClient"/> that is used to interact with Weaviate API.</summary>
     private readonly HttpClient _httpClient;
 
@@ -39,6 +42,11 @@ public class WeaviateVectorStore : IVectorStore
 
         this._httpClient = httpClient;
         this._options = options ?? new();
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName
+        };
     }
 
     /// <inheritdoc />
@@ -91,7 +99,7 @@ public class WeaviateVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", e)
             {
-                VectorStoreType = WeaviateConstants.DatabaseName,
+                VectorStoreType = WeaviateConstants.VectorStoreSystemName,
                 OperationName = "ListCollectionNames"
             };
         }
@@ -103,5 +111,18 @@ public class WeaviateVectorStore : IVectorStore
                 yield return collection.CollectionName;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(HttpClient) ? this._httpClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

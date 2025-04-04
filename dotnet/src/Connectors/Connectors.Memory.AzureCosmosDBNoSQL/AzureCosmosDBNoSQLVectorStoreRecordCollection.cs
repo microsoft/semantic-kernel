@@ -29,8 +29,8 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureCosmosDBNoSQL";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -105,6 +105,13 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             // If partition key is not provided, use key property as a partition key.
             this._partitionKeyProperty = this._model.KeyProperty;
         }
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+            VectorStoreName = database.Id,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
@@ -378,6 +385,19 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
     #endregion
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(Database) ? this._database :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     #region private
 
     private void VerifyVectorType<TVector>(TVector? vector)
@@ -404,7 +424,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -564,7 +584,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
         {
             yield return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
@@ -580,7 +600,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertItem";
 
         var jsonObject = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record));
@@ -660,7 +680,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             jsonObject.Remove(scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this.CollectionName,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));

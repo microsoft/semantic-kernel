@@ -18,6 +18,16 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorizableTextSea
         return Task.FromResult(new VectorSearchResults<TRecord>(this._searchResults));
     }
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     private static async IAsyncEnumerable<VectorSearchResult<TRecord>> ToAsyncEnumerable(IEnumerable<VectorSearchResult<TRecord>> searchResults)
     {
         foreach (var result in searchResults)

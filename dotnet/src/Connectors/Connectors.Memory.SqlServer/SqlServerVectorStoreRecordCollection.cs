@@ -20,6 +20,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711
     : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
     private static readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> s_defaultOptions = new();
 
@@ -60,9 +63,17 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 Mapper = options.Mapper,
                 RecordDefinition = options.RecordDefinition,
             };
-
         this._mapper = this._options.Mapper ?? new RecordMapper<TRecord>(this._model);
 #pragma warning restore CS0618
+
+        var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.InitialCatalog,
+            CollectionName = name
+        };
     }
 
     /// <inheritdoc/>
@@ -205,7 +216,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = "DeleteBatch",
-                VectorStoreType = ExceptionWrapper.VectorStoreType,
+                VectorStoreType = SqlServerConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName
             };
         }
@@ -377,7 +388,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = "UpsertBatch",
-                VectorStoreType = ExceptionWrapper.VectorStoreType,
+                VectorStoreType = SqlServerConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName
             };
         }
@@ -442,6 +453,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 var results = this.ReadVectorSearchResultsAsync(connection, cmd, searchOptions.IncludeVectors, ct);
                 return Task.FromResult(new VectorSearchResults<TRecord>(results));
             }, cancellationToken, "VectorizedSearch", this.CollectionName).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadVectorSearchResultsAsync(

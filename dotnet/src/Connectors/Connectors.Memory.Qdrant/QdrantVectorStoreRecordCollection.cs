@@ -26,14 +26,14 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
-
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Qdrant";
 
     /// <summary>The name of the upsert operation for telemetry purposes.</summary>
     private const string UpsertName = "Upsert";
@@ -96,6 +96,12 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.PointStructCustomMapper ?? new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
 #pragma warning restore CS0618
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
@@ -318,7 +324,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -337,7 +343,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -356,7 +362,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -379,7 +385,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -437,7 +443,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             }
 
             yield return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                QdrantConstants.VectorStoreSystemName,
                 this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
@@ -492,7 +498,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                DatabaseName,
+                QdrantConstants.VectorStoreSystemName,
                 this._collectionName,
                 "Query"));
 
@@ -577,11 +583,24 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                DatabaseName,
+                QdrantConstants.VectorStoreSystemName,
                 this._collectionName,
                 "Query"));
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(QdrantClient) ? this._qdrantClient.QdrantClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <summary>
@@ -600,7 +619,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = QdrantConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -624,7 +643,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = QdrantConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

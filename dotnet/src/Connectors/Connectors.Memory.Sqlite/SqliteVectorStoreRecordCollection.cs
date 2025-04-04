@@ -24,8 +24,8 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "SQLite";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
     private readonly string _connectionString;
@@ -131,10 +131,18 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
                     throw new UnreachableException();
             }
         }
-
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.DictionaryCustomMapper ?? new SqliteVectorStoreRecordMapper<TRecord>(this._model);
 #pragma warning restore CS0618
+
+        var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.DataSource,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
@@ -362,6 +370,18 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
     #endregion
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     #region private
 
     private async ValueTask<SqliteConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
@@ -567,7 +587,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            SqliteConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -590,7 +610,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            SqliteConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -720,7 +740,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            SqliteConstants.VectorStoreSystemName,
             this.CollectionName,
             operationName,
             () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -736,7 +756,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = SqliteConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

@@ -18,8 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </remarks>
 public class RedisVectorStore : IVectorStore
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Redis";
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>The redis database to read/write indices from.</summary>
     private readonly IDatabase _database;
@@ -38,6 +38,12 @@ public class RedisVectorStore : IVectorStore
 
         this._database = database;
         this._options = options ?? new RedisVectorStoreOptions();
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+            VectorStoreName = database.Database.ToString()
+        };
     }
 
     /// <inheritdoc />
@@ -82,7 +88,7 @@ public class RedisVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = RedisConstants.VectorStoreSystemName,
                 OperationName = OperationName
             };
         }
@@ -95,5 +101,18 @@ public class RedisVectorStore : IVectorStore
                 yield return name;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(IDatabase) ? this._metadata :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

@@ -17,6 +17,9 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 /// </remarks>
 public class AzureCosmosDBNoSQLVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</summary>
     private readonly Database _database;
 
@@ -34,6 +37,12 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
 
         this._database = database;
         this._options = options ?? new();
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+            VectorStoreName = database.Id
+        };
     }
 
     /// <inheritdoc />
@@ -83,5 +92,18 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
                 yield return containerName;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(Database) ? this._database :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

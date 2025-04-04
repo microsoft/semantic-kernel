@@ -18,6 +18,9 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </remarks>
 public class SqliteVectorStore : IVectorStore
 {
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary>The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</summary>
     private readonly string _connectionString;
 
@@ -35,6 +38,14 @@ public class SqliteVectorStore : IVectorStore
 
         this._connectionString = connectionString;
         this._options = options ?? new();
+
+        var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.DataSource
+        };
     }
 
     /// <summary>
@@ -99,5 +110,17 @@ public class SqliteVectorStore : IVectorStore
             var ordinal = reader.GetOrdinal(TablePropertyName);
             yield return reader.GetString(ordinal);
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }
