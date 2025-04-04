@@ -3,7 +3,6 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 
