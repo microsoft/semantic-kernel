@@ -8,6 +8,9 @@ The following sample demonstrates how to create an OpenAI Responses Agent using 
 Azure OpenAI or OpenAI. The sample shows how to have the agent answer
 questions about the world.
 
+Note, in this sample, a thread is not used. This creates a stateless agent. It will
+not be able to recall previous messages, which is expected behavior.
+
 The interaction with the agent is via the `get_response` method, which sends a
 user input to the agent and receives a response from the agent. The conversation
 history is maintained by the agent service, i.e. the responses are automatically
