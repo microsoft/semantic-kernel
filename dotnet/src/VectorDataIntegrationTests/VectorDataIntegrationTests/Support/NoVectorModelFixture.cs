@@ -47,7 +47,7 @@ public abstract class NoVectorModelFixture<TKey> : VectorStoreCollectionFixture<
 
     protected override Task WaitForDataAsync()
     {
-        // Don't do anything, since vector search is not suported with this model.
+        // Don't do anything, since vector search is not supported with this model.
         return Task.CompletedTask;
     }
 }
