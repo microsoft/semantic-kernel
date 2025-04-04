@@ -5,7 +5,7 @@ using System;
 namespace Microsoft.SemanticKernel.Agents.Service;
 
 /// <summary>
-/// Describes the <see cref="ServiceAgentProvider"/> assocaited with an <see cref="ServiceAgent"/>.
+/// Describes the <see cref="ServiceAgentProvider"/> associated with an <see cref="ServiceAgent"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 public sealed class ServiceAgentProviderAttribute<TProvider> : Attribute

@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 public class IntentTriageAgentProvider1 : ServiceAgentProvider
 {
     private readonly IntentTriageServiceSettings _serviceSettings;
-    private readonly IntentTriageLanguageSettings _languagSettings;
+    private readonly IntentTriageLanguageSettings _languageSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IntentTriageAgentProvider1"/> class.
@@ -31,7 +31,7 @@ public class IntentTriageAgentProvider1 : ServiceAgentProvider
         : base(configuration, loggerFactory)
     {
         this._serviceSettings = IntentTriageServiceSettings.FromConfiguration(configuration);
-        this._languagSettings = IntentTriageLanguageSettings.FromConfiguration(configuration);
+        this._languageSettings = IntentTriageLanguageSettings.FromConfiguration(configuration);
     }
 
     /// <inheritdoc/>
@@ -39,7 +39,7 @@ public class IntentTriageAgentProvider1 : ServiceAgentProvider
     {
         Kernel kernel = KernelFactory.CreateKernel(this._serviceSettings, this.LoggerFactory);
         IntentTriageAgent1 agent =
-            new(this._languagSettings)
+            new(this._languageSettings)
             {
                 Id = id,
                 Name = name,
