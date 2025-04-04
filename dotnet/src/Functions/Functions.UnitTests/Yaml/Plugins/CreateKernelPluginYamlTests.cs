@@ -47,7 +47,6 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
             string ymlFile1Path = Path.Combine(plugin2Directory, $"{nameof(YAML)}.yml");
 
             File.WriteAllText(ymlFile1Path, YAML);
-
         }
         catch (Exception)
         {
