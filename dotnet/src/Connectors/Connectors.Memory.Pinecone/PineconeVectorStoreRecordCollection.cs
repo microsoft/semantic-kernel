@@ -396,7 +396,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         };
 
         Sdk.QueryResponse response = await this.RunIndexOperationAsync(
-            "Query",
+            "Get",
             indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         if (response.Matches is null)
