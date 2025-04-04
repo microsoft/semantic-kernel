@@ -4,6 +4,7 @@ import logging
 from typing import Any, Literal
 
 from semantic_kernel import Kernel
+from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.prompt_template.input_variable import InputVariable
@@ -20,7 +21,14 @@ def echo_function(message: str, extra: str = "") -> str:
     return f"Function echo: {message} {extra}"
 
 
+agent = ChatCompletionAgent(
+    service=OpenAIChatCompletion(),
+    name="Agent",
+    instructions="Answer questions from the user.",
+)
+
 kernel.add_service(OpenAIChatCompletion(service_id="default"))
+kernel.add_plugin(agent, "agent")
 kernel.add_function("echo", echo_function, "echo_function")
 kernel.add_function(
     plugin_name="prompt",
@@ -28,7 +36,7 @@ kernel.add_function(
     prompt_template_config=PromptTemplateConfig(
         name="prompt",
         description="This is a prompt",
-        template="Please repeat this: {{$message}} and this: {{$extra}}",
+        template="Please repeat this: {{$param1}} and this: {{$param2}}",
         input_variables=[
             InputVariable(
                 name="message",
@@ -36,8 +44,8 @@ kernel.add_function(
                 is_required=True,
             ),
             InputVariable(
-                name="extra",
-                description="This is extra.",
+                name="param2",
+                description="This is param2",
                 default="default",
                 is_required=False,
             ),
@@ -47,7 +55,7 @@ kernel.add_function(
 
 
 def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -> None:
-    server = kernel.as_mcp_server()
+    server = create_mcp_server_from_kernel(kernel, prompt_functions=["agent-Agent"], tool_functions=[])
 
     if transport == "sse" and port is not None:
         import uvicorn
