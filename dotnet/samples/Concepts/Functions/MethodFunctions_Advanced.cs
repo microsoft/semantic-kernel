@@ -32,10 +32,10 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
     }
 
     /// <summary>
-    /// This example shows how to access the custom <see cref="InvocationSettingsAttribute"/> attribute the inner method wrapped by Kernel Function is annotated with.
+    /// This example shows how to access the custom <see cref="InvocationSettingsAttribute"/> attribute the underlying method wrapped by Kernel Function is annotated with.
     /// </summary>
     [Fact]
-    public async Task AccessInnerMethodAttributes()
+    public async Task AccessUnderlyingMethodAttributes()
     {
         // Import the plugin containing the method with the InvocationSettingsAttribute custom attribute
         var kernel = new Kernel();
@@ -46,7 +46,7 @@ public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(outpu
         var kernelFunction = functions[nameof(Plugin.FunctionWithInvocationSettingsAttribute)];
 
         // Access the custom attribute the underlying method is annotated with
-        var invocationSettingsAttribute = kernelFunction.InnerMethod!.GetCustomAttribute<InvocationSettingsAttribute>();
+        var invocationSettingsAttribute = kernelFunction.UnderlyingMethod!.GetCustomAttribute<InvocationSettingsAttribute>();
 
         Console.WriteLine($"Priority: {invocationSettingsAttribute?.Priority}");
     }

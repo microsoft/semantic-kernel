@@ -289,7 +289,7 @@ public sealed class KernelFunctionFromMethodTests2
     }
 
     [Fact]
-    public void ItShouldExposeNativeMethod()
+    public void ItShouldExposeUnderlyingMethod()
     {
         // Arrange
         var target = new LocalExamplePlugin();
@@ -299,11 +299,11 @@ public sealed class KernelFunctionFromMethodTests2
         var kernelFunction = KernelFunctionFactory.CreateFromMethod(methodInfo, target);
 
         // Assert
-        Assert.NotNull(kernelFunction.InnerMethod);
+        Assert.NotNull(kernelFunction.UnderlyingMethod);
 
-        Assert.Equal(methodInfo, kernelFunction.InnerMethod);
+        Assert.Equal(methodInfo, kernelFunction.UnderlyingMethod);
 
-        Assert.NotNull(kernelFunction.InnerMethod.GetCustomAttribute<CustomAttribute>());
+        Assert.NotNull(kernelFunction.UnderlyingMethod.GetCustomAttribute<CustomAttribute>());
     }
 
     private interface IExampleService;

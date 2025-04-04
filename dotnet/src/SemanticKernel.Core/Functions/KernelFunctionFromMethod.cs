@@ -386,7 +386,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (base.JsonSerializerOptions is not null)
         {
             return new KernelFunctionFromMethod(
-            this.InnerMethod!,
+            this.UnderlyingMethod!,
             this._function,
             this.Name,
             pluginName,
@@ -402,7 +402,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         KernelFunctionFromMethod Clone()
         {
             return new KernelFunctionFromMethod(
-            this.InnerMethod!,
+            this.UnderlyingMethod!,
             this._function,
             this.Name,
             pluginName,
@@ -470,7 +470,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
-        this.InnerMethod = method;
+        this.UnderlyingMethod = method;
     }
 
     private KernelFunctionFromMethod(
@@ -488,7 +488,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
-        this.InnerMethod = method;
+        this.UnderlyingMethod = method;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
