@@ -260,7 +260,7 @@ triage_agent = ChatCompletionAgent(
     plugins=[billing_agent, refund_agent],
 )
 
-thread: ChatHistoryAgentThread = None
+thread = None
 
 async def main() -> None:
     print("Welcome to the chat bot!\n  Type 'exit' to exit.\n  Try to get some billing or refund help.")
