@@ -10,7 +10,7 @@ assistant's code interpreter functionality to have it write
 Python code to print Fibonacci numbers.
 """
 
-TASK = "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?"
+TASK = "Use code to determine the values in the Fibonacci sequence that that are less than the value of 101?"
 
 
 async def main():

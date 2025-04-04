@@ -37,7 +37,34 @@ public class ChatCompletionAgentTests
         Assert.Equal("test instructions", agent.Instructions);
         Assert.Equal("test description", agent.Description);
         Assert.Equal("test name", agent.Name);
+        Assert.Null(agent.Arguments);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatCompletionAgentDefinitionWithArguments()
+    {
+        // Arrange
+        KernelArguments arguments = new() { { "prop1", "val1" } };
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Description = "test description",
+                Instructions = "test instructions",
+                Name = "test name",
+                Arguments = arguments
+            };
+
+        // Assert
+        Assert.NotNull(agent.Id);
+        Assert.Equal("test instructions", agent.Instructions);
+        Assert.Equal("test description", agent.Description);
+        Assert.Equal("test name", agent.Name);
         Assert.NotNull(agent.Arguments);
+        Assert.Equal(arguments, agent.Arguments);
     }
 
     /// <summary>
@@ -83,7 +110,7 @@ public class ChatCompletionAgentTests
         Assert.Equal(promptConfig.Template, agent.Instructions);
         Assert.Equal(promptConfig.Description, agent.Description);
         Assert.Equal(promptConfig.Name, agent.Name);
-        Assert.Equal(promptConfig.ExecutionSettings, agent.Arguments.ExecutionSettings);
+        Assert.Equal(promptConfig.ExecutionSettings, agent.Arguments?.ExecutionSettings);
     }
 
     /// <summary>
