@@ -84,9 +84,9 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
-        return this._decoratedVectorStoreRecordCollection.DeleteBatchAsync(keys, cancellationToken);
+        return this._decoratedVectorStoreRecordCollection.DeleteAsync(keys, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -96,9 +96,9 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return this._decoratedVectorStoreRecordCollection.GetBatchAsync(keys, options, cancellationToken);
+        return this._decoratedVectorStoreRecordCollection.GetAsync(keys, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -109,11 +109,11 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var recordWithEmbeddingsTasks = records.Select(r => this.AddEmbeddingsAsync(r, cancellationToken));
         var recordWithEmbeddings = await Task.WhenAll(recordWithEmbeddingsTasks).ConfigureAwait(false);
-        var upsertResults = this._decoratedVectorStoreRecordCollection.UpsertBatchAsync(recordWithEmbeddings, cancellationToken);
+        var upsertResults = this._decoratedVectorStoreRecordCollection.UpsertAsync(recordWithEmbeddings, cancellationToken);
         await foreach (var upsertResult in upsertResults.ConfigureAwait(false))
         {
             yield return upsertResult;

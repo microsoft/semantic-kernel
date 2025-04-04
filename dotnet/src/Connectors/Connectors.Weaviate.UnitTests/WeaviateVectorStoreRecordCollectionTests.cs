@@ -32,7 +32,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new WeaviateVectorStoreRecordCollection<object>(this._mockHttpClient, "Collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -195,7 +195,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        await sut.DeleteBatchAsync(ids);
+        await sut.DeleteAsync(ids);
 
         // Assert
         var request = JsonSerializer.Deserialize<WeaviateDeleteObjectBatchRequest>(this._messageHandlerStub.RequestContent);
@@ -261,7 +261,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.GetBatchAsync([id1, id2]).ToListAsync();
+        var results = await sut.GetAsync([id1, id2]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -329,7 +329,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2]).ToListAsync();
 
         // Assert
         Assert.Contains(id1, results);

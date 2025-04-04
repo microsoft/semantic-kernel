@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Moq;
 using Qdrant.Client.Grpc;
 using Xunit;
@@ -17,6 +17,20 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 /// </summary>
 public class QdrantVectorStoreCollectionSearchMappingTests
 {
+    private readonly VectorStoreRecordModel _model =
+        new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+        .Build(
+            typeof(VectorStoreGenericDataModel<string>),
+            new()
+            {
+                Properties =
+                [
+                    new VectorStoreRecordKeyProperty("Key", typeof(Guid)) { StoragePropertyName = "storage_key" },
+                    new VectorStoreRecordDataProperty("FieldName", typeof(string)) { StoragePropertyName = "storage_FieldName" },
+                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "storage_vector" },
+                ]
+            });
+
     [Theory]
     [InlineData("string")]
     [InlineData("int")]
@@ -37,7 +51,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().EqualTo("FieldName", expected);
 
         // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
+        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, this._model);
 
         // Assert.
         Assert.Single(actual.Must);
@@ -71,7 +85,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
         var filter = new VectorSearchFilter().AnyTagEqualTo("FieldName", "Value");
 
         // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, new Dictionary<string, string>() { { "FieldName", "storage_FieldName" } });
+        var actual = QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, this._model);
 
         // Assert.
         Assert.Single(actual.Must);
@@ -83,10 +97,10 @@ public class QdrantVectorStoreCollectionSearchMappingTests
     public void BuildFilterThrowsForUnknownFieldName()
     {
         // Arrange.
-        var filter = new VectorSearchFilter().EqualTo("FieldName", "Value");
+        var filter = new VectorSearchFilter().EqualTo("UnknownFieldName", "Value");
 
         // Act and Assert.
-        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, new Dictionary<string, string>()));
+        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(filter, this._model));
     }
 
     [Fact]

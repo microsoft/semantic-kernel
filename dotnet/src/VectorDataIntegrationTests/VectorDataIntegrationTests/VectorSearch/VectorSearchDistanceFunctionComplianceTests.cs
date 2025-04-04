@@ -101,7 +101,7 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
 
         try
         {
-            await collection.UpsertBatchAsync(insertedRecords).ToArrayAsync();
+            await collection.UpsertAsync(insertedRecords).ToArrayAsync();
 
             var searchResult = await collection.VectorizedSearchAsync(baseVector);
             var results = await searchResult.Results.ToListAsync();

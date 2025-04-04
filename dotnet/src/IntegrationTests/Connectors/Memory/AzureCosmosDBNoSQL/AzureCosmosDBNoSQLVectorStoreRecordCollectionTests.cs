@@ -212,8 +212,8 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         var record2 = this.CreateTestHotel(HotelId2);
         var record3 = this.CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
-        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
@@ -222,9 +222,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
 
         // Act
-        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+        await sut.DeleteAsync([HotelId1, HotelId2, HotelId3]);
 
-        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         // Assert
         Assert.Empty(getResults);
@@ -273,7 +273,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]));
@@ -304,7 +304,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
@@ -338,7 +338,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Xunit;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
@@ -17,24 +18,28 @@ public class RedisJsonGenericDataModelMapperTests
 {
     private static readonly float[] s_floatVector = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
 
-    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
-    {
-        Properties = new List<VectorStoreRecordProperty>()
-        {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
-            new VectorStoreRecordDataProperty("IntData", typeof(int)),
-            new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-            new VectorStoreRecordDataProperty("ComplexObjectData", typeof(ComplexObject)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-        }
-    };
+    private static readonly VectorStoreRecordModel s_model
+        = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<VectorStoreGenericDataModel<string>>.ModelBuildingOptions)
+            .Build(
+                typeof(VectorStoreGenericDataModel<string>),
+                new()
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                        new VectorStoreRecordDataProperty("StringData", typeof(string)),
+                        new VectorStoreRecordDataProperty("IntData", typeof(int)),
+                        new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
+                        new VectorStoreRecordDataProperty("ComplexObjectData", typeof(ComplexObject)),
+                        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                    ]
+                });
 
     [Fact]
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_model.Properties, JsonSerializerOptions.Default);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -55,7 +60,7 @@ public class RedisJsonGenericDataModelMapperTests
 
         // Assert
         Assert.Equal("key", storageModel.Key);
-        Assert.Equal("data 1", (string)storageModel.Node["storage_string_data"]!);
+        Assert.Equal("data 1", (string)storageModel.Node["StringData"]!);
         Assert.Equal(1, (int)storageModel.Node["IntData"]!);
         Assert.Equal(2, (int?)storageModel.Node["NullableIntData"]!);
         Assert.Equal("prop 1", (string)storageModel.Node["ComplexObjectData"]!.AsObject()["Prop1"]!);
@@ -66,7 +71,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_model.Properties, JsonSerializerOptions.Default);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -98,13 +103,15 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
-        var storageModel = new JsonObject();
-        storageModel.Add("storage_string_data", "data 1");
-        storageModel.Add("IntData", 1);
-        storageModel.Add("NullableIntData", 2);
-        storageModel.Add("ComplexObjectData", new JsonObject(new KeyValuePair<string, JsonNode?>[] { new("Prop1", JsonValue.Create("prop 1")), new("Prop2", JsonValue.Create("prop 2")) }));
-        storageModel.Add("FloatVector", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()));
+        var sut = new RedisJsonGenericDataModelMapper(s_model.Properties, JsonSerializerOptions.Default);
+        var storageModel = new JsonObject
+        {
+            { "StringData", "data 1" },
+            { "IntData", 1 },
+            { "NullableIntData", 2 },
+            { "ComplexObjectData", new JsonObject(new KeyValuePair<string, JsonNode?>[] { new("Prop1", JsonValue.Create("prop 1")), new("Prop2", JsonValue.Create("prop 2")) }) },
+            { "FloatVector", new JsonArray(new[] { 1, 2, 3, 4 }.Select(x => JsonValue.Create(x)).ToArray()) }
+        };
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
@@ -122,13 +129,15 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsNullValues()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
-        var storageModel = new JsonObject();
-        storageModel.Add("storage_string_data", null);
-        storageModel.Add("IntData", null);
-        storageModel.Add("NullableIntData", null);
-        storageModel.Add("ComplexObjectData", null);
-        storageModel.Add("FloatVector", null);
+        var sut = new RedisJsonGenericDataModelMapper(s_model.Properties, JsonSerializerOptions.Default);
+        var storageModel = new JsonObject
+        {
+            { "StringData", null },
+            { "IntData", null },
+            { "NullableIntData", null },
+            { "ComplexObjectData", null },
+            { "FloatVector", null }
+        };
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });
@@ -146,7 +155,7 @@ public class RedisJsonGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange.
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_model.Properties, JsonSerializerOptions.Default);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data = { },
@@ -167,7 +176,7 @@ public class RedisJsonGenericDataModelMapperTests
         // Arrange.
         var storageModel = new JsonObject();
 
-        var sut = new RedisJsonGenericDataModelMapper(s_vectorStoreRecordDefinition.Properties, JsonSerializerOptions.Default);
+        var sut = new RedisJsonGenericDataModelMapper(s_model.Properties, JsonSerializerOptions.Default);
 
         // Act.
         var dataModel = sut.MapFromStorageToDataModel(("key", storageModel), new() { IncludeVectors = true });

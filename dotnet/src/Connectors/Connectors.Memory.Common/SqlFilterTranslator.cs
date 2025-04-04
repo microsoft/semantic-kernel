@@ -9,22 +9,25 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors;
 
+#pragma warning disable MEVD9001 // Microsoft.Extensions.VectorData experimental connector-facing APIs
+
 internal abstract class SqlFilterTranslator
 {
-    private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
+    private readonly VectorStoreRecordModel _model;
     private readonly LambdaExpression _lambdaExpression;
     private readonly ParameterExpression _recordParameter;
     protected readonly StringBuilder _sql;
 
     internal SqlFilterTranslator(
-        IReadOnlyDictionary<string, string> storagePropertyNames,
+        VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
         StringBuilder? sql = null)
     {
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
         this._lambdaExpression = lambdaExpression;
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
@@ -296,10 +299,12 @@ internal abstract class SqlFilterTranslator
     {
         if (expression is MemberExpression member && member.Expression == this._recordParameter)
         {
-            if (!this._storagePropertyNames.TryGetValue(member.Member.Name, out column))
+            if (!this._model.PropertyMap.TryGetValue(member.Member.Name, out var property))
             {
                 throw new InvalidOperationException($"Property name '{member.Member.Name}' provided as part of the filter clause is not a valid property name.");
             }
+
+            column = property.StorageName;
 
             return true;
         }

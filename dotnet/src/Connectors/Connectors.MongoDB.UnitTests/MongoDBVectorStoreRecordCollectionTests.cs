@@ -37,7 +37,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new MongoDBVectorStoreRecordCollection<object>(this._mockMongoDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new MongoDBVectorStoreRecordCollection<object>(this._mockMongoDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -264,7 +264,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         var expectedDefinition = Builders<BsonDocument>.Filter.In(document => document["_id"].AsString, recordKeys);
 
         // Act
-        await sut.DeleteBatchAsync(recordKeys);
+        await sut.DeleteAsync(recordKeys);
 
         // Assert
         this._mockMongoCollection.Verify(l => l.DeleteManyAsync(
@@ -359,7 +359,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.GetBatchAsync(["key1", "key2", "key3"]).ToListAsync();
+        var results = await sut.GetAsync(["key1", "key2", "key3"]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -418,7 +418,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2, hotel3]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]).ToListAsync();
 
         // Assert
         Assert.NotNull(results);

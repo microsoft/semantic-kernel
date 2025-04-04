@@ -40,7 +40,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} (");
+        builder.AppendLine($"""CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}"{tableName.Replace("\"", "\"\"")}" (""");
 
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");
@@ -69,7 +69,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName} USING {extensionName}(");
+        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}'{tableName.Replace("'", "''")}' USING {extensionName}(");
 
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
         builder.Append(");");

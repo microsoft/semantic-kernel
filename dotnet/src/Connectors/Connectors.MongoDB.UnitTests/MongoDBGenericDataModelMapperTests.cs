@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using MongoDB.Bson;
 using Xunit;
@@ -15,33 +16,30 @@ namespace SemanticKernel.Connectors.MongoDB.UnitTests;
 /// </summary>
 public sealed class MongoDBGenericDataModelMapperTests
 {
-    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
-    {
-        Properties = new List<VectorStoreRecordProperty>
-        {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-            new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-            new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-            new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-            new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-            new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-            new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-            new VectorStoreRecordDataProperty("DecimalDataProp", typeof(decimal)),
-            new VectorStoreRecordDataProperty("NullableDecimalDataProp", typeof(decimal?)),
-            new VectorStoreRecordDataProperty("DateTimeDataProp", typeof(DateTime)),
-            new VectorStoreRecordDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
-            new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-            new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>)),
-            new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?)),
-        },
-    };
+    private static readonly VectorStoreRecordModel s_model = BuildModel(
+    [
+        new VectorStoreRecordKeyProperty("Key", typeof(string)),
+        new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
+        new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
+        new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+        new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
+        new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+        new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
+        new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
+        new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
+        new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
+        new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
+        new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
+        new VectorStoreRecordDataProperty("DecimalDataProp", typeof(decimal)),
+        new VectorStoreRecordDataProperty("NullableDecimalDataProp", typeof(decimal?)),
+        new VectorStoreRecordDataProperty("DateTimeDataProp", typeof(DateTime)),
+        new VectorStoreRecordDataProperty("NullableDateTimeDataProp", typeof(DateTime?)),
+        new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
+        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+        new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+        new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>)),
+        new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?))
+    ]);
 
     private static readonly float[] s_floatVector = [1.0f, 2.0f, 3.0f];
     private static readonly double[] s_doubleVector = [1.0f, 2.0f, 3.0f];
@@ -51,7 +49,7 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new MongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(s_model);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -113,16 +111,13 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?))
+        ]);
 
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -137,7 +132,7 @@ public sealed class MongoDBGenericDataModelMapperTests
             },
         };
 
-        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(model);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -152,7 +147,7 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new MongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(s_model);
         var storageModel = new BsonDocument
         {
             ["_id"] = "key",
@@ -209,16 +204,13 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?))
+        ]);
 
         var storageModel = new BsonDocument
         {
@@ -228,7 +220,7 @@ public sealed class MongoDBGenericDataModelMapperTests
             ["NullableFloatVector"] = BsonNull.Value
         };
 
-        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(model);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -244,7 +236,7 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var sut = new MongoDBGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(s_model);
         var storageModel = new BsonDocument();
 
         // Act & Assert
@@ -256,18 +248,15 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+        ]);
 
         var dataModel = new VectorStoreGenericDataModel<string>("key");
-        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(model);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -282,22 +271,19 @@ public sealed class MongoDBGenericDataModelMapperTests
     public void MapFromStorageToDataModelSkipsMissingProperties()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+        ]);
 
         var storageModel = new BsonDocument
         {
             ["_id"] = "key"
         };
 
-        var sut = new MongoDBGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new MongoDBGenericDataModelMapper(model);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -307,4 +293,7 @@ public sealed class MongoDBGenericDataModelMapperTests
         Assert.False(dataModel.Data.ContainsKey("StringDataProp"));
         Assert.False(dataModel.Vectors.ContainsKey("FloatVector"));
     }
+
+    private static VectorStoreRecordModel BuildModel(IReadOnlyList<VectorStoreRecordProperty> properties)
+        => new MongoDBModelBuilder().Build(typeof(VectorStoreGenericDataModel<string>), new() { Properties = properties });
 }

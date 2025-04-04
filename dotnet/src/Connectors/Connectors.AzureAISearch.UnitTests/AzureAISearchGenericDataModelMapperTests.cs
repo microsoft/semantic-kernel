@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Xunit;
 
@@ -15,39 +16,36 @@ namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 /// </summary>
 public class AzureAISearchGenericDataModelMapperTests
 {
-    private static readonly VectorStoreRecordDefinition s_vectorStoreRecordDefinition = new()
-    {
-        Properties = new List<VectorStoreRecordProperty>
-        {
-            new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-            new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
-            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-            new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
-            new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
-            new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
-            new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
-            new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
-            new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
-            new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
-            new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
-            new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
-            new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
-            new VectorStoreRecordDataProperty("TagListDataProp", typeof(string[])),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-        },
-    };
+    private static readonly VectorStoreRecordModel s_model = BuildModel(
+    [
+        new VectorStoreRecordKeyProperty("Key", typeof(string)),
+        new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+        new VectorStoreRecordDataProperty("IntDataProp", typeof(int)),
+        new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+        new VectorStoreRecordDataProperty("LongDataProp", typeof(long)),
+        new VectorStoreRecordDataProperty("NullableLongDataProp", typeof(long?)),
+        new VectorStoreRecordDataProperty("FloatDataProp", typeof(float)),
+        new VectorStoreRecordDataProperty("NullableFloatDataProp", typeof(float?)),
+        new VectorStoreRecordDataProperty("DoubleDataProp", typeof(double)),
+        new VectorStoreRecordDataProperty("NullableDoubleDataProp", typeof(double?)),
+        new VectorStoreRecordDataProperty("BoolDataProp", typeof(bool)),
+        new VectorStoreRecordDataProperty("NullableBoolDataProp", typeof(bool?)),
+        new VectorStoreRecordDataProperty("DateTimeOffsetDataProp", typeof(DateTimeOffset)),
+        new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
+        new VectorStoreRecordDataProperty("TagListDataProp", typeof(string[])),
+        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+        new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+    ]);
 
-    private static readonly float[] s_vector1 = new float[] { 1.0f, 2.0f, 3.0f };
-    private static readonly float[] s_vector2 = new float[] { 4.0f, 5.0f, 6.0f };
-    private static readonly string[] s_taglist = new string[] { "tag1", "tag2" };
+    private static readonly float[] s_vector1 = [1.0f, 2.0f, 3.0f];
+    private static readonly float[] s_vector2 = [4.0f, 5.0f, 6.0f];
+    private static readonly string[] s_taglist = ["tag1", "tag2"];
 
     [Fact]
     public void MapFromDataToStorageModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(s_model);
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
             Data =
@@ -101,16 +99,13 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromDataToStorageModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+        ]);
 
         var dataModel = new VectorStoreGenericDataModel<string>("key")
         {
@@ -125,7 +120,7 @@ public class AzureAISearchGenericDataModelMapperTests
             },
         };
 
-        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(model);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -140,7 +135,7 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsAllSupportedTypes()
     {
         // Arrange
-        var sut = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(s_model);
         var storageModel = new JsonObject();
         storageModel["Key"] = "key";
         storageModel["StringDataProp"] = "string";
@@ -187,16 +182,13 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromStorageToDataModelMapsNullValues()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+        ]);
 
         var storageModel = new JsonObject();
         storageModel["Key"] = "key";
@@ -204,7 +196,7 @@ public class AzureAISearchGenericDataModelMapperTests
         storageModel["NullableIntDataProp"] = null;
         storageModel["NullableFloatVector"] = null;
 
-        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(model);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -220,7 +212,15 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromStorageToDataModelThrowsForMissingKey()
     {
         // Arrange
-        var sut = new AzureAISearchGenericDataModelMapper(s_vectorStoreRecordDefinition);
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
+            new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+        ]);
+
+        var sut = new AzureAISearchGenericDataModelMapper(model);
         var storageModel = new JsonObject();
 
         // Act
@@ -234,18 +234,15 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromDataToStorageModelSkipsMissingProperties()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+        ]);
 
         var dataModel = new VectorStoreGenericDataModel<string>("key");
-        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(model);
 
         // Act
         var storageModel = sut.MapFromDataToStorageModel(dataModel);
@@ -260,20 +257,17 @@ public class AzureAISearchGenericDataModelMapperTests
     public void MapFromStorageToDataModelSkipsMissingProperties()
     {
         // Arrange
-        VectorStoreRecordDefinition vectorStoreRecordDefinition = new()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            },
-        };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Key", typeof(string)),
+            new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
+            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+        ]);
 
         var storageModel = new JsonObject();
         storageModel["Key"] = "key";
 
-        var sut = new AzureAISearchGenericDataModelMapper(vectorStoreRecordDefinition);
+        var sut = new AzureAISearchGenericDataModelMapper(model);
 
         // Act
         var dataModel = sut.MapFromStorageToDataModel(storageModel, new StorageToDataModelMapperOptions { IncludeVectors = true });
@@ -283,4 +277,10 @@ public class AzureAISearchGenericDataModelMapperTests
         Assert.False(dataModel.Data.ContainsKey("StringDataProp"));
         Assert.False(dataModel.Vectors.ContainsKey("FloatVector"));
     }
+
+    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
+        => new VectorStoreRecordJsonModelBuilder(AzureAISearchConstants.s_modelBuildingOptions)
+            .Build(
+                typeof(VectorStoreGenericDataModel<string>),
+                new() { Properties = properties });
 }

@@ -216,7 +216,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [TestRecordKey1, TestRecordKey2],
             new() { IncludeVectors = true }).ToListAsync();
 
@@ -311,7 +311,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
+        await sut.DeleteAsync([TestRecordKey1, TestRecordKey2]);
 
         // Assert
         this._redisDatabaseMock.Verify(x => x.KeyDeleteAsync(TestRecordKey1, CommandFlags.None), Times.Once);
@@ -353,7 +353,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
+        var actual = await sut.UpsertAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -524,9 +524,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
             }
         };
 

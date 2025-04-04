@@ -160,8 +160,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var record2 = this.CreateTestHotel(hotelId2);
         var record3 = this.CreateTestHotel(hotelId3);
 
-        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
-        var getResults = await sut.GetBatchAsync([hotelId1, hotelId2, hotelId3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetAsync([hotelId1, hotelId2, hotelId3]).ToListAsync();
 
         Assert.Equal([hotelId1, hotelId2, hotelId3], upsertResults);
 
@@ -170,9 +170,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.NotNull(getResults.First(l => l.HotelId == hotelId3));
 
         // Act
-        await sut.DeleteBatchAsync([hotelId1, hotelId2, hotelId3]);
+        await sut.DeleteAsync([hotelId1, hotelId2, hotelId3]);
 
-        getResults = await sut.GetBatchAsync([hotelId1, hotelId2, hotelId3]).ToListAsync();
+        getResults = await sut.GetAsync([hotelId1, hotelId2, hotelId3]).ToListAsync();
 
         // Assert
         Assert.Empty(getResults);
@@ -223,7 +223,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
@@ -261,7 +261,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
@@ -295,7 +295,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
@@ -340,7 +340,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel5, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]).ToListAsync();
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), new()
@@ -380,7 +380,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 { "HotelName", "Generic Mapper Hotel" },
                 { "Description", "This is a generic mapper hotel" },
                 { "Tags", new List<string> { "generic" } },
-                { "parking_is_included", false },
+                { "ParkingIncluded", false },
                 { "Timestamp", new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero) },
                 { "HotelRating", 3.6f }
             },
@@ -399,7 +399,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
         Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
         Assert.Equal(new List<string> { "generic" }, localGetResult.Data["Tags"]);
-        Assert.False((bool?)localGetResult.Data["parking_is_included"]);
+        Assert.False((bool?)localGetResult.Data["ParkingIncluded"]);
         Assert.Equal(new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero), localGetResult.Data["Timestamp"]);
         Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
         Assert.Equal(new[] { 30f, 31f, 32f, 33f }, ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
@@ -474,7 +474,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)),
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)),
-                new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)),
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)),
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),

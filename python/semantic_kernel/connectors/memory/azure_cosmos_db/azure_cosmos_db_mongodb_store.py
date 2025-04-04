@@ -4,11 +4,6 @@ import sys
 from importlib import metadata
 from typing import TYPE_CHECKING, Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from pydantic import ValidationError
 from pymongo import AsyncMongoClient
 from pymongo.driver_info import DriverInfo
@@ -24,7 +19,12 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
-    from semantic_kernel.data import VectorStoreRecordCollection
+    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 TModel = TypeVar("TModel")
 

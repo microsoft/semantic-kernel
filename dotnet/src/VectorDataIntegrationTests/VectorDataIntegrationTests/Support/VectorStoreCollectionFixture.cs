@@ -45,7 +45,7 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
     protected virtual async Task SeedAsync()
     {
         // TODO: UpsertBatchAsync returns IAsyncEnumerable<TKey> (to support server-generated keys?), but this makes it quite hard to use:
-        await foreach (var _ in this.Collection.UpsertBatchAsync(this.TestData))
+        await foreach (var _ in this.Collection.UpsertAsync(this.TestData))
         {
         }
 

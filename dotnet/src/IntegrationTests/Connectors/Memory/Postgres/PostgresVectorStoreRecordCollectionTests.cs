@@ -192,8 +192,8 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var record2 = new PostgresHotel<int> { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
         var record3 = new PostgresHotel<int> { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
 
-        var upsertResults = await sut.UpsertBatchAsync([record1, record2, record3]).ToListAsync();
-        var getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
 
@@ -202,9 +202,9 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.NotNull(getResults.First(l => l.HotelId == HotelId3));
 
         // Act
-        await sut.DeleteBatchAsync([HotelId1, HotelId2, HotelId3]);
+        await sut.DeleteAsync([HotelId1, HotelId2, HotelId3]);
 
-        getResults = await sut.GetBatchAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
+        getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         // Assert
         Assert.Empty(getResults);
@@ -364,7 +364,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), new()
@@ -402,7 +402,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), new()
@@ -435,7 +435,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertBatchAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), new()

@@ -30,17 +30,31 @@ Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt
     <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Diagnostics/IsExternalInit.cs" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <PackageReference Include="System.ValueTuple" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Include neticon.png and PACKAGE.md in the project. -->
     <None Include="neticon.png" Pack="true" PackagePath="." />
     <None Include="PACKAGE.md" Pack="true" PackagePath="." />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'net462' ">
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="Shared/System/IndexRange.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/CompilerServicesAttributes.cs" Link="Shared/Diagnostics/CompilerServicesAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/DynamicallyAccessedMembersAttribute.cs" Link="Shared/Diagnostics/DynamicallyAccessedMembersAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/ExperimentalAttribute.cs" Link="Shared/Diagnostics/ExperimentalAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/IsExternalInit.cs" Link="Shared/Diagnostics/IsExternalInit.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/NullableAttributes.cs" Link="Shared/Diagnostics/NullableAttributes.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresDynamicCodeAttribute.cs" Link="Shared/Diagnostics/RequiresDynamicCodeAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/RequiresUnreferencedCodeAttribute.cs" Link="Shared/Diagnostics/RequiresUnreferencedCodeAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnconditionalSuppressMessageAttribute.cs" Link="Shared/Diagnostics/UnconditionalSuppressMessageAttribute.cs" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/UnreachableException.cs" Link="Shared/Diagnostics/UnreachableException.cs" />
   </ItemGroup>
 </Project>

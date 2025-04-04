@@ -45,7 +45,7 @@ public class VectorStore_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         await collection.CreateCollectionIfNotExistsAsync();
 
         // Create and upsert glossary entries into the collection.
-        await collection.UpsertBatchAsync(CreateGlossaryEntries()).ToListAsync();
+        await collection.UpsertAsync(CreateGlossaryEntries()).ToListAsync();
 
         // Search the collection using a vectorizable text search.
         var search = collection as IVectorizableTextSearch<Glossary>;

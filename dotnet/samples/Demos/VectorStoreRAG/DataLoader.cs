@@ -66,7 +66,7 @@ internal sealed class DataLoader<TKey>(
 
             // Upsert the records into the vector store.
             var records = await Task.WhenAll(recordTasks).ConfigureAwait(false);
-            var upsertedKeys = vectorStoreRecordCollection.UpsertBatchAsync(records, cancellationToken: cancellationToken);
+            var upsertedKeys = vectorStoreRecordCollection.UpsertAsync(records, cancellationToken: cancellationToken);
             await foreach (var key in upsertedKeys.ConfigureAwait(false))
             {
                 Console.WriteLine($"Upserted record '{key}' into VectorDB");

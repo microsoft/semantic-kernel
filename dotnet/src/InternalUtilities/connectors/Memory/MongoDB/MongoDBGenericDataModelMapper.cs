@@ -3,9 +3,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -14,22 +16,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within MongoDB.
 /// </summary>
 [ExcludeFromCodeCoverage]
-internal sealed class MongoDBGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, BsonDocument>
+internal sealed class MongoDBGenericDataModelMapper(VectorStoreRecordModel model) : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, BsonDocument>
 {
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MongoDBGenericDataModelMapper"/> class.
-    /// </summary>
-    /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    public MongoDBGenericDataModelMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition)
-    {
-        Verify.NotNull(vectorStoreRecordDefinition);
-
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
-    }
-
     /// <inheritdoc />
     public BsonDocument MapFromDataToStorageModel(VectorStoreGenericDataModel<string> dataModel)
     {
@@ -38,27 +26,30 @@ internal sealed class MongoDBGenericDataModelMapper : IVectorStoreRecordMapper<V
         var document = new BsonDocument();
 
         // Loop through all known properties and map each from the data model to the storage model.
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in model.Properties)
         {
-            var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
+            switch (property)
+            {
+                case VectorStoreRecordKeyPropertyModel keyProperty:
+                    document[MongoDBConstants.MongoReservedKeyPropertyName] = dataModel.Key;
+                    continue;
 
-            if (property is VectorStoreRecordKeyProperty keyProperty)
-            {
-                document[MongoDBConstants.MongoReservedKeyPropertyName] = dataModel.Key;
-            }
-            else if (property is VectorStoreRecordDataProperty dataProperty)
-            {
-                if (dataModel.Data is not null && dataModel.Data.TryGetValue(dataProperty.DataModelPropertyName, out var dataValue))
-                {
-                    document[storagePropertyName] = BsonValue.Create(dataValue);
-                }
-            }
-            else if (property is VectorStoreRecordVectorProperty vectorProperty)
-            {
-                if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(vectorProperty.DataModelPropertyName, out var vectorValue))
-                {
-                    document[storagePropertyName] = BsonArray.Create(GetVectorArray(vectorValue));
-                }
+                case VectorStoreRecordDataPropertyModel dataProperty:
+                    if (dataModel.Data is not null && dataModel.Data.TryGetValue(dataProperty.ModelName, out var dataValue))
+                    {
+                        document[dataProperty.StorageName] = BsonValue.Create(dataValue);
+                    }
+                    continue;
+
+                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                    if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(vectorProperty.ModelName, out var vectorValue))
+                    {
+                        document[property.StorageName] = BsonArray.Create(GetVectorArray(vectorValue));
+                    }
+                    continue;
+
+                default:
+                    throw new UnreachableException();
             }
         }
 
@@ -76,34 +67,33 @@ internal sealed class MongoDBGenericDataModelMapper : IVectorStoreRecordMapper<V
         var vectorProperties = new Dictionary<string, object?>();
 
         // Loop through all known properties and map each from the storage model to the data model.
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in model.Properties)
         {
-            var storagePropertyName = property.StoragePropertyName ?? property.DataModelPropertyName;
-
-            if (property is VectorStoreRecordKeyProperty keyProperty)
+            switch (property)
             {
-                if (storageModel.TryGetValue(MongoDBConstants.MongoReservedKeyPropertyName, out var keyValue))
-                {
-                    key = keyValue.AsString;
-                }
-            }
-            else if (property is VectorStoreRecordDataProperty dataProperty)
-            {
-                if (!storageModel.TryGetValue(storagePropertyName, out var dataValue))
-                {
+                case VectorStoreRecordKeyPropertyModel keyProperty:
+                    if (storageModel.TryGetValue(MongoDBConstants.MongoReservedKeyPropertyName, out var keyValue))
+                    {
+                        key = keyValue.AsString;
+                    }
                     continue;
-                }
 
-                dataProperties.Add(dataProperty.DataModelPropertyName, GetDataPropertyValue(property.DataModelPropertyName, property.PropertyType, dataValue));
-            }
-            else if (property is VectorStoreRecordVectorProperty vectorProperty && options.IncludeVectors)
-            {
-                if (!storageModel.TryGetValue(storagePropertyName, out var vectorValue))
-                {
+                case VectorStoreRecordDataPropertyModel dataProperty:
+                    if (storageModel.TryGetValue(dataProperty.StorageName, out var dataValue))
+                    {
+                        dataProperties.Add(dataProperty.ModelName, GetDataPropertyValue(property.ModelName, property.Type, dataValue));
+                    }
                     continue;
-                }
 
-                vectorProperties.Add(vectorProperty.DataModelPropertyName, GetVectorPropertyValue(property.DataModelPropertyName, property.PropertyType, vectorValue));
+                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                    if (storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
+                    {
+                        vectorProperties.Add(vectorProperty.ModelName, GetVectorPropertyValue(property.ModelName, property.Type, vectorValue));
+                    }
+                    continue;
+
+                default:
+                    throw new UnreachableException();
             }
         }
 

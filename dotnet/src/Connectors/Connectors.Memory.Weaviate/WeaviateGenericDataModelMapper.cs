@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -16,17 +17,8 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
     /// <summary>The name of the Weaviate collection.</summary>
     private readonly string _collectionName;
 
-    /// <summary>A <see cref="VectorStoreRecordKeyProperty"/> property of record definition.</summary>
-    private readonly VectorStoreRecordKeyProperty _keyProperty;
-
-    /// <summary>A collection of <see cref="VectorStoreRecordDataProperty"/> properties of record definition.</summary>
-    private readonly IReadOnlyList<VectorStoreRecordDataProperty> _dataProperties;
-
-    /// <summary>A collection of <see cref="VectorStoreRecordVectorProperty"/> properties of record definition.</summary>
-    private readonly IReadOnlyList<VectorStoreRecordVectorProperty> _vectorProperties;
-
-    /// <summary>A dictionary that maps from a property name to the storage name.</summary>
-    private readonly IReadOnlyDictionary<string, string> _storagePropertyNames;
+    /// <summary>The model.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>A <see cref="JsonSerializerOptions"/> for serialization/deserialization of record properties.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -35,31 +27,15 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
     /// Initializes a new instance of the <see cref="WeaviateGenericDataModelMapper"/> class.
     /// </summary>
     /// <param name="collectionName">The name of the Weaviate collection</param>
-    /// <param name="keyProperty">A <see cref="VectorStoreRecordKeyProperty"/> property of record definition.</param>
-    /// <param name="dataProperties">A collection of <see cref="VectorStoreRecordDataProperty"/> properties of record definition.</param>
-    /// <param name="vectorProperties">A collection of <see cref="VectorStoreRecordVectorProperty"/> properties of record definition.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
+    /// <param name="model">The model</param>
     /// <param name="jsonSerializerOptions">A <see cref="JsonSerializerOptions"/> for serialization/deserialization of record properties.</param>
     public WeaviateGenericDataModelMapper(
         string collectionName,
-        VectorStoreRecordKeyProperty keyProperty,
-        IReadOnlyList<VectorStoreRecordDataProperty> dataProperties,
-        IReadOnlyList<VectorStoreRecordVectorProperty> vectorProperties,
-        IReadOnlyDictionary<string, string> storagePropertyNames,
+        VectorStoreRecordModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        Verify.NotNullOrWhiteSpace(collectionName);
-        Verify.NotNull(keyProperty);
-        Verify.NotNull(dataProperties);
-        Verify.NotNull(vectorProperties);
-        Verify.NotNull(storagePropertyNames);
-        Verify.NotNull(jsonSerializerOptions);
-
         this._collectionName = collectionName;
-        this._keyProperty = keyProperty;
-        this._dataProperties = dataProperties;
-        this._vectorProperties = vectorProperties;
-        this._storagePropertyNames = storagePropertyNames;
+        this._model = model;
         this._jsonSerializerOptions = jsonSerializerOptions;
     }
 
@@ -77,27 +53,23 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
         };
 
         // Populate data properties.
-        foreach (var property in this._dataProperties)
+        foreach (var property in this._model.DataProperties)
         {
-            if (dataModel.Data is not null && dataModel.Data.TryGetValue(property.DataModelPropertyName, out var dataValue))
+            if (dataModel.Data is not null && dataModel.Data.TryGetValue(property.ModelName, out var dataValue))
             {
-                var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
-
-                weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![storagePropertyName] = dataValue is not null ?
-                        JsonSerializer.SerializeToNode(dataValue, property.PropertyType, this._jsonSerializerOptions) :
+                weaviateObjectModel[WeaviateConstants.ReservedDataPropertyName]![property.StorageName] = dataValue is not null ?
+                        JsonSerializer.SerializeToNode(dataValue, property.Type, this._jsonSerializerOptions) :
                         null;
             }
         }
 
         // Populate vector properties.
-        foreach (var property in this._vectorProperties)
+        foreach (var property in this._model.VectorProperties)
         {
-            if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(property.DataModelPropertyName, out var vectorValue))
+            if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(property.ModelName, out var vectorValue))
             {
-                var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
-
-                weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![storagePropertyName] = vectorValue is not null ?
-                        JsonSerializer.SerializeToNode(vectorValue, property.PropertyType, this._jsonSerializerOptions) :
+                weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![property.StorageName] = vectorValue is not null ?
+                        JsonSerializer.SerializeToNode(vectorValue, property.Type, this._jsonSerializerOptions) :
                         null;
             }
         }
@@ -121,28 +93,26 @@ internal sealed class WeaviateGenericDataModelMapper : IVectorStoreRecordMapper<
         var vectorProperties = new Dictionary<string, object?>();
 
         // Populate data properties.
-        foreach (var property in this._dataProperties)
+        foreach (var property in this._model.DataProperties)
         {
-            var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
             var jsonObject = storageModel[WeaviateConstants.ReservedDataPropertyName] as JsonObject;
 
-            if (jsonObject is not null && jsonObject.TryGetPropertyValue(storagePropertyName, out var dataValue))
+            if (jsonObject is not null && jsonObject.TryGetPropertyValue(property.StorageName, out var dataValue))
             {
-                dataProperties.Add(property.DataModelPropertyName, dataValue.Deserialize(property.PropertyType, this._jsonSerializerOptions));
+                dataProperties.Add(property.ModelName, dataValue.Deserialize(property.Type, this._jsonSerializerOptions));
             }
         }
 
         // Populate vector properties.
         if (options.IncludeVectors)
         {
-            foreach (var property in this._vectorProperties)
+            foreach (var property in this._model.VectorProperties)
             {
-                var storagePropertyName = this._storagePropertyNames[property.DataModelPropertyName];
                 var jsonObject = storageModel[WeaviateConstants.ReservedVectorPropertyName] as JsonObject;
 
-                if (jsonObject is not null && jsonObject.TryGetPropertyValue(storagePropertyName, out var vectorValue))
+                if (jsonObject is not null && jsonObject.TryGetPropertyValue(property.StorageName, out var vectorValue))
                 {
-                    vectorProperties.Add(property.DataModelPropertyName, vectorValue.Deserialize(property.PropertyType, this._jsonSerializerOptions));
+                    vectorProperties.Add(property.ModelName, vectorValue.Deserialize(property.Type, this._jsonSerializerOptions));
                 }
             }
         }
