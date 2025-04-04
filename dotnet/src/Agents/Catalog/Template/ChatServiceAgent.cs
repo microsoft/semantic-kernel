@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Service;
 
@@ -30,7 +31,7 @@ public sealed class ChatServiceAgent : ComposedServiceAgent
     }
 
     /// <inheritdoc/>
-    protected override Task<Agent> CreateAgentAsync()
+    protected override Task<Agent> CreateAgentAsync(CancellationToken cancellationToken)
     {
         ChatCompletionAgent agent =
             new()
