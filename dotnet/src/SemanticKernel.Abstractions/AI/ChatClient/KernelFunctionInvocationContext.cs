@@ -18,8 +18,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 [ExcludeFromCodeCoverage]
 internal sealed class KernelFunctionInvocationContext
 {
-    internal const string KernelKey = "Kernel";
-
     /// <summary>
     /// A nop function used to allow <see cref="Function"/> to be non-nullable. Default instances of
     /// <see cref="KernelFunctionInvocationContext"/> start with this as the target function.
@@ -39,9 +37,6 @@ internal sealed class KernelFunctionInvocationContext
     internal KernelFunctionInvocationContext()
     {
     }
-
-    /// <summary>Chat response information</summary>
-    public ChatResponse? Response { get; set; }
 
     /// <summary>Gets or sets the function call content information associated with this invocation.</summary>
     public Microsoft.Extensions.AI.FunctionCallContent CallContent

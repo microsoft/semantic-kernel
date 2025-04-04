@@ -9,8 +9,15 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
-public class AutoFunctionInvocationContext
+public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
 {
+    private KernelFunctionInvocationContext _innerContext;
+
+    public AutoFunctionInvocationContext(KernelFunctionInvocationContext innerContext)
+    {
+        this._innerContext = innerContext;
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
     /// </summary>

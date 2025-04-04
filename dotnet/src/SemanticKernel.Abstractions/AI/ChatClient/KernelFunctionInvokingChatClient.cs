@@ -585,6 +585,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     }
 
     /// <summary>Processes the function call described in <paramref name="callContents"/>[<paramref name="iteration"/>].</summary>
+    /// <param name="kernel"
     /// <param name="messages">The current chat contents, inclusive of the function call contents being processed.</param>
     /// <param name="options">The options used for the response being processed.</param>
     /// <param name="response">The response from the inner client.</param>
@@ -594,6 +595,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
+        Kernel kernel,
         List<ChatMessage> messages, ChatOptions options, ChatResponse response, List<Microsoft.Extensions.AI.FunctionCallContent> callContents,
         int iteration, int functionCallIndex, CancellationToken cancellationToken)
     {
@@ -608,7 +610,9 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
         KernelFunctionInvocationContext context = new()
         {
+            Kernel = kernel,
             Messages = messages,
+            Response = response,
             Options = options,
             CallContent = callContent,
             Function = function,
@@ -701,18 +705,17 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <summary>
     /// Invokes the auto function invocation filters.
     /// </summary>
-    /// <param name="kernel">The <see cref="Kernel"/>.</param>
-    /// <param name="context">The auto function invocation context.</param>
+    /// <param name="kernelContext">The auto function invocation context.</param>
     /// <param name="functionCallCallback">The function to call after the filters.</param>
     /// <returns>The auto function invocation context.</returns>
-    private async Task<KernelFunctionInvocationContext> OnAutoFunctionInvocationAsync(
-        Kernel kernel,
-        AutoFunctionInvocationContext context,
+    private async Task<AutoFunctionInvocationContext> OnAutoFunctionInvocationAsync(
+        KernelFunctionInvocationContext kernelContext,
         Func<AutoFunctionInvocationContext, Task> functionCallCallback)
     {
-        await this.InvokeFilterOrFunctionAsync(kernel.AutoFunctionInvocationFilters, functionCallCallback, context).ConfigureAwait(false);
+        var autoContext = invocationContext.ToAutoFunctionInvocationContext();
+        await this.InvokeFilterOrFunctionAsync(functionCallCallback, kernelContext).ConfigureAwait(false);
 
-        return context;
+        return kernelContext;
     }
 
     /// <summary>
@@ -723,16 +726,17 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// Function will be always executed as last step after all filters.
     /// </summary>
     private async Task InvokeFilterOrFunctionAsync(
-        IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters,
-        Func<KernelFunctionInvocationContext, Task> functionCallCallback,
-        KernelFunctionInvocationContext context,
+        Func<AutoFunctionInvocationContext, Task> functionCallCallback,
+        AutoFunctionInvocationContext context,
         int index = 0)
     {
+        IList<IAutoFunctionInvocationFilter>? autoFunctionInvocationFilters = context.Kernel.AutoFunctionInvocationFilters;
+
         if (autoFunctionInvocationFilters is { Count: > 0 } && index < autoFunctionInvocationFilters.Count)
         {
             await autoFunctionInvocationFilters[index].OnAutoFunctionInvocationAsync(
-                context.ToAutoFunctionInvocationContext(),
-                (context) => this.InvokeFilterOrFunctionAsync(autoFunctionInvocationFilters, functionCallCallback, context, index + 1)
+                context,
+                (context) => this.InvokeFilterOrFunctionAsync(functionCallCallback, context, index + 1)
             ).ConfigureAwait(false);
         }
         else
@@ -747,7 +751,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="invocationContext"/> is <see langword="null"/>.</exception>
-    internal async Task<object?> InvokeFunctionAsync(KernelFunctionInvocationContext invocationContext, Kernel kernel, CancellationToken cancellationToken)
+    internal async Task<object?> InvokeFunctionAsync(KernelFunctionInvocationContext invocationContext, CancellationToken cancellationToken)
     {
         Verify.NotNull(invocationContext);
 
@@ -771,9 +775,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         try
         {
             CurrentContext = invocationContext;
-            var autoFunctionInvocationContext = invocationContext.ToAutoFunctionInvocationContext(kernel, )
             invocationContext = this.OnAutoFunctionInvocationAsync(
-                kernel,
                 invocationContext,
                 async (context) =>
             {
@@ -787,13 +789,13 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                 // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                 // as the called function could in turn telling the model about itself as a possible candidate for invocation.
                 KernelArguments? arguments = null;
-                if (context.CallContent.Arguments is not null)
+                if (context.Arguments is not null)
                 {
-                    arguments = new(context.CallContent.Arguments);
+                    arguments = new(context.Arguments);
                 }
 
                 var result = await invocationContext.Function.InvokeAsync(invocationContext.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
-                context.Result = new FunctionResult(context.Function.AsKernelFunction(), result);
+                context.Result = new FunctionResult(context.Function, result);
             }).ConfigureAwait(false);
 
             )
