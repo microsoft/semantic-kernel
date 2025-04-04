@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
@@ -12,14 +13,14 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TConsumerDataModel">The consumer data model to map to or from.</typeparam>
 internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
-    VectorStoreRecordKeyPropertyModel keyProperty,
+    VectorStoreRecordModel model,
     JsonSerializerOptions jsonSerializerOptions)
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, JsonNode Node)>
 #pragma warning restore CS0618
 {
     /// <summary>The key property.</summary>
-    private readonly string _keyPropertyStorageName = keyProperty.StorageName;
+    private readonly string _keyPropertyStorageName = model.KeyProperty.StorageName;
 
     /// <inheritdoc />
     public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel)
@@ -37,17 +38,24 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
             return (keyValue, jsonNode);
         }
 
-        throw new VectorStoreRecordMappingException($"Missing key field {this._keyPropertyStorageName} on provided record of type {typeof(TConsumerDataModel).FullName}.");
+        throw new VectorStoreRecordMappingException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
     }
 
     /// <inheritdoc />
     public TConsumerDataModel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
     {
-        // The redis result can be either a single object or an array with a single object in the case where we are doing an MGET.
+        // The redis result can have one of three different formats:
+        // 1. a single object
+        // 2. an array with a single object in the case where we are doing an MGET
+        // 3. a single value (string, number, etc.) in the case where there is only one property being requested because the model has only one property apart from the key
         var jsonObject = storageModel.Node switch
         {
             JsonObject topLevelJsonObject => topLevelJsonObject,
             JsonArray and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
+            JsonValue when model.DataProperties.Count + model.VectorProperties.Count == 1 => new JsonObject
+            {
+                [model.DataProperties.Concat<VectorStoreRecordPropertyModel>(model.VectorProperties).First().StorageName] = storageModel.Node
+            },
             _ => throw new VectorStoreRecordMappingException($"Invalid data format for document with key '{storageModel.Key}'")
         };
 

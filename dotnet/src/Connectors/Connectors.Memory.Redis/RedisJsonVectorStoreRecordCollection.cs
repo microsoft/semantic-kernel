@@ -118,7 +118,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         else
         {
             // Default Mapper.
-            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._jsonSerializerOptions);
+            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._model, this._jsonSerializerOptions);
         }
 #pragma warning restore CS0618
     }

@@ -214,9 +214,6 @@ internal static class PostgresVectorStoreRecordPropertyMapping
                         vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
                     }
                     break;
-
-                default:
-                    throw new UnreachableException();
             }
         }
 
