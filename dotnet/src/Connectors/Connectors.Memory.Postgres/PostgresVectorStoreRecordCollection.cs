@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -35,11 +36,13 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     // <summary>Optional configuration options for this class.</summary>
     private readonly PostgresVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -69,44 +72,18 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         // Verify.
         Verify.NotNull(client);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.DictionaryCustomMapper is not null, PostgresConstants.SupportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._client = client;
         this.CollectionName = collectionName;
         this._options = options ?? new PostgresVectorStoreRecordCollectionOptions<TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = false,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = true,
-            });
 
-        // Validate property types.
-        this._propertyReader.VerifyKeyProperties(PostgresConstants.SupportedKeyTypes);
-        this._propertyReader.VerifyDataProperties(PostgresConstants.SupportedDataTypes, PostgresConstants.SupportedEnumerableDataElementTypes);
-        this._propertyReader.VerifyVectorProperties(PostgresConstants.SupportedVectorTypes);
+        this._model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions)
+            .Build(typeof(TRecord), options?.VectorStoreRecordDefinition);
 
-        // Resolve mapper.
-        // First, if someone has provided a custom mapper, use that.
-        // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
-        // Otherwise, use our own default mapper implementation for all other data models.
-        if (this._options.DictionaryCustomMapper is not null)
-        {
-            this._mapper = this._options.DictionaryCustomMapper;
-        }
-        else if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
-        {
-            this._mapper = (new PostgresGenericDataModelMapper<TKey>(this._propertyReader) as IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>)!;
-        }
-        else
-        {
-            this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._propertyReader);
-        }
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+        this._mapper = this._options.DictionaryCustomMapper ?? new PostgresVectorStoreRecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
 
         this._collectionMetadata = new()
         {
@@ -165,20 +142,20 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         Verify.NotNull(storageModel);
 
-        var keyObj = storageModel[this._propertyReader.KeyPropertyStoragePropertyName];
+        var keyObj = storageModel[this._model.KeyProperty.StorageName];
         Verify.NotNull(keyObj);
         TKey key = (TKey)keyObj!;
 
         return this.RunOperationAsync(OperationName, async () =>
             {
-                await this._client.UpsertAsync(this.CollectionName, storageModel, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken).ConfigureAwait(false);
+                await this._client.UpsertAsync(this.CollectionName, storageModel, this._model.KeyProperty.StorageName, cancellationToken).ConfigureAwait(false);
                 return key;
             }
         );
     }
 
     /// <inheritdoc/>
-    public virtual async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -195,10 +172,10 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             yield break;
         }
 
-        var keys = storageModels.Select(model => model[this._propertyReader.KeyPropertyStoragePropertyName]!).ToList();
+        var keys = storageModels.Select(model => model[this._model.KeyProperty.StorageName]!).ToList();
 
         await this.RunOperationAsync(OperationName, () =>
-            this._client.UpsertBatchAsync(this.CollectionName, storageModels, this._propertyReader.KeyPropertyStoragePropertyName, cancellationToken)
+            this._client.UpsertBatchAsync(this.CollectionName, storageModels, this._model.KeyProperty.StorageName, cancellationToken)
         ).ConfigureAwait(false);
 
         foreach (var key in keys) { yield return (TKey)key!; }
@@ -215,7 +192,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         return this.RunOperationAsync<TRecord?>(OperationName, async () =>
         {
-            var row = await this._client.GetAsync(this.CollectionName, key, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken).ConfigureAwait(false);
+            var row = await this._client.GetAsync(this.CollectionName, key, this._model, includeVectors, cancellationToken).ConfigureAwait(false);
 
             if (row is null) { return default; }
             return VectorStoreErrorHandler.RunModelConversion(
@@ -227,7 +204,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc/>
-    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetBatch";
 
@@ -236,7 +213,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         bool includeVectors = options?.IncludeVectors is true;
 
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
-            this._client.GetBatchAsync(this.CollectionName, keys, this._propertyReader.RecordDefinition.Properties, includeVectors, cancellationToken)
+            this._client.GetBatchAsync(this.CollectionName, keys, this._model, includeVectors, cancellationToken)
                 .SelectAsync(row =>
                     VectorStoreErrorHandler.RunModelConversion(
                         this._collectionMetadata.VectorStoreSystemName!,
@@ -256,27 +233,28 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     {
         const string OperationName = "Delete";
         return this.RunOperationAsync(OperationName, () =>
-            this._client.DeleteAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, key, cancellationToken)
+            this._client.DeleteAsync(this.CollectionName, this._model.KeyProperty.StorageName, key, cancellationToken)
         );
     }
 
     /// <inheritdoc/>
-    public virtual Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
         const string OperationName = "DeleteBatch";
         return this.RunOperationAsync(OperationName, () =>
-            this._client.DeleteBatchAsync(this.CollectionName, this._propertyReader.KeyPropertyStoragePropertyName, keys, cancellationToken)
+            this._client.DeleteBatchAsync(this.CollectionName, this._model.KeyProperty.StorageName, keys, cancellationToken)
         );
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
 
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var vectorType = vector.GetType();
 
@@ -288,7 +266,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
 
         var pgVector = PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(vector);
 
@@ -296,16 +274,16 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = searchOptions.Top + searchOptions.Skip;
+        var limit = top + searchOptions.Skip;
 
         return this.RunOperationAsync(OperationName, () =>
         {
             var results = this._client.GetNearestMatchesAsync(
                 this.CollectionName,
-                this._propertyReader,
+                this._model,
                 vectorProperty,
                 pgVector,
-                searchOptions.Top,
+                top,
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
                 searchOptions.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
@@ -345,7 +323,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
-        return this._client.CreateTableAsync(this.CollectionName, this._propertyReader.RecordDefinition.Properties, ifNotExists, cancellationToken);
+        return this._client.CreateTableAsync(this.CollectionName, this._model, ifNotExists, cancellationToken);
     }
 
     private async Task RunOperationAsync(string operationName, Func<Task> operation)

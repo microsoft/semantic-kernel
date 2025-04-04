@@ -82,14 +82,14 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
 
-            VectorSearchResult<TestModel> vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
+            VectorSearchResult<TestModel> vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = true
             })).Results.SingleAsync();
             AssertEquality(updated, vectorSearchResult.Record);
 
-            vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, new()
+            vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = false
@@ -150,6 +150,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         }
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [ConditionalFact]
     public async Task CustomMapper()
     {
@@ -201,6 +202,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             await collection.DeleteCollectionAsync();
         }
     }
+#pragma warning restore CS0618
 
     [ConditionalFact]
     public async Task BatchCRUD()
@@ -220,13 +222,13 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = Enumerable.Range(0, 10).Select(j => (float)(i + j)).ToArray()
             }).ToArray();
 
-            string[] keys = await collection.UpsertBatchAsync(inserted).ToArrayAsync();
+            string[] keys = await collection.UpsertAsync(inserted).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
             {
                 Assert.Equal(inserted[i].Id, keys[i]);
             }
 
-            TestModel[] received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+            TestModel[] received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < inserted.Length; i++)
             {
                 AssertEquality(inserted[i], received[i]);
@@ -239,21 +241,21 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = i.Floats
             }).ToArray();
 
-            keys = await collection.UpsertBatchAsync(updated).ToArrayAsync();
+            keys = await collection.UpsertAsync(updated).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
             {
                 Assert.Equal(updated[i].Id, keys[i]);
             }
 
-            received = await collection.GetBatchAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
+            received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
             for (int i = 0; i < updated.Length; i++)
             {
                 AssertEquality(updated[i], received[i]);
             }
 
-            await collection.DeleteBatchAsync(keys);
+            await collection.DeleteAsync(keys);
 
-            Assert.False(await collection.GetBatchAsync(keys).AnyAsync());
+            Assert.False(await collection.GetAsync(keys).AnyAsync());
         }
         finally
         {
@@ -467,6 +469,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         public ReadOnlyMemory<float> Floats { get; set; }
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private sealed class TestModelMapper : IVectorStoreRecordMapper<TestModel, IDictionary<string, object?>>
     {
         internal bool MapFromDataToStorageModel_WasCalled { get; set; }
@@ -499,4 +502,5 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             };
         }
     }
+#pragma warning restore CS0618
 }

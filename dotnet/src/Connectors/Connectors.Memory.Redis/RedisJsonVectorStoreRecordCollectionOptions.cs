@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
@@ -27,6 +28,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, the default built in mapper will be used, which uses record attrigutes or the provided <see cref="VectorStoreRecordDefinition"/> to map the record.
     /// </remarks>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>? JsonNodeCustomMapper { get; init; } = null;
 
     /// <summary>

@@ -217,7 +217,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [TestRecordKey1, TestRecordKey2],
             new() { IncludeVectors = true }).ToListAsync();
 
@@ -237,6 +237,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 5, 6, 7, 8 }, actual[1].Vector!.Value.ToArray());
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task CanGetRecordWithCustomMapperAsync()
     {
@@ -285,6 +286,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                     It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
                 Times.Once);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData(true)]
@@ -312,7 +314,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
+        await sut.DeleteAsync([TestRecordKey1, TestRecordKey2]);
 
         // Assert
         this._redisDatabaseMock.Verify(x => x.KeyDeleteAsync(TestRecordKey1, CommandFlags.None), Times.Once);
@@ -354,7 +356,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
+        var actual = await sut.UpsertAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -376,6 +378,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             Times.Once);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task CanUpsertRecordWithCustomMapperAsync()
     {
@@ -415,6 +418,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                 x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel>(x => x == model)),
                 Times.Once);
     }
+#pragma warning restore CS0618
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
@@ -449,11 +453,11 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            top: 5,
             new()
             {
                 IncludeVectors = includeVectors,
                 OldFilter = filter,
-                Top = 5,
                 Skip = 2
             });
 
@@ -512,6 +516,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -525,9 +530,9 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
             }
         };
 
@@ -537,6 +542,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, HashEntriesCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>() });
     }
+#pragma warning restore CS0618
 
     private RedisHashSetVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {

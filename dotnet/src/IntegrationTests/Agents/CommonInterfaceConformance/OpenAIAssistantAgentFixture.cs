@@ -34,7 +34,7 @@ public class OpenAIAssistantAgentFixture : AgentFixture
     private OpenAIAssistantAgentThread? _serviceFailingAgentThread;
     private OpenAIAssistantAgentThread? _createdServiceFailingAgentThread;
 
-    public override KernelAgent Agent => this._agent!;
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 

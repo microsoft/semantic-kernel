@@ -72,11 +72,6 @@ public class PostgresVectorStore : IVectorStore
     public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
-        if (!PostgresConstants.SupportedKeyTypes.Contains(typeof(TKey)))
-        {
-            throw new NotSupportedException($"Unsupported key type: {typeof(TKey)}");
-        }
-
 #pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
         {

@@ -20,12 +20,14 @@ public interface IKeywordHybridSearch<TRecord>
     /// <typeparam name="TVector">The type of the vector.</typeparam>
     /// <param name="vector">The vector to search the store with.</param>
     /// <param name="keywords">A collection of keywords to search the store with.</param>
+    /// <param name="top">The maximum number of results to return.</param>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the hybrid search, including their result scores.</returns>
     Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(
         TVector vector,
         ICollection<string> keywords,
+        int top,
         HybridSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default);
 

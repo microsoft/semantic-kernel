@@ -209,7 +209,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Arrange.
         var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, false))!.AsObject();
 
-        var expectedSelectFields = useCustomJsonSerializerOptions ? new[] { "key", "storage_data1", "data2" } : new[] { "Key", "storage_data1", "Data2" };
+        string[] expectedSelectFields = useCustomJsonSerializerOptions ? ["key", "storage_data1", "data2"] : ["Key", "storage_data1", "Data2"];
         this._searchClientMock.Setup(
             x => x.GetDocumentAsync<MultiPropsModel>(
                 TestRecordKey1,
@@ -258,7 +258,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [TestRecordKey1, TestRecordKey2],
             new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
@@ -369,7 +369,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act.
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [TestRecordKey1, TestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -456,7 +456,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act.
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             [model1, model2],
             cancellationToken: this._testCancellationToken).ToListAsync();
 
@@ -539,9 +539,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty("Key", typeof(string)),
+                new VectorStoreRecordDataProperty("Data1", typeof(string)),
+                new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
             }
         };
 
@@ -571,9 +571,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Act.
         var searchResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[4]),
+            top: 5,
             new()
             {
-                Top = 5,
                 Skip = 3,
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1
@@ -613,9 +613,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Act.
         var searchResults = await sut.VectorizableTextSearchAsync(
             "search string",
+            top: 5,
             new()
             {
-                Top = 5,
                 Skip = 3,
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1

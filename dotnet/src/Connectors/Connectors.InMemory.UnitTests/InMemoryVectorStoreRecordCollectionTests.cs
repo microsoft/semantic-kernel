@@ -137,7 +137,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [testKey1, testKey2],
             new()
             {
@@ -201,7 +201,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [testKey1, testKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -255,7 +255,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             [record1, record2],
             cancellationToken: this._testCancellationToken).ToListAsync();
 
@@ -293,6 +293,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            top: 3,
             new() { IncludeVectors = true },
             this._testCancellationToken);
 
@@ -338,6 +339,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            top: 3,
             new() { IncludeVectors = true, OldFilter = filter, IncludeTotalCount = true },
             this._testCancellationToken);
 
@@ -391,6 +393,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
+            top: 3,
             new() { IncludeVectors = true },
             this._testCancellationToken);
 
@@ -432,7 +435,8 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
-            new() { IncludeVectors = true, Top = 10, Skip = 10, IncludeTotalCount = true },
+            top: 10,
+            new() { IncludeVectors = true, Skip = 10, IncludeTotalCount = true },
             this._testCancellationToken);
 
         // Assert
@@ -508,6 +512,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
+            top: 3,
             new() { IncludeVectors = true, VectorProperty = r => r.Vectors["Vector"] },
             this._testCancellationToken);
 

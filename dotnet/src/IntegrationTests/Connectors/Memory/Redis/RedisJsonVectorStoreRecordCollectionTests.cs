@@ -66,6 +66,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+            top: 3,
             new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 10) });
 
         // Assert
@@ -182,7 +183,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var sut = new RedisJsonVectorStoreRecordCollection<RedisHotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
-        var results = sut.UpsertBatchAsync(
+        var results = sut.UpsertAsync(
             [
                 CreateTestHotel("UpsertMany-1", 1),
                 CreateTestHotel("UpsertMany-2", 2),
@@ -256,7 +257,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetBatchAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync(["BaseSet-1", "BaseSet-5", "BaseSet-2"], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -326,7 +327,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
 
         // Act
         // Also include a non-existing key to test that the operation does not fail for these.
-        await sut.DeleteBatchAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
+        await sut.DeleteAsync(["RemoveMany-1", "RemoveMany-2", "RemoveMany-3", "RemoveMany-4"]);
 
         // Assert
         Assert.Null(await sut.GetAsync("RemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
@@ -348,6 +349,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 3,
             new() { IncludeVectors = true, OldFilter = filter });
 
         // Assert
@@ -386,9 +388,9 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 3,
             new()
             {
-                Top = 3,
                 Skip = 2
             });
 
@@ -416,10 +418,10 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 1,
             new()
             {
                 IncludeVectors = includeVectors,
-                Top = 1
             });
 
         // Assert

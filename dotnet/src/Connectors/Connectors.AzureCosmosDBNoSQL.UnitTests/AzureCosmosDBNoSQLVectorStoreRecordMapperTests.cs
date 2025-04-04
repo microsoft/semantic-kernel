@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Xunit;
 
@@ -15,20 +16,14 @@ namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordMapperTests
 {
-    private readonly AzureCosmosDBNoSQLVectorStoreRecordMapper<AzureCosmosDBNoSQLHotel> _sut;
-
-    public AzureCosmosDBNoSQLVectorStoreRecordMapperTests()
-    {
-        var storagePropertyNames = new Dictionary<string, string>
-        {
-            ["HotelId"] = "HotelId",
-            ["HotelName"] = "HotelName",
-            ["Tags"] = "Tags",
-            ["DescriptionEmbedding"] = "description_embedding",
-        };
-
-        this._sut = new("HotelId", storagePropertyNames, JsonSerializerOptions.Default);
-    }
+    private readonly AzureCosmosDBNoSQLVectorStoreRecordMapper<AzureCosmosDBNoSQLHotel> _sut
+        = new(
+            new VectorStoreRecordKeyPropertyModel("HotelId", typeof(string))
+            {
+                StorageName = "id",
+                TemporaryStorageName = "HotelId"
+            },
+            JsonSerializerOptions.Default);
 
     [Fact]
     public void MapFromDataToStorageModelReturnsValidObject()

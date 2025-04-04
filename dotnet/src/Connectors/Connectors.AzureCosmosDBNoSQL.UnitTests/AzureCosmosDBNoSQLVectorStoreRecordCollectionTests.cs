@@ -35,7 +35,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -279,7 +279,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        await sut.DeleteBatchAsync(recordKeys);
+        await sut.DeleteAsync(recordKeys);
 
         // Assert
         foreach (var key in recordKeys)
@@ -389,7 +389,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.GetBatchAsync(["key1", "key2", "key3"]).ToListAsync();
+        var results = await sut.GetAsync(["key1", "key2", "key3"]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -444,7 +444,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2, hotel3]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]).ToListAsync();
 
         // Assert
         Assert.NotNull(results);
@@ -455,6 +455,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key3", results[2]);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -537,6 +538,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(RecordKey, result.HotelId);
         Assert.Equal("Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task VectorizedSearchReturnsValidRecordAsync()
@@ -579,7 +581,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
 
         var results = await actual.Results.ToListAsync();
         var result = results[0];
@@ -601,7 +603,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3)).Results.ToListAsync());
     }
 
     [Fact]
@@ -616,7 +618,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
+            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, searchOptions)).Results.ToListAsync());
     }
 
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()

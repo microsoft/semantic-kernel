@@ -226,7 +226,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupRetrieveMock(testRecordKeys.Select(x => CreateRetrievedPoint(hasNamedVectors, x)).ToList());
 
         // Act.
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             testRecordKeys,
             new() { IncludeVectors = true },
             this._testCancellationToken).ToListAsync();
@@ -253,6 +253,7 @@ public class QdrantVectorStoreRecordCollectionTests
         Assert.Equal(testRecordKeys[1], actual[1].Key);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task CanGetRecordWithCustomMapperAsync()
     {
@@ -298,6 +299,7 @@ public class QdrantVectorStoreRecordCollectionTests
                     It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
                 Times.Once);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [InlineData(true, true)]
@@ -369,7 +371,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupDeleteMocks();
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [UlongTestRecordKey1, UlongTestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -398,7 +400,7 @@ public class QdrantVectorStoreRecordCollectionTests
         this.SetupDeleteMocks();
 
         // Act
-        await sut.DeleteBatchAsync(
+        await sut.DeleteAsync(
             [s_guidTestRecordKey1, s_guidTestRecordKey2],
             cancellationToken: this._testCancellationToken);
 
@@ -454,7 +456,7 @@ public class QdrantVectorStoreRecordCollectionTests
         var models = testRecordKeys.Select(x => CreateModel(x, true));
 
         // Act
-        var actual = await sut.UpsertBatchAsync(
+        var actual = await sut.UpsertAsync(
             models,
             cancellationToken: this._testCancellationToken).ToListAsync();
 
@@ -479,6 +481,7 @@ public class QdrantVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task CanUpsertRecordWithCustomMapperAsync()
     {
@@ -532,9 +535,9 @@ public class QdrantVectorStoreRecordCollectionTests
         {
             Properties = new List<VectorStoreRecordProperty>
             {
-                new VectorStoreRecordKeyProperty("Id", typeof(ulong)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
+                new VectorStoreRecordDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
             }
         };
 
@@ -544,6 +547,7 @@ public class QdrantVectorStoreRecordCollectionTests
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
     }
+#pragma warning restore CS0618
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
@@ -561,7 +565,8 @@ public class QdrantVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
-            new() { IncludeVectors = true, OldFilter = filter, Top = 5, Skip = 2 },
+            top: 5,
+            new() { IncludeVectors = true, OldFilter = filter, Skip = 2 },
             this._testCancellationToken);
 
         // Assert.

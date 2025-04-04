@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Xunit;
 
@@ -19,7 +19,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
 {
     private const string CollectionName = "Collection";
     private const string VectorPropertyName = "descriptionEmbedding";
-    private const string KeyPropertyName = "HotelId";
 
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -32,20 +31,22 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         }
     };
 
-    private readonly Dictionary<string, string> _storagePropertyNames = new()
-    {
-        ["HotelId"] = "hotelId",
-        ["HotelName"] = "hotelName",
-        ["HotelCode"] = "hotelCode",
-        ["Tags"] = "tags",
-        ["DescriptionEmbedding"] = "descriptionEmbedding"
-    };
+    private readonly VectorStoreRecordModel _model = new WeaviateModelBuilder()
+        .Build(
+            typeof(VectorStoreGenericDataModel<string>),
+            new()
+            {
+                Properties =
+                [
+                    new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)) { StoragePropertyName = "hotelId" },
+                    new VectorStoreRecordDataProperty("HotelName", typeof(string)) { StoragePropertyName = "hotelName" },
+                    new VectorStoreRecordDataProperty("HotelCode", typeof(string)) { StoragePropertyName = "hotelCode" },
+                    new VectorStoreRecordDataProperty("Tags", typeof(string[])) { StoragePropertyName = "tags" },
+                    new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "descriptionEmbeddding" },
+                ]
+            });
 
     private readonly ReadOnlyMemory<float> _vector = new([31f, 32f, 33f, 34f]);
-
-    private readonly List<string> _vectorPropertyStorageNames = ["descriptionEmbedding"];
-
-    private readonly List<string> _dataPropertyStorageNames = ["hotelName", "hotelCode"];
 
     [Fact]
     public void BuildSearchQueryByDefaultReturnsValidQuery()
@@ -63,7 +64,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
                 vector: [31,32,33,34]
               }
             ) {
-              hotelName hotelCode
+              HotelName HotelCode Tags
               _additional {
                 id
                 distance
@@ -77,7 +78,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
         };
 
         // Act
@@ -85,12 +85,10 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             this._vector,
             CollectionName,
             VectorPropertyName,
-            KeyPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
-            this._storagePropertyNames,
-            this._vectorPropertyStorageNames,
-            this._dataPropertyStorageNames);
+            this._model);
 
         // Assert
         Assert.Equal(expectedQuery, query);
@@ -106,7 +104,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             IncludeVectors = true
         };
 
@@ -115,28 +112,25 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             this._vector,
             CollectionName,
             VectorPropertyName,
-            KeyPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
-            this._storagePropertyNames,
-            this._vectorPropertyStorageNames,
-            this._dataPropertyStorageNames);
+            this._model);
 
         // Assert
-        Assert.Contains("vectors { descriptionEmbedding }", query);
+        Assert.Contains("vectors { DescriptionEmbedding }", query);
     }
 
     [Fact]
     public void BuildSearchQueryWithFilterReturnsValidQuery()
     {
         // Arrange
-        const string ExpectedFirstSubquery = """{ path: ["hotelName"], operator: Equal, valueText: "Test Name" }""";
-        const string ExpectedSecondSubquery = """{ path: ["tags"], operator: ContainsAny, valueText: ["t1"] }""";
+        const string ExpectedFirstSubquery = """{ path: ["HotelName"], operator: Equal, valueText: "Test Name" }""";
+        const string ExpectedSecondSubquery = """{ path: ["Tags"], operator: ContainsAny, valueText: ["t1"] }""";
 
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             OldFilter = new VectorSearchFilter()
                 .EqualTo("HotelName", "Test Name")
                 .AnyTagEqualTo("Tags", "t1")
@@ -147,12 +141,10 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             this._vector,
             CollectionName,
             VectorPropertyName,
-            KeyPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
-            this._storagePropertyNames,
-            this._vectorPropertyStorageNames,
-            this._dataPropertyStorageNames);
+            this._model);
 
         // Assert
         Assert.Contains(ExpectedFirstSubquery, query);
@@ -166,7 +158,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             OldFilter = new VectorSearchFilter().EqualTo("HotelName", new TestFilterValue())
         };
 
@@ -175,12 +166,10 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             this._vector,
             CollectionName,
             VectorPropertyName,
-            KeyPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
-            this._storagePropertyNames,
-            this._vectorPropertyStorageNames,
-            this._dataPropertyStorageNames));
+            this._model));
     }
 
     [Fact]
@@ -190,7 +179,6 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         var searchOptions = new VectorSearchOptions<DummyType>
         {
             Skip = 2,
-            Top = 3,
             OldFilter = new VectorSearchFilter().EqualTo("NonExistentProperty", "value")
         };
 
@@ -199,12 +187,10 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             this._vector,
             CollectionName,
             VectorPropertyName,
-            KeyPropertyName,
             s_jsonSerializerOptions,
+            top: 3,
             searchOptions,
-            this._storagePropertyNames,
-            this._vectorPropertyStorageNames,
-            this._dataPropertyStorageNames));
+            this._model));
     }
 
     #region private

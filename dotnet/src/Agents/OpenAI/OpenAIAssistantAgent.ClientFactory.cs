@@ -11,7 +11,7 @@ using OpenAI;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
-public sealed partial class OpenAIAssistantAgent : KernelAgent
+public sealed partial class OpenAIAssistantAgent : Agent
 {
     /// <summary>
     /// Specifies a key that avoids an exception from OpenAI Client when a custom endpoint is provided without an API key.

@@ -44,20 +44,13 @@ internal static class MongoDBConstants
     internal static readonly HashSet<Type> SupportedDataTypes =
     [
         typeof(bool),
-        typeof(bool?),
         typeof(string),
         typeof(int),
-        typeof(int?),
         typeof(long),
-        typeof(long?),
         typeof(float),
-        typeof(float?),
         typeof(double),
-        typeof(double?),
         typeof(decimal),
-        typeof(decimal?),
         typeof(DateTime),
-        typeof(DateTime?),
     ];
 
     /// <summary>A <see cref="HashSet{Type}"/> containing the supported vector types.</summary>

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -29,8 +30,10 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    private readonly VectorStoreRecordModel _model;
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -46,53 +49,24 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
 
-        VectorStoreRecordPropertyReader propertyReader = new(typeof(TRecord),
-            options?.RecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = false,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = true,
-            });
-
-        if (VectorStoreRecordPropertyVerification.IsGenericDataModel(typeof(TRecord)))
-        {
-            VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.Mapper is not null, SqlServerConstants.SupportedKeyTypes);
-        }
-        else
-        {
-            propertyReader.VerifyKeyProperties(SqlServerConstants.SupportedKeyTypes);
-        }
-        propertyReader.VerifyDataProperties(SqlServerConstants.SupportedDataTypes, supportEnumerable: false);
-        propertyReader.VerifyVectorProperties(SqlServerConstants.SupportedVectorTypes);
+        this._model = new VectorStoreRecordModelBuilder(SqlServerConstants.ModelBuildingOptions)
+            .Build(typeof(TRecord), options?.RecordDefinition);
 
         this._connectionString = connectionString;
         this.CollectionName = name;
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
-        this._options = options is null ? s_defaultOptions
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+        this._options = options is null
+            ? s_defaultOptions
             : new()
             {
                 Schema = options.Schema,
                 Mapper = options.Mapper,
                 RecordDefinition = options.RecordDefinition,
             };
-        this._propertyReader = propertyReader;
-
-        if (options is not null && options.Mapper is not null)
-        {
-            this._mapper = options.Mapper;
-        }
-        else if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
-        {
-            this._mapper = (new GenericRecordMapper<TKey>(propertyReader) as IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>>)!;
-        }
-        else
-        {
-            propertyReader.VerifyHasParameterlessConstructor();
-
-            this._mapper = new RecordMapper<TRecord>(propertyReader);
-        }
+        this._mapper = this._options.Mapper ?? new RecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
@@ -132,11 +106,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        foreach (var vectorProperty in this._propertyReader.VectorProperties)
+        foreach (var vectorProperty in this._model.VectorProperties)
         {
             if (vectorProperty.Dimensions is not > 0)
             {
-                throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.DataModelPropertyName}' must be set to a positive integer to create a collection.");
+                throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection.");
             }
         }
 
@@ -146,9 +120,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._options.Schema,
             this.CollectionName,
             ifNotExists,
-            this._propertyReader.KeyProperty,
-            this._propertyReader.DataProperties,
-            this._propertyReader.VectorProperties);
+            this._model);
 
         await ExceptionWrapper.WrapAsync(connection, command,
             static (cmd, ct) => cmd.ExecuteNonQueryAsync(ct),
@@ -177,7 +149,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection,
             this._options.Schema,
             this.CollectionName,
-            this._propertyReader.KeyProperty,
+            this._model.KeyProperty,
             key);
 
         await ExceptionWrapper.WrapAsync(connection, command,
@@ -186,7 +158,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -211,7 +183,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                         command,
                         this._options.Schema,
                         this.CollectionName,
-                        this._propertyReader.KeyProperty,
+                        this._model.KeyProperty,
                         keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount)))
                     {
                         break; // keys is empty, there is nothing to delete
@@ -264,8 +236,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection,
             this._options.Schema,
             this.CollectionName,
-            this._propertyReader.KeyProperty,
-            this._propertyReader.Properties,
+            this._model,
             key,
             includeVectors);
 
@@ -279,13 +250,13 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         return reader.HasRows
             ? this._mapper.MapFromStorageToDataModel(
-                new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
+                new SqlDataReaderDictionary(reader, this._model.VectorProperties),
                 new() { IncludeVectors = includeVectors })
             : default;
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null,
+    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
@@ -307,8 +278,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 command,
                 this._options.Schema,
                 this.CollectionName,
-                this._propertyReader.KeyProperty,
-                this._propertyReader.Properties,
+                this._model,
                 keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount),
                 includeVectors))
             {
@@ -327,7 +297,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             while (await ExceptionWrapper.WrapReadAsync(reader, cancellationToken, "GetBatch", this.CollectionName).ConfigureAwait(false))
             {
                 yield return this._mapper.MapFromStorageToDataModel(
-                    new SqlDataReaderDictionary(reader, this._propertyReader.VectorPropertyStoragePropertyNames),
+                    new SqlDataReaderDictionary(reader, this._model.VectorProperties),
                     new() { IncludeVectors = includeVectors });
             }
         } while (command.Parameters.Count == SqlServerConstants.MaxParameterCount);
@@ -343,8 +313,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection,
             this._options.Schema,
             this.CollectionName,
-            this._propertyReader.KeyProperty,
-            this._propertyReader.Properties,
+            this._model,
             this._mapper.MapFromDataToStorageModel(record));
 
         return await ExceptionWrapper.WrapAsync(connection, command,
@@ -357,7 +326,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records,
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
@@ -366,7 +335,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         using SqlTransaction transaction = connection.BeginTransaction();
-        int parametersPerRecord = this._propertyReader.Properties.Count;
+        int parametersPerRecord = this._model.Properties.Count;
         int taken = 0;
 
         try
@@ -384,8 +353,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                         command,
                         this._options.Schema,
                         this.CollectionName,
-                        this._propertyReader.KeyProperty,
-                        this._propertyReader.Properties,
+                        this._model,
                         records.Skip(taken)
                                .Take(SqlServerConstants.MaxParameterCount / parametersPerRecord)
                                .Select(this._mapper.MapFromDataToStorageModel)))
@@ -436,18 +404,19 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         }
         else
         {
-            var keyProperty = this._propertyReader.KeyPropertyInfo;
+            var keyProperty = this._model.KeyProperty;
             foreach (var record in records)
             {
-                yield return (TKey)keyProperty.GetValue(record)!;
+                yield return (TKey)keyProperty.GetValueAsObject(record!)!;
             }
         }
     }
 
     /// <inheritdoc/>
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         if (vector is not ReadOnlyMemory<float> allowed)
         {
@@ -463,7 +432,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         }
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(searchOptions);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // This connection will be disposed by the ReadVectorSearchResultsAsync
@@ -475,8 +444,8 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._options.Schema,
             this.CollectionName,
             vectorProperty,
-            this._propertyReader.Properties,
-            this._propertyReader.StoragePropertyNamesMap,
+            this._model,
+            top,
             searchOptions,
             allowed);
 
@@ -509,7 +478,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         try
         {
             StorageToDataModelMapperOptions options = new() { IncludeVectors = includeVectors };
-            var vectorPropertyStoragePropertyNames = includeVectors ? this._propertyReader.VectorPropertyStoragePropertyNames : [];
+            var vectorProperties = includeVectors ? this._model.VectorProperties : [];
             using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
             int scoreIndex = -1;
@@ -521,7 +490,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                 }
 
                 yield return new VectorSearchResult<TRecord>(
-                    this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorPropertyStoragePropertyNames), options),
+                    this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), options),
                     reader.GetDouble(scoreIndex));
             }
         }

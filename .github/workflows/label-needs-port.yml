@@ -21,21 +21,39 @@ jobs:
     steps:
       - name: Create dotnet issue
         if: contains(github.event.pull_request.labels.*.name, 'needs_port_to_dotnet') || contains(github.event.issue.labels.*.name, 'needs_port_to_dotnet')
+        env:
+          ORIGINAL_URL: ${{ github.event.issue.html_url || github.event.pull_request.html_url }}
+          ORIGINAL_BODY: ${{ github.event.issue.body || github.event.pull_request.body }}
+          ORIGINAL_TITLE: ${{ github.event.issue.title || github.event.pull_request.title }}
+          ORIGINAL_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: |
+          {
+           echo "# Original issue"
+           echo "$ORIGINAL_URL"
+           echo "## Description"
+           echo "$ORIGINAL_BODY"
+           echo "\n Relates to #$ORIGINAL_NUMBER"
+          } > issue_body.md
           new_issue_url=$(gh issue create \
             --title "Port python feature: ${{ github.event.issue.title || github.event.pull_request.title }}" \
             --label ".NET" \
-            --body "# Original issue
-            ${{ github.event.issue.html_url || github.event.pull_request.html_url }}
-            ## Description
-            ${{ github.event.issue.body || github.event.pull_request.body }}")
+            --body-file issue_body.md)
       - name: Create python issue
         if: contains(github.event.pull_request.labels.*.name, 'needs_port_to_python') || contains(github.event.issue.labels.*.name, 'needs_port_to_python')
+        env:
+          ORIGINAL_URL: ${{ github.event.issue.html_url || github.event.pull_request.html_url }}
+          ORIGINAL_BODY: ${{ github.event.issue.body || github.event.pull_request.body }}
+          ORIGINAL_TITLE: ${{ github.event.issue.title || github.event.pull_request.title }}
+          ORIGINAL_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
         run: |
+          {
+           echo "# Original issue"
+           echo "$ORIGINAL_URL"
+           echo "## Description"
+           echo "$ORIGINAL_BODY"
+           echo "\n Relates to #$ORIGINAL_NUMBER"
+          } > issue_body.md
           new_issue_url=$(gh issue create \
             --title "Port dotnet feature: ${{ github.event.issue.title || github.event.pull_request.title }}" \
             --label "python" \
-            --body "# Original issue
-            ${{ github.event.issue.html_url || github.event.pull_request.html_url }}
-            ## Description
-            ${{ github.event.issue.body || github.event.pull_request.body }}")
+            --body-file issue_body.md)

@@ -3,32 +3,22 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
 /// </summary>
-internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, JsonObject>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+internal sealed class AzureAISearchGenericDataModelMapper(VectorStoreRecordModel model) : IVectorStoreRecordMapper<VectorStoreGenericDataModel<string>, JsonObject>
+#pragma warning restore CS0618
 {
-    /// <summary>A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</summary>
-    private readonly VectorStoreRecordDefinition _vectorStoreRecordDefinition;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AzureAISearchGenericDataModelMapper"/> class.
-    /// </summary>
-    /// <param name="vectorStoreRecordDefinition">A <see cref="VectorStoreRecordDefinition"/> that defines the schema of the data in the database.</param>
-    public AzureAISearchGenericDataModelMapper(VectorStoreRecordDefinition vectorStoreRecordDefinition)
-    {
-        Verify.NotNull(vectorStoreRecordDefinition);
-
-        this._vectorStoreRecordDefinition = vectorStoreRecordDefinition;
-    }
-
     /// <inheritdoc />
     public JsonObject MapFromDataToStorageModel(VectorStoreGenericDataModel<string> dataModel)
     {
@@ -37,30 +27,32 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
         var storageJsonObject = new JsonObject();
 
         // Loop through all known properties and map each from the data model json to the storage json.
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in model.Properties)
         {
-            if (property is VectorStoreRecordKeyProperty keyProperty)
+            switch (property)
             {
-                var storagePropertyName = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
-                storageJsonObject.Add(storagePropertyName, dataModel.Key);
-            }
-            else if (property is VectorStoreRecordDataProperty dataProperty)
-            {
-                if (dataModel.Data is not null && dataModel.Data.TryGetValue(dataProperty.DataModelPropertyName, out var dataValue))
-                {
-                    var storagePropertyName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
-                    var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
-                    storageJsonObject.Add(storagePropertyName, serializedJsonNode);
-                }
-            }
-            else if (property is VectorStoreRecordVectorProperty vectorProperty)
-            {
-                if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(vectorProperty.DataModelPropertyName, out var vectorValue))
-                {
-                    var storagePropertyName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-                    var serializedJsonNode = JsonSerializer.SerializeToNode(vectorValue);
-                    storageJsonObject.Add(storagePropertyName, serializedJsonNode);
-                }
+                case VectorStoreRecordKeyPropertyModel keyProperty:
+                    storageJsonObject.Add(keyProperty.StorageName, dataModel.Key);
+                    continue;
+
+                case VectorStoreRecordDataPropertyModel dataProperty:
+                    if (dataModel.Data is not null && dataModel.Data.TryGetValue(dataProperty.ModelName, out var dataValue))
+                    {
+                        var serializedJsonNode = JsonSerializer.SerializeToNode(dataValue);
+                        storageJsonObject.Add(dataProperty.ModelName, serializedJsonNode);
+                    }
+                    continue;
+
+                case VectorStoreRecordVectorPropertyModel vectorProperty:
+                    if (dataModel.Vectors is not null && dataModel.Vectors.TryGetValue(vectorProperty.ModelName, out var vectorValue))
+                    {
+                        var serializedJsonNode = JsonSerializer.SerializeToNode(vectorValue);
+                        storageJsonObject.Add(vectorProperty.StorageName, serializedJsonNode);
+                    }
+                    continue;
+
+                default:
+                    throw new UnreachableException();
             }
         }
 
@@ -78,53 +70,48 @@ internal class AzureAISearchGenericDataModelMapper : IVectorStoreRecordMapper<Ve
         string? key = null;
 
         // Loop through all known properties and map each from json to the data type.
-        foreach (var property in this._vectorStoreRecordDefinition.Properties)
+        foreach (var property in model.Properties)
         {
-            if (property is VectorStoreRecordKeyProperty keyProperty)
+            switch (property)
             {
-                var storagePropertyName = keyProperty.StoragePropertyName ?? keyProperty.DataModelPropertyName;
-                var value = storageModel[storagePropertyName];
-                if (value is null)
-                {
-                    throw new VectorStoreRecordMappingException($"The key property '{storagePropertyName}' is missing from the record retrieved from storage.");
-                }
+                case VectorStoreRecordKeyPropertyModel keyProperty:
+                    key = (string?)storageModel[keyProperty.StorageName]
+                        ?? throw new VectorStoreRecordMappingException($"The key property '{keyProperty.StorageName}' is missing from the record retrieved from storage.");
 
-                key = (string)value!;
-            }
-            else if (property is VectorStoreRecordDataProperty dataProperty)
-            {
-                var storagePropertyName = dataProperty.StoragePropertyName ?? dataProperty.DataModelPropertyName;
-                if (!storageModel.TryGetPropertyValue(storagePropertyName, out var value))
+                    continue;
+
+                case VectorStoreRecordDataPropertyModel dataProperty:
                 {
+                    if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var value))
+                    {
+                        dataProperties.Add(dataProperty.ModelName, value is null ? null : GetDataPropertyValue(property.Type, value));
+                    }
                     continue;
                 }
 
-                if (value is not null)
+                case VectorStoreRecordVectorPropertyModel vectorProperty when options.IncludeVectors:
                 {
-                    dataProperties.Add(dataProperty.DataModelPropertyName, GetDataPropertyValue(property.PropertyType, value));
-                }
-                else
-                {
-                    dataProperties.Add(dataProperty.DataModelPropertyName, null);
-                }
-            }
-            else if (property is VectorStoreRecordVectorProperty vectorProperty && options.IncludeVectors)
-            {
-                var storagePropertyName = vectorProperty.StoragePropertyName ?? vectorProperty.DataModelPropertyName;
-                if (!storageModel.TryGetPropertyValue(storagePropertyName, out var value))
-                {
+                    if (storageModel.TryGetPropertyValue(vectorProperty.StorageName, out var value))
+                    {
+                        if (value is not null)
+                        {
+                            ReadOnlyMemory<float> vector = value.AsArray().Select(x => (float)x!).ToArray();
+                            vectorProperties.Add(vectorProperty.ModelName, vector);
+                        }
+                        else
+                        {
+                            vectorProperties.Add(vectorProperty.ModelName, null);
+                        }
+                    }
+
                     continue;
                 }
 
-                if (value is not null)
-                {
-                    ReadOnlyMemory<float> vector = value.AsArray().Select(x => (float)x!).ToArray();
-                    vectorProperties.Add(vectorProperty.DataModelPropertyName, vector);
-                }
-                else
-                {
-                    vectorProperties.Add(vectorProperty.DataModelPropertyName, null);
-                }
+                case VectorStoreRecordVectorPropertyModel vectorProperty when !options.IncludeVectors:
+                    break;
+
+                default:
+                    throw new UnreachableException();
             }
         }
 

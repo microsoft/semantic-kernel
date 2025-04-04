@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
@@ -29,13 +30,6 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
-
-    /// <summary>A set of types that a key on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedKeyTypes =
-    [
-        typeof(ulong),
-        typeof(Guid)
-    ];
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -58,11 +52,13 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     /// <summary>Optional configuration options for this class.</summary>
     private readonly QdrantVectorStoreRecordCollectionOptions<TRecord> _options;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
@@ -90,46 +86,18 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(qdrantClient);
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelKeyType(typeof(TRecord), options?.PointStructCustomMapper is not null, s_supportedKeyTypes);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._qdrantClient = qdrantClient;
         this._collectionName = collectionName;
         this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(
-            typeof(TRecord),
-            this._options.VectorStoreRecordDefinition,
-            new()
-            {
-                RequiresAtLeastOneVector = !this._options.HasNamedVectors,
-                SupportsMultipleKeys = false,
-                SupportsMultipleVectors = this._options.HasNamedVectors
-            });
 
-        // Validate property types.
-        this._propertyReader.VerifyKeyProperties(s_supportedKeyTypes);
+        this._model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
-        // Assign Mapper.
-        if (this._options.PointStructCustomMapper is not null)
-        {
-            // Custom Mapper.
-            this._mapper = this._options.PointStructCustomMapper;
-        }
-        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<ulong>) || typeof(TRecord) == typeof(VectorStoreGenericDataModel<Guid>))
-        {
-            // Generic data model mapper.
-            this._mapper = (IVectorStoreRecordMapper<TRecord, PointStruct>)new QdrantGenericDataModelMapper(
-                this._propertyReader,
-                this._options.HasNamedVectors);
-        }
-        else
-        {
-            // Default Mapper.
-            this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(
-                this._propertyReader,
-                this._options.HasNamedVectors);
-        }
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+        this._mapper = this._options.PointStructCustomMapper ?? new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
+#pragma warning restore CS0618
 
         this._collectionMetadata = new()
         {
@@ -155,7 +123,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         if (!this._options.HasNamedVectors)
         {
             // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
-            var singleVectorProperty = this._propertyReader.VectorProperty;
+            var singleVectorProperty = this._model.VectorProperty;
 
             // Map the single vector property to the qdrant config.
             var vectorParams = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(singleVectorProperty!);
@@ -171,10 +139,10 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         else
         {
             // Since we are using named vectors, iterate over all vector properties.
-            var vectorProperties = this._propertyReader.VectorProperties;
+            var vectorProperties = this._model.VectorProperties;
 
             // Map the named vectors to the qdrant config.
-            var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, this._propertyReader.StoragePropertyNamesMap);
+            var vectorParamsMap = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties);
 
             // Create the collection with named vectors.
             await this.RunOperationAsync(
@@ -186,50 +154,48 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         }
 
         // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFilterable);
+        var dataProperties = this._model.DataProperties.Where(x => x.IsFilterable);
         foreach (var dataProperty in dataProperties)
         {
-            var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
-
-            if (QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.PropertyType!, out PayloadSchemaType schemaType))
+            if (QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType))
             {
                 // Do nothing since schemaType is already set.
             }
-            else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.PropertyType) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.PropertyType) == typeof(string))
+            else if (VectorStoreRecordPropertyVerification.IsSupportedEnumerableType(dataProperty.Type) && VectorStoreRecordPropertyVerification.GetCollectionElementType(dataProperty.Type) == typeof(string))
             {
                 // For enumerable of strings, use keyword schema type, since this allows tag filtering.
                 schemaType = PayloadSchemaType.Keyword;
             }
             else
             {
-                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsFilterable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                // TODO: This should move to model validation
+                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsFilterable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
             }
 
             await this.RunOperationAsync(
                 "CreatePayloadIndex",
                 () => this._qdrantClient.CreatePayloadIndexAsync(
                     this._collectionName,
-                    storageFieldName,
+                    dataProperty.StorageName,
                     schemaType,
                     cancellationToken: cancellationToken)).ConfigureAwait(false);
         }
 
         // Add indexes for each of the data properties that require full text search.
-        dataProperties = this._propertyReader.DataProperties.Where(x => x.IsFullTextSearchable);
+        dataProperties = this._model.DataProperties.Where(x => x.IsFullTextSearchable);
         foreach (var dataProperty in dataProperties)
         {
-            if (dataProperty.PropertyType != typeof(string))
+            // TODO: This should move to model validation
+            if (dataProperty.Type != typeof(string))
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.DataModelPropertyName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
             }
-
-            var storageFieldName = this._propertyReader.GetStoragePropertyName(dataProperty.DataModelPropertyName);
 
             await this.RunOperationAsync(
                 "CreatePayloadIndex",
                 () => this._qdrantClient.CreatePayloadIndexAsync(
                     this._collectionName,
-                    storageFieldName,
+                    dataProperty.StorageName,
                     PayloadSchemaType.Text,
                     cancellationToken: cancellationToken)).ConfigureAwait(false);
         }
@@ -272,7 +238,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     {
         Verify.NotNull(key);
 
-        var retrievedPoints = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return retrievedPoints.FirstOrDefault();
     }
 
@@ -281,18 +247,18 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     {
         Verify.NotNull(key);
 
-        var retrievedPoints = await this.GetBatchAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return retrievedPoints.FirstOrDefault();
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Num = key }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Uuid = key.ToString("D") }, options, cancellationToken);
     }
@@ -326,7 +292,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -340,7 +306,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteBatchAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -392,7 +358,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<ulong> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public virtual async IAsyncEnumerable<ulong> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -415,7 +381,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken)
+    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(records);
 
@@ -487,31 +453,25 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
 
 #pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
         var filter = internalOptions switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._propertyReader.StoragePropertyNamesMap),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._model),
             _ => new Filter()
         };
 #pragma warning restore CS0618 // Type or member is obsolete
-
-        // Specify the vector name if named vectors are used.
-        string? vectorName = null;
-        if (this._options.HasNamedVectors)
-        {
-            vectorName = this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName);
-        }
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector();
@@ -528,9 +488,9 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             () => this._qdrantClient.QueryAsync(
                 this.CollectionName,
                 query: query,
-                usingVector: vectorName,
+                usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
-                limit: (ulong)internalOptions.Top,
+                limit: (ulong)top,
                 offset: (ulong)internalOptions.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
@@ -548,15 +508,15 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         // Resolve options.
         var internalOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
-        var textDataProperty = this._propertyReader.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
-        var textDataPropertyName = this._propertyReader.GetStoragePropertyName(textDataProperty.DataModelPropertyName);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = internalOptions.VectorProperty });
+        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(internalOptions.AdditionalProperty);
 
         // Build filter object.
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -564,18 +524,11 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         var filter = internalOptions switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._propertyReader.StoragePropertyNamesMap),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._propertyReader.StoragePropertyNamesMap),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantVectorStoreCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._model),
             _ => new Filter()
         };
 #pragma warning restore CS0618 // Type or member is obsolete
-
-        // Specify the vector name if named vectors are used.
-        string? vectorName = null;
-        if (this._options.HasNamedVectors)
-        {
-            vectorName = this._propertyReader.GetStoragePropertyName(vectorProperty.DataModelPropertyName);
-        }
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector();
@@ -593,7 +546,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         if (this._options.HasNamedVectors)
         {
-            vectorQuery.Using = vectorName;
+            vectorQuery.Using = this._options.HasNamedVectors ? vectorProperty.StorageName : null;
         }
 
         // Build the keyword query.
@@ -601,7 +554,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         var keywordSubFilter = new Filter();
         foreach (string keyword in keywords)
         {
-            keywordSubFilter.Should.Add(new Condition() { Field = new FieldCondition() { Key = textDataPropertyName, Match = new Match { Text = keyword } } });
+            keywordSubFilter.Should.Add(new Condition() { Field = new FieldCondition() { Key = textDataProperty.StorageName, Match = new Match { Text = keyword } } });
         }
         keywordFilter.Must.Add(new Condition() { Filter = keywordSubFilter });
         var keywordQuery = new PrefetchQuery
@@ -622,7 +575,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 this.CollectionName,
                 prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
                 query: fusionQuery,
-                limit: (ulong)internalOptions.Top,
+                limit: (ulong)top,
                 offset: (ulong)internalOptions.Skip,
                 vectorsSelector: vectorsSelector,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);

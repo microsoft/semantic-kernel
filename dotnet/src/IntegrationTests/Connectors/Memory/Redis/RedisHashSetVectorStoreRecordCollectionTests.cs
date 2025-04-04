@@ -67,6 +67,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var actual = await sut
             .VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+                top: 3,
                 new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 1), IncludeVectors = true });
 
         // Assert
@@ -168,7 +169,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         var sut = new RedisHashSetVectorStoreRecordCollection<RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
 
         // Act.
-        var results = sut.UpsertBatchAsync(
+        var results = sut.UpsertAsync(
             [
                 CreateTestHotel("HUpsertMany-1", 1),
                 CreateTestHotel("HUpsertMany-2", 2),
@@ -238,7 +239,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         // Also include one non-existing key to test that the operation does not fail for these and returns only the found ones.
-        var hotels = sut.GetBatchAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new GetRecordOptions { IncludeVectors = true });
+        var hotels = sut.GetAsync(["HBaseSet-1", "HBaseSet-5", "HBaseSet-2"], new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(hotels);
@@ -296,7 +297,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Act
         // Also include a non-existing key to test that the operation does not fail for these.
-        await sut.DeleteBatchAsync(["HRemoveMany-1", "HRemoveMany-2", "HRemoveMany-3", "HRemoveMany-4"]);
+        await sut.DeleteAsync(["HRemoveMany-1", "HRemoveMany-2", "HRemoveMany-3", "HRemoveMany-4"]);
 
         // Assert
         Assert.Null(await sut.GetAsync("HRemoveMany-1", new GetRecordOptions { IncludeVectors = true }));
@@ -318,6 +319,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 3,
             new()
             {
                 IncludeVectors = includeVectors,
@@ -362,9 +364,9 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 3,
             new()
             {
-                Top = 3,
                 Skip = 2
             });
 
@@ -392,10 +394,10 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 1,
             new()
             {
                 IncludeVectors = includeVectors,
-                Top = 1
             });
 
         // Assert

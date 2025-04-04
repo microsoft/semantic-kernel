@@ -230,7 +230,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        var actual = await sut.GetBatchAsync(
+        var actual = await sut.GetAsync(
             [TestRecordKey1, TestRecordKey2],
             new() { IncludeVectors = true }).ToListAsync();
 
@@ -332,7 +332,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection(useDefinition);
 
         // Act
-        await sut.DeleteBatchAsync([TestRecordKey1, TestRecordKey2]);
+        await sut.DeleteAsync([TestRecordKey1, TestRecordKey2]);
 
         // Assert
         var expectedArgs1 = new object[] { TestRecordKey1 };
@@ -390,7 +390,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertBatchAsync([model1, model2]).ToListAsync();
+        var actual = await sut.UpsertAsync([model1, model2]).ToListAsync();
 
         // Assert
         Assert.NotNull(actual);
@@ -469,12 +469,12 @@ public class RedisJsonVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
+            top: 5,
             new()
             {
                 IncludeVectors = true,
                 OldFilter = filter,
                 VectorProperty = r => r.Vector1,
-                Top = 5,
                 Skip = 2
             });
 
@@ -511,32 +511,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal("data 2", results.First().Record.Data2);
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector1!.Value.ToArray());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector2!.Value.ToArray());
-    }
-
-    /// <summary>
-    /// Tests that the collection can be created even if the definition and the type do not match.
-    /// In this case, the expectation is that a custom mapper will be provided to map between the
-    /// schema as defined by the definition and the different data model.
-    /// </summary>
-    [Fact]
-    public void CanCreateCollectionWithMismatchedDefinitionAndType()
-    {
-        // Arrange.
-        var definition = new VectorStoreRecordDefinition()
-        {
-            Properties = new List<VectorStoreRecordProperty>
-            {
-                new VectorStoreRecordKeyProperty("Id", typeof(string)),
-                new VectorStoreRecordDataProperty("Text", typeof(string)),
-                new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
-            }
-        };
-
-        // Act.
-        var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
-            this._redisDatabaseMock.Object,
-            TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, JsonNodeCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>() });
     }
 
     private RedisJsonVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)

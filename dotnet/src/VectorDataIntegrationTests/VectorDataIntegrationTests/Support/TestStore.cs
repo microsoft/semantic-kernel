@@ -72,16 +72,23 @@ public abstract class TestStore
     public virtual async Task WaitForDataAsync<TKey, TRecord>(
         IVectorStoreRecordCollection<TKey, TRecord> collection,
         int recordCount,
-        Expression<Func<TRecord, bool>>? filter = null)
+        Expression<Func<TRecord, bool>>? filter = null,
+        int vectorSize = 3)
         where TKey : notnull
     {
+        var vector = new float[vectorSize];
+        for (var i = 0; i < vectorSize; i++)
+        {
+            vector[i] = 1.0f;
+        }
+
         for (var i = 0; i < 20; i++)
         {
             var results = await collection.VectorizedSearchAsync(
-                new ReadOnlyMemory<float>([1, 2, 3]),
+                new ReadOnlyMemory<float>(vector),
+                top: recordCount,
                 new()
                 {
-                    Top = recordCount,
                     // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
                     // so filtered searches show empty results. Add a filter to the seed data check below.
                     Filter = filter

@@ -15,6 +15,7 @@ namespace Memory;
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Qdrant"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_Redis"/></para>
 /// <para><see cref="VectorStore_VectorSearch_MultiStore_InMemory"/></para>
+/// <para><see cref="VectorStore_VectorSearch_MultiStore_Postgres"/></para>
 /// </summary>
 /// <param name="vectorStore">The vector store to ingest data into.</param>
 /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings.</param>
@@ -50,7 +51,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 });
+        var searchResult = await collection.VectorizedSearchAsync(searchVector, top: 1);
         var resultRecords = await searchResult.Results.ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
@@ -60,7 +61,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 1 });
+        searchResult = await collection.VectorizedSearchAsync(searchVector, top: 1);
         resultRecords = await searchResult.Results.ToListAsync();
 
         output.WriteLine("Search string: " + searchString);
@@ -70,7 +71,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(searchVector, new() { Top = 3, Filter = g => g.Category == "External Definitions" });
+        searchResult = await collection.VectorizedSearchAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" });
         resultRecords = await searchResult.Results.ToListAsync();
 
         output.WriteLine("Search string: " + searchString);

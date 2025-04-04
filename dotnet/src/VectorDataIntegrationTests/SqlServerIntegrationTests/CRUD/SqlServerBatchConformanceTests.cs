@@ -34,18 +34,18 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         }).ToArray();
         var keys = inserted.Select(record => record.Id).ToArray();
 
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
-        var receivedKeys = await collection.UpsertBatchAsync(inserted).ToArrayAsync();
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
+        var receivedKeys = await collection.UpsertAsync(inserted).ToArrayAsync();
         Assert.Equal(keys.ToHashSet(), receivedKeys.ToHashSet()); // .ToHashSet() to ignore order
 
-        var received = await collection.GetBatchAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
         foreach (var record in inserted)
         {
             record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
         }
 
-        await collection.DeleteBatchAsync(keys);
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
+        await collection.DeleteAsync(keys);
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
     }
 
     [ConditionalFact]
@@ -62,9 +62,9 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         }).ToArray();
 
         var keys = inserted.Select(record => record.Id).Where(key => key is not null).ToArray();
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
 
-        VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertBatchAsync(inserted).ToArrayAsync().AsTask());
+        VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertAsync(inserted).ToArrayAsync().AsTask());
         Assert.Equal("UpsertBatch", ex.OperationName);
 
         var metadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
@@ -73,6 +73,6 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         Assert.Equal(metadata.CollectionName, ex.CollectionName);
 
         // Make sure that no records were inserted!
-        Assert.Empty(await collection.GetBatchAsync(keys).ToArrayAsync());
+        Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
     }
 }
