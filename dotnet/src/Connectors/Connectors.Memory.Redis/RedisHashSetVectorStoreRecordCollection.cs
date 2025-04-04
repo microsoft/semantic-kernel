@@ -372,27 +372,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        options ??= new();
-
-        var translatedFilter = new RedisFilterTranslator().Translate(filter, this._model);
-        Query query = new Query(translatedFilter)
-            .Limit(options.Skip, top)
-            .Dialect(2);
-
-        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Values.Count switch
-        {
-            0 => null,
-            1 when options.Sort.Values[0].Key is VectorStoreRecordKeyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
-            1 => options.Sort.Values[0],
-            _ => throw new NotSupportedException("Redis does not support ordering by more than one property.")
-        };
-
-        if (sortExpression.HasValue)
-        {
-            query = query.SetSortBy(
-                field: this._model.GetDataOrKeyProperty(sortExpression.Value.Key).StorageName,
-                ascending: sortExpression.Value.Value);
-        }
+        Query query = RedisVectorStoreCollectionSearchMapping.BuildQuery(filter, top, options ??= new(), this._model);
 
         var results = await this.RunOperationAsync(
             "FT.SEARCH",

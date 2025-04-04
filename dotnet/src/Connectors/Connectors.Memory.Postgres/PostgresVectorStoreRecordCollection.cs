@@ -313,7 +313,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             yield return VectorStoreErrorHandler.RunModelConversion(
                 PostgresConstants.DatabaseName,
                 this.CollectionName,
-                "Query",
+                "Get",
                 () => this._mapper.MapFromStorageToDataModel(dictionary, mapperOptions));
         }
     }

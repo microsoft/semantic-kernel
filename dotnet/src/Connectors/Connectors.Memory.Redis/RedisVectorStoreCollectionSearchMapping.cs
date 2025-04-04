@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
@@ -65,6 +66,31 @@ internal static class RedisVectorStoreCollectionSearchMapping
         if (selectFields != null)
         {
             query.ReturnFields(selectFields);
+        }
+
+        return query;
+    }
+
+    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options, VectorStoreRecordModel model)
+    {
+        var translatedFilter = new RedisFilterTranslator().Translate(filter, model);
+        Query query = new Query(translatedFilter)
+            .Limit(options.Skip, top)
+            .Dialect(2);
+
+        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Values.Count switch
+        {
+            0 => null,
+            1 when options.Sort.Values[0].Key is VectorStoreRecordKeyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
+            1 => options.Sort.Values[0],
+            _ => throw new NotSupportedException("Redis does not support ordering by more than one property.")
+        };
+
+        if (sortExpression.HasValue)
+        {
+            query = query.SetSortBy(
+                field: model.GetDataOrKeyProperty(sortExpression.Value.Key).StorageName,
+                ascending: sortExpression.Value.Value);
         }
 
         return query;
