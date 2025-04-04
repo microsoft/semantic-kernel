@@ -68,7 +68,7 @@ public sealed class IntentTriageLanguageSettings
     public string ApiKey { get; init; } = string.Empty;
 
     /// <summary>
-    /// The API version of the langage services.
+    /// The API version of the language services.
     /// </summary>
     public string ApiVersion { get; init; } = string.Empty;
 
