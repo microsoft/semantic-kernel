@@ -297,7 +297,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -308,13 +308,9 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             filter,
             top,
             options,
-            options.Sort.Expressions.Select(pair => new KeyValuePair<VectorStoreRecordProperty, bool>(this._propertyReader.GetOrderByProperty<TRecord>(pair.Key)!, pair.Value)),
+            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)),
             this.CollectionName,
-            this._propertyReader.KeyPropertyName,
-            s_jsonSerializerOptions,
-            this._propertyReader.JsonPropertyNamesMap,
-            this._propertyReader.VectorPropertyJsonNames,
-            this._propertyReader.DataPropertyJsonNames);
+            this._model);
 
         var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken).ConfigureAwait(false);
         await foreach (var record in results.Results.ConfigureAwait(false))

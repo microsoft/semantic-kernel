@@ -15,7 +15,7 @@ public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture f
     protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<TKey, FilterRecord> collection,
         Expression<Func<FilterRecord, bool>> filter, int top)
     {
-        QueryOptions<FilterRecord> options = new();
+        FilterOptions<FilterRecord> options = new();
 
         options.Sort
             .Ascending(r => r.Int)

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -188,9 +189,9 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     internal static DbCommand BuildSelectWhereCommand<TRecord>(
         SqliteConnection connection,
         int top,
-        QueryOptions<TRecord> options,
+        FilterOptions<TRecord> options,
         string table,
-        IReadOnlyList<VectorStoreRecordProperty> properties,
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
         string whereFilter,
         Dictionary<string, object> whereParameters,
         IEnumerable<KeyValuePair<string, bool>> orderByPropertyNames)
@@ -202,7 +203,10 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.Append("SELECT ");
         foreach (var property in properties)
         {
-            builder.AppendFormat("\"{0}\",", property.StoragePropertyName ?? property.DataModelPropertyName);
+            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            {
+                builder.AppendFormat("\"{0}\",", property.StorageName);
+            }
         }
         builder.Length--; // Remove the trailing comma
         builder.AppendLine();

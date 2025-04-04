@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines options for filter search.
 /// </summary>
 /// <typeparam name="TRecord">Type of the record.</typeparam>
-public sealed class QueryOptions<TRecord>
+public sealed class FilterOptions<TRecord>
 {
     private int _skip = 0;
 
@@ -51,12 +51,12 @@ public sealed class QueryOptions<TRecord>
     // This type does not derive any collection in order to avoid Intellisense suggesting LINQ methods.
     public sealed class SortDefinition
     {
-        private readonly List<KeyValuePair<Expression<Func<TRecord, object?>>, bool>> _sorts = new();
+        private readonly List<KeyValuePair<Expression<Func<TRecord, object?>>, bool>> _values = new();
 
         /// <summary>
         /// Gets the expressions to sort by.
         /// </summary>
-        public IReadOnlyList<KeyValuePair<Expression<Func<TRecord, object?>>, bool>> Expressions => this._sorts;
+        public IReadOnlyList<KeyValuePair<Expression<Func<TRecord, object?>>, bool>> Values => this._values;
 
         /// <summary>
         /// Creates an ascending sort.
@@ -68,7 +68,7 @@ public sealed class QueryOptions<TRecord>
                 throw new ArgumentNullException(nameof(propertySelector));
             }
 
-            this._sorts.Add(new(propertySelector, true));
+            this._values.Add(new(propertySelector, true));
             return this;
         }
 
@@ -82,7 +82,7 @@ public sealed class QueryOptions<TRecord>
                 throw new ArgumentNullException(nameof(propertySelector));
             }
 
-            this._sorts.Add(new(propertySelector, false));
+            this._values.Add(new(propertySelector, false));
             return this;
         }
     }

@@ -31,7 +31,7 @@ public sealed class VectorStoreRecordModel
     public IReadOnlyList<VectorStoreRecordKeyPropertyModel> KeyProperties { get; }
 
     /// <summary>
-    /// The dataproperties of the record.
+    /// The data properties of the record.
     /// </summary>
     public IReadOnlyList<VectorStoreRecordDataPropertyModel> DataProperties { get; }
 
@@ -115,7 +115,7 @@ public sealed class VectorStoreRecordModel
             }
             else if (searchOptions.VectorProperty is Expression<Func<TRecord, object?>> expression)
             {
-                return this.GetMatchingProperty<TRecord, VectorStoreRecordVectorPropertyModel>(expression);
+                return this.GetMatchingProperty<TRecord, VectorStoreRecordVectorPropertyModel>(expression, data: false);
             }
         }
 
@@ -139,7 +139,7 @@ public sealed class VectorStoreRecordModel
     {
         if (expression is not null)
         {
-            var property = this.GetMatchingProperty<TRecord, VectorStoreRecordDataPropertyModel>(expression);
+            var property = this.GetMatchingProperty<TRecord, VectorStoreRecordDataPropertyModel>(expression, data: true);
 
             return property.IsFullTextSearchable
                 ? property
@@ -165,10 +165,17 @@ public sealed class VectorStoreRecordModel
         return this._singleFullTextSearchProperty;
     }
 
-    private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression)
+    /// <summary>
+    /// Get the data or key property selected by provided expression.
+    /// </summary>
+    /// <param name="expression">The property selector.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the provided property name is not a valid data or key property name.</exception>
+    public VectorStoreRecordPropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
+        => this.GetMatchingProperty<TRecord, VectorStoreRecordPropertyModel>(expression, data: true);
+
+    private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression, bool data)
         where TProperty : VectorStoreRecordPropertyModel
     {
-        bool data = typeof(TProperty) == typeof(VectorStoreRecordDataProperty);
         string expectedGenericModelPropertyName = data
             ? nameof(VectorStoreGenericDataModel<object>.Data)
             : nameof(VectorStoreGenericDataModel<object>.Vectors);

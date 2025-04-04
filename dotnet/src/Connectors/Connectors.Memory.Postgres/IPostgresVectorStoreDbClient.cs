@@ -136,6 +136,6 @@ internal interface IPostgresVectorStoreDbClient
         VectorSearchFilter? legacyFilter = default, Expression<Func<TRecord, bool>>? newFilter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
-    IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecords<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader,
-        Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord> options, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, VectorStoreRecordModel model,
+        Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options, CancellationToken cancellationToken = default);
 }

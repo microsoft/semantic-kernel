@@ -496,32 +496,32 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        var translatedFilter = new QdrantFilterTranslator().Translate(filter, this._propertyReader.StoragePropertyNamesMap);
+        var translatedFilter = new QdrantFilterTranslator().Translate(filter, this._model);
 
         // Specify whether to include vectors in the search results.
         WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
 
-        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Expressions.Count switch
+        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Values.Count switch
         {
             0 => null,
-            1 => options.Sort.Expressions[0],
+            1 => options.Sort.Values[0],
             _ => throw new NotSupportedException("Qdrant does not support ordering by more than one property.")
         };
 
         OrderBy? orderBy = null;
         if (sortExpression.HasValue)
         {
-            var orderByName = this._propertyReader.GetOrderByProperty(sortExpression.Value.Key) switch
+            var orderByName = this._model.GetDataOrKeyProperty(sortExpression.Value.Key) switch
             {
-                VectorStoreRecordKeyProperty => "id",
-                VectorStoreRecordDataProperty dataProperty => this._propertyReader.StoragePropertyNamesMap[dataProperty.DataModelPropertyName],
+                VectorStoreRecordKeyPropertyModel => "id",
+                VectorStoreRecordDataPropertyModel dataProperty => dataProperty.StorageName,
                 _ => throw new InvalidOperationException()
             };
 

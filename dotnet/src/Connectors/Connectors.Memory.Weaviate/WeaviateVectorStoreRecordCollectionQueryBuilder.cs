@@ -73,25 +73,21 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     /// </summary>
     public static string BuildQuery<TRecord>(
         Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord> queryOptions,
-        IEnumerable<KeyValuePair<VectorStoreRecordProperty, bool>> orderByProperties,
+        FilterOptions<TRecord> queryOptions,
+        IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties,
         string collectionName,
-        string keyPropertyName,
-        JsonSerializerOptions jsonSerializerOptions,
-        IReadOnlyDictionary<string, string> storagePropertyNames,
-        IReadOnlyList<string> vectorPropertyStorageNames,
-        IReadOnlyList<string> dataPropertyStorageNames)
+        VectorStoreRecordModel model)
     {
         var vectorsQuery = queryOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", vectorPropertyStorageNames)} }}" :
+            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
             string.Empty;
 
         string sortPaths = string.Join(",", orderByProperties.Select(property =>
         {
             string? sortPath = property.Key switch
             {
-                VectorStoreRecordKeyProperty key => "id",
-                _ => storagePropertyNames[property.Key.DataModelPropertyName],
+                VectorStoreRecordKeyPropertyModel key => "id",
+                _ => property.Key.StorageName,
             };
 
             return $$"""{ path: ["{{sortPath}}"], order: {{(property.Value ? "asc" : "desc")}} }""";
@@ -99,7 +95,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
 
         var sort = string.IsNullOrEmpty(sortPaths) ? string.Empty : $"sort: [ {sortPaths} ]";
 
-        var translatedFilter = new WeaviateFilterTranslator().Translate(filter, storagePropertyNames);
+        var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
 
         return $$"""
         {
@@ -110,7 +106,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               where: {{translatedFilter}}
               {{sort}}
             ) {
-              {{string.Join(" ", dataPropertyStorageNames)}}
+              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
                 {{WeaviateConstants.ReservedKeyPropertyName}}
                 {{WeaviateConstants.ScorePropertyName}}

@@ -127,7 +127,7 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return this._decoratedVectorStoreRecordCollection.GetAsync(filter, top, options, cancellationToken);
     }

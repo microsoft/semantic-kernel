@@ -337,23 +337,21 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(filter, this._storagePropertyNames);
-
-        var fields = new List<string>(options.IncludeVectors ? this._storagePropertyNames.Values : this._nonVectorStoragePropertyNames);
+        var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(filter, this._model);
 
         var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
-            fields,
-            this._storagePropertyNames,
+            this._model,
             whereClause,
             filterParameters,
-            options.Sort.Expressions.Select(pair => new KeyValuePair<VectorStoreRecordProperty, bool>(this._propertyReader.GetOrderByProperty<TRecord>(pair.Key)!, pair.Value)),
+            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)),
+            options.IncludeVectors,
             top: top,
             skip: options.Skip);
 

@@ -293,7 +293,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -302,9 +302,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
 
-        await foreach (var dictionary in this._client.GetMatchingRecords(
+        await foreach (var dictionary in this._client.GetMatchingRecordsAsync(
             this.CollectionName,
-            this._propertyReader,
+            this._model,
             filter,
             top,
             options,

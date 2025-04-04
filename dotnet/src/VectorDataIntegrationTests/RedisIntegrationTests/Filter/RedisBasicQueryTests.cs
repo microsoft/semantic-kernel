@@ -20,7 +20,7 @@ public abstract class RedisBasicQueryTests(BasicQueryTests<string>.QueryFixture 
 
     protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<string, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
     {
-        QueryOptions<FilterRecord> options = new();
+        FilterOptions<FilterRecord> options = new();
 
         options.Sort.Ascending(r => r.Int2);
 

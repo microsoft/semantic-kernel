@@ -248,7 +248,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.QueryOptions{`1},System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.FilterOptions{`1},System.Threading.CancellationToken)</Target>
     <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -304,7 +304,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.QueryOptions{`1},System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.FilterOptions{`1},System.Threading.CancellationToken)</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -360,7 +360,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0006</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.QueryOptions{`1},System.Threading.CancellationToken)</Target>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2.GetAsync(System.Linq.Expressions.Expression{System.Func{`1,System.Boolean}},System.Int32,Microsoft.Extensions.VectorData.FilterOptions{`1},System.Threading.CancellationToken)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

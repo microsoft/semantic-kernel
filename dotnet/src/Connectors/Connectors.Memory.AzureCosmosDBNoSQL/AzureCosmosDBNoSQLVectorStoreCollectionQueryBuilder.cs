@@ -126,15 +126,22 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     }
 
     internal static QueryDefinition BuildSearchQuery(
-        List<string> fields,
-        Dictionary<string, string> storagePropertyNames,
+        VectorStoreRecordModel model,
         string whereClause, Dictionary<string, object?> filterParameters,
-        IEnumerable<KeyValuePair<VectorStoreRecordProperty, bool>> orderByProperties,
+        IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties,
+        bool includeVectors,
         int top,
         int skip)
     {
         var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
-        var fieldsArgument = fields.Select(field => $"{tableVariableName}.{field}");
+
+        IEnumerable<VectorStoreRecordPropertyModel> projectionProperties = model.Properties;
+        if (!includeVectors)
+        {
+            projectionProperties = projectionProperties.Where(p => p is not VectorStoreRecordVectorPropertyModel);
+        }
+
+        var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field}");
 
         var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
 
@@ -158,7 +165,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
                 orderByClauseNotAdded = false;
             }
 
-            builder.AppendFormat("{0}.{1} {2},", tableVariableName, storagePropertyNames[pair.Key.DataModelPropertyName], pair.Value ? "ASC" : "DESC");
+            builder.AppendFormat("{0}.{1} {2},", tableVariableName, pair.Key.StorageName, pair.Value ? "ASC" : "DESC");
         }
         if (!orderByClauseNotAdded)
         {

@@ -340,7 +340,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -352,30 +352,32 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             VectorSearch = new(),
             Size = top,
             Skip = options.Skip,
-            Filter = new AzureAISearchFilterTranslator().Translate(filter, this._propertyReader.StoragePropertyNamesMap),
+            Filter = new AzureAISearchFilterTranslator().Translate(filter, this._model),
         };
 
         // Filter out vector fields if requested.
         if (!options.IncludeVectors)
         {
-            searchOptions.Select.Add(this._propertyReader.KeyPropertyJsonName);
-            searchOptions.Select.AddRange(this._propertyReader.DataPropertyJsonNames);
+            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
         }
 
-        foreach (var pair in options.Sort.Expressions)
+        foreach (var pair in options.Sort.Values)
         {
-            if (this._propertyReader.GetOrderByProperty(pair.Key) is VectorStoreRecordProperty property)
+            VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.Key);
+            string name = property.StorageName;
+            // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
+            // "The default is ascending order."
+            if (!pair.Value)
             {
-                string name = this._propertyReader.StoragePropertyNamesMap[property.DataModelPropertyName];
-                // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
-                // "The default is ascending order."
-                if (!pair.Value)
-                {
-                    name += " desc";
-                }
-
-                searchOptions.OrderBy.Add(name);
+                name += " desc";
             }
+
+            searchOptions.OrderBy.Add(name);
         }
 
         VectorSearchResults<TRecord> vectorSearchResults = await this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false);

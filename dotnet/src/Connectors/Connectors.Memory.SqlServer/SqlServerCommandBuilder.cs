@@ -377,17 +377,16 @@ internal static class SqlServerCommandBuilder
     internal static SqlCommand SelectWhere<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        QueryOptions<TRecord> options,
+        FilterOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
-        IReadOnlyList<VectorStoreRecordProperty> properties,
-        IReadOnlyDictionary<string, string> storagePropertyNamesMap,
-        IEnumerable<KeyValuePair<VectorStoreRecordProperty, bool>> orderByProperties)
+        VectorStoreRecordModel model,
+        IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties)
     {
         SqlCommand command = connection.CreateCommand();
 
         StringBuilder sb = new(200);
         sb.AppendFormat("SELECT ");
-        sb.AppendColumnNames(properties, includeVectors: options.IncludeVectors);
+        sb.AppendColumnNames(model.Properties, includeVectors: options.IncludeVectors);
         sb.AppendLine();
         sb.Append("FROM ");
         sb.AppendTableName(schema, tableName);
@@ -396,7 +395,7 @@ internal static class SqlServerCommandBuilder
         {
             int startParamIndex = command.Parameters.Count;
 
-            SqlServerFilterTranslator translator = new(storagePropertyNamesMap, filter, sb, startParamIndex: startParamIndex);
+            SqlServerFilterTranslator translator = new(model, filter, sb, startParamIndex: startParamIndex);
             translator.Translate(appendWhere: true);
             List<object> parameters = translator.ParameterValues;
 
@@ -415,14 +414,21 @@ internal static class SqlServerCommandBuilder
                 orderByClauseNotAdded = false;
             }
 
-            sb.AppendFormat("[{0}] {1},", GetColumnName(pair.Key), pair.Value ? "ASC" : "DESC");
+            sb.AppendFormat("[{0}] {1},", pair.Key.StorageName, pair.Value ? "ASC" : "DESC");
         }
+
         if (!orderByClauseNotAdded)
         {
             sb.Length--; // remove the last comma
             sb.AppendLine();
         }
-        // Negative Skip and Top values are rejected by the QueryOptions property setters.
+        else
+        {
+            // no order by properties, but we need to add something for OFFSET and NEXT to work
+            sb.AppendLine("ORDER BY (SELECT NULL)");
+        }
+
+        // Negative Skip and Top values are rejected by the FilterOptions property setters.
         // 0 is a legal value for OFFSET.
         sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
 
@@ -430,6 +436,7 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
+    internal static StringBuilder AppendParameterName(this StringBuilder sb, VectorStoreRecordPropertyModel property, ref int paramIndex, out string parameterName)
     {
         // In SQL Server, parameter names cannot be just a number like "@1".
         // Parameter names must start with an alphabetic character or an underscore

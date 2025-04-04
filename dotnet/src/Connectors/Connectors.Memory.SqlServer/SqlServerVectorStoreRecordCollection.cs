@@ -472,7 +472,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -487,19 +487,18 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection,
             this._options.Schema,
             this.CollectionName,
-            this._propertyReader.Properties,
-            this._propertyReader.StoragePropertyNamesMap,
-            options.Sort.Expressions.Select(pair => new KeyValuePair<VectorStoreRecordProperty, bool>(this._propertyReader.GetOrderByProperty<TRecord>(pair.Key)!, pair.Value)));
+            this._model,
+            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)));
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
             cancellationToken, "GetAsync", this.CollectionName).ConfigureAwait(false);
 
-        var vectorPropertyStoragePropertyNames = options.IncludeVectors ? this._propertyReader.VectorPropertyStoragePropertyNames : [];
+        var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
-            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorPropertyStoragePropertyNames), mapperOptions);
+            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), mapperOptions);
         }
     }
 }

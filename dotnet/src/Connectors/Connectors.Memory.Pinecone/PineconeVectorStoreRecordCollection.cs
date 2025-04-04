@@ -365,12 +365,12 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        if (options?.Sort.Expressions.Count > 0)
+        if (options?.Sort.Values.Count > 0)
         {
             throw new NotSupportedException("Pinecone does not support ordering.");
         }
@@ -386,8 +386,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             // "Either 'vector' or 'ID' must be provided"
             // Since we are doing a query, we don't have a vector to provide, so we fake one.
             // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
-            Vector = new ReadOnlyMemory<float>(new float[this._propertyReader.VectorProperty!.Dimensions!.Value]),
-            Filter = new PineconeFilterTranslator().Translate(filter, this._propertyReader.StoragePropertyNamesMap),
+            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions!.Value]),
+            Filter = new PineconeFilterTranslator().Translate(filter, this._model),
         };
 
         Sdk.QueryResponse response = await this.RunIndexOperationAsync(

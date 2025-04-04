@@ -249,22 +249,22 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        SqliteFilterTranslator translator = new(this._propertyReader.StoragePropertyNamesMap, filter);
+        SqliteFilterTranslator translator = new(this._model, filter);
         translator.Translate(appendWhere: false);
 
-        IReadOnlyList<VectorStoreRecordProperty> properties = options.IncludeVectors
-            ? this._propertyReader.Properties
-            : [this._propertyReader.KeyProperty, .. this._propertyReader.DataProperties];
+        var orderByPropertyNames = options.Sort.Values
+            .Select(pair => new KeyValuePair<string, bool>(this._model.GetDataOrKeyProperty(pair.Key).StorageName, pair.Value));
 
-        var orderByPropertyNames = options.Sort.Expressions
-            .Select(pair => new KeyValuePair<string, bool>(this._propertyReader.StoragePropertyNamesMap[this._propertyReader.GetOrderByProperty(pair.Key)!.DataModelPropertyName], pair.Value));
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties = options.IncludeVectors
+            ? this._model.Properties
+            : [this._model.KeyProperty, .. this._model.DataProperties];
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectWhereCommand(
@@ -272,7 +272,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             top,
             options,
             this._dataTableName,
-            properties,
+            this._model.Properties,
             translator.Clause.ToString(),
             translator.Parameters,
             orderByPropertyNames);

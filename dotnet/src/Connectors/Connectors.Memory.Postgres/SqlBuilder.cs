@@ -90,7 +90,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    internal static PostgresSqlCommandInfo BuildCreateVectorIndexCommand(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
+    internal static PostgresSqlCommandInfo BuildCreateIndexCommand(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
     {
         var indexName = $"{tableName}_{columnName}_index";
 
@@ -319,7 +319,7 @@ WHERE "{keyColumn}" = ANY($1);
         {
             (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, model, legacyFilter, startParamIndex: 2),
-            (null, not null) => GenerateNewFilterWhereClause(model, newFilter),
+            (null, not null) => GenerateNewFilterWhereClause(model, newFilter, startParamIndex: 2),
             _ => (Clause: string.Empty, Parameters: [])
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
@@ -362,38 +362,38 @@ FROM ({commandText}) AS subquery
     }
 
     internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
-        string schema, string tableName, VectorStoreRecordPropertyReader propertyReader,
-        Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord> options)
+        string schema, string tableName, VectorStoreRecordModel model,
+        Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options)
     {
         StringBuilder query = new(200);
         query.Append("SELECT ");
-        foreach (var property in propertyReader.RecordDefinition.Properties)
+        foreach (var property in model.Properties)
         {
-            if (options.IncludeVectors || property is not VectorStoreRecordVectorProperty)
+            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
             {
-                query.AppendFormat("\"{0}\",", property.StoragePropertyName ?? property.DataModelPropertyName);
+                query.AppendFormat("\"{0}\",", property.StorageName);
             }
         }
         query.Length--;  // Remove trailing comma
         query.AppendLine();
         query.AppendFormat("FROM {0}.\"{1}\"", schema, tableName).AppendLine();
 
-        PostgresFilterTranslator translator = new(propertyReader.StoragePropertyNamesMap, filter, startParamIndex: 1, query);
+        PostgresFilterTranslator translator = new(model, filter, startParamIndex: 1, query);
         translator.Translate(appendWhere: true);
         query.AppendLine();
 
         bool orderByClauseNotAdded = true;
-        for (int i = 0; i < options.Sort.Expressions.Count; i++)
+        for (int i = 0; i < options.Sort.Values.Count; i++)
         {
-            var pair = options.Sort.Expressions[i];
+            var pair = options.Sort.Values[i];
             if (orderByClauseNotAdded)
             {
                 query.Append("ORDER BY ");
                 orderByClauseNotAdded = false;
             }
 
-            VectorStoreRecordProperty property = propertyReader.GetOrderByProperty(pair.Key)!;
-            query.AppendFormat("\"{0}\" {1},", property.StoragePropertyName ?? property.DataModelPropertyName, pair.Value ? "ASC" : "DESC");
+            var property = model.GetDataOrKeyProperty(pair.Key);
+            query.AppendFormat("\"{0}\" {1},", property.StorageName, pair.Value ? "ASC" : "DESC");
         }
         if (!orderByClauseNotAdded)
         {

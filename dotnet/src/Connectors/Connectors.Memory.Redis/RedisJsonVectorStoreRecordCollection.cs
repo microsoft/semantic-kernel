@@ -435,30 +435,30 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        var translatedFilter = new RedisFilterTranslator().Translate(filter, this._propertyReader.JsonPropertyNamesMap);
+        var translatedFilter = new RedisFilterTranslator().Translate(filter, this._model);
         Query query = new Query(translatedFilter)
             .Limit(options.Skip, top)
             .Dialect(2);
 
-        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Expressions.Count switch
+        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Values.Count switch
         {
             0 => null,
-            1 when options.Sort.Expressions[0].Key is VectorStoreRecordKeyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
-            1 => options.Sort.Expressions[0],
+            1 when options.Sort.Values[0].Key is VectorStoreRecordKeyProperty => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
+            1 => options.Sort.Values[0],
             _ => throw new NotSupportedException("Redis does not support ordering by more than one property.")
         };
 
         if (sortExpression.HasValue)
         {
             query = query.SetSortBy(
-                field: this._propertyReader.GetJsonPropertyName(this._propertyReader.GetOrderByProperty(sortExpression.Value.Key)!.DataModelPropertyName),
+                field: this._model.GetDataOrKeyProperty(sortExpression.Value.Key).StorageName,
                 ascending: sortExpression.Value.Value);
         }
 

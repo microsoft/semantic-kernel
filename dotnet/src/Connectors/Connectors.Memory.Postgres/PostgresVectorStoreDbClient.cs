@@ -73,7 +73,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
         var createIndexCommands =
             PostgresVectorStoreRecordPropertyMapping.GetIndexInfo(model.Properties)
                 .Select(index =>
-                    SqlBuilder.BuildCreateIndexCommand(this._schema, tableName, index.column, index.kind, index.function, index.isVector, ifNotExists)
+                    SqlBuilder.BuildCreateIndexCommand(this._schema, tableName, index.column, index.kind, index.function, index.isVector, ifNotExists));
 
         // Execute the commands in a transaction.
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -201,20 +201,20 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
         }
     }
 
-    public async IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecords<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader,
-        Expression<Func<TRecord, bool>> filter, int top, QueryOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, VectorStoreRecordModel model,
+        Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection)
         {
-            var commandInfo = SqlBuilder.BuildSelectWhereCommand(this._schema, tableName, propertyReader, filter, top, options);
+            var commandInfo = SqlBuilder.BuildSelectWhereCommand(this._schema, tableName, model, filter, top, options);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
-                yield return this.GetRecord(dataReader, propertyReader.RecordDefinition.Properties, options.IncludeVectors);
+                yield return this.GetRecord(dataReader, model, options.IncludeVectors);
             }
         }
     }

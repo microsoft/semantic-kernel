@@ -18,7 +18,7 @@ public class QdrantBasicQueryTests(QdrantBasicQueryTests.Fixture fixture)
 
     protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<ulong, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
     {
-        QueryOptions<FilterRecord> options = new();
+        FilterOptions<FilterRecord> options = new();
 
         options.Sort.Ascending(r => r.Int2);
 

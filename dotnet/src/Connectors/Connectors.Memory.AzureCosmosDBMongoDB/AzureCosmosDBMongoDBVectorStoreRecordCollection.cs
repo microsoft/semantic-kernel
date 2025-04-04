@@ -308,7 +308,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        QueryOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -316,15 +316,15 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         options ??= new();
 
         // Translate the filter now, so if it fails, we throw immediately.
-        var translatedFilter = new AzureCosmosDBMongoDBFilterTranslator().Translate(filter, this._storagePropertyNames);
+        var translatedFilter = new AzureCosmosDBMongoDBFilterTranslator().Translate(filter, this._model);
 
         SortDefinition<BsonDocument>? sortDefinition = null;
-        if (options.Sort.Expressions.Count > 0)
+        if (options.Sort.Values.Count > 0)
         {
             sortDefinition = Builders<BsonDocument>.Sort.Combine(
-                options.Sort.Expressions.Select(pair =>
+                options.Sort.Values.Select(pair =>
                 {
-                    var storageName = this._storagePropertyNames[this._propertyReader.GetOrderByProperty(pair.Key)!.DataModelPropertyName];
+                    var storageName = this._model.GetDataOrKeyProperty(pair.Key).StorageName;
 
                     return pair.Value
                         ? Builders<BsonDocument>.Sort.Ascending(storageName)
