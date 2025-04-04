@@ -7,6 +7,11 @@ namespace Microsoft.SemanticKernel.Process;
 /// </summary>
 public class KernelProcessMessageSource
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelProcessMessageSource"/> class.
+    /// </summary>
+    /// <param name="messageType">The message type</param>
+    /// <param name="sourceStepId">The unique Id of the source step.</param>
     public KernelProcessMessageSource(string messageType, string sourceStepId)
     {
         Verify.NotNullOrWhiteSpace(messageType, nameof(messageType));

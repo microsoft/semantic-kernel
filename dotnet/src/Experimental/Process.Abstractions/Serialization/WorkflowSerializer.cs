@@ -14,6 +14,13 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class WorkflowSerializer
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true
+    };
+
     /// <summary>
     /// Deserializes a workflow from YAML
     /// </summary>
@@ -21,20 +28,16 @@ public static class WorkflowSerializer
     /// <returns>The deserialized workflow</returns>
     public static Workflow DeserializeFromYaml(string yaml)
     {
-        try
-        {
-            var deserializer = new DeserializerBuilder()
+        var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-            var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
-            return wrapper?.Workflow;
-        }
-        catch (System.Exception ex)
-        {
-            throw;
-        }
+        var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
+
+        return wrapper?.Workflow == null
+            ? throw new KernelException("Failed to deserialize provided YAML to a Processes.")
+            : wrapper.Workflow;
     }
 
     /// <summary>
@@ -83,14 +86,7 @@ public static class WorkflowSerializer
     /// <returns>The deserialized workflow</returns>
     public static Workflow DeserializeFromJson(string json)
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNameCaseInsensitive = true
-        };
-
-        return JsonSerializer.Deserialize<Workflow>(json, options)!;
+        return JsonSerializer.Deserialize<Workflow>(json, s_jsonOptions)!;
     }
 
     /// <summary>
@@ -112,14 +108,7 @@ public static class WorkflowSerializer
     /// <returns>The JSON string</returns>
     public static string SerializeToJson(Workflow workflow)
     {
-        var options = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            WriteIndented = true
-        };
-
-        return JsonSerializer.Serialize(workflow, options);
+        return JsonSerializer.Serialize(workflow, s_jsonOptions);
     }
 
     /// <summary>

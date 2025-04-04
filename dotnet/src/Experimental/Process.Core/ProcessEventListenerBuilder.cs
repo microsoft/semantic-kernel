@@ -27,10 +27,10 @@ internal class ProcessEventListenerBuilder : ProcessStepBuilder
         var state = new KernelProcessStepState("EventListener", this.Id);
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
         var builtSources = this.MessageSources
-            .Select(sourceBuilder => new KernelProcessMessageSource(sourceBuilder.Type, sourceBuilder.Source.Id))
+            .Select(sourceBuilder => new KernelProcessMessageSource(sourceBuilder.MessageType, sourceBuilder.Source.Id))
             .ToList();
 
-        return new KernelProcessEventListener(builtSources, this.DestinationId, typeof(KernelProcessEventListener), state, builtEdges);
+        return new KernelProcessEventListener(builtSources, this.DestinationId, state, builtEdges);
     }
 
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()

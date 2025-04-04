@@ -143,6 +143,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return builder;
     }
 
+    internal void AddListenerStep(ProcessEventListenerBuilder listenerBuilder)
+    {
+        Verify.NotNull(listenerBuilder, nameof(listenerBuilder));
+        this._steps.Add(listenerBuilder);
+    }
+
     #region Public Interface
 
     /// <summary>
@@ -156,6 +162,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <param name="name">The name of the step. This parameter is optional.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <param name="id">The unique identifier for the step. If not provided, a new GUID will be generated.</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null, string? id = null) where TStep : KernelProcessStep
     {
@@ -167,9 +174,10 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Adds a step to the process.
     /// </summary>
-    /// <param name="stepType">The step Type.<param>
+    /// <param name="stepType">The step Type.</param>
     /// <param name="name">The name of the step. This parameter is optional.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
+    /// <param name="id">The unique identifier for the step. If not provided, a new GUID will be generated.</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType(Type stepType, string? name = null, IReadOnlyList<string>? aliases = null, string? id = null)
     {
@@ -274,12 +282,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return this.AddStep(proxyBuilder, aliases);
     }
 
-    internal void AddListenerStep(ProcessEventListenerBuilder listenerBuilder)
-    {
-        Verify.NotNull(listenerBuilder, nameof(listenerBuilder));
-        this._steps.Add(listenerBuilder);
-    }
-
     /// <summary>
     /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
     /// </summary>
@@ -301,6 +303,15 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessEdgeBuilder OnError()
     {
         return new ProcessEdgeBuilder(this, ProcessConstants.GlobalErrorEventId);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ListenForBuilder"/> instance to define a listener for incoming messages.
+    /// </summary>
+    /// <returns></returns>
+    public ListenForBuilder ListenFor()
+    {
+        return new ListenForBuilder(this);
     }
 
     /// <summary>
@@ -352,13 +363,19 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     {
     }
 
-    public static async Task<KernelProcess?> ReadFromStringAsync(string processString)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
+    /// </summary>
+    /// <param name="yaml">The declarative process in yaml.</param>
+    /// <returns>An instance of <see cref="KernelProcess"/></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static async Task<KernelProcess?> LoadFromYamlAsync(string yaml)
     {
-        Verify.NotNullOrWhiteSpace(processString);
+        Verify.NotNullOrWhiteSpace(yaml);
 
         try
         {
-            var workflow = WorkflowSerializer.DeserializeFromYaml(processString);
+            var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
             var builder = new WorkflowBuilder();
             var process = await builder.BuildProcessAsync(workflow).ConfigureAwait(false);
 
@@ -369,101 +386,5 @@ public sealed class ProcessBuilder : ProcessStepBuilder
             throw new ArgumentException("Failed to deserialize the process string.", ex);
         }
     }
-
-    public ListenForBuilder ListenFor()
-    {
-        return new ListenForBuilder(this);
-    }
     #endregion
-}
-
-public class ListenForBuilder
-{
-    private readonly ProcessBuilder _processBuilder;
-
-    public ListenForBuilder(ProcessBuilder processBuilder)
-    {
-        this._processBuilder = processBuilder;
-    }
-
-    public ListenForTargetBuilder Message(string type, ProcessStepBuilder from)
-    {
-        Verify.NotNullOrWhiteSpace(type, nameof(type));
-        Verify.NotNull(from, nameof(from));
-
-        return new ListenForTargetBuilder([new() { Type = type, Source = from }], this._processBuilder);
-    }
-
-    public ListenForTargetBuilder AllOf(List<MessageSourceBuilder> messageSources)
-    {
-        Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
-        return new ListenForTargetBuilder(messageSources, this._processBuilder);
-    }
-}
-
-public class ListenForTargetBuilder : ProcessStepEdgeBuilder
-{
-    private readonly ProcessBuilder _processBuilder;
-    private readonly List<MessageSourceBuilder> _messageSources = new();
-
-    public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder) : base(processBuilder, "Aggregate", "Aggregate")
-    {
-        Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
-        this._messageSources = messageSources;
-        this._processBuilder = processBuilder;
-    }
-
-    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target)
-    {
-        Verify.NotNull(target, nameof(target));
-
-        // Create a new event listener for the source messages and the destination step
-        var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id);
-
-        // Add the listener to the process builder
-        this._processBuilder.AddListenerStep(eventListener);
-
-        // Link the listener to the destination step
-        string eventId = "events_received";
-        eventListener.LinkTo(eventId, new ProcessStepEdgeBuilder(eventListener, eventId, eventListener.Name)
-        {
-            Target = target
-        });
-
-        foreach (var messageSource in this._messageSources)
-        {
-            if (messageSource.Source == null)
-            {
-                throw new InvalidOperationException("Source step cannot be null.");
-            }
-
-            // Link all the source steps to the event listener
-            messageSource.Source.OnEvent(messageSource.Type)
-                .SendEventTo(new ProcessFunctionTargetBuilder(eventListener));
-        }
-
-        return new ListenForTargetBuilder(this._messageSources, this._processBuilder);
-    }
-}
-
-public class MessageSourceBuilder
-{
-    public string Type { get; set; }
-
-    public ProcessStepBuilder Source { get; set; }
-}
-
-// TODO: Move to Core
-public class EventListener
-{
-    public EventListener(string? id = null)
-    {
-        this.Id = id ?? Guid.NewGuid().ToString();
-    }
-
-    public string Id { get; }
-
-    public List<MessageSourceBuilder> MessageSources = [];
-
-    public string DestinationId = "";
 }

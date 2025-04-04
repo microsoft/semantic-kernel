@@ -165,10 +165,10 @@ internal class WorkflowBuilder
                 {
                     var sourceBuilder = this.FindSourceBuilder(new() { Event = listenEvent.Event, From = listenEvent.From }, processBuilder);
                     return new MessageSourceBuilder
-                    {
-                        Source = this._stepBuilders[listenEvent.From],
-                        Type = listenEvent.Event
-                    };
+                    (
+                        messageType: listenEvent.Event,
+                        source: this._stepBuilders[listenEvent.From]
+                    );
                 }
 
                 // Handle AllOf condition
@@ -226,8 +226,8 @@ internal class WorkflowBuilder
     {
         Verify.NotNull(process);
 
-        Workflow workflow = new Workflow();
-        workflow.Nodes = new List<Node>();
+        Workflow workflow = new();
+        workflow.Nodes = [];
 
         var orchestration = new List<OrchestrationStep>();
         var steps = process.Steps;
@@ -242,13 +242,21 @@ internal class WorkflowBuilder
 
     private static Node BuildNode(KernelProcessStepInfo step, List<OrchestrationStep> orchestrationSteps)
     {
+        Verify.NotNullOrWhiteSpace(step?.State?.Id, nameof(step.State.Id));
+
+        var innerStepTypeString = step.InnerStepType.AssemblyQualifiedName;
+        if (string.IsNullOrWhiteSpace(innerStepTypeString))
+        {
+            throw new InvalidOperationException("Attempt to build a workflow node from step with no Id");
+        }
+
         var node = new Node()
         {
-            Id = step.State?.Id,
+            Id = step.State.Id,
             Type = "dotnet",
             Agent = new WorkflowAgent()
             {
-                Type = step.InnerStepType.AssemblyQualifiedName,
+                Type = innerStepTypeString,
                 Id = step.State.Id
             }
         };

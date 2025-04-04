@@ -24,12 +24,16 @@ public class ProcessSerializationTests
         var yaml = this.ReadResource("workflow1.yaml");
 
         // Act
-        var process = await ProcessBuilder.ReadFromStringAsync(yaml);
+        var process = await ProcessBuilder.LoadFromYamlAsync(yaml);
 
         // Assert
         Assert.NotNull(process);
     }
 
+    /// <summary>
+    /// Verify initialization of <see cref="KernelProcessState"/> from a YAML file that contains only a .NET workflow.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task KernelProcessFromDotnetOnlyWorkflow1YamlAsync()
     {
@@ -37,12 +41,16 @@ public class ProcessSerializationTests
         var yaml = this.ReadResource("dotnetOnlyWorkflow1.yaml");
 
         // Act
-        var process = await ProcessBuilder.ReadFromStringAsync(yaml);
+        var process = await ProcessBuilder.LoadFromYamlAsync(yaml);
 
         // Assert
         Assert.NotNull(process);
     }
 
+    /// <summary>
+    /// Verify that the process can be serialized to YAML and deserialized back to a workflow.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task ProcessToWorkflowWorksAsync()
     {
@@ -94,8 +102,8 @@ public class ProcessSerializationTests
             .ListenFor()
                 .AllOf(new()
                 {
-                    new() { Type = CommonEvents.AStepDone, Source = myAStep },
-                    new() { Type = CommonEvents.BStepDone, Source = myBStep }
+                    new(messageType: CommonEvents.AStepDone, source: myAStep),
+                    new(messageType: CommonEvents.BStepDone, source: myBStep)
                 })
                 .SendEventTo(new(myCStep));
 
@@ -121,11 +129,8 @@ public class ProcessSerializationTests
         // Specify the resource name
         string resourceName = $"SemanticKernel.Process.UnitTests.Resources.{name}";
 
-
-        var resoures = assembly.GetManifestResourceNames();
-
         // Get the resource stream
-        using (Stream resourceStream = assembly.GetManifestResourceStream(resourceName))
+        using (Stream? resourceStream = assembly.GetManifestResourceStream(resourceName))
         {
             if (resourceStream != null)
             {
@@ -137,7 +142,7 @@ public class ProcessSerializationTests
             }
             else
             {
-                throw new Exception($"Resource {resourceName} not found in assembly {assembly.FullName}");
+                throw new InvalidOperationException($"Resource {resourceName} not found in assembly {assembly.FullName}");
             }
         }
     }

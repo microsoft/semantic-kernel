@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -40,21 +38,5 @@ public sealed record KernelProcess : KernelProcessStepInfo
         Verify.NotNullOrWhiteSpace(state.Name);
 
         this.Steps = [.. steps];
-    }
-
-    public static async Task<KernelProcess?> ReadFromStringAsync(string processString)
-    {
-        Verify.NotNullOrWhiteSpace(processString);
-
-        try
-        {
-            var workflow = WorkflowSerializer.DeserializeFromYaml(processString);
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException("Failed to deserialize the process string.", ex);
-        }
     }
 }
