@@ -71,7 +71,9 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     private readonly string[] _dataStoragePropertyNames;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -100,6 +102,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         // Assign Mapper.
         if (this._options.JsonNodeCustomMapper is not null)
         {
@@ -118,6 +121,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
             // Default Mapper.
             this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._jsonSerializerOptions);
         }
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc />
@@ -385,9 +389,10 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var internalOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
@@ -396,6 +401,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "JSON");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
+            top,
             internalOptions,
             this._model,
             vectorProperty,

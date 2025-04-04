@@ -66,6 +66,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
+            top: 3,
             new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 10) });
 
         // Assert
@@ -348,6 +349,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 3,
             new() { IncludeVectors = true, OldFilter = filter });
 
         // Assert
@@ -386,9 +388,9 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 3,
             new()
             {
-                Top = 3,
                 Skip = 2
             });
 
@@ -416,10 +418,10 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         // Act
         var actual = await sut.VectorizedSearchAsync(
             vector,
+            top: 1,
             new()
             {
                 IncludeVectors = includeVectors,
-                Top = 1
             });
 
         // Assert

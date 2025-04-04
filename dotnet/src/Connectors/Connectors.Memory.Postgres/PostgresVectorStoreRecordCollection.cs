@@ -36,7 +36,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -75,7 +77,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         this._model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition);
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.DictionaryCustomMapper ?? new PostgresVectorStoreRecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc/>
@@ -233,11 +237,12 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
 
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var vectorType = vector.GetType();
 
@@ -257,7 +262,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = searchOptions.Top + searchOptions.Skip;
+        var limit = top + searchOptions.Skip;
 
         return this.RunOperationAsync(OperationName, () =>
         {
@@ -266,7 +271,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
                 this._model,
                 vectorProperty,
                 pgVector,
-                searchOptions.Top,
+                top,
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
                 searchOptions.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete

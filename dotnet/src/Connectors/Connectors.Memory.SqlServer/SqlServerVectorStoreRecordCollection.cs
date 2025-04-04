@@ -27,7 +27,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordModel _model;
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -50,6 +52,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         this.CollectionName = name;
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._options = options is null
             ? s_defaultOptions
             : new()
@@ -60,6 +63,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             };
 
         this._mapper = this._options.Mapper ?? new RecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc/>
@@ -397,9 +401,10 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         if (vector is not ReadOnlyMemory<float> allowed)
         {
@@ -428,6 +433,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this.CollectionName,
             vectorProperty,
             this._model,
+            top,
             searchOptions,
             allowed);
 

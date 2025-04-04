@@ -48,7 +48,9 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     private readonly AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -240,10 +242,12 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         Array vectorArray = vector switch
         {
@@ -271,7 +275,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = searchOptions.Skip + top;
 
         var vectorPropertyIndexKind = AzureCosmosDBMongoDBVectorStoreCollectionSearchMapping.GetVectorPropertyIndexKind(vectorProperty.IndexKind);
 
@@ -528,6 +532,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         return storagePropertyNames;
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
@@ -545,6 +550,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
     }
+#pragma warning restore CS0618
 
     #endregion
 }

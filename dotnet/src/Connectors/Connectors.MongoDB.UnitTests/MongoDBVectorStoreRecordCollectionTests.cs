@@ -489,6 +489,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             expectedPropertyName: "bson_hotel_name");
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -564,6 +565,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         Assert.Equal(RecordKey, result.HotelId);
         Assert.Equal("Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Theory]
     [MemberData(nameof(VectorizedSearchVectorTypeData))]
@@ -579,11 +581,11 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         // Act & Assert
         if (exceptionExpected)
         {
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector, top: 3));
         }
         else
         {
-            var actual = await sut.VectorizedSearchAsync(vector);
+            var actual = await sut.VectorizedSearchAsync(vector, top: 3);
 
             Assert.NotNull(actual);
         }
@@ -640,10 +642,9 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         };
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(vector, new()
+        var actual = await sut.VectorizedSearchAsync(vector, top: actualTop, new()
         {
             VectorProperty = vectorSelector,
-            Top = actualTop,
         });
 
         // Assert
@@ -669,7 +670,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), options)).Results.FirstOrDefaultAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options)).Results.FirstOrDefaultAsync());
     }
 
     [Fact]
@@ -683,7 +684,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
 
         // Assert
         var result = await actual.Results.FirstOrDefaultAsync();

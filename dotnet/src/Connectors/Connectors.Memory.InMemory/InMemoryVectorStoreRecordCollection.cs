@@ -240,10 +240,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
 #pragma warning restore CS1998
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
@@ -294,7 +295,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         var sortedScoredResults = InMemoryVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :
             nonNullResults.OrderBy(x => x.score);
-        var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(internalOptions.Top);
+        var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(top);
 
         // Build the response.
         var vectorSearchResultList = resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();

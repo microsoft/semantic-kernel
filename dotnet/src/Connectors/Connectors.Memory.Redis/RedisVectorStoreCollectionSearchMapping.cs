@@ -36,15 +36,16 @@ internal static class RedisVectorStoreCollectionSearchMapping
     /// Build a Redis <see cref="Query"/> object from the given vector and options.
     /// </summary>
     /// <param name="vectorBytes">The vector to search the database with as a byte array.</param>
+    /// <param name="top">The maximum number of elements to return.</param>
     /// <param name="options">The options to configure the behavior of the search.</param>
     /// <param name="model">The model.</param>
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, VectorSearchOptions<TRecord> options, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, string[]? selectFields)
     {
         // Build search query.
-        var redisLimit = options.Top + options.Skip;
+        var redisLimit = top + options.Skip;
 
 #pragma warning disable CS0618 // Type or member is obsolete
         var filter = options switch

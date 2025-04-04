@@ -112,7 +112,7 @@ async def test_azure_ai_agent_invoke_stream(ai_project_client, ai_agent_definiti
     assert len(results) == 1
 
 
-async def test_azure_ai_agent_invoke_stream_with_on_complete_callback(ai_project_client, ai_agent_definition):
+async def test_azure_ai_agent_invoke_stream_with_on_new_message_callback(ai_project_client, ai_agent_definition):
     agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
     thread = AsyncMock(spec=AzureAIAgentThread)
     thread.id = "test_thread_id"
@@ -120,8 +120,8 @@ async def test_azure_ai_agent_invoke_stream_with_on_complete_callback(ai_project
 
     final_chat_history = ChatHistory()
 
-    def handle_stream_completion(history: ChatHistory) -> None:
-        final_chat_history.messages.extend(history.messages)
+    async def handle_stream_completion(message: ChatMessageContent) -> None:
+        final_chat_history.add_message(message)
 
     # Fake collected messages
     fake_message = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
@@ -135,7 +135,9 @@ async def test_azure_ai_agent_invoke_stream_with_on_complete_callback(ai_project
         "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke_stream",
         side_effect=fake_invoke,
     ):
-        async for item in agent.invoke_stream(messages="message", thread=thread, on_complete=handle_stream_completion):
+        async for item in agent.invoke_stream(
+            messages="message", thread=thread, on_intermediate_message=handle_stream_completion
+        ):
             results.append(item)
 
     assert len(results) == 1

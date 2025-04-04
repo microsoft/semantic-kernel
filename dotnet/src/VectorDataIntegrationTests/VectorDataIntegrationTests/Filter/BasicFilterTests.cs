@@ -258,10 +258,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
     {
         var results = await collection.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 2, 3]),
+            top: fixture.TestData.Count,
             new()
             {
-                Filter = filter,
-                Top = fixture.TestData.Count
+                Filter = filter
             });
 
         return await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
@@ -288,10 +288,10 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         var results = await fixture.Collection.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 2, 3]),
+            top: fixture.TestData.Count,
             new()
             {
-                OldFilter = legacyFilter,
-                Top = fixture.TestData.Count
+                OldFilter = legacyFilter
             });
 
         var actual = await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();

@@ -52,7 +52,9 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -274,12 +276,14 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorSearch";
 
         VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
@@ -289,6 +293,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             this.CollectionName,
             vectorProperty.StorageName,
             s_jsonSerializerOptions,
+            top,
             searchOptions,
             this._model);
 
@@ -320,11 +325,12 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
 
         VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
@@ -332,6 +338,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildHybridSearchQuery(
             vector,
+            top,
             string.Join(" ", keywords),
             this.CollectionName,
             this._model,
@@ -443,6 +450,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
     {
         if (this._options.JsonObjectCustomMapper is not null)
@@ -459,6 +467,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         return new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._model, s_jsonSerializerOptions);
     }
+#pragma warning restore CS0618
 
     private static void VerifyVectorParam<TVector>(TVector vector)
     {

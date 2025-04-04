@@ -83,7 +83,9 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     private readonly string[] _dataStoragePropertyNamesWithScore;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordCollection{TRecord}"/> class.
@@ -109,7 +111,9 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         this._dataStoragePropertyNamesWithScore = [.. this._model.DataProperties.Select(p => p.StorageName), "vector_score"];
 
         // Assign Mapper.
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.HashEntriesCustomMapper ?? new RedisHashSetVectorStoreRecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc />
@@ -314,9 +318,10 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var internalOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
@@ -326,6 +331,7 @@ public class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreReco
         byte[] vectorBytes = RedisVectorStoreCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
         var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(
             vectorBytes,
+            top,
             internalOptions,
             this._model,
             vectorProperty,

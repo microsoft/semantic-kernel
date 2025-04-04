@@ -14,7 +14,9 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
     VectorStoreRecordKeyPropertyModel keyProperty,
     JsonSerializerOptions jsonSerializerOptions)
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     : IVectorStoreRecordMapper<TConsumerDataModel, (string Key, JsonNode Node)>
+#pragma warning restore CS0618
 {
     /// <summary>The key property.</summary>
     private readonly string _keyPropertyStorageName = keyProperty.StorageName;

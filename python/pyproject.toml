@@ -79,6 +79,9 @@ hugging_face = [
     "sentence-transformers >= 2.2,< 5.0",
     "torch == 2.6.0"
 ]
+mcp = [
+    "mcp ~= 1.6"
+]
 mongo = [
     "pymongo >= 4.8.0, < 4.12",
     "motor >= 3.3.2,< 3.8.0"
@@ -114,7 +117,7 @@ qdrant = [
 redis = [
     "redis[hiredis] ~= 5.0",
     "types-redis ~= 4.6.0.20240425",
-    "redisvl >= 0.3.6",
+    "redisvl ~= 0.4"
 ]
 usearch = [
     "usearch ~= 2.16",

@@ -24,6 +24,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         string collectionName,
         string vectorPropertyName,
         JsonSerializerOptions jsonSerializerOptions,
+        int top,
         VectorSearchOptions<TRecord> searchOptions,
         VectorStoreRecordModel model)
     {
@@ -47,7 +48,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         {
           Get {
             {{collectionName}} (
-              limit: {{searchOptions.Top}}
+              limit: {{top}}
               offset: {{searchOptions.Skip}}
               {{(filter is null ? "" : "where: " + filter)}}
               nearVector: {
@@ -125,6 +126,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     /// </summary>
     public static string BuildHybridSearchQuery<TRecord, TVector>(
         TVector vector,
+        int top,
         string keywords,
         string collectionName,
         VectorStoreRecordModel model,
@@ -153,7 +155,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         {
           Get {
             {{collectionName}} (
-              limit: {{searchOptions.Top}}
+              limit: {{top}}
               offset: {{searchOptions.Skip}}
               {{(filter is null ? "" : "where: " + filter)}}
               hybrid: {

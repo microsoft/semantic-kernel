@@ -48,7 +48,9 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     private readonly MongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -246,10 +248,12 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
@@ -266,7 +270,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = searchOptions.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
@@ -357,9 +361,10 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
@@ -377,7 +382,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = searchOptions.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
@@ -654,6 +659,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         throw new VectorStoreOperationException("Retry logic failed.");
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Returns custom mapper, generic data model mapper or default record mapper.
     /// </summary>
@@ -671,6 +677,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
     }
+#pragma warning restore CS0618
 
     private static Array VerifyVectorParam<TVector>(TVector vector)
     {

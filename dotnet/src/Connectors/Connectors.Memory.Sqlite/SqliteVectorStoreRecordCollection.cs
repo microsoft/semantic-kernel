@@ -35,7 +35,9 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     private readonly SqliteVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
+#pragma warning restore CS0618
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -131,7 +133,9 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             }
         }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.DictionaryCustomMapper ?? new SqliteVectorStoreRecordMapper<TRecord>(this._model);
+#pragma warning restore CS0618
     }
 
     /// <inheritdoc />
@@ -181,11 +185,12 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string LimitPropertyName = "k";
 
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var vectorType = vector.GetType();
         if (!SqliteConstants.SupportedVectorTypes.Contains(vectorType))
@@ -202,7 +207,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = searchOptions.Top + searchOptions.Skip;
+        var limit = top + searchOptions.Skip;
 
         var conditions = new List<SqliteWhereCondition>()
         {

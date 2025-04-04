@@ -53,7 +53,9 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     private readonly VectorStoreRecordPropertyModel _partitionKeyProperty;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Azure CosmosDB NoSQL record.</summary>
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
+#pragma warning restore CS0618
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -299,6 +301,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     /// <inheritdoc />
     public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
@@ -306,6 +309,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         const string ScorePropertyName = "SimilarityScore";
 
         this.VerifyVectorType(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
@@ -320,7 +324,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             ScorePropertyName,
             searchOptions.OldFilter,
             searchOptions.Filter,
-            searchOptions.Top,
+            top,
             searchOptions.Skip,
             searchOptions.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -370,12 +374,13 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
 
         this.VerifyVectorType(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
@@ -391,7 +396,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             ScorePropertyName,
             searchOptions.OldFilter,
             searchOptions.Filter,
-            searchOptions.Top,
+            top,
             searchOptions.Skip,
             searchOptions.IncludeVectors);
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -699,6 +704,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         }
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper(JsonSerializerOptions jsonSerializerOptions)
     {
         if (this._options.JsonObjectCustomMapper is not null)
@@ -714,6 +720,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         return new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._options.JsonSerializerOptions);
     }
+#pragma warning restore CS0618
 
     #endregion
 }
