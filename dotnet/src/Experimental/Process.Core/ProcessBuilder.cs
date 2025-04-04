@@ -24,8 +24,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
 
-    private readonly List<EventListener> _eventListeners = [];
-
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
     /// </summary>
@@ -276,6 +274,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return this.AddStep(proxyBuilder, aliases);
     }
 
+    internal void AddListenerStep(ProcessEventListenerBuilder listenerBuilder)
+    {
+        Verify.NotNull(listenerBuilder, nameof(listenerBuilder));
+        this._steps.Add(listenerBuilder);
+    }
+
     /// <summary>
     /// Provides an instance of <see cref="ProcessEdgeBuilder"/> for defining an input edge to a process.
     /// </summary>
@@ -368,41 +372,62 @@ public sealed class ProcessBuilder : ProcessStepBuilder
 
     public ListenForBuilder ListenFor()
     {
-        return new ListenForBuilder();
+        return new ListenForBuilder(this);
     }
     #endregion
 }
 
 public class ListenForBuilder
 {
+    private readonly ProcessBuilder _processBuilder;
+
+    public ListenForBuilder(ProcessBuilder processBuilder)
+    {
+        this._processBuilder = processBuilder;
+    }
+
     public ListenForTargetBuilder Message(string type, ProcessStepBuilder from)
     {
         Verify.NotNullOrWhiteSpace(type, nameof(type));
         Verify.NotNull(from, nameof(from));
 
-        return new ListenForTargetBuilder([new() { MessageType = type, Source = from }]);
+        return new ListenForTargetBuilder([new() { Type = type, Source = from }], this._processBuilder);
     }
 
-    public ListenForTargetBuilder AllOf(List<MessageSource> messageSources)
+    public ListenForTargetBuilder AllOf(List<MessageSourceBuilder> messageSources)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
-        return new ListenForTargetBuilder(messageSources);
+        return new ListenForTargetBuilder(messageSources, this._processBuilder);
     }
 }
 
 public class ListenForTargetBuilder
 {
-    private readonly List<MessageSource> _messageSources = new();
+    private readonly ProcessBuilder _processBuilder;
+    private readonly List<MessageSourceBuilder> _messageSources = new();
 
-    public ListenForTargetBuilder(List<MessageSource> messageSources)
+    public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
         this._messageSources = messageSources;
+        this._processBuilder = processBuilder;
     }
 
     public ListenForTargetBuilder SendTo(ProcessStepBuilder destination)
     {
         Verify.NotNull(destination, nameof(destination));
+
+        // Create a new event listener for the source messages and the destination step
+        var eventListener = new ProcessEventListenerBuilder(this._messageSources, destination.Id);
+
+        // Add the listener to the process builder
+        this._processBuilder.AddListenerStep(eventListener);
+
+        // Link the listener to the destination step
+        eventListener.LinkTo(destination.Id, new ProcessStepEdgeBuilder(destination, "listener_ready", destination.Name)
+        {
+            Target = new ProcessFunctionTargetBuilder(destination)
+        });
 
         foreach (var messageSource in this._messageSources)
         {
@@ -411,21 +436,18 @@ public class ListenForTargetBuilder
                 throw new InvalidOperationException("Source step cannot be null.");
             }
 
-            // Create a new event listener for the source messages and the destination step
-            var eventListener = new ProcessEventListenerBuilder(this._messageSources, destination.Id);
-
             // Link all the source steps to the event listener
-            messageSource.Source.OnEvent(messageSource.MessageType)
+            messageSource.Source.OnEvent(messageSource.Type)
                 .SendEventTo(new ProcessFunctionTargetBuilder(eventListener));
         }
 
-        return new ListenForTargetBuilder(this._messageSources);
+        return new ListenForTargetBuilder(this._messageSources, this._processBuilder);
     }
 }
 
-public class MessageSource
+public class MessageSourceBuilder
 {
-    public string MessageType { get; set; }
+    public string Type { get; set; }
 
     public ProcessStepBuilder Source { get; set; }
 }
@@ -440,7 +462,7 @@ public class EventListener
 
     public string Id { get; }
 
-    public List<MessageSource> MessageSources = [];
+    public List<MessageSourceBuilder> MessageSources = [];
 
     public string DestinationId = "";
 }

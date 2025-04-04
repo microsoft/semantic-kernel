@@ -2,12 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.Process.Models;
 
 namespace Microsoft.SemanticKernel.Process;
 internal class ProcessEventListenerBuilder : ProcessStepBuilder
 {
-    public ProcessEventListenerBuilder(List<MessageSource> messageSources, string destinationId, string? id = null)
+    public ProcessEventListenerBuilder(List<MessageSourceBuilder> messageSources, string destinationId, string? id = null)
         : base("EventListener", id)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
@@ -17,17 +18,28 @@ internal class ProcessEventListenerBuilder : ProcessStepBuilder
         this.DestinationId = destinationId;
     }
 
-    public List<MessageSource> MessageSources { get; } = [];
+    public List<MessageSourceBuilder> MessageSources { get; } = [];
 
     public string DestinationId { get; } = "";
 
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
-        throw new NotImplementedException();
+        var state = new KernelProcessStepState("EventListener", this.Id);
+        var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
+        var builtSources = this.MessageSources
+            .Select(sourceBuilder => new KernelProcessMessageSource(sourceBuilder.Type, sourceBuilder.Source.Id))
+            .ToList();
+
+        return new KernelProcessEventListener(builtSources, this.DestinationId, typeof(KernelProcessEventListener), state, builtEdges);
     }
 
     internal override Dictionary<string, KernelFunctionMetadata> GetFunctionMetadataMap()
     {
         throw new NotImplementedException();
+    }
+
+    internal override KernelProcessFunctionTarget ResolveFunctionTarget(string? functionName, string? parameterName)
+    {
+        return new KernelProcessFunctionTarget(this.Id, "HandleMessage");
     }
 }

@@ -80,15 +80,24 @@ public class ProcessSerializationTests
             .SendEventTo(new ProcessFunctionTargetBuilder(myAStep))
             .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
 
-        // When AStep finishes, send its output to CStep.
-        myAStep
-            .OnEvent(CommonEvents.AStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
+        //// When AStep finishes, send its output to CStep.
+        //myAStep
+        //    .OnEvent(CommonEvents.AStepDone)
+        //    .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "astepdata"));
 
-        // When BStep finishes, send its output to CStep also.
-        myBStep
-            .OnEvent(CommonEvents.BStepDone)
-            .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
+        //// When BStep finishes, send its output to CStep also.
+        //myBStep
+        //    .OnEvent(CommonEvents.BStepDone)
+        //    .SendEventTo(new ProcessFunctionTargetBuilder(myCStep, parameterName: "bstepdata"));
+
+        processBuilder
+            .ListenFor()
+                .AllOf(new()
+                {
+                    new() { Type = CommonEvents.AStepDone, Source = myAStep },
+                    new() { Type = CommonEvents.BStepDone, Source = myBStep }
+                })
+                .SendTo(myCStep);
 
         // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep

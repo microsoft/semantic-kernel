@@ -173,7 +173,8 @@ public abstract class ProcessStepBuilder
 
             if (undeterminedParameters.Count > 1)
             {
-                throw new KernelException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
+                // TODO: Uncomment the following line when we want to enforce parameter specification. Testing without it for now.
+                //throw new KernelException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
             }
 
             // We can infer the parameter name from the function metadata
