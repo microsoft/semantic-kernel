@@ -187,7 +187,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         string? extraWhereFilter = null;
         Dictionary<string, object>? extraParameters = null;
 
-        if (searchOptions.Filter is not null)
+        if (searchOptions.OldFilter is not null)
         {
             if (searchOptions.Filter is not null)
             {
