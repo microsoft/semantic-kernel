@@ -72,7 +72,8 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
     /// </summary>
     public static string BuildQuery<TRecord>(
-        Expression<Func<TRecord, bool>> filter, int top,
+        Expression<Func<TRecord, bool>> filter,
+        int top,
         FilterOptions<TRecord> queryOptions,
         IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties,
         string collectionName,

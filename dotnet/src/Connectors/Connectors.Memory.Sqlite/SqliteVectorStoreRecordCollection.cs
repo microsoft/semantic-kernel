@@ -281,7 +281,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             yield return this.GetAndMapRecord(
-                "Query",
+                "Get",
                 reader,
                 properties,
                 options.IncludeVectors);

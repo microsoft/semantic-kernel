@@ -522,7 +522,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             {
                 VectorStoreRecordKeyPropertyModel => "id",
                 VectorStoreRecordDataPropertyModel dataProperty => dataProperty.StorageName,
-                _ => throw new InvalidOperationException()
+                _ => throw new InvalidOperationException("The provided sort property must be the Id or a payload property.")
             };
 
             orderBy = new(orderByName)

@@ -403,7 +403,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var records = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            "VectorizedSearch",
+            "Query",
             () => response.Matches.Skip(options.Skip).Select(x => this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
             {
                 Id = x.Id,
