@@ -141,6 +141,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, target);
         var result = new KernelFunctionFromMethod(
+            method,
             methodDetails.Function,
             methodDetails.Name,
             options?.Description ?? methodDetails.Description,
@@ -181,6 +182,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, jsonSerializerOptions, target);
         var result = new KernelFunctionFromMethod(
+            method,
             methodDetails.Function,
             methodDetails.Name,
             options?.Description ?? methodDetails.Description,
@@ -275,6 +277,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, null);
         var result = new KernelFunctionFromMethod(
+            method,
             methodDetails.Function,
             methodDetails.Name,
             options?.Description ?? methodDetails.Description,
@@ -307,6 +310,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, jsonSerializerOptions, target: null);
         var result = new KernelFunctionFromMethod(
+            method,
             methodDetails.Function,
             methodDetails.Name,
             options?.Description ?? methodDetails.Description,
@@ -382,6 +386,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (base.JsonSerializerOptions is not null)
         {
             return new KernelFunctionFromMethod(
+            this.UnderlyingMethod!,
             this._function,
             this.Name,
             pluginName,
@@ -397,6 +402,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         KernelFunctionFromMethod Clone()
         {
             return new KernelFunctionFromMethod(
+            this.UnderlyingMethod!,
             this._function,
             this.Name,
             pluginName,
@@ -424,17 +430,19 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     private KernelFunctionFromMethod(
+        MethodInfo method,
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        this(implementationFunc, functionName, null, description, parameters, returnParameter, additionalMetadata)
+        this(method, implementationFunc, functionName, null, description, parameters, returnParameter, additionalMetadata)
     {
     }
 
     private KernelFunctionFromMethod(
+        MethodInfo method,
         ImplementationFunc implementationFunc,
         string functionName,
         string description,
@@ -442,13 +450,14 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         KernelReturnParameterMetadata returnParameter,
         JsonSerializerOptions jsonSerializerOptions,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        this(implementationFunc, functionName, null, description, parameters, returnParameter, jsonSerializerOptions, additionalMetadata)
+        this(method, implementationFunc, functionName, null, description, parameters, returnParameter, jsonSerializerOptions, additionalMetadata)
     {
     }
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     private KernelFunctionFromMethod(
+        MethodInfo method,
         ImplementationFunc implementationFunc,
         string functionName,
         string? pluginName,
@@ -461,9 +470,11 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
+        this.UnderlyingMethod = method;
     }
 
     private KernelFunctionFromMethod(
+        MethodInfo method,
         ImplementationFunc implementationFunc,
         string functionName,
         string? pluginName,
@@ -477,6 +488,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
+        this.UnderlyingMethod = method;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
