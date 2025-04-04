@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using WeaviateIntegrationTests.Support;
 using VectorDataSpecificationTests.CRUD;
+using WeaviateIntegrationTests.Support;
 using Xunit;
 
 namespace WeaviateIntegrationTests.CRUD;
