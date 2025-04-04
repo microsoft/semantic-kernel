@@ -18,7 +18,7 @@ public abstract class ComposedServiceAgent : ServiceAgent
     /// <summary>
     /// Factory for initializing the agent.
     /// </summary>
-    protected abstract Task<Agent> CreateAgentAsync();
+    protected abstract Task<Agent> CreateAgentAsync(CancellationToken cancellationToken);
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
@@ -29,7 +29,7 @@ public abstract class ComposedServiceAgent : ServiceAgent
     {
         messages ??= [];
 
-        Agent agent = await this.GetAgentAsync().ConfigureAwait(false);
+        Agent agent = await this.GetAgentAsync(cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> responses = agent.InvokeAsync(messages, thread, options, cancellationToken);
         await foreach (AgentResponseItem<ChatMessageContent> response in responses.ConfigureAwait(false))
@@ -47,7 +47,7 @@ public abstract class ComposedServiceAgent : ServiceAgent
     {
         messages ??= [];
 
-        Agent agent = await this.GetAgentAsync().ConfigureAwait(false);
+        Agent agent = await this.GetAgentAsync(cancellationToken).ConfigureAwait(false);
 
         IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> responses =
             agent.InvokeStreamingAsync(messages, thread, options, cancellationToken);
@@ -57,9 +57,9 @@ public abstract class ComposedServiceAgent : ServiceAgent
         }
     }
 
-    private async Task<Agent> GetAgentAsync()
+    private async Task<Agent> GetAgentAsync(CancellationToken cancellationToken)
     {
-        this._agent ??= await this.CreateAgentAsync().ConfigureAwait(false);
+        this._agent ??= await this.CreateAgentAsync(cancellationToken).ConfigureAwait(false);
         return this._agent;
     }
 }

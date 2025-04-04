@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Service;
 
@@ -27,7 +28,7 @@ public sealed class IntentTriageAgent2 : ComposedServiceAgent
     }
 
     /// <inheritdoc/>
-    protected override Task<Agent> CreateAgentAsync()
+    protected override Task<Agent> CreateAgentAsync(CancellationToken cancellationToken)
     {
         this.Kernel.Plugins.AddFromObject(new LanguagePlugin(this._settings));
 
