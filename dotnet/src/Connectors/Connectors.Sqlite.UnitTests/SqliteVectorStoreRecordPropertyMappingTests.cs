@@ -69,7 +69,7 @@ public sealed class SqliteVectorStoreRecordPropertyMappingTests
         };
 
         // Act
-        var columns = SqliteVectorStoreRecordPropertyMapping.GetColumns(properties);
+        var columns = SqliteVectorStoreRecordPropertyMapping.GetColumns(properties, filterOutVector: false);
 
         // Assert
         Assert.Equal("Key", columns[0].Name);

@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -19,6 +18,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 [SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "User input is passed using command parameters.")]
 internal static class SqliteVectorStoreCollectionCommandBuilder
 {
+    internal const string DistancePropertyName = "distance";
+
     public static DbCommand BuildTableCountCommand(SqliteConnection connection, string tableName)
     {
         Verify.NotNullOrWhiteSpace(tableName);
@@ -44,7 +45,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendLine($"""CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}"{tableName.Replace("\"", "\"\"")}" (""");
 
         builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
-        builder.Append(");");
+        builder.AppendLine(");");
 
         foreach (var column in columns)
         {
@@ -97,8 +98,9 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         SqliteConnection connection,
         string tableName,
         string rowIdentifier,
-        IReadOnlyList<string> columnNames,
+        VectorStoreRecordModel model,
         IReadOnlyList<Dictionary<string, object?>> records,
+        bool data,
         bool replaceIfExists = false)
     {
         var builder = new StringBuilder();
@@ -111,9 +113,10 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
             var rowIdentifierParameterName = GetParameterName(rowIdentifier, recordIndex);
 
             var (columns, parameters, values) = GetQueryParts(
-                columnNames,
+                model.Properties,
                 records[recordIndex],
-                recordIndex);
+                recordIndex,
+                data);
 
             builder.AppendLine($"INSERT{replacePlaceholder} INTO {tableName} ({string.Join(", ", columns)})");
             builder.AppendLine($"VALUES ({string.Join(", ", parameters)})");
@@ -130,22 +133,27 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public static DbCommand BuildSelectCommand(
+    public static DbCommand BuildSelectDataCommand(
         SqliteConnection connection,
         string tableName,
-        IReadOnlyList<string> columnNames,
+        VectorStoreRecordModel model,
         List<SqliteWhereCondition> conditions,
-        string? orderByPropertyName = null)
+        IReadOnlyList<(string storageName, bool iaAsc)> orderByPropertyNames,
+        string? extraWhereFilter = null,
+        Dictionary<string, object>? extraParameters = null,
+        int top = 0,
+        int skip = 0)
     {
         var builder = new StringBuilder();
 
-        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
+        var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, extraWhereFilter, extraParameters);
 
-        builder.AppendLine($"SELECT {string.Join(", ", columnNames)}");
+        builder.Append("SELECT ");
+        builder.AppendColumnNames(includeVectors: false, model.Properties);
         builder.AppendLine($"FROM {tableName}");
-
-        AppendWhereClauseIfExists(builder, whereClause);
-        AppendOrderByIfExists(builder, orderByPropertyName);
+        builder.AppendWhereClause(whereClause);
+        builder.AppendOrderBy(orderByPropertyNames);
+        builder.AppendLimits(top, skip);
 
         command.CommandText = builder.ToString();
 
@@ -154,83 +162,33 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     public static DbCommand BuildSelectLeftJoinCommand(
         SqliteConnection connection,
-        string leftTable,
-        string rightTable,
+        string vectorTableName,
+        string dataTableName,
         string joinColumnName,
-        IReadOnlyList<string> leftTablePropertyNames,
-        IReadOnlyList<string> rightTablePropertyNames,
-        List<SqliteWhereCondition> conditions,
+        VectorStoreRecordModel model,
+        IReadOnlyList<SqliteWhereCondition> conditions,
+        bool includeDistance,
+        IReadOnlyList<(string storageName, bool iaAsc)> orderByPropertyNames,
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
-        string? orderByPropertyName = null)
+        int top = 0,
+        int skip = 0)
     {
         var builder = new StringBuilder();
 
-        List<string> propertyNames =
-        [
-            .. leftTablePropertyNames.Select(property => $"{leftTable}.{property}"),
-            .. rightTablePropertyNames.Select(property => $"{rightTable}.{property}"),
-        ];
-
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions, extraWhereFilter, extraParameters);
 
-        builder.AppendLine($"SELECT {string.Join(", ", propertyNames)}");
-        builder.AppendLine($"FROM {leftTable} ");
-        builder.AppendLine($"LEFT JOIN {rightTable} ON {leftTable}.{joinColumnName} = {rightTable}.{joinColumnName}");
-
-        AppendWhereClauseIfExists(builder, whereClause);
-        AppendOrderByIfExists(builder, orderByPropertyName);
-
-        command.CommandText = builder.ToString();
-
-        return command;
-    }
-
-    internal static DbCommand BuildSelectWhereCommand<TRecord>(
-        VectorStoreRecordModel model,
-        SqliteConnection connection,
-        int top,
-        GetFilteredRecordOptions<TRecord> options,
-        string table,
-        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
-        string whereFilter,
-        Dictionary<string, object> whereParameters)
-    {
-        StringBuilder builder = new(200);
-
-        var (command, whereClause) = GetCommandWithWhereClause(connection, Array.Empty<SqliteWhereCondition>(), whereFilter, whereParameters);
-
         builder.Append("SELECT ");
-        foreach (var property in properties)
+        builder.AppendColumnNames(includeVectors: true, model.Properties, vectorTableName, dataTableName);
+        if (includeDistance)
         {
-            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
-            {
-                builder.AppendFormat("\"{0}\",", property.StorageName);
-            }
+            builder.AppendLine($", {vectorTableName}.{DistancePropertyName}");
         }
-        builder.Length--; // Remove the trailing comma
-        builder.AppendLine();
-
-        builder.AppendFormat("FROM {0}", table).AppendLine();
-        builder.AppendFormat("WHERE {0}", whereClause).AppendLine();
-
-        if (options.OrderBy.Values.Count > 0)
-        {
-            builder.Append("ORDER BY ");
-
-            foreach (var sortInfo in options.OrderBy.Values)
-            {
-                builder.AppendFormat("[{0}] {1},",
-                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
-                    sortInfo.Ascending ? "ASC" : "DESC");
-            }
-
-            builder.Length--; // remove the last comma
-            builder.AppendLine();
-        }
-
-        builder.AppendFormat("LIMIT {0}", top).AppendLine();
-        builder.AppendFormat("OFFSET {0}", options.Skip).AppendLine();
+        builder.AppendLine($"FROM {vectorTableName} ");
+        builder.AppendLine($"LEFT JOIN {dataTableName} ON {vectorTableName}.{joinColumnName} = {dataTableName}.{joinColumnName}");
+        builder.AppendWhereClause(whereClause);
+        builder.AppendOrderBy(orderByPropertyNames);
+        builder.AppendLimits(top, skip);
 
         command.CommandText = builder.ToString();
 
@@ -240,15 +198,14 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     public static DbCommand BuildDeleteCommand(
         SqliteConnection connection,
         string tableName,
-        List<SqliteWhereCondition> conditions)
+        IReadOnlyList<SqliteWhereCondition> conditions)
     {
         var builder = new StringBuilder();
 
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
 
         builder.AppendLine($"DELETE FROM [{tableName}]");
-
-        AppendWhereClauseIfExists(builder, whereClause);
+        builder.AppendWhereClause(whereClause);
 
         command.CommandText = builder.ToString();
 
@@ -257,20 +214,80 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     #region private
 
-    private static void AppendWhereClauseIfExists(StringBuilder builder, string? whereClause)
+    private static StringBuilder AppendColumnNames(this StringBuilder builder, bool includeVectors, IReadOnlyList<VectorStoreRecordPropertyModel> properties,
+        string? vectorTableName = null, string? dataTableName = null)
+    {
+        foreach (var property in properties)
+        {
+            string? tableName = dataTableName;
+            if (property is VectorStoreRecordVectorPropertyModel)
+            {
+                if (!includeVectors)
+                {
+                    continue;
+                }
+                tableName = vectorTableName;
+            }
+
+            if (tableName is not null)
+            {
+                builder.AppendFormat("\"{0}\".\"{1}\",", tableName, property.StorageName);
+            }
+            else
+            {
+                builder.AppendFormat("\"{0}\",", property.StorageName);
+            }
+        }
+
+        builder.Length--; // Remove the trailing comma
+        builder.AppendLine();
+        return builder;
+    }
+
+    private static StringBuilder AppendOrderBy(this StringBuilder builder, IReadOnlyList<(string storageName, bool iaAsc)> orderByPropertyNames)
+    {
+        if (orderByPropertyNames.Count > 0)
+        {
+            builder.Append("ORDER BY ");
+
+            foreach (var sortInfo in orderByPropertyNames)
+
+            {
+                builder.AppendFormat("[{0}] {1},",
+                    sortInfo.storageName,
+                    sortInfo.iaAsc ? "ASC" : "DESC");
+            }
+
+            builder.Length--; // remove the last comma
+            builder.AppendLine();
+        }
+
+        return builder;
+    }
+
+    private static StringBuilder AppendLimits(this StringBuilder builder, int top, int skip)
+    {
+        if (top > 0)
+        {
+            builder.AppendFormat("LIMIT {0}", top).AppendLine();
+        }
+
+        if (skip > 0)
+        {
+            builder.AppendFormat("OFFSET {0}", skip).AppendLine();
+        }
+
+        return builder;
+    }
+
+    private static StringBuilder AppendWhereClause(this StringBuilder builder, string? whereClause)
     {
         if (!string.IsNullOrWhiteSpace(whereClause))
         {
             builder.AppendLine($"WHERE {whereClause}");
         }
-    }
 
-    private static void AppendOrderByIfExists(StringBuilder builder, string? propertyName)
-    {
-        if (!string.IsNullOrWhiteSpace(propertyName))
-        {
-            builder.AppendLine($"ORDER BY {propertyName}");
-        }
+        return builder;
     }
 
     private static string GetColumnDefinition(SqliteColumn column)
@@ -342,17 +359,22 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     }
 
     private static (List<string> Columns, List<string> ParameterNames, List<object?> ParameterValues) GetQueryParts(
-        IReadOnlyList<string> propertyNames,
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
         Dictionary<string, object?> record,
-        int index)
+        int index,
+        bool data)
     {
         var columns = new List<string>();
         var parameterNames = new List<string>();
         var parameterValues = new List<object?>();
 
-        foreach (var propertyName in propertyNames)
+        foreach (var property in properties)
         {
-            if (record.TryGetValue(propertyName, out var value))
+            bool include = property is VectorStoreRecordKeyPropertyModel // The Key column is included in both Vector and Data tables.
+                || (data == property is VectorStoreRecordDataPropertyModel); // The Data column is included only in the Data table.
+
+            string propertyName = property.StorageName;
+            if (include && record.TryGetValue(propertyName, out var value))
             {
                 columns.Add(propertyName);
                 parameterNames.Add(GetParameterName(propertyName, index));

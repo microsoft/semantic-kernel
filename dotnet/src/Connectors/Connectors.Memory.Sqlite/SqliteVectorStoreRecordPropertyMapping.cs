@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
@@ -36,7 +37,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
         return new ReadOnlyMemory<float>(array);
     }
 
-    public static List<SqliteColumn> GetColumns(List<VectorStoreRecordPropertyModel> properties)
+    public static List<SqliteColumn> GetColumns(IReadOnlyList<VectorStoreRecordPropertyModel> properties, bool data)
     {
         const string DistanceMetricConfigurationName = "distance_metric";
 
@@ -44,22 +45,40 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
         foreach (var property in properties)
         {
-            var isPrimary = property is VectorStoreRecordKeyPropertyModel;
+            var isPrimary = false;
 
             string propertyType;
             Dictionary<string, object>? configuration = null;
 
             if (property is VectorStoreRecordVectorPropertyModel vectorProperty)
             {
+                if (data)
+                {
+                    continue;
+                }
+
                 propertyType = GetStorageVectorPropertyType(vectorProperty);
                 configuration = new()
                 {
                     [DistanceMetricConfigurationName] = GetDistanceMetric(vectorProperty)
                 };
             }
+            else if (property is VectorStoreRecordDataPropertyModel dataProperty)
+            {
+                if (!data)
+                {
+                    continue;
+                }
+
+                propertyType = GetStorageDataPropertyType(property);
+            }
             else
             {
+                // The Key column in included in both Vector and Data tables.
+                Debug.Assert(property is VectorStoreRecordKeyPropertyModel, "property is VectorStoreRecordKeyPropertyModel");
+
                 propertyType = GetStorageDataPropertyType(property);
+                isPrimary = true;
             }
 
             var column = new SqliteColumn(property.StorageName, propertyType, isPrimary)
