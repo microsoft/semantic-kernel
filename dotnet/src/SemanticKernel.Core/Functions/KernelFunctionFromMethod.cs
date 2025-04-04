@@ -94,7 +94,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -168,7 +167,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -212,7 +210,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0001")]
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     public static KernelFunctionMetadata CreateMetadata(
@@ -244,7 +241,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunctionMetadata CreateMetadata(
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -271,7 +267,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="method">The method to be represented via the created <see cref="KernelFunction"/>.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0001")]
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     public static KernelFunctionMetadata CreateMetadata(
@@ -306,7 +301,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> wrapper for <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunctionMetadata CreateMetadata(
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
