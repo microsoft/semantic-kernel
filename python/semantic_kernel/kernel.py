@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
+from contextlib import AbstractAsyncContextManager
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -42,6 +43,8 @@ from semantic_kernel.services.kernel_services_extension import KernelServicesExt
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
+    from mcp.server.lowlevel.server import LifespanResultT, Server
+
     from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -482,3 +485,56 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             inputs[field_to_store] = vectors[0]  # type: ignore
             return
         setattr(inputs, field_to_store, vectors[0])
+
+    def as_mcp_server(
+        self,
+        server_name: str = "Semantic Kernel MCP Server",
+        version: str | None = None,
+        instructions: str | None = None,
+        lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+        prompt_functions: list[str] | None = None,
+        tool_functions: list[str] | None = None,
+        **kwargs: Any,
+    ) -> "Server":
+        """Create a MCP server from this kernel.
+
+        This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
+        configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
+
+        It will expose all functions in the kernel as tools and prompts.
+        You can specify which functions to expose as tools and prompts by passing
+        the `prompt_functions` and `tool_functions` arguments.
+        These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
+
+
+        Args:
+            kernel: The kernel instance to use.
+            server_name: The name of the server.
+            version: The version of the server.
+            instructions: The instructions to use for the server.
+            lifespan: The lifespan of the server.
+            prompt_functions: The list of fully qualified function names to expose as prompts.
+                if None, all KernelFunctionFromPrompt functions will be exposed.
+                if you don't want to expose any prompts, set this to an empty list.
+            tool_functions: The list of fully qualified function names to expose as tools.
+                if None, all KernelFunctionFromMethod functions will be exposed.
+                if you don't want to expose any tools, set this to an empty list.
+            kwargs: Any extra arguments to pass to the server creation.
+
+        Returns:
+            The MCP server instance, it is a instance of
+            mcp.server.lowlevel.Server
+
+        """
+        from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
+
+        return create_mcp_server_from_kernel(
+            self,
+            server_name=server_name,
+            version=version,
+            instructions=instructions,
+            lifespan=lifespan,
+            prompt_functions=prompt_functions,
+            tool_functions=tool_functions,
+            **kwargs,
+        )

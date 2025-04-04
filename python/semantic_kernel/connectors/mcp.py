@@ -1,17 +1,20 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import asyncio
 import logging
 import sys
 from abc import abstractmethod
-from contextlib import AsyncExitStack, _AsyncGeneratorContextManager
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
 from functools import partial
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from mcp import McpError
+from mcp import McpError, types
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.client.websocket import websocket_client
+from mcp.server.lowlevel.server import Server
 from mcp.types import CallToolResult, EmbeddedResource, Prompt, PromptMessage, TextResourceContents, Tool
 from mcp.types import (
     ImageContent as MCPImageContent,
@@ -20,6 +23,7 @@ from mcp.types import (
     TextContent as MCPTextContent,
 )
 
+from semantic_kernel import Kernel
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -27,6 +31,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -35,7 +40,13 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self  # pragma: no cover
 
+if TYPE_CHECKING:
+    from mcp.server.lowlevel.server import LifespanResultT
+
+
 logger = logging.getLogger(__name__)
+
+# region: Helpers
 
 
 @experimental
@@ -116,6 +127,9 @@ def get_parameters_from_mcp_tool(tool: Tool) -> list[dict[str, Any]]:
         )
         for prop_name, prop_details in properties.items()
     ]
+
+
+# region: MCP Plugin
 
 
 @experimental
@@ -242,6 +256,9 @@ class MCPPluginBase:
         await self.close()
 
 
+# region: MCP Plugin Implementations
+
+
 class MCPStdioPlugin(MCPPluginBase):
     """MCP stdio server configuration."""
 
@@ -311,7 +328,7 @@ class MCPSsePlugin(MCPPluginBase):
     ) -> None:
         """Initialize the MCP sse plugin.
 
-        The arguments are used to create a sse client.
+                The arguments are used to create a sse client.
         see mcp.client.sse.sse_client for more details.
 
         Any extra arguments passed to the constructor will be passed to the
@@ -390,3 +407,169 @@ class MCPWebsocketPlugin(MCPPluginBase):
         if self._client_kwargs:
             args.update(self._client_kwargs)
         return websocket_client(**args)
+
+
+# region: Kernel as MCP Server
+
+
+def create_mcp_server_from_kernel(
+    kernel: Kernel,
+    *,
+    server_name: str = "Semantic Kernel MCP Server",
+    version: str | None = None,
+    instructions: str | None = None,
+    lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+    prompt_functions: list[str] | None = None,
+    tool_functions: list[str] | None = None,
+    **kwargs: Any,
+) -> Server["LifespanResultT"]:
+    """Create an MCP server from a kernel instance.
+
+    This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
+    configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
+
+    You can specify which functions to expose as tools and prompts by passing
+    the `prompt_functions` and `tool_functions` arguments.
+    These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
+
+    Args:
+        kernel: The kernel instance to use.
+        server_name: The name of the server.
+        version: The version of the server.
+        instructions: The instructions to use for the server.
+        lifespan: The lifespan of the server.
+        prompt_functions: The list of fully qualified function names to expose as prompts.
+            if None, all KernelFunctionFromPrompt functions will be exposed.
+            if you don't want to expose any prompts, set this to an empty list.
+        tool_functions: The list of fully qualified function names to expose as tools.
+            if None, all KernelFunctionFromMethod functions will be exposed.
+            if you don't want to expose any tools, set this to an empty list.
+        kwargs: Any extra arguments to pass to the server creation.
+
+    Returns:
+        The MCP server instance, it is a instance of
+        mcp.server.lowlevel.Server
+
+    """
+    server_args: dict[str, Any] = {
+        "name": server_name,
+        "version": version,
+        "instructions": instructions,
+    }
+    if lifespan:
+        server_args["lifespan"] = lifespan
+    if kwargs:
+        server_args.update(kwargs)
+    server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
+
+    @server.list_prompts()
+    async def _list_prompts() -> list[types.Prompt]:
+        """List all prompts in the kernel."""
+        if prompt_functions is not None:
+            functions_to_expose = [
+                func
+                for func in kernel.get_full_list_of_function_metadata()
+                if func.fully_qualified_name in prompt_functions
+            ]
+        else:
+            functions_to_expose = [func for func in kernel.get_full_list_of_function_metadata() if func.is_prompt]
+        prompts = [
+            types.Prompt(
+                name=func.fully_qualified_name,
+                description=func.description,
+                arguments=[
+                    types.PromptArgument(name=param.name, description=param.description, required=param.is_required)
+                    for param in func.parameters
+                    if param.name
+                ],
+            )
+            for func in functions_to_expose
+        ]
+        logger.debug(f"Prompts: {prompts}")
+        await asyncio.sleep(0.0)
+        return prompts
+
+    @server.get_prompt()
+    async def _get_prompt(*args: Any) -> types.GetPromptResult:
+        """Call a prompt function from the kernel."""
+        logger.debug("Prompt called with args: %s", args)
+        function_name, arguments = args[0], args[1]
+        result = await _call_kernel_function(function_name, arguments)
+        function_name = args[0]
+        if result:
+            logger.info(f"Prompt Result: {result}")
+            if isinstance(result.value, list):
+                messages = [
+                    types.PromptMessage(role=cmc.role.value, content=types.TextContent(type="text", text=cmc.content))
+                    for cmc in result.value
+                ]
+            elif isinstance(result.value, ChatMessageContent):
+                messages = [
+                    types.PromptMessage(
+                        role=result.value.role.value
+                        if result.value.role in (AuthorRole.USER, AuthorRole.ASSISTANT)
+                        else "assistant",
+                        content=types.TextContent(type="text", text=result.value.content),
+                    )
+                ]
+            else:
+                messages = [
+                    types.PromptMessage(role="assistant", content=types.TextContent(type="text", text=str(result)))
+                ]
+            return types.GetPromptResult(messages=messages)
+        raise McpError(
+            error=types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message=f"Prompt {function_name} returned no result",
+            ),
+        )
+
+    @server.list_tools()
+    async def _list_tools() -> list[types.Tool]:
+        """List all tools in the kernel."""
+        if tool_functions is not None:
+            functions_to_expose = [
+                func
+                for func in kernel.get_full_list_of_function_metadata()
+                if func.fully_qualified_name in tool_functions
+            ]
+        else:
+            functions_to_expose = [func for func in kernel.get_full_list_of_function_metadata() if not func.is_prompt]
+        tools = [
+            types.Tool(
+                name=func.fully_qualified_name,
+                description=func.description,
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        param.name: param.schema_data for param in func.parameters if param.name and param.schema_data
+                    },
+                    "required": [param.name for param in func.parameters if param.name and param.is_required],
+                },
+            )
+            for func in functions_to_expose
+        ]
+        logger.debug(f"Tools: {tools}")
+        await asyncio.sleep(0.0)
+        return tools
+
+    @server.call_tool()
+    async def _call_tool(*args: Any) -> list[types.TextContent]:
+        """Call a tool in the kernel."""
+        logger.debug("Tool called with args: %s", args)
+        function_name, arguments = args[0], args[1]
+        result = await _call_kernel_function(function_name, arguments)
+        if result:
+            return [types.TextContent(type="text", text=str(result.value))]
+        raise McpError(
+            error=types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message=f"Function {function_name} returned no result",
+            ),
+        )
+
+    async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
+        function = kernel.get_function_from_fully_qualified_function_name(function_name)
+        return await function.invoke(kernel=kernel, **arguments)
+
+    return server
