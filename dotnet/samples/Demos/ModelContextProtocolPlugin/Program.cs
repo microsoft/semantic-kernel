@@ -75,7 +75,7 @@ Console.WriteLine($"\n\n{prompt}\n{result}");
 // Define the agent
 ChatCompletionAgent agent = new()
 {
-    Instructions = "Answer questions about GitGub repositories.",
+    Instructions = "Answer questions about GitHub repositories.",
     Name = "GitHubAgent",
     Kernel = kernel,
     Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
