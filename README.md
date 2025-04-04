@@ -7,9 +7,6 @@
 [![Nuget package](https://img.shields.io/nuget/vpre/Microsoft.SemanticKernel)](https://www.nuget.org/packages/Microsoft.SemanticKernel/)
 [![Discord](https://img.shields.io/discord/1063152441819942922?label=Discord&logo=discord&logoColor=white&color=d82679)](https://aka.ms/SKDiscord)
 
-<div align="center">
-    <img src="docs/images/sk_logo.png" alt="Semantic Kernel" width="400">
-</div>
 
 ## What is Semantic Kernel?
 
@@ -17,7 +14,7 @@ Semantic Kernel is a model-agnostic SDK that empowers developers to build, orche
 
 ## System Requirements
 
-- **Python**: 3.10+
+- **Python**: 3.9+
 - **.NET**: .NET 8.0+ 
 - **Java**: JDK 17+
 - **OS Support**: Windows, macOS, Linux
@@ -99,6 +96,9 @@ asyncio.run(main())
 ### Basic Agent - .NET
 
 ```csharp
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
+
 var builder = Kernel.CreateBuilder();
 builder.AddAzureOpenAIChatCompletion(
                 Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT"),
@@ -110,14 +110,13 @@ var kernel = builder.Build();
 ChatCompletionAgent agent =
     new()
     {
-        Name = "SK-Assistant",
+        Name = "SK-Agent",
         Instructions = "You are a helpful assistant.",
         Kernel = kernel,
     };
 
-ChatMessageContent message = new(AuthorRole.User, "Write a haiku about Semantic Kernel.");
-
-await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
+await foreach (AgentResponseItem<ChatMessageContent> response 
+    in agent.InvokeAsync("Write a haiku about Semantic Kernel."))
 {
     Console.WriteLine(response.Message);
 }
@@ -133,6 +132,12 @@ await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsy
 Enhance your agent with custom tools (plugins) and structured output:
 
 ```python
+from typing import Annotated
+from pydantic import BaseModel
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatPromptExecutionSettings
+from semantic_kernel.functions import kernel_function, KernelArguments
+
 class MenuPlugin:
     @kernel_function(description="Provides a list of specials from the menu.")
     def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
@@ -203,12 +208,10 @@ ChatCompletionAgent agent =
 
     };
 
-ChatMessageContent message = new(AuthorRole.User, "What is the price of the soup special?");
-
-await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
+await foreach (AgentResponseItem<ChatMessageContent> response 
+    in agent.InvokeAsync("What is the price of the soup special?"))
 {
     Console.WriteLine(response.Message);
-    // The price of the Clam Chowder, which is the soup special, is $9.99.
 }
 
 sealed class MenuPlugin
@@ -237,9 +240,6 @@ Build a system of specialized agents that can collaborate:
 import asyncio
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.agents import ChatHistoryAgentThread
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 
 billing_agent = ChatCompletionAgent(
     service=AzureChatCompletion(), 
@@ -261,7 +261,7 @@ triage_agent = ChatCompletionAgent(
     plugins=[billing_agent, refund_agent],
 )
 
-thread = None
+thread: None
 
 async def main() -> None:
     print("Welcome to the chat bot!\n  Type 'exit' to exit.\n  Try to get some billing or refund help.")
