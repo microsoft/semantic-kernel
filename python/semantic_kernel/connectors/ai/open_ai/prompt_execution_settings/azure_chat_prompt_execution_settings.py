@@ -140,14 +140,18 @@ class AzureAISearchDataSource(AzureChatRequestBase):
     @classmethod
     def from_azure_ai_search_settings(cls, azure_ai_search_settings: "AzureAISearchSettings", **kwargs: Any):
         """Create an instance from Azure AI Search settings."""
-        kwargs["parameters"] = {
+        parameters = {
             "endpoint": str(azure_ai_search_settings.endpoint),
             "index_name": azure_ai_search_settings.index_name,
             "authentication": {
                 "key": azure_ai_search_settings.api_key.get_secret_value() if azure_ai_search_settings.api_key else None
             },
         }
-        return cls(**kwargs)
+        
+        for key, value in kwargs.items():
+            parameters[key] = value
+        
+        return cls(parameters=parameters)
 
 
 DataSource = Annotated[Union[AzureAISearchDataSource, AzureCosmosDBDataSource], Field(discriminator="type")]

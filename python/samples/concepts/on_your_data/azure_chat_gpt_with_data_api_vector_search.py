@@ -25,33 +25,36 @@ logging.basicConfig(level=logging.DEBUG)
 # groundbreaking phenomenon in glaciology that could potentially reshape our understanding of climate change.
 
 azure_ai_search_settings = AzureAISearchSettings.create()
-azure_ai_search_settings = azure_ai_search_settings.model_dump()
+datasource_parameters = {}
 
 # This example index has fields "title", "chunk", and "vector".
 # Add fields mapping to the settings.
-azure_ai_search_settings["fieldsMapping"] = {
+datasource_parameters["fieldsMapping"] = {
     "titleField": "title",
     "contentFields": ["chunk"],
     "vectorFields": ["vector"],
 }
 
 # Add Ada embedding deployment name to the settings and use vector search.
-azure_ai_search_settings["embeddingDependency"] = {
+datasource_parameters["embeddingDependency"] = {
     "type": "DeploymentName",
-    "deploymentName": "ada-002",
+    "deploymentName": "embedding",
 }
-azure_ai_search_settings["query_type"] = "vector"
+datasource_parameters["query_type"] = "vector"
 
 # Create the data source settings
-az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings)
+az_source = AzureAISearchDataSource.from_azure_ai_search_settings(
+    azure_ai_search_settings=azure_ai_search_settings,
+    **datasource_parameters
+)
 extra = ExtraBody(data_sources=[az_source])
 service_id = "chat-gpt"
 req_settings = AzureChatPromptExecutionSettings(service_id=service_id, extra_body=extra)
 
-# When using data, use the 2024-02-15-preview API version.
+# When using data, use the 2025-01-01-preview API version.
 chat_service = AzureChatCompletion(
     service_id="chat-gpt",
-    api_version="2024-02-15-preview",
+    api_version="2025-01-01-preview",
 )
 kernel.add_service(chat_service)
 
