@@ -49,8 +49,27 @@ public record ProcessEvent
         {
             Namespace = eventNamespace,
             SourceId = kernelProcessEvent.Id,
-            Data = kernelProcessEvent.Data,
+            Data = KernelProcessEventData.FromObject(kernelProcessEvent.Data),
             Visibility = kernelProcessEvent.Visibility,
             IsError = isError,
+        };
+
+    /// <summary>
+    /// Creates a new <see cref="ProcessEvent"/>.
+    /// </summary>
+    /// <param name="data">data passed in the event</param>
+    /// <param name="eventNamespace">The namespace of the event.</param>
+    /// <param name="sourceId">event source id</param>
+    /// <param name="eventVisibility">visibility of the event</param>
+    /// <param name="isError">Indicates if event is from a runtime error.</param>
+    /// <returns></returns>
+    internal static ProcessEvent Create(object? data, string eventNamespace, string sourceId, KernelProcessEventVisibility eventVisibility, bool isError = false) =>
+        new()
+        {
+            Namespace = eventNamespace,
+            SourceId = sourceId,
+            Data = KernelProcessEventData.FromObject(data),
+            IsError = isError,
+            Visibility = eventVisibility,
         };
 }

@@ -49,9 +49,9 @@ public class LocalProxyTests
             Assert.Equal(1, mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Single(mockProxyClient.CloudEvents);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
 
             // Act
             await processContext.SendEventAsync(new() { Id = this._startProcessEvent, Data = null });
@@ -61,9 +61,9 @@ public class LocalProxyTests
             Assert.Equal(1, mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(2, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
         }
         Assert.Equal(1, mockProxyClient.UninitializationCounter);
     }
@@ -111,13 +111,13 @@ public class LocalProxyTests
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].EventData?.ToObject());
         }
 
         // Assert
@@ -155,13 +155,13 @@ public class LocalProxyTests
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].EventData?.ToObject());
         }
 
         // Assert
@@ -205,13 +205,13 @@ public class LocalProxyTests
             Assert.True(0 < mockProxyClient.InitializationCounter);
             Assert.Equal(0, mockProxyClient.UninitializationCounter);
             Assert.Equal(3, mockProxyClient.CloudEvents.Count);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].TopicName);
-            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].Data?.ProcessId);
-            Assert.Equal("1", mockProxyClient.CloudEvents[0].Data?.EventData);
-            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[1].Data?.EventData);
-            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].TopicName);
-            Assert.Equal("2", mockProxyClient.CloudEvents[2].Data?.EventData);
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[0].ExternalTopicName);
+            Assert.Equal(runningProcessId, mockProxyClient.CloudEvents[0].ProcessId);
+            Assert.Equal("1", mockProxyClient.CloudEvents[0].EventData?.ToObject());
+            Assert.Equal(this._topic1, mockProxyClient.CloudEvents[1].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[1].EventData?.ToObject());
+            Assert.Equal(this._topic2, mockProxyClient.CloudEvents[2].ExternalTopicName);
+            Assert.Equal("2", mockProxyClient.CloudEvents[2].EventData?.ToObject());
         }
 
         // Assert
