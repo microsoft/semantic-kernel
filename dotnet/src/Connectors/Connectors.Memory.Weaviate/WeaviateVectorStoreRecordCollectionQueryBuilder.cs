@@ -69,6 +69,58 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     }
 
     /// <summary>
+    /// Builds Weaviate search query.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
+    /// </summary>
+    public static string BuildQuery<TRecord>(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilterOptions<TRecord> queryOptions,
+        IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties,
+        string collectionName,
+        VectorStoreRecordModel model)
+    {
+        var vectorsQuery = queryOptions.IncludeVectors ?
+            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
+            string.Empty;
+
+        string sortPaths = string.Join(",", orderByProperties.Select(property =>
+        {
+            string? sortPath = property.Key switch
+            {
+                VectorStoreRecordKeyPropertyModel key => "id",
+                _ => property.Key.StorageName,
+            };
+
+            return $$"""{ path: ["{{sortPath}}"], order: {{(property.Value ? "asc" : "desc")}} }""";
+        }));
+
+        var sort = string.IsNullOrEmpty(sortPaths) ? string.Empty : $"sort: [ {sortPaths} ]";
+
+        var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
+
+        return $$"""
+        {
+          Get {
+            {{collectionName}} (
+              limit: {{top}}
+              offset: {{queryOptions.Skip}}
+              where: {{translatedFilter}}
+              {{sort}}
+            ) {
+              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
+              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                {{WeaviateConstants.ReservedKeyPropertyName}}
+                {{WeaviateConstants.ScorePropertyName}}
+                {{vectorsQuery}}
+              }
+            }
+          }
+        }
+        """;
+    }
+
+    /// <summary>
     /// Builds Weaviate hybrid search query.
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
     /// </summary>

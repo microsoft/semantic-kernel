@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -436,6 +437,38 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         });
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        Query query = RedisVectorStoreCollectionSearchMapping.BuildQuery(filter, top, options ??= new(), this._model);
+
+        var results = await this.RunOperationAsync(
+            "FT.SEARCH",
+            () => this._database
+                .FT()
+                .SearchAsync(this._collectionName, query)).ConfigureAwait(false);
+
+        foreach (var document in results.Documents)
+        {
+            var redisResultString = document["json"].ToString();
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                DatabaseName,
+                this._collectionName,
+                "FT.SEARCH",
+                () =>
+                {
+                    var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
+                    return this._mapper.MapFromStorageToDataModel(
+                        (this.RemoveKeyPrefixIfNeeded(document.Id), node),
+                        new() { IncludeVectors = options.IncludeVectors });
+                });
+        }
     }
 
     /// <summary>

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -293,6 +294,33 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
             return Task.FromResult(new VectorSearchResults<TRecord>(results));
         });
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
+
+        await foreach (var dictionary in this._client.GetMatchingRecordsAsync(
+            this.CollectionName,
+            this._model,
+            filter,
+            top,
+            options,
+            cancellationToken).ConfigureAwait(false))
+        {
+            yield return VectorStoreErrorHandler.RunModelConversion(
+                PostgresConstants.DatabaseName,
+                this.CollectionName,
+                "Get",
+                () => this._mapper.MapFromStorageToDataModel(dictionary, mapperOptions));
+        }
     }
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)

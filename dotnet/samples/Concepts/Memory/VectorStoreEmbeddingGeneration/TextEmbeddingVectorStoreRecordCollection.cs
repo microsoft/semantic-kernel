@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
@@ -123,6 +124,12 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return this._decoratedVectorStoreRecordCollection.VectorizedSearchAsync(vector, top, options, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        return this._decoratedVectorStoreRecordCollection.GetAsync(filter, top, options, cancellationToken);
     }
 
     /// <inheritdoc />

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -250,6 +251,46 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
             cancellationToken));
 
         return Task.FromResult(vectorSearchResults);
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        SqliteFilterTranslator translator = new(this._model, filter);
+        translator.Translate(appendWhere: false);
+
+        var orderByPropertyNames = options.Sort.Values
+            .Select(pair => new KeyValuePair<string, bool>(this._model.GetDataOrKeyProperty(pair.Key).StorageName, pair.Value));
+
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties = options.IncludeVectors
+            ? this._model.Properties
+            : [this._model.KeyProperty, .. this._model.DataProperties];
+
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectWhereCommand(
+            connection,
+            top,
+            options,
+            this._dataTableName,
+            this._model.Properties,
+            translator.Clause.ToString(),
+            translator.Parameters,
+            orderByPropertyNames);
+
+        using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return this.GetAndMapRecord(
+                "Get",
+                reader,
+                properties,
+                options.IncludeVectors);
+        }
     }
 
     #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
@@ -708,7 +749,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     private TRecord GetAndMapRecord(
         string operationName,
         DbDataReader reader,
-        List<VectorStoreRecordPropertyModel> properties,
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
         bool includeVectors)
     {
         var storageModel = new Dictionary<string, object?>();

@@ -340,7 +340,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         };
 
         Sdk.QueryResponse response = await this.RunIndexOperationAsync(
-            "Query",
+            "VectorizedSearch",
             indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         if (response.Matches is null)
@@ -356,7 +356,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var records = VectorStoreErrorHandler.RunModelConversion(
             DatabaseName,
             this.CollectionName,
-            "Query",
+            "VectorizedSearch",
             () => skippedResults.Select(x => new VectorSearchResult<TRecord>(this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
             {
                 Id = x.Id,
@@ -367,6 +367,60 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             .ToAsyncEnumerable();
 
         return new(records);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        if (options?.Sort.Values.Count > 0)
+        {
+            throw new NotSupportedException("Pinecone does not support ordering.");
+        }
+
+        options ??= new();
+
+        Sdk.QueryRequest request = new()
+        {
+            TopK = (uint)(top + options.Skip),
+            Namespace = this._options.IndexNamespace,
+            IncludeValues = options.IncludeVectors,
+            IncludeMetadata = true,
+            // "Either 'vector' or 'ID' must be provided"
+            // Since we are doing a query, we don't have a vector to provide, so we fake one.
+            // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
+            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions!.Value]),
+            Filter = new PineconeFilterTranslator().Translate(filter, this._model),
+        };
+
+        Sdk.QueryResponse response = await this.RunIndexOperationAsync(
+            "Get",
+            indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        if (response.Matches is null)
+        {
+            yield break;
+        }
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
+        var records = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            "Query",
+            () => response.Matches.Skip(options.Skip).Select(x => this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
+            {
+                Id = x.Id,
+                Values = x.Values ?? Array.Empty<float>(),
+                Metadata = x.Metadata,
+                SparseValues = x.SparseValues
+            }, mapperOptions)));
+
+        foreach (var record in records)
+        {
+            yield return record;
+        }
     }
 
     private async Task<T> RunIndexOperationAsync<T>(string operationName, Func<IndexClient, Task<T>> operation)

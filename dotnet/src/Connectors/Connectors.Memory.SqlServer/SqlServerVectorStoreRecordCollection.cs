@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -472,6 +473,38 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         finally
         {
             connection.Dispose();
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        using SqlConnection connection = new(this._connectionString);
+        using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
+            filter,
+            top,
+            options,
+            connection,
+            this._options.Schema,
+            this.CollectionName,
+            this._model,
+            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)));
+
+        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+            cancellationToken, "GetAsync", this.CollectionName).ConfigureAwait(false);
+
+        var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), mapperOptions);
         }
     }
 }

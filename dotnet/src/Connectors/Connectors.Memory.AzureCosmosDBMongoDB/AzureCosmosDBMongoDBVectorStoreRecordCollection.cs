@@ -310,6 +310,61 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
     }
 
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        // Translate the filter now, so if it fails, we throw immediately.
+        var translatedFilter = new AzureCosmosDBMongoDBFilterTranslator().Translate(filter, this._model);
+
+        SortDefinition<BsonDocument>? sortDefinition = null;
+        if (options.Sort.Values.Count > 0)
+        {
+            sortDefinition = Builders<BsonDocument>.Sort.Combine(
+                options.Sort.Values.Select(pair =>
+                {
+                    var storageName = this._model.GetDataOrKeyProperty(pair.Key).StorageName;
+
+                    return pair.Value
+                        ? Builders<BsonDocument>.Sort.Ascending(storageName)
+                        : Builders<BsonDocument>.Sort.Descending(storageName);
+                }));
+        }
+
+        using IAsyncCursor<BsonDocument> cursor = await this.RunOperationAsync(
+            "GetAsync",
+            async () =>
+            {
+                return await this._mongoCollection.FindAsync(translatedFilter,
+                    new()
+                    {
+                        Limit = top,
+                        Skip = options.Skip,
+                        Sort = sortDefinition
+                    },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    DatabaseName,
+                    this.CollectionName,
+                    "GetAsync",
+                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+
+                yield return record;
+            }
+        }
+    }
+
     #region private
 
     private async Task CreateIndexesAsync(string collectionName, CancellationToken cancellationToken)

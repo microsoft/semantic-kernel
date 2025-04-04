@@ -344,6 +344,55 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        SearchOptions searchOptions = new()
+        {
+            VectorSearch = new(),
+            Size = top,
+            Skip = options.Skip,
+            Filter = new AzureAISearchFilterTranslator().Translate(filter, this._model),
+        };
+
+        // Filter out vector fields if requested.
+        if (!options.IncludeVectors)
+        {
+            searchOptions.Select.Add(this._model.KeyProperty.StorageName);
+
+            foreach (var dataProperty in this._model.DataProperties)
+            {
+                searchOptions.Select.Add(dataProperty.StorageName);
+            }
+        }
+
+        foreach (var pair in options.Sort.Values)
+        {
+            VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.Key);
+            string name = property.StorageName;
+            // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
+            // "The default is ascending order."
+            if (!pair.Value)
+            {
+                name += " desc";
+            }
+
+            searchOptions.OrderBy.Add(name);
+        }
+
+        VectorSearchResults<TRecord> vectorSearchResults = await this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false);
+        await foreach (var result in vectorSearchResults.Results.ConfigureAwait(false))
+        {
+            yield return result.Record;
+        }
+    }
+
+    /// <inheritdoc />
     public virtual Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchText);
