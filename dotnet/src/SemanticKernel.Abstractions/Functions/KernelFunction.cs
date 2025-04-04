@@ -105,7 +105,7 @@ public abstract class KernelFunction
     /// <remarks>
     /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return null.
     /// </remarks>
-    public MethodInfo? UnderlyingMethod { get; internal init; }
+    public MethodInfo? InnerMethod { get; internal init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
