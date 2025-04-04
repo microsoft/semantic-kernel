@@ -9,8 +9,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, and managing vector record collections, that uses an in memory dictionary as the underlying storage.
 /// </summary>
@@ -34,7 +32,7 @@ public sealed class InMemoryVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "inmemory"
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
         };
     }
 
@@ -48,7 +46,7 @@ public sealed class InMemoryVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "inmemory"
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName
         };
     }
 

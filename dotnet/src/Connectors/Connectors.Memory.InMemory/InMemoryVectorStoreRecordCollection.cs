@@ -13,8 +13,6 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses an in memory dictionary as the underlying storage.
 /// </summary>
@@ -111,7 +109,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "inmemory",
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
             CollectionName = collectionName
         };
     }
@@ -155,7 +153,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.FromException(new VectorStoreOperationException("Collection already exists.")
         {
-            VectorStoreType = "InMemory",
+            VectorStoreType = InMemoryConstants.VectorStoreSystemName,
             CollectionName = this.CollectionName,
             OperationName = "CreateCollection"
         });

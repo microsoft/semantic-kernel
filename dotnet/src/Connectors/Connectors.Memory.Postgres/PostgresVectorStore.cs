@@ -8,8 +8,6 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
@@ -35,8 +33,8 @@ public class PostgresVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "postgresql",
-            DatabaseName = this._postgresClient.DatabaseName
+            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+            VectorStoreName = this._postgresClient.DatabaseName
         };
     }
 
@@ -52,19 +50,17 @@ public class PostgresVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "postgresql",
-            DatabaseName = this._postgresClient.DatabaseName
+            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+            VectorStoreName = this._postgresClient.DatabaseName
         };
     }
 
     /// <inheritdoc />
     public virtual IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
-        const string OperationName = "ListCollectionNames";
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
-            OperationName,
-            vectorStoreSystemName: this._metadata.VectorStoreSystemName
+            "ListCollectionNames"
         );
     }
 

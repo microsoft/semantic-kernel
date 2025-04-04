@@ -87,13 +87,13 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         {
             Assert.True(await collection.CollectionExistsAsync());
 
-#pragma warning disable SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
-#pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             Assert.NotNull(collectionMetadata);
             Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-            Assert.NotNull(collectionMetadata.DatabaseName);
+            Assert.NotNull(collectionMetadata.VectorStoreName);
             Assert.NotNull(collectionMetadata.CollectionName);
 
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
@@ -114,13 +114,13 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         {
             Assert.True(await collection.CollectionExistsAsync());
 
-#pragma warning disable SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
-#pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             Assert.NotNull(collectionMetadata);
             Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-            Assert.NotNull(collectionMetadata.DatabaseName);
+            Assert.NotNull(collectionMetadata.VectorStoreName);
             Assert.NotNull(collectionMetadata.CollectionName);
 
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
@@ -143,13 +143,13 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         {
             Assert.True(await collection.CollectionExistsAsync());
 
-#pragma warning disable SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
-#pragma warning restore SKEXP0020 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
             Assert.NotNull(collectionMetadata);
             Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-            Assert.NotNull(collectionMetadata.DatabaseName);
+            Assert.NotNull(collectionMetadata.VectorStoreName);
             Assert.NotNull(collectionMetadata.CollectionName);
 
             Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));

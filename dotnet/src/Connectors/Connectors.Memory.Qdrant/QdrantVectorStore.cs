@@ -10,8 +10,6 @@ using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Qdrant vector store.
 /// </summary>
@@ -53,7 +51,7 @@ public class QdrantVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "qdrant"
+            VectorStoreSystemName = QdrantConstants.VectorStoreSystemName
         };
     }
 
@@ -95,7 +93,7 @@ public class QdrantVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._metadata.VectorStoreSystemName,
+                VectorStoreType = QdrantConstants.VectorStoreSystemName,
                 OperationName = "ListCollections"
             };
         }

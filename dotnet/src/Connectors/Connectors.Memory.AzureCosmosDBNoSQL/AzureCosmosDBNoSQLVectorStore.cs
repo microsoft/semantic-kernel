@@ -9,8 +9,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Azure CosmosDB NoSQL vector store.
 /// </summary>
@@ -42,8 +40,8 @@ public class AzureCosmosDBNoSQLVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "azure.cosmosdbnosql",
-            DatabaseName = database.Id
+            VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+            VectorStoreName = database.Id
         };
     }
 

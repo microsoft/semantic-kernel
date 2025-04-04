@@ -11,8 +11,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Azure AI Search vector store.
 /// </summary>
@@ -44,8 +42,8 @@ public class AzureAISearchVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "azure.aisearch",
-            DatabaseName = searchIndexClient.ServiceName
+            VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+            VectorStoreName = searchIndexClient.ServiceName
         };
     }
 
@@ -83,11 +81,11 @@ public class AzureAISearchVectorStore : IVectorStore
         var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
         var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
 
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata.VectorStoreSystemName).ConfigureAwait(false);
+        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         while (nextResult.more)
         {
             yield return nextResult.name;
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator, this._metadata.VectorStoreSystemName).ConfigureAwait(false);
+            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         }
     }
 
@@ -110,11 +108,9 @@ public class AzureAISearchVectorStore : IVectorStore
     /// around a yield return.
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
-    /// <param name="vectorStoreSystemName">The vector store system name.</param>
     /// <returns>A value indicating whether there are more results and the current string if true.</returns>
     private static async Task<(string name, bool more)> GetNextIndexNameAsync(
-        ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator,
-        string? vectorStoreSystemName)
+        ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
     {
         const string OperationName = "GetIndexNames";
 
@@ -127,7 +123,7 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = vectorStoreSystemName,
+                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
                 OperationName = OperationName
             };
         }
@@ -135,7 +131,7 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = vectorStoreSystemName,
+                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
                 OperationName = OperationName
             };
         }

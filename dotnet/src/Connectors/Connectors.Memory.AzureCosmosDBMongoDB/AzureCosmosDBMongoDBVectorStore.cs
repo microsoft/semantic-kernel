@@ -9,8 +9,6 @@ using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Azure CosmosDB MongoDB vector store.
 /// </summary>
@@ -42,8 +40,8 @@ public class AzureCosmosDBMongoDBVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "azure.cosmosdbmongodb",
-            DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName
+            VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+            VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName
         };
     }
 

@@ -15,8 +15,6 @@ using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Qdrant as the underlying storage.
 /// </summary>
@@ -101,7 +99,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "qdrant",
+            VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
             CollectionName = collectionName
         };
     }
@@ -326,7 +324,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -345,7 +343,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -364,7 +362,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -387,7 +385,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            QdrantConstants.VectorStoreSystemName,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -445,7 +443,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             }
 
             yield return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                QdrantConstants.VectorStoreSystemName,
                 this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
@@ -500,7 +498,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                this._collectionMetadata.VectorStoreSystemName!,
+                QdrantConstants.VectorStoreSystemName,
                 this._collectionName,
                 "Query"));
 
@@ -585,7 +583,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                this._collectionMetadata.VectorStoreSystemName!,
+                QdrantConstants.VectorStoreSystemName,
                 this._collectionName,
                 "Query"));
 
@@ -621,7 +619,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = QdrantConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -645,7 +643,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = QdrantConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

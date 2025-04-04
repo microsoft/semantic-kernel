@@ -10,8 +10,6 @@ using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Redis vector store.
 /// </summary>
@@ -43,8 +41,8 @@ public class RedisVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "redis",
-            DatabaseName = database.Database.ToString()
+            VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+            VectorStoreName = database.Database.ToString()
         };
     }
 
@@ -90,7 +88,7 @@ public class RedisVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._metadata.VectorStoreSystemName,
+                VectorStoreType = RedisConstants.VectorStoreSystemName,
                 OperationName = OperationName
             };
         }

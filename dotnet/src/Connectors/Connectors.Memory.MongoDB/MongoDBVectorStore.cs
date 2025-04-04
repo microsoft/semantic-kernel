@@ -9,8 +9,6 @@ using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a MongoDB vector store.
 /// </summary>
@@ -42,8 +40,8 @@ public class MongoDBVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "mongodb",
-            DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName
+            VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+            VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName
         };
     }
 

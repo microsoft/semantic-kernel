@@ -12,8 +12,6 @@ using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Represents a collection of vector store records in a Postgres database.
 /// </summary>
@@ -87,8 +85,8 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "postgresql",
-            DatabaseName = this._client.DatabaseName,
+            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+            VectorStoreName = this._client.DatabaseName,
             CollectionName = collectionName
         };
     }
@@ -135,7 +133,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PostgresConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -162,7 +160,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PostgresConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -196,7 +194,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
             if (row is null) { return default; }
             return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                PostgresConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
@@ -216,15 +214,14 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             this._client.GetBatchAsync(this.CollectionName, keys, this._model, includeVectors, cancellationToken)
                 .SelectAsync(row =>
                     VectorStoreErrorHandler.RunModelConversion(
-                        this._collectionMetadata.VectorStoreSystemName!,
+                        PostgresConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors })),
                     cancellationToken
                 ),
             OperationName,
-            this.CollectionName,
-            this._collectionMetadata.VectorStoreSystemName
+            this.CollectionName
         );
     }
 
@@ -294,7 +291,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             .SelectAsync(result =>
                 {
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        this._collectionMetadata.VectorStoreSystemName!,
+                        PostgresConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(
@@ -336,7 +333,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = PostgresConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -353,7 +350,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = PostgresConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

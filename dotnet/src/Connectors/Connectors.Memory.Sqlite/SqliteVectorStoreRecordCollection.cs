@@ -14,8 +14,6 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses SQLite as the underlying storage.
 /// </summary>
@@ -141,8 +139,8 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "sqlite",
-            DatabaseName = connectionStringBuilder.DataSource,
+            VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.DataSource,
             CollectionName = collectionName
         };
     }
@@ -589,7 +587,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            SqliteConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -612,7 +610,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            SqliteConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -742,7 +740,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            SqliteConstants.VectorStoreSystemName,
             this.CollectionName,
             operationName,
             () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -758,7 +756,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = SqliteConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

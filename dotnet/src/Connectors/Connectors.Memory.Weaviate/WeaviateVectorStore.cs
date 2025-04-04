@@ -10,8 +10,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Weaviate vector store.
 /// </summary>
@@ -47,7 +45,7 @@ public class WeaviateVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "weaviate"
+            VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName
         };
     }
 
@@ -101,7 +99,7 @@ public class WeaviateVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", e)
             {
-                VectorStoreType = WeaviateConstants.DatabaseName,
+                VectorStoreType = WeaviateConstants.VectorStoreSystemName,
                 OperationName = "ListCollectionNames"
             };
         }

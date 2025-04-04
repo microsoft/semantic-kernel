@@ -12,8 +12,6 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// An implementation of <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
@@ -72,8 +70,8 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "microsoft.sql_server",
-            DatabaseName = connectionStringBuilder.InitialCatalog,
+            VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.InitialCatalog,
             CollectionName = name
         };
     }
@@ -218,7 +216,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = "DeleteBatch",
-                VectorStoreType = ExceptionWrapper.VectorStoreType,
+                VectorStoreType = SqlServerConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName
             };
         }
@@ -390,7 +388,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = "UpsertBatch",
-                VectorStoreType = ExceptionWrapper.VectorStoreType,
+                VectorStoreType = SqlServerConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName
             };
         }

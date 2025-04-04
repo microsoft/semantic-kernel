@@ -9,8 +9,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// An implementation of <see cref="IVectorStore"/> backed by a SQL Server or Azure SQL database.
 /// </summary>
@@ -42,8 +40,8 @@ public sealed class SqlServerVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "microsoft.sql_server",
-            DatabaseName = connectionStringBuilder.InitialCatalog
+            VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.InitialCatalog
         };
     }
 

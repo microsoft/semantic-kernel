@@ -8,6 +8,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal static class AzureAISearchConstants
 {
+    internal const string VectorStoreSystemName = "azure.aisearch";
+
     /// <summary>A set of types that a key on the provided model may have.</summary>
     private static readonly HashSet<Type> s_supportedKeyTypes = [typeof(string)];
 

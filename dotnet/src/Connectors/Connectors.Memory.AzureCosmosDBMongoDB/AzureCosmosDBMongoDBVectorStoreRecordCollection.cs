@@ -18,8 +18,6 @@ using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure CosmosDB MongoDB as the underlying storage.
 /// </summary>
@@ -85,8 +83,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "azure.cosmosdbmongodb",
-            DatabaseName = mongoDatabase.DatabaseNamespace?.DatabaseName,
+            VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+            VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
             CollectionName = collectionName
         };
     }
@@ -104,8 +102,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             throw new VectorStoreOperationException("Collection already exists.")
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
-                CollectionName = this._collectionMetadata.CollectionName,
+                VectorStoreType = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                CollectionName = this.CollectionName,
                 OperationName = "CreateCollection"
             };
         }
@@ -169,7 +167,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
@@ -196,7 +194,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
                 if (record is not null)
                 {
                     yield return VectorStoreErrorHandler.RunModelConversion(
-                        this._collectionMetadata.VectorStoreSystemName!,
+                        AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(record, new()));
@@ -214,7 +212,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -406,7 +404,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        this._collectionMetadata.VectorStoreSystemName!,
+                        AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
@@ -445,7 +443,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -462,7 +460,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

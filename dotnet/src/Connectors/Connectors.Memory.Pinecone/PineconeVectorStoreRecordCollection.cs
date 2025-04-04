@@ -14,8 +14,6 @@ using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Pinecone as the underlying storage.
 /// </summary>
@@ -65,7 +63,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "pinecone",
+            VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
             CollectionName = collectionName
         };
     }
@@ -143,7 +141,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", other)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = PineconeConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = "DeleteCollection"
             };
@@ -173,7 +171,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PineconeConstants.VectorStoreSystemName,
             this.CollectionName,
             "Get",
             () => this._mapper.MapFromStorageToDataModel(result, mapperOptions));
@@ -209,7 +207,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PineconeConstants.VectorStoreSystemName,
             this.CollectionName,
             "GetBatch",
             () => response.Vectors.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
@@ -264,7 +262,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         Verify.NotNull(record);
 
         var vector = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PineconeConstants.VectorStoreSystemName,
             this.CollectionName,
             "Upsert",
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -288,7 +286,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         Verify.NotNull(records);
 
         var vectors = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PineconeConstants.VectorStoreSystemName,
             this.CollectionName,
             "UpsertBatch",
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -363,7 +361,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            PineconeConstants.VectorStoreSystemName,
             this.CollectionName,
             "Query",
             () => skippedResults.Select(x => new VectorSearchResult<TRecord>(this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
@@ -409,7 +407,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = PineconeConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -426,7 +424,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = PineconeConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

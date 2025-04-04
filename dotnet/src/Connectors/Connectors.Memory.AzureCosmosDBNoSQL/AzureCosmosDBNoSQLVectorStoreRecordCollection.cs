@@ -18,8 +18,6 @@ using SKDistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure CosmosDB NoSQL as the underlying storage.
 /// </summary>
@@ -110,8 +108,8 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "azure.cosmosdbnosql",
-            DatabaseName = database.Id,
+            VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+            VectorStoreName = database.Id,
             CollectionName = collectionName
         };
     }
@@ -426,7 +424,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -586,7 +584,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         await foreach (var jsonObject in this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken).ConfigureAwait(false))
         {
             yield return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
@@ -602,7 +600,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         const string OperationName = "UpsertItem";
 
         var jsonObject = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record));
@@ -682,7 +680,7 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             jsonObject.Remove(scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this.CollectionName,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));

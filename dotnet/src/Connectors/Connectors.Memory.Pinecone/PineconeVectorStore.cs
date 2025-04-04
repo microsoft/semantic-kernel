@@ -10,8 +10,6 @@ using Sdk = Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a Pinecone vector store.
 /// </summary>
@@ -20,8 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </remarks>
 public class PineconeVectorStore : IVectorStore
 {
-    private const string ListCollectionsName = "ListCollections";
-
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreOptions _options;
 
@@ -42,7 +38,7 @@ public class PineconeVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "pinecone"
+            VectorStoreSystemName = PineconeConstants.VectorStoreSystemName
         };
     }
 
@@ -81,8 +77,8 @@ public class PineconeVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._metadata.VectorStoreSystemName,
-                OperationName = ListCollectionsName
+                VectorStoreType = PineconeConstants.VectorStoreSystemName,
+                OperationName = "ListCollections"
             };
         }
 

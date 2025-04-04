@@ -18,8 +18,6 @@ using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
-#pragma warning disable SKEXP0020 // Metadata classes are experimental
-
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Redis JSON as the underlying storage.
 /// </summary>
@@ -126,8 +124,8 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
         this._collectionMetadata = new()
         {
-            VectorStoreSystemName = "redis",
-            DatabaseName = database.Database.ToString(),
+            VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+            VectorStoreName = database.Database.ToString(),
             CollectionName = collectionName
         };
     }
@@ -151,7 +149,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = RedisConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = "FT.INFO"
             };
@@ -240,7 +238,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
         // Convert to the caller's data model.
         return VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            RedisConstants.VectorStoreSystemName,
             this._collectionName,
             "GET",
             () =>
@@ -289,7 +287,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
             // Convert to the caller's data model.
             yield return VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                RedisConstants.VectorStoreSystemName,
                 this._collectionName,
                 "MGET",
                 () =>
@@ -333,7 +331,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
 
         // Map.
         var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
-            this._collectionMetadata.VectorStoreSystemName!,
+            RedisConstants.VectorStoreSystemName,
             this._collectionName,
             "SET",
                 () =>
@@ -367,7 +365,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         foreach (var record in records)
         {
             var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                RedisConstants.VectorStoreSystemName,
                 this._collectionName,
                 "MSET",
                 () =>
@@ -425,7 +423,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             var redisResultString = result["json"].ToString();
             var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
-                this._collectionMetadata.VectorStoreSystemName!,
+                RedisConstants.VectorStoreSystemName,
                 this._collectionName,
                 "FT.SEARCH",
                 () =>
@@ -508,7 +506,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = RedisConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -532,7 +530,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = this._collectionMetadata.VectorStoreSystemName,
+                VectorStoreType = RedisConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

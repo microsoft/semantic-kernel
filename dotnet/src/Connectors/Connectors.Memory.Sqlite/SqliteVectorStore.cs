@@ -10,8 +10,6 @@ using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
-#pragma warning disable SKEXP0020 // VectorStoreMetadata is experimental
-
 /// <summary>
 /// Class for accessing the list of collections in a SQLite vector store.
 /// </summary>
@@ -45,8 +43,8 @@ public class SqliteVectorStore : IVectorStore
 
         this._metadata = new()
         {
-            VectorStoreSystemName = "sqlite",
-            DatabaseName = connectionStringBuilder.DataSource
+            VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.DataSource
         };
     }
 
