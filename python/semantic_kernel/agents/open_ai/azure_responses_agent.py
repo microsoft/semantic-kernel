@@ -102,8 +102,8 @@ class AzureResponsesAgent(OpenAIResponsesAgent):
         if not azure_openai_settings.endpoint:
             raise AgentInitializationException("Please provide an Azure OpenAI endpoint")
 
-        if not azure_openai_settings.chat_deployment_name:
-            raise AgentInitializationException("Please provide an Azure OpenAI deployment name")
+        if not azure_openai_settings.responses_deployment_name:
+            raise AgentInitializationException("Please provide an Azure OpenAI Responses deployment name")
 
         client = AsyncAzureOpenAI(
             azure_endpoint=str(azure_openai_settings.endpoint),
@@ -115,4 +115,4 @@ class AzureResponsesAgent(OpenAIResponsesAgent):
             **kwargs,
         )
 
-        return client, azure_openai_settings.chat_deployment_name
+        return client, azure_openai_settings.responses_deployment_name
