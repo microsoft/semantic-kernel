@@ -254,6 +254,7 @@ def openai_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
     env_vars = {
         "OPENAI_API_KEY": "test_api_key",
         "OPENAI_ORG_ID": "test_org_id",
+        "OPENAI_RESPONSES_MODEL_ID": "test_responses_model_id",
         "OPENAI_CHAT_MODEL_ID": "test_chat_model_id",
         "OPENAI_TEXT_MODEL_ID": "test_text_model_id",
         "OPENAI_EMBEDDING_MODEL_ID": "test_embedding_model_id",
@@ -321,7 +322,7 @@ def dataclass_vector_data_model(
                 property_type=vector_property_type,
             ),
         ] = None
-        id: Annotated[str, VectorStoreRecordKeyField()] = field(default_factory=lambda: str(uuid4()))
+        id: Annotated[str, VectorStoreRecordKeyField(property_type="str")] = field(default_factory=lambda: str(uuid4()))
         content: Annotated[
             str, VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector", property_type="str")
         ] = "content1"
@@ -362,10 +363,11 @@ def data_model_definition(
 ) -> VectorStoreRecordDefinition:
     return VectorStoreRecordDefinition(
         fields={
-            "id": VectorStoreRecordKeyField(),
+            "id": VectorStoreRecordKeyField(property_type="str"),
             "content": VectorStoreRecordDataField(
                 has_embedding=True,
                 embedding_property_name="vector",
+                property_type="str",
             ),
             "vector": VectorStoreRecordVectorField(
                 dimensions=dimensions,
