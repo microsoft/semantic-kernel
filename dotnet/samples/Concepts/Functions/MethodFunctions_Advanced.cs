@@ -8,14 +8,16 @@ using Microsoft.SemanticKernel;
 
 namespace Functions;
 
-// These samples show advanced usage of method functions.
+/// <summary>
+/// These samples show advanced usage of method functions.
+/// </summary>
 public class MethodFunctions_Advanced(ITestOutputHelper output) : BaseTest(output)
 {
     /// <summary>
     /// This example executes Function1, which in turn executes Function2.
     /// </summary>
     [Fact]
-    public async Task MethodFunctionsChainingAsync()
+    public async Task MethodFunctionsChaining()
     {
         Console.WriteLine("Running Method Function Chaining example...");
 
