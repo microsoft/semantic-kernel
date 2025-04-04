@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
@@ -11,11 +14,28 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
 {
-    private KernelFunctionInvocationContext _innerContext;
-
+    private readonly KernelFunction? _kernelFunction;
+    private readonly KernelFunctionInvocationContext? _innerContext;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="KernelFunctionInvocationContext"/>.
+    /// </summary>
     public AutoFunctionInvocationContext(KernelFunctionInvocationContext innerContext)
     {
+        Verify.NotNull(innerContext);
+        Verify.NotNull(innerContext.Options);
+        Verify.NotNull(innerContext.Options.AdditionalProperties);
+
+        innerContext.Options.AdditionalProperties.TryGetValue<Kernel>("Kernel", out var kernel);
+        Verify.NotNull(kernel);
+
+        innerContext.Options.AdditionalProperties.TryGetValue<ChatMessageContent>("ChatMessageContent", out var chatMessageContent);
+        Verify.NotNull(chatMessageContent);
+
         this._innerContext = innerContext;
+        this.ChatHistory = new ChatMessageHistory(innerContext.Messages);
+        this.ChatMessageContent = chatMessageContent;
+        this.Kernel = kernel;
+        this.Result = new FunctionResult(this._kernelFunction!) { Culture = kernel.Culture };
     }
 
     /// <summary>
@@ -40,7 +60,7 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         Verify.NotNull(chatMessageContent);
 
         this.Kernel = kernel;
-        this.Function = function;
+        this._kernelFunction = function;
         this.Result = result;
         this.ChatHistory = chatHistory;
         this.ChatMessageContent = chatMessageContent;
@@ -73,11 +93,6 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     public int FunctionSequenceIndex { get; init; }
 
     /// <summary>
-    /// Number of functions that will be invoked during auto function invocation request.
-    /// </summary>
-    public int FunctionCount { get; init; }
-
-    /// <summary>
     /// The ID of the tool call.
     /// </summary>
     public string? ToolCallId { get; init; }
@@ -101,7 +116,10 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
-    public KernelFunction Function { get; }
+    public KernelFunction Function
+    {
+        get => this._innerContext?.AIFunction.AsKernelFunction() ?? this._kernelFunction!;
+    }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
@@ -114,18 +132,85 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     public FunctionResult Result { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the operation associated with the filter should be terminated.
-    ///
-    /// By default, this value is <see langword="false"/>, which means all functions will be invoked.
-    /// If set to <see langword="true"/>, the behavior depends on how functions are invoked:
-    ///
-    /// - If functions are invoked sequentially (the default behavior), the remaining functions will not be invoked,
-    ///   and the last request to the LLM will not be performed.
-    ///
-    /// - If functions are invoked concurrently (controlled by the <see cref="FunctionChoiceBehaviorOptions.AllowConcurrentInvocation"/> option),
-    ///   other functions will still be invoked, and the last request to the LLM will not be performed.
-    ///
-    /// In both cases, the automatic function invocation process will be terminated, and the result of the last executed function will be returned to the caller.
+    /// Mutable chat message as chat history.
     /// </summary>
-    public bool Terminate { get; set; }
+    internal class ChatMessageHistory : ChatHistory, IEnumerable<ChatMessageContent>
+    {
+        private readonly List<ChatMessage> _messages;
+
+        public ChatMessageHistory(IEnumerable<ChatMessage> messages) : base(messages.ToChatHistory())
+        {
+            this._messages = new List<ChatMessage>(messages);
+        }
+
+        public override void Add(ChatMessageContent item)
+        {
+            item.GetHashCode();
+            base.Add(item);
+            this._messages.Add(item.ToChatMessage());
+        }
+
+        public override void Clear()
+        {
+            base.Clear();
+            this._messages.Clear();
+        }
+
+        public override bool Contains(ChatMessageContent item)
+        {
+            return base.Contains(item);
+        }
+
+        public override bool Remove(ChatMessageContent item)
+        {
+            var index = base.IndexOf(item);
+
+            if (index < 0)
+            {
+                return false;
+            }
+
+            this._messages.RemoveAt(index);
+            base.RemoveAt(index);
+
+            return true;
+        }
+
+        public override void Insert(int index, ChatMessageContent item)
+        {
+            base.Insert(index, item);
+            this._messages.Insert(index, item.ToChatMessage());
+        }
+
+        public override void RemoveAt(int index)
+        {
+            this._messages.RemoveAt(index);
+            base.RemoveAt(index);
+        }
+
+        public override ChatMessageContent this[int index]
+        {
+            get => this._messages[index].ToChatMessageContent();
+            set
+            {
+                this._messages[index] = value.ToChatMessage();
+                base[index] = value;
+            }
+        }
+
+        public override int Count => this._messages.Count;
+
+        // Explicit implementation of IEnumerable<ChatMessageContent>.GetEnumerator()
+        IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator()
+        {
+            foreach (var message in this._messages)
+            {
+                yield return message.ToChatMessageContent(); // Convert and yield each item
+            }
+        }
+
+        // Explicit implementation of non-generic IEnumerable.GetEnumerator()
+        IEnumerator IEnumerable.GetEnumerator()
+            => ((IEnumerable<ChatMessageContent>)this).GetEnumerator();
+    }
 }
