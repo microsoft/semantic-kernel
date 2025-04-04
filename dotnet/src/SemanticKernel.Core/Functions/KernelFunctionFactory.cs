@@ -50,7 +50,6 @@ public static class KernelFunctionFactory
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromMethod(
         Delegate method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -81,7 +80,6 @@ public static class KernelFunctionFactory
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromMethod(
         Delegate method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -125,7 +123,6 @@ public static class KernelFunctionFactory
     /// <param name="returnParameter">Optional return parameter description. If null, it will default to one derived from the method represented by <paramref name="method"/>.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromMethod(
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -162,7 +159,6 @@ public static class KernelFunctionFactory
     /// <param name="target">The target object for the <paramref name="method"/> if it represents an instance method. This should be null if and only if <paramref name="method"/> is a static method.</param>
     /// <param name="options">Optional function creation options.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking <paramref name="method"/>.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromMethod(
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
@@ -221,7 +217,6 @@ public static class KernelFunctionFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromPrompt(
         string promptTemplate,
         JsonSerializerOptions jsonSerializerOptions,
@@ -282,7 +277,6 @@ public static class KernelFunctionFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromPrompt(
         string promptTemplate,
         JsonSerializerOptions jsonSerializerOptions,
@@ -322,7 +316,6 @@ public static class KernelFunctionFactory
     /// </param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromPrompt(
         PromptTemplateConfig promptConfig,
         JsonSerializerOptions jsonSerializerOptions,
@@ -351,7 +344,6 @@ public static class KernelFunctionFactory
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     /// <returns>The created <see cref="KernelFunction"/> for invoking the prompt.</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction CreateFromPrompt(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,
