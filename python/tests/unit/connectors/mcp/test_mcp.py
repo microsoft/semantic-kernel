@@ -35,29 +35,6 @@ def list_tool_calls() -> ListToolsResult:
     )
 
 
-@pytest.fixture
-def list_tool_calls() -> ListToolsResult:
-    return ListToolsResult(
-        tools=[
-            Tool(
-                name="func1",
-                description="func1",
-                inputSchema={
-                    "properties": {
-                        "name": {"type": "string"},
-                    },
-                    "required": ["name"],
-                },
-            ),
-            Tool(
-                name="func2",
-                description="func2",
-                inputSchema={},
-            ),
-        ]
-    )
-
-
 async def test_mcp_plugin_session_not_initialize():
     # Test if Client can insert it's own Session
     mock_session = AsyncMock(spec=ClientSession)
