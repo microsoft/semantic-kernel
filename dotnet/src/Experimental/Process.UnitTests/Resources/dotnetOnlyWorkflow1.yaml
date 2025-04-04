@@ -184,16 +184,25 @@ workflow:
         - node: b_step
 
     - listen_for:
-        event: "AStepDone"
-        from: a_step
+        all_of:
+        - event: "AStepDone"
+          from: a_step
+        - event: "BStepDone"
+          from: b_step
       then:
         - node: c_step
+            
+    # - listen_for:
+    #     event: "AStepDone"
+    #     from: a_step
+    #   then:
+    #     - node: c_step
 
-    - listen_for:
-        event: "BStepDone"
-        from: b_step
-      then:
-        - node: c_step
+    # - listen_for:
+    #     event: "BStepDone"
+    #     from: b_step
+    #   then:
+    #     - node: c_step
 
     - listen_for:
         event: "CStepDone"

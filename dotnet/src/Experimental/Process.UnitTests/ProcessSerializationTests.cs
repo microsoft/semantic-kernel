@@ -97,7 +97,7 @@ public class ProcessSerializationTests
                     new() { Type = CommonEvents.AStepDone, Source = myAStep },
                     new() { Type = CommonEvents.BStepDone, Source = myBStep }
                 })
-                .SendTo(myCStep);
+                .SendEventTo(new(myCStep));
 
         // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep

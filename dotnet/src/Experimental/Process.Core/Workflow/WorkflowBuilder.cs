@@ -53,7 +53,7 @@ internal class WorkflowBuilder
             await this.BuildOrchestrationAsync(workflow.Orchestration, processBuilder).ConfigureAwait(false);
         }
 
-        return null;
+        return processBuilder.Build();
     }
 
     #region Inputs
@@ -146,7 +146,7 @@ internal class WorkflowBuilder
         foreach (var step in orchestrationSteps)
         {
             ListenCondition? listenCondition = step.ListenFor;
-            if (listenCondition is null || string.IsNullOrWhiteSpace(listenCondition.Event) || string.IsNullOrWhiteSpace(listenCondition.From))
+            if (listenCondition is null)
             {
                 throw new ArgumentException("A complete listen_for condition is required for orchestration steps.");
             }
@@ -159,20 +159,42 @@ internal class WorkflowBuilder
 
             ProcessStepEdgeBuilder? edgeBuilder = null;
 
-            // Find the source of the edge, it could either be a step, or an input event.
-            if (this._stepBuilders.TryGetValue(listenCondition.From, out ProcessStepBuilder? sourceStepBuilder))
+            if (listenCondition.AllOf != null && listenCondition.AllOf.Count > 0)
             {
-                // The source is a step.
-                edgeBuilder = sourceStepBuilder.OnEvent(listenCondition.Event);
+                MessageSourceBuilder GetSourceBuilder(ListenEvent listenEvent)
+                {
+                    var sourceBuilder = this.FindSourceBuilder(new() { Event = listenEvent.Event, From = listenEvent.From }, processBuilder);
+                    return new MessageSourceBuilder
+                    {
+                        Source = this._stepBuilders[listenEvent.From],
+                        Type = listenEvent.Event
+                    };
+                }
+
+                // Handle AllOf condition
+                edgeBuilder = processBuilder.ListenFor().AllOf(listenCondition.AllOf.Select(c => GetSourceBuilder(c)).ToList());
             }
-            else if (listenCondition.From.Equals("$.inputs.events", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
+            else if (!string.IsNullOrWhiteSpace(listenCondition.Event) && !string.IsNullOrWhiteSpace(listenCondition.From))
             {
-                // The source is an input event.
-                edgeBuilder = processBuilder.OnInputEvent(listenCondition.Event);
+                // Find the source of the edge, it could either be a step, or an input event.
+                if (this._stepBuilders.TryGetValue(listenCondition.From, out ProcessStepBuilder? sourceStepBuilder))
+                {
+                    // The source is a step.
+                    edgeBuilder = sourceStepBuilder.OnEvent(listenCondition.Event);
+                }
+                else if (listenCondition.From.Equals("$.inputs.events", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
+                {
+                    // The source is an input event.
+                    edgeBuilder = processBuilder.OnInputEvent(listenCondition.Event);
+                }
+                else
+                {
+                    throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+                }
             }
             else
             {
-                throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+                throw new ArgumentException("A complete listen_for condition is required for orchestration steps.");
             }
 
             // Now that we have a validated edge source, we can add the then actions
@@ -193,7 +215,7 @@ internal class WorkflowBuilder
             }
         }
 
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     #endregion
@@ -250,6 +272,38 @@ internal class WorkflowBuilder
         }
 
         return node;
+    }
+
+    /// <summary>
+    /// Find the source of the edge, it could either be a step, or an input event.
+    /// </summary>
+    /// <param name="listenCondition"></param>
+    /// <param name="processBuilder"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    private ProcessStepEdgeBuilder FindSourceBuilder(ListenEvent listenCondition, ProcessBuilder processBuilder)
+    {
+        Verify.NotNull(listenCondition);
+
+        ProcessStepEdgeBuilder? edgeBuilder = null;
+
+        // Find the source of the edge, it could either be a step, or an input event.
+        if (this._stepBuilders.TryGetValue(listenCondition.From, out ProcessStepBuilder? sourceStepBuilder))
+        {
+            // The source is a step.
+            edgeBuilder = sourceStepBuilder.OnEvent(listenCondition.Event);
+        }
+        else if (listenCondition.From.Equals("$.inputs.events", StringComparison.OrdinalIgnoreCase) && this._inputEvents.ContainsKey(listenCondition.Event))
+        {
+            // The source is an input event.
+            edgeBuilder = processBuilder.OnInputEvent(listenCondition.Event);
+        }
+        else
+        {
+            throw new ArgumentException($"An orchestration is referencing a node with Id {listenCondition.From} that does not exist.");
+        }
+
+        return edgeBuilder;
     }
 
     #endregion

@@ -55,6 +55,11 @@ public class ProcessStepEdgeBuilder
     /// <returns>A fresh builder instance for fluid definition</returns>
     public ProcessStepEdgeBuilder SendEventTo(ProcessFunctionTargetBuilder target)
     {
+        return this.SendEventTo_Internal(target);
+    }
+
+    internal virtual ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target)
+    {
         if (this.Target is not null)
         {
             throw new InvalidOperationException("An output target has already been set.");

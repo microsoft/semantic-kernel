@@ -173,7 +173,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
     public ProcessStepBuilder AddStepFromType(Type stepType, string? name = null, IReadOnlyList<string>? aliases = null, string? id = null)
     {
-        ProcessStepBuilderTyped stepBuilder = new(stepType, name, id);
+        ProcessStepBuilderTyped stepBuilder = new(stepType, name: name, id: id);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -401,32 +401,33 @@ public class ListenForBuilder
     }
 }
 
-public class ListenForTargetBuilder
+public class ListenForTargetBuilder : ProcessStepEdgeBuilder
 {
     private readonly ProcessBuilder _processBuilder;
     private readonly List<MessageSourceBuilder> _messageSources = new();
 
-    public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder)
+    public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder) : base(processBuilder, "Aggregate", "Aggregate")
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
         this._messageSources = messageSources;
         this._processBuilder = processBuilder;
     }
 
-    public ListenForTargetBuilder SendTo(ProcessStepBuilder destination)
+    internal override ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target)
     {
-        Verify.NotNull(destination, nameof(destination));
+        Verify.NotNull(target, nameof(target));
 
         // Create a new event listener for the source messages and the destination step
-        var eventListener = new ProcessEventListenerBuilder(this._messageSources, destination.Id);
+        var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id);
 
         // Add the listener to the process builder
         this._processBuilder.AddListenerStep(eventListener);
 
         // Link the listener to the destination step
-        eventListener.LinkTo(destination.Id, new ProcessStepEdgeBuilder(destination, "listener_ready", destination.Name)
+        string eventId = "events_received";
+        eventListener.LinkTo(eventId, new ProcessStepEdgeBuilder(eventListener, eventId, eventListener.Name)
         {
-            Target = new ProcessFunctionTargetBuilder(destination)
+            Target = target
         });
 
         foreach (var messageSource in this._messageSources)
