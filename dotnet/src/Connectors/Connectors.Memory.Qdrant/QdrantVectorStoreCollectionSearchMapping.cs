@@ -125,7 +125,9 @@ internal static class QdrantVectorStoreCollectionSearchMapping
             point.Score);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point, IVectorStoreRecordMapper<TRecord, PointStruct> mapper, bool includeVectors, string databaseSystemName, string collectionName, string operationName)
+#pragma warning restore CS0618
     {
         // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
         var pointStruct = new PointStruct
