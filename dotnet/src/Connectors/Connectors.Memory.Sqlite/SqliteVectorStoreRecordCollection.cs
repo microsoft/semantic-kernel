@@ -184,11 +184,12 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string LimitPropertyName = "k";
 
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var vectorType = vector.GetType();
         if (!SqliteConstants.SupportedVectorTypes.Contains(vectorType))
@@ -205,7 +206,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = searchOptions.Top + searchOptions.Skip;
+        var limit = top + searchOptions.Skip;
 
         var conditions = new List<SqliteWhereCondition>()
         {

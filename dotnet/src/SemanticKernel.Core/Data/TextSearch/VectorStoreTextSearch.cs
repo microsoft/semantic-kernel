@@ -203,17 +203,16 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
             Skip = searchOptions.Skip,
-            Top = searchOptions.Top,
         };
 
         if (this._vectorizedSearch is not null)
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await this._vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
+            return await this._vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
         }
 
-        return await this._vectorizableTextSearch!.VectorizableTextSearchAsync(query, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
+        return await this._vectorizableTextSearch!.VectorizableTextSearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

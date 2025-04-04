@@ -56,7 +56,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Application", "Programming", "Interface"], new() { Top = 1 });
+        var searchResult = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Application", "Programming", "Interface"], top: 1);
         var resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
@@ -66,7 +66,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Retrieval", "Augmented", "Generation"], new() { Top = 1 });
+        searchResult = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Retrieval", "Augmented", "Generation"], top: 1);
         resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
@@ -76,7 +76,7 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Retrieval", "Augmented", "Generation"], new() { Top = 3, Filter = g => g.Category == "External Definitions" });
+        searchResult = await hybridSearchCollection.HybridSearchAsync(searchVector, ["Retrieval", "Augmented", "Generation"], top: 3, new() { Filter = g => g.Category == "External Definitions" });
         resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);

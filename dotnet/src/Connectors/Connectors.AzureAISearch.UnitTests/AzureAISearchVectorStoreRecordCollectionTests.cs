@@ -570,9 +570,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Act.
         var searchResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[4]),
+            top: 5,
             new()
             {
-                Top = 5,
                 Skip = 3,
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1
@@ -612,9 +612,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Act.
         var searchResults = await sut.VectorizableTextSearchAsync(
             "search string",
+            top: 5,
             new()
             {
-                Top = 5,
                 Skip = 3,
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1

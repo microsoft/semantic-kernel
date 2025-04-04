@@ -226,7 +226,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             IncludeVectors = includeVectors
         });
@@ -264,9 +264,8 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
-            Top = 2,
             Skip = 2
         });
 
@@ -298,10 +297,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), new()
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
         {
             OldFilter = filter,
-            Top = 4,
         });
 
         // Assert
@@ -343,10 +341,9 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), new()
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
         {
             OldFilter = filter,
-            Top = 4,
         });
 
         // Assert

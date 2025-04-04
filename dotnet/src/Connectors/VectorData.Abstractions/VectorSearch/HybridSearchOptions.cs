@@ -42,11 +42,6 @@ public class HybridSearchOptions<TRecord>
     public Expression<Func<TRecord, object?>>? AdditionalProperty { get; init; }
 
     /// <summary>
-    /// Gets or sets the maximum number of results to return.
-    /// </summary>
-    public int Top { get; init; } = 3;
-
-    /// <summary>
     /// Gets or sets the number of results to skip before returning results, i.e. the index of the first result to return.
     /// </summary>
     public int Skip { get; init; } = 0;

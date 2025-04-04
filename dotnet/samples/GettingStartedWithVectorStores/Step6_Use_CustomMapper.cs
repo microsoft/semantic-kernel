@@ -80,10 +80,7 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
         // Search the vector store.
         var searchResult = await collection.VectorizedSearchAsync(
             searchVector,
-            new()
-            {
-                Top = 1
-            });
+            top: 1);
         var searchResultItem = await searchResult.Results.FirstAsync();
 
         // Write the search result with its score to the console.

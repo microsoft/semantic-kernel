@@ -248,10 +248,12 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     /// <inheritdoc />
     public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
+        int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
@@ -268,7 +270,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = searchOptions.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 
@@ -302,9 +304,10 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
+        Verify.NotLessThan(top, 1);
 
         var searchOptions = options ?? s_defaultKeywordVectorizedHybridSearchOptions;
         var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = searchOptions.VectorProperty });
@@ -322,7 +325,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         // Constructing a query to fetch "skip + top" total items
         // to perform skip logic locally, since skip option is not part of API.
-        var itemsAmount = searchOptions.Skip + searchOptions.Top;
+        var itemsAmount = searchOptions.Skip + top;
 
         var numCandidates = this._options.NumCandidates ?? itemsAmount * MongoDBConstants.DefaultNumCandidatesRatio;
 

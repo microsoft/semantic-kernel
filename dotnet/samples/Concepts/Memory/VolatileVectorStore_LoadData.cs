@@ -71,7 +71,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
             // Search the collection using a vector search.
             var searchString = "What is the Semantic Kernel?";
             var searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchString);
-            var searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, new() { Top = 1 });
+            var searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, top: 1);
             var resultRecords = await searchResult.Results.ToListAsync();
 
             Console.WriteLine("Search string: " + searchString);
@@ -116,7 +116,7 @@ public class InMemoryVectorStore_LoadData(ITestOutputHelper output) : BaseTest(o
         // Search the collection using a vector search.
         var searchString = "What is the Semantic Kernel?";
         var searchVector = await embeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, new() { Top = 1 });
+        var searchResult = await vectorSearch!.VectorizedSearchAsync(searchVector, top: 1);
         var resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);

@@ -400,9 +400,10 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         if (vector is not ReadOnlyMemory<float> allowed)
         {
@@ -431,6 +432,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this.CollectionName,
             vectorProperty,
             this._model,
+            top,
             searchOptions,
             allowed);
 

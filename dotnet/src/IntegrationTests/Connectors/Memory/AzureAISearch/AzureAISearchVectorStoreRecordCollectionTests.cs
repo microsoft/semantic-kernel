@@ -65,6 +65,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var actual = await sut.VectorizedSearchAsync(
             embedding,
+            top: 3,
             new()
             {
                 IncludeVectors = true,
@@ -347,6 +348,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var filter = option == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorSearchFilter().AnyTagEqualTo("Tags", "bar");
         var actual = await sut.VectorizedSearchAsync(
             await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel"),
+            top: 3,
             new()
             {
                 IncludeVectors = includeVectors,
@@ -387,6 +389,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var filter = new VectorSearchFilter().EqualTo("HotelName", "Hotel 3");
         var actual = await sut.VectorizableTextSearchAsync(
             "A hotel with great views.",
+            top: 3,
             new()
             {
                 VectorProperty = r => r.DescriptionEmbedding,

@@ -73,7 +73,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         ]);
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, new VectorSearchOptions<DummyType>(), model, model.VectorProperty, null);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, top: 3, new VectorSearchOptions<DummyType>(), model, model.VectorProperty, null);
 
         // Assert.
         Assert.NotNull(query);
@@ -89,7 +89,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         // Arrange.
         var floatVector = new ReadOnlyMemory<float>(new float[] { 1.0f, 2.0f, 3.0f });
         var byteArray = MemoryMarshal.AsBytes(floatVector.Span).ToArray();
-        var vectorSearchOptions = new VectorSearchOptions<DummyType> { Top = 5, Skip = 3 };
+        var vectorSearchOptions = new VectorSearchOptions<DummyType> { Skip = 3 };
         var model = BuildModel(
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
@@ -98,7 +98,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
         // Act.
-        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, vectorSearchOptions, model, model.VectorProperty, selectFields);
+        var query = RedisVectorStoreCollectionSearchMapping.BuildQuery(byteArray, top: 5, vectorSearchOptions, model, model.VectorProperty, selectFields);
 
         // Assert.
         Assert.NotNull(query);

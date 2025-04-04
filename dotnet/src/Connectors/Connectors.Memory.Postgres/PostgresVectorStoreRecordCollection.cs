@@ -236,11 +236,12 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
 
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         var vectorType = vector.GetType();
 
@@ -260,7 +261,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
-        var limit = searchOptions.Top + searchOptions.Skip;
+        var limit = top + searchOptions.Skip;
 
         return this.RunOperationAsync(OperationName, () =>
         {
@@ -269,7 +270,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
                 this._model,
                 vectorProperty,
                 pgVector,
-                searchOptions.Top,
+                top,
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
                 searchOptions.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
