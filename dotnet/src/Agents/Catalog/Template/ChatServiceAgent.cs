@@ -2,7 +2,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Service;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Template;
 
@@ -34,7 +33,7 @@ public sealed class ChatServiceAgent : ComposedServiceAgent
     protected override Task<Agent> CreateAgentAsync()
     {
         ChatCompletionAgent agent =
-            new ()
+            new()
             {
                 Name = this.Name,
                 Description = AgentDescription,
