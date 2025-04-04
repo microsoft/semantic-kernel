@@ -477,11 +477,6 @@ class AgentThreadActions:
                                 f"thread: {thread_id}."
                             )
 
-                        if action_result.function_result_streaming_content:
-                            yield action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_result_streaming_content)
-
                         if action_result.function_call_streaming_content:
                             if output_messages is not None:
                                 output_messages.append(action_result.function_call_streaming_content)
@@ -495,7 +490,13 @@ class AgentThreadActions:
                             ):
                                 if sub_content:
                                     yield sub_content
-                            break
+
+                        if action_result.function_result_streaming_content:
+                            yield action_result.function_result_streaming_content
+                            if output_messages is not None:
+                                output_messages.append(action_result.function_result_streaming_content)
+
+                        break
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
                         run = cast(ThreadRun, event_data)
