@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
-using WorkflowEngine.Serialization;
 
 namespace Microsoft.SemanticKernel;
 

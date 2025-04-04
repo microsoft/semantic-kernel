@@ -212,7 +212,7 @@ public class Node
 
     [YamlMember(Alias = "agent")]
     [JsonPropertyName("agent")]
-    public Agent? Agent { get; set; }
+    public WorkflowAgent? Agent { get; set; }
 
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
@@ -235,7 +235,7 @@ public class Node
     public List<OnCompleteAction>? OnComplete { get; set; }
 }
 
-public class Agent
+public class WorkflowAgent
 {
     [YamlMember(Alias = "type")]
     [JsonPropertyName("type")]

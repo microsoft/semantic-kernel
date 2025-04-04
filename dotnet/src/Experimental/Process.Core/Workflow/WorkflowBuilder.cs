@@ -224,7 +224,7 @@ internal class WorkflowBuilder
         {
             Id = step.State?.Id,
             Type = "dotnet",
-            Agent = new Agent()
+            Agent = new WorkflowAgent()
             {
                 Type = step.InnerStepType.AssemblyQualifiedName,
                 Id = step.State.Id
