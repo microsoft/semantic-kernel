@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 /// This agent configures the language services as tools for the LLM
 /// to invoke and the LLM drives response generation. (Typical approach)
 /// </remarks>
-[ServiceAgentProvider<IntentTriageAgentProvider2>()]
+[ServiceAgentProvider<IntentTriageAgentProvider2>]
 public sealed class IntentTriageAgent2 : ComposedServiceAgent
 {
     private readonly IntentTriageLanguageSettings _settings;

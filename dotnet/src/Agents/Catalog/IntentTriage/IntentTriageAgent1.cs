@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 /// This agent invokes language services directly and only resorts to
 /// using the LLM when there's no acceptable service result. (Explicit approach)
 /// </remarks>
-[ServiceAgentProvider<IntentTriageAgentProvider1>()]
+[ServiceAgentProvider<IntentTriageAgentProvider1>]
 public sealed class IntentTriageAgent1 : ServiceAgent
 {
     private readonly LanguagePlugin _plugin;
