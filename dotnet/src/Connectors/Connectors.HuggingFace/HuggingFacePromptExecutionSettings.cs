@@ -183,6 +183,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// This may not be supported by all models/inference API.
     /// </remarks>
     [JsonPropertyName("wait_for_model")]
+    [JsonConverter(typeof(BoolJsonConverter))]
     public bool WaitForModel
     {
         get => this._waitForModel;
@@ -233,6 +234,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// output token returned in the content of message.
     /// </summary>
     [JsonPropertyName("logprobs")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? LogProbs
     {
         get => this._logProbs;
@@ -294,6 +296,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// (Default: True). Bool. If set to False, the return results will not contain the original query making it easier for prompting.
     /// </summary>
     [JsonPropertyName("return_full_text")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? ReturnFullText
     {
         get => this._returnFullText;
@@ -309,6 +312,7 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// (Optional: True). Bool. Whether or not to use sampling, use greedy decoding otherwise.
     /// </summary>
     [JsonPropertyName("do_sample")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? DoSample
     {
         get => this._doSample;
@@ -323,6 +327,8 @@ public sealed class HuggingFacePromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Show details of the generation. Including usage.
     /// </summary>
+    [JsonPropertyName("details")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Details
     {
         get => this._details;
