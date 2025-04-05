@@ -45,10 +45,8 @@ cqa.deploymentName|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLangu
 language.resourceUrl|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The base url (scheme + host) for the language services endpoint
 language.resourceKey|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The api key for the language services
 language.resourceVersion|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The api version for the language services
-AzureAI:ConnectionString|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|A connection string to the Foundry project hosting the agent
-AzureOpenAI:Endpoint|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|The endpoint for the Azure OpenAI service
-AzureOpenAI:DeploymentName|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|The name of the model deployment for the Azure OpenAI service
-AzureOpenAI:ApiKey|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|An optional Api Key for the Azure OpenAI service.  When not defined, AzureCLI bearer token authentication will be used.
+foundry:connectionstring|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|A connection string to the Foundry project hosting the agent
+foundry:deploymentname|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|The name of the model deployment for the Azure OpenAI service
 
 These may be defined as dotnet user-secrets using the following script:
 
@@ -61,10 +59,8 @@ dotnet user-secrets set "language.resourceUrl" "<value>"
 dotnet user-secrets set "language.resourceKey" "<value>"
 dotnet user-secrets set "language.resourceVersion" "<value>"
 
-dotnet user-secrets set "AzureAI:ConnectionString" "<value>"
-dotnet user-secrets set "AzureOpenAI:Endpoint" "<value>"
-dotnet user-secrets set "AzureOpenAI:DeploymentName" "gpt-4o-mini"
-dotnet user-secrets set "AzureOpenAI:ApiKey" "<value>"
+dotnet user-secrets set "foundry:connectionstring" "<value>"
+dotnet user-secrets set "foundry:deploymentname" "gpt-4o-mini"
 ```
 
 ## Running

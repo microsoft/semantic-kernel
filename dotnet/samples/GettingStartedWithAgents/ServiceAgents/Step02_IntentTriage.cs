@@ -38,7 +38,7 @@ public class Step02_IntentTriage(ITestOutputHelper output) : BaseAzureAgentTest(
             "Thank you"
         ];
 
-    private static readonly Type AgentType = typeof(IntentTriageAgent2);
+    private static readonly Type AgentType = typeof(IntentTriageAgent1);
 
     private IntentTriageAgent2 CreateAgent()
     {

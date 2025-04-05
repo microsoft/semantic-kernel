@@ -85,7 +85,7 @@ invoked by the hosting service (or "Agent Container").
     - Invoking a _Semantic Kernel_ agent requires that an `AgentThread` be provided.  
       This method isolates the "Agent Container" from the details on how to create and initialize this `AgentThread`.
 
-    - `threadId` is specific to the specfic invocation of the agent and identifies an external thread that
+    - `threadId` is specific to the specific invocation of the agent and identifies an external thread that
       defines the conversation for which the agent is being requested to respond.
 
 #### [`ServiceAgentProviderFactory`](./ServiceAgentProviderFactory.cs)
