@@ -19,8 +19,8 @@ Three intent-triage agents are provided:
 1. [`IntentTriageAgent3`](./IntentTriageAgent3.cs): 
   
     - Uses OpenAPI spec and instructions from original demo.
-    - Relies on the model's ability to form requests to the langage service.
-    - Exhibits high token usage and sporatic failed requests (bad request).
+    - Relies on the model's ability to form requests to the language service.
+    - Exhibits high token usage and sporadic failed requests (bad request).
     - [`IntentTriageAgent3`](./IntentTriageAgent3.cs) is a subclass of [`ComposedServiceAgent`](../Service/ComposedServiceAgent.cs)
 
 [`LanguagePlugin`](./Tools/LanguagePlugin.cs) adapts the raw API into a simplified contract for the model to call.
