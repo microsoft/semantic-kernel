@@ -30,12 +30,6 @@ internal static class HttpClientProvider
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
-    /// <param name="handler"></param>
-    /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient(HttpMessageHandler handler) => new(handler, disposeHandler: false);
-    /// <summary>
-    /// Retrieves an instance of HttpClient.
-    /// </summary>
     /// <returns>An instance of HttpClient.</returns>
     public static HttpClient GetHttpClient(HttpClient? httpClient = null) => httpClient ?? GetHttpClient();
 
