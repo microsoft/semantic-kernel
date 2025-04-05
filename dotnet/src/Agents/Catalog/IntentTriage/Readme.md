@@ -1,29 +1,36 @@
 ﻿## Overview
 
-Two intent-triage agents are provided:
+Three intent-triage agents are provided:
 
 1. [`IntentTriageAgent1`](./IntentTriageAgent1.cs): 
 
     - Explicitly orchestrates tool invocation and response logic and is not susceptible to model specific behavior inconsistencies across different models.
+    - Based on tools defined in the [`LanguagePlugin`](./Tools/LanguagePlugin.cs).
     - Exhibits significantly less latency when producing a result.
     - [`IntentTriageAgent1`](./IntentTriageAgent1.cs) is a subclass of [`ServiceAgent`](../Service/ServiceAgent.cs)
       
 1. [`IntentTriageAgent2`](./IntentTriageAgent2.cs): 
   
     - Relies on the LLM's tool calling abilities and instruction prompt and requires considerably less code.
+    - Based on tools defined in the [`LanguagePlugin`](./Tools/LanguagePlugin.cs).
     - Bound to the latency of the associated LLM
     - [`IntentTriageAgent2`](./IntentTriageAgent2.cs) is a subclass of [`ComposedServiceAgent`](../Service/ComposedServiceAgent.cs)
+      
+1. [`IntentTriageAgent3`](./IntentTriageAgent3.cs): 
+  
+    - Uses OpenAPI spec and instructions from original demo.
+    - Relies on the model's ability to form requests to the langage service.
+    - Exhibits high token usage and sporatic failed requests (bad request).
+    - [`IntentTriageAgent3`](./IntentTriageAgent3.cs) is a subclass of [`ComposedServiceAgent`](../Service/ComposedServiceAgent.cs)
 
-Both agents rely on the same tooling defined in the [`LanguagePlugin`](./Internal/LanguagePlugin.cs).
-
-[`LanguagePlugin`](./Internal/LanguagePlugin.cs) adapts the raw API into a simplified contract for the model to call.
+[`LanguagePlugin`](./Tools/LanguagePlugin.cs) adapts the raw API into a simplified contract for the model to call.
 This simplification addresses both the _input_ data model as well as the _response_ data model.
 Registering the OpenAPI tool directly the model would result in high token consumption.
 
-[`LanguagePlugin`](./Internal/LanguagePlugin.cs) also relies on explicit result parsing to avoid
+[`LanguagePlugin`](./Tools/LanguagePlugin.cs) also relies on explicit result parsing to avoid
 defining an explicit object model.
 
-Both functions in the [`LanguagePlugin`](./Internal/LanguagePlugin.cs) will filter results based on a confidence threshold.
+Both functions in the [`LanguagePlugin`](./Tools/LanguagePlugin.cs) will filter results based on a confidence threshold.
 While one might expect the model to be able to handle this, the presence of low confidence
 results do tend to influence the model response and generative LLM doesn't excel at quantitative analysis. 
 (see: [How Many R’s in the Word “Strawberry?”](https://medium.com/@SamMormando/how-many-rs-in-the-word-strawberry-a6b8a697a1be))

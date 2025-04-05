@@ -12,6 +12,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.IntentTriage;
 using Microsoft.SemanticKernel.ChatCompletion;
 using ServiceAgents;
+using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 
 namespace GettingStarted.ServiceAgents;
 
@@ -38,9 +39,9 @@ public class Step02_IntentTriage(ITestOutputHelper output) : BaseAzureAgentTest(
             "Thank you"
         ];
 
-    private static readonly Type AgentType = typeof(IntentTriageAgent1);
+    private static readonly Type AgentType = typeof(IntentTriageAgent3);
 
-    private IntentTriageAgent1 CreateAgent()
+    private IntentTriageAgent3 CreateAgent()
     {
         IntentTriageLanguageSettings settings = IntentTriageLanguageSettings.FromConfiguration(this.Configuration);
         return
@@ -60,8 +61,7 @@ public class Step02_IntentTriage(ITestOutputHelper output) : BaseAzureAgentTest(
         Agent agent = this.CreateAgent();
 
         // Create a new thread to capture the agent interaction.
-        ChatHistoryAgentThread thread = new();
-
+        ChatHistory history = [];
         // Invoke the agent with input messages.
         foreach (string question in Questions)
         {
@@ -69,22 +69,28 @@ public class Step02_IntentTriage(ITestOutputHelper output) : BaseAzureAgentTest(
         }
 
         // Display the complete thread to audit state
-        this.DisplayThreadHistory(thread.ChatHistory);
+        this.DisplayThreadHistory(history);
 
         // Local function to invoke agent and display input and response messages.
         async Task InvokeAgentAsync(string input)
         {
+            ChatHistoryAgentThread thread = new();
+
             ChatMessageContent message = new(AuthorRole.User, input);
             this.WriteAgentChatMessage(message);
 
             // Invoke the agent with an explicit input message.
+            TokenCounter counter = new();
+            AgentInvokeOptions options = new() { OnIntermediateMessage = counter.ProcessMessage };
             Stopwatch timer = Stopwatch.StartNew();
-            await foreach (ChatMessageContent response in agent.InvokeAsync(input, thread))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(input, thread, options))
             {
                 this.WriteAgentChatMessage(response);
             }
             timer.Stop();
             Console.WriteLine($"Duration: {timer}");
+            Console.WriteLine($"Tokens: {counter.TotalTokens}");
+            history.AddRange(thread.ChatHistory);
         }
     }
 
@@ -217,6 +223,23 @@ public class Step02_IntentTriage(ITestOutputHelper output) : BaseAzureAgentTest(
         {
             // Output each message in the thread for review.
             this.WriteAgentChatMessage(message);
+        }
+    }
+
+    private sealed class TokenCounter
+    {
+        public int TotalTokens { get; private set; }
+
+        public Task ProcessMessage(ChatMessageContent message)
+        {
+            if (message.Metadata?.TryGetValue("Usage", out object? usage) ?? false)
+            {
+                if (usage is ChatTokenUsage chatUsage)
+                {
+                    this.TotalTokens += chatUsage.TotalTokenCount;
+                }
+            }
+            return Task.CompletedTask;
         }
     }
 }

@@ -44,11 +44,11 @@
           {
             "name": "api-version",
             "in": "query",
-            "description": "API version. Value must be '2023-04-01'",
+            "description": "The API version to use for this operation.",
             "required": true,
             "schema": {
               "type": "string",
-              "default": "2023-04-01"
+              "default": "${language.resourceVersion}"
             }
           }
         ],

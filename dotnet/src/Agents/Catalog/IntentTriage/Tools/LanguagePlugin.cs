@@ -9,6 +9,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.IntentTriage.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.IntentTriage;
@@ -17,7 +18,7 @@ internal sealed class LanguagePlugin
 {
     private const string EndpointCLU = "language/:analyze-conversations";
     private const string EndpointCQA = "language/:query-knowledgebases";
-    private const string HeaderSubscriptionKey = "ocp-apim-subscription-key";
+    public const string HeaderSubscriptionKey = "ocp-apim-subscription-key";
 
     private readonly IntentTriageLanguageSettings _settings;
 
