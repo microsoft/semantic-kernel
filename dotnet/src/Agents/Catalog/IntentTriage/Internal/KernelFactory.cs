@@ -22,9 +22,9 @@ internal static class KernelFactory
     /// <remarks>
     /// PLACEHOLDER: Expect the specifics on authentication for a hosted agent to evolve.
     /// </remarks>
-    public static async ValueTask<Kernel> CreateKernelAsync(FoundrySettings settings, ILoggerFactory loggerFactory)
+    public static async ValueTask<Kernel> CreateKernelAsync(AIProjectClient client, string deploymentName, ILoggerFactory loggerFactory)
     {
-        ConnectionProperties openAIConnectionProperties = await GetConnectionAsync(settings.ConnectionString);
+        ConnectionProperties openAIConnectionProperties = await client.GetConnectionAsync();
         string endpoint = openAIConnectionProperties.GetEndpoint();
         string? apikey = openAIConnectionProperties.GetApiKey();
 
@@ -37,29 +37,19 @@ internal static class KernelFactory
         if (!string.IsNullOrEmpty(apikey))
         {
             builder.AddAzureOpenAIChatCompletion(
-                settings.DeploymentName,
+                deploymentName,
                 endpoint,
                 apikey);
         }
         else
         {
             builder.AddAzureOpenAIChatCompletion(
-                settings.DeploymentName,
+                deploymentName,
                 endpoint,
                 new AzureCliCredential());
         }
 
         // Create the kernel
         return builder.Build();
-    }
-
-    private static async Task<ConnectionProperties> GetConnectionAsync(string connectionString, ConnectionType connectionType = ConnectionType.AzureOpenAI)
-    {
-        AIProjectClient client = new(connectionString, new AzureCliCredential());
-        ConnectionsClient connectionsClient = client.GetConnectionsClient();
-
-        ConnectionResponse connection = await connectionsClient.GetDefaultConnectionAsync(connectionType, includeAll: true);
-
-        return connection.Properties;
     }
 }

@@ -6,35 +6,33 @@ using Azure.AI.Projects;
 namespace Microsoft.SemanticKernel.Agents.Service;
 
 /// <summary>
-/// %%% COMMENT
+/// Extensions methods for the <see cref="ConnectionProperties"/>.
 /// </summary>
 public static class ConnectionPropertiesExtensions
 {
     /// <summary>
-    /// %%% COMMENT
+    /// Retrieve the connection target or endpoint.
     /// </summary>
-    /// <param name="connectionProperties"></param>
-    /// <returns></returns>
+    /// <param name="connectionProperties">The target connection.</param>
     public static string GetEndpoint(this ConnectionProperties connectionProperties)
     {
         if (string.IsNullOrWhiteSpace(connectionProperties.Target))
         {
-            throw new ArgumentException("The API key authentication target URI is missing or invalid."); // %%% EXCEPTION TYPE
+            throw new InvalidOperationException("The connection endpoint is missing or invalid.");
         }
 
         if (!Uri.TryCreate(connectionProperties.Target, UriKind.Absolute, out Uri? endpoint))
         {
-            throw new UriFormatException("Invalid URI format in API key authentication target."); // %%% EXCEPTION TYPE
+            throw new InvalidOperationException("Invalid connection endpoint format.");
         }
 
         return connectionProperties.Target;
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Retrieve the connection api key, if present.
     /// </summary>
-    /// <param name="connectionProperties"></param>
-    /// <returns></returns>
+    /// <param name="connectionProperties">The target connection.</param>
     public static string? GetApiKey(this ConnectionProperties connectionProperties)
     {
         if (connectionProperties.AuthType == AuthenticationType.ApiKey &&

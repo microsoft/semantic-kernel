@@ -21,12 +21,6 @@ namespace Microsoft.SemanticKernel.Agents.Template;
 public class ChatServiceAgentProvider(IConfiguration configuration, ILoggerFactory loggerFactory)
     : ServiceAgentProvider(configuration, loggerFactory)
 {
-    private static class Settings
-    {
-        public const string DeploymentName = "AzureOpenAI:DeploymentName";
-        public const string ConnectionString = "AzureAI:ConnectionString";
-    }
-
     /// <inheritdoc/>
     public override async ValueTask<Agent> CreateAgentAsync(string id, string? name, CancellationToken cancellationToken = default)
     {
@@ -57,7 +51,7 @@ public class ChatServiceAgentProvider(IConfiguration configuration, ILoggerFacto
 
     private async ValueTask<Kernel> CreateKernelAsync()
     {
-        ConnectionProperties openAIConnectionProperties = await GetConnectionAsync(this.FoundrySettings.ConnectionString);
+        ConnectionProperties openAIConnectionProperties = await this.Client.GetConnectionAsync();
         string endpoint = openAIConnectionProperties.GetEndpoint();
         string? apikey = openAIConnectionProperties.GetApiKey();
 
@@ -84,15 +78,5 @@ public class ChatServiceAgentProvider(IConfiguration configuration, ILoggerFacto
 
         // Create the kernel
         return builder.Build();
-    }
-
-    private static async Task<ConnectionProperties> GetConnectionAsync(string connectionString, ConnectionType connectionType = ConnectionType.AzureOpenAI)
-    {
-        AIProjectClient client = new(connectionString, new AzureCliCredential());
-        ConnectionsClient connectionsClient = client.GetConnectionsClient();
-
-        ConnectionResponse connection = await connectionsClient.GetDefaultConnectionAsync(connectionType, includeAll: true);
-
-        return connection.Properties;
     }
 }

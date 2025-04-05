@@ -15,22 +15,13 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 /// Provider to create a <see cref="IntentTriageAgent2"/> instance and
 /// its associated <see cref="AgentThread"/>.
 /// </summary>
-public class IntentTriageAgentProvider3 : ServiceAgentProvider
+public class IntentTriageAgentProvider3(IConfiguration configuration, ILoggerFactory loggerFactory)
+    : ServiceAgentProvider(configuration, loggerFactory)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="IntentTriageAgentProvider2"/> class.
-    /// </summary>
-    /// <param name="configuration">The configuration used to initialize the agent.</param>
-    /// <param name="loggerFactory">The logging services for the agent.</param>
-    public IntentTriageAgentProvider3(IConfiguration configuration, ILoggerFactory loggerFactory)
-        : base(configuration, loggerFactory)
-    {
-    }
-
     /// <inheritdoc/>
     public override async ValueTask<Agent> CreateAgentAsync(string id, string? name, CancellationToken cancellationToken)
     {
-        Kernel kernel = await KernelFactory.CreateKernelAsync(this.FoundrySettings, this.LoggerFactory);
+        Kernel kernel = await KernelFactory.CreateKernelAsync(this.Client, this.FoundrySettings.DeploymentName, this.LoggerFactory);
 
         IntentTriageLanguageSettings languageSettings = IntentTriageLanguageSettings.FromConfiguration(this.Configuration);
 

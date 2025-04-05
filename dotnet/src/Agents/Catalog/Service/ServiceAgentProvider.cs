@@ -30,6 +30,8 @@ public abstract class ServiceAgentProvider
         this.Configuration = configuration;
         this.LoggerFactory = loggerFactory;
         this.FoundrySettings = FoundrySettings.FromConfiguration(configuration);
+        // PLACEHOLDER: Expect the specifics on authentication to evolve.
+        this.Client = new(this.FoundrySettings.ConnectionString, new AzureCliCredential());
     }
 
     /// <summary>
@@ -43,9 +45,14 @@ public abstract class ServiceAgentProvider
     protected ILoggerFactory LoggerFactory { get; }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the founder settings.
     /// </summary>
     protected FoundrySettings FoundrySettings { get; }
+
+    /// <summary>
+    /// Gets the foundry project client.
+    /// </summary>
+    public AIProjectClient Client { get; }
 
     /// <summary>
     /// Instantiates the agent associated with the provider.
@@ -75,8 +82,7 @@ public abstract class ServiceAgentProvider
         int? limit = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        AIProjectClient client = new(this.FoundrySettings.ConnectionString, new AzureCliCredential());
-        AgentsClient agentsClient = client.GetAgentsClient();
+        AgentsClient agentsClient = this.Client.GetAgentsClient();
 
         int messageCount = 0;
         bool hasMore = false;
