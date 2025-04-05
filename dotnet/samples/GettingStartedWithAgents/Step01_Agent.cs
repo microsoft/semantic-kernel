@@ -151,7 +151,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
             new(templateConfig, templateFactory)
             {
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments =
+                Arguments = new()
                     {
                         { "topic", "Dog" },
                         { "length", "3" },
@@ -173,7 +173,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
             // Invoke the agent without any messages, since the agent has all that it needs via the template and arguments.
-            await foreach (ChatMessageContent content in agent.InvokeAsync([], options: new() { KernelArguments = arguments }))
+            await foreach (ChatMessageContent content in agent.InvokeAsync(options: new() { KernelArguments = arguments }))
             {
                 WriteAgentChatMessage(content);
             }

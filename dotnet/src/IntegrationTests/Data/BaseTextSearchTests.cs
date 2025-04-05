@@ -18,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Data;
 /// </summary>
 public abstract class BaseTextSearchTests : BaseIntegrationTest
 {
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task CanSearchAsync()
     {
         // Arrange
@@ -42,7 +42,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         }
     }
 
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task CanGetTextSearchResultsAsync()
     {
         // Arrange
@@ -72,7 +72,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         }
     }
 
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task CanGetSearchResultsAsync()
     {
         // Arrange
@@ -92,7 +92,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         Assert.True(this.VerifySearchResults(results, query));
     }
 
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task UsingTextSearchWithAFilterAsync()
     {
         // Arrange
@@ -113,7 +113,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         Assert.True(this.VerifySearchResults(results, query, filter));
     }
 
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task FunctionCallingUsingCreateWithSearchAsync()
     {
         // Arrange
@@ -142,7 +142,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         Assert.NotEmpty(results);
     }
 
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task FunctionCallingUsingCreateWithGetSearchResultsAsync()
     {
         // Arrange
@@ -171,7 +171,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         Assert.NotEmpty(results);
     }
 
-    [Fact(Skip = "Failing in integration tests pipeline with - HTTP 429 (insufficient_quota) error.")]
+    [Fact(Skip = "For manual verification only.")]
     public virtual async Task FunctionCallingUsingGetTextSearchResultsAsync()
     {
         // Arrange

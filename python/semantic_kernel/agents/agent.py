@@ -21,7 +21,6 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
 
@@ -31,7 +30,6 @@ TMessage = TypeVar("TMessage", bound=ChatMessageContent)
 TThreadType = TypeVar("TThreadType", bound="AgentThread")
 
 
-@release_candidate
 class AgentThread(ABC):
     """Base class for agent threads."""
 
@@ -107,7 +105,6 @@ class AgentThread(ABC):
         raise NotImplementedError
 
 
-@release_candidate
 class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
     """Class representing a response item from an agent.
 
@@ -236,7 +233,7 @@ class Agent(KernelBaseModel, ABC):
     def get_response(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         **kwargs,
     ) -> Awaitable[AgentResponseItem[ChatMessageContent]]:
@@ -266,20 +263,26 @@ class Agent(KernelBaseModel, ABC):
     def invoke(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
-        This invocation method will return the intermediate steps and the final results
-        of the agent's execution as a stream of ChatMessageContent objects to the caller.
+        This invocation method will return the final results of the agent's execution as a
+        stream of ChatMessageContent objects to the caller. The reason for returning a stream
+        is to allow for future extensions to the agent's capabilities, such as multi-modality.
+
+        To get the intermediate steps of the agent's execution, use the on_intermediate_message callback
+        to handle those messages.
 
         Note: A ChatMessageContent object contains an entire message.
 
         Args:
             messages: The message(s) to send to the agent.
             thread: The conversation thread associated with the message(s).
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -291,8 +294,9 @@ class Agent(KernelBaseModel, ABC):
     def invoke_stream(
         self,
         *,
-        messages: str | ChatMessageContent | list[str | ChatMessageContent],
+        messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
@@ -300,11 +304,16 @@ class Agent(KernelBaseModel, ABC):
         This invocation method will return the intermediate steps and final results of the
         agent's execution as a stream of StreamingChatMessageContent objects to the caller.
 
+        To get the intermediate steps of the agent's execution as fully formed messages,
+        use the on_intermediate_message callback.
+
         Note: A StreamingChatMessageContent object contains a chunk of a message.
 
         Args:
             messages: The message(s) to send to the agent.
             thread: The conversation thread associated with the message(s).
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -379,12 +388,16 @@ class Agent(KernelBaseModel, ABC):
 
     async def _ensure_thread_exists_with_messages(
         self,
-        messages: str | ChatMessageContent | Sequence[str | ChatMessageContent],
+        *,
+        messages: str | ChatMessageContent | Sequence[str | ChatMessageContent] | None = None,
         thread: AgentThread | None,
         construct_thread: Callable[[], TThreadType],
         expected_type: type[TThreadType],
     ) -> TThreadType:
         """Ensure the thread exists with the provided message(s)."""
+        if messages is None:
+            messages = []
+
         if isinstance(messages, (str, ChatMessageContent)):
             messages = [messages]
 

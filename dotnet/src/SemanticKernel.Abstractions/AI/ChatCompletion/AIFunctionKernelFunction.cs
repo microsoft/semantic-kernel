@@ -66,6 +66,8 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
             return Array.Empty<KernelParameterMetadata>();
         }
 
+        HashSet<string>? requiredParameters = GetRequiredParameterNames(aiFunction.JsonSchema);
+
         List<KernelParameterMetadata> kernelParams = [];
         var parameterInfos = aiFunction.UnderlyingMethod?.GetParameters().ToDictionary(p => p.Name!, StringComparer.Ordinal);
         foreach (var param in properties.EnumerateObject())
@@ -76,12 +78,35 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
             {
                 Description = param.Value.TryGetProperty("description", out JsonElement description) ? description.GetString() : null,
                 DefaultValue = param.Value.TryGetProperty("default", out JsonElement defaultValue) ? defaultValue : null,
-                IsRequired = param.Value.TryGetProperty("required", out JsonElement required) && required.GetBoolean(),
+                IsRequired = requiredParameters?.Contains(param.Name) ?? false,
                 ParameterType = paramInfo?.ParameterType,
-                Schema = param.Value.TryGetProperty("schema", out JsonElement schema) ? new KernelJsonSchema(schema) : null,
+                Schema = param.Value.TryGetProperty("schema", out JsonElement schema)
+                    ? new KernelJsonSchema(schema)
+                    : new KernelJsonSchema(param.Value),
             });
         }
 
         return kernelParams;
+    }
+
+    /// <summary>
+    /// Gets the names of the required parameters from the AI function's JSON schema.
+    /// </summary>
+    /// <param name="schema">The JSON schema of the AI function.</param>
+    /// <returns>The names of the required parameters.</returns>
+    private static HashSet<string>? GetRequiredParameterNames(JsonElement schema)
+    {
+        HashSet<string>? requiredParameterNames = null;
+
+        if (schema.TryGetProperty("required", out JsonElement requiredElement) && requiredElement.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var node in requiredElement.EnumerateArray())
+            {
+                requiredParameterNames ??= [];
+                requiredParameterNames.Add(node.GetString()!);
+            }
+        }
+
+        return requiredParameterNames;
     }
 }
