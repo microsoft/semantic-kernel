@@ -29,4 +29,12 @@
     <ProjectReference Include="..\..\..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="ToolResources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ToolResources\*" />
+  </ItemGroup>
+
 </Project>

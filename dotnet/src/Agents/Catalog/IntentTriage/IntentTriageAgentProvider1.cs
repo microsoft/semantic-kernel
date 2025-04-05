@@ -4,12 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Service;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Foundry = Azure.AI.Projects;
 
 namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 
@@ -19,9 +17,6 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 /// </summary>
 public class IntentTriageAgentProvider1 : ServiceAgentProvider
 {
-    private readonly IntentTriageServiceSettings _serviceSettings;
-    private readonly IntentTriageLanguageSettings _languageSettings;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="IntentTriageAgentProvider1"/> class.
     /// </summary>
@@ -30,33 +25,31 @@ public class IntentTriageAgentProvider1 : ServiceAgentProvider
     public IntentTriageAgentProvider1(IConfiguration configuration, ILoggerFactory loggerFactory)
         : base(configuration, loggerFactory)
     {
-        this._serviceSettings = IntentTriageServiceSettings.FromConfiguration(configuration);
-        this._languageSettings = IntentTriageLanguageSettings.FromConfiguration(configuration);
     }
 
     /// <inheritdoc/>
-    public override ValueTask<Agent> CreateAgentAsync(string id, string? name, CancellationToken cancellationToken)
+    public override async ValueTask<Agent> CreateAgentAsync(string id, string? name, CancellationToken cancellationToken)
     {
-        Kernel kernel = KernelFactory.CreateKernel(this._serviceSettings, this.LoggerFactory);
+        Kernel kernel = await KernelFactory.CreateKernelAsync(this.FoundrySettings, this.LoggerFactory);
+
+        IntentTriageLanguageSettings languageSettings = IntentTriageLanguageSettings.FromConfiguration(this.Configuration);
+
         IntentTriageAgent1 agent =
-            new(this._languageSettings)
+            new(languageSettings)
             {
                 Id = id,
                 Name = name,
                 Kernel = kernel,
             };
-        return ValueTask.FromResult<Agent>(agent);
+
+        return agent;
     }
 
     /// <inheritdoc/>
     public override async ValueTask<AgentThread> CreateThreadAsync(string threadId, CancellationToken cancellationToken)
     {
-        Foundry.AIProjectClient client = new(
-            this._serviceSettings.ConnectionString,
-            new AzureCliCredential());
-
         // We only need the most recent message to analyze
-        IAsyncEnumerable<ChatMessageContent> messages = GetThreadMessagesAsync(client.GetAgentsClient(), threadId, limit: 1, cancellationToken);
+        IAsyncEnumerable<ChatMessageContent> messages = this.GetThreadMessagesAsync(threadId, limit: 1, cancellationToken);
         ChatHistory history = [.. await messages.ToArrayAsync(cancellationToken)];
 
         ChatHistoryAgentThread agentThread = new(history, threadId);

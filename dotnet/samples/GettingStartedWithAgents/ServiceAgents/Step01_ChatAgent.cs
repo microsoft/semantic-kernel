@@ -66,42 +66,42 @@ public class Step01_ChatAgent(ITestOutputHelper output) : BaseAzureAgentTest(out
 
     /// <summary>
     /// A task specific agent may be referenced from the foundry catalog
-    /// and invoked via a service container.
+    /// and invoked via a service host.
     /// </summary>
     [Fact]
-    public async Task UseAgentAsContainerAsync()
+    public async Task UseAgentFromHostAsync()
     {
-        // Create the simulated service container
-        AgentServiceContainer serviceContainer = new(this.Client, this.Configuration, this.LoggerFactory);
+        // Create the simulated service host
+        ServiceAgentHost servicehost = new(this.Client, this.Configuration, this.LoggerFactory);
 
         // Simulate the creation of a foundry thread by an application or service.
-        string threadId = await serviceContainer.SimulateThreadCreationAsync();
+        string threadId = await servicehost.SimulateThreadCreationAsync();
 
         try
         {
-            // Invoke the agent via the simulated container
+            // Invoke the agent via the simulated host
             await InvokeAgentAsync("Hello");
             await InvokeAgentAsync("Why is the sky blue?");
             await InvokeAgentAsync("How big is a rainbow?");
             await InvokeAgentAsync("Thank you");
 
             // Display the complete thread to audit state
-            this.DisplayThreadHistory(serviceContainer.GetThreadMessagesAsync(threadId).ToEnumerable());
+            this.DisplayThreadHistory(servicehost.GetThreadMessagesAsync(threadId).ToEnumerable());
         }
         finally
         {
-            await serviceContainer.CleanupThreadAsync(threadId);
+            await servicehost.CleanupThreadAsync(threadId);
         }
 
         // Local function to invoke agent and display response messages.
         async Task InvokeAgentAsync(string input)
         {
             // Simulate the thread being updated by the user or another agent.
-            await serviceContainer.SimulateThreadUpdateAsync(threadId, input);
+            await servicehost.SimulateThreadUpdateAsync(threadId, input);
             this.WriteAgentChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            // Invoke the agent via the service container.
-            await foreach (ChatMessageContent response in serviceContainer.InvokeAgentAsync(typeof(ChatServiceAgent), threadId))
+            // Invoke the agent via the service host.
+            await foreach (ChatMessageContent response in servicehost.InvokeAgentAsync(typeof(ChatServiceAgent), threadId))
             {
                 this.WriteAgentChatMessage(response);
             }
@@ -148,42 +148,42 @@ public class Step01_ChatAgent(ITestOutputHelper output) : BaseAzureAgentTest(out
 
     /// <summary>
     /// A task specific agent may be referenced from the foundry catalog
-    /// and invoked via a service container.
+    /// and invoked via a service host.
     /// </summary>
     [Fact]
-    public async Task UseStreamingAsContainerAsync()
+    public async Task UseStreamingFromHostAsync()
     {
-        // Create the simulated service container
-        AgentServiceContainer serviceContainer = new(this.Client, this.Configuration, this.LoggerFactory);
+        // Create the simulated service host
+        ServiceAgentHost servicehost = new(this.Client, this.Configuration, this.LoggerFactory);
 
         // Simulate the creation of a foundry thread by an application or service.
-        string threadId = await serviceContainer.SimulateThreadCreationAsync();
+        string threadId = await servicehost.SimulateThreadCreationAsync();
 
         try
         {
-            // Invoke the agent via the simulated container
+            // Invoke the agent via the simulated host
             await InvokeAgentAsync("Hello");
             await InvokeAgentAsync("Why is the sky blue?");
             await InvokeAgentAsync("How big is a rainbow?");
             await InvokeAgentAsync("Thank you");
 
             // Display the complete thread to audit state
-            this.DisplayThreadHistory(serviceContainer.GetThreadMessagesAsync(threadId).ToEnumerable());
+            this.DisplayThreadHistory(servicehost.GetThreadMessagesAsync(threadId).ToEnumerable());
         }
         finally
         {
-            await serviceContainer.CleanupThreadAsync(threadId);
+            await servicehost.CleanupThreadAsync(threadId);
         }
 
         // Local function to invoke agent and display response messages.
         async Task InvokeAgentAsync(string input)
         {
             // Simulate the thread being updated by the user or another agent.
-            await serviceContainer.SimulateThreadUpdateAsync(threadId, input);
+            await servicehost.SimulateThreadUpdateAsync(threadId, input);
             this.WriteAgentChatMessage(new ChatMessageContent(AuthorRole.User, input));
 
-            // Invoke the agent via the service container.
-            await foreach (StreamingChatMessageContent response in serviceContainer.InvokeStreamingAsync(typeof(ChatServiceAgent), threadId))
+            // Invoke the agent via the service host.
+            await foreach (StreamingChatMessageContent response in servicehost.InvokeStreamingAsync(typeof(ChatServiceAgent), threadId))
             {
                 Console.WriteLine(response.Content);
             }

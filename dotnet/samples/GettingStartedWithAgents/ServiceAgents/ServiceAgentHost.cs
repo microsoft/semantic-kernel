@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 using Microsoft.SemanticKernel.Agents.Service;
 using Foundry = Azure.AI.Projects;
 
@@ -13,7 +14,7 @@ namespace ServiceAgents;
 /// <summary>
 /// An approximation of the Agent Container to be hosted as an AI-Service.
 /// </summary>
-internal sealed class AgentServiceContainer(
+internal sealed class ServiceAgentHost(
     Foundry.AIProjectClient client,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
@@ -115,8 +116,33 @@ internal sealed class AgentServiceContainer(
     /// <summary>
     /// Utility to retrieve all messages from the thread for the sample to access.
     /// </summary>
-    public IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId)
+    public async IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId)
     {
-        return ServiceAgentProvider.GetThreadMessagesAsync(this.Client, threadId);
+        int messageCount = 0;
+        bool hasMore = false;
+        do
+        {
+            Foundry.PageableList<Foundry.ThreadMessage> messagePage =
+                await this.Client.GetMessagesAsync(
+                    threadId,
+                    runId: null,
+                    limit: 100,
+                    order: Foundry.ListSortOrder.Ascending,
+                    after: null,
+                    before: null).ConfigureAwait(false);
+
+            hasMore = messagePage.HasMore;
+
+            // %%% TODO: AGENT NAME
+            foreach (ChatMessageContent message in messagePage.Data.Select(message => message.ToChatMessageContent(agentName: null)))
+            {
+                // Increment the message count
+                messageCount++;
+
+                // Yield each message to the caller
+                yield return message;
+            }
+        }
+        while (hasMore);
     }
 }

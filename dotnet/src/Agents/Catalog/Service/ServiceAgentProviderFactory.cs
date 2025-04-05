@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.SemanticKernel.Agents.Service;
 
 /// <summary>
-/// This factory provides the entry point for a container hosting a <see cref="ServiceAgent"/>
+/// This factory provides the entry point for hosting a <see cref="ServiceAgent"/>
 /// to instantiate and utilize an agent via its <see cref="ServiceAgentProvider"/>,
 /// regardless of the shape of the constructor on any <see cref="Agent"/> subclasss.
 /// </summary>

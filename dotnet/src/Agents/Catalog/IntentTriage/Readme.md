@@ -72,7 +72,7 @@ Both agents can be executed in the [`Step02_IntentTriage`](../../../../samples/G
 Test have two modes and each mode invoked streaming and non-streaming results.
 
 1. Developer mode: Simulates the developer experience (not catalog hosted) as if they referenced the agent package as a project dependency.
-1. Container mode: Simulates a service hosted agent that is instantiated via the [`ServiceAgentProviderFactory`](../Service/ServiceAgentProviderFactory.cs)
+1. Hosted mode: Simulates a service hosted agent that is instantiated via the [`ServiceAgentProviderFactory`](../Service/ServiceAgentProviderFactory.cs)
    and the associated [`ServiceAgentProvider`](../Service/ServiceAgentProvider.cs)
 
 > The most expedient test is `UseAgentAsDeveloperAsync`

@@ -15,14 +15,14 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 /// Provider to create a <see cref="IntentTriageAgent2"/> instance and
 /// its associated <see cref="AgentThread"/>.
 /// </summary>
-public class IntentTriageAgentProvider2 : ServiceAgentProvider
+public class IntentTriageAgentProvider3 : ServiceAgentProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="IntentTriageAgentProvider2"/> class.
     /// </summary>
     /// <param name="configuration">The configuration used to initialize the agent.</param>
     /// <param name="loggerFactory">The logging services for the agent.</param>
-    public IntentTriageAgentProvider2(IConfiguration configuration, ILoggerFactory loggerFactory)
+    public IntentTriageAgentProvider3(IConfiguration configuration, ILoggerFactory loggerFactory)
         : base(configuration, loggerFactory)
     {
     }
@@ -34,13 +34,14 @@ public class IntentTriageAgentProvider2 : ServiceAgentProvider
 
         IntentTriageLanguageSettings languageSettings = IntentTriageLanguageSettings.FromConfiguration(this.Configuration);
 
-        IntentTriageAgent2 agent =
+        IntentTriageAgent3 agent =
             new(languageSettings)
             {
                 Id = id,
                 Name = name,
                 Kernel = kernel,
             };
+
         return agent;
     }
 

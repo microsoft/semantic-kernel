@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Projects;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
@@ -13,23 +14,38 @@ using Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 namespace Microsoft.SemanticKernel.Agents.Service;
 
 /// <summary>
-/// Defines a common contract for a container hosting a <see cref="ServiceAgent"/>
+/// Defines a common contract for hosting a <see cref="ServiceAgent"/>
 /// to instantiate and utilize an agent regardless of the shape of the constructor
 /// on any <see cref="Agent"/> subclasss.
 /// </summary>
-/// <param name="configuration">The configuration used to initialize the agent.</param>
-/// <param name="loggerFactory">The logging services for the agent.</param>
-public abstract class ServiceAgentProvider(IConfiguration configuration, ILoggerFactory loggerFactory)
+public abstract class ServiceAgentProvider
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ServiceAgentProvider"/> class.
+    /// </summary>
+    /// <param name="configuration">The configuration used to initialize the agent.</param>
+    /// <param name="loggerFactory">The logging services for the agent.</param>
+    protected ServiceAgentProvider(IConfiguration configuration, ILoggerFactory loggerFactory)
+    {
+        this.Configuration = configuration;
+        this.LoggerFactory = loggerFactory;
+        this.FoundrySettings = FoundrySettings.FromConfiguration(configuration);
+    }
+
     /// <summary>
     /// The active configuration for the agent.
     /// </summary>
-    protected IConfiguration Configuration => configuration;
+    protected IConfiguration Configuration { get; }
 
     /// <summary>
     /// The logging services for the agent.
     /// </summary>
-    protected ILoggerFactory LoggerFactory => loggerFactory;
+    protected ILoggerFactory LoggerFactory { get; }
+
+    /// <summary>
+    /// %%% COMMENT
+    /// </summary>
+    protected FoundrySettings FoundrySettings { get; }
 
     /// <summary>
     /// Instantiates the agent associated with the provider.
@@ -50,23 +66,24 @@ public abstract class ServiceAgentProvider(IConfiguration configuration, ILogger
     /// <summary>
     /// Convenience method to retrieve messages from the specified thread.
     /// </summary>
-    /// <param name="client">The foundry agent client</param>
     /// <param name="threadId">The thread identifier.</param>
     /// <param name="limit">The maximum number of messages to be retrieved.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An enumeration of the thread's messages.</returns>
-    protected internal static async IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(
-        AgentsClient client,
+    protected async IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(
         string threadId,
         int? limit = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        AIProjectClient client = new(this.FoundrySettings.ConnectionString, new AzureCliCredential());
+        AgentsClient agentsClient = client.GetAgentsClient();
+
         int messageCount = 0;
         bool hasMore = false;
         do
         {
             PageableList<ThreadMessage> messagePage =
-                await client.GetMessagesAsync(
+                await agentsClient.GetMessagesAsync(
                     threadId,
                     runId: null,
                     limit: 100,

@@ -1,9 +1,9 @@
 ﻿# Overview
 
 This project defines the patterns for building "Out of the Box" (OOTB) Agents with _Semantic Kernel_ as well 
-as the contract for how an _OOTB Agent_ is initialize and invoked by the hosting service (or "Agent Container").
+as the contract for how an _OOTB Agent_ is initialize and invoked by the hosting service (Agent Host).
 
-Since the "Agent Container" needs a fixed contract to be able to create and invoke any _OOTB Agent_ without knowledge
+Since the _agent host_ needs a fixed contract to be able to create and invoke any _OOTB Agent_ without knowledge
 of any specific implementation detail (such as the shape of the constructor), a _provider_ pattern is defined where
 each specific _OOTB Agent_ has a dedicated provider.  A factory pattern is preset for creating the provider based
 only on inspect the OOTB Agent type.
@@ -13,7 +13,7 @@ In addition two base-classes are defined for the purpose of building an OOTB Age
 
 # Contract
 
-At a high-level, the contract between the "Agent Container" and the _OOTB Agent_ is defined as:
+At a high-level, the contract between the _agent host_ and the _OOTB Agent_ is defined as:
 
 ## Input
 
@@ -61,7 +61,7 @@ is `sealed` and cannot be extended.
 #### [`ServiceAgentProvider`](./ServiceAgentProvider.cs)
 
 This provider defines the contract for how an _OOTB Agent_ ([`ServiceAgent`](./ServiceAgent.cs)) is initialized and 
-invoked by the hosting service (or "Agent Container").
+invoked by the hosting service (or _agent host_).
 
 - `constructor`: The constructor for any `ServiceAgentProvider` subclass is expected to only accept two parameters:
 
@@ -73,17 +73,17 @@ invoked by the hosting service (or "Agent Container").
 
 - `CreateAgentAsync(string id, string? name) -> Agent`:
     
-    - Provides an instance of the _OOTB Agent_ to the "Agent Container".
+    - Provides an instance of the _OOTB Agent_ to the _agent host_.
 
-    - Isolates the "Agent Container" from the details of how the _OOTB Agent_ is created.
+    - Isolates the _agent host_ from the details of how the _OOTB Agent_ is created.
 
-    - `id` and `name` parameters are specific to the usage of the _OOTB Agent_ and provided by the "Agent Container"
+    - `id` and `name` parameters are specific to the usage of the _OOTB Agent_ and provided by the _agent host_
 
 
 - `AgentThread CreateThreadAsync(string threadId)  -> AgentThread`:
     
     - Invoking a _Semantic Kernel_ agent requires that an `AgentThread` be provided.  
-      This method isolates the "Agent Container" from the details on how to create and initialize this `AgentThread`.
+      This method isolates the _agent host_ from the details on how to create and initialize this `AgentThread`.
 
     - `threadId` is specific to the specific invocation of the agent and identifies an external thread that
       defines the conversation for which the agent is being requested to respond.
@@ -100,7 +100,7 @@ Associates a `ServiceAgentProvider` with an `ServiceAgent`.  This attribute is c
 
 ## Example
 
-The following pattern shows how any _OOTB Agent_ can be created and invoked by the "Agent Container" 
+The following pattern shows how any _OOTB Agent_ can be created and invoked by the _agent host_ 
 without any knowledge of the specific implementation details of the agent othen than the .NET type.
 
 #### Implementation
