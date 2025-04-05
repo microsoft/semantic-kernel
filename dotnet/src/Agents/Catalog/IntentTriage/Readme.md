@@ -38,15 +38,15 @@ Both agents rely upon the same configurations scheme:
 
 Key|Settings|Description|
 ---|---|---
-clu.projectName|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The project name for the CLU model.
-clu.deploymentName|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The deployment name for the CLU model.
-cqa.projectName|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The project name for the CQA model.
-cqa.deploymentName|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The deployment name for the CQA model.
-language.resourceUrl|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The base url (scheme + host) for the language services endpoint
-language.resourceKey|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The api key for the language services
-language.resourceVersion|[`IntentTriageLanguageSettings`](./Settings/IntentTriageLanguageSettings.cs)|The api version for the language services
-foundry:connectionstring|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|A connection string to the Foundry project hosting the agent
-foundry:deploymentname|[`IntentTriageServiceSettings`](./Settings/IntentTriageServiceSettings.cs)|The name of the model deployment for the Azure OpenAI service
+clu.projectName|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The project name for the CLU model.
+clu.deploymentName|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The deployment name for the CLU model.
+cqa.projectName|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The project name for the CQA model.
+cqa.deploymentName|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The deployment name for the CQA model.
+language.resourceUrl|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The base url (scheme + host) for the language services endpoint
+language.resourceKey|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The api key for the language services
+language.resourceVersion|[`IntentTriageLanguageSettings`](./IntentTriageLanguageSettings.cs)|The api version for the language services
+foundry:connectionstring|[`FoundrySettings`](../Service/FoundrySettings.cs)|A connection string to the Foundry project hosting the agent
+foundry:deploymentname|[`FoundrySettings`](../Service/FoundrySettings.cs)|The name of the model deployment for the Azure OpenAI service
 
 These may be defined as dotnet user-secrets using the following script:
 
