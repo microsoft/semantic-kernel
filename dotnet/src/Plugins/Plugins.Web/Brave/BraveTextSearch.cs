@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
 using System.Collections.Generic;
@@ -35,24 +35,7 @@ public sealed class BraveTextSearch : ITextSearch
         this._uri = options?.Endpoint ?? new Uri(DefaultUri);
         this._logger = options?.LoggerFactory?.CreateLogger(typeof(BraveTextSearch)) ?? NullLogger.Instance;
 
-        // Use Gzip to reduce Response Size
-        this._useGzip = options?.UseGzip ?? true;
-
-        if (options!.UseGzip)
-        {
-            var handle = new HttpClientHandler()
-            {
-                AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-            };
-            this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient(handle);
-
-
-            this._httpClient.DefaultRequestHeaders.Add("Accept-Encoding", "gzip");
-        }
-        else
-        {
-            this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
-        }
+        this._httpClient = options?.HttpClient ?? HttpClientProvider.GetHttpClient();
 
         this._httpClient.DefaultRequestHeaders.Add("User-Agent", HttpHeaderConstant.Values.UserAgent);
         this._httpClient.DefaultRequestHeaders.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(BraveTextSearch)));
@@ -81,7 +64,6 @@ public sealed class BraveTextSearch : ITextSearch
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
         return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
-
     }
 
     /// <inheritdoc/>
@@ -96,7 +78,7 @@ public sealed class BraveTextSearch : ITextSearch
         return new KernelSearchResults<object>(this.GetResultsAsWebPageAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
     }
 
-       #region private
+    #region private
 
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
@@ -104,13 +86,12 @@ public sealed class BraveTextSearch : ITextSearch
     private readonly Uri? _uri = null;
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
-    private readonly bool _useGzip;
 
     private static readonly ITextSearchStringMapper s_defaultStringMapper = new DefaultTextSearchStringMapper();
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
     // See https://api-dashboard.search.brave.com/app/documentation/web-search/query#WebSearchAPIQueryParameters
-    private static readonly string[] s_queryParameters = ["country", "search_lang","ui_lang", "safeSearch","freshness","text_decorations" , "spellcheck","result_filter","goggle_id","googles","units" ,"extra_snippets","summary"];
+    private static readonly string[] s_queryParameters = ["country", "search_lang","ui_lang",  "safesearch", "freshness","text_decorations" , "spellcheck","result_filter","googles","units" ,"extra_snippets","summary"];
 
     private const string DefaultUri = "https://api.search.brave.com/res/v1/web/search";
 
@@ -158,7 +139,6 @@ public sealed class BraveTextSearch : ITextSearch
         Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-
 
         if (!string.IsNullOrEmpty(this._apiKey))
         {

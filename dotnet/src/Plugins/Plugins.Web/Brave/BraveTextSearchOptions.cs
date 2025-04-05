@@ -18,10 +18,6 @@ public sealed class BraveTextSearchOptions
     public Uri? Endpoint { get; init; } = null;
 
     /// <summary>
-    /// Use gzip Encoding to decrypt response data
-    /// </summary>
-    public bool UseGzip { get; set; } = true ;
-    /// <summary>
     /// The HTTP client to use for making requests.
     /// </summary>
     public HttpClient? HttpClient { get; init; } = null;
