@@ -23,5 +23,4 @@ public static class ProjectClientExtensions
 
         return connection.Properties;
     }
-
 }
