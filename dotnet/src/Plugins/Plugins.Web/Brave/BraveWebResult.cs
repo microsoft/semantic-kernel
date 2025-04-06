@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel.Plugins.Web.Brave;
 /// <summary>
 /// The Brave Web Page Response
 /// </summary>
+/// <remarks>Can be use for parse for SearchResult LocationResult VideoResult NewsResult</remarks>
 public sealed class BraveWebResult
 {
     /// <summary>
@@ -21,39 +22,39 @@ public sealed class BraveWebResult
     /// A type identifying a web search result.
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; }
+    public string Type { get; set; } = string.Empty;
 
     /// <summary>
-    /// The url where the page is served.
+    /// The url link where the page is served.
     /// </summary>
-#pragma warning disable CA1056
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+#pragma warning disable CA1056
+    public string Url { get; set; } = string.Empty;
 #pragma warning restore CA1056
 
     /// <summary>
     /// The title of the web page.
     /// </summary>
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; set; } = string.Empty;
 
     /// <summary>
     /// A description for the web page.
     /// </summary>
     [JsonPropertyName("description")]
-    public string Description { get; set; }
+    public string Description { get; set; } = string.Empty;
 
     /// <summary>
     /// A string representing the age of the web search result.
     /// </summary>
     [JsonPropertyName("age")]
-    public string Age { get; set; }
+    public string Age { get; set; } = string.Empty;
 
     /// <summary>
     /// Whether the news result is currently a breaking news.
     /// </summary>
     [JsonPropertyName("breaking")]
-    public string? Breaking { get; set; }
+    public bool? Breaking { get; set; }
 
     /// <summary>
     /// Whether the news result is currently a breaking news.
@@ -71,19 +72,19 @@ public sealed class BraveWebResult
     /// Aggregated information on the url associated with the web search result.
     /// </summary>
     [JsonPropertyName("meta_url")]
-    public MetaUrl MetaUrl { get; set; }
+    public MetaUrl? MetaUrl { get; set; }
 
     /// <summary>
     /// The thumbnail of the web search result.
     /// </summary>
     [JsonPropertyName("thumbnail")]
-    public Thumbnail Thumbnail { get; set; }
+    public Thumbnail? Thumbnail { get; set; }
 
     /// <summary>
     /// Result Source
     /// </summary>
     [JsonPropertyName("source")]
-    public string Source { get; set; }
+    public string? Source { get; set; }
 
     /// <summary>
     /// Is source is local
@@ -101,13 +102,13 @@ public sealed class BraveWebResult
     /// A profile associated with the web page.
     /// </summary>
     [JsonPropertyName("profile")]
-    public Profile Profile { get; set; }
+    public BraveProfile? Profile { get; set; }
 
     /// <summary>
     /// A language classification for the web page.
     /// </summary>
     [JsonPropertyName("language")]
-    public string Language { get; set; }
+    public string? Language { get; set; }
 
     /// <summary>
     /// Whether the web page is family friendly.
@@ -116,10 +117,10 @@ public sealed class BraveWebResult
     public bool? FamilyFriendly { get; set; }
 
     /// <summary>
-    /// A sub type identifying the web search result type.
+    /// A subtype identifying the web search result type.
     /// </summary>
     [JsonPropertyName("subtype")]
-    public string Subtype { get; set; }
+    public string? Subtype { get; set; }
 
     /// <summary>
     /// Whether the web search result is currently live. Default value is False.
