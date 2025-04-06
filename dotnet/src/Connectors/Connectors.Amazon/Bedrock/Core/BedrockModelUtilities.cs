@@ -103,7 +103,7 @@ internal static class BedrockModelUtilities
                         Document = new DocumentBlock
                         {
                             Format = DocumentFormat.Pdf,
-                            Name = $"document-{i + 1}.pdf",  // NOTE: Generated to prevent possibility of prompt injection attack
+                            Name = $"document-{i + 1}",  // NOTE: Generated to prevent possibility of prompt injection attack
                             Source = new DocumentSource
                             {
                                 Bytes = new MemoryStream(pdf.Data?.ToArray() ?? [])
@@ -119,7 +119,7 @@ internal static class BedrockModelUtilities
                         Document = new DocumentBlock
                         {
                             Format = DocumentFormat.Doc,
-                            Name = $"document-{i + 1}.doc",  // NOTE: Generated to prevent possibility of prompt injection attack
+                            Name = $"document-{i + 1}",  // NOTE: Generated to prevent possibility of prompt injection attack
                             Source = new DocumentSource
                             {
                                 Bytes = new MemoryStream(doc.Data?.ToArray() ?? [])
@@ -135,7 +135,7 @@ internal static class BedrockModelUtilities
                         Document = new DocumentBlock
                         {
                             Format = DocumentFormat.Docx,
-                            Name = $"document-{i + 1}.docx",  // NOTE: Generated to prevent possibility of prompt injection attack
+                            Name = $"document-{i + 1}",  // NOTE: Generated to prevent possibility of prompt injection attack
                             Source = new DocumentSource
                             {
                                 Bytes = new MemoryStream(docx.Data?.ToArray() ?? [])
