@@ -71,7 +71,7 @@ public sealed class BraveTextSearch : ITextSearch
         CancellationToken cancellationToken = new CancellationToken())
     {
         searchOptions ??= new TextSearchOptions();
-        BraveSearchResponse<BraveWebResult>?  searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        BraveSearchResponse<BraveWebResult>? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         long? totalCount = searchOptions.IncludeTotalCount ? searchResponse?.Web?.Results.Count : null;
 
@@ -91,7 +91,18 @@ public sealed class BraveTextSearch : ITextSearch
     private static readonly ITextSearchResultMapper s_defaultResultMapper = new DefaultTextSearchResultMapper();
 
     // See https://api-dashboard.search.brave.com/app/documentation/web-search/query#WebSearchAPIQueryParameters
-    private static readonly string[] s_queryParameters = ["country", "search_lang","ui_lang",  "safesearch", "freshness","text_decorations" , "spellcheck","result_filter","googles","units" ,"extra_snippets","summary"];
+    private static readonly string[] s_queryParameters = ["country", "search_lang", "ui_lang", "safesearch", "text_decorations", "spellcheck", "result_filter", "units", "extra_snippets"];
+
+    private static readonly string[] s_safeSearch = ["off", "moderate", "strict"];
+
+    private static readonly string[] s_resultFilter = ["discussions", "faq", "infobox", "news", "query", "summarizer", "videos", "web", "locations"];
+
+    // See https://api-dashboard.search.brave.com/app/documentation/web-search/codes
+    private static readonly string[] s_countryCodes = ["ALL", "AR", "AU", "AT", "BE", "BR", "CA", "CL", "DK", "FI", "FR", "DE", "HK", "IN", "ID", "IT", "JP", "KR", "MY", "MX", "NL", "NZ", "NO", "CN", "PL", "PT", "PH", "RU", "SA", "ZA", "ES", "SE", "CH", "TW", "TR", "GB", "US"];
+
+    private static readonly string[] s_searchLang = ["ar", "eu", "bn", "bg", "ca", "zh-hans", "zh-hant", "hr", "cs", "da", "nl", "en", "en-gb", "et", "fi", "fr", "gl", "de", "gu", "he", "hi", "hu", "is", "it", "jp", "kn", "ko", "lv", "lt", "ms", "ml", "mr", "nb", "pl", "pt-br", "pt-pt", "pa", "ro", "ru", "sr", "sk", "sl", "es", "sv", "ta", "te", "th", "tr", "uk", "vi"];
+
+    private static readonly string[] s_uiCode = ["es-AR", "en-AU", "de-AT", "nl-BE", "fr-BE", "pt-BR", "en-CA", "fr-CA", "es-CL", "da-DK", "fi-FI", "fr-FR", "de-DE", "zh-HK", "en-IN", "en-ID", "it-IT", "ja-JP", "ko-KR", "en-MY", "es-MX", "nl-NL", "en-NZ", "no-NO", "zh-CN", "pl-PL", "en-PH", "ru-RU", "en-ZA", "es-ES", "sv-SE", "fr-CH", "de-CH", "zh-TW", "tr-TR", "en-GB", "en-US", "es-US"];
 
     private const string DefaultUri = "https://api.search.brave.com/res/v1/web/search";
 
@@ -124,7 +135,7 @@ public sealed class BraveTextSearch : ITextSearch
     /// <returns>A <see cref="HttpResponseMessage"/> representing the response from the request.</returns>
     private async Task<HttpResponseMessage> SendGetRequestAsync(string query, TextSearchOptions searchOptions, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(query) ;
+        Verify.NotNull(query);
 
         if (searchOptions.Top is <= 0 or >= 21)
         {
@@ -133,7 +144,7 @@ public sealed class BraveTextSearch : ITextSearch
 
         if (searchOptions.Skip is < 0 or > 10)
         {
-            throw new ArgumentOutOfRangeException(nameof(searchOptions),searchOptions.Skip, $"{nameof(searchOptions.Skip)} value must be equal or greater than 0 and less than 10.");
+            throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions.Skip, $"{nameof(searchOptions.Skip)} value must be equal or greater than 0 and less than 10.");
         }
 
         Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
@@ -155,15 +166,15 @@ public sealed class BraveTextSearch : ITextSearch
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<object> GetResultsAsWebPageAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null ||  searchResponse.Web  is null ||  searchResponse.Web.Results is []  )
-        {
-            yield break;
-        }
+        if (searchResponse is null) { yield break; }
 
-        foreach (var webPage in searchResponse.Web.Results)
+        if (searchResponse.Web?.Results is { Count: > 0 } webResults)
         {
-            yield return webPage;
-            await Task.Yield();
+            foreach (var webPage in webResults)
+            {
+                yield return webPage;
+                await Task.Yield();
+            }
         }
     }
 
@@ -174,15 +185,16 @@ public sealed class BraveTextSearch : ITextSearch
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<TextSearchResult> GetResultsAsTextSearchResultAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null || searchResponse.Web  is null ||  searchResponse.Web.Results is []  )
-        {
-            yield break;
-        }
+        if (searchResponse is null)
+        { yield break; }
 
-        foreach (var webPage in searchResponse.Web.Results)
+        if (searchResponse.Web?.Results is { Count: > 0 } webResults)
         {
-            yield return this._resultMapper.MapFromResultToTextSearchResult(webPage);
-            await Task.Yield();
+            foreach (var webPage in webResults)
+            {
+                yield return this._resultMapper.MapFromResultToTextSearchResult(webPage);
+                await Task.Yield();
+            }
         }
     }
 
@@ -193,15 +205,34 @@ public sealed class BraveTextSearch : ITextSearch
     /// <param name="cancellationToken">Cancellation token</param>
     private async IAsyncEnumerable<string> GetResultsAsStringAsync(BraveSearchResponse<BraveWebResult>? searchResponse, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        if (searchResponse is null || searchResponse.Web is null || searchResponse.Web.Results is [])
+        if (searchResponse is null)
+        { yield break; }
+
+        if (searchResponse.Web?.Results is { Count: > 0 } webResults)
         {
-            yield break;
+            foreach (var webPage in webResults)
+            {
+                yield return this._stringMapper.MapFromResultToString(webPage);
+                await Task.Yield();
+            }
         }
 
-        foreach (var webPage in searchResponse.Web.Results)
+        if (searchResponse.News?.Results is { Count: > 0 } newsResults)
         {
-            yield return this._stringMapper.MapFromResultToString(webPage);
-            await Task.Yield();
+            foreach (var newsPage in newsResults)
+            {
+                yield return this._stringMapper.MapFromResultToString(newsPage);
+                await Task.Yield();
+            }
+        }
+
+        if (searchResponse.Videos?.Results is { Count: > 0 } videoResults)
+        {
+            foreach (var videoPage in videoResults)
+            {
+                yield return this._stringMapper.MapFromResultToString(videoPage);
+                await Task.Yield();
+            }
         }
     }
 
@@ -215,7 +246,8 @@ public sealed class BraveTextSearch : ITextSearch
         {
             {"OriginalQuery",searchResponse?.Query?.Original},
             {"AlteredQuery",searchResponse?.Query?.Altered },
-            {"IsSafeSearchEnable",searchResponse?.Query?.IsSafeSearchEnable}
+            {"IsSafeSearchEnable",searchResponse?.Query?.IsSafeSearchEnable},
+            {"IsSpellCheckOff",searchResponse?.Query?.SpellcheckOff  }
         };
     }
 
@@ -271,13 +303,12 @@ public sealed class BraveTextSearch : ITextSearch
             {
                 if (filterClause is EqualToFilterClause equalityFilterClause)
                 {
-                    // if (s_advancedSearchKeywords.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
-                    // {
-                    //     fullQuery.Append($"+{equalityFilterClause.FieldName}%3A").Append(Uri.EscapeDataString(equalityFilterClause.Value.ToString()!));
-                    // }
                     if (s_queryParameters.Contains(equalityFilterClause.FieldName, StringComparer.OrdinalIgnoreCase) && equalityFilterClause.Value is not null)
                     {
-                        string? queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase));
+                        string queryParam = s_queryParameters.FirstOrDefault(s => s.Equals(equalityFilterClause.FieldName, StringComparison.OrdinalIgnoreCase))!;
+
+                        CheckQueryValidation(queryParam, equalityFilterClause.Value);
+
                         queryParams.Append('&').Append(queryParam!).Append('=').Append(Uri.EscapeDataString(equalityFilterClause.Value.ToString()!));
                     }
                     else
@@ -293,5 +324,64 @@ public sealed class BraveTextSearch : ITextSearch
         return fullQuery.ToString();
     }
 
+    /// <summary>
+    /// Validate weather the provide value is acceptable or not
+    /// </summary>
+    /// <param name="queryParam"></param>
+    /// <param name="value"></param>
+    private static void CheckQueryValidation(string queryParam, object value)
+    {
+        switch (queryParam)
+        {
+            case "country":
+                if (value is not string strCountry || !s_countryCodes.Contains(strCountry))
+                { throw new ArgumentException($"Country Code must be one of {string.Join(",", s_countryCodes)}", nameof(value)); }
+                break;
+
+            case "search_lang":
+                if (value is not string strLang || !s_searchLang.Contains(strLang))
+                { throw new ArgumentException($"Search Language must be one of {string.Join(",", s_searchLang)}", nameof(value)); }
+                break;
+
+            case "ui_lang":
+                if (value is not string strUi || !s_uiCode.Contains(strUi))
+                { throw new ArgumentException($"UI Language must be one of {string.Join(",", s_uiCode)}", nameof(value)); }
+                break;
+
+            case "safesearch":
+                if (value is not string safe || !s_safeSearch.Contains(safe))
+                { throw new ArgumentException($"SafeSearch allows only: {string.Join(",", s_safeSearch)}", nameof(value)); }
+                break;
+
+            case "text_decorations":
+                if (value is not bool)
+                { throw new ArgumentException("Text Decorations must be of type bool", nameof(value)); }
+                break;
+
+            case "spellcheck":
+                if (value is not bool)
+                { throw new ArgumentException("SpellCheck must be of type bool", nameof(value)); }
+                break;
+
+            case "result_filter":
+                if (value is string filterStr)
+                {
+                    var filters = filterStr.Split([","], StringSplitOptions.RemoveEmptyEntries);
+                    if (filters.Any(f => !s_resultFilter.Contains(f)))
+                    { throw new ArgumentException($"Result Filter allows only: {string.Join(",", s_resultFilter)}", nameof(value)); }
+                }
+                break;
+
+            case "units":
+                if (value is not string strUnit || strUnit is not ("metric" or "imperial"))
+                { throw new ArgumentException("Units can only be `metric` or `imperial`", nameof(value)); }
+                break;
+
+            case "extra_snippets":
+                if (value is not bool)
+                { throw new ArgumentException("Extra Snippets must be of type bool", nameof(value)); }
+                break;
+        }
+    }
     #endregion
 }
