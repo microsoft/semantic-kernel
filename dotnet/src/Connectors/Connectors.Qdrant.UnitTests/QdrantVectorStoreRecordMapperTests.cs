@@ -203,7 +203,7 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.Equal(5.5f, actual.DataFloat);
         Assert.Equal(5.5d, actual.DataDouble);
         Assert.True(actual.DataBool);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime);
+        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime.ToUniversalTime());
         Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), actual.DataDateTimeOffset);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.DataArrayInt);
 
@@ -241,7 +241,7 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.Equal(5.5f, actual.DataFloat);
         Assert.Equal(5.5d, actual.DataDouble);
         Assert.True(actual.DataBool);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime);
+        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime.ToUniversalTime());
         Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), actual.DataDateTimeOffset);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.DataArrayInt);
 
