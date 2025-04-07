@@ -354,10 +354,8 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             this._model,
             whereClause,
             filterParameters,
-            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)),
-            options.IncludeVectors,
-            top: top,
-            skip: options.Skip);
+            options,
+            top);
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
 

@@ -43,8 +43,7 @@ public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture f
         protected override string CollectionName => "QueryTests";
 
         /// <summary>
-        /// In contrary to the filter tests, the query uses random vectors,
-        /// just to make sure that the values don't matter for GetAsync.
+        /// Use random vectors to make sure that the values don't matter for GetAsync.
         /// </summary>
         protected override ReadOnlyMemory<float> GetVector(int count)
 #pragma warning disable CA5394 // Do not use insecure randomness

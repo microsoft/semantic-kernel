@@ -328,9 +328,9 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
             sortDefinition = Builders<BsonDocument>.Sort.Combine(
                 options.Sort.Values.Select(pair =>
                 {
-                    var storageName = this._model.GetDataOrKeyProperty(pair.Key).StorageName;
+                    var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
 
-                    return pair.Value
+                    return pair.Ascending
                         ? Builders<BsonDocument>.Sort.Ascending(storageName)
                         : Builders<BsonDocument>.Sort.Descending(storageName);
                 }));

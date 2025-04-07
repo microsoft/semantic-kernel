@@ -493,8 +493,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             connection,
             this._options.Schema,
             this.CollectionName,
-            this._model,
-            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)));
+            this._model);
 
         using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),

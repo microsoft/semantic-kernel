@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Provides methods to build SQL commands for managing vector store collections in PostgreSQL.
 /// </summary>
-internal static class SqlBuilder
+internal static class PostgresSqlBuilder
 {
     /// <inheritdoc />
     internal static PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
@@ -382,21 +382,17 @@ FROM ({commandText}) AS subquery
         translator.Translate(appendWhere: true);
         query.AppendLine();
 
-        bool orderByClauseNotAdded = true;
-        for (int i = 0; i < options.Sort.Values.Count; i++)
+        if (options.Sort.Values.Count > 0)
         {
-            var pair = options.Sort.Values[i];
-            if (orderByClauseNotAdded)
+            query.Append("ORDER BY ");
+
+            foreach (var sortInfo in options.Sort.Values)
             {
-                query.Append("ORDER BY ");
-                orderByClauseNotAdded = false;
+                query.AppendFormat("\"{0}\" {1},",
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
             }
 
-            var property = model.GetDataOrKeyProperty(pair.Key);
-            query.AppendFormat("\"{0}\" {1},", property.StorageName, pair.Value ? "ASC" : "DESC");
-        }
-        if (!orderByClauseNotAdded)
-        {
             query.Length--; // remove the last comma
             query.AppendLine();
         }

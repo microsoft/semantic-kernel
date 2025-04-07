@@ -52,7 +52,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(VectorStoreGenericDataModel<int>), recordDefinition);
 
-        var cmdInfo = SqlBuilder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
+        var cmdInfo = PostgresSqlBuilder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("public.\"testcollection\" (", cmdInfo.CommandText);
@@ -89,12 +89,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         if (indexKind != IndexKind.Hnsw)
         {
-            Assert.Throws<NotSupportedException>(() => SqlBuilder.BuildCreateIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
-            Assert.Throws<NotSupportedException>(() => SqlBuilder.BuildCreateIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
+            Assert.Throws<NotSupportedException>(() => PostgresSqlBuilder.BuildCreateIndexCommand("public", "testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists));
             return;
         }
 
-        var cmdInfo = SqlBuilder.BuildCreateIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
+        var cmdInfo = PostgresSqlBuilder.BuildCreateIndexCommand("public", "1testcollection", vectorColumn, indexKind, distanceFunction, true, ifNotExists);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("CREATE INDEX ", cmdInfo.CommandText);
@@ -137,7 +137,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
     [InlineData(false)]
     public void TestBuildCreateNonVectorIndexCommand(bool ifNotExists)
     {
-        var cmdInfo = SqlBuilder.BuildCreateIndexCommand("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
+        var cmdInfo = PostgresSqlBuilder.BuildCreateIndexCommand("schema", "tableName", "columnName", indexKind: "", distanceFunction: "", isVector: false, ifNotExists);
 
         var expectedCommandText = ifNotExists
             ? "CREATE INDEX IF NOT EXISTS \"tableName_columnName_index\" ON schema.\"tableName\" (\"columnName\");"
@@ -149,7 +149,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
     [Fact]
     public void TestBuildDropTableCommand()
     {
-        var cmdInfo = SqlBuilder.BuildDropTableCommand("public", "testcollection");
+        var cmdInfo = PostgresSqlBuilder.BuildDropTableCommand("public", "testcollection");
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("DROP TABLE IF EXISTS public.\"testcollection\"", cmdInfo.CommandText);
@@ -175,7 +175,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         var keyColumn = "id";
 
-        var cmdInfo = SqlBuilder.BuildUpsertCommand("public", "testcollection", keyColumn, row);
+        var cmdInfo = PostgresSqlBuilder.BuildUpsertCommand("public", "testcollection", keyColumn, row);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("INSERT INTO public.\"testcollection\" (", cmdInfo.CommandText);
@@ -229,7 +229,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var keyColumn = "id";
         var columnCount = rows.First().Count;
 
-        var cmdInfo = SqlBuilder.BuildUpsertBatchCommand("public", "testcollection", keyColumn, rows);
+        var cmdInfo = PostgresSqlBuilder.BuildUpsertBatchCommand("public", "testcollection", keyColumn, rows);
 
         // Check for expected properties; integration tests will validate the actual SQL.
         Assert.Contains("INSERT INTO public.\"testcollection\" (", cmdInfo.CommandText);
@@ -286,7 +286,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var key = 123;
 
         // Act
-        var cmdInfo = SqlBuilder.BuildGetCommand("public", "testcollection", model, key, includeVectors: true);
+        var cmdInfo = PostgresSqlBuilder.BuildGetCommand("public", "testcollection", model, key, includeVectors: true);
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
@@ -331,7 +331,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(VectorStoreGenericDataModel<int>), recordDefinition);
 
         // Act
-        var cmdInfo = SqlBuilder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);
+        var cmdInfo = PostgresSqlBuilder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);
 
         // Assert
         Assert.Contains("SELECT", cmdInfo.CommandText);
@@ -354,7 +354,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var key = 123;
 
         // Act
-        var cmdInfo = SqlBuilder.BuildDeleteCommand("public", "testcollection", "id", key);
+        var cmdInfo = PostgresSqlBuilder.BuildDeleteCommand("public", "testcollection", "id", key);
 
         // Assert
         Assert.Contains("DELETE", cmdInfo.CommandText);
@@ -372,7 +372,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
         var keys = new List<long> { 123, 124 };
 
         // Act
-        var cmdInfo = SqlBuilder.BuildDeleteBatchCommand("public", "testcollection", "id", keys);
+        var cmdInfo = PostgresSqlBuilder.BuildDeleteBatchCommand("public", "testcollection", "id", keys);
 
         // Assert
         Assert.Contains("DELETE", cmdInfo.CommandText);

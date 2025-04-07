@@ -264,23 +264,20 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         SqliteFilterTranslator translator = new(this._model, filter);
         translator.Translate(appendWhere: false);
 
-        var orderByPropertyNames = options.Sort.Values
-            .Select(pair => new KeyValuePair<string, bool>(this._model.GetDataOrKeyProperty(pair.Key).StorageName, pair.Value));
-
         IReadOnlyList<VectorStoreRecordPropertyModel> properties = options.IncludeVectors
             ? this._model.Properties
             : [this._model.KeyProperty, .. this._model.DataProperties];
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectWhereCommand(
+            this._model,
             connection,
             top,
             options,
             this._dataTableName,
             this._model.Properties,
             translator.Clause.ToString(),
-            translator.Parameters,
-            orderByPropertyNames);
+            translator.Parameters);
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))

@@ -318,16 +318,16 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         if (options.Sort.Values.Count > 0)
         {
             var first = options.Sort.Values[0];
-            var sorted = first.Value
-                    ? records.OrderBy(first.Key)
-                    : records.OrderByDescending(first.Key);
+            var sorted = first.Ascending
+                    ? records.OrderBy(first.PropertySelector)
+                    : records.OrderByDescending(first.PropertySelector);
 
             for (int i = 1; i < options.Sort.Values.Count; i++)
             {
                 var next = options.Sort.Values[i];
-                sorted = next.Value
-                    ? sorted.ThenBy(next.Key)
-                    : sorted.ThenByDescending(next.Key);
+                sorted = next.Ascending
+                    ? sorted.ThenBy(next.PropertySelector)
+                    : sorted.ThenByDescending(next.PropertySelector);
             }
 
             records = sorted;

@@ -313,7 +313,6 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             filter,
             top,
             options,
-            options.Sort.Values.Select(pair => new KeyValuePair<VectorStoreRecordPropertyModel, bool>(this._model.GetDataOrKeyProperty<TRecord>(pair.Key), pair.Value)),
             this.CollectionName,
             this._model);
 

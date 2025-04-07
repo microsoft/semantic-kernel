@@ -513,7 +513,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         // Specify whether to include vectors in the search results.
         WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
 
-        KeyValuePair<Expression<Func<TRecord, object?>>, bool>? sortExpression = options.Sort.Values.Count switch
+        var sortInfo = options.Sort.Values.Count switch
         {
             0 => null,
             1 => options.Sort.Values[0],
@@ -521,18 +521,12 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         };
 
         OrderBy? orderBy = null;
-        if (sortExpression.HasValue)
+        if (sortInfo is not null)
         {
-            var orderByName = this._model.GetDataOrKeyProperty(sortExpression.Value.Key) switch
-            {
-                VectorStoreRecordKeyPropertyModel => "id",
-                VectorStoreRecordDataPropertyModel dataProperty => dataProperty.StorageName,
-                _ => throw new InvalidOperationException("The provided sort property must be the Id or a payload property.")
-            };
-
+            var orderByName = this._model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
             orderBy = new(orderByName)
             {
-                Direction = sortExpression.Value.Value ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc
+                Direction = sortInfo.Ascending ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc
             };
         }
 

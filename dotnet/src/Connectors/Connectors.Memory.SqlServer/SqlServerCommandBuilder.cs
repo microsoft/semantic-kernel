@@ -380,8 +380,7 @@ internal static class SqlServerCommandBuilder
         int top,
         FilterOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
-        VectorStoreRecordModel model,
-        IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties)
+        VectorStoreRecordModel model)
     {
         SqlCommand command = connection.CreateCommand();
 
@@ -406,27 +405,25 @@ internal static class SqlServerCommandBuilder
             }
             sb.AppendLine();
         }
-        bool orderByClauseNotAdded = true;
-        foreach (var pair in orderByProperties)
+
+        if (options.Sort.Values.Count > 0)
         {
-            if (orderByClauseNotAdded)
+            sb.Append("ORDER BY ");
+
+            foreach (var sortInfo in options.Sort.Values)
             {
-                sb.Append("ORDER BY ");
-                orderByClauseNotAdded = false;
+                sb.AppendFormat("[{0}] {1},",
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
             }
 
-            sb.AppendFormat("[{0}] {1},", pair.Key.StorageName, pair.Value ? "ASC" : "DESC");
-        }
-
-        if (!orderByClauseNotAdded)
-        {
             sb.Length--; // remove the last comma
             sb.AppendLine();
         }
         else
         {
             // no order by properties, but we need to add something for OFFSET and NEXT to work
-            sb.AppendLine("ORDER BY (SELECT NULL)");
+            sb.AppendLine("ORDER BY (SELECT 1)");
         }
 
         // Negative Skip and Top values are rejected by the FilterOptions property setters.
@@ -583,7 +580,7 @@ internal static class SqlServerCommandBuilder
     {
         switch (value)
         {
-            case null when property is not null && property.Type == typeof(byte[]):
+            case null when property?.Type == typeof(byte[]):
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
                 break;
             case null:

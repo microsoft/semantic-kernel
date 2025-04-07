@@ -187,14 +187,14 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     }
 
     internal static DbCommand BuildSelectWhereCommand<TRecord>(
+        VectorStoreRecordModel model,
         SqliteConnection connection,
         int top,
         FilterOptions<TRecord> options,
         string table,
         IReadOnlyList<VectorStoreRecordPropertyModel> properties,
         string whereFilter,
-        Dictionary<string, object> whereParameters,
-        IEnumerable<KeyValuePair<string, bool>> orderByPropertyNames)
+        Dictionary<string, object> whereParameters)
     {
         StringBuilder builder = new(200);
 
@@ -214,19 +214,17 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendFormat("FROM {0}", table).AppendLine();
         builder.AppendFormat("WHERE {0}", whereClause).AppendLine();
 
-        bool orderByClauseNotAdded = true;
-        foreach (var pair in orderByPropertyNames)
+        if (options.Sort.Values.Count > 0)
         {
-            if (orderByClauseNotAdded)
+            builder.Append("ORDER BY ");
+
+            foreach (var sortInfo in options.Sort.Values)
             {
-                builder.Append("ORDER BY ");
-                orderByClauseNotAdded = false;
+                builder.AppendFormat("[{0}] {1},",
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
             }
 
-            builder.AppendFormat("[{0}] {1},", pair.Key, pair.Value ? "ASC" : "DESC");
-        }
-        if (!orderByClauseNotAdded)
-        {
             builder.Length--; // remove the last comma
             builder.AppendLine();
         }

@@ -373,11 +373,12 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
         foreach (var pair in options.Sort.Values)
         {
-            VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.Key);
+            VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
             string name = property.StorageName;
+            // From https://learn.microsoft.com/dotnet/api/azure.search.documents.searchoptions.orderby:
             // "Each expression can be followed by asc to indicate ascending, or desc to indicate descending".
             // "The default is ascending order."
-            if (!pair.Value)
+            if (!pair.Ascending)
             {
                 name += " desc";
             }

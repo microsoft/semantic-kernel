@@ -76,7 +76,6 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         Expression<Func<TRecord, bool>> filter,
         int top,
         FilterOptions<TRecord> queryOptions,
-        IEnumerable<KeyValuePair<VectorStoreRecordPropertyModel, bool>> orderByProperties,
         string collectionName,
         VectorStoreRecordModel model)
     {
@@ -84,18 +83,12 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
             string.Empty;
 
-        string sortPaths = string.Join(",", orderByProperties.Select(property =>
+        var sortPaths = string.Join(",", queryOptions.Sort.Values.Select(sortInfo =>
         {
-            string? sortPath = property.Key switch
-            {
-                VectorStoreRecordKeyPropertyModel key => "id",
-                _ => property.Key.StorageName,
-            };
+            string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 
-            return $$"""{ path: ["{{sortPath}}"], order: {{(property.Value ? "asc" : "desc")}} }""";
+            return $$"""{ path: ["{{sortPath}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
         }));
-
-        var sort = string.IsNullOrEmpty(sortPaths) ? string.Empty : $"sort: [ {sortPaths} ]";
 
         var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
 
@@ -106,7 +99,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               limit: {{top}}
               offset: {{queryOptions.Skip}}
               where: {{translatedFilter}}
-              {{sort}}
+              sort: [ {{sortPaths}} ]
             ) {
               {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
               {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
