@@ -7,7 +7,7 @@ import numpy as np
 from pandas import DataFrame
 from pytest import mark, raises
 
-from semantic_kernel.data.record_definition.vector_store_model_protocols import (
+from semantic_kernel.data.record_definition import (
     SerializeMethodProtocol,
     ToDictMethodProtocol,
 )
@@ -287,9 +287,11 @@ async def test_upsert_fail(DictVectorStoreRecordCollection, data_model_definitio
         data_model_definition=data_model_definition,
     )
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
-    with raises(VectorStoreOperationException, match="Error upserting record:"):
+    with raises(VectorStoreOperationException, match="Error upserting record"):
         await vector_store_record_collection.upsert(record)
-    with raises(VectorStoreOperationException, match="Error upserting records:"):
+    with raises(VectorStoreOperationException, match="Error upserting record"):
+        await vector_store_record_collection.upsert([record])
+    with raises(VectorStoreOperationException, match="Error upserting record"):
         await vector_store_record_collection.upsert_batch([record])
     assert len(vector_store_record_collection.inner_storage) == 0
 
@@ -304,9 +306,11 @@ async def test_get_fail(DictVectorStoreRecordCollection, data_model_definition):
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
-    with raises(VectorStoreOperationException, match="Error getting record:"):
+    with raises(VectorStoreOperationException, match="Error getting record"):
         await vector_store_record_collection.get("test_id")
-    with raises(VectorStoreOperationException, match="Error getting records:"):
+    with raises(VectorStoreOperationException, match="Error getting record"):
+        await vector_store_record_collection.get(["test_id"])
+    with raises(VectorStoreOperationException, match="Error getting record"):
         await vector_store_record_collection.get_batch(["test_id"])
 
 
@@ -336,9 +340,7 @@ async def test_get_fail_multiple(DictVectorStoreRecordCollection, data_model_def
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
     with (
-        patch(
-            "semantic_kernel.data.vector_storage.vector_store_record_collection.VectorStoreRecordCollection.deserialize"
-        ) as deserialize_mock,
+        patch("semantic_kernel.data.vector_storage.VectorStoreRecordCollection.deserialize") as deserialize_mock,
         raises(
             VectorStoreModelDeserializationException, match="Error deserializing record, multiple records returned:"
         ),
@@ -360,9 +362,11 @@ async def test_delete_fail(DictVectorStoreRecordCollection, data_model_definitio
     record = {"id": "test_id", "content": "test_content", "vector": [1.0, 2.0, 3.0]}
     await vector_store_record_collection.upsert(record)
     assert len(vector_store_record_collection.inner_storage) == 1
-    with raises(VectorStoreOperationException, match="Error deleting record:"):
+    with raises(VectorStoreOperationException, match="Error deleting record"):
         await vector_store_record_collection.delete("test_id")
-    with raises(VectorStoreOperationException, match="Error deleting records:"):
+    with raises(VectorStoreOperationException, match="Error deleting record"):
+        await vector_store_record_collection.delete(["test_id"])
+    with raises(VectorStoreOperationException, match="Error deleting record"):
         await vector_store_record_collection.delete_batch(["test_id"])
     assert len(vector_store_record_collection.inner_storage) == 1
 

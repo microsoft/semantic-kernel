@@ -26,7 +26,7 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
             templateFactory: new KernelPromptTemplateFactory(),
             templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
-            Arguments =
+            Arguments = new()
             {
                 { "topic", "Dog" },
                 { "length", "3" }

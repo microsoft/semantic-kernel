@@ -35,7 +35,7 @@ public class ChatCompletionAgentInvokeTests() : InvokeTests(() => new ChatComple
             options: new()
             {
                 KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) }),
-                OnNewMessage = (message) =>
+                OnIntermediateMessage = (message) =>
                 {
                     notifiedMessages.Add(message);
                     return Task.CompletedTask;
@@ -63,7 +63,7 @@ public class ChatCompletionAgentInvokeTests() : InvokeTests(() => new ChatComple
             options: new()
             {
                 KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(autoInvoke: false) }),
-                OnNewMessage = (message) =>
+                OnIntermediateMessage = (message) =>
                 {
                     notifiedMessages.Add(message);
                     return Task.CompletedTask;
