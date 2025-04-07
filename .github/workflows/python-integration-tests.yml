@@ -533,7 +533,7 @@ jobs:
           script: core.setFailed('Integration Tests Cancelled!')
 
       - name: Microsoft Teams Notification
-        uses: skitionek/notify-microsoft-teams@master
+        uses: skitionek/notify-microsoft-teams@v1.0.8
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
           webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
@@ -543,7 +543,7 @@ jobs:
           title: "{title: ` ${{ env.run_type }}: ${{ env.date }} `, text: ` ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`}"
 
       - name: Microsoft Teams Notification (Dry Run)
-        uses: skitionek/notify-microsoft-teams@master
+        uses: skitionek/notify-microsoft-teams@v1.0.8
         if: github.ref != 'refs/heads/main'
         with:
           webhook_url: NONE

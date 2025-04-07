@@ -6,16 +6,19 @@ from typing import Annotated
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents import ChatHistory, FunctionCallContent, FunctionResultContent
+from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.functions import kernel_function
 
 """
 The following sample demonstrates how to create an Azure AI Agent
-and use it with streaming responses. Additionally, the invoke_stream
-configures a chat history callback to receive the conversation history
-once the streaming invocation is complete. The agent is configured to use
-a plugin that provides a list of specials from the menu and the price
-of the requested menu item.
+and use it with functions. In order to answer user questions, the
+agent internally uses the functions. These internal steps are returned
+to the user as part of the agent's response. Thus, the invoke method
+configures a message callback to receive the agent's internal messages. 
+
+The agent is configured to use a plugin that provides a list of
+specials from the menu and the price of the requested menu item.
 """
 
 
@@ -38,11 +41,11 @@ class MenuPlugin:
         return "$9.99"
 
 
-final_chat_history = ChatHistory()
+intermediate_steps: list[ChatMessageContent] = []
 
 
-def handle_stream_completion(history: ChatHistory) -> None:
-    final_chat_history.messages.extend(history.messages)
+async def handle_intermediate_steps(message: ChatMessageContent) -> None:
+    intermediate_steps.append(message)
 
 
 async def main() -> None:
@@ -87,26 +90,21 @@ async def main() -> None:
         try:
             for user_input in user_inputs:
                 print(f"# User: '{user_input}'")
-                first_chunk = True
-                async for response in agent.invoke_stream(
+                async for response in agent.invoke(
                     messages=user_input,
                     thread=thread,
-                    on_complete=handle_stream_completion,
+                    on_intermediate_message=handle_intermediate_steps,
                 ):
-                    if first_chunk:
-                        print(f"# {response.role}: ", end="", flush=True)
-                        first_chunk = False
-                    print(response.content, end="", flush=True)
+                    print(f"# Agent: {response}")
                     thread = response.thread
-                print()
         finally:
             # Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
-        # Print the final chat history
-        print("\nFinal chat history:")
-        for msg in final_chat_history.messages:
+        # Print the intermediate steps
+        print("\nIntermediate Steps:")
+        for msg in intermediate_steps:
             if any(isinstance(item, FunctionResultContent) for item in msg.items):
                 for fr in msg.items:
                     if isinstance(fr, FunctionResultContent):
@@ -117,6 +115,33 @@ async def main() -> None:
                         print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
             else:
                 print(f"{msg.role}: {msg.content}")
+
+    # Sample output:
+    # User: 'Hello'
+    # Agent: Hello! How can I assist you today?
+    # User: 'What is the special soup?'
+    # Agent: The special soup is Clam Chowder. Would you like to know more about the menu or anything else?
+    # User: 'How much does that cost?'
+    # Agent: The Clam Chowder costs $9.99. If you have any more questions or need further assistance, feel free to ask!
+    # User: 'Thank you'
+    # Agent: You're welcome! If you have any more questions in the future, don't hesitate to ask. Have a great day!
+    #
+    # Intermediate Steps:
+    # AuthorRole.ASSISTANT: Hello! How can I assist you today?
+    # Function Call:> MenuPlugin-get_specials with arguments: {}
+    # Function Result:>
+    #         Special Soup: Clam Chowder
+    #         Special Salad: Cobb Salad
+    #         Special Drink: Chai Tea
+    #         for function: MenuPlugin-get_specials
+    # AuthorRole.ASSISTANT: The special soup is Clam Chowder. Would you like to know more about the menu or anything
+    #                       else?
+    # Function Call:> MenuPlugin-get_item_price with arguments: {"menu_item":"Clam Chowder"}
+    # Function Result:> $9.99 for function: MenuPlugin-get_item_price
+    # AuthorRole.ASSISTANT: The Clam Chowder costs $9.99. If you have any more questions or need further assistance,
+    #                       feel free to ask!
+    # AuthorRole.ASSISTANT: You're welcome! If you have any more questions in the future, don't hesitate to ask.
+    #                       Have a great day!
 
 
 if __name__ == "__main__":
