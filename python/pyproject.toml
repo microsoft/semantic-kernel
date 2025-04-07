@@ -55,7 +55,7 @@ dependencies = [
 ### Optional dependencies
 [project.optional-dependencies]
 autogen = [
-    "autogen-agentchat >= 0.2, <0.4"
+    "autogen-agentchat >= 0.2, < 0.6"
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
