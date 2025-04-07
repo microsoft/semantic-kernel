@@ -151,8 +151,10 @@ class SendEvents(str, Enum):
     RESPONSE_CANCEL = "response.cancel"
 
 
-def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) -> RealtimeClientEvent:
+def _create_openai_realtime_client_event(event_type: SendEvents | str, **kwargs: Any) -> RealtimeClientEvent:
     """Create an OpenAI Realtime client event from a event type and kwargs."""
+    if isinstance(event_type, str):
+        event_type = SendEvents(event_type)
     match event_type:
         case SendEvents.SESSION_UPDATE:
             if "session" not in kwargs:
