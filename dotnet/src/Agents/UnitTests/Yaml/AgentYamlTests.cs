@@ -21,9 +21,9 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Yaml;
 
 /// <summary>
-/// Unit tests for <see cref="YamlKernelAgentFactoryExtensions"/>.
+/// Unit tests for <see cref="YamlAgentFactoryExtensions"/>.
 /// </summary>
-public class KernelAgentYamlTests : IDisposable
+public class AgentYamlTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
@@ -32,7 +32,7 @@ public class KernelAgentYamlTests : IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
     /// </summary>
-    public KernelAgentYamlTests()
+    public AgentYamlTests()
     {
         this._messageHandlerStub = new HttpMessageHandlerStub();
         this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);

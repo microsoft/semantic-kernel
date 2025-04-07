@@ -7,7 +7,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Represents an output for an agent.
 /// </summary>
-[ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
 public sealed class AgentOutput
 {

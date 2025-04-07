@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// The options for defining a tool.
 /// </summary>
-[ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
 public sealed class AgentToolDefinition
 {

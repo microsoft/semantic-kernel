@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Extension methods for <see cref="AgentFactory"/> to create agents from YAML.
 /// </summary>
-public static class YamlKernelAgentFactoryExtensions
+public static class YamlAgentFactoryExtensions
 {
     /// <summary>
     /// Create a <see cref="Agent"/> from the given YAML text.
