@@ -77,6 +77,12 @@ internal sealed class LocalMap : LocalStep
                     Type resultType = capturedEvent.Value;
 
                     mapOperations[index].Context.Results.TryGetValue(eventName, out object? result);
+                    if (result is KernelProcessEventData eventData)
+                    {
+                        result = eventData.ToObject();
+                        resultType = Type.GetType(eventData.ObjectType)!;
+                    }
+
                     if (!resultMap.TryGetValue(eventName, out Array? results))
                     {
                         results = Array.CreateInstance(resultType, mapOperations.Count);
