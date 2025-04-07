@@ -7,7 +7,7 @@ from abc import abstractmethod
 from collections.abc import Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
 from functools import partial
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 from mcp import McpError, types
 from mcp.client.session import ClientSession
@@ -27,6 +27,7 @@ from semantic_kernel import Kernel
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
+from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
@@ -413,39 +414,28 @@ class MCPWebsocketPlugin(MCPPluginBase):
 # region: Kernel as MCP Server
 
 
-def _kernel_content_to_message(
+def _kernel_content_to_mcp_type(
     content: TextContent | ImageContent | BinaryContent | ChatMessageContent,
-    role: Literal["user", "assistant"] = "assistant",
-) -> Sequence[types.PromptMessage]:
+) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
     """Convert a kernel content type to a MCP type."""
-    if isinstance(content, ChatMessageContent) and content.role in (AuthorRole.USER, AuthorRole.ASSISTANT):
-        role = content.role.value  # type: ignore[assignment]
     if isinstance(content, TextContent):
-        return [types.PromptMessage(role=role, content=types.TextContent(type="text", text=content.text))]
+        return [types.TextContent(type="text", text=content.text)]
     if isinstance(content, ImageContent):
-        return [
-            types.PromptMessage(
-                role=role,
-                content=types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type),
-            )
-        ]
+        return [types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type)]
     if isinstance(content, BinaryContent):
         return [
-            types.PromptMessage(
-                role=role,
-                content=types.EmbeddedResource(
-                    type="resource",
-                    resource=types.BlobResourceContents(
-                        blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "kernel://binary"
-                    ),
+            types.EmbeddedResource(
+                type="resource",
+                resource=types.BlobResourceContents(
+                    blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "kernel:///binary"
                 ),
             )
         ]
     if isinstance(content, ChatMessageContent):
-        messages: list[types.PromptMessage] = []
+        messages: list[types.TextContent | types.ImageContent | types.EmbeddedResource] = []
         for item in content.items:
             if isinstance(item, (TextContent, ImageContent, BinaryContent)):
-                messages.extend(_kernel_content_to_message(item, role))
+                messages.extend(_kernel_content_to_mcp_type(item))
         return messages
 
     raise FunctionExecutionException(f"Unsupported content type: {type(content)}")
@@ -458,7 +448,6 @@ def create_mcp_server_from_kernel(
     version: str | None = None,
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
-    prompt_functions: OptionalOneOrMany[str] = None,
     excluded_functions: OptionalOneOrMany[str] = None,
     **kwargs: Any,
 ) -> Server["LifespanResultT"]:
@@ -467,9 +456,8 @@ def create_mcp_server_from_kernel(
     This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
     configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-    By default, all functions are exposed as Tools, you can specify which functions to expose as prompts by passing
-    the `prompt_functions` argument. If a function is exposed as a prompt, it will not be exposed as a tool.
-    If you want to not expose a function at all, you can use the `excluded_functions` argument.
+    By default, all functions are exposed as Tools, you can specify which functions,
+    to do this you can use the `excluded_functions` argument.
     These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
 
     Args:
@@ -478,8 +466,6 @@ def create_mcp_server_from_kernel(
         version: The version of the server.
         instructions: The instructions to use for the server.
         lifespan: The lifespan of the server.
-        prompt_functions: The list of fully qualified function names to expose as prompts.
-            if None, all functions will be exposed as tools only.
         excluded_functions: The list of fully qualified function names to exclude from the server.
             if None, no functions will be excluded.
         kwargs: Any extra arguments to pass to the server creation.
@@ -499,61 +485,10 @@ def create_mcp_server_from_kernel(
     if kwargs:
         server_args.update(kwargs)
 
-    if prompt_functions is not None and not isinstance(prompt_functions, list):
-        prompt_functions = [prompt_functions]  # type: ignore
     if excluded_functions is not None and not isinstance(excluded_functions, list):
         excluded_functions = [excluded_functions]  # type: ignore
 
     server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
-
-    @server.list_prompts()
-    async def _list_prompts() -> list[types.Prompt]:
-        """List all prompts in the kernel."""
-        if prompt_functions is None:
-            return []
-        functions_to_expose = [
-            func
-            for func in kernel.get_full_list_of_function_metadata()
-            if func.fully_qualified_name in prompt_functions
-        ]
-        prompts = [
-            types.Prompt(
-                name=func.fully_qualified_name,
-                description=func.description,
-                arguments=[
-                    types.PromptArgument(name=param.name, description=param.description, required=param.is_required)
-                    for param in func.parameters
-                    if param.name
-                ],
-            )
-            for func in functions_to_expose
-        ]
-        logger.debug(f"Prompts: {prompts}")
-        await asyncio.sleep(0.0)
-        return prompts
-
-    @server.get_prompt()
-    async def _get_prompt(*args: Any) -> types.GetPromptResult:
-        """Call a prompt function from the kernel."""
-        logger.debug("Prompt called with args: %s", args)
-        function_name, arguments = args[0], args[1]
-        result = await _call_kernel_function(function_name, arguments)
-        function_name = args[0]
-        if result:
-            logger.info(f"Prompt Result: {result}")
-            messages: list[types.PromptMessage] = []
-            if isinstance(result.value, list):
-                for item in result.value:
-                    messages.extend(_kernel_content_to_message(item))
-            else:
-                messages.extend(_kernel_content_to_message(result.value))
-            return types.GetPromptResult(messages=messages)
-        raise McpError(
-            error=types.ErrorData(
-                code=types.INTERNAL_ERROR,
-                message=f"Prompt {function_name} returned no result",
-            ),
-        )
 
     @server.list_tools()
     async def _list_tools() -> list[types.Tool]:
@@ -562,7 +497,6 @@ def create_mcp_server_from_kernel(
             func
             for func in kernel.get_full_list_of_function_metadata()
             if func.fully_qualified_name not in (excluded_functions or [])
-            and func.fully_qualified_name not in (prompt_functions or [])
         ]
         tools = [
             types.Tool(
@@ -589,7 +523,24 @@ def create_mcp_server_from_kernel(
         function_name, arguments = args[0], args[1]
         result = await _call_kernel_function(function_name, arguments)
         if result:
-            return [types.TextContent(type="text", text=str(result.value))]
+            value = result.value
+            messages = []
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(value, KernelContent):
+                        messages.extend(_kernel_content_to_mcp_type(item))
+                    else:
+                        messages.append(
+                            types.TextContent(type="text", text=str(item)),
+                        )
+            else:
+                if isinstance(value, KernelContent):
+                    messages.extend(_kernel_content_to_mcp_type(value))
+                else:
+                    messages.append(
+                        types.TextContent(type="text", text=str(value)),
+                    )
+            return messages
         raise McpError(
             error=types.ErrorData(
                 code=types.INTERNAL_ERROR,

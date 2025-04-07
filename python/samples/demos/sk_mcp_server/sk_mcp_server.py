@@ -91,17 +91,19 @@ def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -
                     name="message",
                     description="This is the message.",
                     is_required=True,
+                    json_schema='{ "type": "string", "description": "This is the message."}',
                 ),
                 InputVariable(
                     name="extra",
                     description="This is extra.",
                     default="default",
                     is_required=False,
+                    json_schema='{ "type": "string", "description": "This is the message."}',
                 ),
             ],
         ),
     )
-    server = kernel.as_mcp_server(server_name="sk", prompt_functions="prompt-prompt")
+    server = kernel.as_mcp_server(server_name="sk")
 
     if transport == "sse" and port is not None:
         import uvicorn

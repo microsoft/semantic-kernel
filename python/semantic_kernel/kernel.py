@@ -492,7 +492,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         version: str | None = None,
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
-        prompt_functions: OptionalOneOrMany[str] = None,
         excluded_functions: OptionalOneOrMany[str] = None,
         **kwargs: Any,
     ) -> "Server":
@@ -501,9 +500,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-        By default, all functions are exposed as Tools, you can specify which functions to expose as prompts by passing
-        the `prompt_functions` argument. If a function is exposed as a prompt, it will not be exposed as a tool.
-        If you want to not expose a function at all, you can use the `excluded_functions` argument.
+         By default, all functions are exposed as Tools, you can specify which functions,
+        to do this you can use the `excluded_functions` argument.
         These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
 
         Args:
@@ -512,8 +510,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             version: The version of the server.
             instructions: The instructions to use for the server.
             lifespan: The lifespan of the server.
-            prompt_functions: The list of fully qualified function names to expose as prompts.
-                if None, all functions will be exposed as tools only.
             excluded_functions: The list of fully qualified function names to exclude from the server.
                 if None, no functions will be excluded.
             kwargs: Any extra arguments to pass to the server creation.
@@ -531,7 +527,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             version=version,
             instructions=instructions,
             lifespan=lifespan,
-            prompt_functions=prompt_functions,
             excluded_functions=excluded_functions,
             **kwargs,
         )

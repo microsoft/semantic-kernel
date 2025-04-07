@@ -167,7 +167,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             function = KernelFunction.from_prompt(
                 function_name=function_name,
                 plugin_name=plugin_name,
-                description=description,
+                description=description or prompt_template_config.description if prompt_template_config else None,
                 prompt=prompt,
                 template_format=template_format,
                 prompt_template=prompt_template,
