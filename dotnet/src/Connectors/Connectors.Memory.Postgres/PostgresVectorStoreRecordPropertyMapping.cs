@@ -216,10 +216,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
                     break;
 
                 case VectorStoreRecordKeyPropertyModel:
-                    continue;
-
-                default:
-                    throw new UnreachableException();
+                    break;
             }
         }
 
