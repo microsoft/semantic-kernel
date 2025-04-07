@@ -329,6 +329,38 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     }
 
     [Fact(Skip = SkipReason)]
+    public async Task ItCanUpsertRecordBatchAsync()
+    {
+        // Arrange
+        const string HotelId = "55555555-5555-5555-5555-5555555555";
+        var sut = new MongoDBVectorStoreRecordCollection<MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+
+        var records = Enumerable.Range(0, 10).Select(i => CreateTestHotel(HotelId + i.ToString("x2"))).ToList();
+        await foreach (var upsertKey in sut.UpsertAsync(records))
+        {
+            var getResult = await sut.GetAsync(upsertKey);
+            Assert.NotNull(getResult);
+            Assert.StartsWith(HotelId, getResult.HotelId);
+        }
+
+        // Act
+        foreach (var record in records)
+        {
+            record.HotelName = "Updated name";
+            record.HotelRating = 10;
+        }
+
+        // Assert
+        await foreach (var upsertKey in sut.UpsertAsync(records))
+        {
+            var getResult = await sut.GetAsync(upsertKey);
+            Assert.NotNull(getResult);
+            Assert.Equal("Updated name", getResult.HotelName);
+            Assert.Equal(10, getResult.HotelRating);
+        }
+    }
+
+    [Fact(Skip = SkipReason)]
     public async Task VectorizedSearchReturnsValidResultsByDefaultAsync()
     {
         // Arrange
