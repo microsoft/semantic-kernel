@@ -42,11 +42,11 @@ class TestOpenAIAssistantAgentIntegration:
             client, model = OpenAIAssistantAgent.setup_resources()
             AgentClass = OpenAIAssistantAgent
 
-        client, model = AzureAssistantAgent.setup_resources()
-
         if params.get("enable_code_interpreter"):
             code_interpreter_tool, code_interpreter_tool_resources = (
                 AzureAssistantAgent.configure_code_interpreter_tool()
+                if agent_type == "azure"
+                else OpenAIAssistantAgent.configure_code_interpreter_tool()
             )
             tools.extend(code_interpreter_tool)
             tool_resources.update(code_interpreter_tool_resources)
@@ -61,8 +61,10 @@ class TestOpenAIAssistantAgentIntegration:
                 name="assistant_file_search_int_tests",
                 file_ids=[file.id],
             )
-            file_search_tool, file_search_tool_resources = AzureAssistantAgent.configure_file_search_tool(
-                vector_store.id
+            file_search_tool, file_search_tool_resources = (
+                AzureAssistantAgent.configure_file_search_tool(vector_store.id)
+                if agent_type == "azure"
+                else OpenAIAssistantAgent.configure_file_search_tool(vector_store.id)
             )
             tools.extend(file_search_tool)
             tool_resources.update(file_search_tool_resources)
