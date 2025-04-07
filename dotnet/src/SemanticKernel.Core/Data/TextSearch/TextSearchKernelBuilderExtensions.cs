@@ -8,7 +8,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register <see cref="ITextSearch"/> for use with <see cref="KernelBuilder"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class TextSearchKernelBuilderExtensions
 {
     /// <summary>

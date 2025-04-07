@@ -86,9 +86,9 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             async (m) =>
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(m).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(m).ConfigureAwait(false);
                 }
             },
             options?.KernelArguments,
@@ -116,9 +116,9 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
 
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(result).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(result).ConfigureAwait(false);
                 }
             }
 
@@ -127,7 +127,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -170,9 +170,9 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             async (m) =>
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(m).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(m).ConfigureAwait(false);
                 }
             },
             options?.KernelArguments,
@@ -187,7 +187,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
