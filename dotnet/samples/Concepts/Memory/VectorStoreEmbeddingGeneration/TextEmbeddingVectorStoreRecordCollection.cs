@@ -137,6 +137,16 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         return await this.VectorizedSearchAsync(embeddingValue, top, options, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._decoratedVectorStoreRecordCollection.GetService(serviceType, serviceKey);
+    }
+
     /// <summary>
     /// Generate and add embeddings for each embedding field that has a <see cref="GenerateTextEmbeddingAttribute"/> on the provided record.
     /// </summary>

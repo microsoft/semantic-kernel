@@ -12,8 +12,6 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class ExceptionWrapper
 {
-    internal const string VectorStoreType = "SqlServer";
-
     internal static async Task<T> WrapAsync<T>(
         SqlConnection connection,
         SqlCommand command,
@@ -42,7 +40,7 @@ internal static class ExceptionWrapper
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = operationName,
-                VectorStoreType = VectorStoreType,
+                VectorStoreType = SqlServerConstants.VectorStoreSystemName,
                 CollectionName = collectionName
             };
         }
@@ -63,7 +61,7 @@ internal static class ExceptionWrapper
             throw new VectorStoreOperationException(ex.Message, ex)
             {
                 OperationName = operationName,
-                VectorStoreType = VectorStoreType,
+                VectorStoreType = SqlServerConstants.VectorStoreSystemName,
                 CollectionName = collectionName
             };
         }

@@ -32,6 +32,7 @@ public class AzureAISearchVectorStoreTests
         this._searchClientMock = new Mock<SearchClient>(MockBehavior.Strict);
         this._searchIndexClientMock = new Mock<SearchIndexClient>(MockBehavior.Strict);
         this._searchIndexClientMock.Setup(x => x.GetSearchClient(TestCollectionName)).Returns(this._searchClientMock.Object);
+        this._searchIndexClientMock.Setup(x => x.ServiceName).Returns("TestService");
     }
 
     [Fact]

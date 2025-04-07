@@ -8,6 +8,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 internal static class SqliteConstants
 {
+    internal const string VectorStoreSystemName = "sqlite";
+
     /// <summary>
     /// SQLite extension name for vector search.
     /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.

@@ -23,8 +23,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "MongoDB";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
@@ -80,6 +80,13 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         this._options = options ?? new MongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
         this._mapper = this.InitializeMapper();
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
+            VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
@@ -95,7 +102,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             throw new VectorStoreOperationException("Collection already exists.")
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = MongoDBConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = "CreateCollection"
             };
@@ -166,7 +173,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            MongoDBConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
@@ -193,7 +200,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 if (record is not null)
                 {
                     yield return VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
+                        MongoDBConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(record, new()));
@@ -211,7 +218,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            MongoDBConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -350,7 +357,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
             foreach (var response in cursor.Current)
             {
                 var record = VectorStoreErrorHandler.RunModelConversion(
-                    DatabaseName,
+                    MongoDBConstants.VectorStoreSystemName,
                     this.CollectionName,
                     "GetAsync",
                     () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
@@ -413,6 +420,20 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
             },
             cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(IMongoDatabase) ? this._mongoDatabase :
+            serviceType == typeof(IMongoCollection<BsonDocument>) ? this._mongoCollection :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     #region private
@@ -525,7 +546,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
+                        MongoDBConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors }));
@@ -564,7 +585,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = MongoDBConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -581,7 +602,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = MongoDBConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -612,7 +633,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 {
                     throw new VectorStoreOperationException("Call to vector store failed.", ex)
                     {
-                        VectorStoreType = DatabaseName,
+                        VectorStoreType = MongoDBConstants.VectorStoreSystemName,
                         CollectionName = this.CollectionName,
                         OperationName = operationName
                     };
@@ -646,7 +667,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
                 {
                     throw new VectorStoreOperationException("Call to vector store failed.", ex)
                     {
-                        VectorStoreType = DatabaseName,
+                        VectorStoreType = MongoDBConstants.VectorStoreSystemName,
                         CollectionName = this.CollectionName,
                         OperationName = operationName
                     };

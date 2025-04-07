@@ -26,6 +26,9 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
     /// <inheritdoc />
     public string CollectionName { get; }
 
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     /// <summary>Postgres client that is used to interact with the database.</summary>
     private readonly IPostgresVectorStoreDbClient _client;
 
@@ -80,6 +83,13 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.DictionaryCustomMapper ?? new PostgresVectorStoreRecordMapper<TRecord>(this._model);
 #pragma warning restore CS0618
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = PostgresConstants.VectorStoreSystemName,
+            VectorStoreName = this._client.DatabaseName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc/>
@@ -124,7 +134,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         const string OperationName = "Upsert";
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            PostgresConstants.DatabaseName,
+            PostgresConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -151,7 +161,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            PostgresConstants.DatabaseName,
+            PostgresConstants.VectorStoreSystemName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -185,7 +195,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
 
             if (row is null) { return default; }
             return VectorStoreErrorHandler.RunModelConversion(
-                PostgresConstants.DatabaseName,
+                PostgresConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors }));
@@ -205,7 +215,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             this._client.GetBatchAsync(this.CollectionName, keys, this._model, includeVectors, cancellationToken)
                 .SelectAsync(row =>
                     VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.DatabaseName,
+                        PostgresConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(row, new() { IncludeVectors = includeVectors })),
@@ -282,7 +292,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             .SelectAsync(result =>
                 {
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        PostgresConstants.DatabaseName,
+                        PostgresConstants.VectorStoreSystemName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(
@@ -316,11 +326,24 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
             cancellationToken).ConfigureAwait(false))
         {
             yield return VectorStoreErrorHandler.RunModelConversion(
-                PostgresConstants.DatabaseName,
+                PostgresConstants.VectorStoreSystemName,
                 this.CollectionName,
                 "Get",
                 () => this._mapper.MapFromStorageToDataModel(dictionary, mapperOptions));
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(NpgsqlDataSource) ? this._client.DataSource :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     private Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
@@ -338,7 +361,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = PostgresConstants.DatabaseName,
+                VectorStoreType = PostgresConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -355,7 +378,7 @@ public class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRe
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = PostgresConstants.DatabaseName,
+                VectorStoreType = PostgresConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

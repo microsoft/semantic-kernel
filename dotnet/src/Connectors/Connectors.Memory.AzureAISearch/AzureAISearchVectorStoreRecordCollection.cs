@@ -30,8 +30,8 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
     IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureAISearch";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -95,7 +95,13 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             this._mapper = new AzureAISearchGenericDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, JsonObject>;
         }
-#pragma warning restore CS0618
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+            VectorStoreName = searchIndexClient.ServiceName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
@@ -117,7 +123,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = "GetIndex"
             };
@@ -512,6 +518,20 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         return this.SearchAndMapToDataModelAsync(keywordsCombined, searchOptions, internalOptions.IncludeVectors, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
+            serviceType == typeof(SearchClient) ? this._searchClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     /// <summary>
     /// Get the document with the given key and map it to the data model using the configured mapper type.
     /// </summary>
@@ -541,7 +561,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureAISearchConstants.VectorStoreSystemName,
                 this._collectionName,
                 OperationName,
                 () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
@@ -604,7 +624,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         if (this._mapper is not null)
         {
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureAISearchConstants.VectorStoreSystemName!,
                 this._collectionName,
                 OperationName,
                 () => records.Select(this._mapper!.MapFromDataToStorageModel));
@@ -632,7 +652,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         await foreach (var result in results.ConfigureAwait(false))
         {
             var document = VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                AzureAISearchConstants.VectorStoreSystemName,
                 this._collectionName,
                 operationName,
                 () => this._mapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
@@ -716,7 +736,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -725,7 +745,7 @@ public class AzureAISearchVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

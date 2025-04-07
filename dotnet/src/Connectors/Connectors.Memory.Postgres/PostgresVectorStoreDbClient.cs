@@ -27,7 +27,11 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 {
     private readonly string _schema = schema;
 
+    private readonly NpgsqlConnectionStringBuilder _connectionStringBuilder = new(dataSource.ConnectionString);
+
     public NpgsqlDataSource DataSource { get; } = dataSource;
+
+    public string? DatabaseName => this._connectionStringBuilder.Database;
 
     /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)

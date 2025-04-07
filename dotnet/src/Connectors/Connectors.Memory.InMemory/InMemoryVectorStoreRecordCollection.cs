@@ -23,6 +23,9 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
@@ -103,6 +106,12 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
                 return property.GetValueAsObject(record!);
             };
 #pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
+            CollectionName = collectionName
+        };
     }
 
     /// <summary>
@@ -144,7 +153,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.FromException(new VectorStoreOperationException("Collection already exists.")
         {
-            VectorStoreType = "InMemory",
+            VectorStoreType = InMemoryConstants.VectorStoreSystemName,
             CollectionName = this.CollectionName,
             OperationName = "CreateCollection"
         });
@@ -300,6 +309,19 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Build the response.
         var vectorSearchResultList = resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
         return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <inheritdoc />

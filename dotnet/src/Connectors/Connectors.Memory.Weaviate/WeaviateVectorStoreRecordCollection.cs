@@ -25,6 +25,9 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     /// <summary>Default JSON serializer options.</summary>
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
@@ -97,6 +100,12 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         // Assign mapper.
         this._mapper = this.InitializeMapper();
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
@@ -209,7 +218,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             }
 
             return VectorStoreErrorHandler.RunModelConversion(
-                WeaviateConstants.DatabaseName,
+                WeaviateConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
@@ -251,7 +260,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         var responses = await this.RunOperationAsync(OperationName, async () =>
         {
             var jsonObjects = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-                WeaviateConstants.DatabaseName,
+                WeaviateConstants.VectorStoreSystemName,
                 this.CollectionName,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -349,6 +358,19 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(HttpClient) ? this._httpClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
     #region private
 
     private async Task<VectorSearchResults<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, CancellationToken cancellationToken)
@@ -363,7 +385,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException($"Error occurred during vector search. Response: {content}")
             {
-                VectorStoreType = WeaviateConstants.DatabaseName,
+                VectorStoreType = WeaviateConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -374,7 +396,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
-                WeaviateConstants.DatabaseName,
+                WeaviateConstants.VectorStoreSystemName,
                 this.CollectionName,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -439,7 +461,7 @@ public class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = WeaviateConstants.DatabaseName,
+                VectorStoreType = WeaviateConstants.VectorStoreSystemName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
