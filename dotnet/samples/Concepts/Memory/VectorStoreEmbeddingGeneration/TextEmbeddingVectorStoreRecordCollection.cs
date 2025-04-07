@@ -47,7 +47,6 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    [Obsolete("Use GetService(typeof(VectorStoreRecordCollectionMetadata)) to get an information about vector store record collection.")]
     public string CollectionName => this._decoratedVectorStoreRecordCollection.CollectionName;
 
     /// <inheritdoc />
