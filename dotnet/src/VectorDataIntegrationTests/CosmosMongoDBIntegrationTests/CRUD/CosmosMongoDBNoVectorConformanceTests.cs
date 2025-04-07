@@ -2,11 +2,16 @@
 
 using CosmosMongoDBIntegrationTests.Support;
 using VectorDataSpecificationTests.CRUD;
+using VectorDataSpecificationTests.Support;
 using Xunit;
 
 namespace CosmosMongoDBIntegrationTests.CRUD;
 
-public class CosmosMongoDBNoVectorConformanceTests(CosmosMongoDBNoVectorModelFixture fixture)
-    : NoVectorConformanceTests<string>(fixture), IClassFixture<CosmosMongoDBNoVectorModelFixture>
+public class CosmosMongoDBNoVectorConformanceTests(CosmosMongoDBNoVectorConformanceTests.Fixture fixture)
+    : NoVectorConformanceTests<string>(fixture), IClassFixture<CosmosMongoDBNoVectorConformanceTests.Fixture>
 {
+    public new class Fixture : NoVectorConformanceTests<string>.Fixture
+    {
+        public override TestStore TestStore => CosmosMongoDBTestStore.Instance;
+    }
 }

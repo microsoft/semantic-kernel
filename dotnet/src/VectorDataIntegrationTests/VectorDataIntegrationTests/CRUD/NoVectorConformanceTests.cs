@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using VectorDataSpecificationTests.Models;
+using Microsoft.Extensions.VectorData;
 using VectorDataSpecificationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
@@ -11,7 +11,7 @@ namespace VectorDataSpecificationTests.CRUD;
 /// Tests CRUD operations using a model without a vector.
 /// This is only supported by a subset of databases so only extend if applicable for your database.
 /// </summary>
-public class NoVectorConformanceTests<TKey>(NoVectorModelFixture<TKey> fixture) where TKey : notnull
+public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixture fixture) where TKey : notnull
 {
     [ConditionalFact]
     public Task GetAsyncReturnsInsertedRecord_WithVectors()
@@ -42,7 +42,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorModelFixture<TKey> fixture) 
     {
         var collection = fixture.Collection;
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
-        NoVectorModel<TKey> inserted = new()
+        NoVectorModel inserted = new()
         {
             Id = expectedKey,
             Text = "some"
@@ -68,7 +68,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorModelFixture<TKey> fixture) 
     {
         var collection = fixture.Collection;
         var existingRecord = fixture.TestData[1];
-        NoVectorModel<TKey> updated = new()
+        NoVectorModel updated = new()
         {
             Id = existingRecord.Id,
             Text = "updated"
@@ -90,5 +90,83 @@ public class NoVectorConformanceTests<TKey>(NoVectorModelFixture<TKey> fixture) 
         Assert.NotNull(await fixture.Collection.GetAsync(recordToRemove.Id));
         await fixture.Collection.DeleteAsync(recordToRemove.Id);
         Assert.Null(await fixture.Collection.GetAsync(recordToRemove.Id));
+    }
+
+    /// <summary>
+    /// This class is for testing databases that support having no vector.
+    /// Not all DBs support this.
+    /// </summary>
+    public sealed class NoVectorModel
+    {
+        public const int DimensionCount = 3;
+
+        [VectorStoreRecordKey(StoragePropertyName = "key")]
+        public TKey Id { get; set; } = default!;
+
+        [VectorStoreRecordData(StoragePropertyName = "text")]
+        public string? Text { get; set; }
+
+        public void AssertEqual(NoVectorModel? other)
+        {
+            Assert.NotNull(other);
+            Assert.Equal(this.Id, other.Id);
+            Assert.Equal(this.Text, other.Text);
+        }
+    }
+
+    /// <summary>
+    /// Provides data and configuration for a model without a vector, which is supported by some connectors.
+    /// </summary>
+    public abstract class Fixture : VectorStoreCollectionFixture<TKey, NoVectorModel>
+    {
+        protected override List<NoVectorModel> BuildTestData() =>
+        [
+            new()
+            {
+                Id = this.GenerateNextKey<TKey>(),
+                Text = "UsedByGetTests",
+            },
+            new()
+            {
+                Id = this.GenerateNextKey<TKey>(),
+                Text = "UsedByUpdateTests",
+            },
+            new()
+            {
+                Id = this.GenerateNextKey<TKey>(),
+                Text = "UsedByDeleteTests",
+            },
+            new()
+            {
+                Id = this.GenerateNextKey<TKey>(),
+                Text = "UsedByDeleteBatchTests",
+            }
+        ];
+
+        protected override VectorStoreRecordDefinition GetRecordDefinition()
+            => new()
+            {
+                Properties =
+                [
+                    new VectorStoreRecordKeyProperty(nameof(NoVectorModel.Id), typeof(TKey)),
+                    new VectorStoreRecordDataProperty(nameof(NoVectorModel.Text), typeof(string)) { IsFilterable = true },
+                ]
+            };
+
+        protected override async Task WaitForDataAsync()
+        {
+            for (var i = 0; i < 20; i++)
+            {
+                var results = await this.Collection.GetAsync([this.TestData[0].Id, this.TestData[1].Id, this.TestData[2].Id, this.TestData[3].Id]).ToArrayAsync();
+                if (results.Length == 4 && results.All(r => r != null))
+                {
+                    return;
+                }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(100));
+            }
+
+            throw new InvalidOperationException("Data did not appear in the collection within the expected time.");
+        }
     }
 }
