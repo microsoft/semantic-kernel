@@ -45,9 +45,19 @@ public abstract class NoVectorModelFixture<TKey> : VectorStoreCollectionFixture<
             ]
         };
 
-    protected override Task WaitForDataAsync()
+    protected override async Task WaitForDataAsync()
     {
-        // Don't do anything, since vector search is not supported with this model.
-        return Task.CompletedTask;
+        for (var i = 0; i < 20; i++)
+        {
+            var results = await this.Collection.GetAsync([this.TestData[0].Id, this.TestData[1].Id, this.TestData[2].Id, this.TestData[3].Id]).ToArrayAsync();
+            if (results.Length == 4 && results.All(r => r != null))
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100));
+        }
+
+        throw new InvalidOperationException("Data did not appear in the collection within the expected time.");
     }
 }

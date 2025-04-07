@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.VectorData;
@@ -184,6 +185,10 @@ internal static class PostgresVectorStoreRecordPropertyMapping
         {
             switch (property)
             {
+                case VectorStoreRecordKeyPropertyModel:
+                    // There is no need to create a separate index for the key property.
+                    break;
+
                 case VectorStoreRecordVectorPropertyModel vectorProperty:
                     var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
                     var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
@@ -213,6 +218,9 @@ internal static class PostgresVectorStoreRecordPropertyMapping
                         vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
                     }
                     break;
+
+                default:
+                    throw new UnreachableException();
             }
         }
 
