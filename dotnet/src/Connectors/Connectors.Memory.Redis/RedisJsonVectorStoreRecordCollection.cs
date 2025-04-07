@@ -23,7 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
@@ -134,7 +134,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     public string CollectionName => this._collectionName;
 
     /// <inheritdoc />
-    public virtual async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -149,7 +149,8 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = RedisConstants.VectorStoreSystemName,
+                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = "FT.INFO"
             };
@@ -157,7 +158,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // Map the record definition to a schema.
         var schema = RedisVectorStoreCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: true);
@@ -173,7 +174,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -182,7 +183,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -204,7 +205,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -239,6 +240,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         // Convert to the caller's data model.
         return VectorStoreErrorHandler.RunModelConversion(
             RedisConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this._collectionName,
             "GET",
             () =>
@@ -249,7 +251,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<string> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<string> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
         var keysList = keys.ToList();
@@ -288,6 +290,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
             // Convert to the caller's data model.
             yield return VectorStoreErrorHandler.RunModelConversion(
                 RedisConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "MGET",
                 () =>
@@ -299,7 +302,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(key);
 
@@ -315,7 +318,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -325,13 +328,14 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
         // Map.
         var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
             RedisConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this._collectionName,
             "SET",
                 () =>
@@ -356,7 +360,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -366,6 +370,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             var redisJsonRecord = VectorStoreErrorHandler.RunModelConversion(
                 RedisConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "MSET",
                 () =>
@@ -395,7 +400,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -424,6 +429,7 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
             var redisResultString = result["json"].ToString();
             var mappedRecord = VectorStoreErrorHandler.RunModelConversion(
                 RedisConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "FT.SEARCH",
                 () =>
@@ -506,7 +512,8 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = RedisConstants.VectorStoreSystemName,
+                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -530,7 +537,8 @@ public class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordC
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = RedisConstants.VectorStoreSystemName,
+                VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

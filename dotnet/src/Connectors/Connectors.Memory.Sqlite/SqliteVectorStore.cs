@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class SqliteVectorStore : IVectorStore
+public sealed class SqliteVectorStore : IVectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -60,7 +60,7 @@ public class SqliteVectorStore : IVectorStore
         => throw new InvalidOperationException("Use the constructor that accepts a connection string instead.");
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
 #pragma warning disable CS0618 // ISqliteVectorStoreRecordCollectionFactory is obsolete
@@ -92,7 +92,7 @@ public class SqliteVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";

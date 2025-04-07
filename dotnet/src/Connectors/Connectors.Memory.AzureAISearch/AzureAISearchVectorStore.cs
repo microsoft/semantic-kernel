@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class AzureAISearchVectorStore : IVectorStore
+public sealed class AzureAISearchVectorStore : IVectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -48,7 +48,7 @@ public class AzureAISearchVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
 #pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
@@ -76,16 +76,16 @@ public class AzureAISearchVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
         var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
 
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+        var nextResult = await this.GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         while (nextResult.more)
         {
             yield return nextResult.name;
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+            nextResult = await this.GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         }
     }
 
@@ -109,7 +109,7 @@ public class AzureAISearchVectorStore : IVectorStore
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
     /// <returns>A value indicating whether there are more results and the current string if true.</returns>
-    private static async Task<(string name, bool more)> GetNextIndexNameAsync(
+    private async Task<(string name, bool more)> GetNextIndexNameAsync(
         ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
     {
         const string OperationName = "GetIndexNames";
@@ -123,7 +123,8 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = OperationName
             };
         }
@@ -131,7 +132,8 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = OperationName
             };
         }

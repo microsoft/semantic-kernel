@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class PineconeVectorStore : IVectorStore
+public sealed class PineconeVectorStore : IVectorStore
 {
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreOptions _options;
@@ -43,7 +43,7 @@ public class PineconeVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
 #pragma warning disable CS0618 // IPineconeVectorStoreRecordCollectionFactory is obsolete
@@ -65,7 +65,7 @@ public class PineconeVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IndexList indexList;
 
@@ -77,7 +77,8 @@ public class PineconeVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = PineconeConstants.VectorStoreSystemName,
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = "ListCollections"
             };
         }

@@ -34,14 +34,17 @@ public static class PineconeFactory
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and points in a Pinecone store.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreatePineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
-        => new PineconeLangchainInteropVectorStore(pineconeClient);
+        => new PineconeLangchainInteropVectorStore(new PineconeVectorStore(pineconeClient), pineconeClient);
 
-    private sealed class PineconeLangchainInteropVectorStore(Sdk.PineconeClient pineconeClient)
-        : PineconeVectorStore(pineconeClient)
+    private sealed class PineconeLangchainInteropVectorStore(
+        IVectorStore innerStore,
+        Sdk.PineconeClient pineconeClient)
+        : IVectorStore
     {
         private readonly Sdk.PineconeClient _pineconeClient = pineconeClient;
 
-        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey : notnull
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -59,5 +62,9 @@ public static class PineconeFactory
                     VectorStoreRecordDefinition = s_recordDefinition
                 }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
     }
 }
