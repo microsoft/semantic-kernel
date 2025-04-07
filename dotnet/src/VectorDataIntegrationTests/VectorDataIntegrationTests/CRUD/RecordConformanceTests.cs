@@ -53,12 +53,12 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
     {
         var collection = fixture.Collection;
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
-        SimpleModel<TKey> inserted = new()
+        SimpleRecord<TKey> inserted = new()
         {
             Id = expectedKey,
             Text = "some",
             Number = 123,
-            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, SimpleModel<TKey>.DimensionCount).ToArray())
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, SimpleRecord<TKey>.DimensionCount).ToArray())
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
@@ -81,12 +81,12 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
     {
         var collection = fixture.Collection;
         var existingRecord = fixture.TestData[1];
-        SimpleModel<TKey> updated = new()
+        SimpleRecord<TKey> updated = new()
         {
             Id = existingRecord.Id,
             Text = "updated",
             Number = 456,
-            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.2f, SimpleModel<TKey>.DimensionCount).ToArray())
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.2f, SimpleRecord<TKey>.DimensionCount).ToArray())
         };
 
         Assert.NotNull(await collection.GetAsync(existingRecord.Id));
