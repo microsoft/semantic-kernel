@@ -418,7 +418,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]);
 
         // Assert
         Assert.NotNull(results);

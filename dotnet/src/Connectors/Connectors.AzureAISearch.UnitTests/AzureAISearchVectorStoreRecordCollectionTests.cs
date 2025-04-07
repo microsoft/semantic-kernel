@@ -458,7 +458,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.UpsertAsync(
             [model1, model2],
-            cancellationToken: this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken);
 
         // Assert.
         Assert.NotNull(actual);

@@ -167,7 +167,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var sut = new AzureAISearchVectorStoreRecordCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName);
 
         // Act
-        var results = sut.UpsertAsync(
+        var results = await sut.UpsertAsync(
             [
                 await this.CreateTestHotelAsync("UpsertMany-1"),
                 await this.CreateTestHotelAsync("UpsertMany-2"),
@@ -176,15 +176,14 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Assert
         Assert.NotNull(results);
-        var resultsList = await results.ToListAsync();
 
-        Assert.Equal(3, resultsList.Count);
-        Assert.Contains("UpsertMany-1", resultsList);
-        Assert.Contains("UpsertMany-2", resultsList);
-        Assert.Contains("UpsertMany-3", resultsList);
+        Assert.Equal(3, results.Count);
+        Assert.Contains("UpsertMany-1", results);
+        Assert.Contains("UpsertMany-2", results);
+        Assert.Contains("UpsertMany-3", results);
 
         // Output
-        foreach (var result in resultsList)
+        foreach (var result in results)
         {
             output.WriteLine(result);
         }

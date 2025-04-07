@@ -210,7 +210,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
                 var collection = vectorStore.GetCollection<string, ExampleRecord>(CollectionName);
                 await collection.CreateCollectionIfNotExistsAsync(context.CancellationToken);
 
-                await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken).ToListAsync(context.CancellationToken);
+                await collection.UpsertAsync(exampleRecords, cancellationToken: context.CancellationToken);
 
                 // Generate embedding for original request.
                 var requestEmbedding = await textEmbeddingGenerationService.GenerateEmbeddingAsync(request, cancellationToken: context.CancellationToken);

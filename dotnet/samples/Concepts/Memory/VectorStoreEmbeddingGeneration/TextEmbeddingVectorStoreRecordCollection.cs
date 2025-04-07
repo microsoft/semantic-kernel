@@ -2,7 +2,6 @@
 
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -110,15 +109,11 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         var recordWithEmbeddingsTasks = records.Select(r => this.AddEmbeddingsAsync(r, cancellationToken));
         var recordWithEmbeddings = await Task.WhenAll(recordWithEmbeddingsTasks).ConfigureAwait(false);
-        var upsertResults = this._decoratedVectorStoreRecordCollection.UpsertAsync(recordWithEmbeddings, cancellationToken);
-        await foreach (var upsertResult in upsertResults.ConfigureAwait(false))
-        {
-            yield return upsertResult;
-        }
+        return await this._decoratedVectorStoreRecordCollection.UpsertAsync(recordWithEmbeddings, cancellationToken);
     }
 
     /// <inheritdoc />

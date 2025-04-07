@@ -222,7 +222,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = Enumerable.Range(0, 10).Select(j => (float)(i + j)).ToArray()
             }).ToArray();
 
-            string[] keys = await collection.UpsertAsync(inserted).ToArrayAsync();
+            var keys = await collection.UpsertAsync(inserted);
             for (int i = 0; i < inserted.Length; i++)
             {
                 Assert.Equal(inserted[i].Id, keys[i]);
@@ -241,7 +241,7 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
                 Floats = i.Floats
             }).ToArray();
 
-            keys = await collection.UpsertAsync(updated).ToArrayAsync();
+            keys = await collection.UpsertAsync(updated);
             for (int i = 0; i < updated.Length; i++)
             {
                 Assert.Equal(updated[i].Id, keys[i]);

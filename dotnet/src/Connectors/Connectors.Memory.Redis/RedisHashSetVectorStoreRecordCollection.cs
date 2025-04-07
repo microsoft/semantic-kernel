@@ -320,20 +320,14 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         // Upsert records in parallel.
         var tasks = records.Select(x => this.UpsertAsync(x, cancellationToken));
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-        foreach (var result in results)
-        {
-            if (result is not null)
-            {
-                yield return (TKey)(object)result;
-            }
-        }
+        return results.Where(r => r is not null).ToList();
     }
 
     /// <inheritdoc />
