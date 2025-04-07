@@ -63,6 +63,49 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
         }
     }
 
+    [Fact]
+    public async Task AzureAIAgentWithKernelAsync()
+    {
+        var text =
+            """
+            type: foundry_agent
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
+            model:
+              id: ${AzureAI:ChatModelId}
+            """;
+
+        var agent = await this._kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+        Assert.NotNull(agent);
+
+        var input = "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million";
+        Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
+        try
+        {
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+            {
+                agentThread = response.Thread;
+                WriteAgentChatMessage(response);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"Error invoking agent: {e.Message}");
+        }
+        finally
+        {
+            var azureaiAgent = agent as AzureAIAgent;
+            Assert.NotNull(azureaiAgent);
+            await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
+        }
+    }
+
     #region private
     private readonly Kernel _kernel;
     private readonly AgentFactory _kernelAgentFactory;
