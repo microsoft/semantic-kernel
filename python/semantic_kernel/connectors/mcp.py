@@ -4,10 +4,10 @@ import asyncio
 import logging
 import sys
 from abc import abstractmethod
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from mcp import McpError, types
 from mcp.client.session import ClientSession
@@ -33,6 +33,7 @@ from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
 from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 11):
@@ -412,6 +413,46 @@ class MCPWebsocketPlugin(MCPPluginBase):
 # region: Kernel as MCP Server
 
 
+def _kernel_content_to_message(
+    content: TextContent | ImageContent | BinaryContent | ChatMessageContent,
+    role: Literal["user", "assistant"] = "assistant",
+) -> Sequence[types.PromptMessage]:
+    """Convert a kernel content type to a MCP type."""
+    if isinstance(content, ChatMessageContent) and content.role in (AuthorRole.USER, AuthorRole.ASSISTANT):
+        role = content.role.value
+    if isinstance(content, TextContent):
+        return [types.PromptMessage(role=role, content=types.TextContent(type="text", text=content.text))]
+    if isinstance(content, ImageContent):
+        return [
+            types.PromptMessage(
+                role=role,
+                content=types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type),
+            )
+        ]
+    if isinstance(content, BinaryContent):
+        return [
+            types.PromptMessage(
+                role=role,
+                content=types.EmbeddedResource(
+                    type="resource",
+                    resource=types.BlobResourceContents(
+                        blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "kernel://binary"
+                    ),
+                ),
+            )
+        ]
+    if isinstance(content, ChatMessageContent):
+        messages = []
+        [
+            messages.extend(_kernel_content_to_message(item, role))
+            for item in content.items
+            if isinstance(item, (TextContent, ImageContent, BinaryContent))
+        ]
+        return messages
+
+    raise FunctionExecutionException(f"Unsupported content type: {type(content)}")
+
+
 def create_mcp_server_from_kernel(
     kernel: Kernel,
     *,
@@ -419,8 +460,8 @@ def create_mcp_server_from_kernel(
     version: str | None = None,
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
-    prompt_functions: list[str] | None = None,
-    tool_functions: list[str] | None = None,
+    prompt_functions: OptionalOneOrMany[str] = None,
+    excluded_functions: OptionalOneOrMany[str] = None,
     **kwargs: Any,
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a kernel instance.
@@ -428,8 +469,9 @@ def create_mcp_server_from_kernel(
     This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
     configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-    You can specify which functions to expose as tools and prompts by passing
-    the `prompt_functions` and `tool_functions` arguments.
+    By default, all functions are exposed as Tools, you can specify which functions to expose as prompts by passing
+    the `prompt_functions` argument. If a function is exposed as a prompt, it will not be exposed as a tool.
+    If you want to not expose a function at all, you can use the `excluded_functions` argument.
     These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
 
     Args:
@@ -439,11 +481,9 @@ def create_mcp_server_from_kernel(
         instructions: The instructions to use for the server.
         lifespan: The lifespan of the server.
         prompt_functions: The list of fully qualified function names to expose as prompts.
-            if None, all KernelFunctionFromPrompt functions will be exposed.
-            if you don't want to expose any prompts, set this to an empty list.
-        tool_functions: The list of fully qualified function names to expose as tools.
-            if None, all KernelFunctionFromMethod functions will be exposed.
-            if you don't want to expose any tools, set this to an empty list.
+            if None, all functions will be exposed as tools only.
+        excluded_functions: The list of fully qualified function names to exclude from the server.
+            if None, no functions will be excluded.
         kwargs: Any extra arguments to pass to the server creation.
 
     Returns:
@@ -460,19 +500,24 @@ def create_mcp_server_from_kernel(
         server_args["lifespan"] = lifespan
     if kwargs:
         server_args.update(kwargs)
+
+    if prompt_functions is not None and not isinstance(prompt_functions, list):
+        prompt_functions = [prompt_functions]
+    if excluded_functions is not None and not isinstance(excluded_functions, list):
+        excluded_functions = [excluded_functions]
+
     server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
 
     @server.list_prompts()
     async def _list_prompts() -> list[types.Prompt]:
         """List all prompts in the kernel."""
-        if prompt_functions is not None:
-            functions_to_expose = [
-                func
-                for func in kernel.get_full_list_of_function_metadata()
-                if func.fully_qualified_name in prompt_functions
-            ]
-        else:
-            functions_to_expose = [func for func in kernel.get_full_list_of_function_metadata() if func.is_prompt]
+        if prompt_functions is None:
+            return []
+        functions_to_expose = [
+            func
+            for func in kernel.get_full_list_of_function_metadata()
+            if func.fully_qualified_name in prompt_functions
+        ]
         prompts = [
             types.Prompt(
                 name=func.fully_qualified_name,
@@ -498,24 +543,11 @@ def create_mcp_server_from_kernel(
         function_name = args[0]
         if result:
             logger.info(f"Prompt Result: {result}")
+            messages: list[types.PromptMessage] = []
             if isinstance(result.value, list):
-                messages = [
-                    types.PromptMessage(role=cmc.role.value, content=types.TextContent(type="text", text=cmc.content))
-                    for cmc in result.value
-                ]
-            elif isinstance(result.value, ChatMessageContent):
-                messages = [
-                    types.PromptMessage(
-                        role=result.value.role.value
-                        if result.value.role in (AuthorRole.USER, AuthorRole.ASSISTANT)
-                        else "assistant",
-                        content=types.TextContent(type="text", text=result.value.content),
-                    )
-                ]
+                [messages.extend(_kernel_content_to_message(item)) for item in result.value]
             else:
-                messages = [
-                    types.PromptMessage(role="assistant", content=types.TextContent(type="text", text=str(result)))
-                ]
+                messages.extend(_kernel_content_to_message(result.value))
             return types.GetPromptResult(messages=messages)
         raise McpError(
             error=types.ErrorData(
@@ -527,14 +559,12 @@ def create_mcp_server_from_kernel(
     @server.list_tools()
     async def _list_tools() -> list[types.Tool]:
         """List all tools in the kernel."""
-        if tool_functions is not None:
-            functions_to_expose = [
-                func
-                for func in kernel.get_full_list_of_function_metadata()
-                if func.fully_qualified_name in tool_functions
-            ]
-        else:
-            functions_to_expose = [func for func in kernel.get_full_list_of_function_metadata() if not func.is_prompt]
+        functions_to_expose = [
+            func
+            for func in kernel.get_full_list_of_function_metadata()
+            if func.fully_qualified_name not in (excluded_functions or [])
+            and func.fully_qualified_name not in (prompt_functions or [])
+        ]
         tools = [
             types.Tool(
                 name=func.fully_qualified_name,

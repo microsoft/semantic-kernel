@@ -18,7 +18,7 @@ Some other common runners are [uvx](https://docs.astral.sh/uv/guides/tools/), fo
 
 The code shown works the same for a Sse server, only then a MCPSsePlugin needs to be used instead of the MCPStdioPlugin.
 
-The reverse, using Semantic Kernel as a server, is not yet implemented, but will be in the future.
+The reverse, using Semantic Kernel as a server, can be found in the [demos/sk_mcp_server](../demos/sk_mcp_server) folder.
 
 ## Running the sample
 

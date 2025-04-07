@@ -35,7 +35,7 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
@@ -492,8 +492,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         version: str | None = None,
         instructions: str | None = None,
         lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
-        prompt_functions: list[str] | None = None,
-        tool_functions: list[str] | None = None,
+        prompt_functions: OptionalOneOrMany[str] = None,
+        excluded_functions: OptionalOneOrMany[str] = None,
         **kwargs: Any,
     ) -> "Server":
         """Create a MCP server from this kernel.
@@ -501,11 +501,10 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-        It will expose all functions in the kernel as tools and prompts.
-        You can specify which functions to expose as tools and prompts by passing
-        the `prompt_functions` and `tool_functions` arguments.
+        By default, all functions are exposed as Tools, you can specify which functions to expose as prompts by passing
+        the `prompt_functions` argument. If a function is exposed as a prompt, it will not be exposed as a tool.
+        If you want to not expose a function at all, you can use the `excluded_functions` argument.
         These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
-
 
         Args:
             kernel: The kernel instance to use.
@@ -514,11 +513,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             instructions: The instructions to use for the server.
             lifespan: The lifespan of the server.
             prompt_functions: The list of fully qualified function names to expose as prompts.
-                if None, all KernelFunctionFromPrompt functions will be exposed.
-                if you don't want to expose any prompts, set this to an empty list.
-            tool_functions: The list of fully qualified function names to expose as tools.
-                if None, all KernelFunctionFromMethod functions will be exposed.
-                if you don't want to expose any tools, set this to an empty list.
+                if None, all functions will be exposed as tools only.
+            excluded_functions: The list of fully qualified function names to exclude from the server.
+                if None, no functions will be excluded.
             kwargs: Any extra arguments to pass to the server creation.
 
         Returns:
@@ -535,6 +532,6 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             instructions=instructions,
             lifespan=lifespan,
             prompt_functions=prompt_functions,
-            tool_functions=tool_functions,
+            excluded_functions=excluded_functions,
             **kwargs,
         )
