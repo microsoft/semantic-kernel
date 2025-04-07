@@ -376,7 +376,7 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke-stream", "openai-structured-outputs-invoke-stream"],
     )
-    async def test_structed_outputs_stream(self, responses_agent: OpenAIResponsesAgent):
+    async def test_structured_outputs_stream(self, responses_agent: OpenAIResponsesAgent):
         """Test function calling streaming."""
         full_message: str = ""
         async for response in responses_agent.invoke_stream(
