@@ -209,22 +209,15 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         const string OperationName = "ReplaceOne";
 
-        var replaceOptions = new ReplaceOptions { IsUpsert = true };
-        var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this.CollectionName,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record));
-
-        var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
+        var replacement = CreateReplaceOne(record, OperationName);
 
         return this.RunOperationAsync(OperationName, async () =>
         {
             await this._mongoCollection
-                .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
+                .ReplaceOneAsync(this.GetFilterById(replacement.Key), replacement.Model.Replacement, new ReplaceOptions { IsUpsert = true }, cancellationToken)
                 .ConfigureAwait(false);
 
-            return key;
+            return replacement.Key;
         });
     }
 
@@ -233,16 +226,34 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
     {
         Verify.NotNull(records);
 
-        var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-        var results = await Task.WhenAll(tasks).ConfigureAwait(false);
+        const string OperationName = "ReplaceOne.BulkWrite";
 
-        foreach (var result in results)
+        var replacements = records.Select(r => CreateReplaceOne(r, OperationName));
+
+        await this.RunOperationAsync(OperationName, async () =>
         {
-            if (result is not null)
-            {
-                yield return result;
-            }
+            using var session = await this._mongoDatabase.Client.StartSessionAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+            return await this._mongoCollection.BulkWriteAsync(session, replacements.Select(r => r.Model), cancellationToken: cancellationToken).ConfigureAwait(false);
+        }).ConfigureAwait(false);
+
+        foreach (var result in replacements)
+        {
+            yield return result.Key;
         }
+    }
+
+    private (ReplaceOneModel<BsonDocument> Model, string Key) CreateReplaceOne(TRecord record, string operationName)
+    {
+        var storageModel = VectorStoreErrorHandler.RunModelConversion(
+            DatabaseName,
+            this.CollectionName,
+            operationName,
+            () => this._mapper.MapFromDataToStorageModel(record));
+
+        var key = storageModel[MongoDBConstants.MongoReservedKeyPropertyName].AsString;
+        var filter = this.GetFilterById(key);
+
+        return (new ReplaceOneModel<BsonDocument>(filter, storageModel) { IsUpsert = true }, key);
     }
 
     /// <inheritdoc />
