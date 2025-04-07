@@ -28,7 +28,7 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
 
         var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
-        await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
+        await foreach (ChatMessageContent response in agent!.InvokeAsync("Cats and Dogs"))
         {
             this.WriteAgentChatMessage(response);
         }
