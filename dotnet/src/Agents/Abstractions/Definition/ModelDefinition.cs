@@ -8,7 +8,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Defines the model to be used by an agent.
 /// </summary>
-[ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
 public sealed class ModelDefinition
 {
@@ -30,7 +29,7 @@ public sealed class ModelDefinition
         get => this._api ?? DefaultApi;
         set
         {
-            Verify.NotNull(value);
+            Verify.NotNullOrWhiteSpace(value);
             this._api = value;
         }
     }

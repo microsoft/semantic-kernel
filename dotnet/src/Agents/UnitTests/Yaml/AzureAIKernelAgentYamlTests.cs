@@ -19,7 +19,7 @@ using Xunit;
 namespace SemanticKernel.Agents.UnitTests.Yaml;
 
 /// <summary>
-/// Unit tests for <see cref="YamlKernelAgentFactoryExtensions"/> with <see cref="AzureAIAgentFactory"/>.
+/// Unit tests for <see cref="YamlAgentFactoryExtensions"/> with <see cref="AzureAIAgentFactory"/>.
 /// </summary>
 public class AzureAIKernelAgentYamlTests : IDisposable
 {

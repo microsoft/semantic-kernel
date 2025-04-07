@@ -23,6 +23,7 @@ public static class AgentDefinitionExtensions
     public static KernelArguments GetDefaultKernelArguments(this AgentDefinition agentDefinition, Kernel kernel)
     {
         Verify.NotNull(agentDefinition);
+        Verify.NotNull(kernel);
 
         PromptExecutionSettings executionSettings = new()
         {
@@ -39,7 +40,7 @@ public static class AgentDefinitionExtensions
                 var nameParts = FunctionName.Parse(function.Id!, FunctionNameSeparator);
 
                 // Look up the function in the kernel.
-                if (kernel is not null && kernel.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var kernelFunction))
+                if (kernel.Plugins.TryGetFunction(nameParts.PluginName, nameParts.Name, out var kernelFunction))
                 {
                     kernelFunctions.Add(kernelFunction);
                     continue;

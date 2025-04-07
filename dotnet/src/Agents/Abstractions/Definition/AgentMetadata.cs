@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Defines agent metadata.
 /// </summary>
-[ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
 public sealed class AgentMetadata
 {

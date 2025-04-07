@@ -9,7 +9,6 @@ namespace Microsoft.SemanticKernel.Agents;
 /// <summary>
 /// Defines the connection for a model.
 /// </summary>
-[ExcludeFromCodeCoverage]
 [Experimental("SKEXP0110")]
 public sealed class ModelConnection
 {

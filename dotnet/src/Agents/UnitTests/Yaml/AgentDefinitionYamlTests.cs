@@ -21,6 +21,7 @@ public class AgentDefinitionYamlTests
         // Arrange
         var text =
             """
+            id: agent_12345
             version: 1.0.0
             type: chat_completion_agent
             name: My Agent
@@ -63,8 +64,10 @@ public class AgentDefinitionYamlTests
             tools:
                 - id: tool1
                   type: code_interpreter
+                  description: Code interpreter tool
                 - id: tool2
                   type: file_search
+                  description: File search tool
             """;
 
         // Act
