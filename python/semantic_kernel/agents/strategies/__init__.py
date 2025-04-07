@@ -10,6 +10,7 @@ from semantic_kernel.agents.strategies.termination.kernel_function_termination_s
     KernelFunctionTerminationStrategy,
 )
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
+from semantic_kernel.agents.strategies.selection.selection_strategy import SelectionStrategy
 
 __all__ = [
     "AggregatorTerminationStrategy",
@@ -18,4 +19,5 @@ __all__ = [
     "KernelFunctionTerminationStrategy",
     "SequentialSelectionStrategy",
     "TerminationStrategy",
+    "SelectionStrategy",
 ]
