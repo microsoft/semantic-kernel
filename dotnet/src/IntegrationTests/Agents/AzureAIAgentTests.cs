@@ -107,7 +107,6 @@ public class AzureAIAgentTests
     [RetryFact(typeof(HttpOperationException))]
     public async Task AzureAIAgentDeclarativeAsync()
     {
-
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<AIProjectClient>(this._client);
         var kernel = builder.Build();
