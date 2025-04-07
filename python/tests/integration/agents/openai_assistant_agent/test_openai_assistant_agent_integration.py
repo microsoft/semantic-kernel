@@ -13,7 +13,7 @@ from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
 
 class WeatherPlugin:
-    """Mock weather plugin."""
+    """A sample Mock weather plugin."""
 
     @kernel_function(description="Get real-time weather information.")
     def current_weather(self, location: Annotated[str, "The location to get the weather"]) -> str:
