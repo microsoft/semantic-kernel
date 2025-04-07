@@ -419,7 +419,7 @@ def _kernel_content_to_message(
 ) -> Sequence[types.PromptMessage]:
     """Convert a kernel content type to a MCP type."""
     if isinstance(content, ChatMessageContent) and content.role in (AuthorRole.USER, AuthorRole.ASSISTANT):
-        role = content.role.value
+        role = content.role.value  # type: ignore[assignment]
     if isinstance(content, TextContent):
         return [types.PromptMessage(role=role, content=types.TextContent(type="text", text=content.text))]
     if isinstance(content, ImageContent):
@@ -442,12 +442,10 @@ def _kernel_content_to_message(
             )
         ]
     if isinstance(content, ChatMessageContent):
-        messages = []
-        [
-            messages.extend(_kernel_content_to_message(item, role))
-            for item in content.items
-            if isinstance(item, (TextContent, ImageContent, BinaryContent))
-        ]
+        messages: list[types.PromptMessage] = []
+        for item in content.items:
+            if isinstance(item, (TextContent, ImageContent, BinaryContent)):
+                messages.extend(_kernel_content_to_message(item, role))
         return messages
 
     raise FunctionExecutionException(f"Unsupported content type: {type(content)}")
@@ -502,9 +500,9 @@ def create_mcp_server_from_kernel(
         server_args.update(kwargs)
 
     if prompt_functions is not None and not isinstance(prompt_functions, list):
-        prompt_functions = [prompt_functions]
+        prompt_functions = [prompt_functions]  # type: ignore
     if excluded_functions is not None and not isinstance(excluded_functions, list):
-        excluded_functions = [excluded_functions]
+        excluded_functions = [excluded_functions]  # type: ignore
 
     server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
 
@@ -545,7 +543,8 @@ def create_mcp_server_from_kernel(
             logger.info(f"Prompt Result: {result}")
             messages: list[types.PromptMessage] = []
             if isinstance(result.value, list):
-                [messages.extend(_kernel_content_to_message(item)) for item in result.value]
+                for item in result.value:
+                    messages.extend(_kernel_content_to_message(item))
             else:
                 messages.extend(_kernel_content_to_message(result.value))
             return types.GetPromptResult(messages=messages)
