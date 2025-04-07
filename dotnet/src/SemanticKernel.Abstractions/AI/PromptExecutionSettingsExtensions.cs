@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
 
@@ -149,7 +150,8 @@ internal static class PromptExecutionSettingsExtensions
             options.Tools = functions.Select(f => f.AsAIFunction(kernel)).Cast<AITool>().ToList();
         }
 
-        return options;
+        // Enables usage of AutoFunctionInvocationFilters
+        return options.AddKernel(kernel!);
 
         // Be a little lenient on the types of the values used in the extension data,
         // e.g. allow doubles even when requesting floats.

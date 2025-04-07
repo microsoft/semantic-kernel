@@ -48,7 +48,7 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatClient
 {
     /// <summary>The <see cref="KernelFunctionInvocationContext"/> for the current function invocation.</summary>
-    private static readonly AsyncLocal<KernelFunctionInvocationContext?> _currentContext = new();
+    private static readonly AsyncLocal<KernelFunctionInvocationContext?> s_currentContext = new();
 
     /// <summary>The logger to use for logging information about function invocation.</summary>
     private readonly ILogger _logger;
@@ -68,8 +68,8 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     public KernelFunctionInvokingChatClient(IChatClient innerClient, ILogger? logger = null)
         : base(innerClient)
     {
-        _logger = logger ?? NullLogger.Instance;
-        _activitySource = innerClient.GetService<ActivitySource>();
+        this._logger = logger ?? NullLogger.Instance;
+        this._activitySource = innerClient.GetService<ActivitySource>();
     }
 
     /// <summary>
@@ -80,8 +80,8 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// </remarks>
     internal static KernelFunctionInvocationContext? CurrentContext
     {
-        get => _currentContext.Value;
-        set => _currentContext.Value = value;
+        get => s_currentContext.Value;
+        set => s_currentContext.Value = value;
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// </value>
     /// <remarks>
     /// Changing the value of this property while the client is in use might result in inconsistencies
-    /// as to whether errors are retried during an in-flight request.
+    /// whether errors are retried during an in-flight request.
     /// </remarks>
     public bool RetryOnError { get; set; }
 
@@ -169,7 +169,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// </remarks>
     public int? MaximumIterationsPerRequest
     {
-        get => _maximumIterationsPerRequest;
+        get => this._maximumIterationsPerRequest;
         set
         {
             if (value < 1)
@@ -177,7 +177,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                 throw new ArgumentOutOfRangeException(nameof(value));
             }
 
-            _maximumIterationsPerRequest = value;
+            this._maximumIterationsPerRequest = value;
         }
     }
 
@@ -189,7 +189,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
+        using Activity? activity = this._activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -217,7 +217,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             // Any function call work to do? If yes, ensure we're tracking that work in functionCallContents.
             bool requiresFunctionInvocation =
                 options?.Tools is { Count: > 0 } &&
-                (!MaximumIterationsPerRequest.HasValue || iteration < MaximumIterationsPerRequest.GetValueOrDefault()) &&
+                (!this.MaximumIterationsPerRequest.HasValue || iteration < this.MaximumIterationsPerRequest.GetValueOrDefault()) &&
                 CopyFunctionCalls(response.Messages, ref functionCallContents);
 
             // In a common case where we make a request and there's no function calling work required,
@@ -252,10 +252,16 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             // Prepare the history for the next iteration.
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
 
+            // Prepare the options for the next auto function invocation iteration.
+            UpdateOptionsForAutoFunctionInvocation(ref options!, response.Messages.Last().ToChatMessageContent(), isStreaming: false);
+
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await this.ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
+
+            // Clear the auto function invocation options.
+            ClearOptionsForAutoFunctionInvocation(ref options!);
 
             if (UpdateOptionsForMode(modeAndMessages.Mode, ref options!, response.ChatThreadId))
             {
@@ -279,7 +285,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
         // A single request into this GetStreamingResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
+        using Activity? activity = this._activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
@@ -315,7 +321,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             // If there are no tools to call, or for any other reason we should stop, return the response.
             if (functionCallContents is not { Count: > 0 } ||
                 options?.Tools is not { Count: > 0 } ||
-                (MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
+                (this.MaximumIterationsPerRequest is { } maxIterations && iteration >= maxIterations))
             {
                 break;
             }
@@ -327,12 +333,18 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             // Prepare the history for the next iteration.
             FixupHistories(originalMessages, ref messages, ref augmentedHistory, response, responseMessages, ref lastIterationHadThreadId);
 
-            // Process all of the functions, adding their results into the history.
-            var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
+            // Prepare the options for the next auto function invocation iteration.
+            UpdateOptionsForAutoFunctionInvocation(ref options!, response.Messages.Last().ToChatMessageContent(), isStreaming: true);
+
+            // Process all the functions, adding their results into the history.
+            var modeAndMessages = await this.ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
+            // Clear the auto function invocation options.
+            ClearOptionsForAutoFunctionInvocation(ref options!);
+
             // Stream any generated function results. This mirrors what's done for GetResponseAsync, where the returned messages
-            // includes all activities, including generated function results.
+            // include all activities, including generated function results.
             string toolResponseId = Guid.NewGuid().ToString("N");
             foreach (var message in modeAndMessages.MessagesAdded)
             {
@@ -454,6 +466,37 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         return any;
     }
 
+    private static void UpdateOptionsForAutoFunctionInvocation(ref ChatOptions options, ChatMessageContent content, bool isStreaming)
+    {
+        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.IsStreamingKey) ?? false)
+        {
+            throw new KernelException($"The reserved key name '{ChatOptionsExtensions.IsStreamingKey}' is already specified in the options. Avoid using this key name.");
+        }
+
+        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.ChatMessageContentKey) ?? false)
+        {
+            throw new KernelException($"The reserved key name '{ChatOptionsExtensions.ChatMessageContentKey}' is already specified in the options. Avoid using this key name.");
+        }
+
+        options.AdditionalProperties ??= [];
+
+        options.AdditionalProperties[ChatOptionsExtensions.IsStreamingKey] = isStreaming;
+        options.AdditionalProperties[ChatOptionsExtensions.ChatMessageContentKey] = content;
+    }
+
+    private static void ClearOptionsForAutoFunctionInvocation(ref ChatOptions options)
+    {
+        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.IsStreamingKey) ?? false)
+        {
+            options.AdditionalProperties.Remove(ChatOptionsExtensions.IsStreamingKey);
+        }
+
+        if (options.AdditionalProperties?.ContainsKey(ChatOptionsExtensions.ChatMessageContentKey) ?? false)
+        {
+            options.AdditionalProperties.Remove(ChatOptionsExtensions.ChatMessageContentKey);
+        }
+    }
+
     /// <summary>Updates <paramref name="options"/> for the response.</summary>
     /// <returns>true if the function calling loop should terminate; otherwise, false.</returns>
     private static bool UpdateOptionsForMode(ContinueMode mode, ref ChatOptions options, string? chatThreadId)
@@ -517,11 +560,11 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
         if (functionCallContents.Count == 1)
         {
-            FunctionInvocationResult result = await ProcessFunctionCallAsync(
+            FunctionInvocationResult result = await this.ProcessFunctionCallAsync(
                 messages, options, functionCallContents, iteration, 0, cancellationToken).ConfigureAwait(false);
 
-            IList<ChatMessage> added = CreateResponseMessages([result]);
-            ThrowIfNoFunctionResultsAdded(added);
+            IList<ChatMessage> added = this.CreateResponseMessages([result]);
+            this.ThrowIfNoFunctionResultsAdded(added);
 
             messages.AddRange(added);
             return (result.ContinueMode, added);
@@ -530,12 +573,12 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         {
             FunctionInvocationResult[] results;
 
-            if (AllowConcurrentInvocation)
+            if (this.AllowConcurrentInvocation)
             {
                 // Schedule the invocation of every function.
                 results = await Task.WhenAll(
                     from i in Enumerable.Range(0, functionCallContents.Count)
-                    select Task.Run(() => ProcessFunctionCallAsync(
+                    select Task.Run(() => this.ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
                         iteration, i, cancellationToken))).ConfigureAwait(false);
             }
@@ -545,7 +588,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                 results = new FunctionInvocationResult[functionCallContents.Count];
                 for (int i = 0; i < results.Length; i++)
                 {
-                    results[i] = await ProcessFunctionCallAsync(
+                    results[i] = await this.ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
                         iteration, i, cancellationToken).ConfigureAwait(false);
                 }
@@ -553,8 +596,8 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
             ContinueMode continueMode = ContinueMode.Continue;
 
-            IList<ChatMessage> added = CreateResponseMessages(results);
-            ThrowIfNoFunctionResultsAdded(added);
+            IList<ChatMessage> added = this.CreateResponseMessages(results);
+            this.ThrowIfNoFunctionResultsAdded(added);
 
             messages.AddRange(added);
             foreach (FunctionInvocationResult fir in results)
@@ -576,7 +619,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     {
         if (messages is null || messages.Count == 0)
         {
-            throw new InvalidOperationException($"{GetType().Name}.{nameof(CreateResponseMessages)} returned null or an empty collection of messages.");
+            throw new InvalidOperationException($"{this.GetType().Name}.{nameof(this.CreateResponseMessages)} returned null or an empty collection of messages.");
         }
     }
 
@@ -595,13 +638,14 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         var callContent = callContents[functionCallIndex];
 
         // Look up the AIFunction for the function call. If the requested function isn't available, send back an error.
-        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(t => t.Name == callContent.Name);
+        AIFunction? function = options.Tools!.OfType<AIFunction>().FirstOrDefault(
+            t => t.Name == callContent.Name);
         if (function is null)
         {
             return new(ContinueMode.Continue, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
-        KernelFunctionInvocationContext context = new()
+        var context = new AutoFunctionInvocationContext(new()
         {
             Messages = messages,
             Options = options,
@@ -609,18 +653,17 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             AIFunction = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
-            FunctionCount = callContents.Count,
-        };
+            FunctionCount = callContents.Count
+        });
 
         object? result;
         try
         {
-            result = await InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
+            result = await this.InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
-            return new(
-                RetryOnError ? ContinueMode.Continue : ContinueMode.AllowOneMoreRoundtrip, // We won't allow further function calls, hence the LLM will just get one more chance to give a final answer.
+            return new(this.RetryOnError ? ContinueMode.Continue : ContinueMode.AllowOneMoreRoundtrip, // We won't allow further function calls, hence the LLM will just get one more chance to give a final answer.
                 FunctionInvocationStatus.Exception,
                 callContent,
                 result: null,
@@ -681,7 +724,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                     _ => "Error: Unknown error.",
                 };
 
-                if (IncludeDetailedErrors && result.Exception is not null)
+                if (this.IncludeDetailedErrors && result.Exception is not null)
                 {
                     message = $"{message} Exception: {result.Exception.Message}";
                 }
@@ -744,19 +787,19 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     {
         Verify.NotNull(invocationContext);
 
-        using Activity? activity = _activitySource?.StartActivity(invocationContext.AIFunction.Name);
+        using Activity? activity = this._activitySource?.StartActivity(invocationContext.AIFunction.Name);
 
         long startingTimestamp = 0;
-        if (_logger.IsEnabled(LogLevel.Debug))
+        if (this._logger.IsEnabled(LogLevel.Debug))
         {
             startingTimestamp = Stopwatch.GetTimestamp();
-            if (_logger.IsEnabled(LogLevel.Trace))
+            if (this._logger.IsEnabled(LogLevel.Trace))
             {
-                LogInvokingSensitive(invocationContext.AIFunction.Name, LoggingAsJson(invocationContext.CallContent.Arguments, invocationContext.AIFunction.JsonSerializerOptions));
+                this.LogInvokingSensitive(invocationContext.AIFunction.Name, LoggingAsJson(invocationContext.CallContent.Arguments, invocationContext.AIFunction.JsonSerializerOptions));
             }
             else
             {
-                LogInvoking(invocationContext.AIFunction.Name);
+                this.LogInvoking(invocationContext.AIFunction.Name);
             }
         }
 
@@ -788,6 +831,8 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                     var result = await invocationContext.AIFunction.InvokeAsync(invocationContext.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
                     context.Result = new FunctionResult(context.Function, result);
                 }).ConfigureAwait(false);
+
+                invocationContext = autoFunctionInvocationContext;
             }
         }
         catch (Exception e)
@@ -800,28 +845,28 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
             if (e is OperationCanceledException)
             {
-                LogInvocationCanceled(invocationContext.AIFunction.Name);
+                this.LogInvocationCanceled(invocationContext.AIFunction.Name);
             }
             else
             {
-                LogInvocationFailed(invocationContext.AIFunction.Name, e);
+                this.LogInvocationFailed(invocationContext.AIFunction.Name, e);
             }
 
             throw;
         }
         finally
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
+            if (this._logger.IsEnabled(LogLevel.Debug))
             {
                 TimeSpan elapsed = GetElapsedTime(startingTimestamp);
 
-                if (result is not null && _logger.IsEnabled(LogLevel.Trace))
+                if (result is not null && this._logger.IsEnabled(LogLevel.Trace))
                 {
-                    LogInvocationCompletedSensitive(invocationContext.AIFunction.Name, elapsed, LoggingAsJson(result, invocationContext.AIFunction.JsonSerializerOptions));
+                    this.LogInvocationCompletedSensitive(invocationContext.AIFunction.Name, elapsed, LoggingAsJson(result, invocationContext.AIFunction.JsonSerializerOptions));
                 }
                 else
                 {
-                    LogInvocationCompleted(invocationContext.AIFunction.Name, elapsed);
+                    this.LogInvocationCompleted(invocationContext.AIFunction.Name, elapsed);
                 }
             }
         }
@@ -881,11 +926,11 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     {
         internal FunctionInvocationResult(ContinueMode continueMode, FunctionInvocationStatus status, Microsoft.Extensions.AI.FunctionCallContent callContent, object? result, Exception? exception)
         {
-            ContinueMode = continueMode;
-            Status = status;
-            CallContent = callContent;
-            Result = result;
-            Exception = exception;
+            this.ContinueMode = continueMode;
+            this.Status = status;
+            this.CallContent = callContent;
+            this.Result = result;
+            this.Exception = exception;
         }
 
         /// <summary>Gets status about how the function invocation completed.</summary>

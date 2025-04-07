@@ -596,7 +596,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         Assert.Equal([0], requestSequenceNumbers);
         Assert.Equal([0], functionSequenceNumbers);
 
-        // Results of function invoked before termination should be returned 
+        // Results of function invoked before termination should be returned
         Assert.Equal(3, streamingContent.Count);
 
         var lastMessageContent = streamingContent[^1] as StreamingChatMessageContent;
@@ -732,8 +732,8 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
     private static List<HttpResponseMessage> GetFunctionCallingResponses()
     {
         return [
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_multiple_function_calls_test_response.json")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_multiple_function_calls_test_response.json")) },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_chatclient_multiple_function_calls_test_response.json")) },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_chatclient_multiple_function_calls_test_response.json")) },
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_test_response.json")) }
         ];
     }
@@ -741,8 +741,8 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
     private static List<HttpResponseMessage> GetFunctionCallingStreamingResponses()
     {
         return [
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_streaming_multiple_function_calls_test_response.txt")) },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_streaming_multiple_function_calls_test_response.txt")) },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_chatclient_streaming_multiple_function_calls_test_response.txt")) },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/filters_chatclient_streaming_multiple_function_calls_test_response.txt")) },
             new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(File.OpenRead("TestData/chat_completion_streaming_test_response.txt")) }
         ];
     }

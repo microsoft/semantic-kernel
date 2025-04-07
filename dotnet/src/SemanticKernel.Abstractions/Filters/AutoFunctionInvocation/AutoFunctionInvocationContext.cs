@@ -25,17 +25,20 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         Verify.NotNull(innerContext.Options);
         Verify.NotNull(innerContext.Options.AdditionalProperties);
 
-        innerContext.Options.AdditionalProperties.TryGetValue<Kernel>("Kernel", out var kernel);
+        innerContext.Options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
         Verify.NotNull(kernel);
 
-        innerContext.Options.AdditionalProperties.TryGetValue<ChatMessageContent>("ChatMessageContent", out var chatMessageContent);
+        innerContext.Options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
         Verify.NotNull(chatMessageContent);
+
+        innerContext.Options.AdditionalProperties.TryGetValue<bool>(ChatOptionsExtensions.IsStreamingKey, out var isStreaming);
+        this.IsStreaming = isStreaming;
 
         this._innerContext = innerContext;
         this.ChatHistory = new ChatMessageHistory(innerContext.Messages);
         this.ChatMessageContent = chatMessageContent;
         this.Kernel = kernel;
-        this.Result = new FunctionResult(this._kernelFunction!) { Culture = kernel.Culture };
+        this.Result = new FunctionResult(this.Function) { Culture = kernel.Culture };
     }
 
     /// <summary>
