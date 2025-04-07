@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from typing import Any
+from warnings import warn
 
 from openai.types.images_response import ImagesResponse
 
@@ -16,7 +17,9 @@ from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestE
 class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
     """OpenAI text to image client."""
 
-    async def generate_image(self, prompt: str, settings: PromptExecutionSettings, **kwargs: Any) -> bytes | str:
+    async def generate_image(
+        self, prompt: str, settings: PromptExecutionSettings | None = None, **kwargs: Any
+    ) -> bytes | str:
         """Generate image from text.
 
         Args:
@@ -27,6 +30,11 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
         Returns:
             bytes | str: Image bytes or image URL.
         """
+        if "description" in kwargs and not prompt:
+            warn("The 'description' argument is deprecated. Use 'prompt' instead.", DeprecationWarning)
+            prompt = kwargs.pop("description")
+        if not settings:
+            settings = OpenAITextToImageExecutionSettings(**kwargs)
         if not isinstance(settings, OpenAITextToImageExecutionSettings):
             settings = OpenAITextToImageExecutionSettings.from_prompt_execution_settings(settings)
 
@@ -35,6 +43,9 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
 
         if not settings.prompt:
             raise ServiceInvalidRequestError("Prompt is required.")
+
+        if not settings.ai_model_id:
+            settings.ai_model_id = self.ai_model_id
 
         response = await self._send_request(settings)
 

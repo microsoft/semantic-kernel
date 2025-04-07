@@ -74,7 +74,7 @@ async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_en
 
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
 
-    await openai_text_to_image.generate_image(description=prompt, width=width, height=width)
+    await openai_text_to_image.generate_image(prompt=prompt, width=width, height=width)
 
     mock_generate.assert_awaited_once_with(
         prompt=prompt,
@@ -90,7 +90,9 @@ async def test_generate_fail(mock_generate, openai_unit_test_env) -> None:
 
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
     with pytest.raises(ServiceResponseException):
-        await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
+        await openai_text_to_image.generate_image(
+            prompt="", description="painting of flowers in vase", width=width, height=width
+        )
 
 
 async def test_generate_invalid_image_size(openai_unit_test_env) -> None:
@@ -99,7 +101,7 @@ async def test_generate_invalid_image_size(openai_unit_test_env) -> None:
 
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
     with pytest.raises(ServiceInvalidExecutionSettingsError):
-        await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
+        await openai_text_to_image.generate_image(prompt="painting of flowers in vase", width=width, height=width)
 
 
 async def test_generate_empty_description(openai_unit_test_env) -> None:
@@ -108,7 +110,7 @@ async def test_generate_empty_description(openai_unit_test_env) -> None:
 
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
     with pytest.raises(ServiceInvalidExecutionSettingsError):
-        await openai_text_to_image.generate_image(description="", width=width, height=width)
+        await openai_text_to_image.generate_image(prompt="", width=width, height=width)
 
 
 @patch.object(AsyncImages, "generate", new_callable=AsyncMock)
@@ -119,4 +121,4 @@ async def test_generate_no_result(mock_generate, openai_unit_test_env) -> None:
 
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
     with pytest.raises(ServiceResponseException):
-        await openai_text_to_image.generate_image(description="painting of flowers in vase", width=width, height=width)
+        await openai_text_to_image.generate_image(prompt="painting of flowers in vase", width=width, height=width)
