@@ -9,7 +9,6 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.IntentTriage.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.IntentTriage;
