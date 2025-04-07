@@ -22,6 +22,7 @@ public class RedisVectorStoreTests
     public RedisVectorStoreTests()
     {
         this._redisDatabaseMock = new Mock<IDatabase>(MockBehavior.Strict);
+        this._redisDatabaseMock.Setup(l => l.Database).Returns(0);
 
         var batchMock = new Mock<IBatch>();
         this._redisDatabaseMock.Setup(x => x.CreateBatch(It.IsAny<object>())).Returns(batchMock.Object);

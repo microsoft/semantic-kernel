@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -16,6 +17,9 @@ public sealed class SqlServerVectorStore : IVectorStore
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreOptions _options;
 
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
     /// </summary>
@@ -31,6 +35,14 @@ public sealed class SqlServerVectorStore : IVectorStore
         this._options = options is not null
             ? new() { Schema = options.Schema }
             : SqlServerVectorStoreOptions.Defaults;
+
+        var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
+            VectorStoreName = connectionStringBuilder.InitialCatalog
+        };
     }
 
     /// <inheritdoc/>
@@ -62,5 +74,17 @@ public sealed class SqlServerVectorStore : IVectorStore
         {
             yield return reader.GetString(reader.GetOrdinal("table_name"));
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

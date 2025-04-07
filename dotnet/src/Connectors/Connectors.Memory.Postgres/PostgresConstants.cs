@@ -9,8 +9,8 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 internal static class PostgresConstants
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    public const string DatabaseName = "Postgres";
+    /// <summary>The name of this vector store for telemetry purposes.</summary>
+    public const string VectorStoreSystemName = "postgresql";
 
     /// <summary>Validation options.</summary>
     public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()

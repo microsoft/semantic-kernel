@@ -131,6 +131,16 @@ public class VectorStoreTextSearchTestBase
             var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
             return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken);
         }
+
+        /// <inheritdoc />
+        public object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            ArgumentNullException.ThrowIfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+                vectorizedSearch.GetService(serviceType, serviceKey);
+        }
     }
 
     /// <summary>

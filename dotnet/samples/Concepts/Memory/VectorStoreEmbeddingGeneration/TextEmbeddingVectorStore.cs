@@ -41,6 +41,16 @@ public class TextEmbeddingVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._decoratedVectorStore.GetService(serviceType, serviceKey);
+    }
+
+    /// <inheritdoc />
     public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return this._decoratedVectorStore.ListCollectionNamesAsync(cancellationToken);
