@@ -158,7 +158,7 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
             if "session" not in kwargs:
                 raise ContentException("Session is required for SessionUpdateEvent")
             return SessionUpdateEvent(
-                type=event_type,
+                type=event_type.value,
                 session=kwargs.pop("session"),
                 **kwargs,
             )
@@ -166,36 +166,36 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
             if "audio" not in kwargs:
                 raise ContentException("Audio is required for InputAudioBufferAppendEvent")
             return InputAudioBufferAppendEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_COMMIT:
             return InputAudioBufferCommitEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.INPUT_AUDIO_BUFFER_CLEAR:
             return InputAudioBufferClearEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_CREATE:
             if "item" not in kwargs:
                 raise ContentException("Item is required for ConversationItemCreateEvent")
-            kwargs["type"] = event_type
+            kwargs["type"] = event_type.value
             return ConversationItemCreateEvent(**kwargs)
         case SendEvents.CONVERSATION_ITEM_TRUNCATE:
             if "content_index" not in kwargs:
                 kwargs["content_index"] = 0
             return ConversationItemTruncateEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.CONVERSATION_ITEM_DELETE:
             if "item_id" not in kwargs:
                 raise ContentException("Item ID is required for ConversationItemDeleteEvent")
             return ConversationItemDeleteEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
         case SendEvents.RESPONSE_CREATE:
@@ -204,13 +204,13 @@ def _create_openai_realtime_client_event(event_type: SendEvents, **kwargs: Any) 
             else:
                 response = None
             return ResponseCreateEvent(
-                type=event_type,
+                type=event_type.value,
                 response=response,
                 **kwargs,
             )
         case SendEvents.RESPONSE_CANCEL:
             return ResponseCancelEvent(
-                type=event_type,
+                type=event_type.value,
                 **kwargs,
             )
 
