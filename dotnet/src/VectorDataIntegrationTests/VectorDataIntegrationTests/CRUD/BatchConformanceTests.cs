@@ -67,12 +67,12 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
     private async Task UpsertBatchAsyncCanInsertNewRecords(bool includeVectors)
     {
         var collection = fixture.Collection;
-        SimpleModel<TKey>[] inserted = Enumerable.Range(0, 10).Select(i => new SimpleModel<TKey>()
+        SimpleRecord<TKey>[] inserted = Enumerable.Range(0, 10).Select(i => new SimpleRecord<TKey>()
         {
             Id = fixture.GenerateNextKey<TKey>(),
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
         var keys = inserted.Select(record => record.Id).ToArray();
 
@@ -97,16 +97,16 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
     private async Task UpsertBatchAsyncCanUpdateExistingRecords(bool includeVectors)
     {
-        SimpleModel<TKey>[] inserted = Enumerable.Range(0, 10).Select(i => new SimpleModel<TKey>()
+        SimpleRecord<TKey>[] inserted = Enumerable.Range(0, 10).Select(i => new SimpleRecord<TKey>()
         {
             Id = fixture.GenerateNextKey<TKey>(),
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
         await fixture.Collection.UpsertAsync(inserted).ToArrayAsync();
 
-        SimpleModel<TKey>[] updated = inserted.Select(i => new SimpleModel<TKey>()
+        SimpleRecord<TKey>[] updated = inserted.Select(i => new SimpleRecord<TKey>()
         {
             Id = i.Id,
             Text = i.Text + "updated",
@@ -136,16 +136,16 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
     private async Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(bool includeVectors)
     {
-        SimpleModel<TKey>[] records = Enumerable.Range(0, 10).Select(i => new SimpleModel<TKey>()
+        SimpleRecord<TKey>[] records = Enumerable.Range(0, 10).Select(i => new SimpleRecord<TKey>()
         {
             Id = fixture.GenerateNextKey<TKey>(),
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
 
         // We take first half of the records and insert them.
-        SimpleModel<TKey>[] firstHalf = records.Take(records.Length / 2).ToArray();
+        SimpleRecord<TKey>[] firstHalf = records.Take(records.Length / 2).ToArray();
         TKey[] insertedKeys = await fixture.Collection.UpsertAsync(firstHalf).ToArrayAsync();
         Assert.Equal(
             firstHalf.Select(r => r.Id).OrderBy(id => id).ToArray(),
@@ -196,6 +196,6 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
     // The order of records in the received array is not guaranteed
     // to match the order of keys in the requested keys array.
-    protected SimpleModel<TKey> GetRecord(SimpleModel<TKey>[] received, TKey key)
+    protected SimpleRecord<TKey> GetRecord(SimpleRecord<TKey>[] received, TKey key)
         => received.Single(r => r.Id!.Equals(key));
 }

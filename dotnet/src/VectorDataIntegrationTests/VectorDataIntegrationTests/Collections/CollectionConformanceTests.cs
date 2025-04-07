@@ -12,7 +12,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 {
     [ConditionalFact]
     public Task DeleteCollectionDoesNotThrowForNonExistingCollection()
-         => this.DeleteNonExistingCollection<SimpleModel<TKey>>();
+         => this.DeleteNonExistingCollection<SimpleRecord<TKey>>();
 
     [ConditionalFact]
     public Task DeleteCollectionDoesNotThrowForNonExistingCollection_GenericDataModel()
@@ -20,7 +20,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
     [ConditionalFact]
     public Task CreateCollectionCreatesTheCollection()
-        => this.CreateCollection<SimpleModel<TKey>>();
+        => this.CreateCollection<SimpleRecord<TKey>>();
 
     [ConditionalFact]
     public Task CreateCollectionCreatesTheCollection_GenericDataModel()
@@ -28,7 +28,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
     [ConditionalFact]
     public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow()
-        => this.CreateCollectionIfNotExistsMoreThanOnce<SimpleModel<TKey>>();
+        => this.CreateCollectionIfNotExistsMoreThanOnce<SimpleRecord<TKey>>();
 
     [ConditionalFact]
     public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow_GenericDataModel()
@@ -36,7 +36,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
 
     [ConditionalFact]
     public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException()
-        => this.CreateCollectionMoreThanOnce<SimpleModel<TKey>>();
+        => this.CreateCollectionMoreThanOnce<SimpleRecord<TKey>>();
 
     [ConditionalFact]
     public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException_GenericDataModel()

@@ -42,7 +42,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     {
         var collection = fixture.Collection;
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
-        NoVectorModel inserted = new()
+        NoVectorRecord inserted = new()
         {
             Id = expectedKey,
             Text = "some"
@@ -68,7 +68,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     {
         var collection = fixture.Collection;
         var existingRecord = fixture.TestData[1];
-        NoVectorModel updated = new()
+        NoVectorRecord updated = new()
         {
             Id = existingRecord.Id,
             Text = "updated"
@@ -96,7 +96,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     /// This class is for testing databases that support having no vector.
     /// Not all DBs support this.
     /// </summary>
-    public sealed class NoVectorModel
+    public sealed class NoVectorRecord
     {
         public const int DimensionCount = 3;
 
@@ -106,7 +106,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
         [VectorStoreRecordData(StoragePropertyName = "text")]
         public string? Text { get; set; }
 
-        public void AssertEqual(NoVectorModel? other)
+        public void AssertEqual(NoVectorRecord? other)
         {
             Assert.NotNull(other);
             Assert.Equal(this.Id, other.Id);
@@ -117,9 +117,9 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
     /// <summary>
     /// Provides data and configuration for a model without a vector, which is supported by some connectors.
     /// </summary>
-    public abstract class Fixture : VectorStoreCollectionFixture<TKey, NoVectorModel>
+    public abstract class Fixture : VectorStoreCollectionFixture<TKey, NoVectorRecord>
     {
-        protected override List<NoVectorModel> BuildTestData() =>
+        protected override List<NoVectorRecord> BuildTestData() =>
         [
             new()
             {
@@ -148,8 +148,8 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(NoVectorModel.Id), typeof(TKey)),
-                    new VectorStoreRecordDataProperty(nameof(NoVectorModel.Text), typeof(string)) { IsFilterable = true },
+                    new VectorStoreRecordKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)),
+                    new VectorStoreRecordDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsFilterable = true },
                 ]
             };
 
