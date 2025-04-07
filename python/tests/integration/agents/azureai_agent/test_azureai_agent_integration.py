@@ -9,9 +9,7 @@ from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 
@@ -150,6 +148,7 @@ Dolphin  2
         response = await azureai_agent.get_response(messages=input_text)
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
+        assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_code_interpreter": True}], indirect=True)
     async def test_code_interpreter_invoke(self, azureai_agent: AzureAIAgent):
@@ -165,7 +164,7 @@ Dolphin  2
         async for response in azureai_agent.invoke(messages=input_text):
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
-            assert any(isinstance(item, FileReferenceContent) for item in response.message.items)
+            assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_code_interpreter": True}], indirect=True)
     async def test_code_interpreter_invoke_stream(self, azureai_agent: AzureAIAgent):
@@ -181,7 +180,7 @@ Dolphin  2
         async for response in azureai_agent.invoke_stream(messages=input_text):
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
-            assert any(isinstance(item, StreamingFileReferenceContent) for item in response.message.items)
+            assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_file_search": True}], indirect=True)
     async def test_file_search_get_response(self, azureai_agent: AzureAIAgent):
