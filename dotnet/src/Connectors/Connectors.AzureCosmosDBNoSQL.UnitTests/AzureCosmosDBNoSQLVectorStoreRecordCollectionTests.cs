@@ -706,10 +706,10 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string? IndexableData1 { get; set; }
 
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsFullTextIndexed = true)]
         public string? IndexableData2 { get; set; }
 
         [VectorStoreRecordData]

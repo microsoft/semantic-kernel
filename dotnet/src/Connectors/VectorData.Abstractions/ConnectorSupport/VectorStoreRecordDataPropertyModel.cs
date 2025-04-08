@@ -14,20 +14,20 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 public class VectorStoreRecordDataPropertyModel(string modelName, Type type) : VectorStoreRecordPropertyModel(modelName, type)
 {
     /// <summary>
-    /// Gets or sets a value indicating whether this data property is filterable.
+    /// Gets or sets a value indicating whether this data property is indexed for filtering.
     /// </summary>
     /// <value>
     /// The default is <see langword="false" />.
     /// </value>
-    public bool IsFilterable { get; set; }
+    public bool IsIndexed { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this data property is full text searchable.
+    /// Gets or sets a value indicating whether this data property is indexed for full-text search.
     /// </summary>
     /// <value>
     /// The default is <see langword="false" />.
     /// </value>
-    public bool IsFullTextSearchable { get; set; }
+    public bool IsFullTextIndexed { get; set; }
 
     /// <inheritdoc/>
     // TODO: Temporary, remove once we move to Dictionary<string, object?> as the dynamic representation

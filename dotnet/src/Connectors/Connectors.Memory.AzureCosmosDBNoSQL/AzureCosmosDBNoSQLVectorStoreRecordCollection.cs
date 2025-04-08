@@ -490,11 +490,11 @@ public class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         // Process Data properties.
         foreach (var property in this._model.DataProperties)
         {
-            if (property.IsFilterable || property.IsFullTextSearchable)
+            if (property.IsIndexed || property.IsFullTextIndexed)
             {
                 indexingPolicy.IncludedPaths.Add(new IncludedPath { Path = $"/{property.StorageName}/?" });
             }
-            if (property.IsFullTextSearchable)
+            if (property.IsFullTextIndexed)
             {
                 indexingPolicy.FullTextIndexes.Add(new FullTextIndexPath { Path = $"/{property.StorageName}" });
                 // TODO: Switch to using language from a setting.

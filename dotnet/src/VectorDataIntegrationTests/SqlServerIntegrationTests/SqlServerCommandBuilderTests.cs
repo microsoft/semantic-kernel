@@ -112,7 +112,7 @@ public class SqlServerCommandBuilderTests
             [
                 new VectorStoreRecordKeyProperty("id", typeof(long)),
                 new VectorStoreRecordDataProperty("simpleName", typeof(string)),
-                new VectorStoreRecordDataProperty("with space", typeof(int)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("with space", typeof(int)) { IsIndexed = true },
                 new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 }
             ]);
 

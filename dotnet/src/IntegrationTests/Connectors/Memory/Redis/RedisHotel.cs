@@ -16,23 +16,23 @@ public class RedisHotel
     [VectorStoreRecordKey]
     public string HotelId { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string HotelName { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public int HotelCode { get; init; }
 
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreRecordData(IsFullTextIndexed = true)]
     public string Description { get; init; }
 
     [VectorStoreRecordVector(4)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; init; }
 
 #pragma warning disable CA1819 // Properties should not return arrays
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string[] Tags { get; init; }
 
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreRecordData(IsFullTextIndexed = true)]
     public string[] FTSTags { get; init; }
 #pragma warning restore CA1819 // Properties should not return arrays
 
@@ -67,13 +67,13 @@ public class RedisBasicHotel<TVectorElement>
     [VectorStoreRecordKey]
     public string HotelId { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string HotelName { get; init; }
 
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public int HotelCode { get; init; }
 
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreRecordData(IsFullTextIndexed = true)]
     public string Description { get; init; }
 
     [VectorStoreRecordVector(4)]

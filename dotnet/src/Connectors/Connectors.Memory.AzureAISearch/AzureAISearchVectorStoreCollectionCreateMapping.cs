@@ -33,17 +33,17 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information.</exception>
     public static SimpleField MapDataField(VectorStoreRecordDataPropertyModel dataProperty)
     {
-        if (dataProperty.IsFullTextSearchable)
+        if (dataProperty.IsFullTextIndexed)
         {
             if (dataProperty.Type != typeof(string))
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Azure AI Search VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Azure AI Search VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
             }
 
-            return new SearchableField(dataProperty.StorageName) { IsFilterable = dataProperty.IsFilterable };
+            return new SearchableField(dataProperty.StorageName) { IsFilterable = dataProperty.IsIndexed };
         }
 
-        return new SimpleField(dataProperty.StorageName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.Type)) { IsFilterable = dataProperty.IsFilterable };
+        return new SimpleField(dataProperty.StorageName, AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.Type)) { IsFilterable = dataProperty.IsIndexed };
     }
 
     /// <summary>

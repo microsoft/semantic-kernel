@@ -16,20 +16,20 @@ namespace Microsoft.Extensions.VectorData;
 public sealed class VectorStoreRecordDataAttribute : Attribute
 {
     /// <summary>
-    /// Gets or sets a value indicating whether this data property is filterable.
+    /// Gets or sets a value indicating whether this data property is indexed for filtering.
     /// </summary>
     /// <value>
     /// The default is <see langword="false" />.
     /// </value>
-    public bool IsFilterable { get; init; }
+    public bool IsIndexed { get; init; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this data property is full-text searchable.
+    /// Gets or sets a value indicating whether this data property is indexed for full-text search.
     /// </summary>
     /// <value>
     /// The default is <see langword="false" />.
     /// </value>
-    public bool IsFullTextSearchable { get; init; }
+    public bool IsFullTextIndexed { get; init; }
 
     /// <summary>
     /// Gets or sets an optional name to use for the property in storage, if different from the property name.

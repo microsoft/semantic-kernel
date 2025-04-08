@@ -160,7 +160,7 @@ public class VectorStoreTextSearchTestBase
         [VectorStoreRecordData]
         public required string Text { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

@@ -141,24 +141,24 @@ public sealed class VectorStoreRecordModel
         {
             var property = this.GetMatchingProperty<TRecord, VectorStoreRecordDataPropertyModel>(expression);
 
-            return property.IsFullTextSearchable
+            return property.IsFullTextIndexed
                 ? property
-                : throw new InvalidOperationException($"The property '{property.ModelName}' on '{this._recordType.Name}' must have full text search enabled.");
+                : throw new InvalidOperationException($"The property '{property.ModelName}' on '{this._recordType.Name}' must have full text search indexing enabled.");
         }
 
         if (this._singleFullTextSearchProperty is null)
         {
-            // If text data property name is not provided, check if a single full text searchable text property exists or throw otherwise.
+            // If text data property name is not provided, check if a single full text indexed text property exists or throw otherwise.
             var fullTextStringProperties = this.DataProperties
-                .Where(l => l.Type == typeof(string) && l.IsFullTextSearchable)
+                .Where(l => l.Type == typeof(string) && l.IsFullTextIndexed)
                 .ToList();
 
-            // If text data property name is not provided, check if a single full text searchable text property exists or throw otherwise.
+            // If text data property name is not provided, check if a single full text indexed text property exists or throw otherwise.
             this._singleFullTextSearchProperty = fullTextStringProperties switch
             {
                 [var singleProperty] => singleProperty,
-                { Count: 0 } => throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any text data properties that have full text search enabled."),
-                _ => throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple text data properties that have full text search enabled, please specify your chosen property via options.")
+                { Count: 0 } => throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any text data properties that have full text indexing enabled."),
+                _ => throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple text data properties that have full text indexing enabled, please specify your chosen property via options.")
             };
         }
 
