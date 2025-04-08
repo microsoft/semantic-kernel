@@ -136,7 +136,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -158,7 +158,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         {
             var request = new WeaviateDeleteCollectionSchemaRequest(this.CollectionName).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -171,7 +171,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         {
             var request = new WeaviateDeleteObjectRequest(this.CollectionName, key).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -196,7 +196,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
             var request = new WeaviateDeleteObjectBatchRequest(match).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -388,7 +388,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
-    private Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> ExecuteRequestAsync(
+        HttpRequestMessage request,
+        bool ensureSuccessStatusCode = true,
+        CancellationToken cancellationToken = default)
     {
         request.RequestUri = new Uri(this._endpoint, request.RequestUri!);
 
@@ -397,12 +400,21 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
         }
 
-        return this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
+        var response = await this._httpClient
+            .SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (ensureSuccessStatusCode)
+        {
+            response.EnsureSuccessStatusCode();
+        }
+
+        return response;
     }
 
     private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
@@ -420,11 +432,14 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     private async Task<TResponse?> ExecuteRequestWithNotFoundHandlingAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this.ExecuteRequestAsync(request, ensureSuccessStatusCode: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return default;
         }
+
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
