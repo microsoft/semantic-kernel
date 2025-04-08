@@ -4,7 +4,6 @@ using MCPServer.Resources;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
-using MCPServer.Prompts;
 
 namespace MCPServer;
 
