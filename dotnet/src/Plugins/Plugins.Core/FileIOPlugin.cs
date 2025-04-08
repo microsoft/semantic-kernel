@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 public sealed class FileIOPlugin
 {
     /// <summary>
-    /// List of allowed folders to download to.
+    /// List of allowed folders to read from or write to.
     /// </summary>
     public IEnumerable<string>? AllowedFolders
     {
