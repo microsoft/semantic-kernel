@@ -74,6 +74,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
 
+        if (database.Client?.ClientOptions?.UseSystemTextJsonSerializerWithOptions is null)
+        {
+            throw new ArgumentException(
+                $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " +
+                $"is required to be configured for {nameof(AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>)}.");
+        }
+
         // Assign.
         this._database = database;
         this.CollectionName = collectionName;

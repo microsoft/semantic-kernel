@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
@@ -18,12 +19,24 @@ namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
 {
     private readonly IServiceCollection _serviceCollection = new ServiceCollection();
+    private readonly Mock<Database> _mockDatabase = new();
+
+    public AzureCosmosDBNoSQLServiceCollectionExtensionsTests()
+    {
+        var mockClient = new Mock<CosmosClient>();
+
+        mockClient.Setup(l => l.ClientOptions).Returns(new CosmosClientOptions() { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default });
+
+        this._mockDatabase
+            .Setup(l => l.Client)
+            .Returns(mockClient.Object);
+    }
 
     [Fact]
     public void AddVectorStoreRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>());
+        this._serviceCollection.AddSingleton<Database>(this._mockDatabase.Object);
 
         // Act
         this._serviceCollection.AddAzureCosmosDBNoSQLVectorStore();
@@ -56,7 +69,7 @@ public sealed class AzureCosmosDBNoSQLServiceCollectionExtensionsTests
     public void AddVectorStoreRecordCollectionRegistersClass()
     {
         // Arrange
-        this._serviceCollection.AddSingleton<Database>(Mock.Of<Database>());
+        this._serviceCollection.AddSingleton<Database>(this._mockDatabase.Object);
 
         // Act
         this._serviceCollection.AddAzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>("testcollection");
