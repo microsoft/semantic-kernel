@@ -16,6 +16,9 @@ internal sealed class WeaviateConstants
     /// <summary>Reserved vector property name in Weaviate.</summary>
     internal const string ReservedVectorPropertyName = "vectors";
 
+    /// <summary>Reserved single vector property name in Weaviate.</summary>
+    internal const string ReservedSingleVectorPropertyName = "vector";
+
     /// <summary>Collection property name in Weaviate.</summary>
     internal const string CollectionPropertyName = "class";
 

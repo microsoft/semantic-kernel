@@ -95,7 +95,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this.CollectionName = collectionName;
         this._options = options ?? new();
         this._apiKey = this._options.ApiKey;
-        this._model = new WeaviateModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
+        this._model = new WeaviateModelBuilder(this._options.UseSingleVector)
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
 
         // Assign mapper.
         this._mapper = this.InitializeMapper();
@@ -467,7 +468,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
         }
 
-        return new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._model, s_jsonSerializerOptions);
+        return new WeaviateVectorStoreRecordMapper<TRecord>(
+            this.CollectionName,
+            this._options.UseSingleVector,
+            this._model,
+            s_jsonSerializerOptions);
     }
 #pragma warning restore CS0618
 

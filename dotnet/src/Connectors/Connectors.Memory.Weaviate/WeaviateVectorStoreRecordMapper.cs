@@ -13,17 +13,26 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 #pragma warning restore CS0618
 {
     private readonly string _collectionName;
+    private readonly bool _useSingleVector;
     private readonly VectorStoreRecordModel _model;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
+    private readonly string _vectorPropertyName;
+
     public WeaviateVectorStoreRecordMapper(
         string collectionName,
+        bool useSingleVector,
         VectorStoreRecordModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._collectionName = collectionName;
+        this._useSingleVector = useSingleVector;
         this._model = model;
         this._jsonSerializerOptions = jsonSerializerOptions;
+
+        this._vectorPropertyName = useSingleVector ?
+            WeaviateConstants.ReservedSingleVectorPropertyName :
+            WeaviateConstants.ReservedVectorPropertyName;
     }
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel)
@@ -41,7 +50,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
             // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
             { WeaviateConstants.ReservedKeyPropertyName, jsonNodeDataModel[this._model.KeyProperty.TemporaryStorageName!]!.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, new JsonObject() },
-            { WeaviateConstants.ReservedVectorPropertyName, new JsonObject() },
+            { this._vectorPropertyName, new JsonObject() },
         };
 
         // Populate data properties.
@@ -56,13 +65,26 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         }
 
         // Populate vector properties.
-        foreach (var property in this._model.VectorProperties)
+        if (this._useSingleVector)
         {
-            var node = jsonNodeDataModel[property.StorageName];
+            var vectorProperty = this._model.VectorProperty;
+            var node = jsonNodeDataModel[vectorProperty.StorageName];
 
             if (node is not null)
             {
-                weaviateObjectModel[WeaviateConstants.ReservedVectorPropertyName]![property.StorageName] = node.DeepClone();
+                weaviateObjectModel[this._vectorPropertyName] = node.DeepClone();
+            }
+        }
+        else
+        {
+            foreach (var property in this._model.VectorProperties)
+            {
+                var node = jsonNodeDataModel[property.StorageName];
+
+                if (node is not null)
+                {
+                    weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = node.DeepClone();
+                }
             }
         }
 
@@ -97,13 +119,26 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Populate vector properties.
         if (options.IncludeVectors)
         {
-            foreach (var property in this._model.VectorProperties)
+            if (this._useSingleVector)
             {
-                var node = storageModel[WeaviateConstants.ReservedVectorPropertyName]?[property.StorageName];
+                var vectorProperty = this._model.VectorProperty;
+                var node = storageModel[this._vectorPropertyName];
 
                 if (node is not null)
                 {
-                    jsonNodeDataModel[property.StorageName] = node.DeepClone();
+                    jsonNodeDataModel[vectorProperty.StorageName] = node.DeepClone();
+                }
+            }
+            else
+            {
+                foreach (var property in this._model.VectorProperties)
+                {
+                    var node = storageModel[this._vectorPropertyName]?[property.StorageName];
+
+                    if (node is not null)
+                    {
+                        jsonNodeDataModel[property.StorageName] = node.DeepClone();
+                    }
                 }
             }
         }

@@ -39,4 +39,12 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
     /// This parameter is optional because authentication may be disabled in local clusters for testing purposes.
     /// </remarks>
     public string? ApiKey { get; set; } = null;
+
+    /// <summary>
+    /// Boolean flag which indicates whether a single vector data schema should be used in Weaviate collection.
+    /// By default it's <see langword="false" />, meaning that multiple vector data schema will be used (also known as named vectors).
+    /// <see href="https://weaviate.io/developers/weaviate/config-refs/schema/multi-vector"/>.
+    /// When single vector data schema is enabled, only one vector property will be used with name "vector".
+    /// </summary>
+    public bool UseSingleVector { get; set; } = false;
 }

@@ -31,7 +31,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         }
     };
 
-    private readonly VectorStoreRecordModel _model = new WeaviateModelBuilder()
+    private readonly VectorStoreRecordModel _model = new WeaviateModelBuilder(useSingleVector: false)
         .Build(
             typeof(VectorStoreGenericDataModel<string>),
             new()

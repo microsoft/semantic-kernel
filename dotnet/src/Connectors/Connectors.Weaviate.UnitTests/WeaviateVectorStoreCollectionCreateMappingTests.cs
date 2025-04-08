@@ -14,11 +14,13 @@ namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 /// </summary>
 public sealed class WeaviateVectorStoreCollectionCreateMappingTests
 {
+    private const bool UseSingleVector = false;
+
     [Fact]
     public void ItThrowsExceptionWithInvalidIndexKind()
     {
         // Arrange
-        var model = new WeaviateModelBuilder()
+        var model = new WeaviateModelBuilder(UseSingleVector)
             .Build(
                 typeof(VectorStoreGenericDataModel<Guid>),
                 new VectorStoreRecordDefinition
@@ -41,7 +43,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItReturnsCorrectSchemaWithValidIndexKind(string indexKind, string expectedIndexKind)
     {
         // Arrange
-        var model = new WeaviateModelBuilder()
+        var model = new WeaviateModelBuilder(UseSingleVector)
             .Build(
                 typeof(VectorStoreGenericDataModel<Guid>),
                 new VectorStoreRecordDefinition
@@ -65,7 +67,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItThrowsExceptionWithInvalidDistanceFunction()
     {
         // Arrange
-        var model = new WeaviateModelBuilder()
+        var model = new WeaviateModelBuilder(UseSingleVector)
             .Build(
                 typeof(VectorStoreGenericDataModel<Guid>),
                 new VectorStoreRecordDefinition
@@ -90,7 +92,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItReturnsCorrectSchemaWithValidDistanceFunction(string distanceFunction, string expectedDistanceFunction)
     {
         // Arrange
-        var model = new WeaviateModelBuilder()
+        var model = new WeaviateModelBuilder(UseSingleVector)
             .Build(
                 typeof(VectorStoreGenericDataModel<Guid>),
                 new VectorStoreRecordDefinition
@@ -163,7 +165,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     public void ItMapsPropertyCorrectly(Type propertyType, string expectedPropertyType)
     {
         // Arrange
-        var model = new WeaviateModelBuilder()
+        var model = new WeaviateModelBuilder(UseSingleVector)
             .Build(
                 typeof(VectorStoreGenericDataModel<Guid>),
                 new VectorStoreRecordDefinition

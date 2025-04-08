@@ -6,22 +6,25 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal class WeaviateModelBuilder() : VectorStoreRecordJsonModelBuilder(s_modelBuildingOptions)
+internal class WeaviateModelBuilder(bool useSingleVector) : VectorStoreRecordJsonModelBuilder(GetModelBuildingOptions(useSingleVector))
 {
-    private static readonly VectorStoreRecordModelBuildingOptions s_modelBuildingOptions = new()
+    private static VectorStoreRecordModelBuildingOptions GetModelBuildingOptions(bool useSingleVector)
     {
-        RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
+        return new()
+        {
+            RequiresAtLeastOneVector = false,
+            SupportsMultipleKeys = false,
+            SupportsMultipleVectors = !useSingleVector,
 
-        SupportedKeyPropertyTypes = [typeof(Guid)],
-        SupportedDataPropertyTypes = s_supportedDataTypes,
-        SupportedEnumerableDataPropertyElementTypes = s_supportedDataTypes,
-        SupportedVectorPropertyTypes = s_supportedVectorTypes,
+            SupportedKeyPropertyTypes = [typeof(Guid)],
+            SupportedDataPropertyTypes = s_supportedDataTypes,
+            SupportedEnumerableDataPropertyElementTypes = s_supportedDataTypes,
+            SupportedVectorPropertyTypes = s_supportedVectorTypes,
 
-        UsesExternalSerializer = true,
-        ReservedKeyStorageName = WeaviateConstants.ReservedKeyPropertyName
-    };
+            UsesExternalSerializer = true,
+            ReservedKeyStorageName = WeaviateConstants.ReservedKeyPropertyName
+        };
+    }
 
     private static readonly HashSet<Type> s_supportedDataTypes =
     [

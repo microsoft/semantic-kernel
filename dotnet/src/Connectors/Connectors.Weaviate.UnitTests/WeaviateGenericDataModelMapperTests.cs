@@ -18,6 +18,8 @@ namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 /// </summary>
 public sealed class WeaviateGenericDataModelMapperTests
 {
+    private const bool UseSingleVector = false;
+
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -29,7 +31,7 @@ public sealed class WeaviateGenericDataModelMapperTests
         }
     };
 
-    private static readonly VectorStoreRecordModel s_model = new WeaviateModelBuilder()
+    private static readonly VectorStoreRecordModel s_model = new WeaviateModelBuilder(UseSingleVector)
         .Build(
             typeof(VectorStoreGenericDataModel<Guid>),
             new VectorStoreRecordDefinition
@@ -351,7 +353,7 @@ public sealed class WeaviateGenericDataModelMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder().Build(typeof(VectorStoreGenericDataModel<Guid>), recordDefinition, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(UseSingleVector).Build(typeof(VectorStoreGenericDataModel<Guid>), recordDefinition, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
@@ -382,7 +384,7 @@ public sealed class WeaviateGenericDataModelMapperTests
             ]
         };
 
-        var model = new WeaviateModelBuilder().Build(typeof(VectorStoreGenericDataModel<Guid>), recordDefinition, s_jsonSerializerOptions);
+        var model = new WeaviateModelBuilder(UseSingleVector).Build(typeof(VectorStoreGenericDataModel<Guid>), recordDefinition, s_jsonSerializerOptions);
 
         var key = new Guid("55555555-5555-5555-5555-555555555555");
 
