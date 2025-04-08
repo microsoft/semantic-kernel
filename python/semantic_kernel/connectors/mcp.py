@@ -17,13 +17,7 @@ from mcp.client.websocket import websocket_client
 from mcp.server.lowlevel.server import Server
 from mcp.shared.context import RequestContext
 from mcp.shared.session import RequestResponder
-from mcp.types import CallToolResult, EmbeddedResource, Prompt, TextResourceContents, Tool
-from mcp.types import (
-    ImageContent as MCPImageContent,
-)
-from mcp.types import (
-    TextContent as MCPTextContent,
-)
+from mcp.types import Prompt, Tool
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -66,36 +60,36 @@ LOG_LEVEL_MAPPING: dict[types.LoggingLevel, int] = {
 
 
 @experimental
-def _mcp_prompt_message_to_semantic_kernel_type(
+def _mcp_prompt_message_to_kernel_content(
     mcp_type: types.PromptMessage | types.SamplingMessage,
 ) -> ChatMessageContent:
     """Convert a MCP container type to a Semantic Kernel type."""
     return ChatMessageContent(
         role=AuthorRole(mcp_type.role),
-        items=[_mcp_type_to_semantic_kernel_type(mcp_type.content)],
+        items=[_mcp_content_types_to_kernel_content(mcp_type.content)],
         inner_content=mcp_type,
     )
 
 
 @experimental
-def _mcp_call_tool_result_to_semantic_kernel_type(
-    mcp_type: CallToolResult,
+def _mcp_call_tool_result_to_kernel_contents(
+    mcp_type: types.CallToolResult,
 ) -> list[TextContent | ImageContent | BinaryContent]:
     """Convert a MCP container type to a Semantic Kernel type."""
-    return [_mcp_type_to_semantic_kernel_type(item) for item in mcp_type.content]
+    return [_mcp_content_types_to_kernel_content(item) for item in mcp_type.content]
 
 
 @experimental
-def _mcp_type_to_semantic_kernel_type(
-    mcp_type: MCPImageContent | MCPTextContent | EmbeddedResource,
+def _mcp_content_types_to_kernel_content(
+    mcp_type: types.ImageContent | types.TextContent | types.EmbeddedResource,
 ) -> TextContent | ImageContent | BinaryContent:
     """Convert a MCP type to a Semantic Kernel type."""
-    if isinstance(mcp_type, MCPTextContent):
+    if isinstance(mcp_type, types.TextContent):
         return TextContent(text=mcp_type.text, inner_content=mcp_type)
-    if isinstance(mcp_type, MCPImageContent):
+    if isinstance(mcp_type, types.ImageContent):
         return ImageContent(data=mcp_type.data, mime_type=mcp_type.mimeType, inner_content=mcp_type)
-
-    if isinstance(mcp_type.resource, TextResourceContents):
+    # subtypes of EmbeddedResource
+    if isinstance(mcp_type.resource, types.TextResourceContents):
         return TextContent(
             text=mcp_type.resource.text,
             inner_content=mcp_type,
@@ -109,24 +103,54 @@ def _mcp_type_to_semantic_kernel_type(
 
 
 @experimental
-def get_parameter_from_mcp_prompt(prompt: Prompt) -> list[dict[str, Any]]:
+def _kernel_content_to_mcp_content_types(
+    content: TextContent | ImageContent | BinaryContent | ChatMessageContent,
+) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
+    """Convert a kernel content type to a MCP type."""
+    if isinstance(content, TextContent):
+        return [types.TextContent(type="text", text=content.text)]
+    if isinstance(content, ImageContent):
+        return [types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type)]
+    if isinstance(content, BinaryContent):
+        return [
+            types.EmbeddedResource(
+                type="resource",
+                resource=types.BlobResourceContents(
+                    blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "kernel:///binary"
+                ),
+            )
+        ]
+    if isinstance(content, ChatMessageContent):
+        messages: list[types.TextContent | types.ImageContent | types.EmbeddedResource] = []
+        for item in content.items:
+            if isinstance(item, (TextContent, ImageContent, BinaryContent)):
+                messages.extend(_kernel_content_to_mcp_content_types(item))
+            else:
+                logger.debug("Unsupported content type: %s", type(item))
+        return messages
+
+    raise FunctionExecutionException(f"Unsupported content type: {type(content)}")
+
+
+@experimental
+def _get_parameter_dict_from_mcp_prompt(prompt: Prompt) -> list[dict[str, Any]]:
     """Creates a MCPFunction instance from a prompt."""
     # Check if 'properties' is missing or not a dictionary
     if not prompt.arguments:
         return []
     return [
-        dict(
-            name=prompt_argument.name,
-            description=prompt_argument.description,
-            is_required=True,
-            type_object=str,
-        )
+        {
+            "name": prompt_argument.name,
+            "description": prompt_argument.description,
+            "is_required": True,
+            "type_object": str,
+        }
         for prompt_argument in prompt.arguments
     ]
 
 
 @experimental
-def get_parameters_from_mcp_tool(tool: Tool) -> list[dict[str, Any]]:
+def _get_parameter_dicts_from_mcp_tool(tool: Tool) -> list[dict[str, Any]]:
     """Creates an MCPFunction instance from a tool."""
     properties = tool.inputSchema.get("properties", None)
     required = tool.inputSchema.get("required", [])
@@ -134,13 +158,13 @@ def get_parameters_from_mcp_tool(tool: Tool) -> list[dict[str, Any]]:
     if not properties:
         return []
     return [
-        dict(
-            name=prop_name,
-            is_required=prop_name in required,
-            type=prop_details.get("type"),
-            default_value=prop_details.get("default", None),
-            schema_data=prop_details,
-        )
+        {
+            "name": prop_name,
+            "is_required": prop_name in required,
+            "type": prop_details.get("type"),
+            "default_value": prop_details.get("default", None),
+            "schema_data": prop_details,
+        }
         for prop_name, prop_details in properties.items()
     ]
 
@@ -228,6 +252,7 @@ class MCPPluginBase:
         completion_settings = self.sample_completion_service.get_prompt_execution_settings_class()()
         if "temperature" in completion_settings.__class__.model_fields:
             completion_settings.temperature = params.temperature  # type: ignore
+
         if "max_completion_tokens" in completion_settings.__class__.model_fields:
             completion_settings.max_completion_tokens = params.maxTokens  # type: ignore
         elif "max_tokens" in completion_settings.__class__.model_fields:
@@ -236,7 +261,7 @@ class MCPPluginBase:
             completion_settings.max_output_tokens = params.maxTokens  # type: ignore
         chat_history = ChatHistory(system_message=params.systemPrompt)
         for msg in params.messages:
-            chat_history.add_message(_mcp_prompt_message_to_semantic_kernel_type(msg))
+            chat_history.add_message(_mcp_prompt_message_to_kernel_content(msg))
         result = await self.sample_completion_service.get_chat_message_content(
             chat_history,
             completion_settings,
@@ -246,10 +271,10 @@ class MCPPluginBase:
                 code=types.INTERNAL_ERROR,
                 message="Failed to get chat message content.",
             )
-        mcp_contents = _kernel_content_to_mcp_type(result)
+        mcp_contents = _kernel_content_to_mcp_content_types(result)
         # grab the first content that is of type TextContent or ImageContent
         mcp_content = next(
-            (content for content in mcp_contents if isinstance(content, (MCPTextContent, MCPImageContent))),
+            (content for content in mcp_contents if isinstance(content, (types.TextContent, types.ImageContent))),
             None,
         )
         if not mcp_content:
@@ -266,9 +291,10 @@ class MCPPluginBase:
     async def logging_callback(self, params: types.LoggingMessageNotificationParams) -> None:
         """Callback function for logging.
 
-        Please subclass the MCPPlugin and override this function if you want to adapt the behavior.
+        This function is called when the MCP Server sends a log message.
+        By default it will log the message to the logger with the level set in the params.
 
-        Be default the logger's level well be set on the server as well.
+        Please subclass the MCP*Plugin and override this function if you want to adapt the behavior.
         """
         logger.log(LOG_LEVEL_MAPPING[params.level], params.data)
 
@@ -305,7 +331,7 @@ class MCPPluginBase:
             func = kernel_function(name=prompt.name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
-            func.__kernel_function_parameters__ = get_parameter_from_mcp_prompt(prompt)
+            func.__kernel_function_parameters__ = _get_parameter_dict_from_mcp_prompt(prompt)
             setattr(self, prompt.name, func)
 
     async def load_tools(self):
@@ -317,7 +343,7 @@ class MCPPluginBase:
             # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
             func = kernel_function(name=tool.name, description=tool.description)(partial(self.call_tool, tool.name))
-            func.__kernel_function_parameters__ = get_parameters_from_mcp_tool(tool)
+            func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, tool.name, func)
 
     async def close(self) -> None:
@@ -337,9 +363,7 @@ class MCPPluginBase:
                 "MCP server not connected, please call connect() before using this method."
             )
         try:
-            return _mcp_call_tool_result_to_semantic_kernel_type(
-                await self.session.call_tool(tool_name, arguments=kwargs)
-            )
+            return _mcp_call_tool_result_to_kernel_contents(await self.session.call_tool(tool_name, arguments=kwargs))
         except McpError:
             raise
         except Exception as ex:
@@ -353,7 +377,7 @@ class MCPPluginBase:
             )
         try:
             prompt_result = await self.session.get_prompt(prompt_name, arguments=kwargs)
-            return [_mcp_prompt_message_to_semantic_kernel_type(message) for message in prompt_result.messages]
+            return [_mcp_prompt_message_to_kernel_content(message) for message in prompt_result.messages]
         except McpError:
             raise
         except Exception as ex:
@@ -539,33 +563,6 @@ class MCPWebsocketPlugin(MCPPluginBase):
 # region: Kernel as MCP Server
 
 
-def _kernel_content_to_mcp_type(
-    content: TextContent | ImageContent | BinaryContent | ChatMessageContent,
-) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-    """Convert a kernel content type to a MCP type."""
-    if isinstance(content, TextContent):
-        return [types.TextContent(type="text", text=content.text)]
-    if isinstance(content, ImageContent):
-        return [types.ImageContent(type="image", data=content.data_string, mimeType=content.mime_type)]
-    if isinstance(content, BinaryContent):
-        return [
-            types.EmbeddedResource(
-                type="resource",
-                resource=types.BlobResourceContents(
-                    blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "kernel:///binary"
-                ),
-            )
-        ]
-    if isinstance(content, ChatMessageContent):
-        messages: list[types.TextContent | types.ImageContent | types.EmbeddedResource] = []
-        for item in content.items:
-            if isinstance(item, (TextContent, ImageContent, BinaryContent)):
-                messages.extend(_kernel_content_to_mcp_type(item))
-        return messages
-
-    raise FunctionExecutionException(f"Unsupported content type: {type(content)}")
-
-
 def create_mcp_server_from_kernel(
     kernel: Kernel,
     *,
@@ -653,14 +650,14 @@ def create_mcp_server_from_kernel(
             if isinstance(value, list):
                 for item in value:
                     if isinstance(value, (TextContent, ImageContent, BinaryContent, ChatMessageContent)):
-                        messages.extend(_kernel_content_to_mcp_type(item))
+                        messages.extend(_kernel_content_to_mcp_content_types(item))
                     else:
                         messages.append(
                             types.TextContent(type="text", text=str(item)),
                         )
             else:
                 if isinstance(value, (TextContent, ImageContent, BinaryContent, ChatMessageContent)):
-                    messages.extend(_kernel_content_to_mcp_type(value))
+                    messages.extend(_kernel_content_to_mcp_content_types(value))
                 else:
                     messages.append(
                         types.TextContent(type="text", text=str(value)),
