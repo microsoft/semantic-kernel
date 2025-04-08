@@ -1,14 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.RegularExpressions;
+using Microsoft.SemanticKernel;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
 
 namespace MCPServer.Resources;
 
-internal class ResourceTemplateDefinition
+/// <summary>
+/// Represents a resource template definition.
+/// </summary>
+public sealed class ResourceTemplateDefinition
 {
+    /// <summary>
+    /// The regular expression to match the resource template.
+    /// </summary>
     private Regex? _regex = null;
+
+    /// <summary>
+    /// The kernel function to invoke the resource template handler.
+    /// </summary>
+    private KernelFunction? _kernelFunction = null;
 
     /// <summary>
     /// Gets or sets the MCP resource template.
@@ -18,25 +30,43 @@ internal class ResourceTemplateDefinition
     /// <summary>
     /// Gets or sets the handler for the MCP resource template.
     /// </summary>
-    public required Func<RequestContext<ReadResourceRequestParams>, IDictionary<string, string>, CancellationToken, Task<ReadResourceResult>> Handler { get; init; }
+    public required Delegate Handler { get; init; }
 
     /// <summary>
-    /// Gets or sets the function that checks if the resource template matches a given Uri.
+    /// Gets or sets the kernel instance to invoke the resource template handler.
     /// </summary>
+    public required Kernel Kernel { get; init; }
+
+    /// <summary>
+    /// Checks if the given Uri matches the resource template.
+    /// </summary>
+    /// <param name="uri">The Uri to check for match.</param>
     public bool IsMatch(string uri)
     {
         return this.GetRegex().IsMatch(uri);
     }
 
-    public IDictionary<string, string> GetArguments(string uri)
+    /// <summary>
+    /// Invokes the resource template handler.
+    /// </summary>
+    /// <param name="context">The MCP server context.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the invocation.</returns>
+    public async Task<ReadResourceResult> InvokeHandlerAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
     {
-        var match = this.GetRegex().Match(uri);
-        if (!match.Success)
+        if (this._kernelFunction == null)
         {
-            throw new ArgumentException($"The uri '{uri}' does not match the template '{this.ResourceTemplate.UriTemplate}'.");
+            this._kernelFunction = KernelFunctionFactory.CreateFromMethod(this.Handler);
         }
 
-        return match.Groups.Cast<Group>().Where(g => g.Name != "0").ToDictionary(g => g.Name, g => g.Value);
+        KernelArguments args = new(source: this.GetArguments(context.Params!.Uri!))
+        {
+            { "context", context },
+        };
+
+        FunctionResult result = await this._kernelFunction.InvokeAsync(kernel: this.Kernel, arguments: args, cancellationToken: cancellationToken);
+
+        return result.GetValue<ReadResourceResult>() ?? throw new InvalidOperationException("The handler did not return a valid result.");
     }
 
     private Regex GetRegex()
@@ -47,10 +77,22 @@ internal class ResourceTemplateDefinition
         }
 
         var pattern = "^" +
-                     Regex.Escape(this.ResourceTemplate.UriTemplate)
-                    .Replace("\\{", "(?<")
-                    .Replace("}", @">[^/]+)") + "$";
+                      Regex.Escape(this.ResourceTemplate.UriTemplate)
+                           .Replace("\\{", "(?<")
+                           .Replace("}", ">[^/]+)") +
+                      "$";
 
-        return this._regex = new(pattern);
+        return this._regex = new(pattern, RegexOptions.Compiled);
+    }
+
+    private Dictionary<string, object?> GetArguments(string uri)
+    {
+        var match = this.GetRegex().Match(uri);
+        if (!match.Success)
+        {
+            throw new ArgumentException($"The uri '{uri}' does not match the template '{this.ResourceTemplate.UriTemplate}'.");
+        }
+
+        return match.Groups.Cast<Group>().Where(g => g.Name != "0").ToDictionary(g => g.Name, g => (object?)g.Value);
     }
 }

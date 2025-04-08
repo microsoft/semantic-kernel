@@ -36,17 +36,67 @@ public static class McpServerBuilderExtensions
     /// Adds a resource template to the server.
     /// </summary>
     /// <param name="builder">The MCP server builder.</param>
+    /// <param name="kernel">The kernel instance.</param>
     /// <param name="template">The MCP resource template.</param>
     /// <param name="handler">The MCP resource template handler.</param>
-    /// <returns></returns>
+    /// <returns>The builder instance.</returns>
     public static IMcpServerBuilder AddResourceTemplate(
         this IMcpServerBuilder builder,
+        Kernel kernel,
         ResourceTemplate template,
-        Func<RequestContext<ReadResourceRequestParams>, IDictionary<string, string>, CancellationToken, Task<ReadResourceResult>> handler)
+        Delegate handler)
     {
-        ResourceRegistry.RegisterResourceTemplate(new ResourceTemplateDefinition { ResourceTemplate = template, Handler = handler, });
+        builder.AddResourceTemplate(new ResourceTemplateDefinition { ResourceTemplate = template, Handler = handler, Kernel = kernel });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a resource template to the server.
+    /// </summary>
+    /// <param name="builder">The MCP server builder.</param>
+    /// <param name="templateDefinition">The resource template definition.</param>
+    /// <returns>The builder instance.</returns>
+    public static IMcpServerBuilder AddResourceTemplate(this IMcpServerBuilder builder, ResourceTemplateDefinition templateDefinition)
+    {
+        ResourceRegistry.RegisterResourceTemplate(templateDefinition);
 
         builder.WithListResourceTemplatesHandler(ResourceRegistry.HandleListResourceTemplatesRequestAsync);
+        builder.WithReadResourceHandler(ResourceRegistry.HandleReadResourceRequestAsync);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a resource to the server.
+    /// </summary>
+    /// <param name="builder">The MCP server builder.</param>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="resource">The MCP resource.</param>
+    /// <param name="handler">The MCP resource handler.</param>
+    /// <returns>The builder instance.</returns>
+    public static IMcpServerBuilder AddResource(
+        this IMcpServerBuilder builder,
+        Kernel kernel,
+        Resource resource,
+        Delegate handler)
+    {
+        builder.AddResource(new ResourceDefinition { Resource = resource, Handler = handler, Kernel = kernel });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a resource to the server.
+    /// </summary>
+    /// <param name="builder">The MCP server builder.</param>
+    /// <param name="resourceDefinition">The resource definition.</param>
+    /// <returns>The builder instance.</returns>
+    public static IMcpServerBuilder AddResource(this IMcpServerBuilder builder, ResourceDefinition resourceDefinition)
+    {
+        ResourceRegistry.RegisterResource(resourceDefinition);
+
+        builder.WithListResourcesHandler(ResourceRegistry.HandleListResourcesRequestAsync);
         builder.WithReadResourceHandler(ResourceRegistry.HandleReadResourceRequestAsync);
 
         return builder;

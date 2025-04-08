@@ -1,13 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using MCPServer.Resources;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
 
-namespace MCPServer.Prompts;
+namespace MCPServer.Resources;
 
 /// <summary>
-/// Represents the resource registry that contains the prompt definitions and provides the handlers for the prompt `List` and `Get` requests.
+/// Represents the resource registry that contains the resource and resource template definitions and provides the handlers for the `List` and `Get` requests.
 /// </summary>
 internal static class ResourceRegistry
 {
@@ -16,9 +15,9 @@ internal static class ResourceRegistry
     private static readonly IList<ResourceTemplateDefinition> s_resourceTemplateDefinitions = [];
 
     /// <summary>
-    /// Registers a resource definition.
+    /// Registers a resource.
     /// </summary>
-    /// <param name="definition">The prompt definition to register.</param>
+    /// <param name="definition">The resource to register.</param>
     public static void RegisterResource(ResourceDefinition definition)
     {
         if (s_resourceDefinitions.ContainsKey(definition.Resource.Uri))
@@ -30,9 +29,9 @@ internal static class ResourceRegistry
     }
 
     /// <summary>
-    /// Registers a resource template definition.
+    /// Registers a resource template.
     /// </summary>
-    /// <param name="definition">The resource template definition to register.</param>
+    /// <param name="definition">The resource template to register.</param>
     public static void RegisterResourceTemplate(ResourceTemplateDefinition definition)
     {
         if (s_resourceTemplateDefinitions.Any(d => d.ResourceTemplate.UriTemplate == definition.ResourceTemplate.UriTemplate))
@@ -43,7 +42,13 @@ internal static class ResourceRegistry
         s_resourceTemplateDefinitions.Add(definition);
     }
 
-    internal static Task<ListResourceTemplatesResult> HandleListResourceTemplatesRequestAsync(RequestContext<ListResourceTemplatesRequestParams> context, CancellationToken cancellationToken)
+    /// <summary>
+    /// Handles the `ListResourceTemplates` request.
+    /// </summary>
+    /// <param name="context">The MCP server context.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the request.</returns>
+    public static Task<ListResourceTemplatesResult> HandleListResourceTemplatesRequestAsync(RequestContext<ListResourceTemplatesRequestParams> context, CancellationToken cancellationToken)
     {
         return Task.FromResult(new ListResourceTemplatesResult
         {
@@ -51,7 +56,13 @@ internal static class ResourceRegistry
         });
     }
 
-    internal static Task<ListResourcesResult> HandleListResourcesRequestAsync(RequestContext<ListResourcesRequestParams> context, CancellationToken cancellationToken)
+    /// <summary>
+    /// Handles the `ListResources` request.
+    /// </summary>
+    /// <param name="context">The MCP server context.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the request.</returns>
+    public static Task<ListResourcesResult> HandleListResourcesRequestAsync(RequestContext<ListResourcesRequestParams> context, CancellationToken cancellationToken)
     {
         return Task.FromResult(new ListResourcesResult
         {
@@ -59,7 +70,13 @@ internal static class ResourceRegistry
         });
     }
 
-    internal static Task<ReadResourceResult> HandleReadResourceRequestAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
+    /// <summary>
+    /// Handles the `ReadResource` request.
+    /// </summary>
+    /// <param name="context">The MCP server context.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the request.</returns>
+    public static Task<ReadResourceResult> HandleReadResourceRequestAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
     {
         // Make sure the uri of the resource or resource template is provided
         if (context.Params?.Uri is not string { } resourceUri || string.IsNullOrEmpty(resourceUri))
@@ -70,7 +87,7 @@ internal static class ResourceRegistry
         // Look up in registered resource first
         if (s_resourceDefinitions.TryGetValue(resourceUri, out ResourceDefinition? resourceDefinition))
         {
-            return resourceDefinition.Handler(context, cancellationToken);
+            return resourceDefinition.InvokeHandlerAsync(context, cancellationToken);
         }
 
         // Look up in registered resource templates
@@ -78,9 +95,7 @@ internal static class ResourceRegistry
         {
             if (resourceTemplateDefinition.IsMatch(resourceUri))
             {
-                var args = resourceTemplateDefinition.GetArguments(resourceUri);
-
-                return resourceTemplateDefinition.Handler(context, args, cancellationToken);
+                return resourceTemplateDefinition.InvokeHandlerAsync(context, cancellationToken);
             }
         }
 
