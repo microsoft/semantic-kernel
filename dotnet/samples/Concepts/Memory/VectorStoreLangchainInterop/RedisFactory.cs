@@ -34,14 +34,17 @@ public static class RedisFactory
     /// <param name="database">The redis database to read/write from.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateRedisLangchainInteropVectorStore(IDatabase database)
-        => new RedisLangchainInteropVectorStore(database);
+        => new RedisLangchainInteropVectorStore(new RedisVectorStore(database), database);
 
-    private sealed class RedisLangchainInteropVectorStore(IDatabase database)
-        : RedisVectorStore(database)
+    private sealed class RedisLangchainInteropVectorStore(
+        IVectorStore innerStore,
+        IDatabase database)
+        : IVectorStore
     {
         private readonly IDatabase _database = database;
 
-        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey : notnull
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -60,5 +63,9 @@ public static class RedisFactory
                     VectorStoreRecordDefinition = s_recordDefinition
                 }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
     }
 }

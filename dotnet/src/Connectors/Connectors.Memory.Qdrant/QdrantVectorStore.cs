@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class QdrantVectorStore : IVectorStore
+public sealed class QdrantVectorStore : IVectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -56,7 +56,7 @@ public class QdrantVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
 #pragma warning disable CS0618 // IQdrantVectorStoreRecordCollectionFactory is obsolete
@@ -81,7 +81,7 @@ public class QdrantVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IReadOnlyList<string> collections;
 
@@ -93,7 +93,8 @@ public class QdrantVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = QdrantConstants.VectorStoreSystemName,
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = "ListCollections"
             };
         }
