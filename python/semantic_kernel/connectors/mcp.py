@@ -637,14 +637,14 @@ def create_mcp_server_from_kernel(
             )
             for func in functions_to_expose
         ]
-        logger.debug(f"Tools: {tools}")
+        await _log(level="debug", data=f"List of tools: {tools}")
         await asyncio.sleep(0.0)
         return tools
 
     @server.call_tool()
     async def _call_tool(*args: Any) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
         """Call a tool in the kernel."""
-        logger.debug("Tool called with args: %s", args)
+        await _log(level="debug", data=f"Calling tool with args: {args}")
         function_name, arguments = args[0], args[1]
         result = await _call_kernel_function(function_name, arguments)
         if result:
@@ -672,6 +672,17 @@ def create_mcp_server_from_kernel(
                 message=f"Function {function_name} returned no result",
             ),
         )
+
+    async def _log(level: types.LoggingLevel, data: Any) -> None:
+        """Log a message to the server."""
+        logger.log(LOG_LEVEL_MAPPING[level], data)
+        await server.request_context.session.send_log_message(level=level, data=data)
+
+    @server.set_logging_level()
+    async def _set_logging_level(level: types.LoggingLevel) -> None:
+        """Set the logging level for the server."""
+        logger.setLevel(LOG_LEVEL_MAPPING[level])
+        await _log(level="notice", data=f"Log level set to {level}")
 
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
         function = kernel.get_function_from_fully_qualified_function_name(function_name)
