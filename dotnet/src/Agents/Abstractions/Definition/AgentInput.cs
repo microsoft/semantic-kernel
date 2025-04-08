@@ -36,7 +36,7 @@ public sealed class AgentInput
     /// <summary>
     /// Gets or sets JSON Schema describing this input.
     /// </summary>
-    public string? Schema { get; set; }
+    public string? JsonSchema { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to handle the input value as potential dangerous content.
