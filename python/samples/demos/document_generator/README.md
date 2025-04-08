@@ -46,7 +46,7 @@ To learn more about the Semantic Kernel Agent Framework, please refer to the [Se
 
 ### Step 1: Set up the environment
 
-The Document Generator demo currently supports two different AI Services. If integrating into your own code, other AI services can be used. See Semantic Kernel's Learn Site [page](https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/?tabs=csharp-AzureOpenAI%2Cpython-AzureOpenAI%2Cjava-AzureOpenAI&pivots=programming-language-python) about other available Chat Completion servies.
+The Document Generator demo currently supports two different AI Services. If integrating into your own code, other AI services can be used. See Semantic Kernel's Learn Site [page](https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/?tabs=csharp-AzureOpenAI%2Cpython-AzureOpenAI%2Cjava-AzureOpenAI&pivots=programming-language-python) about other available Chat Completion services.
 
 #### OpenAI
 
