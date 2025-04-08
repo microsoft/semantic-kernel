@@ -35,7 +35,7 @@ internal sealed class Program
     /// 1. Creates an MCP client.
     /// 2. Retrieves the list of resources provided by the MCP server.
     /// 3. Retrieves the `image://cat.jpg` resource content from the MCP server.
-    /// 4. Add the image to the chat history and prompt the AI model to describe the content of the image.
+    /// 4. Adds the image to the chat history and prompts the AI model to describe the content of the image.
     /// </summary>
     private static async Task UseMCPResourcesAsync()
     {
@@ -84,7 +84,7 @@ internal sealed class Program
     /// 1. Creates an MCP client.
     /// 2. Retrieves the list of resource templates provided by the MCP server.
     /// 3. Reads relevant to the prompt records from the `vectorStore://records/{prompt}` MCP resource template.
-    /// 4. Add the records to the chat history and prompt the AI model to explain what SK is.
+    /// 4. Adds the records to the chat history and prompts the AI model to explain what SK is.
     /// </summary>
     private static async Task UseMCPResourceTemplatesAsync()
     {

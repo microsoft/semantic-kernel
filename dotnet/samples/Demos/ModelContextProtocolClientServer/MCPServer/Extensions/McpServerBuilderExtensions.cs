@@ -39,13 +39,13 @@ public static class McpServerBuilderExtensions
     /// <param name="template">The MCP resource template.</param>
     /// <param name="handler">The MCP resource template handler.</param>
     /// <returns>The builder instance.</returns>
-    public static IMcpServerBuilder AddResourceTemplate(
+    public static IMcpServerBuilder WithResourceTemplate(
         this IMcpServerBuilder builder,
         Kernel kernel,
         ResourceTemplate template,
         Delegate handler)
     {
-        builder.AddResourceTemplate(new ResourceTemplateDefinition { ResourceTemplate = template, Handler = handler, Kernel = kernel });
+        builder.WithResourceTemplate(new ResourceTemplateDefinition { ResourceTemplate = template, Handler = handler, Kernel = kernel });
 
         return builder;
     }
@@ -56,7 +56,7 @@ public static class McpServerBuilderExtensions
     /// <param name="builder">The MCP server builder.</param>
     /// <param name="templateDefinition">The resource template definition.</param>
     /// <returns>The builder instance.</returns>
-    public static IMcpServerBuilder AddResourceTemplate(this IMcpServerBuilder builder, ResourceTemplateDefinition templateDefinition)
+    public static IMcpServerBuilder WithResourceTemplate(this IMcpServerBuilder builder, ResourceTemplateDefinition templateDefinition)
     {
         ResourceRegistry.RegisterResourceTemplate(templateDefinition);
 
@@ -74,13 +74,13 @@ public static class McpServerBuilderExtensions
     /// <param name="resource">The MCP resource.</param>
     /// <param name="handler">The MCP resource handler.</param>
     /// <returns>The builder instance.</returns>
-    public static IMcpServerBuilder AddResource(
+    public static IMcpServerBuilder WithResource(
         this IMcpServerBuilder builder,
         Kernel kernel,
         Resource resource,
         Delegate handler)
     {
-        builder.AddResource(new ResourceDefinition { Resource = resource, Handler = handler, Kernel = kernel });
+        builder.WithResource(new ResourceDefinition { Resource = resource, Handler = handler, Kernel = kernel });
 
         return builder;
     }
@@ -91,7 +91,7 @@ public static class McpServerBuilderExtensions
     /// <param name="builder">The MCP server builder.</param>
     /// <param name="resourceDefinition">The resource definition.</param>
     /// <returns>The builder instance.</returns>
-    public static IMcpServerBuilder AddResource(this IMcpServerBuilder builder, ResourceDefinition resourceDefinition)
+    public static IMcpServerBuilder WithResource(this IMcpServerBuilder builder, ResourceDefinition resourceDefinition)
     {
         ResourceRegistry.RegisterResource(resourceDefinition);
 

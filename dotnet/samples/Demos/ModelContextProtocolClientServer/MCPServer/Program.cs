@@ -30,10 +30,10 @@ builder.Services
     .WithTools(kernel.Plugins)
 
     // Register vector search as MCP resource template
-    .AddResourceTemplate(CreateVectorStoreSearchResourceTemplate(kernel))
+    .WithResourceTemplate(CreateVectorStoreSearchResourceTemplate(kernel))
 
     // Register the cat image as a MCP resource
-    .AddResource(ResourceDefinition.CreateBlobResource(
+    .WithResource(ResourceDefinition.CreateBlobResource(
         kernel: kernel,
         uri: "image://cat.jpg",
         name: "cat-image",
