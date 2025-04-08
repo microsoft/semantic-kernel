@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -14,30 +15,29 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
 {
-    private readonly KernelFunction? _kernelFunction;
-    private readonly KernelFunctionInvocationContext? _innerContext;
+    private ChatHistory? _chatHistory;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="KernelFunctionInvocationContext"/>.
     /// </summary>
-    public AutoFunctionInvocationContext(KernelFunctionInvocationContext innerContext)
+    public AutoFunctionInvocationContext(ChatOptions options)
     {
-        Verify.NotNull(innerContext);
-        Verify.NotNull(innerContext.Options);
-        Verify.NotNull(innerContext.Options.AdditionalProperties);
+        this.Options = options;
 
-        innerContext.Options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
+        // To create a AutoFunctionInvocationContext from a KernelFunctionInvocationContext,
+        // the ChatOptions must be provided with AdditionalProperties.
+        Verify.NotNull(options.AdditionalProperties);
+
+        options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
         Verify.NotNull(kernel);
 
-        innerContext.Options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
+        options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
         Verify.NotNull(chatMessageContent);
 
-        innerContext.Options.AdditionalProperties.TryGetValue<bool>(ChatOptionsExtensions.IsStreamingKey, out var isStreaming);
-        this.IsStreaming = isStreaming;
+        options.AdditionalProperties.TryGetValue<bool?>(ChatOptionsExtensions.IsStreamingKey, out var isStreaming);
+        Verify.NotNull(isStreaming);
+        this.IsStreaming = isStreaming.Value;
 
-        this._innerContext = innerContext;
-        this.ChatHistory = new ChatMessageHistory(innerContext.Messages);
-        this.ChatMessageContent = chatMessageContent;
-        this.Kernel = kernel;
         this.Result = new FunctionResult(this.Function) { Culture = kernel.Culture };
     }
 
@@ -62,11 +62,18 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         Verify.NotNull(chatHistory);
         Verify.NotNull(chatMessageContent);
 
-        this.Kernel = kernel;
-        this._kernelFunction = function;
+        this.Options = new()
+        {
+            AdditionalProperties = new()
+            {
+                [ChatOptionsExtensions.ChatMessageContentKey] = chatMessageContent,
+                [ChatOptionsExtensions.KernelKey] = kernel
+            }
+        };
+
+        this.Messages = chatHistory.ToChatMessageList();
+        this.AIFunction = function.AsAIFunction();
         this.Result = result;
-        this.ChatHistory = chatHistory;
-        this.ChatMessageContent = chatMessageContent;
     }
 
     /// <summary>
@@ -83,27 +90,48 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// <summary>
     /// Gets the arguments associated with the operation.
     /// </summary>
-    public KernelArguments? Arguments { get; init; }
+    public KernelArguments? Arguments
+    {
+        get => this.CallContent.Arguments is KernelArguments kernelArguments ? kernelArguments : null;
+        init => this.CallContent.Arguments = value;
+    }
 
     /// <summary>
     /// Request sequence index of automatic function invocation process. Starts from 0.
     /// </summary>
-    public int RequestSequenceIndex { get; init; }
+    public int RequestSequenceIndex
+    {
+        get => this.Iteration;
+        init => this.Iteration = value;
+    }
 
     /// <summary>
     /// Function sequence index. Starts from 0.
     /// </summary>
-    public int FunctionSequenceIndex { get; init; }
+    public int FunctionSequenceIndex
+    {
+        get => this.FunctionCallIndex;
+        init => this.FunctionCallIndex = value;
+    }
 
     /// <summary>
     /// The ID of the tool call.
     /// </summary>
-    public string? ToolCallId { get; init; }
+    public string? ToolCallId
+    {
+        get => this.CallContent.CallId;
+        init
+        {
+            Verify.NotNull(value);
+            // ToolCallId
+            this.CallContent = new Microsoft.Extensions.AI.FunctionCallContent(value, this.CallContent.Name, this.CallContent.Arguments);
+        }
+    }
 
     /// <summary>
     /// The chat message content associated with automatic function invocation.
     /// </summary>
-    public ChatMessageContent ChatMessageContent { get; }
+    public ChatMessageContent ChatMessageContent => (this.Options?.AdditionalProperties?[ChatOptionsExtensions.ChatMessageContentKey] as ChatMessageContent)!;
 
     /// <summary>
     /// The execution settings associated with the operation.
@@ -114,20 +142,27 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
     /// </summary>
-    public ChatHistory ChatHistory { get; }
+    public ChatHistory ChatHistory => this._chatHistory ??= new ChatMessageHistory(this.Messages);
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
-    public KernelFunction Function
-    {
-        get => this._innerContext?.AIFunction.AsKernelFunction() ?? this._kernelFunction!;
-    }
+    public KernelFunction Function => this.AIFunction.AsKernelFunction();
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
     /// </summary>
-    public Kernel Kernel { get; }
+    public Kernel Kernel
+    {
+        get
+        {
+            Kernel? kernel = null;
+            this.Options?.AdditionalProperties?.TryGetValue(ChatOptionsExtensions.KernelKey, out kernel);
+
+            // To avoid exception from properties, when attempting to retrieve a kernel from a non-ready context, it will give a null.
+            return kernel!;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the result of the function's invocation.
@@ -135,20 +170,19 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     public FunctionResult Result { get; set; }
 
     /// <summary>
-    /// Mutable chat message as chat history.
+    /// Mutable IEnumerable of chat message as chat history.
     /// </summary>
-    internal class ChatMessageHistory : ChatHistory, IEnumerable<ChatMessageContent>
+    private class ChatMessageHistory : ChatHistory, IEnumerable<ChatMessageContent>
     {
         private readonly List<ChatMessage> _messages;
 
-        public ChatMessageHistory(IEnumerable<ChatMessage> messages) : base(messages.ToChatHistory())
+        internal ChatMessageHistory(IEnumerable<ChatMessage> messages) : base(messages.ToChatHistory())
         {
             this._messages = new List<ChatMessage>(messages);
         }
 
         public override void Add(ChatMessageContent item)
         {
-            item.GetHashCode();
             base.Add(item);
             this._messages.Add(item.ToChatMessage());
         }
@@ -157,11 +191,6 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         {
             base.Clear();
             this._messages.Clear();
-        }
-
-        public override bool Contains(ChatMessageContent item)
-        {
-            return base.Contains(item);
         }
 
         public override bool Remove(ChatMessageContent item)

@@ -645,16 +645,20 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             return new(ContinueMode.Continue, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
-        var context = new AutoFunctionInvocationContext(new()
+        if (callContent.Arguments is not null)
+        {
+            callContent.Arguments = new KernelArguments(callContent.Arguments);
+        }
+
+        var context = new AutoFunctionInvocationContext(options)
         {
             Messages = messages,
-            Options = options,
             CallContent = callContent,
             AIFunction = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
             FunctionCount = callContents.Count
-        });
+        };
 
         object? result;
         try
@@ -810,29 +814,23 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             if (invocationContext is AutoFunctionInvocationContext autoFunctionInvocationContext)
             {
                 autoFunctionInvocationContext = await this.OnAutoFunctionInvocationAsync(
-                autoFunctionInvocationContext,
-                async (context) =>
-                {
-                    // Check if filter requested termination
-                    if (context.Terminate)
+                    autoFunctionInvocationContext,
+                    async (context) =>
                     {
-                        return;
-                    }
+                        // Check if filter requested termination
+                        if (context.Terminate)
+                        {
+                            return;
+                        }
 
-                    // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
-                    // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
-                    // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                    KernelArguments? arguments = null;
-                    if (context.Arguments is not null)
-                    {
-                        arguments = new(context.Arguments);
-                    }
-
-                    var result = await invocationContext.AIFunction.InvokeAsync(invocationContext.CallContent.Arguments, cancellationToken).ConfigureAwait(false);
-                    context.Result = new FunctionResult(context.Function, result);
+                        // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
+                        // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
+                        // as the called function could in turn telling the model about itself as a possible candidate for invocation.
+                        result = await invocationContext.AIFunction.InvokeAsync(autoFunctionInvocationContext.Arguments, cancellationToken).ConfigureAwait(false);
+                        context.Result = new FunctionResult(context.Function, result);
                 }).ConfigureAwait(false);
 
-                invocationContext = autoFunctionInvocationContext;
+                result = autoFunctionInvocationContext.Result.GetValue<object>();
             }
         }
         catch (Exception e)
