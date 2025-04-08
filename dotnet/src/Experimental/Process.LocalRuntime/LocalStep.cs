@@ -154,7 +154,14 @@ internal class LocalStep : IKernelProcessMessageChannel
                 functionParameters = this._inputs[message.FunctionName];
             }
 
-            functionParameters![kvp.Key] = kvp.Value;
+            if (kvp.Value is KernelProcessEventData proxyData)
+            {
+                functionParameters![kvp.Key] = proxyData.ToObject();
+            }
+            else
+            {
+                functionParameters![kvp.Key] = kvp.Value;
+            }
         }
     }
 
@@ -212,24 +219,22 @@ internal class LocalStep : IKernelProcessMessageChannel
         {
             FunctionResult invokeResult = await this.InvokeFunction(function, this._kernel, arguments).ConfigureAwait(false);
             this.EmitEvent(
-                new ProcessEvent
-                {
-                    Namespace = this._eventNamespace,
-                    SourceId = $"{targetFunction}.OnResult",
-                    Data = invokeResult.GetValue<object>()
-                });
+                ProcessEvent.Create(
+                    invokeResult.GetValue<object>(),
+                    this._eventNamespace,
+                    sourceId: $"{targetFunction}.OnResult",
+                    eventVisibility: KernelProcessEventVisibility.Public));
         }
         catch (Exception ex)
         {
             this._logger.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             this.EmitEvent(
-                new ProcessEvent
-                {
-                    Namespace = this._eventNamespace,
-                    SourceId = $"{targetFunction}.OnError",
-                    Data = KernelProcessError.FromException(ex),
-                    IsError = true
-                });
+                ProcessEvent.Create(
+                    KernelProcessError.FromException(ex),
+                    this._eventNamespace,
+                    sourceId: $"{targetFunction}.OnError",
+                    eventVisibility: KernelProcessEventVisibility.Public,
+                    isError: true));
         }
         finally
         {

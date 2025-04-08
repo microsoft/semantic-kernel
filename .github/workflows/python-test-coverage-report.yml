@@ -39,7 +39,7 @@ jobs:
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
       - name: Pytest coverage comment
         id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@main
+        uses: MishaKav/pytest-coverage-comment@v1.1.53
         with:
           github-token: ${{ secrets.GH_ACTIONS_PR_WRITE }}
           issue-number: ${{ env.PR_NUMBER }}

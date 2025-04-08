@@ -30,6 +30,6 @@ Please visit the following [link](https://learn.microsoft.com/en-us/azure/ai-ser
 
 #### Environment Variables / Config
 
-`AZURE_OPENAI_RESPONSES_MODEL_ID=""`
+`AZURE_OPENAI_RESPONSES_DEPLOYMENT_NAME=""`
 
 The other Azure OpenAI config values used for AzureAssistantAgent or AzureChatCompletion, like `AZURE_OPENAI_API_VERSION` or `AZURE_OPENAI_ENDPOINT` are still valid for the `AzureResponsesAgent`.
