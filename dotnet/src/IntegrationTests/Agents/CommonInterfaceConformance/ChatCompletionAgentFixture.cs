@@ -65,6 +65,10 @@ public class ChatCompletionAgentFixture : AgentFixture
             deploymentName: configuration.ChatDeploymentName!,
             endpoint: configuration.Endpoint,
             credentials: new AzureCliCredential());
+        kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(
+            deploymentName: configuration.EmbeddingModelId!,
+            endpoint: configuration.Endpoint,
+            credential: new AzureCliCredential());
         Kernel kernel = kernelBuilder.Build();
 
         this._agent = new ChatCompletionAgent()

@@ -10,12 +10,14 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 /// </summary>
 internal static class AssistantRunOptionsFactory
 {
-    public static RunCreationOptions GenerateOptions(RunCreationOptions? defaultOptions, string? agentInstructions, RunCreationOptions? invocationOptions)
+    public static RunCreationOptions GenerateOptions(RunCreationOptions? defaultOptions, string? agentInstructions, RunCreationOptions? invocationOptions, string? threadExtensionsContext)
     {
+        var additionalInstructions = (invocationOptions?.AdditionalInstructions ?? defaultOptions?.AdditionalInstructions) + threadExtensionsContext;
+
         RunCreationOptions runOptions =
             new()
             {
-                AdditionalInstructions = invocationOptions?.AdditionalInstructions ?? defaultOptions?.AdditionalInstructions,
+                AdditionalInstructions = additionalInstructions,
                 InstructionsOverride = invocationOptions?.InstructionsOverride ?? agentInstructions,
                 MaxOutputTokenCount = invocationOptions?.MaxOutputTokenCount ?? defaultOptions?.MaxOutputTokenCount,
                 MaxInputTokenCount = invocationOptions?.MaxInputTokenCount ?? defaultOptions?.MaxInputTokenCount,

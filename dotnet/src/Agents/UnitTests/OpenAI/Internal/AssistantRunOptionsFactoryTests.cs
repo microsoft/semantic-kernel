@@ -29,7 +29,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -62,7 +62,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, "test", invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, "test", invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -97,7 +97,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.NotNull(options);
@@ -134,7 +134,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.Equal(2, options.Metadata.Count);
@@ -163,7 +163,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, invocationOptions, threadExtensionsContext: null);
 
         // Assert
         Assert.Single(options.AdditionalMessages);
@@ -186,7 +186,7 @@ public class AssistantRunOptionsFactoryTests
             };
 
         // Act
-        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null);
+        RunCreationOptions options = AssistantRunOptionsFactory.GenerateOptions(defaultOptions, null, null, threadExtensionsContext: null);
 
         // Assert
         Assert.Equal(1024, options.MaxInputTokenCount);

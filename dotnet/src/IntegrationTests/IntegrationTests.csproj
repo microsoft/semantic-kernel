@@ -96,6 +96,7 @@
     <ProjectReference Include="..\Experimental\Process.LocalRuntime\Process.LocalRuntime.csproj" />
     <ProjectReference Include="..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Functions\Functions.Yaml\Functions.Yaml.csproj" />
+    <ProjectReference Include="..\Memory\Memory\Memory.csproj" />
     <ProjectReference Include="..\Planners\Planners.Handlebars\Planners.Handlebars.csproj" />
     <!--ProjectReference Include="..\Planners\Planners.OpenAI\Planners.OpenAI.csproj" /-->
     <ProjectReference Include="..\Plugins\Plugins.Core\Plugins.Core.csproj" />
