@@ -7,12 +7,12 @@ using Xunit;
 
 namespace WeaviateIntegrationTests.HybridSearch;
 
-public class WeaviateKeywordVectorizedHybridSearchTests_UnnamedVectors(
-    WeaviateKeywordVectorizedHybridSearchTests_UnnamedVectors.VectorAndStringFixture vectorAndStringFixture,
-    WeaviateKeywordVectorizedHybridSearchTests_UnnamedVectors.MultiTextFixture multiTextFixture)
+public class WeaviateKeywordVectorizedHybridSearchTests_UnnamedVector(
+    WeaviateKeywordVectorizedHybridSearchTests_UnnamedVector.VectorAndStringFixture vectorAndStringFixture,
+    WeaviateKeywordVectorizedHybridSearchTests_UnnamedVector.MultiTextFixture multiTextFixture)
     : KeywordVectorizedHybridSearchComplianceTests<Guid>(vectorAndStringFixture, multiTextFixture),
-        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests_UnnamedVectors.VectorAndStringFixture>,
-        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests_UnnamedVectors.MultiTextFixture>
+        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests_UnnamedVector.VectorAndStringFixture>,
+        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests_UnnamedVector.MultiTextFixture>
 {
     public new class VectorAndStringFixture : KeywordVectorizedHybridSearchComplianceTests<Guid>.VectorAndStringFixture
     {
