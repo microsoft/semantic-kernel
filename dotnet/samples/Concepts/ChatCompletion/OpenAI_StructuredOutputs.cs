@@ -165,7 +165,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         var executionSettings = new OpenAIPromptExecutionSettings
         {
             ResponseFormat = typeof(EmailResult),
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Send a request and pass prompt execution settings with desired response format.
@@ -215,7 +215,7 @@ public class OpenAI_StructuredOutputs(ITestOutputHelper output) : BaseTest(outpu
         var executionSettings = new AzureOpenAIPromptExecutionSettings
         {
             ResponseFormat = typeof(EmailResult),
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Send a request and pass prompt execution settings with desired response format.
