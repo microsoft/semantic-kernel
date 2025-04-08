@@ -81,34 +81,34 @@ public sealed class FileIOPlugin
     private HashSet<string>? _allowedFolders;
 
     /// <summary>
-    /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
+    /// If a list of allowed folder has been provided, the folder of the provided path is checked
     /// to verify it is in the allowed folder list.
     /// </summary>
-    private bool IsFilePathAllowed(string filePath)
+    private bool IsFilePathAllowed(string path)
     {
-        Verify.NotNullOrWhiteSpace(filePath);
+        Verify.NotNullOrWhiteSpace(path);
 
-        if (filePath.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(filePath));
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        if (this.DisableFileOverwrite && Directory.Exists(filePath))
+        if (this.DisableFileOverwrite && File.Exists(path))
         {
-            throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(filePath));
+            throw new ArgumentException("Invalid file path, overwriting existing files is disabled.", nameof(path));
         }
 
-        string? directoryPath = Path.GetDirectoryName(filePath);
+        string? directoryPath = Path.GetDirectoryName(path);
 
         if (string.IsNullOrEmpty(directoryPath))
         {
-            throw new ArgumentException("Invalid file path, file location must be specified.", nameof(filePath));
+            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
-        if (File.Exists(filePath) && File.GetAttributes(filePath).HasFlag(FileAttributes.ReadOnly))
+        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
         {
             // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-            throw new UnauthorizedAccessException($"File is read-only: {filePath}");
+            throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
         return this._allowedFolders is null || this._allowedFolders.Contains(directoryPath);
