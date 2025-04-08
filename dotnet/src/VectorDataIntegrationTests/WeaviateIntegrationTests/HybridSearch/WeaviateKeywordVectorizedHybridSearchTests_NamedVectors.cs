@@ -7,16 +7,16 @@ using Xunit;
 
 namespace WeaviateIntegrationTests.HybridSearch;
 
-public class WeaviateKeywordVectorizedHybridSearchTests(
-    WeaviateKeywordVectorizedHybridSearchTests.VectorAndStringFixture vectorAndStringFixture,
-    WeaviateKeywordVectorizedHybridSearchTests.MultiTextFixture multiTextFixture)
+public class WeaviateKeywordVectorizedHybridSearchTests_NamedVectors(
+    WeaviateKeywordVectorizedHybridSearchTests_NamedVectors.VectorAndStringFixture vectorAndStringFixture,
+    WeaviateKeywordVectorizedHybridSearchTests_NamedVectors.MultiTextFixture multiTextFixture)
     : KeywordVectorizedHybridSearchComplianceTests<Guid>(vectorAndStringFixture, multiTextFixture),
-        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests.VectorAndStringFixture>,
-        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests.MultiTextFixture>
+        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests_NamedVectors.VectorAndStringFixture>,
+        IClassFixture<WeaviateKeywordVectorizedHybridSearchTests_NamedVectors.MultiTextFixture>
 {
     public new class VectorAndStringFixture : KeywordVectorizedHybridSearchComplianceTests<Guid>.VectorAndStringFixture
     {
-        public override TestStore TestStore => WeaviateTestStore.Instance;
+        public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 
         protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
@@ -25,7 +25,7 @@ public class WeaviateKeywordVectorizedHybridSearchTests(
 
     public new class MultiTextFixture : KeywordVectorizedHybridSearchComplianceTests<Guid>.MultiTextFixture
     {
-        public override TestStore TestStore => WeaviateTestStore.Instance;
+        public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 
         protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
 
