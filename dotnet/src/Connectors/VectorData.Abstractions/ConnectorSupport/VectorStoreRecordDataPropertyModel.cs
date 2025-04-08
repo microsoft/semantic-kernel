@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 public class VectorStoreRecordDataPropertyModel(string modelName, Type type) : VectorStoreRecordPropertyModel(modelName, type)
 {
     /// <summary>
-    /// Gets or sets a value indicating whether this data property is indexed for filtering.
+    /// Gets or sets a value indicating whether this data property is indexed.
     /// </summary>
     /// <value>
     /// The default is <see langword="false" />.

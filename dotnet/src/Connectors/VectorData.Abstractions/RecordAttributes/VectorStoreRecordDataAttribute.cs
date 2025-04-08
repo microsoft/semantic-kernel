@@ -16,7 +16,25 @@ namespace Microsoft.Extensions.VectorData;
 public sealed class VectorStoreRecordDataAttribute : Attribute
 {
     /// <summary>
-    /// Gets or sets a value indicating whether this data property is indexed for filtering.
+    /// Gets or sets a value indicating whether this data property is filterable.
+    /// </summary>
+    /// <value>
+    /// The default is <see langword="false" />.
+    /// </value>
+    [Obsolete("This property is now obsolete and will have no affect if used. Please use IsIndexed instead", error: true)]
+    public bool IsFilterable { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this data property is full text searchable.
+    /// </summary>
+    /// <value>
+    /// The default is <see langword="false" />.
+    /// </value>
+    [Obsolete("This property is now obsolete and will have no affect if used. Please use IsFullTextIndexed instead", error: true)]
+    public bool IsFullTextSearchable { get; init; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this data property is indexed.
     /// </summary>
     /// <value>
     /// The default is <see langword="false" />.

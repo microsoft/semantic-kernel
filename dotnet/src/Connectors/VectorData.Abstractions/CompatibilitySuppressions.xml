@@ -73,62 +73,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.get_IsFilterable</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.get_IsFullTextSearchable</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.set_IsFilterable(System.Boolean)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.set_IsFullTextSearchable(System.Boolean)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.get_IsFilterable</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.get_IsFullTextSearchable</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.set_IsFilterable(System.Boolean)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.set_IsFullTextSearchable(System.Boolean)</Target>
-    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.get_Top</Target>
     <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
@@ -199,62 +143,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.get_IsFilterable</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.get_IsFullTextSearchable</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.set_IsFilterable(System.Boolean)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.set_IsFullTextSearchable(System.Boolean)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.get_IsFilterable</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.get_IsFullTextSearchable</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.set_IsFilterable(System.Boolean)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.set_IsFullTextSearchable(System.Boolean)</Target>
-    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.HybridSearchOptions`1.get_Top</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
@@ -319,62 +207,6 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Microsoft.Extensions.VectorData.VectorSearchOptions`1.set_Top(System.Int32)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.get_IsFilterable</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.get_IsFullTextSearchable</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.set_IsFilterable(System.Boolean)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataAttribute.set_IsFullTextSearchable(System.Boolean)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.get_IsFilterable</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.get_IsFullTextSearchable</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.set_IsFilterable(System.Boolean)</Target>
-    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
-    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
-    <IsBaselineSuppression>true</IsBaselineSuppression>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Microsoft.Extensions.VectorData.VectorStoreRecordDataProperty.set_IsFullTextSearchable(System.Boolean)</Target>
     <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
