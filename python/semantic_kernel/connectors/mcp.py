@@ -5,7 +5,7 @@ import logging
 import sys
 from abc import abstractmethod
 from collections.abc import Callable, Sequence
-from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager
+from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGeneratorContextManager, suppress
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
@@ -15,7 +15,9 @@ from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.client.websocket import websocket_client
 from mcp.server.lowlevel.server import Server
-from mcp.types import CallToolResult, EmbeddedResource, Prompt, PromptMessage, TextResourceContents, Tool
+from mcp.shared.context import RequestContext
+from mcp.shared.session import RequestResponder
+from mcp.types import CallToolResult, EmbeddedResource, Prompt, TextResourceContents, Tool
 from mcp.types import (
     ImageContent as MCPImageContent,
 )
@@ -24,10 +26,11 @@ from mcp.types import (
 )
 
 from semantic_kernel import Kernel
+from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.contents.binary_content import BinaryContent
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
-from semantic_kernel.contents.kernel_content import KernelContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
@@ -50,10 +53,21 @@ logger = logging.getLogger(__name__)
 
 # region: Helpers
 
+LOG_LEVEL_MAPPING: dict[types.LoggingLevel, int] = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "notice": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+    "critical": logging.CRITICAL,
+    "alert": logging.CRITICAL,
+    "emergency": logging.CRITICAL,
+}
+
 
 @experimental
 def _mcp_prompt_message_to_semantic_kernel_type(
-    mcp_type: PromptMessage,
+    mcp_type: types.PromptMessage | types.SamplingMessage,
 ) -> ChatMessageContent:
     """Convert a MCP container type to a Semantic Kernel type."""
     return ChatMessageContent(
@@ -143,16 +157,16 @@ class MCPPluginBase:
         name: str,
         description: str | None = None,
         session: ClientSession | None = None,
+        sample_completion_service: ChatCompletionClientBase | None = None,
     ) -> None:
         """Initialize the MCP Plugin Base."""
         self.name = name
         self.description = description
-        self._tools_parsed = False
-        self._prompts_parsed = False
         self._exit_stack = AsyncExitStack()
         self.session = session
+        self.sample_completion_service = sample_completion_service
 
-    async def connect(self, force_reload: bool = False) -> None:
+    async def connect(self) -> None:
         """Connect to the MCP server."""
         if not self.session:
             try:
@@ -163,7 +177,15 @@ class MCPPluginBase:
                     "Failed to connect to the MCP server. Please check your configuration."
                 ) from ex
             try:
-                session = await self._exit_stack.enter_async_context(ClientSession(*transport))
+                session_args = {
+                    "read_stream": transport[0],
+                    "write_stream": transport[1],
+                    "message_handler": self.message_handler,
+                    "logging_callback": self.logging_callback,
+                }
+                if self.sample_completion_service:
+                    session_args["sampling_callback"] = self.sampling_callback
+                session = await self._exit_stack.enter_async_context(ClientSession(**session_args))
             except Exception as ex:
                 await self._exit_stack.aclose()
                 raise KernelPluginInvalidConfigurationError(
@@ -174,32 +196,129 @@ class MCPPluginBase:
         elif self.session._request_id == 0:
             # If the session is not initialized, we need to reinitialize it
             await self.session.initialize()
-        if not self._tools_parsed or force_reload:
-            try:
-                tool_list = await self.session.list_tools()
-            except Exception:
-                tool_list = None
+        logger.debug("Connected to MCP server: %s", self.session)
+        with suppress(Exception):
+            logger.debug("Resources: %s", await self.session.list_resources())
+        with suppress(Exception):
+            logger.debug("Resource templates: %s", await self.session.list_resource_templates())
+        await self.load_tools()
+        await self.load_prompts()
+        try:
+            await self.session.set_logging_level(
+                next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
+            )
+        except Exception:
+            logger.warning("Failed to set log level to %s", logger.level)
+
+    async def sampling_callback(
+        self, context: RequestContext[ClientSession, Any], params: types.CreateMessageRequestParams
+    ) -> types.CreateMessageResult | types.ErrorData:
+        """Callback function for sampling.
+
+        This function is called when the MCP server needs to get a message completed.
+
+        This is a simple version of this function, it can be overridden to allow more complex sampling.
+        It get's added to the session at initialization time, so overriding it is the best way to do this.
+        """
+        if not self.sample_completion_service:
+            return types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message="Sampling callback not set. Please set the sample completion service.",
+            )
+        completion_settings = self.sample_completion_service.get_prompt_execution_settings_class()()
+        if "temperature" in completion_settings.__class__.model_fields:
+            completion_settings.temperature = params.temperature  # type: ignore
+        if "max_completion_tokens" in completion_settings.__class__.model_fields:
+            completion_settings.max_completion_tokens = params.maxTokens  # type: ignore
+        elif "max_tokens" in completion_settings.__class__.model_fields:
+            completion_settings.max_tokens = params.maxTokens  # type: ignore
+        elif "max_output_tokens" in completion_settings.__class__.model_fields:
+            completion_settings.max_output_tokens = params.maxTokens  # type: ignore
+        chat_history = ChatHistory(system_message=params.systemPrompt)
+        for msg in params.messages:
+            chat_history.add_message(_mcp_prompt_message_to_semantic_kernel_type(msg))
+        result = await self.sample_completion_service.get_chat_message_content(
+            chat_history,
+            completion_settings,
+        )
+        if not result:
+            return types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message="Failed to get chat message content.",
+            )
+        mcp_contents = _kernel_content_to_mcp_type(result)
+        # grab the first content that is of type TextContent or ImageContent
+        mcp_content = next(
+            (content for content in mcp_contents if isinstance(content, (MCPTextContent, MCPImageContent))),
+            None,
+        )
+        if not mcp_content:
+            return types.ErrorData(
+                code=types.INTERNAL_ERROR,
+                message="Failed to get chat message content.",
+            )
+        return types.CreateMessageResult(
+            role="assistant",
+            content=mcp_content,
+            model=self.sample_completion_service.ai_model_id,
+        )
+
+    async def logging_callback(self, params: types.LoggingMessageNotificationParams) -> None:
+        """Callback function for logging.
+
+        Please subclass the MCPPlugin and override this function if you want to adapt the behavior.
+
+        Be default the logger's level well be set on the server as well.
+        """
+        logger.log(LOG_LEVEL_MAPPING[params.level], params.data)
+
+    async def message_handler(
+        self,
+        message: RequestResponder[types.ServerRequest, types.ClientResult] | types.ServerNotification | Exception,
+    ) -> None:
+        """Handle messages from the MCP server.
+
+        By default this function will handle exceptions on the server, by logging those.
+
+        And it will trigger a reload of the tools and prompts when the list changed notification is received.
+
+        If you want to extend this behavior you can subclass the MCPPlugin and override this function,
+        if you want to keep the default behavior, make sure to call `super().message_handler(message)`.
+        """
+        if isinstance(message, Exception):
+            logger.error("Error from MCP server: %s", message)
+            return
+        if isinstance(message, types.ServerNotification):
+            match message.root.method:
+                case "notifications/tools/list_changed":
+                    await self.load_tools()
+                case "notifications/prompts/list_changed":
+                    await self.load_prompts()
+
+    async def load_prompts(self):
+        """Load prompts from the MCP server."""
+        try:
+            prompt_list = await self.session.list_prompts()
+        except Exception:
+            prompt_list = None
+        for prompt in prompt_list.prompts if prompt_list else []:
+            func = kernel_function(name=prompt.name, description=prompt.description)(
+                partial(self.get_prompt, prompt.name)
+            )
+            func.__kernel_function_parameters__ = get_parameter_from_mcp_prompt(prompt)
+            setattr(self, prompt.name, func)
+
+    async def load_tools(self):
+        """Load tools from the MCP server."""
+        try:
+            tool_list = await self.session.list_tools()
+        except Exception:
+            tool_list = None
             # Create methods with the kernel_function decorator for each tool
-            for tool in tool_list.tools if tool_list else []:
-                func = kernel_function(name=tool.name, description=tool.description)(partial(self.call_tool, tool.name))
-                func.__kernel_function_parameters__ = get_parameters_from_mcp_tool(tool)
-                setattr(self, tool.name, func)
-
-            self._tools_parsed = True  # Mark tools as parsed
-
-        if not self._prompts_parsed or force_reload:
-            try:
-                prompt_list = await self.session.list_prompts()
-            except Exception:
-                prompt_list = None
-            for prompt in prompt_list.prompts if prompt_list else []:
-                func = kernel_function(name=prompt.name, description=prompt.description)(
-                    partial(self.get_prompt, prompt.name)
-                )
-                func.__kernel_function_parameters__ = get_parameter_from_mcp_prompt(prompt)
-                setattr(self, prompt.name, func)
-
-            self._prompts_parsed = True
+        for tool in tool_list.tools if tool_list else []:
+            func = kernel_function(name=tool.name, description=tool.description)(partial(self.call_tool, tool.name))
+            func.__kernel_function_parameters__ = get_parameters_from_mcp_tool(tool)
+            setattr(self, tool.name, func)
 
     async def close(self) -> None:
         """Disconnect from the MCP server."""
@@ -273,6 +392,7 @@ class MCPStdioPlugin(MCPPluginBase):
         args: list[str] | None = None,
         env: dict[str, str] | None = None,
         encoding: str | None = None,
+        sample_completion_service: ChatCompletionClientBase | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP stdio plugin.
@@ -290,10 +410,11 @@ class MCPStdioPlugin(MCPPluginBase):
             args: The arguments to pass to the command.
             env: The environment variables to set for the command.
             encoding: The encoding to use for the command output.
+            sample_completion_service: The sample completion service to use to do sampling.
             kwargs: Any extra arguments to pass to the stdio client.
 
         """
-        super().__init__(name, description, session)
+        super().__init__(name, description, session, sample_completion_service)
         self.command = command
         self.args = args or []
         self.env = env
@@ -326,6 +447,7 @@ class MCPSsePlugin(MCPPluginBase):
         headers: dict[str, Any] | None = None,
         timeout: float | None = None,
         sse_read_timeout: float | None = None,
+        sample_completion_service: ChatCompletionClientBase | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP sse plugin.
@@ -344,10 +466,11 @@ class MCPSsePlugin(MCPPluginBase):
             headers: The headers to send with the request.
             timeout: The timeout for the request.
             sse_read_timeout: The timeout for reading from the SSE stream.
+            sample_completion_service: The sample completion service to use to do sampling.
             kwargs: Any extra arguments to pass to the sse client.
 
         """
-        super().__init__(name, description, session)
+        super().__init__(name, description, session, sample_completion_service)
         self.url = url
         self.headers = headers or {}
         self.timeout = timeout
@@ -379,6 +502,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
         url: str,
         session: ClientSession | None = None,
         description: str | None = None,
+        sample_completion_service: ChatCompletionClientBase | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the MCP websocket plugin.
@@ -394,10 +518,11 @@ class MCPWebsocketPlugin(MCPPluginBase):
             url: The URL of the MCP server.
             session: The session to use for the MCP connection.
             description: The description of the plugin.
+            sample_completion_service: The sample completion service to use to do sampling.
             kwargs: Any extra arguments to pass to the websocket client.
 
         """
-        super().__init__(name, description, session)
+        super().__init__(name, description, session, sample_completion_service)
         self.url = url
         self._client_kwargs = kwargs
 
@@ -517,24 +642,24 @@ def create_mcp_server_from_kernel(
         return tools
 
     @server.call_tool()
-    async def _call_tool(*args: Any) -> list[types.TextContent]:
+    async def _call_tool(*args: Any) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
         """Call a tool in the kernel."""
         logger.debug("Tool called with args: %s", args)
         function_name, arguments = args[0], args[1]
         result = await _call_kernel_function(function_name, arguments)
         if result:
             value = result.value
-            messages = []
+            messages: list[types.TextContent | types.ImageContent | types.EmbeddedResource] = []
             if isinstance(value, list):
                 for item in value:
-                    if isinstance(value, KernelContent):
+                    if isinstance(value, (TextContent, ImageContent, BinaryContent, ChatMessageContent)):
                         messages.extend(_kernel_content_to_mcp_type(item))
                     else:
                         messages.append(
                             types.TextContent(type="text", text=str(item)),
                         )
             else:
-                if isinstance(value, KernelContent):
+                if isinstance(value, (TextContent, ImageContent, BinaryContent, ChatMessageContent)):
                     messages.extend(_kernel_content_to_mcp_type(value))
                 else:
                     messages.append(

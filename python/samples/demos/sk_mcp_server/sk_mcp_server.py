@@ -8,6 +8,9 @@ import argparse
 import logging
 from typing import Any, Literal
 
+from mcp import McpError, types
+from pydantic import AnyUrl
+
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.functions import kernel_function
@@ -104,6 +107,38 @@ def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = None) -
         ),
     )
     server = kernel.as_mcp_server(server_name="sk")
+
+    @server.list_resources()
+    async def list_resources() -> list[types.Resource]:
+        """List resources"""
+        return [
+            types.Resource(
+                uri="sk:///prompt-prompt",
+                name="Prompt Resource",
+                description="This is resource 1",
+            ),
+            types.Resource(
+                uri="sk:///echo",
+                name="Echo resource",
+                description="This is resource 2",
+            ),
+        ]
+
+    @server.read_resource()
+    async def read_resource(uri: AnyUrl) -> str | bytes:
+        """Read resource"""
+        logger.info(f"Reading resource: {uri}")
+        match str(uri):
+            case "sk:///prompt-prompt":
+                return "This is the prompt resource"
+            case "sk:///echo":
+                return "This is the echo resource"
+        raise McpError(
+            error=types.ErrorData(
+                code=types.INVALID_PARAMS,
+                message="Invalid resource URI",
+            )
+        )
 
     if transport == "sse" and port is not None:
         import uvicorn

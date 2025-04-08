@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import logging
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
 from semantic_kernel.contents import ChatHistory
+from semantic_kernel.utils.logging import setup_logging
 
 """
 This sample demonstrates how to build a conversational chatbot
@@ -32,6 +35,9 @@ You are a chat bot. And you help users interact with Github.
 You are especially good at answering questions about the Microsoft semantic-kernel project.
 You can call functions to get the information you need.
 """
+
+setup_logging()
+logging.getLogger("semantic_kernel.connectors.mcp").setLevel(logging.DEBUG)
 
 # Create and configure the kernel.
 kernel = Kernel()
@@ -91,18 +97,28 @@ async def main() -> None:
     # The command and args are specific to the MCP server you want to run.
     # For example, the Github MCP Server uses `npx` to run the server.
     # There is also a MCPSsePlugin, which takes a URL.
-    async with MCPStdioPlugin(
-        name="Github",
-        description="Github Plugin",
-        command="npx",
-        args=["-y", "@modelcontextprotocol/server-github"],
-    ) as github_plugin:
+    async with (
+        # MCPStdioPlugin(
+        #     name="Github",
+        #     description="Github Plugin",
+        #     command="npx",
+        #     args=["-y", "@modelcontextprotocol/server-github"],
+        # ) as github_plugin,
+        MCPStdioPlugin(
+            name="everything",
+            description="Everything Plugin",
+            command="npx",
+            args=["-y", "@modelcontextprotocol/server-everything"],
+            sample_completion_service=OpenAIChatCompletion(),
+        ) as everything_plugin,
+    ):
         # instead of using this async context manager, you can also use:
         # await github_plugin.connect()
         # and then await github_plugin.close() at the end of the program.
 
         # Add the plugin to the kernel.
-        kernel.add_plugin(github_plugin)
+        # kernel.add_plugin(github_plugin)
+        kernel.add_plugin(everything_plugin)
 
         # Start the chat loop.
         print("Welcome to the chat bot!\n  Type 'exit' to exit.\n")

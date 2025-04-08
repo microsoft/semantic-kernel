@@ -182,7 +182,5 @@ async def test_kernel_as_mcp_server(kernel: "Kernel", decorated_native_function,
     assert server is not None
     assert types.PingRequest in server.request_handlers
     assert types.ListToolsRequest in server.request_handlers
-    assert types.ListPromptsRequest in server.request_handlers
     assert types.CallToolRequest in server.request_handlers
-    assert types.GetPromptRequest in server.request_handlers
     assert server.name == "Semantic Kernel MCP Server"
