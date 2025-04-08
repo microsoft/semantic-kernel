@@ -36,7 +36,7 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
     public AssistantClient AssistantClient => this._assistantClient!;
 
-    public override KernelAgent Agent => this._agent!;
+    public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
 

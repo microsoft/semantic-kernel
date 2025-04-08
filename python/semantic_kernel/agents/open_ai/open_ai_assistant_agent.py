@@ -2,9 +2,13 @@
 
 import logging
 import sys
-from collections.abc import AsyncIterable, Callable, Iterable
+from collections.abc import AsyncIterable, Awaitable, Callable, Iterable
 from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
+
+from typing_extensions import deprecated
+
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -31,7 +35,6 @@ from semantic_kernel.agents.open_ai.assistant_thread_actions import AssistantThr
 from semantic_kernel.agents.open_ai.run_polling_options import RunPollingOptions
 from semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings import OpenAISettings
 from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -44,7 +47,6 @@ from semantic_kernel.functions import KernelArguments
 from semantic_kernel.functions.kernel_function import TEMPLATE_FORMAT_MAP
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
@@ -440,6 +442,9 @@ class OpenAIAssistantAgent(Agent):
 
     # region Message Handling
 
+    @deprecated(
+        "Pass messages directly to get_response(...)/invoke(...) instead. This method will be removed after May 1st 2025."  # noqa: E501
+    )
     async def add_chat_message(
         self, thread_id: str, message: "str | ChatMessageContent", **kwargs: Any
     ) -> "Message | None":
@@ -572,6 +577,7 @@ class OpenAIAssistantAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
@@ -596,6 +602,7 @@ class OpenAIAssistantAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The Agent Thread to use.
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             arguments: The kernel arguments.
             instructions_override: The instructions override.
             kernel: The kernel to use as an override.
@@ -658,9 +665,13 @@ class OpenAIAssistantAgent(Agent):
             arguments=arguments,
             **run_level_params,  # type: ignore
         ):
+            response.metadata["thread_id"] = thread.id
+            await thread.on_new_message(response)
+
+            if on_intermediate_message:
+                await on_intermediate_message(response)
+
             if is_visible:
-                response.metadata["thread_id"] = thread.id
-                await thread.on_new_message(response)
                 yield AgentResponseItem(message=response, thread=thread)
 
     @trace_agent_invocation
@@ -670,6 +681,7 @@ class OpenAIAssistantAgent(Agent):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         additional_instructions: str | None = None,
         additional_messages: list[ChatMessageContent] | None = None,
         arguments: KernelArguments | None = None,
@@ -679,7 +691,6 @@ class OpenAIAssistantAgent(Agent):
         max_prompt_tokens: int | None = None,
         metadata: dict[str, str] | None = None,
         model: str | None = None,
-        on_complete: Callable[[ChatHistory], None] | None = None,
         parallel_tool_calls: bool | None = None,
         reasoning_effort: Literal["low", "medium", "high"] | None = None,
         response_format: "AssistantResponseFormatOptionParam | None" = None,
@@ -695,6 +706,8 @@ class OpenAIAssistantAgent(Agent):
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
             thread: The Agent Thread to use.
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             additional_instructions: Additional instructions.
             additional_messages: Additional messages.
             arguments: The kernel arguments.
@@ -704,8 +717,6 @@ class OpenAIAssistantAgent(Agent):
             max_prompt_tokens: The maximum prompt tokens.
             metadata: The metadata.
             model: The model.
-            on_complete: A callback to receive the ChatHistory of full messages received from the agent.
-                These are full content messages formed from the streamed chunks.
             parallel_tool_calls: Parallel tool calls.
             reasoning_effort: The reasoning effort.
             response_format: The response format.
@@ -752,7 +763,7 @@ class OpenAIAssistantAgent(Agent):
         }
         run_level_params = {k: v for k, v in run_level_params.items() if v is not None}
 
-        collected_messages: list[ChatMessageContent] | None = [] if on_complete is not None else None
+        collected_messages: list[ChatMessageContent] | None = [] if on_intermediate_message else None
 
         async for message in AssistantThreadActions.invoke_stream(
             agent=self,
@@ -765,7 +776,10 @@ class OpenAIAssistantAgent(Agent):
             message.metadata["thread_id"] = thread.id
             yield AgentResponseItem(message=message, thread=thread)
 
-        if on_complete and collected_messages:
-            on_complete(ChatHistory(messages=collected_messages))
+        for message in collected_messages or []:  # type: ignore
+            message.metadata["thread_id"] = thread.id
+            await thread.on_new_message(message)
+            if on_intermediate_message:
+                await on_intermediate_message(message)
 
     # endregion

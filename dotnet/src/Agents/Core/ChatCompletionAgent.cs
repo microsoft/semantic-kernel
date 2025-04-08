@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 using Microsoft.SemanticKernel.Services;
@@ -17,13 +18,13 @@ using Microsoft.SemanticKernel.Services;
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
-/// Represents a <see cref="KernelAgent"/> specialization based on <see cref="IChatCompletionService"/>.
+/// Represents a <see cref="Agent"/> specialization based on <see cref="IChatCompletionService"/>.
 /// </summary>
 /// <remarks>
 /// NOTE: Enable <see cref="PromptExecutionSettings.FunctionChoiceBehavior"/> for agent plugins
-/// (<see cref="KernelAgent.Arguments"/>).
+/// (<see cref="Agent.Arguments"/>).
 /// </remarks>
-public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
+public sealed class ChatCompletionAgent : ChatHistoryAgent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgent"/> class.
@@ -88,9 +89,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             async (m) =>
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(m).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(m).ConfigureAwait(false);
                 }
             },
             options?.KernelArguments,
@@ -118,9 +119,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, result, cancellationToken).ConfigureAwait(false);
 
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(result).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(result).ConfigureAwait(false);
                 }
             }
 
@@ -129,7 +130,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -175,9 +176,9 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
             async (m) =>
             {
                 await this.NotifyThreadOfNewMessage(chatHistoryAgentThread, m, cancellationToken).ConfigureAwait(false);
-                if (options?.OnNewMessage is not null)
+                if (options?.OnIntermediateMessage is not null)
                 {
-                    await options.OnNewMessage(m).ConfigureAwait(false);
+                    await options.OnIntermediateMessage(m).ConfigureAwait(false);
                 }
             },
             options?.KernelArguments,
@@ -192,7 +193,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     }
 
     /// <inheritdoc/>
-    [Obsolete("Use InvokeStreamingAsync with AgentThread instead.")]
+    [Obsolete("Use InvokeStreamingAsync with AgentThread instead. This method will be removed after May 1st 2025.")]
     public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         ChatHistory history,
         KernelArguments? arguments = null,
@@ -246,7 +247,7 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
     {
         ChatHistory chat = [];
 
-        string? instructions = await this.FormatInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
+        string? instructions = await this.RenderInstructionsAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrWhiteSpace(instructions))
         {
@@ -273,9 +274,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, this.Arguments.MergeArguments(arguments));
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 
@@ -323,9 +323,8 @@ public sealed class ChatCompletionAgent : ChatHistoryKernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         kernel ??= this.Kernel;
-        arguments = this.MergeArguments(arguments);
 
-        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, arguments);
+        (IChatCompletionService chatCompletionService, PromptExecutionSettings? executionSettings) = GetChatCompletionService(kernel, this.Arguments.MergeArguments(arguments));
 
         ChatHistory chat = await this.SetupAgentChatHistoryAsync(history, arguments, kernel, additionalInstructions, cancellationToken).ConfigureAwait(false);
 

@@ -12,9 +12,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace SemanticKernel.Agents.UnitTests;
 
 /// <summary>
-/// Mock definition of <see cref="KernelAgent"/> with a <see cref="ChatHistoryKernelAgent"/> contract.
+/// Mock definition of <see cref="Agent"/> with a <see cref="ChatHistoryAgent"/> contract.
 /// </summary>
-internal sealed class MockAgent : ChatHistoryKernelAgent
+internal sealed class MockAgent : ChatHistoryAgent
 {
     public int InvokeCount { get; private set; }
 
@@ -64,17 +64,17 @@ internal sealed class MockAgent : ChatHistoryKernelAgent
         return this.Response.Select(m => new StreamingChatMessageContent(m.Role, m.Content)).ToAsyncEnumerable();
     }
 
-    // Expose protected method for testing
-    public new KernelArguments MergeArguments(KernelArguments? arguments)
-    {
-        return base.MergeArguments(arguments);
-    }
-
     protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         ChatHistory history =
             JsonSerializer.Deserialize<ChatHistory>(channelState) ??
             throw new KernelException("Unable to restore channel: invalid state.");
         return Task.FromResult<AgentChannel>(new ChatHistoryChannel(history));
+    }
+
+    // Expose protected method for testing
+    public new Task<string?> RenderInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
+    {
+        return base.RenderInstructionsAsync(kernel, arguments, cancellationToken);
     }
 }

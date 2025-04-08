@@ -16,9 +16,12 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="System.Linq.Async" />
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Agents\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\src\Agents\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
