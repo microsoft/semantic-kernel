@@ -28,6 +28,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
             new ChatMessageContent(AuthorRole.Assistant, "Who's there?"),
             new ChatMessageContent(AuthorRole.User, "Orange.")
         ];
+        foreach (ChatMessageContent message in messages)
+        {
+            WriteAgentChatMessage(message);
+        }
 
         // Invoke the agent and output the response
         var responseItems = agent.InvokeAsync(messages);
@@ -56,7 +60,10 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         AgentThread? agentThread = null;
         foreach (string message in messages)
         {
-            var responseItems = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, message), agentThread);
+            var userMessage = new ChatMessageContent(AuthorRole.User, message);
+            WriteAgentChatMessage(userMessage);
+
+            var responseItems = agent.InvokeAsync(userMessage, agentThread);
             await foreach (AgentResponseItem<ChatMessageContent> responseItem in responseItems)
             {
                 agentThread = responseItem.Thread;
@@ -84,16 +91,22 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
         AgentThread? agentThread = null;
         foreach (string message in messages)
         {
-            var responseItems = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, message), agentThread);
+            var userMessage = new ChatMessageContent(AuthorRole.User, message);
+            WriteAgentChatMessage(userMessage);
+
+            var responseItems = agent.InvokeAsync(userMessage, agentThread);
             await foreach (AgentResponseItem<ChatMessageContent> responseItem in responseItems)
             {
                 agentThread = responseItem.Thread;
+                this.Output.WriteLine(agentThread.Id);
                 WriteAgentChatMessage(responseItem.Message);
             }
         }
 
+        // Display the contents in the latest thread
         if (agentThread is not null)
         {
+            this.Output.WriteLine("\n\nResponse Thread Messages\n");
             var responseAgentThread = agentThread as OpenAIResponseAgentThread;
             var threadMessages = responseAgentThread?.GetMessagesAsync();
             if (threadMessages is not null)
