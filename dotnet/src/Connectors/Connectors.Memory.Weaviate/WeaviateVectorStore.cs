@@ -76,7 +76,8 @@ public sealed class WeaviateVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 Endpoint = this._options.Endpoint,
-                ApiKey = this._options.ApiKey
+                ApiKey = this._options.ApiKey,
+                HasNamedVectors = this._options.HasNamedVectors
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;

@@ -24,16 +24,13 @@ public sealed class WeaviateTestStore : TestStore
 
     public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
-    public WeaviateVectorStore GetVectorStore(WeaviateVectorStoreOptions options)
-        => new(this.Client, options);
-
     private WeaviateTestStore(bool hasNamedVectors) => this._hasNamedVectors = hasNamedVectors;
 
     protected override async Task StartAsync()
     {
         await this._container.StartAsync();
         this._httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._container.GetMappedPublicPort(WeaviateBuilder.WeaviateHttpPort)}/v1/") };
-        this._defaultVectorStore = new(this._httpClient);
+        this._defaultVectorStore = new(this._httpClient, new() { HasNamedVectors = this._hasNamedVectors });
     }
 
     protected override Task StopAsync()
