@@ -2,7 +2,7 @@
 name = "semantic-kernel"
 description = "Semantic Kernel Python SDK"
 authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
-readme = "pip/README.md"
+readme = "README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
 requires-python = ">=3.10"
@@ -48,7 +48,7 @@ dependencies = [
     "jinja2 ~= 3.1",
     "nest-asyncio ~= 1.6",
     "scipy>=1.15.1",
-    "websockets >= 13, < 15",
+    "websockets >= 13, < 16",
     "aiortc>=1.9.0",
 ]
 
@@ -78,6 +78,9 @@ hugging_face = [
     "transformers[torch] ~= 4.28",
     "sentence-transformers >= 2.2,< 5.0",
     "torch == 2.6.0"
+]
+mcp = [
+    "mcp ~= 1.6"
 ]
 mongo = [
     "pymongo >= 4.8.0, < 4.12",
@@ -114,7 +117,7 @@ qdrant = [
 redis = [
     "redis[hiredis] ~= 5.0",
     "types-redis ~= 4.6.0.20240425",
-    "redisvl >= 0.3.6",
+    "redisvl ~= 0.4"
 ]
 usearch = [
     "usearch ~= 2.16",

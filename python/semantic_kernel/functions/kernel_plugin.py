@@ -239,12 +239,15 @@ class KernelPlugin(KernelBaseModel):
         else:
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
             candidates.extend(inspect.getmembers(plugin_instance, inspect.isfunction))  # type: ignore
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.iscoroutinefunction))  # type: ignore
         # Read every method from the plugin instance
         functions = [
             KernelFunctionFromMethod(method=candidate, plugin_name=plugin_name)
             for _, candidate in candidates
             if hasattr(candidate, "__kernel_function__")
         ]
+        if not description:
+            description = getattr(plugin_instance, "description", None)
         return cls(name=plugin_name, description=description, functions=functions)
 
     @classmethod

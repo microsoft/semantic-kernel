@@ -195,30 +195,29 @@ async def test_invoke_tool_call_not_added(kernel_with_ai_service: tuple[Kernel, 
         kernel: Kernel,
         arguments: KernelArguments,
     ):
-        new_messages = [
-            ChatMessageContent(role=AuthorRole.ASSISTANT, content="Processed Message 1"),
-            ChatMessageContent(role=AuthorRole.TOOL, content="Processed Message 2"),
+        responses = [
+            ChatMessageContent(role=AuthorRole.TOOL, content="Tool Call Result"),
         ]
-        chat_history.messages.extend(new_messages)
-        return new_messages
+        chat_history.messages.extend(responses)
+        return responses
 
     mock_ai_service_client.get_chat_message_contents = AsyncMock(side_effect=mock_get_chat_message_contents)
 
     messages = [message async for message in agent.invoke(messages="test", thread=thread)]
 
-    assert len(messages) == 2
-    assert messages[0].message.content == "Processed Message 1"
-    assert messages[1].message.content == "Processed Message 2"
+    assert len(messages) == 1
+    assert messages[0].message.content == "Tool Call Result"
+    assert messages[0].message.role == AuthorRole.TOOL
+    assert messages[0].message.name == "TestAgent"
 
     thread: ChatHistoryAgentThread = messages[-1].thread
     thread_messages = [message async for message in thread.get_messages()]
 
-    assert len(thread_messages) == 4
+    assert len(thread_messages) == 2
     assert thread_messages[0].content == "test"
-    assert thread_messages[1].content == "Processed Message 1"
-    assert thread_messages[2].content == "Processed Message 2"
+    assert thread_messages[1].content == "Tool Call Result"
     assert thread_messages[1].name == "TestAgent"
-    assert thread_messages[2].name == "TestAgent"
+    assert thread_messages[1].role == AuthorRole.TOOL
 
 
 async def test_invoke_no_service_throws(kernel: Kernel):

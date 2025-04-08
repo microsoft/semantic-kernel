@@ -43,6 +43,7 @@ ist = "ist"               # German language
 dall = "dall"             # OpenAI model name
 pn = "pn"                 # Kiota parameter
 nin = "nin"               # MongoDB "not in" operator
+asend = "asend"           # Async generator method
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service

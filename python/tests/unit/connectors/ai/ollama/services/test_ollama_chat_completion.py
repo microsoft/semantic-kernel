@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
+from ollama import AsyncClient
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.ollama.ollama_prompt_execution_settings import OllamaChatPromptExecutionSettings
 from semantic_kernel.connectors.ai.ollama.services.ollama_chat_completion import OllamaChatCompletion
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.exceptions.service_exceptions import (
     ServiceInitializationError,
     ServiceInvalidExecutionSettingsError,
@@ -228,3 +231,32 @@ async def test_streaming_chat_completion_wrong_return_type(
             OllamaChatPromptExecutionSettings(service_id=service_id, options=default_options),
         ):
             pass
+
+
+@pytest.fixture
+async def setup_ollama_chat_completion():
+    async_client_mock = AsyncMock(spec=AsyncClient)
+    async_client_mock.chat = AsyncMock()
+    ollama_chat_completion = OllamaChatCompletion(
+        service_id="test_service", ai_model_id="test_model_id", client=async_client_mock
+    )
+    return ollama_chat_completion, async_client_mock
+
+
+async def test_service_url_new(setup_ollama_chat_completion):
+    ollama_chat_completion, async_client_mock = setup_ollama_chat_completion
+    # Mock the client's internal structure
+    async_client_mock._client = AsyncMock(spec=httpx.AsyncClient)
+    async_client_mock._client.base_url = "http://mocked_base_url"
+
+    service_url = ollama_chat_completion.service_url()
+    assert service_url == "http://mocked_base_url"
+
+
+async def test_prepare_chat_history_for_request(setup_ollama_chat_completion):
+    ollama_chat_completion, _ = setup_ollama_chat_completion
+    chat_history = MagicMock(spec=ChatHistory)
+    chat_history.messages = []
+
+    prepared_history = ollama_chat_completion._prepare_chat_history_for_request(chat_history)
+    assert prepared_history == []

@@ -39,12 +39,9 @@ from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_file_reference_content import StreamingFileReferenceContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import (
-    AgentExecutionException,
-    AgentInvokeException,
-)
+from semantic_kernel.exceptions.agent_exceptions import AgentExecutionException, AgentInvokeException
 from semantic_kernel.functions.kernel_arguments import KernelArguments
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
@@ -66,7 +63,7 @@ _T = TypeVar("_T", bound="AssistantThreadActions")
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental
+@release_candidate
 class AssistantThreadActions:
     """Assistant Thread Actions class."""
 
@@ -487,12 +484,6 @@ class AssistantThreadActions:
                                 f"Function call required but no function steps found for agent `{agent.name}` "
                                 f"thread: {thread_id}."
                             )
-                        if function_action_result.function_result_streaming_content:
-                            # Yield the function result content to the caller
-                            yield function_action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                # Add the function result content to the messages list, if it exists
-                                output_messages.append(function_action_result.function_result_streaming_content)
                         if function_action_result.function_call_streaming_content:
                             if output_messages is not None:
                                 output_messages.append(function_action_result.function_call_streaming_content)
@@ -501,7 +492,10 @@ class AssistantThreadActions:
                                 thread_id=thread_id,
                                 tool_outputs=function_action_result.tool_outputs,  # type: ignore
                             )
-                            break
+                        if function_action_result.function_result_streaming_content and output_messages is not None:
+                            # Add the function result content to the messages list, if it exists
+                            output_messages.append(function_action_result.function_result_streaming_content)
+                        break
                     elif event.event == "thread.run.completed":
                         run = event.data
                         logger.info(f"Run completed with ID: {run.id}")
