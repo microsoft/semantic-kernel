@@ -30,16 +30,27 @@ internal class WeaviateModelBuilder(bool useSingleVector) : VectorStoreRecordJso
     [
         typeof(string),
         typeof(bool),
+        typeof(bool?),
         typeof(int),
+        typeof(int?),
         typeof(long),
+        typeof(long?),
         typeof(short),
+        typeof(short?),
         typeof(byte),
+        typeof(byte?),
         typeof(float),
+        typeof(float?),
         typeof(double),
+        typeof(double?),
         typeof(decimal),
+        typeof(decimal?),
         typeof(DateTime),
+        typeof(DateTime?),
         typeof(DateTimeOffset),
+        typeof(DateTimeOffset?),
         typeof(Guid),
+        typeof(Guid?)
     ];
 
     internal static readonly HashSet<Type> s_supportedVectorTypes =

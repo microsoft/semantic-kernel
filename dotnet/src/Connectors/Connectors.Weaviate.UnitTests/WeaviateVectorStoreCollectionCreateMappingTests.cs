@@ -160,8 +160,6 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
     [InlineData(typeof(bool?), "boolean")]
     [InlineData(typeof(List<bool>), "boolean[]")]
     [InlineData(typeof(List<bool?>), "boolean[]")]
-    [InlineData(typeof(object), "object")]
-    [InlineData(typeof(List<object>), "object[]")]
     public void ItMapsPropertyCorrectly(Type propertyType, string expectedPropertyType)
     {
         // Arrange

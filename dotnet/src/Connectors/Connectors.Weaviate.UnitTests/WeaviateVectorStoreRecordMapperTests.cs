@@ -56,7 +56,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 
         var vectorNode = useSingleVector ? document["vector"] : document["vectors"]!["descriptionEmbedding"];
 
-        Assert.Equal([1f, 2f, 3f], document["vectors"]!["descriptionEmbedding"]!.AsArray().Select(l => l!.GetValue<float>()));
+        Assert.Equal([1f, 2f, 3f], vectorNode!.AsArray().Select(l => l!.GetValue<float>()));
     }
 
     [Theory]
