@@ -34,9 +34,21 @@ internal static class ResponseItemExtensions
         var collection = new ChatMessageContentItemCollection();
         foreach (var part in content)
         {
-            if (part.Kind == ResponseContentPartKind.OutputText)
+            if (part.Kind == ResponseContentPartKind.OutputText || part.Kind == ResponseContentPartKind.InputText)
             {
-                collection.Add(new TextContent(part.Text));
+                collection.Add(new TextContent(part.Text, innerContent: part));
+            }
+            else if (part.Kind == ResponseContentPartKind.InputImage)
+            {
+                collection.Add(new FileReferenceContent(part.InputImageFileId, innerContent: part));
+            }
+            else if (part.Kind == ResponseContentPartKind.InputFile)
+            {
+                collection.Add(new FileReferenceContent(part.InputFileId, innerContent: part));
+            }
+            else if (part.Kind == ResponseContentPartKind.Refusal)
+            {
+                collection.Add(new TextContent(part.Refusal, innerContent: part));
             }
         }
         return collection;

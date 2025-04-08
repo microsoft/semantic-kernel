@@ -14,10 +14,10 @@ using OpenAI.Responses;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Represents a <see cref="KernelAgent"/> specialization based on Open AI Assistant / GPT.
+/// Represents a <see cref="Agent"/> specialization based on Open AI Assistant / GPT.
 /// </summary>
 [ExcludeFromCodeCoverage]
-public sealed class OpenAIResponseAgent : KernelAgent
+public sealed class OpenAIResponseAgent : Agent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIResponseAgent"/> class.
@@ -105,7 +105,6 @@ public sealed class OpenAIResponseAgent : KernelAgent
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var kernel = options?.Kernel ?? this.Kernel;
-        var arguments = this.MergeArguments(options?.KernelArguments);
 
         var overrideHistory = history;
         if (!this.StoreEnabled)
@@ -121,9 +120,9 @@ public sealed class OpenAIResponseAgent : KernelAgent
             Instructions = $"{this.Instructions}\n{options?.AdditionalInstructions}",
             StoredOutputEnabled = agentThread.StoreEnabled,
         };
-        if (agentThread.StoreEnabled && agentThread.Id != null)
+        if (agentThread.StoreEnabled && agentThread.ResponseId != null)
         {
-            creationOptions.PreviousResponseId = agentThread.Id;
+            creationOptions.PreviousResponseId = agentThread.ResponseId;
         }
 
         var clientResult = await this.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);

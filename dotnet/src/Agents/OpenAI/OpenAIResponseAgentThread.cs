@@ -76,9 +76,6 @@ public sealed class OpenAIResponseAgentThread : AgentThread
             throw new InvalidOperationException("This thread has been deleted and cannot be recreated.");
         }
 
-        // Enable storing
-        this.StoreEnabled = true;
-
         // Id will not be available until after a message is sent
         return Task.FromResult<string?>(null);
     }

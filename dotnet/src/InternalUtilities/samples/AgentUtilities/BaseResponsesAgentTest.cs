@@ -28,7 +28,7 @@ public abstract class BaseResponsesAgentTest : BaseAgentsTest<OpenAIResponseClie
         this.Client = new(model: "gpt-4o", credential: new ApiKeyCredential(TestConfiguration.OpenAI.ApiKey), options: options);
     }
 
-    protected bool EnableLogging { get; set; } = true;
+    protected bool EnableLogging { get; set; } = false;
 
     /// <inheritdoc/>
     protected override OpenAIResponseClient Client { get; }
