@@ -492,12 +492,9 @@ class AssistantThreadActions:
                                 thread_id=thread_id,
                                 tool_outputs=function_action_result.tool_outputs,  # type: ignore
                             )
-                        if function_action_result.function_result_streaming_content:
-                            # Yield the function result content to the caller
-                            yield function_action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                # Add the function result content to the messages list, if it exists
-                                output_messages.append(function_action_result.function_result_streaming_content)
+                        if function_action_result.function_result_streaming_content and output_messages is not None:
+                            # Add the function result content to the messages list, if it exists
+                            output_messages.append(function_action_result.function_result_streaming_content)
                         break
                     elif event.event == "thread.run.completed":
                         run = event.data

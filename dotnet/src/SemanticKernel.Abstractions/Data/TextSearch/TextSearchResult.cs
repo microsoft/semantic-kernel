@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
@@ -14,7 +12,6 @@ namespace Microsoft.SemanticKernel.Data;
 /// - Link reference associated with the search result
 /// </remarks>
 /// <param name="value">The text search result value.</param>
-[Experimental("SKEXP0001")]
 public sealed class TextSearchResult(string value)
 {
     /// <summary>
