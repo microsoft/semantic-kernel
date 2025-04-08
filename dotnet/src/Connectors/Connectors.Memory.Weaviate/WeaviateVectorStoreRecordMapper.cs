@@ -13,7 +13,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 #pragma warning restore CS0618
 {
     private readonly string _collectionName;
-    private readonly bool _useSingleVector;
+    private readonly bool _hasNamedVectors;
     private readonly VectorStoreRecordModel _model;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
@@ -21,18 +21,18 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
 
     public WeaviateVectorStoreRecordMapper(
         string collectionName,
-        bool useSingleVector,
+        bool hasNamedVectors,
         VectorStoreRecordModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
         this._collectionName = collectionName;
-        this._useSingleVector = useSingleVector;
+        this._hasNamedVectors = hasNamedVectors;
         this._model = model;
         this._jsonSerializerOptions = jsonSerializerOptions;
 
-        this._vectorPropertyName = useSingleVector ?
-            WeaviateConstants.ReservedSingleVectorPropertyName :
-            WeaviateConstants.ReservedVectorPropertyName;
+        this._vectorPropertyName = hasNamedVectors ?
+            WeaviateConstants.ReservedVectorPropertyName :
+            WeaviateConstants.ReservedSingleVectorPropertyName;
     }
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel)
@@ -65,17 +65,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         }
 
         // Populate vector properties.
-        if (this._useSingleVector)
-        {
-            var vectorProperty = this._model.VectorProperty;
-            var node = jsonNodeDataModel[vectorProperty.StorageName];
-
-            if (node is not null)
-            {
-                weaviateObjectModel[this._vectorPropertyName] = node.DeepClone();
-            }
-        }
-        else
+        if (this._hasNamedVectors)
         {
             foreach (var property in this._model.VectorProperties)
             {
@@ -85,6 +75,16 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
                 {
                     weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = node.DeepClone();
                 }
+            }
+        }
+        else
+        {
+            var vectorProperty = this._model.VectorProperty;
+            var node = jsonNodeDataModel[vectorProperty.StorageName];
+
+            if (node is not null)
+            {
+                weaviateObjectModel[this._vectorPropertyName] = node.DeepClone();
             }
         }
 
@@ -119,17 +119,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
         // Populate vector properties.
         if (options.IncludeVectors)
         {
-            if (this._useSingleVector)
-            {
-                var vectorProperty = this._model.VectorProperty;
-                var node = storageModel[this._vectorPropertyName];
-
-                if (node is not null)
-                {
-                    jsonNodeDataModel[vectorProperty.StorageName] = node.DeepClone();
-                }
-            }
-            else
+            if (this._hasNamedVectors)
             {
                 foreach (var property in this._model.VectorProperties)
                 {
@@ -139,6 +129,16 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IVectorStoreRec
                     {
                         jsonNodeDataModel[property.StorageName] = node.DeepClone();
                     }
+                }
+            }
+            else
+            {
+                var vectorProperty = this._model.VectorProperty;
+                var node = storageModel[this._vectorPropertyName];
+
+                if (node is not null)
+                {
+                    jsonNodeDataModel[vectorProperty.StorageName] = node.DeepClone();
                 }
             }
         }

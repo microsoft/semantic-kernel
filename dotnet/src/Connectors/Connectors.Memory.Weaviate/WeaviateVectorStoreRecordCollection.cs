@@ -95,7 +95,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
         this.CollectionName = collectionName;
         this._options = options ?? new();
         this._apiKey = this._options.ApiKey;
-        this._model = new WeaviateModelBuilder(this._options.UseSingleVector)
+        this._model = new WeaviateModelBuilder(this._options.HasNamedVectors)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
 
         // Assign mapper.
@@ -470,7 +470,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         return new WeaviateVectorStoreRecordMapper<TRecord>(
             this.CollectionName,
-            this._options.UseSingleVector,
+            this._options.HasNamedVectors,
             this._model,
             s_jsonSerializerOptions);
     }

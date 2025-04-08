@@ -31,7 +31,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromDataToStorageModelReturnsValidObject(bool useSingleVector)
+    public void MapFromDataToStorageModelReturnsValidObject(bool hasNamedVectors)
     {
         // Arrange
         var hotel = new WeaviateHotel
@@ -42,7 +42,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
             DescriptionEmbedding = new ReadOnlyMemory<float>([1f, 2f, 3f])
         };
 
-        var sut = GetMapper(useSingleVector);
+        var sut = GetMapper(hasNamedVectors);
 
         // Act
         var document = sut.MapFromDataToStorageModel(hotel);
@@ -54,7 +54,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
         Assert.Equal("Test Name", document["properties"]!["hotelName"]!.GetValue<string>());
         Assert.Equal(["tag1", "tag2"], document["properties"]!["tags"]!.AsArray().Select(l => l!.GetValue<string>()));
 
-        var vectorNode = useSingleVector ? document["vector"] : document["vectors"]!["descriptionEmbedding"];
+        var vectorNode = hasNamedVectors ? document["vectors"]!["descriptionEmbedding"] : document["vector"];
 
         Assert.Equal([1f, 2f, 3f], vectorNode!.AsArray().Select(l => l!.GetValue<float>()));
     }
@@ -62,7 +62,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelReturnsValidObject(bool useSingleVector)
+    public void MapFromStorageToDataModelReturnsValidObject(bool hasNamedVectors)
     {
         // Arrange
         var document = new JsonObject
@@ -77,16 +77,16 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 
         var vectorNode = new JsonArray(new List<float> { 1f, 2f, 3f }.Select(l => JsonValue.Create(l)).ToArray());
 
-        if (useSingleVector)
-        {
-            document["vector"] = vectorNode;
-        }
-        else
+        if (hasNamedVectors)
         {
             document["vectors"]!["descriptionEmbedding"] = vectorNode;
         }
+        else
+        {
+            document["vector"] = vectorNode;
+        }
 
-        var sut = GetMapper(useSingleVector);
+        var sut = GetMapper(hasNamedVectors);
 
         // Act
         var hotel = sut.MapFromStorageToDataModel(document, new() { IncludeVectors = true });
@@ -102,10 +102,10 @@ public sealed class WeaviateVectorStoreRecordMapperTests
 
     #region private
 
-    private static WeaviateVectorStoreRecordMapper<WeaviateHotel> GetMapper(bool useSingleVector) => new(
+    private static WeaviateVectorStoreRecordMapper<WeaviateHotel> GetMapper(bool hasNamedVectors) => new(
         "CollectionName",
-        useSingleVector,
-        new WeaviateModelBuilder(useSingleVector)
+        hasNamedVectors,
+        new WeaviateModelBuilder(hasNamedVectors)
         .Build(
             typeof(VectorStoreGenericDataModel<Guid>),
             new VectorStoreRecordDefinition

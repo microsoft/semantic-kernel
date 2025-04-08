@@ -6,15 +6,15 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal class WeaviateModelBuilder(bool useSingleVector) : VectorStoreRecordJsonModelBuilder(GetModelBuildingOptions(useSingleVector))
+internal class WeaviateModelBuilder(bool hasNamedVectors) : VectorStoreRecordJsonModelBuilder(GetModelBuildingOptions(hasNamedVectors))
 {
-    private static VectorStoreRecordModelBuildingOptions GetModelBuildingOptions(bool useSingleVector)
+    private static VectorStoreRecordModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
     {
         return new()
         {
             RequiresAtLeastOneVector = false,
             SupportsMultipleKeys = false,
-            SupportsMultipleVectors = !useSingleVector,
+            SupportsMultipleVectors = hasNamedVectors,
 
             SupportedKeyPropertyTypes = [typeof(Guid)],
             SupportedDataPropertyTypes = s_supportedDataTypes,
