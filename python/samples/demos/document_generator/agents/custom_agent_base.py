@@ -7,6 +7,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.contents.utils.author_role import AuthorRole
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -88,13 +89,13 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
         normalized_messages = self._normalize_messages(messages)
 
         if additional_user_message:
-            normalized_messages.append(ChatMessageContent(role="user", content=additional_user_message))
+            normalized_messages.append(ChatMessageContent(role=AuthorRole.USER, content=additional_user_message))
 
         # Filter out empty or function-only messages to avoid polluting context
         messages_to_pass = [m for m in normalized_messages if m.content]
 
         async for response in super().invoke(
-            messages=messages_to_pass,
+            messages=messages_to_pass,  # type: ignore
             thread=thread,
             on_intermediate_message=on_intermediate_message,
             arguments=arguments,
@@ -113,7 +114,7 @@ class CustomAgentBase(ChatCompletionAgent, ABC):
         normalized: list[ChatMessageContent] = []
         for msg in messages:
             if isinstance(msg, str):
-                normalized.append(ChatMessageContent(role="user", content=msg))
+                normalized.append(ChatMessageContent(role=AuthorRole.USER, content=msg))
             else:
                 normalized.append(msg)
         return normalized
