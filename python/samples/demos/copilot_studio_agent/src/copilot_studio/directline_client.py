@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Dict, Any, Mapping
+from typing import Optional, Dict, Any
 
 import aiohttp
 
@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class DirectLineClient:
     """
-    Handles Direct Line API interactions for Copilot Studio agents.  
+    Handles Direct Line API interactions for Copilot Studio agents.
     Provides methods for authentication, starting conversations, posting activities, and polling responses, including support for watermark-based activity retrieval.
     """
 
@@ -46,14 +46,34 @@ class DirectLineClient:
             
         return self._session
 
-    async def close(self) -> None:
+    async def start_conversation(self) -> str:
         """
-        Close the aiohttp session.
+        Start a new DirectLine conversation.
+        
+        Returns:
+            The conversation ID.
+            
+        Raises:
+            Exception: If starting the conversation fails.
         """
-        if self._session and not self._session.closed:
-            await self._session.close()
-            logger.debug("DirectLine session closed")
-    
+        # Use the session with the bot secret for authorization
+        session = await self.get_session()
+        
+        async with session.post(f"{self.directline_endpoint}/conversations") as resp:
+            if resp.status not in (200, 201):
+                raise Exception(f"Failed to create DirectLine conversation. Status: {resp.status}")
+            
+            data = await resp.json()
+            conversation_id = data.get("conversationId")
+            
+            if not conversation_id:
+                logger.error("Conversation creation response missing conversationId: %s", data)
+                raise Exception("No conversation ID received from conversation creation.")
+                
+            logger.debug(f"Created conversation {conversation_id}")
+            
+            return conversation_id
+
     async def post_activity(self, conversation_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         Post an activity to a DirectLine conversation.
@@ -77,10 +97,12 @@ class DirectLineClient:
                 raise Exception(f"Failed to post activity. Status: {resp.status}")
             
             return await resp.json()
-    
+
+      
     async def get_activities(self, conversation_id: str, watermark: Optional[str] = None) -> Dict[str, Any]:
         """
         Get activities from a DirectLine conversation.
+        Use watermark to retrieve new activities since the last retrieved activity.
         
         Args:
             conversation_id: The conversation ID.
@@ -106,32 +128,43 @@ class DirectLineClient:
                 raise Exception(f"Error polling activities. Status: {resp.status}")
             
             return await resp.json()
-            
-    async def start_conversation(self) -> str:
-        """
-        Start a new DirectLine conversation.
-        Uses the bot secret directly to start the conversation.
         
+    async def end_conversation(self, conversation_id: str, user_id: str = "user1") -> Dict[str, Any]:
+        """
+        End a DirectLine conversation by sending an endOfConversation activity.
+        
+        Args:
+            conversation_id: The conversation ID to end.
+            user_id: The user ID to use in the 'from' field (defaults to "user1").
+            
         Returns:
-            The conversation ID.
+            The response from the API.
             
         Raises:
-            Exception: If starting the conversation fails.
+            Exception: If ending the conversation fails.
         """
-        # Use the session with the bot secret for authorization
-        session = await self.get_session()
+        payload = {
+            "type": "endOfConversation",
+            "from": {
+                "id": user_id
+            }
+        }
         
-        async with session.post(f"{self.directline_endpoint}/conversations") as resp:
-            if resp.status not in (200, 201):
-                raise Exception(f"Failed to create DirectLine conversation. Status: {resp.status}")
+        session = await self.get_session()
+        activities_url = f"{self.directline_endpoint}/conversations/{conversation_id}/activities"
+        
+        async with session.post(activities_url, json=payload) as resp:
+            if resp.status != 200:
+                logger.error("Failed to end conversation. Status: %s", resp.status)
+                raise Exception(f"Failed to end conversation. Status: {resp.status}")
             
-            data = await resp.json()
-            conversation_id = data.get("conversationId")
-            
-            if not conversation_id:
-                logger.error("Conversation creation response missing conversationId: %s", data)
-                raise Exception("No conversation ID received from conversation creation.")
-                
-            logger.debug(f"Created conversation {conversation_id}")
-            
-            return conversation_id
+            logger.debug(f"Successfully ended conversation {conversation_id}")
+            return await resp.json()
+
+    async def close(self) -> None:
+        """
+        Close the aiohttp session.
+        """
+        if self._session and not self._session.closed:
+            await self._session.close()
+            logger.debug("DirectLine session closed")

@@ -49,10 +49,15 @@ class CopilotAgentThread(AgentThread):
     async def _delete(self) -> None:
         """Ends the current thread.
 
-        This will only end the underlying DirectLine conversation but not delete it.
+        This will end the underlying DirectLine conversation but not delete it permanently
+        from the service, as DirectLine API doesn't provide a specific endpoint to delete conversations.
         """
-        # DirectLine API does not provide a specific endpoint to delete conversations.
-        pass
+        if self._id:
+            try:
+                await self._directline_client.end_conversation(self._id)
+                logger.debug(f"Conversation {self._id} has been ended")
+            except Exception as e:
+                logger.error(f"Failed to end conversation {self._id}: {str(e)}")
 
     @override
     async def _on_new_message(self, new_message: str | ChatMessageContent) -> None:
