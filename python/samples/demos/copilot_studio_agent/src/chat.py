@@ -4,7 +4,6 @@ import logging
 
 import chainlit as cl
 from dotenv import load_dotenv
-
 from product_advisor import ProductAdvisor
 
 load_dotenv(override=True)
@@ -14,6 +13,7 @@ logging.getLogger("direct_line_agent").setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 product_advisor_agent = ProductAdvisor()
+
 
 @cl.on_chat_start
 async def on_chat_start():

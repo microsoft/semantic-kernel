@@ -11,15 +11,13 @@ from semantic_kernel.agents.channels.agent_channel import AgentChannel
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions.agent_exceptions import AgentChatException
-from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.exceptions.agent_exceptions import AgentChatException, AgentInvokeException
 
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
 from copilot_studio.copilot_agent_thread import CopilotAgentThread
+
 
 class CopilotStudioAgentChannel(AgentChannel, ChatHistory):
     """A channel for interacting with Copilot Studio Agent."""

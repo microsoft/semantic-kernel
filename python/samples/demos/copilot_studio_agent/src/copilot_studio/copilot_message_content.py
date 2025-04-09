@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Any
+
 from pydantic import Field
+
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 
@@ -84,7 +86,7 @@ class CopilotMessageContent(ChatMessageContent):
                 adaptive_card=adaptive_card,
                 suggested_actions=suggested_actions if suggested_actions else None,
             )
-        elif suggested_actions:
+        if suggested_actions:
             return cls(
                 role=role,
                 content=content,
@@ -92,10 +94,9 @@ class CopilotMessageContent(ChatMessageContent):
                 copilot_content_type=CopilotContentType.SUGGESTED_ACTIONS,
                 suggested_actions=suggested_actions,
             )
-        else:
-            return cls(
-                role=role,
-                content=content,
-                name=name,
-                copilot_content_type=CopilotContentType.TEXT,
-            )
+        return cls(
+            role=role,
+            content=content,
+            name=name,
+            copilot_content_type=CopilotContentType.TEXT,
+        )

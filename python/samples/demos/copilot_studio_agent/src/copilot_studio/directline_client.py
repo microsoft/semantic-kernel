@@ -1,9 +1,10 @@
 import logging
-from typing import Optional, Dict, Any
+from typing import Any
 
 import aiohttp
 
 logger = logging.getLogger(__name__)
+
 
 class DirectLineClient:
     """
@@ -98,7 +99,6 @@ class DirectLineClient:
             
             return await resp.json()
 
-      
     async def get_activities(self, conversation_id: str, watermark: str | None = None) -> dict[str, Any]:
         """
         Get activities from a DirectLine conversation.

@@ -1,11 +1,11 @@
 import os
 
-from dotenv import load_dotenv
-
 from copilot_studio.copilot_agent import CopilotAgent
 from copilot_studio.directline_client import DirectLineClient
+from dotenv import load_dotenv
 
 load_dotenv(override=True)
+
 
 class ProductAdvisor(CopilotAgent):
     """

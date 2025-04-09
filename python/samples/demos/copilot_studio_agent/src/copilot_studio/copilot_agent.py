@@ -1,19 +1,22 @@
 import asyncio
 import logging
 import sys
-from typing import Any, ClassVar
-
 from collections.abc import AsyncIterable
+from typing import Any, ClassVar
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
     from typing_extensions import override  # pragma: no cover
 
+from copilot_studio.copilot_agent_channel import CopilotStudioAgentChannel
+from copilot_studio.copilot_agent_thread import CopilotAgentThread
+from copilot_studio.copilot_message_content import CopilotMessageContent
+from copilot_studio.directline_client import DirectLineClient
+
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
-from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
@@ -21,11 +24,6 @@ from semantic_kernel.utils.telemetry.agent_diagnostics.decorators import (
     trace_agent_get_response,
     trace_agent_invocation,
 )
-
-from copilot_studio.copilot_agent_channel import CopilotStudioAgentChannel
-from copilot_studio.copilot_agent_thread import CopilotAgentThread
-from copilot_studio.copilot_message_content import CopilotMessageContent
-from copilot_studio.directline_client import DirectLineClient
 
 logger: logging.Logger = logging.getLogger(__name__)
 
