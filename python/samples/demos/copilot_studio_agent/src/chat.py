@@ -1,13 +1,12 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
-import os
 
 import chainlit as cl
-from direct_line_agent import DirectLineAgent
 from dotenv import load_dotenv
 
 from semantic_kernel.contents.chat_history import ChatHistory
+from product_advisor import ProductAdvisor
 
 load_dotenv(override=True)
 
@@ -15,14 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logging.getLogger("direct_line_agent").setLevel(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-agent = DirectLineAgent(
-    id="copilot_studio",
-    name="copilot_studio",
-    description="copilot_studio",
-    bot_secret=os.getenv("BOT_SECRET"),
-    bot_endpoint=os.getenv("BOT_ENDPOINT"),
-)
-
+product_advisor_agent = ProductAdvisor()
 
 @cl.on_chat_start
 async def on_chat_start():
@@ -31,14 +23,17 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    chat_history: ChatHistory = cl.user_session.get("chat_history")
+    # Get threads from session
+    agent_threads = cl.user_session.get("agent_threads", {})
+    thread = agent_threads.get(product_advisor_agent.id)
 
-    chat_history.add_user_message(message.content)
+    final_response = None
+    async for response in product_advisor_agent.invoke(messages=message.content, thread=thread):
+        if response:
+            # Send each message as it comes in
+            await cl.Message(content=response.message.content, author=product_advisor_agent.name).send()
+            final_response = response
 
-    response = await agent.get_response(history=chat_history)
-
-    cl.user_session.set("chat_history", chat_history)
-
-    logger.info(f"Response: {response}")
-
-    await cl.Message(content=response.content, author=agent.name).send()
+    # Update thread in session
+    agent_threads[product_advisor_agent.id] = final_response.thread
+    cl.user_session.set("agent_threads", agent_threads)
