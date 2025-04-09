@@ -87,7 +87,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // TODO: Make generic to avoid boxing
 #pragma warning disable MEVD9000 // KeyResolver and VectorResolver are experimental
         this._keyResolver = this._options.KeyResolver is null
-            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record!)!
+            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record)!
             : this._options.KeyResolver;
 
         this._vectorResolver = this._options.VectorResolver is not null
@@ -104,7 +104,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
                     throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
                 }
 
-                return property.GetValueAsObject(record!);
+                return property.GetValueAsObject(record);
             };
 #pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 

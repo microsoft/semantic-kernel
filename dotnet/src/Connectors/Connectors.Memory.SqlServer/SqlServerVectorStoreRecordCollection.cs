@@ -431,7 +431,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         {
             foreach (var record in records)
             {
-                yield return ((VectorStoreGenericDataModel<TKey>)(object)record!).Key;
+                yield return ((VectorStoreGenericDataModel<TKey>)(object)record).Key;
             }
         }
         else
@@ -439,7 +439,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             var keyProperty = this._model.KeyProperty;
             foreach (var record in records)
             {
-                yield return (TKey)keyProperty.GetValueAsObject(record!)!;
+                yield return (TKey)keyProperty.GetValueAsObject(record)!;
             }
         }
     }
