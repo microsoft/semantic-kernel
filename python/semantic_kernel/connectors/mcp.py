@@ -102,7 +102,7 @@ def get_parameter_from_mcp_prompt(prompt: Prompt) -> list[dict[str, Any]]:
 def get_parameters_from_mcp_tool(tool: Tool) -> list[dict[str, Any]]:
     """Creates an MCPFunction instance from a tool."""
     properties = tool.inputSchema.get("properties", None)
-    required = tool.inputSchema.get("required", list())
+    required = tool.inputSchema.get("required", [])
     # Check if 'properties' is missing or not a dictionary
     if not properties:
         return []
