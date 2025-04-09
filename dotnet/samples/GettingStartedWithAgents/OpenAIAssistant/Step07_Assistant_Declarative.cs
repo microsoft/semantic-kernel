@@ -15,13 +15,9 @@ namespace GettingStarted.OpenAIAssistants;
 /// </summary>
 public class Step07_Assistant_Declarative : BaseAssistantTest
 {
-    public Step07_Assistant_Declarative(ITestOutputHelper output) : base(output)
-    {
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<OpenAIClient>(this.Client);
-        this._kernel = builder.Build();
-    }
-
+    /// <summary>
+    /// Demonstrates creating and using a OpenAI Assistant using configuration.
+    /// </summary>
     [Fact]
     public async Task OpenAIAssistantAgentWithConfigurationForOpenAIAsync()
     {
@@ -44,6 +40,9 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a OpenAI Assistant using configuration for Azure OpenAI.
+    /// </summary>
     [Fact]
     public async Task OpenAIAssistantAgentWithConfigurationForAzureOpenAIAsync()
     {
@@ -70,6 +69,9 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a OpenAI Assistant using a Kernel.
+    /// </summary>
     [Fact]
     public async Task OpenAIAssistantAgentWithKernelAsync()
     {
@@ -89,6 +91,9 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a OpenAI Assistant with templated instructions.
+    /// </summary>
     [Fact]
     public async Task OpenAIAssistantAgentWithTemplateAsync()
     {
@@ -149,6 +154,13 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
                 await agentThread.DeleteAsync();
             }
         }
+    }
+
+    public Step07_Assistant_Declarative(ITestOutputHelper output) : base(output)
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<OpenAIClient>(this.Client);
+        this._kernel = builder.Build();
     }
 
     #region private

@@ -18,30 +18,9 @@ namespace GettingStarted;
 /// </summary>
 public class Step10_MultiAgent_Declarative : BaseAgentsTest
 {
-    public Step10_MultiAgent_Declarative(ITestOutputHelper output) : base(output)
-    {
-        var openaiClient =
-           this.UseOpenAIConfig ?
-               OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
-               !string.IsNullOrWhiteSpace(this.ApiKey) ?
-                   OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
-                   OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
-
-        var aiProjectClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
-
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<OpenAIClient>(openaiClient);
-        builder.Services.AddSingleton<AIProjectClient>(aiProjectClient);
-        AddChatCompletionToKernel(builder);
-        this._kernel = builder.Build();
-
-        this._kernelAgentFactory = new AggregatorKernelAgentFactory(
-            new ChatCompletionAgentFactory(),
-            new OpenAIAssistantAgentFactory(),
-            new AzureAIAgentFactory()
-            );
-    }
-
+    /// <summary>
+    /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
+    /// </summary>
     [Fact]
     public async Task ChatCompletionAgentWithKernelAsync()
     {
@@ -63,6 +42,9 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
         }
     }
 
+    /// <summary>
+    /// Demonstrates creating and using an Azure AI Agent with a Kernel.
+    /// </summary>
     [Fact]
     public async Task AzureAIAgentWithKernelAsync()
     {
@@ -104,6 +86,30 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
                 await agentThread.DeleteAsync();
             }
         }
+    }
+
+    public Step10_MultiAgent_Declarative(ITestOutputHelper output) : base(output)
+    {
+        var openaiClient =
+           this.UseOpenAIConfig ?
+               OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential(this.ApiKey ?? throw new ConfigurationNotFoundException("OpenAI:ApiKey"))) :
+               !string.IsNullOrWhiteSpace(this.ApiKey) ?
+                   OpenAIAssistantAgent.CreateAzureOpenAIClient(new ApiKeyCredential(this.ApiKey), new Uri(this.Endpoint!)) :
+                   OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!));
+
+        var aiProjectClient = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential());
+
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<OpenAIClient>(openaiClient);
+        builder.Services.AddSingleton<AIProjectClient>(aiProjectClient);
+        AddChatCompletionToKernel(builder);
+        this._kernel = builder.Build();
+
+        this._kernelAgentFactory = new AggregatorKernelAgentFactory(
+            new ChatCompletionAgentFactory(),
+            new OpenAIAssistantAgentFactory(),
+            new AzureAIAgentFactory()
+            );
     }
 
     #region private

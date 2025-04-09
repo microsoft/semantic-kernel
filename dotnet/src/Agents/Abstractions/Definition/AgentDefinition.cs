@@ -54,7 +54,7 @@ public sealed class AgentDefinition
     /// <summary>
     /// Gets or sets the collection of inputs used by the agent.
     /// </summary>
-    public Dictionary<string, AgentInput>? Inputs { get; set; }
+    public IDictionary<string, AgentInput>? Inputs { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of outputs supported by the agent.

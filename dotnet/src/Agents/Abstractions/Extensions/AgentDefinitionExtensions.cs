@@ -77,7 +77,7 @@ public static class AgentDefinitionExtensions
     {
         Verify.NotNull(agentDefinition);
 
-        if (templateFactory == null || agentDefinition.Template is null || agentDefinition.Instructions is null)
+        if (templateFactory is null || agentDefinition.Template is null || agentDefinition.Instructions is null)
         {
             return null;
         }

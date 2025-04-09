@@ -17,13 +17,9 @@ namespace GettingStarted.AzureAgents;
 /// </summary>
 public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
 {
-    public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
-    {
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<AIProjectClient>(this.Client);
-        this._kernel = builder.Build();
-    }
-
+    /// <summary>
+    /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
+    /// </summary>
     [Fact]
     public async Task AzureAIAgentWithConfigurationAsync()
     {
@@ -408,6 +404,13 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                 await agentThread.DeleteAsync();
             }
         }
+    }
+
+    public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<AIProjectClient>(this.Client);
+        this._kernel = builder.Build();
     }
 
     #region private

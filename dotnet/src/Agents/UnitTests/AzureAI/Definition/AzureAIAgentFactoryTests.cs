@@ -75,7 +75,7 @@ public class AzureAIAgentFactoryTests : IDisposable
             ]
         };
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentResponse);
+        using var responseMessage = this.SetupResponse(HttpStatusCode.OK, AzureAIAgentResponse);
 
         // Act
         var agent = await factory.CreateAsync(this._kernel, agentDefinition);
@@ -111,12 +111,16 @@ public class AzureAIAgentFactoryTests : IDisposable
         """;
 
     #region private
-    private void SetupResponse(HttpStatusCode statusCode, string response) =>
-#pragma warning disable CA2000 // Dispose objects before losing scope
-        this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)
+    private HttpResponseMessage SetupResponse(HttpStatusCode statusCode, string response)
+    {
+        var responseMessage = new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(response)
-        });
-#pragma warning restore CA2000 // Dispose objects before losing scope
+        };
+
+        this._messageHandlerStub.ResponseQueue.Enqueue(responseMessage);
+
+        return responseMessage;
+    }
     #endregion
 }

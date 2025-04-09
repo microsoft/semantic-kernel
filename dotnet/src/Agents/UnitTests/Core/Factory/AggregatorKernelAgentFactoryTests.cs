@@ -50,7 +50,7 @@ public class AggregatorKernelAgentFactoryTests
         var target = new AggregatorKernelAgentFactory(new MyAgentFactory1(), new MyAgentFactory2());
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(async () => await target.CreateAsync(kernel, agentDefinition));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await target.CreateAsync(kernel, agentDefinition));
     }
 
     #region private

@@ -14,13 +14,9 @@ namespace GettingStarted.BedrockAgents;
 /// </summary>
 public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
 {
-    public Step07_BedrockAgent_Declarative(ITestOutputHelper output) : base(output)
-    {
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<AmazonBedrockAgentClient>(this.Client);
-        this._kernel = builder.Build();
-    }
-
+    /// <summary>
+    /// Demonstrates creating and using a Bedrock Agent with using configuration settings.
+    /// </summary>
     [Fact]
     public async Task BedrockAgentWithConfigurationAsync()
     {
@@ -43,6 +39,9 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         await InvokeAgentAsync(agent!, "Cats and Dogs");
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a Bedrock Agent with a code interpreter.
+    /// </summary>
     [Fact]
     public async Task BedrockAgentWithCodeInterpreterAsync()
     {
@@ -67,6 +66,9 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that are less then the value of 101?");
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a Bedrock Agent with functions.
+    /// </summary>
     [Fact]
     public async Task BedrockAgentWithFunctionsAsync()
     {
@@ -111,6 +113,9 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         await InvokeAgentAsync(agent!, "What is the current weather in Seattle and what is the weather forecast in Seattle?");
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a Bedrock Agent with a knowledge base.
+    /// </summary>
     [Fact]
     public async Task BedrockAgentWithKnowledgeBaseAsync()
     {
@@ -136,6 +141,13 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
 
         await InvokeAgentAsync(agent!, "What is Semantic Kernel?");
+    }
+
+    public Step07_BedrockAgent_Declarative(ITestOutputHelper output) : base(output)
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<AmazonBedrockAgentClient>(this.Client);
+        this._kernel = builder.Build();
     }
 
     protected override async Task<BedrockAgent> CreateAgentAsync(string agentName)

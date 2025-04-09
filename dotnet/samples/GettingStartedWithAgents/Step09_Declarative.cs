@@ -12,6 +12,9 @@ namespace GettingStarted;
 /// </summary>
 public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(output)
 {
+    /// <summary>
+    /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
+    /// </summary>
     [Fact]
     public async Task ChatCompletionAgentWithKernelAsync()
     {
@@ -24,9 +27,9 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             description: Story Telling Agent
             instructions: Tell a story suitable for children about the topic provided by the user.
             """;
-        var kernelAgentFactory = new ChatCompletionAgentFactory();
+        var agentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
+        var agent = await agentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync("Cats and Dogs"))
         {
@@ -34,28 +37,9 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
         }
     }
 
-    [Fact]
-    public async Task ChatCompletionAgentWithConfigurationAsync()
-    {
-        Kernel kernel = this.CreateKernelWithChatCompletion();
-
-        var text =
-            """
-            type: chat_completion_agent
-            name: StoryAgent
-            description: Store Telling Agent
-            instructions: Tell a story suitable for children about the topic provided by the user.
-            """;
-        var kernelAgentFactory = new ChatCompletionAgentFactory();
-        var configuration = TestConfiguration.GetSection(this.UseOpenAIConfig ? "OpenAI" : "AzureOpenAI");
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, configuration: configuration);
-
-        await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Cats and Dogs")))
-        {
-            this.WriteAgentChatMessage(response);
-        }
-    }
-
+    /// <summary>
+    /// Demonstrates creating and using a Chat Completion Agent with functions.
+    /// </summary>
     [Fact]
     public async Task ChatCompletionAgentWithFunctionsAsync()
     {
@@ -78,9 +62,9 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
               - id: MenuPlugin.GetItemPrice
                 type: function
             """;
-        var kernelAgentFactory = new ChatCompletionAgentFactory();
+        var agentFactory = new ChatCompletionAgentFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
+        var agent = await agentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
 
         await foreach (ChatMessageContent response in agent!.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is the special soup and how much does it cost?")))
         {
@@ -88,6 +72,9 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
         }
     }
 
+    /// <summary>
+    /// Demonstrates creating and using a Chat Completion Agent with templated instructions.
+    /// </summary>
     [Fact]
     public async Task ChatCompletionAgentWithTemplateAsync()
     {
@@ -113,10 +100,10 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
             template:
                 format: semantic-kernel
             """;
-        var kernelAgentFactory = new ChatCompletionAgentFactory();
+        var agentFactory = new ChatCompletionAgentFactory();
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await kernelAgentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, PromptTemplateFactory = promptTemplateFactory });
+        var agent = await agentFactory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel, PromptTemplateFactory = promptTemplateFactory });
         Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()

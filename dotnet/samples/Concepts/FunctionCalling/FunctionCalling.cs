@@ -537,10 +537,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Create a logging handler to output HTTP requests and responses
         if (output is not null)
         {
-            var handler = new LoggingHandler(new HttpClientHandler(), output);
-            var httpClient = new HttpClient(handler);
-
-            builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey, httpClient: httpClient);
+            builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
         }
         else
         {

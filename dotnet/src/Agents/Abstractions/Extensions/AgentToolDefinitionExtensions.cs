@@ -34,9 +34,9 @@ public static class AgentToolDefinitionExtensions
             {
                 return (T?)Convert.ChangeType(value, typeof(T));
             }
-            catch (InvalidCastException)
+            catch (InvalidCastException ex)
             {
-                throw new InvalidCastException($"The option key '{key}' value must be of type '{typeof(T?)}' but is '{value.GetType()}'.");
+                throw new InvalidCastException($"The option key '{key}' value must be of type '{typeof(T?)}' but is '{value.GetType()}'.", ex);
             }
         }
 

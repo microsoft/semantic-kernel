@@ -24,9 +24,9 @@ public abstract class AgentFactory
     /// Initializes a new instance of the <see cref="AgentFactory"/> class.
     /// </summary>
     /// <param name="types">Types of agent this factory can create</param>
-    protected AgentFactory(string[] types)
+    protected AgentFactory(IEnumerable<string> types)
     {
-        this.Types = types;
+        this.Types = [.. types];
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public abstract class AgentFactory
         Verify.NotNull(agentDefinition);
 
         var kernelAgent = await this.TryCreateAsync(kernel, agentDefinition, agentCreationOptions, cancellationToken).ConfigureAwait(false);
-        return (Agent?)kernelAgent ?? throw new KernelException($"Agent type {agentDefinition.Type} is not supported.");
+        return (Agent?)kernelAgent ?? throw new NotSupportedException($"Agent type {agentDefinition.Type} is not supported.");
     }
 
     /// <summary>

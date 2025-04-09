@@ -183,7 +183,7 @@ internal static class AgentToolDefinitionExtensions
             throw new InvalidCastException($"The option key '{key}' value must be of type '{typeof(T)}' but is '{value.GetType()}'.");
         }
 
-        throw new ArgumentException($"The option key '{key}' is required.");
+        throw new ArgumentException($"The option key '{key}' was not found.");
     }
 
     private static readonly BinaryData s_noParams = BinaryData.FromObjectAsJson(new { type = "object", properties = new { } });
