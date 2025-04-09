@@ -34,5 +34,6 @@ async def on_message(message: cl.Message):
             final_response = response
 
     # Update thread in session
-    agent_threads[product_advisor_agent.id] = final_response.thread
-    cl.user_session.set("agent_threads", agent_threads)
+    if final_response is not None:
+        agent_threads[product_advisor_agent.id] = final_response.thread
+        cl.user_session.set("agent_threads", agent_threads)
