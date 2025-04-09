@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -316,7 +317,12 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         }));
 
         // Assert
-        Assert.Equal("NewValue", result.ToString());
+        var chatResponse = Assert.IsType<ChatResponse>(result.GetValue<ChatResponse>());
+        Assert.NotNull(chatResponse);
+
+        var lastFunctionResult = GetLastFunctionResultFromChatResponse(chatResponse);
+        Assert.NotNull(lastFunctionResult);
+        Assert.Equal("NewValue", lastFunctionResult.ToString());
     }
 
     [Fact]
@@ -727,6 +733,18 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
     }
 
     #region private
+
+    private static object? GetLastFunctionResultFromChatResponse(ChatResponse chatResponse)
+    {
+        Assert.NotEmpty(chatResponse.Messages);
+        var chatMessage = chatResponse.Messages[^1];
+
+        Assert.NotEmpty(chatMessage.Contents);
+        Assert.Contains(chatMessage.Contents, c => c is Microsoft.Extensions.AI.FunctionResultContent);
+
+        var resultContent = (Microsoft.Extensions.AI.FunctionResultContent)chatMessage.Contents.Last(c => c is Microsoft.Extensions.AI.FunctionResultContent);
+        return resultContent.Result;
+    }
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
     private static List<HttpResponseMessage> GetFunctionCallingResponses()
