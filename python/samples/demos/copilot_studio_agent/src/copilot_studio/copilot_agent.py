@@ -256,5 +256,3 @@ class CopilotAgent(Agent):
             await thread.create()
 
         return CopilotStudioAgentChannel(thread=thread)
-
-
