@@ -128,7 +128,7 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
     internal static QueryDefinition BuildSearchQuery<TRecord>(
         VectorStoreRecordModel model,
         string whereClause, Dictionary<string, object?> filterParameters,
-        FilterOptions<TRecord> filterOptions,
+        GetFilteredRecordOptions<TRecord> filterOptions,
         int top)
     {
         var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
@@ -153,11 +153,11 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         builder.AppendLine($"FROM {tableVariableName}");
         builder.Append("WHERE ").AppendLine(whereClause);
 
-        if (filterOptions.Sort.Values.Count > 0)
+        if (filterOptions.OrderBy.Values.Count > 0)
         {
             builder.Append("ORDER BY ");
 
-            foreach (var sortInfo in filterOptions.Sort.Values)
+            foreach (var sortInfo in filterOptions.OrderBy.Values)
             {
                 builder.AppendFormat("{0}.{1} {2},", tableVariableName,
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,

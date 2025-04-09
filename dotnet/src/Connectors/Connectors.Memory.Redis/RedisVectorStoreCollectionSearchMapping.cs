@@ -71,28 +71,23 @@ internal static class RedisVectorStoreCollectionSearchMapping
         return query;
     }
 
-    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options, VectorStoreRecordModel model)
+    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, VectorStoreRecordModel model)
     {
         var translatedFilter = new RedisFilterTranslator().Translate(filter, model);
         Query query = new Query(translatedFilter)
             .Limit(options.Skip, top)
             .Dialect(2);
 
-        var sortInfo = options.Sort.Values.Count switch
+        var sortInfo = options.OrderBy.Values.Count switch
         {
             0 => null,
-            1 => options.Sort.Values[0],
+            1 => options.OrderBy.Values[0],
             _ => throw new NotSupportedException("Redis does not support ordering by more than one property.")
         };
 
         if (sortInfo is not null)
         {
-            string storageName = model.GetDataOrKeyProperty(sortInfo.PropertySelector) switch
-            {
-                VectorStoreRecordKeyPropertyModel => throw new NotSupportedException("Key property can't be used for sorting, as Id is not part of the schema."),
-                VectorStoreRecordPropertyModel property => property.StorageName,
-            };
-
+            string storageName = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
             query = query.SetSortBy(field: storageName, ascending: sortInfo.Ascending);
         }
 

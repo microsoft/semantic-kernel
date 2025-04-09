@@ -142,5 +142,5 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// <returns>The records matching given predicate.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
-    IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 }

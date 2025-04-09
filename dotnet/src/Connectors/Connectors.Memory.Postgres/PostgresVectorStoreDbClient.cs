@@ -206,7 +206,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     }
 
     public async IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, VectorStoreRecordModel model,
-        Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 

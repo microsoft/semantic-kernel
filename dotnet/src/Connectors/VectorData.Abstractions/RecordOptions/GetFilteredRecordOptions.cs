@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Defines options for filter search.
 /// </summary>
 /// <typeparam name="TRecord">Type of the record.</typeparam>
-public sealed class FilterOptions<TRecord>
+public sealed class GetFilteredRecordOptions<TRecord>
 {
     private int _skip = 0;
 
@@ -38,7 +38,7 @@ public sealed class FilterOptions<TRecord>
     /// <value>
     /// If not provided, the order of returned results is non-deterministic.
     /// </value>
-    public SortDefinition Sort { get; } = new();
+    public OrderByDefinition OrderBy { get; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether to include vectors in the retrieval result.
@@ -49,7 +49,7 @@ public sealed class FilterOptions<TRecord>
     /// A builder for sorting.
     /// </summary>
     // This type does not derive any collection in order to avoid Intellisense suggesting LINQ methods.
-    public sealed class SortDefinition
+    public sealed class OrderByDefinition
     {
         private readonly List<SortInfo> _values = new();
 
@@ -62,7 +62,7 @@ public sealed class FilterOptions<TRecord>
         /// <summary>
         /// Creates an ascending sort.
         /// </summary>
-        public SortDefinition Ascending(Expression<Func<TRecord, object?>> propertySelector)
+        public OrderByDefinition Ascending(Expression<Func<TRecord, object?>> propertySelector)
         {
             if (propertySelector is null)
             {
@@ -76,7 +76,7 @@ public sealed class FilterOptions<TRecord>
         /// <summary>
         /// Creates a descending sort.
         /// </summary>
-        public SortDefinition Descending(Expression<Func<TRecord, object?>> propertySelector)
+        public OrderByDefinition Descending(Expression<Func<TRecord, object?>> propertySelector)
         {
             if (propertySelector is null)
             {

@@ -352,7 +352,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -378,7 +378,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TRecord> :
             }
         }
 
-        foreach (var pair in options.Sort.Values)
+        foreach (var pair in options.OrderBy.Values)
         {
             VectorStoreRecordPropertyModel property = this._model.GetDataOrKeyProperty(pair.PropertySelector);
             string name = property.StorageName;

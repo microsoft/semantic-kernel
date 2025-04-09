@@ -326,7 +326,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilterOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -337,16 +337,16 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             .AsQueryable()
             .Where(filter);
 
-        if (options.Sort.Values.Count > 0)
+        if (options.OrderBy.Values.Count > 0)
         {
-            var first = options.Sort.Values[0];
+            var first = options.OrderBy.Values[0];
             var sorted = first.Ascending
                     ? records.OrderBy(first.PropertySelector)
                     : records.OrderByDescending(first.PropertySelector);
 
-            for (int i = 1; i < options.Sort.Values.Count; i++)
+            for (int i = 1; i < options.OrderBy.Values.Count; i++)
             {
-                var next = options.Sort.Values[i];
+                var next = options.OrderBy.Values[i];
                 sorted = next.Ascending
                     ? sorted.ThenBy(next.PropertySelector)
                     : sorted.ThenByDescending(next.PropertySelector);

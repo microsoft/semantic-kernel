@@ -21,9 +21,9 @@ public class CosmosNoSQLBasicQueryTests(CosmosNoSQLBasicQueryTests.Fixture fixtu
 
     protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<string, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
     {
-        FilterOptions<FilterRecord> options = new();
+        GetFilteredRecordOptions<FilterRecord> options = new();
 
-        options.Sort.Ascending(r => r.Int2);
+        options.OrderBy.Ascending(r => r.Int2);
 
         return await collection.GetAsync(filter, top, options).ToListAsync();
     }

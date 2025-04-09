@@ -378,7 +378,7 @@ internal static class SqlServerCommandBuilder
     internal static SqlCommand SelectWhere<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        FilterOptions<TRecord> options,
+        GetFilteredRecordOptions<TRecord> options,
         SqlConnection connection, string? schema, string tableName,
         VectorStoreRecordModel model)
     {
@@ -406,11 +406,11 @@ internal static class SqlServerCommandBuilder
             sb.AppendLine();
         }
 
-        if (options.Sort.Values.Count > 0)
+        if (options.OrderBy.Values.Count > 0)
         {
             sb.Append("ORDER BY ");
 
-            foreach (var sortInfo in options.Sort.Values)
+            foreach (var sortInfo in options.OrderBy.Values)
             {
                 sb.AppendFormat("[{0}] {1},",
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
@@ -426,7 +426,7 @@ internal static class SqlServerCommandBuilder
             sb.AppendLine("ORDER BY (SELECT 1)");
         }
 
-        // Negative Skip and Top values are rejected by the FilterOptions property setters.
+        // Negative Skip and Top values are rejected by the GetFilteredRecordOptions property setters.
         // 0 is a legal value for OFFSET.
         sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
 

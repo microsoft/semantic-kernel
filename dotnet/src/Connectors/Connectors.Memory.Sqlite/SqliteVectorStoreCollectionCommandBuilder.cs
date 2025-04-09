@@ -190,7 +190,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         VectorStoreRecordModel model,
         SqliteConnection connection,
         int top,
-        FilterOptions<TRecord> options,
+        GetFilteredRecordOptions<TRecord> options,
         string table,
         IReadOnlyList<VectorStoreRecordPropertyModel> properties,
         string whereFilter,
@@ -214,11 +214,11 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendFormat("FROM {0}", table).AppendLine();
         builder.AppendFormat("WHERE {0}", whereClause).AppendLine();
 
-        if (options.Sort.Values.Count > 0)
+        if (options.OrderBy.Values.Count > 0)
         {
             builder.Append("ORDER BY ");
 
-            foreach (var sortInfo in options.Sort.Values)
+            foreach (var sortInfo in options.OrderBy.Values)
             {
                 builder.AppendFormat("[{0}] {1},",
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,

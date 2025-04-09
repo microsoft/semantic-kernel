@@ -75,7 +75,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     public static string BuildQuery<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        FilterOptions<TRecord> queryOptions,
+        GetFilteredRecordOptions<TRecord> queryOptions,
         string collectionName,
         VectorStoreRecordModel model)
     {
@@ -83,7 +83,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
             $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
             string.Empty;
 
-        var sortPaths = string.Join(",", queryOptions.Sort.Values.Select(sortInfo =>
+        var sortPaths = string.Join(",", queryOptions.OrderBy.Values.Select(sortInfo =>
         {
             string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 

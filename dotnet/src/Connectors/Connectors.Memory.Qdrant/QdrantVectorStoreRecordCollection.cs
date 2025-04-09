@@ -513,7 +513,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
 
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilterOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -525,10 +525,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
         // Specify whether to include vectors in the search results.
         WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
 
-        var sortInfo = options.Sort.Values.Count switch
+        var sortInfo = options.OrderBy.Values.Count switch
         {
             0 => null,
-            1 => options.Sort.Values[0],
+            1 => options.OrderBy.Values[0],
             _ => throw new NotSupportedException("Qdrant does not support ordering by more than one property.")
         };
 

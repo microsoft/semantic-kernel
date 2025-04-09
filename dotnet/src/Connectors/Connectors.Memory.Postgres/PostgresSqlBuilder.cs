@@ -363,7 +363,7 @@ FROM ({commandText}) AS subquery
 
     internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
         string schema, string tableName, VectorStoreRecordModel model,
-        Expression<Func<TRecord, bool>> filter, int top, FilterOptions<TRecord> options)
+        Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options)
     {
         StringBuilder query = new(200);
         query.Append("SELECT ");
@@ -382,11 +382,11 @@ FROM ({commandText}) AS subquery
         translator.Translate(appendWhere: true);
         query.AppendLine();
 
-        if (options.Sort.Values.Count > 0)
+        if (options.OrderBy.Values.Count > 0)
         {
             query.Append("ORDER BY ");
 
-            foreach (var sortInfo in options.Sort.Values)
+            foreach (var sortInfo in options.OrderBy.Values)
             {
                 query.AppendFormat("\"{0}\" {1},",
                     model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
