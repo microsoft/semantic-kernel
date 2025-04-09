@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 class DirectLineClient:
     """
-    Manages DirectLine API interactions.
-    Uses the bot secret directly for authentication rather than managing tokens.
+    Handles Direct Line API interactions for Copilot Studio agents.  
+    Provides methods for authentication, starting conversations, posting activities, and polling responses, including support for watermark-based activity retrieval.
     """
 
     def __init__(

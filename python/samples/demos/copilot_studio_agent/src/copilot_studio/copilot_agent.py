@@ -25,14 +25,14 @@ from copilot_studio.copilot_agent_thread import CopilotAgentThread
 from copilot_studio.copilot_message_content import CopilotMessageContent
 from copilot_studio.directline_client import DirectLineClient
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class CopilotAgent(Agent):
     """
-    An Agent subclass that connects to a DirectLine Bot from Microsoft Bot Framework.
-    Instead of directly supplying a secret and conversation ID, the agent queries a token_endpoint
-    to retrieve the token and then starts a conversation.
+    An agent that facilitates communication with a Microsoft Copilot Studio bot via the Direct Line API.  
+    It serializes user inputs into Direct Line payloads, handles asynchronous response polling, and transforms bot activities into structured message content.  
+    Conversation state such as conversation ID and watermark is externally managed by CopilotAgentThread.
     """    
     directline_client: DirectLineClient | None = None
 

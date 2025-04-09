@@ -16,7 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 class CopilotAgentThread(AgentThread):
-    """Copilot Agent Thread class."""
+    """
+    Thread implementation for Copilot Studio conversations via DirectLine API.
+    Manages conversation IDs and watermarks for tracking conversation state.
+    """
 
     def __init__(
         self,

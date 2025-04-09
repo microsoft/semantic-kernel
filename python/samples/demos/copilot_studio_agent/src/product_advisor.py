@@ -8,6 +8,10 @@ from copilot_studio.directline_client import DirectLineClient
 load_dotenv(override=True)
 
 class ProductAdvisor(CopilotAgent):
+    """
+    Template for instantiating Copilot Studio agents with agent-specific secrets from environment variables.  
+    Initializes a DirectLine client configured for each agent instance.
+    """
 
     def __init__(self):
         directline_endpoint = os.getenv("DIRECTLINE_ENDPOINT")
