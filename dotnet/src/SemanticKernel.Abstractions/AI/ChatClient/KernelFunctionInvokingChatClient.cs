@@ -657,7 +657,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             AIFunction = function,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
-            FunctionCount = callContents.Count
+            FunctionCount = callContents.Count,
         };
 
         object? result;

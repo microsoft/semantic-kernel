@@ -17,6 +17,7 @@ internal static class ChatOptionsExtensions
     internal const string KernelKey = "AutoInvokingKernel";
     internal const string IsStreamingKey = "AutoInvokingIsStreaming";
     internal const string ChatMessageContentKey = "AutoInvokingChatCompletionContent";
+    internal const string PromptExecutionSettingsKey = "AutoInvokingPromptExecutionSettings";
 
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>
     internal static PromptExecutionSettings? ToPromptExecutionSettings(this ChatOptions? options)

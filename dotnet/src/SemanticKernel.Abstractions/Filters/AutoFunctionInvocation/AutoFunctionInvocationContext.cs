@@ -34,6 +34,9 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
         Verify.NotNull(chatMessageContent);
 
+        options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
+        this.ExecutionSettings = executionSettings;
+
         options.AdditionalProperties.TryGetValue<bool?>(ChatOptionsExtensions.IsStreamingKey, out var isStreaming);
         Verify.NotNull(isStreaming);
         this.IsStreaming = isStreaming.Value;
@@ -137,7 +140,15 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// The execution settings associated with the operation.
     /// </summary>
     [Experimental("SKEXP0001")]
-    public PromptExecutionSettings? ExecutionSettings { get; init; }
+    public PromptExecutionSettings? ExecutionSettings
+    {
+        get => this.Options?.AdditionalProperties?[ChatOptionsExtensions.PromptExecutionSettingsKey] as PromptExecutionSettings;
+        init
+        {
+            this.Options.AdditionalProperties ??= [];
+            this.Options.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = value;
+        }
+    }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.

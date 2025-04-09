@@ -67,7 +67,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         // Act
         var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
 
         // Assert
@@ -145,7 +145,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
@@ -350,7 +350,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         var chatCompletion = new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessage("System message");
@@ -391,7 +391,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         var chatCompletion = new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
 
         var chatHistory = new ChatHistory();
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         await foreach (var item in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
@@ -437,7 +437,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         // Act
         var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
 
         // Assert
@@ -469,9 +469,9 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        await kernel.InvokePromptAsync("Test prompt", new(new PromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
 
         // Assert
@@ -501,7 +501,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
@@ -542,7 +542,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         // Act
         var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
 
         // Assert
@@ -586,7 +586,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var executionSettings = new OpenAIPromptExecutionSettings { ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions };
+        var executionSettings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         List<StreamingKernelContent> streamingContent = [];
 
@@ -683,9 +683,9 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
             return Task.CompletedTask;
         });
 
-        var expectedExecutionSettings = new OpenAIPromptExecutionSettings
+        var expectedExecutionSettings = new PromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Act
@@ -712,9 +712,9 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
             return Task.CompletedTask;
         });
 
-        var expectedExecutionSettings = new OpenAIPromptExecutionSettings
+        var expectedExecutionSettings = new PromptExecutionSettings
         {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
 
         // Act

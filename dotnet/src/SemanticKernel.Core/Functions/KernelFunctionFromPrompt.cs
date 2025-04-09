@@ -286,7 +286,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         else if (result.AIService is IChatClient chatClient)
         {
-            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings.ToChatOptions(kernel), cancellationToken);
+            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
         }
         else
         {
