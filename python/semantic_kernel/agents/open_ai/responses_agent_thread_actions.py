@@ -459,7 +459,6 @@ class ResponsesAgentThreadActions:
                 msg = function_result_messages[0]
                 if output_messages is not None:
                     output_messages.append(msg)
-                yield msg  # Always yield the first message if eligible
 
             if any(result.terminate for result in results if result is not None):
                 break  # Only break if any result has terminate=True

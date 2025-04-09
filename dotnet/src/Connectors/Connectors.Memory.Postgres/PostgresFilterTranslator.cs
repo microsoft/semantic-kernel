@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -14,8 +15,8 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
     internal PostgresFilterTranslator(
         VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
-        int startParamIndex)
-        : base(model, lambdaExpression, sql: null)
+        int startParamIndex,
+        StringBuilder? sql = null) : base(model, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
     }

@@ -66,11 +66,19 @@ public sealed class SqlServerVectorStore : IVectorStore
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._options.Schema);
 
-        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(
+            connection,
+            command,
             static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
-            cancellationToken, "ListCollection").ConfigureAwait(false);
+            operationName: "ListCollectionNames",
+            vectorStoreName: this._metadata.VectorStoreName,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        while (await ExceptionWrapper.WrapReadAsync(reader, cancellationToken, "ListCollection").ConfigureAwait(false))
+        while (await ExceptionWrapper.WrapReadAsync(
+            reader,
+            operationName: "ListCollectionNames",
+            vectorStoreName: this._metadata.VectorStoreName,
+            cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             yield return reader.GetString(reader.GetOrdinal("table_name"));
         }

@@ -48,7 +48,7 @@ jobs:
         run: uv run --frozen pytest --junitxml=pytest.xml ./tests/unit
       - name: Surface failing tests
         if: ${{ !matrix.experimental }}
-        uses: pmeier/pytest-results-action@main
+        uses: pmeier/pytest-results-action@v0.7.1
         with:
           path: python/pytest.xml
           summary: true

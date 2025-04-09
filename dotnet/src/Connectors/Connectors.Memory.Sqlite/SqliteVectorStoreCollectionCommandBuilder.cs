@@ -8,6 +8,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -184,6 +186,57 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
+    internal static DbCommand BuildSelectWhereCommand<TRecord>(
+        VectorStoreRecordModel model,
+        SqliteConnection connection,
+        int top,
+        GetFilteredRecordOptions<TRecord> options,
+        string table,
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
+        string whereFilter,
+        Dictionary<string, object> whereParameters)
+    {
+        StringBuilder builder = new(200);
+
+        var (command, whereClause) = GetCommandWithWhereClause(connection, Array.Empty<SqliteWhereCondition>(), whereFilter, whereParameters);
+
+        builder.Append("SELECT ");
+        foreach (var property in properties)
+        {
+            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            {
+                builder.AppendFormat("\"{0}\",", property.StorageName);
+            }
+        }
+        builder.Length--; // Remove the trailing comma
+        builder.AppendLine();
+
+        builder.AppendFormat("FROM {0}", table).AppendLine();
+        builder.AppendFormat("WHERE {0}", whereClause).AppendLine();
+
+        if (options.OrderBy.Values.Count > 0)
+        {
+            builder.Append("ORDER BY ");
+
+            foreach (var sortInfo in options.OrderBy.Values)
+            {
+                builder.AppendFormat("[{0}] {1},",
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
+            }
+
+            builder.Length--; // remove the last comma
+            builder.AppendLine();
+        }
+
+        builder.AppendFormat("LIMIT {0}", top).AppendLine();
+        builder.AppendFormat("OFFSET {0}", options.Skip).AppendLine();
+
+        command.CommandText = builder.ToString();
+
+        return command;
+    }
+
     public static DbCommand BuildDeleteCommand(
         SqliteConnection connection,
         string tableName,
@@ -242,7 +295,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     private static (DbCommand Command, string WhereClause) GetCommandWithWhereClause(
         SqliteConnection connection,
-        List<SqliteWhereCondition> conditions,
+        IReadOnlyList<SqliteWhereCondition> conditions,
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null)
     {

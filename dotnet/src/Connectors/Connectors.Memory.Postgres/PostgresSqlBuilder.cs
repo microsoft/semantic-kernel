@@ -16,10 +16,10 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Provides methods to build SQL commands for managing vector store collections in PostgreSQL.
 /// </summary>
-internal class PostgresVectorStoreCollectionSqlBuilder : IPostgresVectorStoreCollectionSqlBuilder
+internal static class PostgresSqlBuilder
 {
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
+    internal static PostgresSqlCommandInfo BuildDoesTableExistCommand(string schema, string tableName)
     {
         return new PostgresSqlCommandInfo(
             commandText: """
@@ -37,7 +37,7 @@ WHERE table_schema = $1
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetTablesCommand(string schema)
+    internal static PostgresSqlCommandInfo BuildGetTablesCommand(string schema)
     {
         return new PostgresSqlCommandInfo(
             commandText: """
@@ -50,7 +50,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreRecordModel model, bool ifNotExists = true)
+    internal static PostgresSqlCommandInfo BuildCreateTableCommand(string schema, string tableName, VectorStoreRecordModel model, bool ifNotExists = true)
     {
         if (string.IsNullOrWhiteSpace(tableName))
         {
@@ -90,7 +90,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildCreateIndexCommand(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
+    internal static PostgresSqlCommandInfo BuildCreateIndexCommand(string schema, string tableName, string columnName, string indexKind, string distanceFunction, bool isVector, bool ifNotExists)
     {
         var indexName = $"{tableName}_{columnName}_index";
 
@@ -127,7 +127,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildDropTableCommand(string schema, string tableName)
+    internal static PostgresSqlCommandInfo BuildDropTableCommand(string schema, string tableName)
     {
         return new PostgresSqlCommandInfo(
             commandText: $@"DROP TABLE IF EXISTS {schema}.""{tableName}"""
@@ -135,7 +135,7 @@ WHERE table_schema = $1 AND table_type = 'BASE TABLE'
     }
 
     /// <inheritdoc/>
-    public PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, string keyColumn, Dictionary<string, object?> row)
+    internal static PostgresSqlCommandInfo BuildUpsertCommand(string schema, string tableName, string keyColumn, Dictionary<string, object?> row)
     {
         var columns = row.Keys.ToList();
         var columnNames = string.Join(", ", columns.Select(k => $"\"{k}\""));
@@ -158,7 +158,7 @@ DO UPDATE SET {updateColumnsWithParams};
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildUpsertBatchCommand(string schema, string tableName, string keyColumn, List<Dictionary<string, object?>> rows)
+    internal static PostgresSqlCommandInfo BuildUpsertBatchCommand(string schema, string tableName, string keyColumn, List<Dictionary<string, object?>> rows)
     {
         if (rows == null || rows.Count == 0)
         {
@@ -205,7 +205,7 @@ DO UPDATE SET {updateSetClause};
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, TKey key, bool includeVectors = false)
+    internal static PostgresSqlCommandInfo BuildGetCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, TKey key, bool includeVectors = false)
         where TKey : notnull
     {
         List<string> queryColumns = new();
@@ -228,7 +228,7 @@ WHERE "{model.KeyProperty.StorageName}" = ${1};
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, List<TKey> keys, bool includeVectors = false)
+    internal static PostgresSqlCommandInfo BuildGetBatchCommand<TKey>(string schema, string tableName, VectorStoreRecordModel model, List<TKey> keys, bool includeVectors = false)
         where TKey : notnull
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
@@ -256,7 +256,7 @@ WHERE "{model.KeyProperty.StorageName}" = ANY($1);
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildDeleteCommand<TKey>(string schema, string tableName, string keyColumn, TKey key)
+    internal static PostgresSqlCommandInfo BuildDeleteCommand<TKey>(string schema, string tableName, string keyColumn, TKey key)
     {
         return new PostgresSqlCommandInfo(
             commandText: $"""
@@ -268,7 +268,7 @@ WHERE "{keyColumn}" = ${1};
     }
 
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
+    internal static PostgresSqlCommandInfo BuildDeleteBatchCommand<TKey>(string schema, string tableName, string keyColumn, List<TKey> keys)
     {
         NpgsqlDbType? keyType = PostgresVectorStoreRecordPropertyMapping.GetNpgsqlDbType(typeof(TKey)) ?? throw new ArgumentException($"Unsupported key type {typeof(TKey).Name}");
 
@@ -293,7 +293,7 @@ WHERE "{keyColumn}" = ANY($1);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <inheritdoc />
-    public PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(
+    internal static PostgresSqlCommandInfo BuildGetNearestMatchCommand<TRecord>(
         string schema, string tableName, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, Vector vectorValue,
         VectorSearchFilter? legacyFilter, Expression<Func<TRecord, bool>>? newFilter, int? skip, bool includeVectors, int limit)
     {
@@ -319,7 +319,7 @@ WHERE "{keyColumn}" = ANY($1);
         {
             (not null, not null) => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             (not null, null) => GenerateLegacyFilterWhereClause(schema, tableName, model, legacyFilter, startParamIndex: 2),
-            (null, not null) => GenerateNewFilterWhereClause(model, newFilter),
+            (null, not null) => GenerateNewFilterWhereClause(model, newFilter, startParamIndex: 2),
             _ => (Clause: string.Empty, Parameters: [])
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
@@ -361,9 +361,54 @@ FROM ({commandText}) AS subquery
         };
     }
 
-    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordModel model, LambdaExpression newFilter)
+    internal static PostgresSqlCommandInfo BuildSelectWhereCommand<TRecord>(
+        string schema, string tableName, VectorStoreRecordModel model,
+        Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options)
     {
-        PostgresFilterTranslator translator = new(model, newFilter, startParamIndex: 2);
+        StringBuilder query = new(200);
+        query.Append("SELECT ");
+        foreach (var property in model.Properties)
+        {
+            if (options.IncludeVectors || property is not VectorStoreRecordVectorPropertyModel)
+            {
+                query.AppendFormat("\"{0}\",", property.StorageName);
+            }
+        }
+        query.Length--;  // Remove trailing comma
+        query.AppendLine();
+        query.AppendFormat("FROM {0}.\"{1}\"", schema, tableName).AppendLine();
+
+        PostgresFilterTranslator translator = new(model, filter, startParamIndex: 1, query);
+        translator.Translate(appendWhere: true);
+        query.AppendLine();
+
+        if (options.OrderBy.Values.Count > 0)
+        {
+            query.Append("ORDER BY ");
+
+            foreach (var sortInfo in options.OrderBy.Values)
+            {
+                query.AppendFormat("\"{0}\" {1},",
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
+            }
+
+            query.Length--; // remove the last comma
+            query.AppendLine();
+        }
+
+        query.AppendFormat("OFFSET {0}", options.Skip).AppendLine();
+        query.AppendFormat("LIMIT {0}", top).AppendLine();
+
+        return new PostgresSqlCommandInfo(query.ToString())
+        {
+            Parameters = translator.ParameterValues.Select(p => new NpgsqlParameter { Value = p }).ToList()
+        };
+    }
+
+    internal static (string Clause, List<object> Parameters) GenerateNewFilterWhereClause(VectorStoreRecordModel model, LambdaExpression newFilter, int startParamIndex)
+    {
+        PostgresFilterTranslator translator = new(model, newFilter, startParamIndex);
         translator.Translate(appendWhere: true);
         return (translator.Clause.ToString(), translator.ParameterValues);
     }

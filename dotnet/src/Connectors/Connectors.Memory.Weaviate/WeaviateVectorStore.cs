@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class WeaviateVectorStore : IVectorStore
+public sealed class WeaviateVectorStore : IVectorStore
 {
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
@@ -51,7 +51,7 @@ public class WeaviateVectorStore : IVectorStore
 
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
 #pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
@@ -83,7 +83,7 @@ public class WeaviateVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var request = new WeaviateGetCollectionsRequest().Build();
         WeaviateGetCollectionsResponse collectionsResponse;
@@ -99,7 +99,8 @@ public class WeaviateVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", e)
             {
-                VectorStoreType = WeaviateConstants.VectorStoreSystemName,
+                VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = "ListCollectionNames"
             };
         }

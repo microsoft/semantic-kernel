@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// <summary>
 /// Represents a vector store implementation using PostgreSQL.
 /// </summary>
-public class PostgresVectorStore : IVectorStore
+public sealed class PostgresVectorStore : IVectorStore
 {
     private readonly IPostgresVectorStoreDbClient _postgresClient;
     private readonly NpgsqlDataSource? _dataSource;
@@ -56,16 +56,17 @@ public class PostgresVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return PostgresVectorStoreUtils.WrapAsyncEnumerableAsync(
             this._postgresClient.GetTablesAsync(cancellationToken),
-            "ListCollectionNames"
+            "ListCollectionNames",
+            this._metadata.VectorStoreName
         );
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
     {
 #pragma warning disable CS0618 // IPostgresVectorStoreRecordCollectionFactory is obsolete

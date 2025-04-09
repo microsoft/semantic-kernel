@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,9 +27,15 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
     public AzureCosmosDBNoSQLVectorStoreRecordCollectionTests()
     {
+        this._mockDatabase.Setup(l => l.GetContainer(It.IsAny<string>())).Returns(this._mockContainer.Object);
+
+        var mockClient = new Mock<CosmosClient>();
+
+        mockClient.Setup(l => l.ClientOptions).Returns(new CosmosClientOptions() { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default });
+
         this._mockDatabase
-            .Setup(l => l.GetContainer(It.IsAny<string>()))
-            .Returns(this._mockContainer.Object);
+            .Setup(l => l.Client)
+            .Returns(mockClient.Object);
     }
 
     [Fact]
@@ -37,6 +44,20 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Act & Assert
         var exception = Assert.Throws<NotSupportedException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
+    }
+
+    [Fact]
+    public void ConstructorWithoutSystemTextJsonSerializerOptionsThrowsArgumentException()
+    {
+        // Arrange
+        var mockDatabase = new Mock<Database>();
+        var mockClient = new Mock<CosmosClient>();
+
+        mockDatabase.Setup(l => l.Client).Returns(mockClient.Object);
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(mockDatabase.Object, "collection"));
+        Assert.Contains(nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions), exception.Message);
     }
 
     [Fact]
