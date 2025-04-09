@@ -18,9 +18,6 @@ Kernel kernel = CreateKernel();
 kernel.Plugins.AddFromType<DateTimeUtils>();
 kernel.Plugins.AddFromType<WeatherUtils>();
 
-// Register prompts
-PromptRegistry.RegisterPrompt(PromptDefinition.Create(EmbeddedResource.ReadAsString("Prompts.getCurrentWeatherForCity.json"), kernel));
-
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 builder.Services
     .AddMcpServer()
@@ -28,6 +25,9 @@ builder.Services
 
     // Add all functions from the kernel plugins to the MCP server as tools
     .WithTools(kernel.Plugins)
+
+    // Register the `getCurrentWeatherForCity` prompt
+    .WithPrompt(PromptDefinition.Create(EmbeddedResource.ReadAsString("Prompts.getCurrentWeatherForCity.json"), kernel))
 
     // Register vector search as MCP resource template
     .WithResourceTemplate(CreateVectorStoreSearchResourceTemplate(kernel))
@@ -38,11 +38,7 @@ builder.Services
         uri: "image://cat.jpg",
         name: "cat-image",
         content: EmbeddedResource.ReadAsBytes("Resources.cat.jpg"),
-        mimeType: "image/jpeg"))
-
-    // Register prompt handlers
-    .WithListPromptsHandler(PromptRegistry.HandlerListPromptRequestsAsync)
-    .WithGetPromptHandler(PromptRegistry.HandlerGetPromptRequestsAsync);
+        mimeType: "image/jpeg"));
 
 await builder.Build().RunAsync();
 

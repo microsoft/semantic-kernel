@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MCPServer.Prompts;
 using MCPServer.Resources;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Protocol.Types;
@@ -27,6 +28,22 @@ public static class McpServerBuilderExtensions
                 builder.Services.AddSingleton(services => McpServerTool.Create(function.AsAIFunction()));
             }
         }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a resource template to the server.
+    /// </summary>
+    /// <param name="builder">The MCP server builder.</param>
+    /// <param name="templateDefinition">The resource template definition.</param>
+    /// <returns>The builder instance.</returns>
+    public static IMcpServerBuilder WithPrompt(this IMcpServerBuilder builder, PromptDefinition templateDefinition)
+    {
+        PromptRegistry.RegisterPrompt(templateDefinition);
+
+        builder.WithListPromptsHandler(PromptRegistry.HandlerListPromptRequestsAsync);
+        builder.WithGetPromptHandler(PromptRegistry.HandlerGetPromptRequestsAsync);
 
         return builder;
     }
