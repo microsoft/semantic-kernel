@@ -6360,7 +6360,7 @@ wheels = [
 
 [[package]]
 name = "weaviate-client"
-version = "4.12.0"
+version = "4.11.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "authlib", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
@@ -6371,9 +6371,9 @@ dependencies = [
     { name = "pydantic", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
     { name = "validators", marker = "sys_platform == 'darwin' or sys_platform == 'linux' or sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f7/bd/4ddc30e1dded6ca78697d000307a7605acc1fb18b4daae379c5516a83646/weaviate_client-4.12.0.tar.gz", hash = "sha256:4bbccecd87a17d612a52394825fea696569def2faf37d1e268b4a23c4f91748a", size = 643803 }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/b4/5b86e73a0431e077d71aca96e135c97686e92740f304b66a40b3726be93d/weaviate_client-4.11.3.tar.gz", hash = "sha256:7ed82b04ae3bf1463d5746076cf1956e392c1a8f64440d705f9e21c5f9bb74fa", size = 613421 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e6/3b/b7b23ddf05c0a4172aa74dff29d03568438d87746fb3acbe6b1e52cf91f0/weaviate_client-4.12.0-py3-none-any.whl", hash = "sha256:72299b18edca40a97d44917ecf1a488949e71a82cab6e19e93d2408bcdcb1eea", size = 366582 },
+    { url = "https://files.pythonhosted.org/packages/70/9e/07e2f6a7a43b230a241a30550bcb583cbeaaf838aed3c4fd5200cfcd7e1c/weaviate_client-4.11.3-py3-none-any.whl", hash = "sha256:ee64f4b55988b7951e4ce5cedb9a26ccfd5641c2a89ff962465b01eee2700b21", size = 353858 },
 ]
 
 [[package]]
