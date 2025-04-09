@@ -13,6 +13,8 @@ from openai.types.responses.response_content_part_added_event import ResponseCon
 from openai.types.responses.response_created_event import ResponseCreatedEvent
 from openai.types.responses.response_error_event import ResponseErrorEvent
 from openai.types.responses.response_function_call_arguments_delta_event import ResponseFunctionCallArgumentsDeltaEvent
+from openai.types.responses.response_input_text import ResponseInputText
+from openai.types.responses.response_item import ResponseItem
 from openai.types.responses.response_output_item import ResponseOutputItem
 from openai.types.responses.response_output_item_added_event import ResponseOutputItemAddedEvent
 from openai.types.responses.response_output_item_done_event import ResponseOutputItemDoneEvent
@@ -534,7 +536,7 @@ class ResponsesAgentThreadActions:
             for response in responses.data:
                 last_id = response.id
 
-                content = cls._create_response_message_content(response)  # type: ignore
+                content = cls._create_response_message_content_for_response_item(response)  # type: ignore
 
                 if len(content.items) > 0:
                     yield content
@@ -707,12 +709,12 @@ class ResponsesAgentThreadActions:
         return function_calls
 
     @classmethod
-    def _get_metadata_from_response(cls: type[_T], response: Response) -> dict[str, Any]:
+    def _get_metadata_from_response(cls: type[_T], response: Response | ResponseItem) -> dict[str, Any]:
         """Get metadata from a chat response."""
         return {
             "id": response.id,
-            "created": response.created_at,
-            "usage": response.usage.model_dump() if response.usage is not None else None,
+            "created": response.created_at if hasattr(response, "created_at") else None,
+            "usage": response.usage.model_dump() if hasattr(response, "usage") and response.usage is not None else None,
         }
 
     @classmethod
@@ -726,6 +728,27 @@ class ResponsesAgentThreadActions:
         metadata = cls._get_metadata_from_response(response)
         items = cls._collect_items_from_output(response.output)
         role_str = response.output[0].role if (response.output and hasattr(response.output[0], "role")) else "assistant"
+        return ChatMessageContent(
+            inner_content=response,
+            ai_model_id=ai_model_id,
+            metadata=metadata,
+            name=name,
+            role=AuthorRole(role_str),
+            items=items,
+            status=Status(response.status),
+        )
+
+    @classmethod
+    def _create_response_message_content_for_response_item(
+        cls: type[_T],
+        response: ResponseItem,
+        ai_model_id: str | None = None,
+        name: str | None = None,
+    ) -> "ChatMessageContent":
+        """Create a chat message content object from a choice."""
+        metadata = cls._get_metadata_from_response(response)
+        items = cls._collect_items_for_response_item(response.content)  # type: ignore
+        role_str = response.role if hasattr(response, "role") else "assistant"
         return ChatMessageContent(
             inner_content=response,
             ai_model_id=ai_model_id,
@@ -795,6 +818,20 @@ class ResponsesAgentThreadActions:
         for msg in filter(lambda output_msg: isinstance(output_msg, (ResponseOutputMessage)), output or []):
             assert isinstance(msg, ResponseOutputMessage)  # nosec
             items.extend(cls._collect_text_and_annotations(msg.content))
+
+        return items
+
+    @classmethod
+    def _collect_items_for_response_item(cls: type[_T], output: list[Any]) -> list[Any]:
+        """Aggregate items from the various output types."""
+        items = []
+        items.extend(cls._get_tool_calls_from_output(output))
+
+        for msg in filter(lambda msg: isinstance(msg, (ResponseInputText, ResponseOutputText)), output or []):
+            if isinstance(msg, ResponseInputText):
+                items.append(TextContent(text=msg.text))  # type: ignore
+            if isinstance(msg, ResponseOutputText):
+                items.extend(cls._collect_text_and_annotations([msg]))
 
         return items
 
