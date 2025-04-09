@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
 
 from agents.copilot_studio.copilot_agent import CopilotAgent
@@ -9,7 +11,6 @@ load_dotenv(override=True)
 
 class TaglineGenerator(CopilotAgent):
     """
-    Tagline generator agent that creates witty, impactful taglines that resonate with modern consumers.
     Provides a single tagline at a time based on product descriptions or feedback.
     Initializes a DirectLine client configured for the agent instance.
     """
@@ -29,6 +30,6 @@ class TaglineGenerator(CopilotAgent):
         super().__init__(
             id="tagline_generator",
             name="tagline_generator",
-            description="Creative copywriter that generates witty, impactful taglines for modern consumers while adapting to brand voice and audience needs.",
+            description="Creative copywriter that generates witty, impactful taglines.",
             directline_client=directline_client,
         )

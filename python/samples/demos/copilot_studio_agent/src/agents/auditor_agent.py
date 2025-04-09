@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import os
 
 from agents.copilot_studio.copilot_agent import CopilotAgent
@@ -29,6 +31,9 @@ class BrandAuditor(CopilotAgent):
         super().__init__(
             id="brand_auditor",
             name="brand_auditor",
-            description="Brand compliance specialist ensuring messaging aligns with a modern wellness company's identity, values, and audience.",
+            description=(
+                "Brand compliance specialist ensuring messaging aligns with a modern wellness "
+                "company's identity, values, and audience."
+            ),
             directline_client=directline_client,
         )

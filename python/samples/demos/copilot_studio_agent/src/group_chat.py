@@ -3,14 +3,14 @@
 import asyncio
 import logging
 import sys
+
+from agents.auditor_agent import BrandAuditor
+from agents.tagline_agent import TaglineGenerator
 from dotenv import load_dotenv
 
 from semantic_kernel.agents import AgentGroupChat
 from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.contents import AuthorRole
-
-from agents.tagline_agent import TaglineGenerator
-from agents.auditor_agent import BrandAuditor
 
 """
 The following sample demonstrates how to create a group chat with Copilot Studio agents
@@ -80,9 +80,11 @@ async def main():
     Sample Output:
     # AuthorRole.USER: Suggest a thrilling tagline for our energy drink that helps users crush the day.
     # AuthorRole.ASSISTANT - tagline_generator: "Fuel Your Fire, Crush the Day!"
-    # AuthorRole.ASSISTANT - brand_auditor: "The tagline does not align with the brand's calm, confident, and sincere voice..."
+    # AuthorRole.ASSISTANT - brand_auditor: "The tagline does not align with the brand's calm, confident,
+    #  and sincere voice..."
     # AuthorRole.ASSISTANT - tagline_generator: "Empower Your Day with Natural Energy."
-    # AuthorRole.ASSISTANT - brand_auditor: "The tagline aligns well with the brand's calm, confident, and sincere voice..."
+    # AuthorRole.ASSISTANT - brand_auditor: "The tagline aligns well with the brand's calm, confident,
+    # and sincere voice..."
     """
 
 

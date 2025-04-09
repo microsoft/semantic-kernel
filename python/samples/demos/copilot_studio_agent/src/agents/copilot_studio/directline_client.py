@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
 from typing import Any
 
@@ -9,7 +11,8 @@ logger = logging.getLogger(__name__)
 class DirectLineClient:
     """
     Handles Direct Line API interactions for Copilot Studio agents.
-    Provides methods for authentication, starting conversations, posting activities, and polling responses, including support for watermark-based activity retrieval.
+    Provides methods for authentication, starting conversations, posting activities,
+    and polling responses, including support for watermark-based activity retrieval.
     """
 
     def __init__(

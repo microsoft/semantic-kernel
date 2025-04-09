@@ -1,5 +1,7 @@
-import sys
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
+import sys
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 

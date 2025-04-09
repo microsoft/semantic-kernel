@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft. All rights reserved.
+
 import logging
 import sys
 from typing import Any
