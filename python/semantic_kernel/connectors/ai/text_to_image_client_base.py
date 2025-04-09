@@ -12,11 +12,20 @@ class TextToImageClientBase(AIServiceClientBase, ABC):
     """Base class for text to image client."""
 
     @abstractmethod
-    async def generate_image(self, prompt: str, settings: PromptExecutionSettings, **kwargs: Any) -> bytes | str:
+    async def generate_image(
+        self,
+        description: str,
+        width: int | None = None,
+        height: int | None = None,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
+    ) -> bytes | str:
         """Generate image from text.
 
         Args:
-            prompt: Description of the image.
+            description: Description of the image.
+            width: Deprecated, use settings instead.
+            height: Deprecated, use settings instead.
             settings: Execution settings for the prompt.
             kwargs: Additional arguments.
 
@@ -25,18 +34,23 @@ class TextToImageClientBase(AIServiceClientBase, ABC):
         """
         raise NotImplementedError
 
-    async def get_image_content(self, prompt: str, settings: PromptExecutionSettings, **kwargs: Any) -> ImageContent:
-        """Get image content.
+    async def get_image_content(
+        self,
+        description: str,
+        settings: PromptExecutionSettings,
+        **kwargs: Any,
+    ) -> ImageContent:
+        """Generate an image from prompt and return an ImageContent.
 
         Args:
-            prompt: Description of the image.
+            description: Description of the image.
             settings: Execution settings for the prompt.
             kwargs: Additional arguments.
 
         Returns:
             ImageContent: Image content.
         """
-        image = await self.generate_image(prompt, settings, **kwargs)
+        image = await self.generate_image(description=description, settings=settings, **kwargs)
         if isinstance(image, str):
             return ImageContent(uri=image)
         return ImageContent(data=image)

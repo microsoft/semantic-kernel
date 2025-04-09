@@ -6,6 +6,7 @@ from warnings import warn
 from openai.types.images_response import ImagesResponse
 
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_text_to_image_execution_settings import (
+    ImageSize,
     OpenAITextToImageExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
@@ -18,28 +19,42 @@ class OpenAITextToImageBase(OpenAIHandler, TextToImageClientBase):
     """OpenAI text to image client."""
 
     async def generate_image(
-        self, prompt: str, settings: PromptExecutionSettings | None = None, **kwargs: Any
+        self,
+        description: str,
+        width: int | None = None,
+        height: int | None = None,
+        settings: PromptExecutionSettings | None = None,
+        **kwargs: Any,
     ) -> bytes | str:
         """Generate image from text.
 
         Args:
-            prompt: Description of the image.
+            description: Description of the image.
+            width: Deprecated, use settings instead.
+            height: Deprecated, use settings instead.
             settings: Execution settings for the prompt.
             kwargs: Additional arguments, check the openai images.generate documentation for the supported arguments.
 
         Returns:
             bytes | str: Image bytes or image URL.
         """
-        if "description" in kwargs and not prompt:
-            warn("The 'description' argument is deprecated. Use 'prompt' instead.", DeprecationWarning)
-            prompt = kwargs.pop("description")
         if not settings:
             settings = OpenAITextToImageExecutionSettings(**kwargs)
         if not isinstance(settings, OpenAITextToImageExecutionSettings):
             settings = OpenAITextToImageExecutionSettings.from_prompt_execution_settings(settings)
+        if width:
+            warn("The 'width' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning)
+            if settings.size and not settings.size.width:
+                settings.size.width = width
+        if height:
+            warn("The 'height' argument is deprecated. Use 'settings.size' instead.", DeprecationWarning)
+            if settings.size and not settings.size.height:
+                settings.size.height = height
+        if not settings.size and width and height:
+            settings.size = ImageSize(width=width, height=height)
 
         if not settings.prompt:
-            settings.prompt = prompt
+            settings.prompt = description
 
         if not settings.prompt:
             raise ServiceInvalidRequestError("Prompt is required.")
