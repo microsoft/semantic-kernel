@@ -55,6 +55,7 @@ public static class PineconeKernelBuilderExtensions
         string collectionName,
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
@@ -77,6 +78,7 @@ public static class PineconeKernelBuilderExtensions
         string apiKey,
         PineconeVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddPineconeVectorStoreRecordCollection<TRecord>(collectionName, apiKey, options, serviceId);
         return builder;

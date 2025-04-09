@@ -42,7 +42,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
     public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException_GenericDataModel()
         => this.CreateCollectionMoreThanOnce<VectorStoreGenericDataModel<TKey>>();
 
-    private async Task<IVectorStoreRecordCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>()
+    private async Task<IVectorStoreRecordCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
     {
         var collectionName = fixture.GetUniqueCollectionName();
         VectorStoreRecordDefinition? definition = null;
@@ -70,14 +70,14 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         return collection;
     }
 
-    private async Task DeleteNonExistingCollection<TRecord>()
+    private async Task DeleteNonExistingCollection<TRecord>() where TRecord : notnull
     {
         var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
         await collection.DeleteCollectionAsync();
     }
 
-    private async Task CreateCollection<TRecord>()
+    private async Task CreateCollection<TRecord>() where TRecord : notnull
     {
         var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
@@ -104,7 +104,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         }
     }
 
-    private async Task CreateCollectionIfNotExistsMoreThanOnce<TRecord>()
+    private async Task CreateCollectionIfNotExistsMoreThanOnce<TRecord>() where TRecord : notnull
     {
         var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
@@ -133,7 +133,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         }
     }
 
-    private async Task CreateCollectionMoreThanOnce<TRecord>()
+    private async Task CreateCollectionMoreThanOnce<TRecord>() where TRecord : notnull
     {
         var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 

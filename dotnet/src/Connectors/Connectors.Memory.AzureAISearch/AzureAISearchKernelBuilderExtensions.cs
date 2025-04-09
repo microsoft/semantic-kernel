@@ -73,6 +73,7 @@ public static class AzureAISearchKernelBuilderExtensions
         string collectionName,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, options, serviceId);
         return builder;
@@ -97,6 +98,7 @@ public static class AzureAISearchKernelBuilderExtensions
         TokenCredential tokenCredential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, tokenCredential, options, serviceId);
         return builder;
@@ -121,6 +123,7 @@ public static class AzureAISearchKernelBuilderExtensions
         AzureKeyCredential credential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddAzureAISearchVectorStoreRecordCollection<TRecord>(collectionName, endpoint, credential, options, serviceId);
         return builder;

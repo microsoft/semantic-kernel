@@ -40,6 +40,7 @@ public static class InMemoryKernelBuilderExtensions
         InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         builder.Services.AddInMemoryVectorStoreRecordCollection<TKey, TRecord>(collectionName, options, serviceId);
         return builder;

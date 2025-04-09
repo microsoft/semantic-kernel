@@ -55,6 +55,7 @@ public static class WeaviateKernelBuilderExtensions
         HttpClient? httpClient = default,
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddWeaviateVectorStoreRecordCollection(collectionName, httpClient, options, serviceId);
         return builder;

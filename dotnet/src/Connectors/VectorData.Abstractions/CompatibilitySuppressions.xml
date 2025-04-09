@@ -484,4 +484,46 @@
     <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetCollection``2(System.String,Microsoft.Extensions.VectorData.VectorStoreRecordDefinition)``1:notnull</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>T:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2``1:notnull</Target>
+    <Left>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net462/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetCollection``2(System.String,Microsoft.Extensions.VectorData.VectorStoreRecordDefinition)``1:notnull</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>T:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2``1:notnull</Target>
+    <Left>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/net8.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>M:Microsoft.Extensions.VectorData.IVectorStore.GetCollection``2(System.String,Microsoft.Extensions.VectorData.VectorStoreRecordDefinition)``1:notnull</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0021</DiagnosticId>
+    <Target>T:Microsoft.Extensions.VectorData.IVectorStoreRecordCollection`2``1:notnull</Target>
+    <Left>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Left>
+    <Right>lib/netstandard2.0/Microsoft.Extensions.VectorData.Abstractions.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
 </Suppressions>

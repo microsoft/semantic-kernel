@@ -25,6 +25,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;

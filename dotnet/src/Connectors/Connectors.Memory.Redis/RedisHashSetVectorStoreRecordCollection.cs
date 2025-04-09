@@ -21,7 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord> where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>

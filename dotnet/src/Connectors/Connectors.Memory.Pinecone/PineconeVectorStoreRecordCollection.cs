@@ -21,6 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    where TRecord : notnull
 {
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 

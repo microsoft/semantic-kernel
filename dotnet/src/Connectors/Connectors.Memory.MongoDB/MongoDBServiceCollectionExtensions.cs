@@ -93,6 +93,7 @@ public static class MongoDBServiceCollectionExtensions
         string collectionName,
         MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -128,6 +129,7 @@ public static class MongoDBServiceCollectionExtensions
         string databaseName,
         MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -155,7 +157,7 @@ public static class MongoDBServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

@@ -22,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
+    where TRecord : notnull
 {
     /// <inheritdoc />
     public string CollectionName { get; }
