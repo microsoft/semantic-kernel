@@ -239,6 +239,7 @@ async def test_agent_thread_actions_invoke_with_requires_action(ai_project_clien
             "semantic_kernel.agents.azure_ai.agent_thread_actions.get_function_call_contents",
             side_effect=mock_get_function_call_contents,
         ),
+        patch.object(AgentThreadActions, "_invoke_function_calls", return_value=[None]),
     ):
         messages = []
         async for is_visible, content in AgentThreadActions.invoke(
