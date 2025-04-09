@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class SqliteVectorStoreRecordCollection<TRecord> :
+public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<ulong, TRecord>,
     IVectorStoreRecordCollection<string, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect
@@ -147,7 +147,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         const string OperationName = "TableCount";
 
@@ -180,7 +180,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -193,7 +193,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string LimitPropertyName = "k";
 
@@ -626,6 +626,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -649,6 +650,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
@@ -779,6 +781,7 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
 
         return VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             operationName,
             () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
@@ -794,7 +797,8 @@ public class SqliteVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = SqliteConstants.VectorStoreSystemName,
+                VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };

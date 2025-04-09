@@ -2,7 +2,7 @@
 name = "semantic-kernel"
 description = "Semantic Kernel Python SDK"
 authors = [{ name = "Microsoft", email = "SK-Support@microsoft.com"}]
-readme = "pip/README.md"
+readme = "README.md"
 # Version read from __version__ field in __init__.py by Flit
 dynamic = ["version"]
 requires-python = ">=3.10"

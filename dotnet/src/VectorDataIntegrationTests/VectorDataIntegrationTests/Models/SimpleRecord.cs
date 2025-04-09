@@ -10,7 +10,7 @@ namespace VectorDataSpecificationTests.Models;
 /// a key, int, string and an embedding.
 /// </summary>
 /// <typeparam name="TKey">TKey is a generic parameter because different connectors support different key types.</typeparam>
-public sealed class SimpleModel<TKey>
+public sealed class SimpleRecord<TKey>
 {
     public const int DimensionCount = 3;
 
@@ -26,7 +26,7 @@ public sealed class SimpleModel<TKey>
     [VectorStoreRecordVector(Dimensions: DimensionCount, StoragePropertyName = "embedding")]
     public ReadOnlyMemory<float> Floats { get; set; }
 
-    public void AssertEqual(SimpleModel<TKey>? other, bool includeVectors)
+    public void AssertEqual(SimpleRecord<TKey>? other, bool includeVectors)
     {
         Assert.NotNull(other);
         Assert.Equal(this.Id, other.Id);

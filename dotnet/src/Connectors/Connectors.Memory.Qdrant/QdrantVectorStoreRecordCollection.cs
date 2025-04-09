@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class QdrantVectorStoreRecordCollection<TRecord> :
+public sealed class QdrantVectorStoreRecordCollection<TRecord> :
     IVectorStoreRecordCollection<ulong, TRecord>,
     IVectorStoreRecordCollection<Guid, TRecord>,
     IKeywordHybridSearch<TRecord>
@@ -108,7 +108,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     public string CollectionName => this._collectionName;
 
     /// <inheritdoc />
-    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "CollectionExists",
@@ -116,7 +116,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         if (!this._options.HasNamedVectors)
         {
@@ -200,7 +200,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -209,7 +209,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("DeleteCollection",
             async () =>
             {
@@ -232,7 +232,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             });
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -241,7 +241,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -250,19 +250,19 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Num = key }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
     {
         return this.GetBatchByPointIdAsync(keys, key => new PointId { Uuid = key.ToString("D") }, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -276,7 +276,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(Guid key, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(Guid key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -290,7 +290,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -304,7 +304,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -318,13 +318,14 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
             QdrantConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -344,6 +345,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         // Create point from record.
         var pointStruct = VectorStoreErrorHandler.RunModelConversion(
             QdrantConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this._collectionName,
             UpsertName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -356,13 +358,14 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<ulong> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ulong> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
             QdrantConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -386,6 +389,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         // Create points from records.
         var pointStructs = VectorStoreErrorHandler.RunModelConversion(
             QdrantConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -444,6 +448,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 
             yield return VectorStoreErrorHandler.RunModelConversion(
                 QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
@@ -451,7 +456,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -499,6 +504,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 this._mapper,
                 internalOptions.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "Query"));
 
@@ -551,6 +557,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 this._mapper,
                 options.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "Scroll"));
 
@@ -639,6 +646,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 this._mapper,
                 internalOptions.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "Query"));
 
@@ -674,7 +682,8 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = QdrantConstants.VectorStoreSystemName,
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -698,7 +707,8 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = QdrantConstants.VectorStoreSystemName,
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

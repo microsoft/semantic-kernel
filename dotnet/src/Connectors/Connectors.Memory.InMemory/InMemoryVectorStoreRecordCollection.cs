@@ -153,7 +153,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.FromException(new VectorStoreOperationException("Collection already exists.")
         {
-            VectorStoreType = InMemoryConstants.VectorStoreSystemName,
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
             CollectionName = this.CollectionName,
             OperationName = "CreateCollection"
         });

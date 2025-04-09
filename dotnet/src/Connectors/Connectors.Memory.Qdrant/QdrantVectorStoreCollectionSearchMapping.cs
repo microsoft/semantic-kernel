@@ -94,12 +94,20 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// <param name="point">The point to map to a <see cref="VectorSearchResult{TRecord}"/>.</param>
     /// <param name="mapper">The mapper to perform the main mapping operation with.</param>
     /// <param name="includeVectors">A value indicating whether to include vectors in the mapped result.</param>
-    /// <param name="databaseSystemName">The name of the database system the operation is being run on.</param>
+    /// <param name="vectorStoreSystemName">The name of the vector store system the operation is being run on.</param>
+    /// <param name="vectorStoreName">The name of the vector store the operation is being run on.</param>
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <returns>The mapped <see cref="VectorSearchResult{TRecord}"/>.</returns>
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    public static VectorSearchResult<TRecord> MapScoredPointToVectorSearchResult<TRecord>(ScoredPoint point, IVectorStoreRecordMapper<TRecord, PointStruct> mapper, bool includeVectors, string databaseSystemName, string collectionName, string operationName)
+    public static VectorSearchResult<TRecord> MapScoredPointToVectorSearchResult<TRecord>(
+        ScoredPoint point,
+        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+        bool includeVectors,
+        string vectorStoreSystemName,
+        string? vectorStoreName,
+        string collectionName,
+        string operationName)
 #pragma warning restore CS0618
     {
         // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
@@ -118,7 +126,8 @@ internal static class QdrantVectorStoreCollectionSearchMapping
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
             VectorStoreErrorHandler.RunModelConversion(
-                databaseSystemName,
+                vectorStoreSystemName,
+                vectorStoreName,
                 collectionName,
                 operationName,
                 () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors })),
@@ -126,7 +135,13 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     }
 
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point, IVectorStoreRecordMapper<TRecord, PointStruct> mapper, bool includeVectors, string databaseSystemName, string collectionName, string operationName)
+    internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point,
+        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+        bool includeVectors,
+        string vectorStoreSystemName,
+        string? vectorStoreName,
+        string collectionName,
+        string operationName)
 #pragma warning restore CS0618
     {
         // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
@@ -144,7 +159,8 @@ internal static class QdrantVectorStoreCollectionSearchMapping
 
         // Do the mapping with error handling.
         return VectorStoreErrorHandler.RunModelConversion(
-                databaseSystemName,
+                vectorStoreSystemName,
+                vectorStoreName,
                 collectionName,
                 operationName,
                 () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
