@@ -14,7 +14,17 @@ This way, you can create any amount of agents in Copilot Studio and interact wit
 
 ## Implementation
 
-The implementation is quite simple, since Copilot Studio can publish agents over DirectLine API, which we can use in Semantic Kernel to define a new subclass of `Agent` named [`DirectLineAgent`](src/direct_line_agent.py).
+The implementation enables seamless integration with Copilot Studio agents via the DirectLine API. Several key components work together to provide this functionality:
+
+- [`DirectLineClient`](src/copilot_studio/directline_client.py): A utility module that handles all Direct Line API operations including authentication, conversation management, posting user activities, and retrieving bot responses using watermark-based polling.
+
+- [`CopilotAgent`](src/copilot_studio/copilot_agent.py): Implements `CopilotAgent`, which orchestrates interactions with a Copilot Studio bot. It serializes user messages, handles asynchronous polling for responses, and converts bot activities into structured message content.
+
+- [`CopilotAgentThread`](src/copilot_studio/copilot_agent_thread.py): Provides a specialized thread implementation for Copilot Studio conversations, managing Direct Line-specific context such as conversation ID and watermark.
+
+- [`CopilotAgentChannel`](src/copilot_studio/copilot_agent_channel.py): Adds `CopilotStudioAgentChannel`, allowing Copilot Studio agents to participate in multi-agent group chats via the channel-based invocation system.
+
+- [`CopilotMessageContent`](src/copilot_studio/copilot_message_content.py): Introduces `CopilotMessageContent`, an extension of `ChatMessageContent` that can represent rich message types from Copilot Studio—including plain text, adaptive cards, and suggested actions.
 
 Additionally, we do enforce [authentication to the DirectLine API](https://learn.microsoft.com/en-us/microsoft-copilot-studio/configure-web-security).
 
