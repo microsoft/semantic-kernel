@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
-internal sealed class FunctionIdBlock : Block, ITextRendering
+internal sealed partial class FunctionIdBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.FunctionId;
 
@@ -36,7 +36,7 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     public override bool IsValid(out string errorMsg)
     {
-        if (!s_validContentRegex.IsMatch(this.Content))
+        if (!ValidContentRegex().IsMatch(this.Content))
         {
             errorMsg = "The function identifier is empty";
             return false;
@@ -60,11 +60,17 @@ internal sealed class FunctionIdBlock : Block, ITextRendering
 
     private static bool HasMoreThanOneDot(string? value)
     {
-        if (value == null || value.Length < 2) { return false; }
+        if (value is null || value.Length < 2) { return false; }
 
         int count = 0;
         return value.Any(t => t == '.' && ++count > 1);
     }
 
+#if NET
+    [GeneratedRegex("^[a-zA-Z0-9_.]*$")]
+    private static partial Regex ValidContentRegex();
+#else
+    private static Regex ValidContentRegex() => s_validContentRegex;
     private static readonly Regex s_validContentRegex = new("^[a-zA-Z0-9_.]*$");
+#endif
 }

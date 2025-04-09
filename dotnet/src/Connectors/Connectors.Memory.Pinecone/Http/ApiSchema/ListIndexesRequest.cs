@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// ListIndexesRequest
 /// See https://docs.pinecone.io/reference/list_indexes
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class ListIndexesRequest
 {
     public static ListIndexesRequest Create()

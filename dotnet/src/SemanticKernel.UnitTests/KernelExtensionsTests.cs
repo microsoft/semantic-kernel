@@ -18,7 +18,7 @@ public class KernelExtensionsTests
         var testFunction = KernelFunctionFactory.CreateFromMethod(() => expectedValue, functionName: "Test");
 
         var kernel = new Kernel();
-        kernel.Plugins.Add(new KernelPlugin("Fake", new[] { testFunction }));
+        kernel.Plugins.AddFromFunctions("Fake", "Fake functions", [testFunction]);
 
         var resultValueInvokeSignature2 = await kernel.InvokeAsync<object>(testFunction);
         var resultValueInvokeSignature3 = await kernel.InvokeAsync<object>("Fake", "Test");
@@ -29,14 +29,14 @@ public class KernelExtensionsTests
 
     public class ComplexObjectTestData : IEnumerable<object[]>
     {
-        private readonly List<object?[]> _data = new()
-        {
-            new object?[] { null },
-            new object?[] { 1 },
-            new object?[] { "Bogus" },
-            new object?[] { DateTime.Now },
-            new object?[] { new { Id = 2, Name = "Object2" } }
-        };
+        private readonly List<object?[]> _data =
+        [
+            [null],
+            [1],
+            ["Bogus"],
+            [DateTime.Now],
+            [new { Id = 2, Name = "Object2" }]
+        ];
 
         public IEnumerator<object[]> GetEnumerator() => this._data.GetEnumerator();
 

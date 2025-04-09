@@ -1,13 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Get information about an index.
 /// See https://docs.pinecone.io/reference/describe_index
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class DescribeIndexRequest
 {
     /// <summary>

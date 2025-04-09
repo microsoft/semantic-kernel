@@ -29,7 +29,7 @@ public class FunctionResultTests
     {
         object resultValue = new();
         CultureInfo culture = new("fr-FR");
-        IDictionary<string, object?> metadata = new Dictionary<string, object?>();
+        var metadata = new Dictionary<string, object?>();
 
         FunctionResult result = new(s_nopFunction, resultValue, culture);
         Assert.Same(resultValue, result.GetValue<object>());
@@ -71,7 +71,7 @@ public class FunctionResultTests
         FunctionResult target = new(s_nopFunction, value, CultureInfo.InvariantCulture);
 
         // Act,Assert
-        Assert.Throws<InvalidCastException>(() => target.GetValue<string>());
+        Assert.Throws<InvalidCastException>(target.GetValue<string>);
     }
 
     [Fact]
@@ -108,5 +108,30 @@ public class FunctionResultTests
 
         // Act and Assert
         Assert.Equal(value, target.ToString());
+    }
+
+    [Fact]
+    public void GetValueWhenValueIsKernelContentGenericStringShouldReturnContentBaseToString()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        FunctionResult target = new(s_nopFunction, new TextContent(expectedValue));
+
+        // Act and Assert
+        Assert.Equal(expectedValue, target.GetValue<string>());
+    }
+
+    [Fact]
+    public void GetValueWhenValueIsKernelContentGenericTypeMatchShouldReturn()
+    {
+        // Arrange
+        string expectedValue = Guid.NewGuid().ToString();
+        var valueType = new TextContent(expectedValue);
+        FunctionResult target = new(s_nopFunction, valueType);
+
+        // Act and Assert
+
+        Assert.Equal(valueType, target.GetValue<TextContent>());
+        Assert.Equal(valueType, target.GetValue<KernelContent>());
     }
 }

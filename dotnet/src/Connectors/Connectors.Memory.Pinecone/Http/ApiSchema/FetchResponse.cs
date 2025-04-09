@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 #pragma warning disable CA1812 // remove class never instantiated (used by System.Text.Json)
 
@@ -12,6 +13,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// FetchResponse
 /// See https://docs.pinecone.io/reference/fetch
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class FetchResponse
 {
     /// <summary>

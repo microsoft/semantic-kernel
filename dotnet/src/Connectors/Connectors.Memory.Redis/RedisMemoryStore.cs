@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -15,7 +16,7 @@ using NRedisStack.Search.Literals.Enums;
 using StackExchange.Redis;
 using static NRedisStack.Search.Schema.VectorField;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
+namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Redis.
@@ -23,6 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Redis;
 /// <remarks>The embedded data is saved to the Redis server database specified in the constructor.
 /// Similarity search capability is provided through the RediSearch module. Use RediSearch's "Index" to implement "Collection".
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class RedisMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
@@ -144,7 +146,7 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
         foreach (var key in keys)
         {
             var result = await this.InternalGetAsync(collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
+            if (result is not null)
             {
                 yield return result;
             }
@@ -156,12 +158,12 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), new[] {
+        await this._database.HashSetAsync(GetRedisKey(collectionName, record.Key), [
             new HashEntry("key", record.Key),
             new HashEntry("metadata", record.GetSerializedMetadata()),
             new HashEntry("embedding", this.ConvertEmbeddingToBytes(record.Embedding)),
             new HashEntry("timestamp", ToTimestampLong(record.Timestamp))
-        }, flags: CommandFlags.None).ConfigureAwait(false);
+        ], flags: CommandFlags.None).ConfigureAwait(false);
 
         return record.Key;
     }
@@ -336,6 +338,8 @@ public class RedisMemoryStore : IMemoryStore, IDisposable
 
     private async Task<MemoryRecord?> InternalGetAsync(string collectionName, string key, bool withEmbedding, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         HashEntry[] hashEntries = await this._database.HashGetAllAsync(GetRedisKey(collectionName, key), flags: CommandFlags.None).ConfigureAwait(false);
 
         if (hashEntries.Length == 0) { return null; }

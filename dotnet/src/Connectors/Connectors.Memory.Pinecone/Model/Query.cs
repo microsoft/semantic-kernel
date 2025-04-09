@@ -2,14 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Query parameters for use in a query request.
 /// </summary>
+[Experimental("SKEXP0020")]
 public sealed class Query
 {
     /// <summary>
@@ -30,7 +31,6 @@ public sealed class Query
     /// <summary>
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Vector { get; set; }
 
     /// <summary>

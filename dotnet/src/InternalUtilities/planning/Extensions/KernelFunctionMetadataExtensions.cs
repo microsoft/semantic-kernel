@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,21 +17,21 @@ internal static class KernelFunctionMetadataExtensions
     /// Creates a <see cref="JsonSchemaFunctionView"/> for a function.
     /// </summary>
     /// <param name="function">The function.</param>
-    /// <param name="jsonSchemaDelegate">A delegate that creates a JSON Schema from a <see cref="Type"/> and a semantic description.</param>
     /// <param name="includeOutputSchema">Indicates if the schema should include information about the output or return type of the function.</param>
+    /// <param name="nameDelimiter">The delimiter to use between the plugin name and the function name.</param>
     /// <returns>An instance of <see cref="JsonSchemaFunctionView"/></returns>
-    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, Func<Type?, string?, KernelJsonSchema?> jsonSchemaDelegate, bool includeOutputSchema = true)
+    public static JsonSchemaFunctionView ToJsonSchemaFunctionView(this KernelFunctionMetadata function, bool includeOutputSchema = true, string nameDelimiter = "-")
     {
         var functionView = new JsonSchemaFunctionView
         {
-            Name = $"{function.PluginName}_{function.Name}",
+            Name = $"{function.PluginName}{nameDelimiter}{function.Name}",
             Description = function.Description,
         };
 
         var requiredProperties = new List<string>();
         foreach (var parameter in function.Parameters)
         {
-            var schema = parameter.Schema ?? jsonSchemaDelegate(parameter.ParameterType, parameter.Description);
+            var schema = parameter.Schema;
             if (schema is not null)
             {
                 functionView.Parameters.Properties.Add(parameter.Name, schema);
@@ -50,8 +49,7 @@ internal static class KernelFunctionMetadataExtensions
                 Description = SuccessfulResponseDescription
             };
 
-            var schema = function.ReturnParameter.Schema ?? jsonSchemaDelegate(function.ReturnParameter.ParameterType, SuccessfulResponseDescription);
-            functionResponse.Content.JsonResponse.Schema = schema;
+            functionResponse.Content.JsonResponse.Schema = function.ReturnParameter.Schema;
 
             functionView.FunctionResponses.Add(SuccessfulResponseCode, functionResponse);
         }
@@ -69,16 +67,14 @@ internal static class KernelFunctionMetadataExtensions
     {
         var inputs = string.Join("\n", function.Parameters.Select(parameter =>
         {
-            var defaultValueString = string.IsNullOrEmpty(parameter.DefaultValue) ? string.Empty : $" (default value: {parameter.DefaultValue})";
+            var defaultValueString = InternalTypeConverter.ConvertToString(parameter.DefaultValue);
+            defaultValueString = string.IsNullOrEmpty(defaultValueString) ? string.Empty : $" (default value: {defaultValueString})";
             return $"    - {parameter.Name}: {parameter.Description}{defaultValueString}";
         }));
 
         // description and inputs are indented by 2 spaces
         // While each parameter in inputs is indented by 4 spaces
-        return $@"{function.ToFullyQualifiedName()}:
-  description: {function.Description}
-  inputs:
-{inputs}";
+        return $"{function.ToFullyQualifiedName()}:  description: {function.Description}  inputs:{inputs}";
     }
 
     /// <summary>

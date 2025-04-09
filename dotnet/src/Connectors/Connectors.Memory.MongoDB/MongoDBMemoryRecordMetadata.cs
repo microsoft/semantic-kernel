@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
 /// A MongoDB record metadata.
 /// </summary>
 #pragma warning disable CA1815 // Override equals and operator equals on value types
+[Experimental("SKEXP0020")]
 public struct MongoDBMemoryRecordMetadata
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 {

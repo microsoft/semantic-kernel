@@ -2,13 +2,12 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Experimental.Orchestration.Flow.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0102</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0101</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

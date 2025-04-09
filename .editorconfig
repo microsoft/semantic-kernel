@@ -136,6 +136,7 @@ dotnet_diagnostic.IDE0005.severity = warning # Remove unnecessary using directiv
 dotnet_diagnostic.IDE0009.severity = warning # Add this or Me qualification
 dotnet_diagnostic.IDE0011.severity = warning # Add braces
 dotnet_diagnostic.IDE0018.severity = warning # Inline variable declaration
+
 dotnet_diagnostic.IDE0032.severity = warning # Use auto-implemented property
 dotnet_diagnostic.IDE0034.severity = warning # Simplify 'default' expression
 dotnet_diagnostic.IDE0035.severity = warning # Remove unreachable code
@@ -158,15 +159,27 @@ dotnet_diagnostic.CA1032.severity = none # We're using RCS1194 which seems to co
 dotnet_diagnostic.CA1034.severity = none # Do not nest type. Alternatively, change its accessibility so that it is not externally visible
 dotnet_diagnostic.CA1062.severity = none # Disable null check, C# already does it for us
 dotnet_diagnostic.CA1303.severity = none # Do not pass literals as localized parameters
-dotnet_diagnostic.CA1510.severity = none
+dotnet_diagnostic.CA1305.severity = none # Operation could vary based on current user's locale settings
+dotnet_diagnostic.CA1307.severity = none # Operation has an overload that takes a StringComparison
+dotnet_diagnostic.CA1508.severity = none # Avoid dead conditional code. Too many false positives.
+dotnet_diagnostic.CA1510.severity = none # ArgumentNullException.Throw
+dotnet_diagnostic.CA1512.severity = none # ArgumentOutOfRangeException.Throw
+dotnet_diagnostic.CA1515.severity = none # Making public types from exes internal
 dotnet_diagnostic.CA1805.severity = none # Member is explicitly initialized to its default value
 dotnet_diagnostic.CA1822.severity = none # Member does not access instance data and can be marked as static
 dotnet_diagnostic.CA1848.severity = none # For improved performance, use the LoggerMessage delegates
+dotnet_diagnostic.CA1849.severity = none # Use async equivalent; analyzer is currently noisy
+dotnet_diagnostic.CA1865.severity = none # StartsWith(char)
+dotnet_diagnostic.CA1867.severity = none # EndsWith(char)
 dotnet_diagnostic.CA2007.severity = none # Do not directly await a Task
 dotnet_diagnostic.CA2225.severity = none # Operator overloads have named alternates
 dotnet_diagnostic.CA2227.severity = none # Change to be read-only by removing the property setter
 dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
+dotnet_diagnostic.CA2253.severity = none # Named placeholders in the logging message template should not be comprised of only numeric characters
+dotnet_diagnostic.CA2263.severity = suggestion # Use generic overload
 
+dotnet_diagnostic.VSTHRD003.severity = none # Waiting on thread from another context
+dotnet_diagnostic.VSTHRD103.severity = none # Use async equivalent; analyzer is currently noisy
 dotnet_diagnostic.VSTHRD111.severity = none # Use .ConfigureAwait(bool) is hidden by default, set to none to prevent IDE from changing on autosave
 dotnet_diagnostic.VSTHRD200.severity = none # Use Async suffix for async methods
 dotnet_diagnostic.xUnit1004.severity = none # Test methods should not be skipped. Remove the Skip property to start running the test again.
@@ -209,20 +222,29 @@ dotnet_diagnostic.RCS1241.severity = none # Implement IComparable when implement
 dotnet_diagnostic.IDE0001.severity = none # Simplify name
 dotnet_diagnostic.IDE0002.severity = none # Simplify member access
 dotnet_diagnostic.IDE0004.severity = none # Remove unnecessary cast
+dotnet_diagnostic.IDE0010.severity = none # Populate switch
+dotnet_diagnostic.IDE0021.severity = none # Use block body for constructors
+dotnet_diagnostic.IDE0022.severity = none # Use block body for methods
+dotnet_diagnostic.IDE0024.severity = none # Use block body for operator
 dotnet_diagnostic.IDE0035.severity = none # Remove unreachable code
 dotnet_diagnostic.IDE0051.severity = none # Remove unused private member
 dotnet_diagnostic.IDE0052.severity = none # Remove unread private member
 dotnet_diagnostic.IDE0058.severity = none # Remove unused expression value
 dotnet_diagnostic.IDE0059.severity = none # Unnecessary assignment of a value
 dotnet_diagnostic.IDE0060.severity = none # Remove unused parameter
+dotnet_diagnostic.IDE0061.severity = none # Use block body for local function
 dotnet_diagnostic.IDE0079.severity = none # Remove unnecessary suppression.
 dotnet_diagnostic.IDE0080.severity = none # Remove unnecessary suppression operator.
 dotnet_diagnostic.IDE0100.severity = none # Remove unnecessary equality operator
 dotnet_diagnostic.IDE0110.severity = none # Remove unnecessary discards
 dotnet_diagnostic.IDE0130.severity = none # Namespace does not match folder structure
+dotnet_diagnostic.IDE0290.severity = none # Use primary constructor
 dotnet_diagnostic.IDE0032.severity = none # Use auto property
 dotnet_diagnostic.IDE0160.severity = none # Use block-scoped namespace
 dotnet_diagnostic.IDE1006.severity = warning # Naming rule violations
+dotnet_diagnostic.IDE0046.severity = suggestion # If statement can be simplified
+dotnet_diagnostic.IDE0056.severity = suggestion # Indexing can be simplified
+dotnet_diagnostic.IDE0057.severity = suggestion # Substring can be simplified
 
 ###############################
 # Naming Conventions          #
@@ -362,6 +384,39 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 
+###############################
+# Resharper Rules             #
+###############################
+
+# Resharper disabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
+resharper_redundant_linebreak_highlighting = none # Disable Resharper's "Redundant line break" highlighting
+resharper_missing_linebreak_highlighting = none # Disable Resharper's "Missing line break" highlighting
+resharper_bad_empty_braces_line_breaks_highlighting = none # Disable Resharper's "Bad empty braces line breaks" highlighting
+resharper_missing_indent_highlighting = none # Disable Resharper's "Missing indent" highlighting
+resharper_missing_blank_lines_highlighting = none # Disable Resharper's "Missing blank lines" highlighting
+resharper_wrong_indent_size_highlighting = none # Disable Resharper's "Wrong indent size" highlighting
+resharper_bad_indent_highlighting = none # Disable Resharper's "Bad indent" highlighting
+resharper_bad_expression_braces_line_breaks_highlighting = none # Disable Resharper's "Bad expression braces line breaks" highlighting
+resharper_multiple_spaces_highlighting = none # Disable Resharper's "Multiple spaces" highlighting
+resharper_bad_expression_braces_indent_highlighting = none # Disable Resharper's "Bad expression braces indent" highlighting
+resharper_bad_control_braces_indent_highlighting = none # Disable Resharper's "Bad control braces indent" highlighting
+resharper_bad_preprocessor_indent_highlighting = none # Disable Resharper's "Bad preprocessor indent" highlighting
+resharper_redundant_blank_lines_highlighting = none # Disable Resharper's "Redundant blank lines" highlighting
+resharper_multiple_statements_on_one_line_highlighting = none # Disable Resharper's "Multiple statements on one line" highlighting
+resharper_bad_braces_spaces_highlighting = none # Disable Resharper's "Bad braces spaces" highlighting
+resharper_outdent_is_off_prev_level_highlighting = none # Disable Resharper's "Outdent is off previous level" highlighting
+resharper_bad_symbol_spaces_highlighting = none # Disable Resharper's "Bad symbol spaces" highlighting
+resharper_bad_colon_spaces_highlighting = none # Disable Resharper's "Bad colon spaces" highlighting
+resharper_bad_semicolon_spaces_highlighting = none # Disable Resharper's "Bad semicolon spaces" highlighting
+resharper_bad_square_brackets_spaces_highlighting = none # Disable Resharper's "Bad square brackets spaces" highlighting
+resharper_bad_parens_spaces_highlighting = none # Disable Resharper's "Bad parens spaces" highlighting
+
+# Resharper enabled rules: https://www.jetbrains.com/help/resharper/Reference__Code_Inspections_CSHARP.html#CodeSmell
+resharper_comment_typo_highlighting = suggestion # Resharper's "Comment typo" highlighting
+resharper_redundant_using_directive_highlighting = warning # Resharper's "Redundant using directive" highlighting
+resharper_inconsistent_naming_highlighting = warning # Resharper's "Inconsistent naming" highlighting
+resharper_redundant_this_qualifier_highlighting = warning # Resharper's "Redundant 'this' qualifier" highlighting
+resharper_arrange_this_qualifier_highlighting = warning # Resharper's "Arrange 'this' qualifier" highlighting
 
 ###############################
 # Java Coding Conventions     #
@@ -369,10 +424,10 @@ csharp_style_expression_bodied_local_functions = false:silent
 [*.java]
 charset = utf-8
 end_of_line = lf
-indent_size = 2
+indent_size = 4
 indent_style = space
 insert_final_newline = false
-tab_width = 2
+tab_width = 4
 ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_smart_tabs = false

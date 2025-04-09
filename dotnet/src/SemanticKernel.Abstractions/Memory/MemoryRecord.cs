@@ -11,14 +11,13 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// IMPORTANT: this is a storage schema. Changing the fields will invalidate existing metadata stored in persistent vector DBs.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryRecord : DataEntryBase
 {
     /// <summary>
     /// Source content embeddings.
     /// </summary>
     [JsonPropertyName("embedding")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Embedding { get; }
 
     /// <summary>
@@ -87,7 +86,7 @@ public class MemoryRecord : DataEntryBase
     /// <param name="embedding">Source content embedding.</param>
     /// <param name="additionalMetadata">Optional string for saving custom metadata.</param>
     /// <param name="key">Optional existing database key.</param>
-    /// <param name="timestamp">optional timestamp.</param>
+    /// <param name="timestamp">Optional timestamp.</param>
     /// <returns>Memory record</returns>
     public static MemoryRecord LocalRecord(
         string id,
@@ -130,8 +129,8 @@ public class MemoryRecord : DataEntryBase
         string? key = null,
         DateTimeOffset? timestamp = null)
     {
-        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json);
-        return metadata != null
+        var metadata = JsonSerializer.Deserialize<MemoryRecordMetadata>(json, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
+        return metadata is not null
             ? new MemoryRecord(metadata, embedding, key, timestamp)
             : throw new KernelException("Unable to create memory record from serialized metadata");
     }
@@ -159,6 +158,6 @@ public class MemoryRecord : DataEntryBase
     /// <returns>The memory record's metadata serialized to a json string.</returns>
     public string GetSerializedMetadata()
     {
-        return JsonSerializer.Serialize(this.Metadata);
+        return JsonSerializer.Serialize(this.Metadata, MemoryRecordMetadataJsonSerializerContext.Default.MemoryRecordMetadata);
     }
 }

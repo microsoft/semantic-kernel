@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.SemanticKernel.AI;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Prompt;
@@ -15,40 +15,40 @@ public class XmlPromptParserTests
     [Theory]
     [InlineData("This is plain prompt")]
     [InlineData("<message This is invalid chat prompt>")]
-    public void ItReturnsEmptyListWhenPromptIsPlainText(string prompt)
+    public void ItReturnsNullListWhenPromptIsPlainText(string prompt)
     {
         // Act
         var result = XmlPromptParser.TryParse(prompt, out var nodes);
 
         // Assert
         Assert.False(result);
-        Assert.Empty(nodes);
+        Assert.Null(nodes);
     }
 
     [Fact]
     public void ItReturnsPromptNodesWhenPromptHasXmlFormat()
     {
         // Arrange
-        const string Prompt = @"
-<message role=""system"">
-Test with role in double quotes and content in new line.
-</message>
+        const string Prompt = """
+            <message role="system">
+            Test with role in double quotes and content in new line.
+            </message>
 
-<message role='user'>Test with role in single quotes and content in the same line.</message>
+            <message role='user'>Test with role in single quotes and content in the same line.</message>
 
-<message role=""assistant"">
-Test with multiline content.
-Second line.
-</message>
+            <message role="assistant">
+            Test with multiline content.
+            Second line.
+            </message>
 
-<message role='system'>
-    Test line with tab.
-</message>
+            <message role='system'>
+                Test line with tab.
+            </message>
 
-<message role='user'>
-    <audio src='https://fake-link-to-audio' />
-</message>
-";
+            <message role='user'>
+                <audio src='https://fake-link-to-audio' />
+            </message>
+            """;
 
         var expectedNodes = new List<PromptNode>
         {
@@ -59,7 +59,8 @@ Second line.
             new("message")
             {
                 Attributes = { { "role", "user" } },
-                ChildNodes = new List<PromptNode> { new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } } }
+                Content = "<audio src=\"https://fake-link-to-audio\" />",
+                ChildNodes = [new("audio") { Attributes = { { "src", "https://fake-link-to-audio" } } }]
             },
         };
 

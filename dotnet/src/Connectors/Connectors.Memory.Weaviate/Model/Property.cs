@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
+using System.Diagnostics.CodeAnalysis;
 
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
+
+[Experimental("SKEXP0020")]
 internal sealed class Property
 {
     public string? Name { get; set; }

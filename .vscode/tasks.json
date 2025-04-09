@@ -88,54 +88,6 @@
       ],
       "dependsOrder": "sequence"
     },
-    // *****************************
-    // Contributing (python) - Setup
-    // *****************************
-    {
-      "label": "setup (contributing-python)",
-      "detail": "",
-      "group": "build",
-      "dependsOn": ["install poetry", "install python packages"],
-      "dependsOrder": "sequence"
-    },
-    {
-      "label": "install poetry",
-      "detail": "Install poetry",
-      "command": "pip3",
-      "type": "shell",
-      "args": ["install", "poetry"],
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
-    },
-    {
-      "label": "install python packages",
-      "detail": "Install python packages",
-      "command": "poetry",
-      "type": "shell",
-      "args": ["install"],
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
-    },
-    // Formatting
-    {
-      "label": "validate (contributing-python)",
-      "command": "poetry",
-      "type": "shell",
-      "group": "build",
-      "args": [
-        "run",
-        "pre-commit",
-        "run",
-        "-c",
-        ".conf/.pre-commit-config.yaml",
-        "-a"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
-    },
     // ***************
     // Kernel (dotnet)
     // ***************
@@ -270,69 +222,26 @@
         "cwd": "${workspaceFolder}/dotnet/src/IntegrationTests/"
       }
     },
-    // ****************
-    // Kernel (python)
-    // ****************
-    // Test
     {
-      "label": "test (Semantic-Kernel-Python)",
-      "command": "poetry",
-      "type": "shell",
-      "args": ["run", "pytest", "tests/unit"],
-      "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "PR-Validate"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
-    },
-    {
-      "label": "test (Semantic-Kernel-Python Integration)",
-      "command": "poetry",
-      "type": "shell",
-      "args": ["run", "pytest", "tests/integration", "-k", "${input:filter}"],
-      "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "PR-Validate"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
-    },
-    {
-      "label": "test (Semantic-Kernel-Python ALL)",
-      "command": "poetry",
-      "type": "shell",
-      "args": ["run", "pytest", "tests", "-k", "${input:filter}"],
-      "problemMatcher": "$msCompile",
-      "group": "test",
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared",
-        "group": "PR-Validate"
-      },
-      "options": {
-        "cwd": "${workspaceFolder}/python"
-      }
+      "label": "build (CopilotAgentPluginsDemoSample)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/samples/Demos/CopilotAgentPlugins/CopilotAgentPluginsDemoSample/CopilotAgentPluginsDemoSample.csproj"
+      ]
     },
     // ****************
     // Samples (dotnet)
     // ****************
     // Kernel Syntax Examples
     {
-      "label": "build (KernelSyntaxExamples)",
+      "label": "build (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
         "/property:DebugType=portable"
@@ -341,26 +250,26 @@
       "group": "build"
     },
     {
-      "label": "watch (KernelSyntaxExamples)",
+      "label": "watch (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "watch",
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj"
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj"
       ],
       "problemMatcher": "$msCompile",
       "group": "build"
     },
     {
-      "label": "run (KernelSyntaxExamples)",
+      "label": "run (Concepts)",
       "command": "dotnet",
       "type": "process",
       "args": [
         "run",
         "--project",
-        "${workspaceFolder}/dotnet/samples/KernelSyntaxExamples/KernelSyntaxExamples.csproj",
+        "${workspaceFolder}/dotnet/samples/Concepts/Concepts.csproj",
         "${input:filter}"
       ],
       "problemMatcher": "$msCompile",
@@ -371,6 +280,39 @@
         "group": "PR-Validate"
       }
     },
+    {
+      "label": "build (ProcessWithDapr)",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/dotnet/samples/Demos/ProcessWithDapr/ProcessWithDapr.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "/property:DebugType=portable"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "daprd-debug",
+      "type": "daprd",
+      "appId": "processwithdapr",
+      "logLevel": "debug",
+      "appPort": 5000,
+      "httpPort": 3500,
+      "dependsOn":["build (ProcessWithDapr)"]
+    },
+    {
+      "label": "dapr-down",
+      "type": "shell",
+      "command": ["dapr stop --app-id processwithdapr"],
+      "presentation": {
+        "clear": true,
+        "close": true,
+        "reveal": "never"
+      }
+    }
   ],
   "inputs": [
     {

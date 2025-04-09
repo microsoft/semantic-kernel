@@ -4,11 +4,13 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
+using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
 {
@@ -39,8 +41,10 @@ public class MongoDBMemoryStoreTestsFixture : IAsyncLifetime
         var vectorSearchCollectionNamespace = CollectionNamespace.FromFullName(vectorSearchCollection);
         this.VectorSearchCollectionName = vectorSearchCollectionNamespace.CollectionName;
 
+        var skVersion = typeof(IMemoryStore).Assembly?.GetName()?.Version?.ToString();
         var mongoClientSettings = MongoClientSettings.FromConnectionString(connectionString);
         mongoClientSettings.ApplicationName = GetRandomName();
+        mongoClientSettings.LibraryInfo = new LibraryInfo("Microsoft Semantic Kernel", skVersion);
 
         this.DatabaseTestName = "dotnetMSKIntegrationTests1";
         this.ListCollectionsDatabaseTestName = "dotnetMSKIntegrationTests2";

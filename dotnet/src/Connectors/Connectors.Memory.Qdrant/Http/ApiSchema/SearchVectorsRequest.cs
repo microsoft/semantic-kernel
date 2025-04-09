@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+[Experimental("SKEXP0020")]
 internal sealed class SearchVectorsRequest
 {
     [JsonPropertyName("vector")]
@@ -55,7 +57,7 @@ internal sealed class SearchVectorsRequest
 
     public SearchVectorsRequest HavingTags(IEnumerable<string>? tags)
     {
-        if (tags == null) { return this; }
+        if (tags is null) { return this; }
 
         foreach (var tag in tags)
         {
@@ -160,7 +162,7 @@ internal sealed class SearchVectorsRequest
 
         internal Filter()
         {
-            this.Conditions = new();
+            this.Conditions = [];
         }
 
         internal Filter ValueMustMatch(string key, object value)

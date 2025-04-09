@@ -1,0 +1,13 @@
+{{#*inline "IntroductionWithExample"}}
+{{#message role="system"}}## Instructions
+Explain how to achieve the user's goal using the available helpers with a Handlebars .Net template.
+
+## Example
+If the user posed the goal below, you could answer with the following template.
+{{~/message}}
+
+{{#if allowLoops}}{{> LoopsAllowedExample }}
+{{~else}}{{> NoLoopsExample }}
+{{/if}}
+{{#message role="system"}}Now let's try the real thing.{{/message}}
+{{/inline}}

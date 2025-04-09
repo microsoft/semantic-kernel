@@ -7,10 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Plugins.Memory;
 using Xunit;
 
-namespace SemanticKernel.Plugins.UnitTests.Memory;
+namespace SemanticKernel.UnitTests.Memory;
 
 public class VolatileMemoryStoreTests
 {
@@ -252,7 +251,7 @@ public class VolatileMemoryStoreTests
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
-        string[] testCollections = { "test_collection5", "test_collection6", "test_collection7" };
+        string[] testCollections = ["test_collection5", "test_collection6", "test_collection7"];
         this._collectionNum += 3;
         await this._db.CreateCollectionAsync(testCollections[0]);
         await this._db.CreateCollectionAsync(testCollections[1]);
@@ -540,7 +539,7 @@ public class VolatileMemoryStoreTests
         await this._db.CreateCollectionAsync(collection);
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
 
-        List<string> keys = new();
+        List<string> keys = [];
         await foreach (var key in this._db.UpsertBatchAsync(collection, records))
         {
             keys.Add(key);
@@ -574,7 +573,7 @@ public class VolatileMemoryStoreTests
         // Assert
         collections = this._db.GetCollectionsAsync().ToEnumerable();
         numCollections = collections.Count();
-        Assert.True(numCollections == 0);
+        Assert.Equal(0, numCollections);
         this._collectionNum = 0;
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection

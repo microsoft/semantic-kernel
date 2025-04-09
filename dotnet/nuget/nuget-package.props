@@ -1,11 +1,29 @@
 <Project>
   <PropertyGroup>
     <!-- Central version prefix - applies to all nuget packages. -->
-    <Version>1.0.0-rc3</Version>
+    <VersionPrefix>1.45.0</VersionPrefix>
+    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
 
     <Configurations>Debug;Release;Publish</Configurations>
     <IsPackable>true</IsPackable>
 
+    <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
+    <PackageValidationBaselineVersion>1.44.0</PackageValidationBaselineVersion>
+    <!-- Validate assembly attributes only for Publish builds -->
+    <NoWarn Condition="'$(Configuration)' != 'Publish'">$(NoWarn);CP0003</NoWarn>
+    <!-- Do not validate reference assemblies -->
+    <NoWarn>$(NoWarn);CP1002</NoWarn>
+
+    <!-- Enable NuGet package auditing -->
+    <NuGetAudit>true</NuGetAudit>
+
+    <!-- Audit direct and transitive packages -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+
+    <!-- Report low, moderate, high and critical advisories -->
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    
     <!-- Default description and tags. Packages can override. -->
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>

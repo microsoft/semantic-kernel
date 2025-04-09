@@ -41,7 +41,8 @@ public sealed class TextPlugin
     /// <param name="cultureInfo"> An object that supplies culture-specific casing rules. </param>
     /// <returns> The converted string. </returns>
     [KernelFunction, Description("Convert a string to uppercase.")]
-    public string Uppercase(string input, CultureInfo? cultureInfo = null) => input.ToUpper(cultureInfo);
+    public string Uppercase(string input, CultureInfo? cultureInfo = null) =>
+        input.ToUpper(cultureInfo ?? CultureInfo.CurrentCulture);
 
     /// <summary>
     /// Convert a string to lowercase.
@@ -50,7 +51,8 @@ public sealed class TextPlugin
     /// <param name="cultureInfo"> An object that supplies culture-specific casing rules. </param>
     /// <returns> The converted string. </returns>
     [KernelFunction, Description("Convert a string to lowercase.")]
-    public string Lowercase(string input, CultureInfo? cultureInfo = null) => input.ToLower(cultureInfo);
+    public string Lowercase(string input, CultureInfo? cultureInfo = null) =>
+        input.ToLower(cultureInfo ?? CultureInfo.CurrentCulture);
 
     /// <summary>
     /// Get the length of a string. Returns 0 if null or empty

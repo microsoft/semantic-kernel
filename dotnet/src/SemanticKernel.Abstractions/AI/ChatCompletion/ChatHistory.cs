@@ -8,7 +8,7 @@ using System.Text;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
-namespace Microsoft.SemanticKernel.AI.ChatCompletion;
+namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>
 /// Provides a history of chat messages from a chat conversation.
@@ -24,19 +24,30 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// </summary>
     public ChatHistory()
     {
-        this._messages = new();
+        this._messages = [];
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message
+    /// Creates a new instance of the <see cref="ChatHistory"/> with a first message in the provided <see cref="AuthorRole"/>.
+    /// If not role is provided then the first message will default to <see cref="AuthorRole.System"/> role.
+    /// </summary>
+    /// <param name="message">The text message to add to the first message in chat history.</param>
+    /// <param name="role">The role to add as the first message.</param>
+    public ChatHistory(string message, AuthorRole role)
+    {
+        Verify.NotNullOrWhiteSpace(message);
+
+        this._messages = [];
+        this.Add(new ChatMessageContent(role, message));
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message.
     /// </summary>
     /// <param name="systemMessage">The system message to add to the history.</param>
     public ChatHistory(string systemMessage)
+        : this(systemMessage, AuthorRole.System)
     {
-        Verify.NotNullOrWhiteSpace(systemMessage);
-
-        this._messages = new();
-        this.AddSystemMessage(systemMessage);
     }
 
     /// <summary>Initializes the history will all of the specified messages.</summary>
@@ -52,22 +63,22 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public int Count => this._messages.Count;
 
     /// <summary>
-    /// Add a message to the chat history
-    /// </summary>
-    /// <param name="chatMessageContent">Chat message content</param>
-    public void AddMessage(ChatMessageContent chatMessageContent)
-    {
-        this.Add(chatMessageContent);
-    }
-
-    /// <summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="content">Message content</param>
     /// <param name="encoding">Encoding of the message content</param>
     /// <param name="metadata">Dictionary for any additional metadata</param>
     /// </summary>
-    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IDictionary<string, object?>? metadata = null) =>
+    public void AddMessage(AuthorRole authorRole, string content, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
         this.Add(new ChatMessageContent(authorRole, content, null, null, encoding, metadata));
+
+    /// <summary>
+    /// <param name="authorRole">Role of the message author</param>
+    /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    /// <param name="encoding">Encoding of the message content</param>
+    /// <param name="metadata">Dictionary for any additional metadata</param>
+    /// </summary>
+    public void AddMessage(AuthorRole authorRole, ChatMessageContentItemCollection contentItems, Encoding? encoding = null, IReadOnlyDictionary<string, object?>? metadata = null) =>
+        this.Add(new ChatMessageContent(authorRole, contentItems, null, null, encoding, metadata));
 
     /// <summary>
     /// Add a user message to the chat history
@@ -75,6 +86,13 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="content">Message content</param>
     public void AddUserMessage(string content) =>
         this.AddMessage(AuthorRole.User, content);
+
+    /// <summary>
+    /// Add a user message to the chat history
+    /// </summary>
+    /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
+    public void AddUserMessage(ChatMessageContentItemCollection contentItems) =>
+        this.AddMessage(AuthorRole.User, contentItems);
 
     /// <summary>
     /// Add an assistant message to the chat history
@@ -89,6 +107,13 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <param name="content">Message content</param>
     public void AddSystemMessage(string content) =>
         this.AddMessage(AuthorRole.System, content);
+
+    /// <summary>
+    /// Add a developer message to the chat history
+    /// </summary>
+    /// <param name="content">Message content</param>
+    public void AddDeveloperMessage(string content) =>
+        this.AddMessage(AuthorRole.Developer, content);
 
     /// <summary>Adds a message to the history.</summary>
     /// <param name="item">The message to add.</param>

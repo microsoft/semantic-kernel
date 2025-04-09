@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenApi.Model;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestResponses;
 using Xunit;
 
@@ -39,6 +38,7 @@ public class RestApiOperationResponseTests
     [InlineData("fake-content", "application/json", "{\"type\": \"string\"}")]
     [InlineData("{\"fake\": \"content\"}", "text/plain", "{\"type\": \"string\"}")]
     [InlineData("{\"fake\": \"content\"}", "application/json", "{\"type\": \"string\"}")]
+    [InlineData("{\"fake\": \"content\"}", "application/json; charset=utf-8", "{\"type\": \"string\"}")]
     public void ItShouldFailValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
@@ -56,6 +56,7 @@ public class RestApiOperationResponseTests
     [InlineData("fake-content", "text/plain", "{\"type\": \"string\"}")]
     [InlineData("fake-content", "application/xml", "{\"type\": \"string\"}")]
     [InlineData("fake-content", "image", "{\"type\": \"string\"}")]
+    [InlineData("\"fake-content\"", "application/json; charset=utf-8", "{\"type\": \"string\"}")]
     public void ItShouldPassValidationWithSchema(string content, string contentType, string schemaJson)
     {
         //Arrange
@@ -100,5 +101,20 @@ public class RestApiOperationResponseTests
 
         //Assert
         Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("content", "content")]
+    public void ToStringReturnsString(object? content, string expectedContent)
+    {
+        // Arrange
+        var response = new RestApiOperationResponse(content!, "application/json");
+
+        // Act
+        var result = response.ToString();
+
+        // Assert
+        Assert.Equal(expectedContent, result);
     }
 }

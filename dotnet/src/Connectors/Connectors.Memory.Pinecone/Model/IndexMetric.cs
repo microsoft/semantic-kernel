@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// The vector similarity metric of the index
 /// </summary>
 /// <value>The vector similarity metric of the index</value>
+[Experimental("SKEXP0020")]
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum IndexMetric
 {

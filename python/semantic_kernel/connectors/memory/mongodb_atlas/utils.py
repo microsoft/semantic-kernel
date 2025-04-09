@@ -1,12 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
-from __future__ import annotations
 
 from numpy import array
+from pymongo.operations import SearchIndexModel
 
+from semantic_kernel.connectors.memory.mongodb_atlas.const import DISTANCE_FUNCTION_MAPPING
+from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
+    VectorStoreRecordVectorField,
+)
+from semantic_kernel.exceptions.service_exceptions import ServiceInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 
-DEFAULT_DB_NAME = "default"
-DEFAULT_SEARCH_INDEX_NAME = "default"
 NUM_CANDIDATES_SCALAR = 10
 
 MONGODB_FIELD_ID = "_id"
@@ -23,11 +28,12 @@ MONGODB_FIELD_TIMESTAMP = "timestamp"
 def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord:
     """Converts a search result to a MemoryRecord.
 
-    Arguments:
-        data {dict} -- Azure Cognitive Search result data.
+    Args:
+        data (dict): Azure Cognitive Search result data.
+        with_embeddings (bool): Whether to include embeddings.
 
     Returns:
-        MemoryRecord -- The MemoryRecord from Azure Cognitive Search Data Result.
+        MemoryRecord: The MemoryRecord from Azure Cognitive Search Data Result.
     """
     meta = data.get(MONGODB_FIELD_METADATA, {})
 
@@ -45,15 +51,14 @@ def document_to_memory_record(data: dict, with_embeddings: bool) -> MemoryRecord
 
 
 def memory_record_to_mongo_document(record: MemoryRecord) -> dict:
-    """Convert a MemoryRecord to a dictionary
+    """Convert a MemoryRecord to a dictionary.
 
-    Arguments:
-        record {MemoryRecord} -- The MemoryRecord from Azure Cognitive Search Data Result.
+    Args:
+        record (MemoryRecord): The MemoryRecord from Azure Cognitive Search Data Result.
 
     Returns:
-        data {dict} -- Dictionary data.
+        data (dict): Dictionary data.
     """
-
     return {
         MONGODB_FIELD_ID: record._id,
         MONGODB_FIELD_METADATA: {
@@ -67,3 +72,44 @@ def memory_record_to_mongo_document(record: MemoryRecord) -> dict:
         MONGODB_FIELD_EMBEDDING: record._embedding.tolist(),
         MONGODB_FIELD_TIMESTAMP: record._timestamp,
     }
+
+
+def create_vector_field(field: VectorStoreRecordVectorField) -> dict:
+    """Create a vector field.
+
+    Args:
+        field (VectorStoreRecordVectorField): The vector field.
+
+    Returns:
+        dict: The vector field.
+    """
+    if field.distance_function not in DISTANCE_FUNCTION_MAPPING:
+        raise ServiceInitializationError(f"Invalid distance function: {field.distance_function}")
+    return {
+        "type": "vector",
+        "numDimensions": field.dimensions,
+        "path": field.name,
+        "similarity": DISTANCE_FUNCTION_MAPPING[field.distance_function],
+    }
+
+
+def create_index_definition(record_definition: VectorStoreRecordDefinition, index_name: str) -> SearchIndexModel:
+    """Create an index definition.
+
+    Args:
+        record_definition (VectorStoreRecordDefinition): The record definition.
+        index_name (str): The index name.
+
+    Returns:
+        SearchIndexModel: The index definition.
+    """
+    vector_fields = [create_vector_field(field) for field in record_definition.vector_fields]
+    data_fields = [
+        {"path": field.name, "type": "filter"}
+        for field in record_definition.fields
+        if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+    ]
+    key_field = [{"path": record_definition.key_field.name, "type": "filter"}]
+    return SearchIndexModel(
+        type="vectorSearch", name=index_name, definition={"fields": vector_fields + data_fields + key_field}
+    )

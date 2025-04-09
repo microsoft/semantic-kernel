@@ -17,7 +17,7 @@ The index has to be defined on a field called ```embedding```. For example:
     "fields": {
       "embedding": {
         "dimension": 1024,
-        "similarity": "cosine",
+        "similarity": "cosine_similarity",
         "type": "knnVector"
       }
     }

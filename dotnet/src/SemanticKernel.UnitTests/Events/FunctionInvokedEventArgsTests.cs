@@ -2,10 +2,11 @@
 
 using System.Globalization;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Events;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Events;
+
+#pragma warning disable CS0618 // Events are deprecated
 
 public class FunctionInvokedEventArgsTests
 {
@@ -15,7 +16,7 @@ public class FunctionInvokedEventArgsTests
         //Arrange
         var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
-        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
+        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), [], originalResults);
 
         //Assert
         Assert.Equal(36, sut.ResultValue);
@@ -27,7 +28,7 @@ public class FunctionInvokedEventArgsTests
         //Arrange
         var originalResults = new FunctionResult(KernelFunctionFactory.CreateFromMethod(() => { }), 36, CultureInfo.InvariantCulture);
 
-        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), new KernelArguments(), originalResults);
+        var sut = new FunctionInvokedEventArgs(KernelFunctionFactory.CreateFromMethod(() => { }), [], originalResults);
 
         //Act
         sut.SetResultValue(72);

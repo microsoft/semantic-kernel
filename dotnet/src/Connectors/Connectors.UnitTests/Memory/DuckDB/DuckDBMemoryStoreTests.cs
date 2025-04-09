@@ -6,11 +6,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+using DuckDB.NET.Data;
+using Microsoft.SemanticKernel.Connectors.DuckDB;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.DuckDB;
+namespace SemanticKernel.Connectors.UnitTests.DuckDB;
 
 /// <summary>
 /// Unit tests of <see cref="DuckDBMemoryStore"/>.
@@ -129,14 +130,14 @@ public class DuckDBMemoryStoreTests
 
         // Assert
         var collections2 = db.GetCollectionsAsync();
-        Assert.True(await collections2.CountAsync() == 0);
+        Assert.Equal(0, await collections2.CountAsync());
     }
 
     [Fact]
     public async Task ItCanInsertIntoNonExistentCollectionAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -161,10 +162,44 @@ public class DuckDBMemoryStoreTests
     }
 
     [Fact]
+    public async Task ItCanNotInsertLargerVectorAsync()
+    {
+        // Arrange
+        float[] embedding = new float[] { 1, 2, 3 };
+        using var db = await DuckDBMemoryStore.ConnectAsync(embedding.Length - 1);
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: embedding,
+            key: null,
+            timestamp: null);
+
+        await Assert.ThrowsAsync<DuckDBException>(async () => await db.UpsertAsync("random collection", testRecord));
+    }
+
+    [Fact]
+    public async Task ItCanNotInsertSmallerVectorAsync()
+    {
+        // Arrange
+        float[] embedding = new float[] { 1, 2, 3 };
+        using var db = await DuckDBMemoryStore.ConnectAsync(embedding.Length + 1);
+        MemoryRecord testRecord = MemoryRecord.LocalRecord(
+            id: "test",
+            text: "text",
+            description: "description",
+            embedding: embedding,
+            key: null,
+            timestamp: null);
+
+        await Assert.ThrowsAsync<DuckDBException>(async () => await db.UpsertAsync("random collection", testRecord));
+    }
+
+    [Fact]
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -191,7 +226,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -221,7 +256,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -251,7 +286,7 @@ public class DuckDBMemoryStoreTests
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         string commonId = "test";
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: commonId,
@@ -285,7 +320,7 @@ public class DuckDBMemoryStoreTests
     public async Task ExistingRecordCanBeRemovedAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
             id: "test",
             text: "text",
@@ -354,7 +389,7 @@ public class DuckDBMemoryStoreTests
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
         string collection = this.GetTestCollectionName();
@@ -417,7 +452,7 @@ public class DuckDBMemoryStoreTests
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         var compareEmbedding = new float[] { 1, 1, 1 };
         string collection = this.GetTestCollectionName();
 
@@ -478,7 +513,7 @@ public class DuckDBMemoryStoreTests
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         var compareEmbedding = new float[] { 1, 1, 1 };
         string collection = this.GetTestCollectionName();
 
@@ -537,7 +572,7 @@ public class DuckDBMemoryStoreTests
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
         string collection = this.GetTestCollectionName();
@@ -573,7 +608,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanBatchUpsertRecordsAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         int numRecords = 10;
         string collection = this.GetTestCollectionName();
 
@@ -594,7 +629,7 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanBatchGetRecordsAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         int numRecords = 10;
         string collection = this.GetTestCollectionName();
 
@@ -615,14 +650,14 @@ public class DuckDBMemoryStoreTests
     public async Task ItCanBatchRemoveRecordsAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         int numRecords = 10;
         string collection = this.GetTestCollectionName();
 
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await db.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in db.UpsertBatchAsync(collection, records))
@@ -643,7 +678,7 @@ public class DuckDBMemoryStoreTests
     public async Task DeletingNonExistentCollectionDoesNothingAsync()
     {
         // Arrange
-        using var db = await DuckDBMemoryStore.ConnectAsync();
+        using var db = await DuckDBMemoryStore.ConnectAsync(3);
         string collection = this.GetTestCollectionName();
 
         // Act

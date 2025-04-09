@@ -461,6 +461,7 @@ env/
 venv/
 myvenv/
 ENV/
+.venv*/
 
 # Python dist
 dist/
@@ -476,6 +477,9 @@ java/.mvn/wrapper/maven-wrapper.jar
 # Java settings
 conf.properties
 
+# Intellij configuration
+*.iml
+
 # Playwright
 playwright-report/
 
@@ -490,3 +494,9 @@ swa-cli.config.json
 
 # python devcontainer
 /python/.devcontainer/*
+
+# kiota workspace files
+**/.kiota
+
+# dapr extension files
+**/dapr.yaml

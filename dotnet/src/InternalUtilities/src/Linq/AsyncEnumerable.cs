@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -8,6 +10,7 @@ using Microsoft.SemanticKernel;
 // Used for compatibility with System.Linq.Async Nuget pkg
 namespace System.Linq;
 
+[ExcludeFromCodeCoverage]
 internal static class AsyncEnumerable
 {
     public static IAsyncEnumerable<T> Empty<T>() => EmptyAsyncEnumerable<T>.Instance;
@@ -132,6 +135,40 @@ internal static class AsyncEnumerable
             return false;
         }
     }
+
+#pragma warning disable IDE1006 // Naming rule violation: Missing suffix: 'Async'
+
+    /// <summary>
+    /// Projects each element of an <see cref="IAsyncEnumerable{TSource}"/> into a new form by incorporating
+    /// an asynchronous transformation function.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the elements of the source sequence.</typeparam>
+    /// <typeparam name="TResult">The type of the elements of the resulting sequence.</typeparam>
+    /// <param name="source">An <see cref="IAsyncEnumerable{TSource}"/> to invoke a transform function on.</param>
+    /// <param name="selector">
+    /// A transform function to apply to each element. This function takes an element of
+    /// type TSource and returns an element of type TResult.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A CancellationToken to observe while iterating through the sequence.
+    /// </param>
+    /// <returns>
+    /// An <see cref="IAsyncEnumerable{TResult}"/> whose elements are the result of invoking the transform
+    /// function on each element of the original sequence.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when the source or selector is null.</exception>
+    public static async IAsyncEnumerable<TResult> SelectAsync<TSource, TResult>(
+       this IAsyncEnumerable<TSource> source,
+       Func<TSource, TResult> selector,
+       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await foreach (var item in source.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            yield return selector(item);
+        }
+    }
+
+#pragma warning restore IDE1006 // Naming rule violation: Missing suffix: 'Async'
 
     private sealed class EmptyAsyncEnumerable<T> : IAsyncEnumerable<T>, IAsyncEnumerator<T>
     {

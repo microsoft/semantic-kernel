@@ -1,0 +1,23 @@
+classDiagram
+
+    ChatHistory
+
+    AgentChatState --> ChatHistory
+    AgentChannelState --* AgentChatState
+    ChatParticipant --* AgentChatState
+    class AgentChatState {
+        ChatHistory History
+        Iterable~ChatParticipant~ Participants
+        Iterable~AgentChannelState~ Channels
+    }
+
+    class AgentChannelState {
+        +text ChannelKey
+        +text ChannelState
+    }
+
+    class ChatParticipant {
+        +text Id
+        +text? Name
+        +text Type
+    }

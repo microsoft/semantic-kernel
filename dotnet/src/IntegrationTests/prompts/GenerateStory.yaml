@@ -1,6 +1,6 @@
 ﻿name: GenerateStory
 template: |
-  Tell a story about {{$topic}} that is {{$length}} sentences long.
+  Tell a story about {{$topic}} that is {{$length}} sentences long. Include {{$topic}} words in response.
 template_format: semantic-kernel
 description: A function that generates a story about a topic.
 input_variables:
@@ -13,4 +13,5 @@ input_variables:
 output_variable:
   description: The generated story.
 execution_settings:
-  - temperature: 0.6
+  default:
+    temperature: 0.6

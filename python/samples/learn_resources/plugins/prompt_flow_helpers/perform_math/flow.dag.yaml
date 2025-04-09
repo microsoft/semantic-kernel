@@ -1,0 +1,28 @@
+id: template_standard_flow
+name: Template Standard Flow
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  text:
+    type: string
+  deployment_type:
+    type: string
+    default: chat-completion
+  deployment_name:
+    type: string
+    default: gpt-35-turbo
+outputs:
+  result:
+    type: string
+    reference: ${math_planner.output}
+nodes:
+- name: math_planner
+  type: python
+  source:
+    type: code
+    path: math_planner.py
+  inputs:
+    input: ${inputs.text}
+    deployment_type: ${inputs.deployment_type}
+    deployment_name: ${inputs.deployment_name}
+    AzureOpenAIConnection: AzureOpenAIConnection

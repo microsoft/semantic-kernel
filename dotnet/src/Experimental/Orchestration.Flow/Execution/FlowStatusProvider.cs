@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.ChatCompletion;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Abstractions;
 using Microsoft.SemanticKernel.Experimental.Orchestration.Execution;
 using Microsoft.SemanticKernel.Memory;
@@ -125,7 +125,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
         {
             try
             {
-                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? new List<ReActStep>();
+                return JsonSerializer.Deserialize<List<ReActStep>>(text) ?? [];
             }
             catch
             {
@@ -134,7 +134,7 @@ public sealed class FlowStatusProvider : IFlowStatusProvider
             }
         }
 
-        return new List<ReActStep>();
+        return [];
     }
 
     /// <inheritdoc/>

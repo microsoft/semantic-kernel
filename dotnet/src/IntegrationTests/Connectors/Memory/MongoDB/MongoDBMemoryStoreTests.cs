@@ -3,27 +3,22 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Connectors.Memory.MongoDB;
+namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 
 /// <summary>
 /// Integration tests of <see cref="MongoDBMemoryStore"/>.
 /// </summary>
-public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixture>
+public class MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture) : IClassFixture<MongoDBMemoryStoreTestsFixture>
 {
     // If null, all tests will be enabled
     private const string? SkipReason = "MongoDB Atlas cluster is required";
 
-    private readonly MongoDBMemoryStoreTestsFixture _fixture;
-
-    public MongoDBMemoryStoreTests(MongoDBMemoryStoreTestsFixture fixture)
-    {
-        this._fixture = fixture;
-    }
+    private readonly MongoDBMemoryStoreTestsFixture _fixture = fixture;
 
     [Fact(Skip = SkipReason)]
     public async Task ItCanCreateAndGetCollectionAsync()
@@ -258,7 +253,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         // Arrange
         var collectionName = GetRandomName();
         var memoryStore = this._fixture.MemoryStore;
-        var ids = new[] { "a", "b", "c" };
+        string[] ids = ["a", "b", "c"];
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
@@ -276,7 +271,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
         var collectionName = GetRandomName();
         var memoryStore = this._fixture.MemoryStore;
         var testRecords = DataHelper.CreateBatchRecords(10);
-        var ids = testRecords.Select(t => t.Metadata.Id).Concat(new[] { "a", "b", "c" }).ToArray();
+        var ids = testRecords.Select(t => t.Metadata.Id).Concat(["a", "b", "c"]).ToArray();
 
         // Act
         await memoryStore.CreateCollectionAsync(collectionName);
@@ -292,7 +287,7 @@ public class MongoDBMemoryStoreTests : IClassFixture<MongoDBMemoryStoreTestsFixt
     {
         // Arrange
         var memoryStore = this._fixture.ListCollectionsMemoryStore;
-        var testCollections = new[] { "collection1", "collection2", "collection3" };
+        string[] testCollections = ["collection1", "collection2", "collection3"];
         foreach (var collection in testCollections)
         {
             await memoryStore.CreateCollectionAsync(collection);

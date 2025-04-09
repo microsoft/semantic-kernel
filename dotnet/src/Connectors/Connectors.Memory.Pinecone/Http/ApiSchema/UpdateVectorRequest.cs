@@ -2,11 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// The Update operation updates vector in a namespace.
@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
 /// If a set_metadata is included, the values of the fields specified in it will be added or overwrite the previous value.
 /// See https://docs.pinecone.io/reference/update
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class UpdateVectorRequest
 {
     /// <summary>

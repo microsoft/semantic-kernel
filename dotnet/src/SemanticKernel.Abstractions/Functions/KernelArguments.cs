@@ -3,7 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.AI;
+using System.Text.Json.Serialization;
 
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
@@ -21,20 +21,53 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
 {
     /// <summary>Dictionary of name/values for all the arguments in the instance.</summary>
     private readonly Dictionary<string, object?> _arguments;
+    private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
     /// <summary>
-    /// The main input parameter name.
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
-    public const string InputParameterName = "input";
+    [JsonConstructor]
+    public KernelArguments()
+    {
+        this._arguments = new(StringComparer.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
-    public KernelArguments(PromptExecutionSettings? executionSettings = null)
+    public KernelArguments(PromptExecutionSettings? executionSettings)
+        : this(executionSettings is null ? null : [executionSettings])
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
+    /// </summary>
+    /// <param name="executionSettings">The prompt execution settings.</param>
+    public KernelArguments(IEnumerable<PromptExecutionSettings>? executionSettings)
     {
         this._arguments = new(StringComparer.OrdinalIgnoreCase);
-        this.ExecutionSettings = executionSettings;
+        if (executionSettings is not null)
+        {
+            var newExecutionSettings = new Dictionary<string, PromptExecutionSettings>();
+            foreach (var settings in executionSettings)
+            {
+                var targetServiceId = settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
+                if (newExecutionSettings.ContainsKey(targetServiceId))
+                {
+                    var exceptionMessage = (targetServiceId == PromptExecutionSettings.DefaultServiceId)
+                        ? $"Multiple prompt execution settings with the default service id '{PromptExecutionSettings.DefaultServiceId}' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances."
+                        : $"Multiple prompt execution settings with the service id '{targetServiceId}' have been provided. Provide a unique service id for all instances.";
+
+                    throw new ArgumentException(exceptionMessage, nameof(executionSettings));
+                }
+
+                newExecutionSettings[targetServiceId] = settings;
+            }
+
+            this.ExecutionSettings = newExecutionSettings;
+        }
     }
 
     /// <summary>
@@ -46,7 +79,7 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     /// If <paramref name="executionSettings"/> is non-null, it is used as the <see cref="ExecutionSettings"/> for this new instance.
     /// Otherwise, if the source is a <see cref="KernelArguments"/>, its <see cref="ExecutionSettings"/> are used.
     /// </remarks>
-    public KernelArguments(IDictionary<string, object?> source, PromptExecutionSettings? executionSettings = null)
+    public KernelArguments(IDictionary<string, object?> source, Dictionary<string, PromptExecutionSettings>? executionSettings = null)
     {
         Verify.NotNull(source);
 
@@ -55,20 +88,32 @@ public sealed class KernelArguments : IDictionary<string, object?>, IReadOnlyDic
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains a single input argument.
-    /// </summary>
-    /// <param name="input">A string input value to use as the <see cref="InputParameterName"/> argument.</param>
-    /// <param name="executionSettings">The prompt execution settings.</param>
-    public KernelArguments(string? input, PromptExecutionSettings? executionSettings = null)
-    {
-        this._arguments = new(1, StringComparer.OrdinalIgnoreCase) { [InputParameterName] = input };
-        this.ExecutionSettings = executionSettings;
-    }
-
-    /// <summary>
     /// Gets or sets the prompt execution settings.
     /// </summary>
-    public PromptExecutionSettings? ExecutionSettings { get; set; }
+    /// <remarks>
+    /// The settings dictionary is keyed by the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.
+    /// When setting, the service id of each <see cref="PromptExecutionSettings"/> must match the key in the dictionary.
+    /// </remarks>
+    public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings
+    {
+        get => this._executionSettings;
+        set
+        {
+            if (value is { Count: > 0 })
+            {
+                foreach (var kv in value!)
+                {
+                    // Ensures that if a service id is specified it needs to match to the current key in the dictionary.
+                    if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
+                    {
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(this.ExecutionSettings));
+                    }
+                }
+            }
+
+            this._executionSettings = value;
+        }
+    }
 
     /// <summary>
     /// Gets the number of arguments contained in the <see cref="KernelArguments"/>.

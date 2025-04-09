@@ -562,21 +562,21 @@ public sealed class PlanTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
         if (useChatModel)
         {
             c.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                credentials: new AzureCliCredential());
         }
         else
         {
             c.AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                credentials: new AzureCliCredential());
         }
 
         if (useEmbeddings)

@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// DescribeIndexStatsRequest
 /// See https://docs.pinecone.io/reference/describe_index_stats_post
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class DescribeIndexStatsRequest
 {
     /// <summary>
@@ -32,7 +34,7 @@ internal sealed class DescribeIndexStatsRequest
 
     public HttpRequestMessage Build()
     {
-        HttpRequestMessage request = this.Filter == null
+        HttpRequestMessage request = this.Filter is null
             ? HttpRequest.CreatePostRequest("/describe_index_stats")
             : HttpRequest.CreatePostRequest("/describe_index_stats", this);
 

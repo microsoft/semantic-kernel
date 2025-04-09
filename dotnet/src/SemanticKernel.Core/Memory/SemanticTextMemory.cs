@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Embeddings;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -15,10 +15,10 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Implementation of <see cref="ISemanticTextMemory"/>. Provides methods to save, retrieve, and search for text information
 /// in a semantic memory store.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class SemanticTextMemory : ISemanticTextMemory
 {
-    private readonly ITextEmbeddingGeneration _embeddingGenerator;
+    private readonly ITextEmbeddingGenerationService _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
     /// <summary>
@@ -28,7 +28,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     /// <param name="embeddingGenerator">The text embedding generator to use for generating embeddings.</param>
     public SemanticTextMemory(
         IMemoryStore storage,
-        ITextEmbeddingGeneration embeddingGenerator)
+        ITextEmbeddingGenerationService embeddingGenerator)
     {
         this._embeddingGenerator = embeddingGenerator;
         this._storage = storage;
@@ -46,7 +46,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     {
         var embedding = await this._embeddingGenerator.GenerateEmbeddingAsync(text, kernel, cancellationToken).ConfigureAwait(false);
         MemoryRecord data = MemoryRecord.LocalRecord(
-            id: id, text: text, description: description, additionalMetadata: additionalMetadata, embedding: embedding);
+            id: id,
+            text: text,
+            description: description,
+            additionalMetadata: additionalMetadata,
+            embedding: embedding);
 
         if (!(await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
@@ -89,7 +93,7 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     {
         MemoryRecord? record = await this._storage.GetAsync(collection, key, withEmbedding, cancellationToken).ConfigureAwait(false);
 
-        if (record == null) { return null; }
+        if (record is null) { return null; }
 
         return MemoryQueryResult.FromMemoryRecord(record, 1);
     }
@@ -116,17 +120,20 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     {
         ReadOnlyMemory<float> queryEmbedding = await this._embeddingGenerator.GenerateEmbeddingAsync(query, kernel, cancellationToken).ConfigureAwait(false);
 
-        IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
-            collectionName: collection,
-            embedding: queryEmbedding,
-            limit: limit,
-            minRelevanceScore: minRelevanceScore,
-            withEmbeddings: withEmbeddings,
-            cancellationToken: cancellationToken);
-
-        await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken))
+        if ((await this._storage.DoesCollectionExistAsync(collection, cancellationToken).ConfigureAwait(false)))
         {
-            yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+            IAsyncEnumerable<(MemoryRecord, double)> results = this._storage.GetNearestMatchesAsync(
+                collectionName: collection,
+                embedding: queryEmbedding,
+                limit: limit,
+                minRelevanceScore: minRelevanceScore,
+                withEmbeddings: withEmbeddings,
+                cancellationToken: cancellationToken);
+
+            await foreach ((MemoryRecord, double) result in results.WithCancellation(cancellationToken).ConfigureAwait(false))
+            {
+                yield return MemoryQueryResult.FromMemoryRecord(result.Item1, result.Item2);
+            }
         }
     }
 

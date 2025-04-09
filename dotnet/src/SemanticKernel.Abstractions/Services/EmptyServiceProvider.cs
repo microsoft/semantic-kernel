@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
@@ -32,9 +33,29 @@ internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProv
         if (serviceType.IsConstructedGenericType &&
             serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
         {
-            return Array.CreateInstance(serviceType.GenericTypeArguments[0], 0);
+            return CreateArray(serviceType.GenericTypeArguments[0], 0);
         }
 
         return null;
     }
+
+    [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode", Justification = "VerifyAotCompatibility ensures elementType is not a ValueType")]
+    private static Array CreateArray(Type elementType, int length)
+    {
+        if (VerifyAotCompatibility && elementType.IsValueType)
+        {
+            // NativeAOT apps are not able to make Enumerable of ValueType services
+            // since there is no guarantee the ValueType[] code has been generated.
+            throw new InvalidOperationException($"Unable to create an Enumerable service of type '{elementType}' because it is a ValueType. Native code to support creating Enumerable services might not be available with native AOT.");
+        }
+
+        return Array.CreateInstance(elementType, length);
+    }
+
+    private static bool VerifyAotCompatibility =>
+#if NETFRAMEWORK || NETSTANDARD2_0
+            false;
+#else
+            !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
+#endif
 }

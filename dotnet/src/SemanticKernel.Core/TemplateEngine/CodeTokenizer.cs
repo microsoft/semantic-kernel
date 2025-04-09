@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -33,7 +32,7 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
 /// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 /// </summary>
-internal sealed class CodeTokenizer
+internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 {
     private enum TokenTypes
     {
@@ -44,12 +43,7 @@ internal sealed class CodeTokenizer
         NamedArg = 4,
     }
 
-    private readonly ILoggerFactory _loggerFactory;
-
-    public CodeTokenizer(ILoggerFactory? loggerFactory = null)
-    {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-    }
+    private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
     /// <summary>
     /// Tokenize a code block, without checking for syntax errors
@@ -62,7 +56,7 @@ internal sealed class CodeTokenizer
         text = text?.Trim();
 
         // Render NULL to ""
-        if (string.IsNullOrEmpty(text)) { return new List<Block>(); }
+        if (string.IsNullOrEmpty(text)) { return []; }
 
         // Track what type of token we're reading
         TokenTypes currentTokenType = TokenTypes.None;
@@ -323,14 +317,13 @@ internal sealed class CodeTokenizer
     Justification = "Does not throw an exception by design.")]
     private static bool IsValidNamedArg(string tokenContent)
     {
-        try
+        if (NamedArgBlock.TryGetNameAndValue(tokenContent, out string _, out string _))
         {
             var tokenContentAsNamedArg = new NamedArgBlock(tokenContent);
-            return tokenContentAsNamedArg.IsValid(out var error);
+
+            return tokenContentAsNamedArg.IsValid(out string _);
         }
-        catch
-        {
-            return false;
-        }
+
+        return false;
     }
 }

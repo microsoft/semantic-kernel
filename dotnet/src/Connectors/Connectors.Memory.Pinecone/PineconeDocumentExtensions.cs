@@ -2,15 +2,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Extensions for <see cref="PineconeDocument"/> class.
 /// </summary>
+[Experimental("SKEXP0020")]
 public static class PineconeDocumentExtensions
 {
     /// <summary>
@@ -39,7 +41,7 @@ public static class PineconeDocumentExtensions
             JsonSerializerOptions options = PineconeUtils.DefaultSerializerOptions;
             var additionalMetaData = JsonSerializer.Deserialize<Dictionary<string, object>>(memoryRecord.Metadata.AdditionalMetadata, options);
 
-            if (additionalMetaData != null)
+            if (additionalMetaData is not null)
             {
                 foreach (var item in additionalMetaData)
                 {
@@ -58,16 +60,7 @@ public static class PineconeDocumentExtensions
     /// </summary>
     /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
     /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
-    public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument) =>
-        ToMemoryRecord(pineconeDocument, transferVectorOwnership: false);
-
-    /// <summary>
-    /// Maps <see cref="PineconeDocument"/> instance to <see cref="MemoryRecord"/>.
-    /// </summary>
-    /// <param name="pineconeDocument">Instance of <see cref="PineconeDocument"/>.</param>
-    /// <param name="transferVectorOwnership">Whether to allow the created embedding to store a reference to this instance.</param>
-    /// <returns>Instance of <see cref="MemoryRecord"/>.</returns>
-    internal static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument, bool transferVectorOwnership)
+    public static MemoryRecord ToMemoryRecord(this PineconeDocument pineconeDocument)
     {
         ReadOnlyMemory<float> embedding = pineconeDocument.Values;
 
@@ -82,7 +75,7 @@ public static class PineconeDocumentExtensions
             additionalMetadataJson
         );
 
-        DateTimeOffset? timestamp = pineconeDocument.CreatedAt != null
+        DateTimeOffset? timestamp = pineconeDocument.CreatedAt is not null
             ? DateTimeOffset.Parse(pineconeDocument.CreatedAt, DateTimeFormatInfo.InvariantInfo)
             : null;
 

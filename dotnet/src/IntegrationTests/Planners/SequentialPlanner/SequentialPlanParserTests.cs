@@ -30,11 +30,11 @@ public class SequentialPlanParserTests
         AzureOpenAIConfiguration? azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIConfiguration);
 
-        Kernel kernel = new KernelBuilder()
+        Kernel kernel = Kernel.CreateBuilder()
             .WithAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey,
+                credentials: new AzureCliCredential(),
                 serviceId: azureOpenAIConfiguration.ServiceId)
             .Build();
         kernel.ImportPluginFromType<EmailPluginFake>("email");

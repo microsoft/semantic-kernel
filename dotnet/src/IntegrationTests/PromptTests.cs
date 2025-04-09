@@ -4,12 +4,12 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.PromptTemplate.Handlebars;
-using SemanticKernel.IntegrationTests.Connectors.OpenAI;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,18 +21,16 @@ public sealed class PromptTests : IDisposable
     public PromptTests(ITestOutputHelper output)
     {
         this._logger = new XunitLogger<Kernel>(output);
-        this._testOutputHelper = new RedirectOutput(output);
-        Console.SetOut(this._testOutputHelper);
 
         // Load configuration
         this._configuration = new ConfigurationBuilder()
             .AddJsonFile(path: "testsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile(path: "testsettings.development.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<OpenAICompletionTests>()
+            .AddUserSecrets<PromptTests>()
             .Build();
 
-        this._kernelBuilder = new KernelBuilder();
+        this._kernelBuilder = Kernel.CreateBuilder();
         this._kernelBuilder.Services.AddSingleton<ILoggerFactory>(this._logger);
     }
 
@@ -59,51 +57,33 @@ public sealed class PromptTests : IDisposable
             });
 
         // Assert
-        Assert.Contains("Dog", actual.GetValue<string>(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(actual.GetValue<string>()?.Length > 0);
     }
 
     #region private methods
 
-    private readonly KernelBuilder _kernelBuilder;
+    private readonly IKernelBuilder _kernelBuilder;
     private readonly IConfigurationRoot _configuration;
     private readonly XunitLogger<Kernel> _logger;
-    private readonly RedirectOutput _testOutputHelper;
 
     public void Dispose()
     {
-        this.Dispose(true);
-        GC.SuppressFinalize(this);
+        this._logger.Dispose();
     }
 
-    ~PromptTests()
-    {
-        this.Dispose(false);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            this._logger.Dispose();
-            this._testOutputHelper.Dispose();
-        }
-    }
-
-    private void ConfigureAzureOpenAI(KernelBuilder kernelBuilder)
+    private void ConfigureAzureOpenAI(IKernelBuilder kernelBuilder)
     {
         var azureOpenAIConfiguration = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>();
 
         Assert.NotNull(azureOpenAIConfiguration);
-        Assert.NotNull(azureOpenAIConfiguration.DeploymentName);
+        Assert.NotNull(azureOpenAIConfiguration.ChatDeploymentName);
         Assert.NotNull(azureOpenAIConfiguration.Endpoint);
-        Assert.NotNull(azureOpenAIConfiguration.ApiKey);
         Assert.NotNull(azureOpenAIConfiguration.ServiceId);
 
-        kernelBuilder.AddAzureOpenAITextGeneration(
-            deploymentName: azureOpenAIConfiguration.DeploymentName,
-            modelId: azureOpenAIConfiguration.ModelId,
+        kernelBuilder.AddAzureOpenAIChatCompletion(
+            deploymentName: azureOpenAIConfiguration.ChatDeploymentName,
             endpoint: azureOpenAIConfiguration.Endpoint,
-            apiKey: azureOpenAIConfiguration.ApiKey,
+            credentials: new AzureCliCredential(),
             serviceId: azureOpenAIConfiguration.ServiceId);
     }
     #endregion

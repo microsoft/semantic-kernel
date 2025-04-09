@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pod type of the index, see https://docs.pinecone.io/docs/indexes#pods-pod-types-and-pod-sizes.
 /// </summary>
+[Experimental("SKEXP0020")]
 [JsonConverter(typeof(PodTypeJsonConverter))]
 public enum PodType
 {
@@ -96,10 +98,17 @@ public enum PodType
     /// Enum Starter for value: starter
     /// </summary>
     [EnumMember(Value = "starter")]
-    Starter = 13
+    Starter = 13,
+
+    /// <summary>
+    /// Enum Nano for value: nano
+    /// </summary>
+    [EnumMember(Value = "nano")]
+    Nano = 14
 }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
+[Experimental("SKEXP0020")]
 internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
 #pragma warning restore CA1812
 {
@@ -110,10 +119,10 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
         object? enumValue = Enum
             .GetValues(typeToConvert)
             .Cast<object?>()
-            .FirstOrDefault(value => value != null && typeToConvert.GetMember(value.ToString()!)[0]
-                .GetCustomAttribute(typeof(EnumMemberAttribute)) is EnumMemberAttribute enumMemberAttr && enumMemberAttr.Value == stringValue);
+            .FirstOrDefault(value => value is not null && typeToConvert.GetMember(value.ToString()!)[0]
+                .GetCustomAttribute<EnumMemberAttribute>() is { } enumMemberAttr && enumMemberAttr.Value == stringValue);
 
-        if (enumValue != null)
+        if (enumValue is not null)
         {
             return (PodType)enumValue;
         }
@@ -123,15 +132,11 @@ internal sealed class PodTypeJsonConverter : JsonConverter<PodType>
 
     public override void Write(Utf8JsonWriter writer, PodType value, JsonSerializerOptions options)
     {
-        EnumMemberAttribute? enumMemberAttr = value.GetType().GetMember(value.ToString())[0].GetCustomAttribute(typeof(EnumMemberAttribute)) as EnumMemberAttribute;
-
-        if (enumMemberAttr != null)
-        {
-            writer.WriteStringValue(enumMemberAttr.Value);
-        }
-        else
+        if (value.GetType().GetMember(value.ToString())[0].GetCustomAttribute<EnumMemberAttribute>() is not { } enumMemberAttr)
         {
             throw new JsonException($"Unable to find EnumMember attribute for PodType '{value}'.");
         }
+
+        writer.WriteStringValue(enumMemberAttr.Value);
     }
 }

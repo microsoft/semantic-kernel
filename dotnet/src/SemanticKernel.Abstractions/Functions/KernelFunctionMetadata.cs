@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
@@ -16,9 +17,13 @@ public sealed class KernelFunctionMetadata
     /// <summary>The description of the function.</summary>
     private string _description = string.Empty;
     /// <summary>The function's parameters.</summary>
-    private IReadOnlyList<KernelParameterMetadata> _parameters = Array.Empty<KernelParameterMetadata>();
+    private IReadOnlyList<KernelParameterMetadata> _parameters = [];
     /// <summary>The function's return parameter.</summary>
     private KernelReturnParameterMetadata? _returnParameter;
+    /// <summary>Optional metadata in addition to the named properties already available on this class.</summary>
+    private ReadOnlyDictionary<string, object?>? _additionalProperties;
+    /// <summary>A static empty dictionary to default to when none is provided.</summary>
+    internal static readonly ReadOnlyDictionary<string, object?> s_emptyDictionary = new(new Dictionary<string, object?>());
 
     /// <summary>Initializes the <see cref="KernelFunctionMetadata"/> for a function with the specified name.</summary>
     /// <param name="name">The name of the function.</param>
@@ -43,6 +48,7 @@ public sealed class KernelFunctionMetadata
         this.Description = metadata.Description;
         this.Parameters = metadata.Parameters;
         this.ReturnParameter = metadata.ReturnParameter;
+        this.AdditionalProperties = metadata.AdditionalProperties;
     }
 
     /// <summary>Gets the name of the function.</summary>
@@ -84,11 +90,22 @@ public sealed class KernelFunctionMetadata
     /// <remarks>If the function has no return parameter, the returned value will be a default instance of a <see cref="KernelReturnParameterMetadata"/>.</remarks>
     public KernelReturnParameterMetadata ReturnParameter
     {
-        get => this._returnParameter ??= new();
+        get => this._returnParameter ??= KernelReturnParameterMetadata.Empty;
         init
         {
             Verify.NotNull(value);
             this._returnParameter = value;
+        }
+    }
+
+    /// <summary>Gets optional metadata in addition to the named properties already available on this class.</summary>
+    public ReadOnlyDictionary<string, object?> AdditionalProperties
+    {
+        get => this._additionalProperties ??= s_emptyDictionary;
+        init
+        {
+            Verify.NotNull(value);
+            this._additionalProperties = value;
         }
     }
 }

@@ -1,12 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch</AssemblyName>
-    <RootNamespace>Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
-
-    <!--NU5104: A stable release of a package should not have a prerelease dependency.-->
-    <NoWarn>NU5104</NoWarn>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.AzureAISearch</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Connectors.AzureAISearch</RootNamespace>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -15,13 +13,17 @@
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
-    <PackageId>Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch</PackageId>
+    <PackageId>Microsoft.SemanticKernel.Connectors.AzureAISearch</PackageId>
     <Title>Semantic Kernel - Azure AI Search Semantic Memory</Title>
     <Description>Azure AI Search Semantic Memory connector for Semantic Kernel</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Search.Documents" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SemanticKernel.Connectors.AzureAISearch.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

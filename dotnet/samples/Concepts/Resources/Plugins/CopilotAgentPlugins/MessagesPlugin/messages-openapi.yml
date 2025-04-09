@@ -1,0 +1,513 @@
+openapi: 3.0.1
+info:
+  title: OData Service for namespace microsoft.graph - Subset
+  description: This OData service is located at https://graph.microsoft.com/v1.0
+  version: v1.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
+paths:
+  /me/messages:
+    get:
+      tags:
+        - me.message
+      summary: Get the messages in the signed-in user\u0026apos;s mailbox
+      description: Get the messages in the signed-in user\u0026apos;s mailbox (including the Deleted Items and Clutter folders). Depending on the page size and mailbox data, getting messages from a mailbox can incur multiple requests. The default page size is 10 messages. Use $top to customize the page size, within the range of 1 and 1000. To improve the operation response time, use $select to specify the exact properties you need; see example 1 below. Fine-tune the values for $select and $top, especially when you must use a larger page size, as returning a page with hundreds of messages each with a full response payload may trigger the gateway timeout (HTTP 504). To get the next page of messages, simply apply the entire URL returned in @odata.nextLink to the next get-messages request. This URL includes any query parameters you may have specified in the initial request. Do not try to extract the $skip value from the @odata.nextLink URL to manipulate responses. This API uses the $skip value to keep count of all the items it has gone through in the user\u0026apos;s mailbox to return a page of message-type items. It\u0026apos;s therefore possible that even in the initial response, the $skip value is larger than the page size. For more information, see Paging Microsoft Graph data in your app. Currently, this operation returns message bodies in only HTML format. There are two scenarios where an app can get messages in another user\u0026apos;s mail folder
+      operationId: me_ListMessages
+      parameters:
+        - name: includeHiddenMessages
+          in: query
+          description: Include Hidden Messages
+          style: form
+          explode: false
+          schema:
+            type: string
+        - $ref: '#/components/parameters/top'
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/search'
+        - $ref: '#/components/parameters/filter'
+        - $ref: '#/components/parameters/count'
+        - name: $orderby
+          in: query
+          description: Order items by property values
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          $ref: '#/components/responses/microsoft.graph.messageCollectionResponse'
+      x-ms-pageable:
+        nextLinkName: '@odata.nextLink'
+        operationName: listMore
+        itemName: value
+  /me/sendMail:
+    post:
+      tags:
+        - me.user.Actions
+      summary: Invoke action sendMail
+      description: 'Send the message specified in the request body using either JSON or MIME format. When using JSON format, you can include a file attachment in the same sendMail action call. When using MIME format: This method saves the message in the Sent Items folder. Alternatively, create a draft message to send later. To learn more about the steps involved in the backend before a mail is delivered to recipients, see here.'
+      operationId: me_sendMail
+      requestBody:
+        $ref: '#/components/requestBodies/sendMailRequestBody'
+      responses:
+        '204':
+          description: Success
+components:
+  schemas:
+    microsoft.graph.message:
+      title: message
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The categories associated with the item
+        changeKey:
+          type: string
+          description: 'Identifies the version of the item. Every time the item is changed, changeKey changes as well. This allows Exchange to apply changes to the correct version of the object. Read-only.'
+          nullable: true
+        createdDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        lastModifiedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        bccRecipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.recipient'
+          description: 'The Bcc: recipients for the message.'
+        body:
+          $ref: '#/components/schemas/microsoft.graph.itemBody'
+        bodyPreview:
+          type: string
+          description: The first 255 characters of the message body. It is in text format.
+          nullable: true
+        ccRecipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.recipient'
+          description: 'The Cc: recipients for the message.'
+        conversationId:
+          type: string
+          description: The ID of the conversation the email belongs to.
+          nullable: true
+        conversationIndex:
+          type: string
+          description: Indicates the position of the message within the conversation.
+          format: base64url
+          nullable: true
+        flag:
+          $ref: '#/components/schemas/microsoft.graph.followupFlag'
+        from:
+          $ref: '#/components/schemas/microsoft.graph.recipient'
+        hasAttachments:
+          type: boolean
+          description: 'Indicates whether the message has attachments. This property doesn''t include inline attachments, so if a message contains only inline attachments, this property is false. To verify the existence of inline attachments, parse the body property to look for a src attribute, such as <IMG src=''cid:image001.jpg@01D26CD8.6C05F070''>.'
+          nullable: true
+        importance:
+          $ref: '#/components/schemas/microsoft.graph.importance'
+        inferenceClassification:
+          $ref: '#/components/schemas/microsoft.graph.inferenceClassificationType'
+        internetMessageHeaders:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.internetMessageHeader'
+          description: A collection of message headers defined by RFC5322. The set includes message headers indicating the network path taken by a message from the sender to the recipient. It can also contain custom message headers that hold app data for the message.  Returned only on applying a $select query option. Read-only.
+        internetMessageId:
+          type: string
+          description: The message ID in the format specified by RFC2822.
+          nullable: true
+        isDeliveryReceiptRequested:
+          type: boolean
+          description: Indicates whether a read receipt is requested for the message.
+          nullable: true
+        isDraft:
+          type: boolean
+          description: Indicates whether the message is a draft. A message is a draft if it hasn't been sent yet.
+          nullable: true
+        isRead:
+          type: boolean
+          description: Indicates whether the message has been read.
+          nullable: true
+        isReadReceiptRequested:
+          type: boolean
+          description: Indicates whether a read receipt is requested for the message.
+          nullable: true
+        parentFolderId:
+          type: string
+          description: The unique identifier for the message's parent mailFolder.
+          nullable: true
+        receivedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The date and time the message was received.  The date and time information uses ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.'
+          format: date-time
+          nullable: true
+        replyTo:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.recipient'
+          description: The email addresses to use when replying.
+        sender:
+          $ref: '#/components/schemas/microsoft.graph.recipient'
+        sentDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The date and time the message was sent.  The date and time information uses ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z.'
+          format: date-time
+          nullable: true
+        subject:
+          type: string
+          description: The subject of the message.
+          nullable: true
+        toRecipients:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.recipient'
+          description: 'The To: recipients for the message.'
+        uniqueBody:
+          $ref: '#/components/schemas/microsoft.graph.itemBody'
+        webLink:
+          type: string
+          description: 'The URL to open the message in Outlook on the web.You can append an ispopout argument to the end of the URL to change how the message is displayed. If ispopout is not present or if it is set to 1, then the message is shown in a popout window. If ispopout is set to 0, the browser shows the message in the Outlook on the web review pane.The message opens in the browser if you are signed in to your mailbox via Outlook on the web. You are prompted to sign in if you are not already signed in with the browser.This URL cannot be accessed from within an iFrame.'
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.attachment'
+          description: The fileAttachment and itemAttachment attachments for the message.
+        extensions:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.extension'
+          description: The collection of open extensions defined for the message. Nullable.
+        multiValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.multiValueLegacyExtendedProperty'
+          description: The collection of multi-value extended properties defined for the message. Nullable.
+        singleValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.singleValueLegacyExtendedProperty'
+          description: The collection of single-value extended properties defined for the message. Nullable.
+    microsoft.graph.recipient:
+      title: recipient
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        emailAddress:
+          $ref: '#/components/schemas/microsoft.graph.emailAddress'
+        '@odata.type':
+          type: string
+      discriminator:
+        propertyName: '@odata.type'
+    microsoft.graph.itemBody:
+      title: itemBody
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        content:
+          type: string
+          description: The content of the item.
+          nullable: true
+        contentType:
+          $ref: '#/components/schemas/microsoft.graph.bodyType'
+        '@odata.type':
+          type: string
+      description: The body of the message. It can be in HTML or text format. Find out about safe HTML in a message body.
+    microsoft.graph.followupFlag:
+      title: followupFlag
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        completedDateTime:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        dueDateTime:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        flagStatus:
+          $ref: '#/components/schemas/microsoft.graph.followupFlagStatus'
+        startDateTime:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        '@odata.type':
+          type: string
+      description: 'The flag value that indicates the status, start date, due date, or completion date for the message.'
+    microsoft.graph.importance:
+      title: importance
+      enum:
+        - low
+        - normal
+        - high
+      type: string
+      description: 'The importance of the message. The possible values are: low, normal, and high.'
+    microsoft.graph.inferenceClassificationType:
+      title: inferenceClassificationType
+      enum:
+        - focused
+        - other
+      type: string
+      description: 'The classification of the message for the user, based on inferred relevance or importance, or on an explicit override. The possible values are: focused or other.'
+    microsoft.graph.internetMessageHeader:
+      title: internetMessageHeader
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        name:
+          type: string
+          description: Represents the key in a key-value pair.
+          nullable: true
+        value:
+          type: string
+          description: The value in a key-value pair.
+          nullable: true
+        '@odata.type':
+          type: string
+    microsoft.graph.attachment:
+      title: attachment
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        contentType:
+          type: string
+          description: The MIME type.
+          nullable: true
+        isInline:
+          type: boolean
+          description: 'true if the attachment is an inline attachment; otherwise, false.'
+        lastModifiedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        name:
+          type: string
+          description: The attachment's file name.
+          nullable: true
+        size:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: The length of the attachment in bytes.
+          format: int32
+    microsoft.graph.extension:
+      title: extension
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+    microsoft.graph.multiValueLegacyExtendedProperty:
+      title: multiValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: A collection of property values.
+    microsoft.graph.singleValueLegacyExtendedProperty:
+      title: singleValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: string
+          description: A property value.
+          nullable: true
+    microsoft.graph.messageCollectionResponse:
+      title: Base collection pagination and count responses
+      type: object
+      properties:
+        '@odata.count':
+          type: integer
+          format: int64
+          nullable: true
+        '@odata.nextLink':
+          type: string
+          nullable: true
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.message'
+    microsoft.graph.emailAddress:
+      title: emailAddress
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        address:
+          type: string
+          description: The email address of the person or entity.
+          nullable: true
+        name:
+          type: string
+          description: The display name of the person or entity.
+          nullable: true
+        '@odata.type':
+          type: string
+      description: The recipient's email address.
+    microsoft.graph.bodyType:
+      title: bodyType
+      enum:
+        - text
+        - html
+      type: string
+      description: The type of the content. Possible values are text and html.
+    microsoft.graph.dateTimeTimeZone:
+      title: dateTimeTimeZone
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        dateTime:
+          type: string
+          description: 'A single point of time in a combined date and time representation ({date}T{time}; for example, 2017-08-29T04:00:00.0000000).'
+        timeZone:
+          type: string
+          description: 'Represents a time zone, for example, ''Pacific Standard Time''. See below for more possible values.'
+          nullable: true
+        '@odata.type':
+          type: string
+      description: The date and time that the follow-up was finished.
+    microsoft.graph.followupFlagStatus:
+      title: followupFlagStatus
+      enum:
+        - notFlagged
+        - complete
+        - flagged
+      type: string
+      description: 'The status for follow-up for an item. Possible values are notFlagged, complete, and flagged.'
+  responses:
+    microsoft.graph.messageCollectionResponse:
+      description: Retrieved collection
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/microsoft.graph.messageCollectionResponse'
+  parameters:
+    top:
+      name: $top
+      in: query
+      description: Show only the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+      example: 50
+    skip:
+      name: $skip
+      in: query
+      description: Skip the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+    search:
+      name: $search
+      in: query
+      description: Search items by search phrases
+      style: form
+      explode: false
+      schema:
+        type: string
+    filter:
+      name: $filter
+      in: query
+      description: Filter items by property values
+      style: form
+      explode: false
+      schema:
+        type: string
+    count:
+      name: $count
+      in: query
+      description: Include count of items
+      style: form
+      explode: false
+      schema:
+        type: boolean
+  requestBodies:
+    sendMailRequestBody:
+      description: Action parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              Message:
+                $ref: '#/components/schemas/microsoft.graph.message'
+              SaveToSentItems:
+                type: boolean
+                default: false
+                nullable: true
+      required: true

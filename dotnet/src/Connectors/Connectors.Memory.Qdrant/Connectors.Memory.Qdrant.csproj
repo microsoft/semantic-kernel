@@ -2,9 +2,10 @@
   
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Qdrant</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Qdrant</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
   
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -19,10 +20,15 @@
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Qdrant.Client" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Plugins\Plugins.Memory\Plugins.Memory.csproj" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 

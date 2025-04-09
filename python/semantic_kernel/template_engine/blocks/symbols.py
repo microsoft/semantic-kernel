@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
+from enum import Enum
 
 
-class Symbols:
+class Symbols(str, Enum):
+    """Symbols used in the template engine."""
+
     BLOCK_STARTER = "{"
     BLOCK_ENDER = "}"
 
@@ -15,3 +18,5 @@ class Symbols:
     TAB = "\t"
     NEW_LINE = "\n"
     CARRIAGE_RETURN = "\r"
+
+    NAMED_ARG_BLOCK_SEPARATOR = "="

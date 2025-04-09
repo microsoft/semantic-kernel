@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.SemanticKernel.Memory;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.Postgres;
+namespace SemanticKernel.Connectors.UnitTests.Postgres;
 
 /// <summary>
 /// Unit tests for <see cref="PostgresMemoryStore"/> class.
@@ -112,7 +112,7 @@ public class PostgresMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var batchUpsertMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] batchUpsertMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
         var expectedMemoryRecordKeys = batchUpsertMemoryRecords.Select(l => l.Key).ToList();
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
@@ -181,7 +181,7 @@ public class PostgresMemoryStoreTests
         var memoryRecord2 = this.GetRandomMemoryRecord();
         var memoryRecord3 = this.GetRandomMemoryRecord();
 
-        var expectedMemoryRecords = new[] { memoryRecord1, memoryRecord2, memoryRecord3 };
+        MemoryRecord[] expectedMemoryRecords = [memoryRecord1, memoryRecord2, memoryRecord3];
         var memoryRecordKeys = expectedMemoryRecords.Select(l => l.Key).ToList();
 
         foreach (var memoryRecord in expectedMemoryRecords)
@@ -197,7 +197,7 @@ public class PostgresMemoryStoreTests
 
         this._postgresDbClientMock
                 .Setup(client => client.ReadBatchAsync(CollectionName, memoryRecordKeys, true, CancellationToken.None))
-                .Returns(expectedMemoryRecords.Select(memoryRecord => this.GetPostgresMemoryEntryFromMemoryRecord(memoryRecord)).ToAsyncEnumerable());
+                .Returns(expectedMemoryRecords.Select(this.GetPostgresMemoryEntryFromMemoryRecord).ToAsyncEnumerable());
 
         using var store = new PostgresMemoryStore(this._postgresDbClientMock.Object);
 

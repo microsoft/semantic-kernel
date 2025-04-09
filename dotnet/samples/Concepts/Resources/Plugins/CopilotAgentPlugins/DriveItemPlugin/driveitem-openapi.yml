@@ -1,0 +1,40 @@
+openapi: 3.0.1
+info:
+  title: OData Service for namespace microsoft.graph - Subset
+  description: This OData service is located at https://graph.microsoft.com/v1.0
+  version: v1.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
+paths:
+  "/me/drive/root/children/{driveItem-id}/content":
+    get:
+      tags:
+        - drives.driveItem
+      summary: Get content for the navigation property items from drives
+      description: "The content stream, if the item represents a file."
+      operationId: drives_GetItemsContent
+      parameters:
+        - name: $format
+          in: query
+          description: Format of the content
+          style: form
+          explode: false
+          schema:
+            type: string
+      responses:
+        2XX:
+          description: Retrieved media content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    parameters:
+      - name: driveItem-id
+        in: path
+        description: The unique identifier of driveItem
+        required: true
+        style: simple
+        schema:
+          type: string
+components: {}

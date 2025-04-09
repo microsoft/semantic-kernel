@@ -6,11 +6,16 @@
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <AnalysisLevel>latest</AnalysisLevel>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>10</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- In "main" branch this flag should be always "false". -->
+    <IsReleaseCandidate>false</IsReleaseCandidate>
+  </PropertyGroup>
+  
   <PropertyGroup>
     <!-- Disable NuGet packaging by default. Projects can override. -->
     <IsPackable>disable</IsPackable>
@@ -18,6 +23,11 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Publish'">
     <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <!-- .NET Framework/.NET Standard don't property support nullable reference types, suppress any warnings for those TFMs -->
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net472' ">
+    <NoWarn>$(NoWarn);CS8604;CS8602</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>

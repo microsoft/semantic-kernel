@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Memory;
-using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.AzureAISearch;
+namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
 /// Azure AI Search record and index definition.
 /// Note: once defined, index cannot be modified.
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class AzureAISearchMemoryRecord
 {
     /// <summary>
@@ -60,7 +61,6 @@ internal sealed class AzureAISearchMemoryRecord
     /// Content embedding
     /// </summary>
     [JsonPropertyName(EmbeddingField)]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Embedding { get; set; }
 
     /// <summary>

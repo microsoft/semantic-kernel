@@ -3,14 +3,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Copy of metadata associated with a memory entry.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryQueryResult
 {
     /// <summary>
@@ -27,7 +26,6 @@ public class MemoryQueryResult
     /// <summary>
     /// Nullable embedding associated with the metadata returned for by a query.
     /// </summary>
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float>? Embedding { get; }
 
     /// <summary>

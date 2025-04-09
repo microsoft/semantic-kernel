@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Plugins.OpenAPI.OpenAI;
+using Microsoft.SemanticKernel.Plugins.OpenApi.OpenAI;
 using Microsoft.SemanticKernel.Planning;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Microsoft.SemanticKernel.Plugins.Web;
@@ -143,21 +143,21 @@ public sealed class StepwisePlannerTests : IDisposable
         AzureOpenAIConfiguration? azureOpenAIEmbeddingsConfiguration = this._configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
         Assert.NotNull(azureOpenAIEmbeddingsConfiguration);
 
-        KernelBuilder builder = new();
+        IKernelBuilder builder = Kernel.CreateBuilder();
 
         if (useChatModel)
         {
             builder.Services.AddAzureOpenAIChatCompletion(
                 deploymentName: azureOpenAIConfiguration.ChatDeploymentName!,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                credentials: new AzureCliCredential());
         }
         else
         {
             builder.Services.AddAzureOpenAITextGeneration(
                 deploymentName: azureOpenAIConfiguration.DeploymentName,
                 endpoint: azureOpenAIConfiguration.Endpoint,
-                apiKey: azureOpenAIConfiguration.ApiKey);
+                credentials: new AzureCliCredential());
         }
 
         if (useEmbeddings)

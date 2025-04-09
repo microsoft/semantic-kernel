@@ -1,34 +1,33 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import logging
 from copy import deepcopy
-from logging import Logger
-from typing import Dict, List, Optional, Tuple
 
 from numpy import array, linalg, ndarray
 
+from semantic_kernel.exceptions import ServiceResourceNotFoundError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.utils.feature_stage_decorator import experimental
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
+@experimental
 class VolatileMemoryStore(MemoryStoreBase):
-    _store: Dict[str, Dict[str, MemoryRecord]]
-    _logger: Logger
+    """A volatile memory store that stores data in memory."""
 
-    def __init__(self, logger: Optional[Logger] = None) -> None:
+    _store: dict[str, dict[str, MemoryRecord]]
+
+    def __init__(self) -> None:
+        """Initializes a new instance of the VolatileMemoryStore class."""
         self._store = {}
-        self._logger = logger or NullLogger()
-        """Initializes a new instance of the VolatileMemoryStore class.
 
-        Arguments:
-            logger {Optional[Logger]} -- The logger to use. (default: {None})
-        """
-
-    async def create_collection_async(self, collection_name: str) -> None:
+    async def create_collection(self, collection_name: str) -> None:
         """Creates a new collection if it does not exist.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to create.
+        Args:
+            collection_name (str): The name of the collection to create.
 
         Returns:
             None
@@ -38,21 +37,21 @@ class VolatileMemoryStore(MemoryStoreBase):
         else:
             self._store[collection_name] = {}
 
-    async def get_collections_async(
+    async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Gets the list of collections.
 
         Returns:
-            List[str] -- The list of collections.
+            List[str]: The list of collections.
         """
         return list(self._store.keys())
 
-    async def delete_collection_async(self, collection_name: str) -> None:
+    async def delete_collection(self, collection_name: str) -> None:
         """Deletes a collection.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to delete.
+        Args:
+            collection_name (str): The name of the collection to delete.
 
         Returns:
             None
@@ -60,72 +59,68 @@ class VolatileMemoryStore(MemoryStoreBase):
         if collection_name in self._store:
             del self._store[collection_name]
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Checks if a collection exists.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to check.
+        Args:
+            collection_name (str): The name of the collection to check.
 
         Returns:
-            bool -- True if the collection exists; otherwise, False.
+            bool: True if the collection exists; otherwise, False.
         """
         return collection_name in self._store
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upserts a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to upsert the record into.
-            record {MemoryRecord} -- The record to upsert.
+        Args:
+            collection_name (str): The name of the collection to upsert the record into.
+            record (MemoryRecord): The record to upsert.
 
         Returns:
-            str -- The unique database key of the record.
+            str: The unique database key of the record.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         record._key = record._id
         self._store[collection_name][record._key] = record
         return record._key
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord]
-    ) -> List[str]:
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord]) -> list[str]:
         """Upserts a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to upsert the records into.
-            records {List[MemoryRecord]} -- The records to upsert.
+        Args:
+            collection_name (str): The name of the collection to upsert the records into.
+            records (List[MemoryRecord]): The records to upsert.
 
         Returns:
-            List[str] -- The unique database keys of the records.
+            List[str]: The unique database keys of the records.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         for record in records:
             record._key = record._id
             self._store[collection_name][record._key] = record
         return [record._key for record in records]
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool = False
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool = False) -> MemoryRecord:
         """Gets a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the record from.
-            key {str} -- The unique database key of the record.
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the record from.
+            key (str): The unique database key of the record.
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            MemoryRecord -- The record.
+            MemoryRecord: The record.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         if key not in self._store[collection_name]:
-            raise Exception(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
 
         result = self._store[collection_name][key]
 
@@ -135,27 +130,23 @@ class VolatileMemoryStore(MemoryStoreBase):
             result._embedding = None
         return result
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool = False
-    ) -> List[MemoryRecord]:
+    async def get_batch(
+        self, collection_name: str, keys: list[str], with_embeddings: bool = False
+    ) -> list[MemoryRecord]:
         """Gets a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the records from.
-            keys {List[str]} -- The unique database keys of the records.
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the records from.
+            keys (List[str]): The unique database keys of the records.
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[MemoryRecord] -- The records.
+            List[MemoryRecord]: The records.
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
-        results = [
-            self._store[collection_name][key]
-            for key in keys
-            if key in self._store[collection_name]
-        ]
+        results = [self._store[collection_name][key] for key in keys if key in self._store[collection_name]]
 
         if not with_embeddings:
             # create copy of results without embeddings
@@ -164,60 +155,60 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result._embedding = None
         return results
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+    async def remove(self, collection_name: str, key: str) -> None:
         """Removes a record.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to remove the record from.
-            key {str} -- The unique database key of the record to remove.
+        Args:
+            collection_name (str): The name of the collection to remove the record from.
+            key (str): The unique database key of the record to remove.
 
         Returns:
             None
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         if key not in self._store[collection_name]:
-            raise Exception(f"Key '{key}' not found in collection '{collection_name}'")
+            raise ServiceResourceNotFoundError(f"Key '{key}' not found in collection '{collection_name}'")
 
         del self._store[collection_name][key]
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Removes a batch of records.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to remove the records from.
-            keys {List[str]} -- The unique database keys of the records to remove.
+        Args:
+            collection_name (str): The name of the collection to remove the records from.
+            keys (List[str]): The unique database keys of the records to remove.
 
         Returns:
             None
         """
         if collection_name not in self._store:
-            raise Exception(f"Collection '{collection_name}' does not exist")
+            raise ServiceResourceNotFoundError(f"Collection '{collection_name}' does not exist")
 
         for key in keys:
             if key in self._store[collection_name]:
                 del self._store[collection_name][key]
 
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
         min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float]:
         """Gets the nearest match to an embedding using cosine similarity.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the nearest match from.
-            embedding {ndarray} -- The embedding to find the nearest match to.
-            min_relevance_score {float} -- The minimum relevance score of the match. (default: {0.0})
-            with_embedding {bool} -- Whether to include the embedding in the result. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the nearest match from.
+            embedding (ndarray): The embedding to find the nearest match to.
+            min_relevance_score (float): The minimum relevance score of the match. (default: {0.0})
+            with_embedding (bool): Whether to include the embedding in the result. (default: {False})
 
         Returns:
-            Tuple[MemoryRecord, float] -- The record and the relevance score.
+            Tuple[MemoryRecord, float]: The record and the relevance score.
         """
-        return self.get_nearest_matches_async(
+        return self.get_nearest_matches(
             collection_name=collection_name,
             embedding=embedding,
             limit=1,
@@ -225,27 +216,31 @@ class VolatileMemoryStore(MemoryStoreBase):
             with_embeddings=with_embedding,
         )
 
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
         limit: int,
         min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Gets the nearest matches to an embedding using cosine similarity.
 
-        Arguments:
-            collection_name {str} -- The name of the collection to get the nearest matches from.
-            embedding {ndarray} -- The embedding to find the nearest matches to.
-            limit {int} -- The maximum number of matches to return.
-            min_relevance_score {float} -- The minimum relevance score of the matches. (default: {0.0})
-            with_embeddings {bool} -- Whether to include the embeddings in the results. (default: {False})
+        Args:
+            collection_name (str): The name of the collection to get the nearest matches from.
+            embedding (ndarray): The embedding to find the nearest matches to.
+            limit (int): The maximum number of matches to return.
+            min_relevance_score (float): The minimum relevance score of the matches. (default: {0.0})
+            with_embeddings (bool): Whether to include the embeddings in the results. (default: {False})
 
         Returns:
-            List[Tuple[MemoryRecord, float]] -- The records and their relevance scores.
+            List[Tuple[MemoryRecord, float]]: The records and their relevance scores.
         """
         if collection_name not in self._store:
+            logger.warning(
+                f"Collection '{collection_name}' does not exist in collections: "
+                f"{', '.join([collection for collection in await self.get_collections()])}"
+            )
             return []
 
         # Get all the records in the collection
@@ -286,17 +281,15 @@ class VolatileMemoryStore(MemoryStoreBase):
                 result[0]._embedding = None
         return top_results
 
-    def compute_similarity_scores(
-        self, embedding: ndarray, embedding_array: ndarray
-    ) -> ndarray:
+    def compute_similarity_scores(self, embedding: ndarray, embedding_array: ndarray) -> ndarray:
         """Computes the cosine similarity scores between a query embedding and a group of embeddings.
 
-        Arguments:
-            embedding {ndarray} -- The query embedding.
-            embedding_array {ndarray} -- The group of embeddings.
+        Args:
+            embedding (ndarray): The query embedding.
+            embedding_array (ndarray): The group of embeddings.
 
         Returns:
-            ndarray -- The cosine similarity scores.
+            ndarray: The cosine similarity scores.
         """
         query_norm = linalg.norm(embedding)
         collection_norm = linalg.norm(embedding_array, axis=1)
@@ -309,11 +302,11 @@ class VolatileMemoryStore(MemoryStoreBase):
         similarity_scores = array([-1.0] * embedding_array.shape[0])
 
         if valid_indices.any():
-            similarity_scores[valid_indices] = embedding.dot(
-                embedding_array[valid_indices].T
-            ) / (query_norm * collection_norm[valid_indices])
+            similarity_scores[valid_indices] = embedding.dot(embedding_array[valid_indices].T) / (
+                query_norm * collection_norm[valid_indices]
+            )
             if not valid_indices.all():
-                self._logger.warning(
+                logger.warning(
                     "Some vectors in the embedding collection are zero vectors."
                     "Ignoring cosine similarity score computation for those vectors."
                 )

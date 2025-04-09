@@ -3,11 +3,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides internal utility methods for converting types to strings with consideration for CultureInfo.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class InternalTypeConverter
 {
     /// <summary>
@@ -16,17 +20,17 @@ internal static class InternalTypeConverter
     /// <param name="value">The object to convert.</param>
     /// <param name="culture">The CultureInfo to consider during conversion.</param>
     /// <returns>A string representation of the object value, considering the specified CultureInfo.</returns>
-    public static string? ConvertToString(object? value, CultureInfo culture)
+    public static string? ConvertToString(object? value, CultureInfo? culture = null)
     {
-        if (value == null) { return null; }
+        if (value is null) { return null; }
 
         var sourceType = value.GetType();
 
         var converterDelegate = GetTypeToStringConverterDelegate(sourceType);
 
-        return converterDelegate == null
+        return converterDelegate is null
             ? value.ToString()
-            : converterDelegate(value, culture);
+            : converterDelegate(value, culture ?? CultureInfo.InvariantCulture);
     }
 
     /// <summary>

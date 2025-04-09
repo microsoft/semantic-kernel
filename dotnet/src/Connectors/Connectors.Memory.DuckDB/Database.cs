@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DuckDB.NET.Data;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
 internal struct DatabaseEntry
 {
@@ -24,10 +23,11 @@ internal struct DatabaseEntry
     public float Score { get; set; }
 }
 
-internal sealed class Database
+internal sealed class Database(int? vectorSize)
 {
     private const string TableName = "SKMemoryTable";
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "The vectorSize user input is int and cannot be used for injection")]
     public async Task CreateTableAsync(DuckDBConnection conn, CancellationToken cancellationToken = default)
     {
         using var cmd = conn.CreateCommand();
@@ -36,7 +36,7 @@ internal sealed class Database
                 collection TEXT,
                 key TEXT,
                 metadata TEXT,
-                embedding FLOAT[],
+                embedding FLOAT[{vectorSize}],
                 timestamp TEXT,
                 PRIMARY KEY(collection, key))";
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
@@ -52,7 +52,7 @@ internal sealed class Database
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-                INSERT INTO {TableName} VALUES ($collectionName, $key, $metadata, [], $timestamp ); ";
+                INSERT INTO {TableName} VALUES ($collectionName, $key, $metadata, NULL, $timestamp ); ";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         cmd.Parameters.Add(new DuckDBParameter("key", string.Empty));
         cmd.Parameters.Add(new DuckDBParameter("metadata", string.Empty));
@@ -63,7 +63,7 @@ internal sealed class Database
 
     private static string EncodeFloatArrayToString(float[]? data)
     {
-        var dataArrayString = $"[{string.Join(", ", (data ?? Array.Empty<float>()).Select(n => n.ToString("F10", CultureInfo.InvariantCulture)))}]";
+        var dataArrayString = $"[{string.Join(", ", (data ?? []).Select(n => n.ToString("F10", CultureInfo.InvariantCulture)))}]";
         return dataArrayString;
     }
 
@@ -72,7 +72,7 @@ internal sealed class Database
         string collectionName, string key, string? metadata, float[]? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
         await this.DeleteAsync(conn, collectionName, key, cancellationToken).ConfigureAwait(true);
-        var embeddingArrayString = EncodeFloatArrayToString(embedding ?? Array.Empty<float>());
+        var embeddingArrayString = EncodeFloatArrayToString(embedding ?? []);
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $"INSERT INTO {TableName} VALUES(${nameof(collectionName)}, ${nameof(key)}, ${nameof(metadata)}, {embeddingArrayString}, ${nameof(timestamp)})";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
@@ -118,7 +118,7 @@ internal sealed class Database
 
         using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-            SELECT key, metadata, timestamp, embedding, (embedding <=> {embeddingArrayString}) as score FROM {TableName}
+            SELECT key, metadata, timestamp, embedding, list_cosine_similarity(embedding, {embeddingArrayString}) as score FROM {TableName}
             WHERE collection=${nameof(collectionName)} AND len(embedding) > 0 AND score >= {minRelevanceScore.ToString("F12", CultureInfo.InvariantCulture)}
             ORDER BY score DESC
             LIMIT ${nameof(limit)};";
@@ -136,7 +136,7 @@ internal sealed class Database
             }
 
             string metadata = dataReader.GetFieldValue<string>("metadata");
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            float[] embeddingFromSearch = [.. dataReader.GetFieldValue<List<float>>("embedding")];
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
             float score = dataReader.GetFieldValue<float>("score");
 
@@ -168,7 +168,7 @@ internal sealed class Database
         if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
             string metadata = dataReader.GetFieldValue<string>("metadata");
-            float[] embeddingFromSearch = (dataReader.GetFieldValue<List<float>>("embedding").ToArray());
+            float[] embeddingFromSearch = [.. dataReader.GetFieldValue<List<float>>("embedding")];
             string timestamp = dataReader.GetFieldValue<string>("timestamp");
 
             return new DatabaseEntry
@@ -202,6 +202,31 @@ internal sealed class Database
                 AND key=${nameof(key)}; ";
         cmd.Parameters.Add(new DuckDBParameter(nameof(collectionName), collectionName));
         cmd.Parameters.Add(new DuckDBParameter(nameof(key), key));
+        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task DeleteBatchAsync(DuckDBConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
+    {
+        if (keys.Length == 0)
+        {
+            return;
+        }
+
+        using var cmd = conn.CreateCommand();
+        var keyPlaceholders = string.Join(", ", keys.Select((k) => "?"));
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         DELETE FROM {TableName}
+         WHERE collection=?
+            AND key IN ({keyPlaceholders});";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+        cmd.Parameters.Add(new DuckDBParameter { Value = collectionName });
+        // Add the key parameters
+        foreach (var key in keys)
+        {
+            cmd.Parameters.Add(new DuckDBParameter { Value = key });
+        }
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Class representing the metadata associated with a Semantic Kernel memory.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public class MemoryRecordMetadata : ICloneable
 {
     /// <summary>

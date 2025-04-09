@@ -1,189 +1,198 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union
+import logging
+from abc import ABC
+from typing import Any, Union
 
-from numpy import array, ndarray
-from openai import AsyncOpenAI, AsyncStream
-from openai.types import Completion
+from openai import AsyncOpenAI, AsyncStream, BadRequestError, _legacy_response
+from openai.lib._parsing._completions import type_to_response_format_param
+from openai.types import Completion, CreateEmbeddingResponse
+from openai.types.audio import Transcription
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
-from pydantic import Field
+from openai.types.images_response import ImagesResponse
+from pydantic import BaseModel
 
-from semantic_kernel.connectors.ai.ai_exception import AIException
-from semantic_kernel.connectors.ai.ai_service_client_base import AIServiceClientBase
-from semantic_kernel.connectors.ai.chat_request_settings import ChatRequestSettings
-from semantic_kernel.connectors.ai.complete_request_settings import (
-    CompleteRequestSettings,
+from semantic_kernel.connectors.ai.open_ai import (
+    OpenAIAudioToTextExecutionSettings,
+    OpenAIChatPromptExecutionSettings,
+    OpenAIEmbeddingPromptExecutionSettings,
+    OpenAIPromptExecutionSettings,
+    OpenAITextToAudioExecutionSettings,
+    OpenAITextToImageExecutionSettings,
 )
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import (
-    OpenAIModelTypes,
-)
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
+from semantic_kernel.connectors.ai.open_ai.services.open_ai_model_types import OpenAIModelTypes
+from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.connectors.utils.structured_output_schema import generate_structured_output_response_format_schema
+from semantic_kernel.exceptions import ServiceResponseException
+from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
+from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.schema.kernel_json_schema_builder import KernelJsonSchemaBuilder
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+RESPONSE_TYPE = Union[
+    ChatCompletion,
+    Completion,
+    AsyncStream[ChatCompletionChunk],
+    AsyncStream[Completion],
+    list[Any],
+    ImagesResponse,
+    Transcription,
+    _legacy_response.HttpxBinaryResponseContent,
+]
 
 
-class OpenAIHandler(AIServiceClientBase, ABC):
+class OpenAIHandler(KernelBaseModel, ABC):
     """Internal class for calls to OpenAI API's."""
 
     client: AsyncOpenAI
     ai_model_type: OpenAIModelTypes = OpenAIModelTypes.CHAT
-    prompt_tokens: int = Field(0, init_var=False)
-    completion_tokens: int = Field(0, init_var=False)
-    total_tokens: int = Field(0, init_var=False)
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
 
-    async def _send_request(
+    async def _send_request(self, settings: PromptExecutionSettings) -> RESPONSE_TYPE:
+        """Send a request to the OpenAI API."""
+        if self.ai_model_type == OpenAIModelTypes.TEXT or self.ai_model_type == OpenAIModelTypes.CHAT:
+            assert isinstance(settings, OpenAIPromptExecutionSettings)  # nosec
+            return await self._send_completion_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.EMBEDDING:
+            assert isinstance(settings, OpenAIEmbeddingPromptExecutionSettings)  # nosec
+            return await self._send_embedding_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.TEXT_TO_IMAGE:
+            assert isinstance(settings, OpenAITextToImageExecutionSettings)  # nosec
+            return await self._send_text_to_image_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.AUDIO_TO_TEXT:
+            assert isinstance(settings, OpenAIAudioToTextExecutionSettings)  # nosec
+            return await self._send_audio_to_text_request(settings)
+        if self.ai_model_type == OpenAIModelTypes.TEXT_TO_AUDIO:
+            assert isinstance(settings, OpenAITextToAudioExecutionSettings)  # nosec
+            return await self._send_text_to_audio_request(settings)
+
+        raise NotImplementedError(f"Model type {self.ai_model_type} is not supported")
+
+    async def _send_completion_request(
         self,
-        request_settings: Union[CompleteRequestSettings, ChatRequestSettings],
-        prompt: Optional[str] = None,
-        messages: Optional[List[Dict[str, str]]] = None,
-        stream: bool = False,
-        functions: Optional[List[Dict[str, Any]]] = None,
-    ) -> Union[
-        ChatCompletion,
-        Completion,
-        AsyncStream[ChatCompletionChunk],
-        AsyncStream[Completion],
-    ]:
-        """
-        Completes the given prompt. Returns a single string completion.
-        Cannot return multiple completions. Cannot return logprobs.
-
-        Arguments:
-            prompt {str} -- The prompt to complete.
-            messages {List[Tuple[str, str]]} -- A list of tuples, where each tuple is a role and content set.
-            request_settings {CompleteRequestSettings} -- The request settings.
-            stream {bool} -- Whether to stream the response.
-
-        Returns:
-            ChatCompletion, Completion, AsyncStream[Completion | ChatCompletionChunk] -- The completion response.
-        """
-        chat_mode = self.ai_model_type == OpenAIModelTypes.CHAT
-        self._validate_request(request_settings, prompt, messages, chat_mode)
-        model_args = self._create_model_args(
-            request_settings, stream, prompt, messages, functions, chat_mode
-        )
+        settings: OpenAIPromptExecutionSettings,
+    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
+        """Execute the appropriate call to OpenAI models."""
         try:
-            response = await (
-                self.client.chat.completions.create(**model_args)
-                if chat_mode
-                else self.client.completions.create(**model_args)
-            )
-        except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
+            settings_dict = settings.prepare_settings_dict()
+            if self.ai_model_type == OpenAIModelTypes.CHAT:
+                assert isinstance(settings, OpenAIChatPromptExecutionSettings)  # nosec
+                self._handle_structured_output(settings, settings_dict)
+                if settings.tools is None:
+                    settings_dict.pop("parallel_tool_calls", None)
+                response = await self.client.chat.completions.create(**settings_dict)
+            else:
+                response = await self.client.completions.create(**settings_dict)
+
+            self.store_usage(response)
+            return response
+        except BadRequestError as ex:
+            if ex.code == "content_filter":
+                raise ContentFilterAIException(
+                    f"{type(self)} service encountered a content error",
+                    ex,
+                ) from ex
+            raise ServiceResponseException(
                 f"{type(self)} service failed to complete the prompt",
                 ex,
             ) from ex
-        if not isinstance(response, AsyncStream):
-            self.log.info(f"OpenAI usage: {response.usage}")
-            self.prompt_tokens += response.usage.prompt_tokens
-            self.completion_tokens += response.usage.completion_tokens
-            self.total_tokens += response.usage.total_tokens
-        return response
-
-    def _validate_request(self, request_settings, prompt, messages, chat_mode):
-        """Validate the request, check if the settings are present and valid."""
-        try:
-            assert (
-                self.ai_model_type != OpenAIModelTypes.EMBEDDING
-            ), "The model type is not supported for this operation, please use a text or chat model"
-        except AssertionError as exc:
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported, exc.args[0], exc
-            ) from exc
-        try:
-            assert request_settings, "The request settings cannot be `None`"
-            assert (
-                request_settings.max_tokens >= 1
-            ), f"The max tokens must be greater than 0, but was {request_settings.max_tokens}"
-            if chat_mode:
-                assert (
-                    prompt or messages
-                ), "The messages cannot be `None` or empty, please use either prompt or messages"
-            if not chat_mode:
-                assert prompt, "The prompt cannot be `None` or empty"
-        except AssertionError as exc:
-            raise AIException(
-                AIException.ErrorCodes.InvalidRequest, exc.args[0], exc
-            ) from exc
-
-    def _create_model_args(
-        self, request_settings, stream, prompt, messages, functions, chat_mode
-    ):
-        model_args = self.get_model_args()
-        model_args.update(
-            {
-                "stream": stream,
-                "temperature": request_settings.temperature,
-                "top_p": request_settings.top_p,
-                "stop": (
-                    request_settings.stop_sequences
-                    if request_settings.stop_sequences is not None
-                    and len(request_settings.stop_sequences) > 0
-                    else None
-                ),
-                "max_tokens": request_settings.max_tokens,
-                "presence_penalty": request_settings.presence_penalty,
-                "frequency_penalty": request_settings.frequency_penalty,
-                "logit_bias": (
-                    request_settings.token_selection_biases
-                    if request_settings.token_selection_biases is not None
-                    and len(request_settings.token_selection_biases) > 0
-                    else {}
-                ),
-                "n": request_settings.number_of_responses,
-            }
-        )
-        if not chat_mode:
-            model_args["prompt"] = prompt
-            if hasattr(request_settings, "logprobs"):
-                model_args["logprobs"] = request_settings.logprobs
-            return model_args
-
-        model_args["messages"] = messages or [{"role": "user", "content": prompt}]
-        if functions and request_settings.function_call is not None:
-            model_args["function_call"] = request_settings.function_call
-            if request_settings.function_call != "auto":
-                model_args["functions"] = [
-                    func
-                    for func in functions
-                    if func["name"] == request_settings.function_call
-                ]
-            else:
-                model_args["functions"] = functions
-        return model_args
-
-    async def _send_embedding_request(
-        self, texts: List[str], batch_size: Optional[int] = None
-    ) -> ndarray:
-        if self.ai_model_type != OpenAIModelTypes.EMBEDDING:
-            raise AIException(
-                AIException.ErrorCodes.FunctionTypeNotSupported,
-                "The model type is not supported for this operation, please use an embedding model",
-            )
-        model_args = self.get_model_args()
-        try:
-            raw_embeddings = []
-            batch_size = batch_size or len(texts)
-            for i in range(0, len(texts), batch_size):
-                batch = texts[i : i + batch_size]  # noqa: E203
-                response = await self.client.embeddings.create(
-                    input=batch,
-                    **model_args,
-                )
-                # make numpy arrays from the response
-                # TODO: the openai response is cast to a list[float], could be used instead of nparray
-                raw_embeddings.extend([array(x.embedding) for x in response.data])
-                if response.usage:
-                    self.log.info(f"OpenAI usage: {response.usage}")
-                    self.prompt_tokens += response.usage.prompt_tokens
-                    self.total_tokens += response.usage.total_tokens
-            return array(raw_embeddings)
         except Exception as ex:
-            raise AIException(
-                AIException.ErrorCodes.ServiceError,
+            raise ServiceResponseException(
+                f"{type(self)} service failed to complete the prompt",
+                ex,
+            ) from ex
+
+    async def _send_embedding_request(self, settings: OpenAIEmbeddingPromptExecutionSettings) -> list[Any]:
+        """Send a request to the OpenAI embeddings endpoint."""
+        try:
+            response = await self.client.embeddings.create(**settings.prepare_settings_dict())
+
+            self.store_usage(response)
+            return [x.embedding for x in response.data]
+        except Exception as ex:
+            raise ServiceResponseException(
                 f"{type(self)} service failed to generate embeddings",
                 ex,
             ) from ex
 
-    @abstractmethod
-    def get_model_args(self) -> Dict[str, Any]:
-        """Return the model args for the specific openai api."""
+    async def _send_text_to_image_request(self, settings: OpenAITextToImageExecutionSettings) -> ImagesResponse:
+        """Send a request to the OpenAI text to image endpoint."""
+        try:
+            return await self.client.images.generate(
+                **settings.prepare_settings_dict(),
+            )
+        except Exception as ex:
+            raise ServiceResponseException(f"Failed to generate image: {ex}") from ex
+
+    async def _send_audio_to_text_request(self, settings: OpenAIAudioToTextExecutionSettings) -> Transcription:
+        """Send a request to the OpenAI audio to text endpoint."""
+        if not settings.filename:
+            raise ServiceInvalidRequestError("Audio file is required for audio to text service")
+
+        try:
+            with open(settings.filename, "rb") as audio_file:
+                return await self.client.audio.transcriptions.create(
+                    file=audio_file,
+                    **settings.prepare_settings_dict(),
+                )
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to transcribe audio",
+                ex,
+            ) from ex
+
+    async def _send_text_to_audio_request(
+        self, settings: OpenAITextToAudioExecutionSettings
+    ) -> _legacy_response.HttpxBinaryResponseContent:
+        """Send a request to the OpenAI text to audio endpoint.
+
+        The OpenAI API returns the content of the generated audio file.
+        """
+        try:
+            return await self.client.audio.speech.create(
+                **settings.prepare_settings_dict(),
+            )
+        except Exception as ex:
+            raise ServiceResponseException(
+                f"{type(self)} service failed to generate audio",
+                ex,
+            ) from ex
+
+    def _handle_structured_output(
+        self, request_settings: OpenAIChatPromptExecutionSettings, settings: dict[str, Any]
+    ) -> None:
+        response_format = getattr(request_settings, "response_format", None)
+        if getattr(request_settings, "structured_json_response", False) and response_format:
+            # Case 1: response_format is a type and subclass of BaseModel
+            if isinstance(response_format, type) and issubclass(response_format, BaseModel):
+                settings["response_format"] = type_to_response_format_param(response_format)
+            # Case 2: response_format is a type but not a subclass of BaseModel
+            elif isinstance(response_format, type):
+                generated_schema = KernelJsonSchemaBuilder.build(parameter_type=response_format, structured_output=True)
+                assert generated_schema is not None  # nosec
+                settings["response_format"] = generate_structured_output_response_format_schema(
+                    name=response_format.__name__, schema=generated_schema
+                )
+            # Case 3: response_format is a dictionary, pass it without modification
+            elif isinstance(response_format, dict):
+                settings["response_format"] = response_format
+
+    def store_usage(
+        self,
+        response: ChatCompletion
+        | Completion
+        | AsyncStream[ChatCompletionChunk]
+        | AsyncStream[Completion]
+        | CreateEmbeddingResponse,
+    ):
+        """Store the usage information from the response."""
+        if not isinstance(response, AsyncStream) and response.usage:
+            logger.info(f"OpenAI usage: {response.usage}")
+            self.prompt_tokens += response.usage.prompt_tokens
+            self.total_tokens += response.usage.total_tokens
+            if hasattr(response.usage, "completion_tokens"):
+                self.completion_tokens += response.usage.completion_tokens

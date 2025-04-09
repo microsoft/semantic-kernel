@@ -19,9 +19,7 @@ jobs:
         fail-fast: false
         matrix:
           include:
-          - { os: ubuntu-latest, dotnet: '6.0', configuration: Debug }
-          - { os: ubuntu-latest, dotnet: '6.0', configuration: Release }
-          - { os: ubuntu-latest, dotnet: '7.0', configuration: Release }
+          - { os: ubuntu-latest, dotnet: '8.0', configuration: Debug }
           - { os: ubuntu-latest, dotnet: '8.0', configuration: Release }
 
     runs-on: ${{ matrix.os }}
@@ -29,6 +27,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         clean: true
+        persist-credentials: false
 
     - name: Find solutions
       shell: bash
@@ -56,7 +55,7 @@ jobs:
         done
 
     - name: Upload dotnet test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dotnet-testresults-${{ matrix.configuration }}
         path: ./TestResults
@@ -68,7 +67,7 @@ jobs:
         matrix:
           os: [windows-latest]
           configuration: [Release, Debug]
-          dotnet-version: ['7.0.x']
+          dotnet-version: ['8.0.x']
     runs-on: ${{ matrix.os }}
     env:
       NUGET_CERT_REVOCATION_MODE: offline
@@ -76,15 +75,16 @@ jobs:
     - uses: actions/checkout@v4
       with:
         clean: true
+        persist-credentials: false
 
     - name: Setup .NET SDK ${{ matrix.dotnet-version }}
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ matrix.dotnet-version }}
       env:
         NUGET_AUTH_TOKEN: ${{ secrets.GPR_READ_TOKEN }}
 
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       with:
         path: ~/.nuget/packages
         # Look to see if there is a cache hit for the corresponding requirements file
@@ -122,7 +122,7 @@ jobs:
         done
 
     - name: Upload dotnet test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dotnet-testresults-${{ matrix.configuration }}
         path: ./TestResults

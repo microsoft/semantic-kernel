@@ -3,6 +3,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.SemanticKernel;
 using Xunit;
 
 namespace SemanticKernel.UnitTests.Utilities;
@@ -114,8 +115,7 @@ public class InternalTypeConverterTests
     public void ItCallsCustomConverterSpecifiedByTypeConverterAttribute()
     {
         // Arrange
-        var customType = new MyCustomType();
-        customType.Value = 4;
+        var customType = new MyCustomType { Value = 4 };
 
         // Act
         var result = InternalTypeConverter.ConvertToString(customType, CultureInfo.InvariantCulture);

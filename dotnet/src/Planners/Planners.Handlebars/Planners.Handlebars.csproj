@@ -4,7 +4,8 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Planners.Handlebars</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -21,11 +22,14 @@
     <EmbeddedResource Include="Handlebars\CreatePlanPrompt.handlebars">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+  <EmbeddedResource Include="Handlebars\CreatePlanPromptPartials\**\*.handlebars">  
+    <CopyToOutputDirectory>Always</CopyToOutputDirectory>  
+  </EmbeddedResource>  
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +38,5 @@
 
   <ItemGroup>
     <PackageReference Include="Handlebars.Net" />
-    <PackageReference Include="JsonSchema.Net.Generation" />
   </ItemGroup>
 </Project>

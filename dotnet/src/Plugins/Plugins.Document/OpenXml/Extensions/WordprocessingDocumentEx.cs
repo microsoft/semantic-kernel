@@ -27,20 +27,11 @@ internal static class WordprocessingDocumentEx
     {
         StringBuilder sb = new();
 
-        var mainPart = wordprocessingDocument.MainDocumentPart;
-        if (mainPart is null)
-        {
-            throw new InvalidOperationException("The main document part is missing.");
-        }
-
-        var body = mainPart.Document.Body;
-        if (body is null)
-        {
-            throw new InvalidOperationException("The document body is missing.");
-        }
+        var mainPart = wordprocessingDocument.MainDocumentPart ?? throw new InvalidOperationException("The main document part is missing.");
+        var body = mainPart.Document.Body ?? throw new InvalidOperationException("The document body is missing.");
 
         var paras = body.Descendants<Paragraph>();
-        if (paras != null)
+        if (paras is not null)
         {
             foreach (Paragraph para in paras)
             {
@@ -58,17 +49,8 @@ internal static class WordprocessingDocumentEx
             throw new ArgumentNullException(nameof(text));
         }
 
-        MainDocumentPart? mainPart = wordprocessingDocument.MainDocumentPart;
-        if (mainPart is null)
-        {
-            throw new InvalidOperationException("The main document part is missing.");
-        }
-
-        Body? body = mainPart.Document.Body;
-        if (body is null)
-        {
-            throw new InvalidOperationException("The document body is missing.");
-        }
+        MainDocumentPart mainPart = wordprocessingDocument.MainDocumentPart ?? throw new InvalidOperationException("The main document part is missing.");
+        Body body = mainPart.Document.Body ?? throw new InvalidOperationException("The document body is missing.");
 
         Paragraph para = body.AppendChild(new Paragraph());
         Run run = para.AppendChild(new Run());

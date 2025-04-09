@@ -1,8 +1,10 @@
 ---
 name: Feature request
 about: Suggest an idea for this project
-title: ''
+title: 'New Feature: '
 labels: ''
+type: 'feature'
+projects: ["semantic-kernel"]
 assignees: ''
 
 ---

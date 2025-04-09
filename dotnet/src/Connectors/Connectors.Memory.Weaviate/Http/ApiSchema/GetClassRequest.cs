@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+[Experimental("SKEXP0020")]
 internal sealed class GetClassRequest
 {
     private GetClassRequest(string @class)

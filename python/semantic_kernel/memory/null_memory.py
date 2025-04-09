@@ -1,53 +1,53 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import List, Optional
-
 from semantic_kernel.memory.memory_query_result import MemoryQueryResult
 from semantic_kernel.memory.semantic_text_memory_base import SemanticTextMemoryBase
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
+@experimental
 class NullMemory(SemanticTextMemoryBase):
-    async def save_information_async(
+    """Class for null memory."""
+
+    async def save_information(
         self,
         collection: str,
         text: str,
         id: str,
-        description: Optional[str] = None,
-        additional_metadata: Optional[str] = None,
+        description: str | None = None,
+        additional_metadata: str | None = None,
     ) -> None:
-        """Nullifies behavior of SemanticTextMemoryBase.save_information_async()"""
-        return None
+        """Nullifies behavior of SemanticTextMemoryBase save_information."""
+        return
 
-    async def save_reference_async(
+    async def save_reference(
         self,
         collection: str,
         text: str,
         external_id: str,
         external_source_name: str,
-        description: Optional[str] = None,
-        additional_metadata: Optional[str] = None,
+        description: str | None = None,
+        additional_metadata: str | None = None,
     ) -> None:
-        """Nullifies behavior of SemanticTextMemoryBase.save_reference_async()"""
+        """Nullifies behavior of SemanticTextMemoryBase save_reference."""
+        return
+
+    async def get(self, collection: str, query: str) -> MemoryQueryResult | None:
+        """Nullifies behavior of SemanticTextMemoryBase get."""
         return None
 
-    async def get_async(
-        self, collection: str, query: str
-    ) -> Optional[MemoryQueryResult]:
-        """Nullifies behavior of SemanticTextMemoryBase.get_async()"""
-        return None
-
-    async def search_async(
+    async def search(
         self,
         collection: str,
         query: str,
         limit: int = 1,
         min_relevance_score: float = 0.7,
-    ) -> List[MemoryQueryResult]:
-        """Nullifies behavior of SemanticTextMemoryBase.search_async()"""
+    ) -> list[MemoryQueryResult]:
+        """Nullifies behavior of SemanticTextMemoryBase search."""
         return []
 
-    async def get_collections_async(self) -> List[str]:
-        """Nullifies behavior of SemanticTextMemoryBase.get_collections_async()"""
+    async def get_collections(self) -> list[str]:
+        """Nullifies behavior of SemanticTextMemoryBase get_collections."""
         return []
 
 

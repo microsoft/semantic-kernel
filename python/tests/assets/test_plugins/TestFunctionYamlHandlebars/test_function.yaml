@@ -1,0 +1,12 @@
+name: TestFunctionHandlebars
+template_format: handlebars
+template: |
+    {{#each chat_history}}{{#message role=role}}{{~content~}}{{/message}}{{/each}}
+description: A test function from a yaml file.
+execution_settings:
+    default:
+        temperature: 0.6
+        max_tokens: 123
+        top_p: 1.0
+        presence_penalty: 0.0
+        frequency_penalty: 2.0

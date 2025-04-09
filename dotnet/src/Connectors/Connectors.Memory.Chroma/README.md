@@ -1,6 +1,6 @@
-# Microsoft.SemanticKernel.Connectors.Memory.Chroma
+# Microsoft.SemanticKernel.Connectors.Chroma
 
-This assembly contains implementation of Semantic Kernel Memory Store using [Chroma](https://docs.trychroma.com/), open-source embedding database.
+This assembly contains implementation of Semantic Kernel Memory Store using [Chroma](https://www.trychroma.com/), open-source embedding database.
 
 **Note:** Chroma connector is verified using Chroma version **0.4.10**. Any higher versions may introduce incompatibility.
 
@@ -20,15 +20,17 @@ docker-compose up -d --build
 ```
 
 3. Use Semantic Kernel with Chroma, using server local endpoint `http://localhost:8000`:
+
+   > See [Example 14](../../../samples/Concepts/Memory/SemanticTextMemory_Building.cs) and [Example 15](../../../samples/Concepts/Memory/TextMemoryPlugin_MultipleMemoryStore.cs) for more memory usage examples with the kernel.
+
 ```csharp
 const string endpoint = "http://localhost:8000";
 
-ChromaMemoryStore memoryStore = new(endpoint);
-
-Kernel kernel = new KernelBuilder()
-    .WithLogger(logger)
-    .WithOpenAITextEmbeddingGenerationService("text-embedding-ada-002", "OPENAI_API_KEY")
-    .WithMemoryStorage(memoryStore)
-    //.WithChromaMemoryStore(endpoint) // This method offers an alternative approach to registering Chroma memory store.
+var memoryWithChroma = new MemoryBuilder()
+    .WithChromaMemoryStore(endpoint)
+    .WithLoggerFactory(loggerFactory)
+    .WithOpenAITextEmbeddingGeneration("text-embedding-ada-002", apiKey)
     .Build();
+
+var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(memoryWithChroma));
 ```

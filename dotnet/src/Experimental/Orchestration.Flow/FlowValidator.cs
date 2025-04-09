@@ -60,7 +60,7 @@ public class FlowValidator : IFlowValidator
     {
         var steps = flow.Steps
             .Select(step => step as ReferenceFlowStep)
-            .Where(step => step != null);
+            .Where(step => step is not null);
 
         foreach (var step in steps)
         {

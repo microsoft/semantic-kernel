@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// UpsertRequest
 /// See https://docs.pinecone.io/reference/upsert
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class UpsertRequest
 {
     /// <summary>
@@ -56,7 +58,7 @@ internal sealed class UpsertRequest
     [JsonConstructor]
     private UpsertRequest()
     {
-        this.Vectors = new List<PineconeDocument>();
+        this.Vectors = [];
     }
 
     #endregion

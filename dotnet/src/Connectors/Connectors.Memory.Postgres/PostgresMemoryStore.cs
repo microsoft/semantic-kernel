@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,9 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
 using Pgvector;
-using Pgvector.Npgsql;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a Postgres database with pgvector extension.
@@ -21,6 +21,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Postgres;
 /// The embedded data is saved to the Postgres database specified in the constructor.
 /// Similarity search capability is provided through the pgvector extension. Use Postgres's "Table" to implement "Collection".
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class PostgresMemoryStore : IMemoryStore, IDisposable
 {
     internal const string DefaultSchema = "public";

@@ -7,9 +7,8 @@
 // This was copied from https://github.com/dotnet/runtime/blob/39b9607807f29e48cae4652cd74735182b31182e/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/NullableAttributes.cs
 // and updated to have the scope of the attributes be internal.
 
-namespace System.Diagnostics.CodeAnalysis;
-
 #if !NETCOREAPP
+namespace System.Diagnostics.CodeAnalysis;
 
 /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
@@ -36,6 +35,7 @@ internal sealed class NotNullAttribute : Attribute
 }
 
 /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 internal sealed class MaybeNullWhenAttribute : Attribute
 {
@@ -50,6 +50,7 @@ internal sealed class MaybeNullWhenAttribute : Attribute
 }
 
 /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter will not be null even if the corresponding type allows it.</summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 internal sealed class NotNullWhenAttribute : Attribute
 {
@@ -64,6 +65,7 @@ internal sealed class NotNullWhenAttribute : Attribute
 }
 
 /// <summary>Specifies that the output will be non-null if the named parameter is non-null.</summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, AllowMultiple = true, Inherited = false)]
 internal sealed class NotNullIfNotNullAttribute : Attribute
 {
@@ -84,6 +86,7 @@ internal sealed class DoesNotReturnAttribute : Attribute
 }
 
 /// <summary>Specifies that the method will not return if the associated Boolean parameter is passed the specified value.</summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
 internal sealed class DoesNotReturnIfAttribute : Attribute
 {
@@ -103,6 +106,7 @@ internal sealed class DoesNotReturnIfAttribute : Attribute
 #if !NETCOREAPP || NETCOREAPP3_1
 
 /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values.</summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
 internal sealed class MemberNotNullAttribute : Attribute
 {
@@ -111,7 +115,7 @@ internal sealed class MemberNotNullAttribute : Attribute
     /// The field or property member that is promised to be not-null.
     /// </param>
     [SuppressMessage("Design", "CA1019:Define accessors for attribute arguments")]
-    public MemberNotNullAttribute(string member) => this.Members = new[] { member };
+    public MemberNotNullAttribute(string member) => this.Members = [member];
 
     /// <summary>Initializes the attribute with the list of field and property members.</summary>
     /// <param name="members">
@@ -124,6 +128,7 @@ internal sealed class MemberNotNullAttribute : Attribute
 }
 
 /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values when returning with the specified return value condition.</summary>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
 internal sealed class MemberNotNullWhenAttribute : Attribute
 {
@@ -138,7 +143,7 @@ internal sealed class MemberNotNullWhenAttribute : Attribute
     public MemberNotNullWhenAttribute(bool returnValue, string member)
     {
         this.ReturnValue = returnValue;
-        this.Members = new[] { member };
+        this.Members = [member];
     }
 
     /// <summary>Initializes the attribute with the specified return value condition and list of field and property members.</summary>

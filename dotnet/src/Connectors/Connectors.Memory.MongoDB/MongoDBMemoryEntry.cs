@@ -1,15 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
 /// A MongoDB memory entry.
 /// </summary>
+[Experimental("SKEXP0020")]
 public sealed class MongoDBMemoryEntry
 {
     /// <summary>

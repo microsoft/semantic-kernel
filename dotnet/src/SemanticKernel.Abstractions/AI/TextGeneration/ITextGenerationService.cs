@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
-namespace Microsoft.SemanticKernel.AI.TextGeneration;
+namespace Microsoft.SemanticKernel.TextGeneration;
 
 /// <summary>
 /// Interface for text generation services

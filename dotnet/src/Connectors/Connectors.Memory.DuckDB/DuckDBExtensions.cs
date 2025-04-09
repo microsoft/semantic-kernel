@@ -2,7 +2,7 @@
 
 using System.Data.Common;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.DuckDB;
+namespace Microsoft.SemanticKernel.Connectors.DuckDB;
 
 internal static class DuckDBExtensions
 {

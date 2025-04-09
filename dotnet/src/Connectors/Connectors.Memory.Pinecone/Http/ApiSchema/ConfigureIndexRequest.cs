@@ -1,15 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// This operation specifies the pod type and number of replicas for an index.
 /// See https://docs.pinecone.io/reference/configure_index
 /// </summary>
+[Experimental("SKEXP0020")]
 internal sealed class ConfigureIndexRequest
 {
     public string IndexName { get; set; }

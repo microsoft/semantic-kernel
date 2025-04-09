@@ -1,0 +1,909 @@
+openapi: 3.0.4
+info:
+  title: OData Service for namespace microsoft.graph - Subset
+  description: This OData service is located at https://graph.microsoft.com/v1.0
+  version: v1.0
+servers:
+  - url: https://graph.microsoft.com/v1.0
+paths:
+  /me/calendar/events:
+    get:
+      tags:
+        - me.calendar
+      summary: List events
+      description: "Retrieve a list of events in a calendar. The calendar can be one for a user, or the default calendar of a Microsoft 365 group. The list of events contains single instance meetings and series masters. To get expanded event instances, you can get the calendar view, or\nget the instances of an event."
+      operationId: me_calendar_ListEvents
+      parameters:
+        - $ref: '#/components/parameters/top'
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/search'
+        - $ref: '#/components/parameters/filter'
+        - $ref: '#/components/parameters/count'
+        - name: $orderby
+          in: query
+          description: Order items by property values
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $select
+          in: query
+          description: Select properties to be returned
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+        - name: $expand
+          in: query
+          description: Expand related entities
+          style: form
+          explode: false
+          schema:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
+      responses:
+        2XX:
+          $ref: '#/components/responses/microsoft.graph.eventCollectionResponse'
+      x-ms-pageable:
+        nextLinkName: '@odata.nextLink'
+        operationName: listMore
+        itemName: value
+    post:
+      tags:
+        - me.calendar
+      summary: Create new navigation property to events for me
+      operationId: me_calendar_CreateEvents
+      requestBody:
+        description: New navigation property
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/microsoft.graph.event'
+        required: true
+      responses:
+        2XX:
+          description: Created navigation property.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/microsoft.graph.event'
+components:
+  schemas:
+    microsoft.graph.event:
+      title: event
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The categories associated with the item
+        changeKey:
+          type: string
+          description: 'Identifies the version of the item. Every time the item is changed, changeKey changes as well. This allows Exchange to apply changes to the correct version of the object. Read-only.'
+          nullable: true
+        createdDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        lastModifiedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        allowNewTimeProposals:
+          type: boolean
+          description: 'true if the meeting organizer allows invitees to propose a new time when responding; otherwise, false. Optional. Default is true.'
+          nullable: true
+        attendees:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.attendee'
+          description: The collection of attendees for the event.
+        body:
+          $ref: '#/components/schemas/microsoft.graph.itemBody'
+        bodyPreview:
+          type: string
+          description: The preview of the message associated with the event. It is in text format.
+          nullable: true
+        end:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        hasAttachments:
+          type: boolean
+          description: Set to true if the event has attachments.
+          nullable: true
+        hideAttendees:
+          type: boolean
+          description: 'When set to true, each attendee only sees themselves in the meeting request and meeting Tracking list. Default is false.'
+          nullable: true
+        iCalUId:
+          type: string
+          description: A unique identifier for an event across calendars. This ID is different for each occurrence in a recurring series. Read-only.
+          nullable: true
+        importance:
+          $ref: '#/components/schemas/microsoft.graph.importance'
+        isAllDay:
+          type: boolean
+          description: 'Set to true if the event lasts all day. If true, regardless of whether it''s a single-day or multi-day event, start and end time must be set to midnight and be in the same time zone.'
+          nullable: true
+        isCancelled:
+          type: boolean
+          description: Set to true if the event has been canceled.
+          nullable: true
+        isDraft:
+          type: boolean
+          description: 'Set to true if the user has updated the meeting in Outlook but has not sent the updates to attendees. Set to false if all changes have been sent, or if the event is an appointment without any attendees.'
+          nullable: true
+        isOnlineMeeting:
+          type: boolean
+          description: 'True if this event has online meeting information (that is, onlineMeeting points to an onlineMeetingInfo resource), false otherwise. Default is false (onlineMeeting is null). Optional.  After you set isOnlineMeeting to true, Microsoft Graph initializes onlineMeeting. Subsequently Outlook ignores any further changes to isOnlineMeeting, and the meeting remains available online.'
+          nullable: true
+        isOrganizer:
+          type: boolean
+          description: Set to true if the calendar owner (specified by the owner property of the calendar) is the organizer of the event (specified by the organizer property of the event). This also applies if a delegate organized the event on behalf of the owner.
+          nullable: true
+        isReminderOn:
+          type: boolean
+          description: Set to true if an alert is set to remind the user of the event.
+          nullable: true
+        location:
+          $ref: '#/components/schemas/microsoft.graph.location'
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.location'
+          description: 'The locations where the event is held or attended from. The location and locations properties always correspond with each other. If you update the location property, any prior locations in the locations collection would be removed and replaced by the new location value.'
+        onlineMeeting:
+          $ref: '#/components/schemas/microsoft.graph.onlineMeetingInfo'
+        onlineMeetingProvider:
+          $ref: '#/components/schemas/microsoft.graph.onlineMeetingProviderType'
+        onlineMeetingUrl:
+          type: string
+          description: 'A URL for an online meeting. The property is set only when an organizer specifies in Outlook that an event is an online meeting such as Skype. Read-only.To access the URL to join an online meeting, use joinUrl which is exposed via the onlineMeeting property of the event. The onlineMeetingUrl property will be deprecated in the future.'
+          nullable: true
+        organizer:
+          $ref: '#/components/schemas/microsoft.graph.recipient'
+        originalEndTimeZone:
+          type: string
+          description: The end time zone that was set when the event was created. A value of tzone://Microsoft/Custom indicates that a legacy custom time zone was set in desktop Outlook.
+          nullable: true
+        originalStart:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'Represents the start time of an event when it is initially created as an occurrence or exception in a recurring series. This property is not returned for events that are single instances. Its date and time information is expressed in ISO 8601 format and is always in UTC. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        originalStartTimeZone:
+          type: string
+          description: The start time zone that was set when the event was created. A value of tzone://Microsoft/Custom indicates that a legacy custom time zone was set in desktop Outlook.
+          nullable: true
+        recurrence:
+          $ref: '#/components/schemas/microsoft.graph.patternedRecurrence'
+        reminderMinutesBeforeStart:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: The number of minutes before the event start time that the reminder alert occurs.
+          format: int32
+          nullable: true
+        responseRequested:
+          type: boolean
+          description: 'Default is true, which represents the organizer would like an invitee to send a response to the event.'
+          nullable: true
+        responseStatus:
+          $ref: '#/components/schemas/microsoft.graph.responseStatus'
+        sensitivity:
+          $ref: '#/components/schemas/microsoft.graph.sensitivity'
+        seriesMasterId:
+          type: string
+          description: 'The ID for the recurring series master item, if this event is part of a recurring series.'
+          nullable: true
+        showAs:
+          $ref: '#/components/schemas/microsoft.graph.freeBusyStatus'
+        start:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        subject:
+          type: string
+          description: The text of the event's subject line.
+          nullable: true
+        transactionId:
+          type: string
+          description: 'A custom identifier specified by a client app for the server to avoid redundant POST operations in case of client retries to create the same event. This is useful when low network connectivity causes the client to time out before receiving a response from the server for the client''s prior create-event request. After you set transactionId when creating an event, you cannot change transactionId in a subsequent update. This property is only returned in a response payload if an app has set it. Optional.'
+          nullable: true
+        type:
+          $ref: '#/components/schemas/microsoft.graph.eventType'
+        webLink:
+          type: string
+          description: 'The URL to open the event in Outlook on the web.Outlook on the web opens the event in the browser if you are signed in to your mailbox. Otherwise, Outlook on the web prompts you to sign in.This URL cannot be accessed from within an iFrame.'
+          nullable: true
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.attachment'
+          description: 'The collection of FileAttachment, ItemAttachment, and referenceAttachment attachments for the event. Navigation property. Read-only. Nullable.'
+        calendar:
+          $ref: '#/components/schemas/microsoft.graph.calendar'
+        extensions:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.extension'
+          description: The collection of open extensions defined for the event. Nullable.
+        instances:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.event'
+          description: 'The occurrences of a recurring series, if the event is a series master. This property includes occurrences that are part of the recurrence pattern, and exceptions that have been modified, but does not include occurrences that have been cancelled from the series. Navigation property. Read-only. Nullable.'
+        multiValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.multiValueLegacyExtendedProperty'
+          description: The collection of multi-value extended properties defined for the event. Read-only. Nullable.
+        singleValueExtendedProperties:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.singleValueLegacyExtendedProperty'
+          description: The collection of single-value extended properties defined for the event. Read-only. Nullable.
+    microsoft.graph.attendee:
+      title: attendee
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        emailAddress:
+          $ref: '#/components/schemas/microsoft.graph.emailAddress'
+        '@odata.type':
+          type: string
+        type:
+          $ref: '#/components/schemas/microsoft.graph.attendeeType'
+        proposedNewTime:
+          $ref: '#/components/schemas/microsoft.graph.timeSlot'
+        status:
+          $ref: '#/components/schemas/microsoft.graph.responseStatus'
+    microsoft.graph.itemBody:
+      title: itemBody
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        content:
+          type: string
+          description: The content of the item.
+          nullable: true
+        contentType:
+          $ref: '#/components/schemas/microsoft.graph.bodyType'
+        '@odata.type':
+          type: string
+      description: The body of the message associated with the event. It can be in HTML or text format.
+    microsoft.graph.dateTimeTimeZone:
+      title: dateTimeTimeZone
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        dateTime:
+          type: string
+          description: 'A single point of time in a combined date and time representation ({date}T{time}; for example, 2017-08-29T04:00:00.0000000).'
+        timeZone:
+          type: string
+          description: 'Represents a time zone, for example, ''Pacific Standard Time''. See below for more possible values.'
+          nullable: true
+        '@odata.type':
+          type: string
+      description: 'The date, time, and time zone that the event ends. By default, the end time is in UTC.'
+    microsoft.graph.importance:
+      title: importance
+      enum:
+        - low
+        - normal
+        - high
+      type: string
+      description: 'The importance of the event. The possible values are: low, normal, high.'
+    microsoft.graph.location:
+      title: location
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/microsoft.graph.physicalAddress'
+        coordinates:
+          $ref: '#/components/schemas/microsoft.graph.outlookGeoCoordinates'
+        displayName:
+          type: string
+          description: The name associated with the location.
+          nullable: true
+        locationEmailAddress:
+          type: string
+          description: Optional email address of the location.
+          nullable: true
+        locationType:
+          $ref: '#/components/schemas/microsoft.graph.locationType'
+        locationUri:
+          type: string
+          description: Optional URI representing the location.
+          nullable: true
+        uniqueId:
+          type: string
+          description: For internal use only.
+          nullable: true
+        uniqueIdType:
+          $ref: '#/components/schemas/microsoft.graph.locationUniqueIdType'
+        '@odata.type':
+          type: string
+      description: The location of the event.
+      discriminator:
+        propertyName: '@odata.type'
+    microsoft.graph.onlineMeetingInfo:
+      title: onlineMeetingInfo
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        conferenceId:
+          type: string
+          description: The ID of the conference.
+          nullable: true
+        joinUrl:
+          type: string
+          description: The external link that launches the online meeting. This is a URL that clients launch into a browser and will redirect the user to join the meeting.
+          nullable: true
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.phone'
+          description: All of the phone numbers associated with this conference.
+        quickDial:
+          type: string
+          description: The preformatted quick dial for this call.
+          nullable: true
+        tollFreeNumbers:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: The toll free numbers that can be used to join the conference.
+        tollNumber:
+          type: string
+          description: The toll number that can be used to join the conference.
+          nullable: true
+        '@odata.type':
+          type: string
+      description: 'Details for an attendee to join the meeting online. Default is null. Read-only. After you set the isOnlineMeeting and onlineMeetingProvider properties to enable a meeting online, Microsoft Graph initializes onlineMeeting. When set, the meeting remains available online, and you cannot change the isOnlineMeeting, onlineMeetingProvider, and onlneMeeting properties again.'
+    microsoft.graph.onlineMeetingProviderType:
+      title: onlineMeetingProviderType
+      enum:
+        - unknown
+        - skypeForBusiness
+        - skypeForConsumer
+        - teamsForBusiness
+      type: string
+      description: 'Represents the online meeting service provider. By default, onlineMeetingProvider is unknown. The possible values are unknown, teamsForBusiness, skypeForBusiness, and skypeForConsumer. Optional.  After you set onlineMeetingProvider, Microsoft Graph initializes onlineMeeting. Subsequently you cannot change onlineMeetingProvider again, and the meeting remains available online.'
+    microsoft.graph.recipient:
+      title: recipient
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        emailAddress:
+          $ref: '#/components/schemas/microsoft.graph.emailAddress'
+        '@odata.type':
+          type: string
+      description: The organizer of the event.
+      discriminator:
+        propertyName: '@odata.type'
+        mapping:
+          '#microsoft.graph.attendeeBase': '#/components/schemas/microsoft.graph.attendeeBase'
+          '#microsoft.graph.attendee': '#/components/schemas/microsoft.graph.attendee'
+    microsoft.graph.patternedRecurrence:
+      title: patternedRecurrence
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        pattern:
+          $ref: '#/components/schemas/microsoft.graph.recurrencePattern'
+        range:
+          $ref: '#/components/schemas/microsoft.graph.recurrenceRange'
+        '@odata.type':
+          type: string
+      description: The recurrence pattern for the event.
+    microsoft.graph.responseStatus:
+      title: responseStatus
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        response:
+          $ref: '#/components/schemas/microsoft.graph.responseType'
+        time:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The date and time when the response was returned. It uses ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        '@odata.type':
+          type: string
+      description: Indicates the type of response sent in response to an event message.
+    microsoft.graph.sensitivity:
+      title: sensitivity
+      enum:
+        - normal
+        - personal
+        - private
+        - confidential
+      type: string
+      description: 'Possible values are: normal, personal, private, confidential.'
+    microsoft.graph.freeBusyStatus:
+      title: freeBusyStatus
+      enum:
+        - unknown
+        - free
+        - tentative
+        - busy
+        - oof
+        - workingElsewhere
+      type: string
+      description: 'The status to show. Possible values are: free, tentative, busy, oof, workingElsewhere, unknown.'
+    microsoft.graph.eventType:
+      title: eventType
+      enum:
+        - singleInstance
+        - occurrence
+        - exception
+        - seriesMaster
+      type: string
+      description: 'The event type. Possible values are: singleInstance, occurrence, exception, seriesMaster. Read-only'
+    microsoft.graph.attachment:
+      title: attachment
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        contentType:
+          type: string
+          description: The MIME type.
+          nullable: true
+        isInline:
+          type: boolean
+          description: 'true if the attachment is an inline attachment; otherwise, false.'
+        lastModifiedDateTime:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]([.][0-9]{1,12})?(Z|[+-][0-9][0-9]:[0-9][0-9])$'
+          type: string
+          description: 'The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z'
+          format: date-time
+          nullable: true
+        name:
+          type: string
+          description: The attachment's file name.
+          nullable: true
+        size:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: The length of the attachment in bytes.
+          format: int32
+    microsoft.graph.calendar:
+      description: The calendar that contains the event. Navigation property. Read-only.
+    microsoft.graph.extension:
+      title: extension
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+    microsoft.graph.multiValueLegacyExtendedProperty:
+      title: multiValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: array
+          items:
+            type: string
+            nullable: true
+          description: A collection of property values.
+    microsoft.graph.singleValueLegacyExtendedProperty:
+      title: singleValueLegacyExtendedProperty
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier for an entity. Read-only.
+        '@odata.type':
+          type: string
+        value:
+          type: string
+          description: A property value.
+          nullable: true
+    microsoft.graph.eventCollectionResponse:
+      title: Base collection pagination and count responses
+      type: object
+      properties:
+        '@odata.count':
+          type: integer
+          format: int64
+          nullable: true
+        '@odata.nextLink':
+          type: string
+          nullable: true
+        value:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.event'
+    microsoft.graph.emailAddress:
+      title: emailAddress
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        address:
+          type: string
+          description: The email address of the person or entity.
+          nullable: true
+        name:
+          type: string
+          description: The display name of the person or entity.
+          nullable: true
+        '@odata.type':
+          type: string
+      description: The recipient's email address.
+    microsoft.graph.attendeeType:
+      title: attendeeType
+      enum:
+        - required
+        - optional
+        - resource
+      type: string
+      description: 'The type of attendee. The possible values are: required, optional, resource. Currently if the attendee is a person, findMeetingTimes always considers the person is of the Required type.'
+    microsoft.graph.timeSlot:
+      title: timeSlot
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        end:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        start:
+          $ref: '#/components/schemas/microsoft.graph.dateTimeTimeZone'
+        '@odata.type':
+          type: string
+      description: 'An alternate date/time proposed by the attendee for a meeting request to start and end. If the attendee hasn''t proposed another time, then this property isn''t included in a response of a GET event.'
+    microsoft.graph.bodyType:
+      title: bodyType
+      enum:
+        - text
+        - html
+      type: string
+      description: The type of the content. Possible values are text and html.
+    microsoft.graph.physicalAddress:
+      title: physicalAddress
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        city:
+          type: string
+          description: The city.
+          nullable: true
+        countryOrRegion:
+          type: string
+          description: 'The country or region. It''s a free-format string value, for example, ''United States''.'
+          nullable: true
+        postalCode:
+          type: string
+          description: The postal code.
+          nullable: true
+        state:
+          type: string
+          description: The state.
+          nullable: true
+        street:
+          type: string
+          description: The street.
+          nullable: true
+        '@odata.type':
+          type: string
+      description: The street address of the location.
+    microsoft.graph.outlookGeoCoordinates:
+      title: outlookGeoCoordinates
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        accuracy:
+          type: number
+          description: 'The accuracy of the latitude and longitude. As an example, the accuracy can be measured in meters, such as the latitude and longitude are accurate to within 50 meters.'
+          format: double
+          nullable: true
+        altitude:
+          type: number
+          description: The altitude of the location.
+          format: double
+          nullable: true
+        altitudeAccuracy:
+          type: number
+          description: The accuracy of the altitude.
+          format: double
+          nullable: true
+        latitude:
+          type: number
+          description: The latitude of the location.
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          description: The longitude of the location.
+          format: double
+          nullable: true
+        '@odata.type':
+          type: string
+      description: The geographic coordinates and elevation of the location.
+    microsoft.graph.locationType:
+      title: locationType
+      enum:
+        - default
+        - conferenceRoom
+        - homeAddress
+        - businessAddress
+        - geoCoordinates
+        - streetAddress
+        - hotel
+        - restaurant
+        - localBusiness
+        - postalAddress
+      type: string
+      description: 'The type of location. The possible values are: default, conferenceRoom, homeAddress, businessAddress,geoCoordinates, streetAddress, hotel, restaurant, localBusiness, postalAddress. Read-only.'
+    microsoft.graph.locationUniqueIdType:
+      title: locationUniqueIdType
+      enum:
+        - unknown
+        - locationStore
+        - directory
+        - private
+        - bing
+      type: string
+      description: For internal use only.
+    microsoft.graph.phone:
+      title: phone
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        language:
+          type: string
+          nullable: true
+        number:
+          type: string
+          description: The phone number.
+          nullable: true
+        region:
+          type: string
+          nullable: true
+        type:
+          $ref: '#/components/schemas/microsoft.graph.phoneType'
+        '@odata.type':
+          type: string
+    microsoft.graph.recurrencePattern:
+      title: recurrencePattern
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        dayOfMonth:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: The day of the month on which the event occurs. Required if type is absoluteMonthly or absoluteYearly.
+          format: int32
+        daysOfWeek:
+          type: array
+          items:
+            $ref: '#/components/schemas/microsoft.graph.dayOfWeek'
+          description: 'A collection of the days of the week on which the event occurs. The possible values are: sunday, monday, tuesday, wednesday, thursday, friday, saturday. If type is relativeMonthly or relativeYearly, and daysOfWeek specifies more than one day, the event falls on the first day that satisfies the pattern.  Required if type is weekly, relativeMonthly, or relativeYearly.'
+        firstDayOfWeek:
+          $ref: '#/components/schemas/microsoft.graph.dayOfWeek'
+        index:
+          $ref: '#/components/schemas/microsoft.graph.weekIndex'
+        interval:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: 'The number of units between occurrences, where units can be in days, weeks, months, or years, depending on the type. Required.'
+          format: int32
+        month:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: The month in which the event occurs.  This is a number from 1 to 12.
+          format: int32
+        type:
+          $ref: '#/components/schemas/microsoft.graph.recurrencePatternType'
+        '@odata.type':
+          type: string
+      description: 'The frequency of an event.  For access reviews: Do not specify this property for a one-time access review.  Only interval, dayOfMonth, and type (weekly, absoluteMonthly) properties of recurrencePattern are supported.'
+    microsoft.graph.recurrenceRange:
+      title: recurrenceRange
+      required:
+        - '@odata.type'
+      type: object
+      properties:
+        endDate:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$'
+          type: string
+          description: 'The date to stop applying the recurrence pattern. Depending on the recurrence pattern of the event, the last occurrence of the meeting may not be this date. Required if type is endDate.'
+          format: date
+          nullable: true
+        numberOfOccurrences:
+          maximum: 2147483647
+          minimum: -2147483648
+          type: number
+          description: The number of times to repeat the event. Required and must be positive if type is numbered.
+          format: int32
+        recurrenceTimeZone:
+          type: string
+          description: 'Time zone for the startDate and endDate properties. Optional. If not specified, the time zone of the event is used.'
+          nullable: true
+        startDate:
+          pattern: '^[0-9]{4,}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$'
+          type: string
+          description: 'The date to start applying the recurrence pattern. The first occurrence of the meeting may be this date or later, depending on the recurrence pattern of the event. Must be the same value as the start property of the recurring event. Required.'
+          format: date
+          nullable: true
+        type:
+          $ref: '#/components/schemas/microsoft.graph.recurrenceRangeType'
+        '@odata.type':
+          type: string
+      description: The duration of an event.
+    microsoft.graph.responseType:
+      title: responseType
+      enum:
+        - none
+        - organizer
+        - tentativelyAccepted
+        - accepted
+        - declined
+        - notResponded
+      type: string
+      description: 'The response type. Possible values are: none, organizer, tentativelyAccepted, accepted, declined, notResponded.To differentiate between none and notResponded:  none – from organizer''s perspective. This value is used when the status of an attendee/participant is reported to the organizer of a meeting.  notResponded – from attendee''s perspective. Indicates the attendee has not responded to the meeting request.  Clients can treat notResponded == none.  As an example, if attendee Alex hasn''t responded to a meeting request, getting Alex'' response status for that event in Alex'' calendar returns notResponded. Getting Alex'' response from the calendar of any other attendee or the organizer''s returns none. Getting the organizer''s response for the event in anybody''s calendar also returns none.'
+    microsoft.graph.phoneType:
+      title: phoneType
+      enum:
+        - home
+        - business
+        - mobile
+        - other
+        - assistant
+        - homeFax
+        - businessFax
+        - otherFax
+        - pager
+        - radio
+      type: string
+      description: 'The type of phone number. The possible values are: home, business, mobile, other, assistant, homeFax, businessFax, otherFax, pager, radio.'
+    microsoft.graph.dayOfWeek:
+      title: dayOfWeek
+      enum:
+        - sunday
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+      type: string
+    microsoft.graph.weekIndex:
+      title: weekIndex
+      enum:
+        - first
+        - second
+        - third
+        - fourth
+        - last
+      type: string
+      description: 'Specifies on which instance of the allowed days specified in daysOfWeek the event occurs, counted from the first instance in the month. The possible values are: first, second, third, fourth, last. Default is first. Optional and used if type is relativeMonthly or relativeYearly.'
+    microsoft.graph.recurrencePatternType:
+      title: recurrencePatternType
+      enum:
+        - daily
+        - weekly
+        - absoluteMonthly
+        - relativeMonthly
+        - absoluteYearly
+        - relativeYearly
+      type: string
+      description: 'The recurrence pattern type: daily, weekly, absoluteMonthly, relativeMonthly, absoluteYearly, relativeYearly. Required. For more information, see values of type property.'
+    microsoft.graph.recurrenceRangeType:
+      title: recurrenceRangeType
+      enum:
+        - endDate
+        - noEnd
+        - numbered
+      type: string
+      description: 'The recurrence range. The possible values are: endDate, noEnd, numbered. Required.'
+  responses:
+    microsoft.graph.eventCollectionResponse:
+      description: Retrieved collection
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/microsoft.graph.eventCollectionResponse'
+  parameters:
+    top:
+      name: $top
+      in: query
+      description: Show only the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+      example: 50
+    skip:
+      name: $skip
+      in: query
+      description: Skip the first n items
+      style: form
+      explode: false
+      schema:
+        minimum: 0
+        type: integer
+    search:
+      name: $search
+      in: query
+      description: Search items by search phrases
+      style: form
+      explode: false
+      schema:
+        type: string
+    filter:
+      name: $filter
+      in: query
+      description: Filter items by property values
+      style: form
+      explode: false
+      schema:
+        type: string
+    count:
+      name: $count
+      in: query
+      description: Include count of items
+      style: form
+      explode: false
+      schema:
+        type: boolean

@@ -4,12 +4,11 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Markdown</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>alpha</VersionSuffix>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
-
 
   <PropertyGroup>
     <!-- NuGet Package Settings -->
@@ -26,8 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/AppContextSwitchHelper.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

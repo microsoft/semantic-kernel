@@ -2,9 +2,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+[Experimental("SKEXP0020")]
 internal class WeaviateObject
 {
     public string? Id { get; set; }

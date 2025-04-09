@@ -1,15 +1,21 @@
 ﻿{
   "OpenAI": {
-    "ServiceId": "text-davinci-003",
-    "ModelId": "text-davinci-003",
+    "ServiceId": "gpt-3.5-turbo-instruct",
+    "ModelId": "gpt-3.5-turbo-instruct",
+    "ChatModelId": "gpt-4o",
     "ApiKey": ""
   },
-  "AzureOpenAI": {
-    "ServiceId": "azure-text-davinci-003",
-    "DeploymentName": "text-davinci-003",
-    "ChatDeploymentName": "gpt-4",
+  "AzureAIInference": {
+    "ServiceId": "azure-ai-inference",
     "Endpoint": "",
-    "ApiKey": ""
+    "ApiKey": "",
+    "ChatModelId ": "phi3"
+  },
+  "AzureOpenAI": {
+    "ServiceId": "azure-gpt",
+    "DeploymentName": "gpt-35-turbo-instruct",
+    "ChatDeploymentName": "gpt-4o",
+    "Endpoint": ""
   },
   "OpenAIEmbeddings": {
     "ServiceId": "text-embedding-ada-002",
@@ -18,11 +24,70 @@
   },
   "AzureOpenAIEmbeddings": {
     "ServiceId": "azure-text-embedding-ada-002",
-    "DeploymentName": "text-embedding-ada-002",
-    "Endpoint": "",
+    "DeploymentName": "ada-002",
+    "Endpoint": ""
+  },
+  "OpenAITextToAudio": {
+    "ServiceId": "tts-1",
+    "ModelId": "tts-1",
     "ApiKey": ""
   },
+  "AzureOpenAITextToAudio": {
+    "ServiceId": "azure-tts",
+    "DeploymentName": "tts",
+    "Endpoint": ""
+  },
+  "OpenAIAudioToText": {
+    "ServiceId": "whisper-1",
+    "ModelId": "whisper-1",
+    "ApiKey": ""
+  },
+  "AzureOpenAIAudioToText": {
+    "ServiceId": "azure-whisper",
+    "DeploymentName": "whisper",
+    "Endpoint": ""
+  },
+  "OpenAITextToImage": {
+    "ServiceId": "dall-e-2",
+    "ModelId": "dall-e-2",
+    "ApiKey": ""
+  },
+  "AzureOpenAITextToImage": {
+    "ServiceId": "azure-dalle3",
+    "DeploymentName": "Dalle3",
+    "Endpoint": ""
+  },
   "HuggingFace": {
+    "EmbeddingModelId": "sentence-transformers/all-MiniLM-L6-v2",
+    "TextGenerationModelId": "microsoft/phi-2",
+    "ChatCompletionModelId": "tgi",
+    "ApiKey": "",
+    "TextGenerationEndpoint": "http://localhost:8080/",
+    "EmbeddingEndpoint": "https://api-inference.huggingface.co/",
+    "ChatCompletionEndpoint": "http://localhost:8080/"
+  },
+  "GoogleAI": {
+    "EmbeddingModelId": "embedding-001",
+    "ApiKey": "",
+    "Gemini": {
+      "ModelId": "gemini-1.5-flash",
+      "VisionModelId": "gemini-1.5-flash"
+    }
+  },
+  "VertexAI": {
+    "EmbeddingModelId": "textembedding-gecko@003",
+    "BearerKey": "",
+    "Location": "us-central1",
+    "ProjectId": "",
+    "Gemini": {
+      "ModelId": "gemini-1.5-flash",
+      "VisionModelId": "gemini-1.5-flash"
+    }
+  },
+  "MistralAI": {
+    "EmbeddingModelId": "mistral-embed",
+    "ChatModelId": "mistral-large-latest",
+    "ImageModelId": "pixtral-12b-2409",
     "ApiKey": ""
   },
   "Bing": {
@@ -34,5 +99,32 @@
   "MongoDB": {
     "ConnectionString": "",
     "VectorSearchCollection": "dotnetMSKNearestTest.nearestSearch"
+  },
+  "AzureCosmosDBNoSQL": {
+    "ConnectionString": "",
+    "Endpoint": ""
+  },
+  "AzureCosmosDBMongoDB": {
+    "ConnectionString": ""
+  },
+  "SqlServer": {
+    "ConnectionString": ""
+  },
+  "Planners": {
+    "AzureOpenAI": {
+      "ServiceId": "azure-gpt-35-turbo",
+      "DeploymentName": "gpt-35-turbo",
+      "Endpoint": "",
+      "ApiKey": ""
+    },
+    "OpenAI": {
+      "ServiceId": "openai-gpt-4",
+      "ModelId": "gpt-4",
+      "ApiKey": ""
+    }
+  },
+  "BedrockAgent": {
+    "AgentResourceRoleArn": "",
+    "FoundationModel": "anthropic.claude-3-haiku-20240307-v1:0"
   }
 }

@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+[Experimental("SKEXP0020")]
 internal sealed class UpsertVectorRequest
 {
     public static UpsertVectorRequest Create(string collectionName)
@@ -58,9 +60,9 @@ internal sealed class UpsertVectorRequest
 
         internal BatchRequest()
         {
-            this.Ids = new List<string>();
-            this.Vectors = new List<ReadOnlyMemory<float>>();
-            this.Payloads = new List<Dictionary<string, object>>();
+            this.Ids = [];
+            this.Vectors = [];
+            this.Payloads = [];
         }
     }
 

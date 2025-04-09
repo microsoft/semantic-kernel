@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+[Experimental("SKEXP0020")]
 internal sealed class BatchRequest
 {
     private readonly string _class;
@@ -14,11 +15,11 @@ internal sealed class BatchRequest
     private BatchRequest(string @class)
     {
         this._class = @class;
-        this.Objects = new();
+        this.Objects = [];
     }
 
     // ReSharper disable once UnusedMember.Global
-    public string[] Fields { get; } = { "ALL" };
+    public string[] Fields { get; } = ["ALL"];
 
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once CollectionNeverQueried.Global

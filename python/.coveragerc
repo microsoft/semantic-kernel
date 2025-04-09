@@ -1,0 +1,37 @@
+[run]
+source = semantic_kernel
+omit = 
+    semantic_kernel/connectors/memory/astradb/*
+    semantic_kernel/connectors/memory/azure_cognitive_search/*
+    semantic_kernel/connectors/memory/azure_cosmosdb/*
+    semantic_kernel/connectors/memory/azure_cosmosdb_no_sql/*
+    semantic_kernel/connectors/memory/chroma/chroma_memory_store.py
+    semantic_kernel/connectors/memory/milvus/*
+    semantic_kernel/connectors/memory/mongodb_atlas/mongodb_atlas_memory_store.py
+    semantic_kernel/connectors/memory/pinecone/pinecone_memory_store.py
+    semantic_kernel/connectors/memory/pinecone/utils.py
+    semantic_kernel/connectors/memory/postgres/postgres_memory_store.py
+    semantic_kernel/connectors/memory/qdrant/qdrant_memory_store.py
+    semantic_kernel/connectors/memory/redis/redis_memory_store.py
+    semantic_kernel/connectors/memory/usearch/*
+    semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py
+    semantic_kernel/reliability/*
+    semantic_kernel/memory/*
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __repr__
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # TYPE_CHECKING and @overload blocks are never executed during pytest run
+    if TYPE_CHECKING:
+    @overload
+    @abstractmethod

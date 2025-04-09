@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CA1716 // Identifiers should not match keywords
+
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Microsoft.SemanticKernel.Services;
 
 /// <summary>
@@ -8,19 +16,19 @@ namespace Microsoft.SemanticKernel.Services;
 public static class AIServiceExtensions
 {
     /// <summary>
-    /// Key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the model identifier in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string ModelIdKey = "ModelId";
+    public static string ModelIdKey => "ModelId";
 
     /// <summary>
-    /// Key used to store the endpoint key in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the endpoint key in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string EndpointKey = "Endpoint";
+    public static string EndpointKey => "Endpoint";
 
     /// <summary>
-    /// Key used to store the API version in the <see cref="IAIService.Attributes"/> dictionary.
+    /// Gets the key used to store the API version in the <see cref="IAIService.Attributes"/> dictionary.
     /// </summary>
-    public const string ApiVersionKey = "ApiVersion";
+    public static string ApiVersionKey => "ApiVersion";
 
     /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
@@ -50,5 +58,85 @@ public static class AIServiceExtensions
     {
         Verify.NotNull(service);
         return service.Attributes?.TryGetValue(key, out object? value) == true ? value as string : null;
+    }
+
+    /// <summary>
+    /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified
+    /// <see cref="Kernel"/> based on a <see cref="KernelFunction"/> and associated <see cref="KernelArguments"/>.
+    /// </summary>
+    /// <typeparam name="T">
+    /// Specifies the type of the <see cref="IAIService"/> required. This must be the same type
+    /// with which the service was registered in the <see cref="IServiceCollection"/> orvia
+    /// the <see cref="IKernelBuilder"/>.
+    /// </typeparam>
+    /// <param name="selector">The <see cref="IAIServiceSelector"/> to use to select a service from the <see cref="Kernel"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="function">The function.</param>
+    /// <param name="arguments">The function arguments.</param>
+    /// <returns>A tuple of the selected service and the settings associated with the service (the settings may be null).</returns>
+    /// <exception cref="KernelException">An appropriate service could not be found.</exception>
+    public static (T, PromptExecutionSettings?) SelectAIService<T>(
+        this IAIServiceSelector selector,
+        Kernel kernel,
+        KernelFunction function,
+        KernelArguments arguments) where T : class, IAIService
+    {
+        Verify.NotNull(selector);
+        Verify.NotNull(kernel);
+        Verify.NotNull(function);
+        Verify.NotNull(arguments);
+
+        if (selector.TrySelectAIService<T>(
+            kernel, function, arguments,
+            out T? service, out PromptExecutionSettings? settings))
+        {
+            return (service, settings);
+        }
+
+        var message = new StringBuilder().Append("Required service of type ").Append(typeof(T)).Append(" not registered.");
+        if (function.ExecutionSettings is not null)
+        {
+            string serviceIds = string.Join("|", function.ExecutionSettings.Keys);
+            if (!string.IsNullOrEmpty(serviceIds))
+            {
+                message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
+            }
+
+            string modelIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ModelId));
+            if (!string.IsNullOrEmpty(modelIds))
+            {
+                message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
+            }
+        }
+
+        throw new KernelException(message.ToString());
+    }
+
+    /// <summary>
+    /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified
+    /// <see cref="Kernel"/> based on a <see cref="KernelFunction"/> and associated <see cref="KernelArguments"/>.
+    /// </summary>
+    /// <typeparam name="T">
+    /// Specifies the type of the <see cref="IAIService"/> required. This must be the same type
+    /// with which the service was registered in the <see cref="IServiceCollection"/> orvia
+    /// the <see cref="IKernelBuilder"/>.
+    /// </typeparam>
+    /// <param name="selector">The <see cref="IAIServiceSelector"/> to use to select a service from the <see cref="Kernel"/>.</param>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
+    /// <param name="executionSettings">The dictionary of <see cref="PromptExecutionSettings"/> to use to select a service from the <see cref="Kernel"/>.</param>
+    /// <param name="arguments">The function arguments.</param>
+    /// <returns>A tuple of the selected service and the settings associated with the service (the settings may be null).</returns>
+    /// <exception cref="KernelException">An appropriate service could not be found.</exception>
+    [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
+    [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
+    public static (T, PromptExecutionSettings?) SelectAIService<T>(
+        this IAIServiceSelector selector,
+        Kernel kernel,
+        IReadOnlyDictionary<string, PromptExecutionSettings>? executionSettings,
+        KernelArguments arguments) where T : class, IAIService
+    {
+        // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
+        KernelFunction nullPrompt = new KernelFunctionNoop(executionSettings);
+        return selector.SelectAIService<T>(kernel, nullPrompt, arguments);
     }
 }

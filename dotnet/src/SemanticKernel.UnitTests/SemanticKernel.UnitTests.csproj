@@ -3,16 +3,14 @@
   <PropertyGroup>
     <RootNamespace>SemanticKernel.UnitTests</RootNamespace>
     <AssemblyName>SemanticKernel.UnitTests</AssemblyName>
-    <TargetFrameworks>net6.0</TargetFrameworks>    <!-- ;net48 -->
-    <RollForward>LatestMajor</RollForward>
+    <TargetFrameworks>net8.0</TargetFrameworks>    <!-- ;net48 -->
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0001,SKEXP0002,SKEXP0003,SKEXP0055</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,IDE1006,VSTHRD111,SKEXP0001,SKEXP0010,SKEXP0020,SKEXP0050,SKEXP0110,SKEXP0120</NoWarn>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
-
   <ItemGroup>
+    <PackageReference Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
@@ -24,16 +22,37 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.ML.Tokenizers" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="System.ValueTuple" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\Connectors\Connectors.Memory.InMemory\Connectors.Memory.InMemory.csproj" />
     <ProjectReference Include="..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" />
     <ProjectReference Include="..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/connectors/AI/FunctionCalling/FunctionCallingUtilities.props" />
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/test/AssertExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Type/TypeExtensions.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Http/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/openai/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseData.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseLine.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/SseReader.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Text/StreamJsonParser.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Data/VectorStoreRecordMapping.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Text\*.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

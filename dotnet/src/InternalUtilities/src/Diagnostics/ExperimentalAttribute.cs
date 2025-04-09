@@ -4,9 +4,9 @@
 // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Diagnostics/CodeAnalysis/ExperimentalAttribute.cs
 // made internal rather than public.
 
+#if !NET8_0_OR_GREATER
 namespace System.Diagnostics.CodeAnalysis;
 
-#if !NET8_0_OR_GREATER
 /// <summary>
 ///  Indicates that an API is experimental and it may change in the future.
 /// </summary>
@@ -14,6 +14,7 @@ namespace System.Diagnostics.CodeAnalysis;
 ///   This attribute allows call sites to be flagged with a diagnostic that indicates that an experimental
 ///   feature is used. Authors can use this attribute to ship preview features in their assemblies.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 [AttributeUsage(AttributeTargets.Assembly |
                 AttributeTargets.Module |
                 AttributeTargets.Class |

@@ -2,13 +2,13 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Extensions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Extensions.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111</NoWarn>
+    <LangVersion>12</LangVersion>
+    <NoWarn>$(NoWarn);CA2007,VSTHRD111,SKEXP0001</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -25,6 +25,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PromptTemplate.Handlebars\PromptTemplate.Handlebars.csproj" />
+    <ProjectReference Include="..\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
   </ItemGroup>
 </Project>

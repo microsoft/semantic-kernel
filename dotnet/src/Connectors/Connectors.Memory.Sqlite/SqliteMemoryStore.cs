@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics.Tensors;
@@ -13,7 +14,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> backed by a SQLite database.
@@ -21,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
 /// <remarks>The data is saved to a database file, specified in the constructor.
 /// The data persists between subsequent instances. Only one instance may access the file at a time.
 /// The caller is responsible for deleting the file.</remarks>
+[Experimental("SKEXP0020")]
 public class SqliteMemoryStore : IMemoryStore, IDisposable
 {
     /// <summary>
@@ -52,7 +54,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken))
+        await foreach (var collection in this._dbConnector.GetCollectionsAsync(this._dbConnection, cancellationToken).ConfigureAwait(false))
         {
             yield return collection;
         }
@@ -87,21 +89,9 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<MemoryRecord> GetBatchAsync(string collectionName, IEnumerable<string> keys, bool withEmbeddings = false, CancellationToken cancellationToken = default)
     {
-        foreach (var key in keys)
-        {
-            var result = await this.InternalGetAsync(this._dbConnection, collectionName, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
-            if (result != null)
-            {
-                yield return result;
-            }
-            else
-            {
-                yield break;
-            }
-        }
+        return this.InternalGetBatchAsync(this._dbConnection, collectionName, keys.ToArray(), withEmbeddings, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -113,7 +103,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     /// <inheritdoc/>
     public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(k => this._dbConnector.DeleteAsync(this._dbConnection, collectionName, k, cancellationToken))).ConfigureAwait(false);
+        await this._dbConnector.DeleteBatchAsync(this._dbConnection, collectionName, keys.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -130,12 +120,11 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             yield break;
         }
 
-        var collectionMemories = new List<MemoryRecord>();
-        List<(MemoryRecord Record, double Score)> embeddings = new();
+        List<(MemoryRecord Record, double Score)> embeddings = [];
 
-        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken))
+        await foreach (var record in this.GetAllAsync(collectionName, cancellationToken).ConfigureAwait(false))
         {
-            if (record != null)
+            if (record is not null)
             {
                 double similarity = TensorPrimitives.CosineSimilarity(embedding.Span, record.Embedding.Span);
                 if (similarity >= minRelevanceScore)
@@ -218,8 +207,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
 
     private static DateTimeOffset? ParseTimestamp(string? str)
     {
-        if (!string.IsNullOrEmpty(str)
-            && DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
+        if (DateTimeOffset.TryParse(str, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out DateTimeOffset timestamp))
         {
             return timestamp;
         }
@@ -232,7 +220,7 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
         // delete empty entry in the database if it exists (see CreateCollection)
         await this._dbConnector.DeleteEmptyAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false);
 
-        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken))
+        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadAllAsync(this._dbConnection, collectionName, cancellationToken).ConfigureAwait(false))
         {
             ReadOnlyMemory<float> vector = JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default);
 
@@ -246,18 +234,8 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
     {
         record.Key = record.Metadata.Id;
 
-        // Update
-        await this._dbConnector.UpdateAsync(
-            conn: connection,
-            collection: collectionName,
-            key: record.Key,
-            metadata: record.GetSerializedMetadata(),
-            embedding: JsonSerializer.Serialize(record.Embedding, JsonOptionsCache.Default),
-            timestamp: ToTimestampString(record.Timestamp),
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        // Insert if entry does not exists
-        await this._dbConnector.InsertOrIgnoreAsync(
+        // Insert or replace
+        await this._dbConnector.UpsertAsync(
             conn: connection,
             collection: collectionName,
             key: record.Key,
@@ -293,6 +271,19 @@ public class SqliteMemoryStore : IMemoryStore, IDisposable
             ReadOnlyMemory<float>.Empty,
             entry.Value.Key,
             ParseTimestamp(entry.Value.Timestamp));
+    }
+
+    private async IAsyncEnumerable<MemoryRecord> InternalGetBatchAsync(
+        SqliteConnection connection,
+        string collectionName,
+        string[] keys, bool withEmbedding,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        await foreach (DatabaseEntry dbEntry in this._dbConnector.ReadBatchAsync(connection, collectionName, keys, withEmbedding, cancellationToken).ConfigureAwait(false))
+        {
+            ReadOnlyMemory<float> vector = withEmbedding ? JsonSerializer.Deserialize<ReadOnlyMemory<float>>(dbEntry.EmbeddingString, JsonOptionsCache.Default) : ReadOnlyMemory<float>.Empty;
+            yield return MemoryRecord.FromJsonMetadata(dbEntry.MetadataString, vector, dbEntry.Key, ParseTimestamp(dbEntry.Timestamp)); ;
+        }
     }
 
     #endregion

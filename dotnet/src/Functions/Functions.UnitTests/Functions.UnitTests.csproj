@@ -2,13 +2,12 @@
   <PropertyGroup>
     <AssemblyName>SemanticKernel.Functions.UnitTests</AssemblyName>
     <RootNamespace>SemanticKernel.Functions.UnitTests</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <RollForward>LatestMajor</RollForward>
+    <TargetFramework>net8.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <IsPackable>false</IsPackable>
-    <NoWarn>CA2007,VSTHRD111,SKEXP0040,SKEXP0041</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1861,CA1869,VSTHRD111,CS1591,SKEXP0040,SKEXP0001</NoWarn>
   </PropertyGroup>
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/test/TestInternalUtilities.props" />
   <ItemGroup>
@@ -16,6 +15,11 @@
     <None Remove="OpenApi\TestPlugins\ai-plugin.json" />
     <None Remove="OpenApi\TestPlugins\ai-plugin2.json" />
     <None Remove="OpenApi\TestPlugins\documentV3_1.yaml" />
+    <None Remove="OpenApi\TestPlugins\multipart-form-data.json" />
+    <None Remove="OpenApi\TestPlugins\no-securityV3_0.json" />
+    <None Remove="OpenApi\TestPlugins\apikey-securityV3_0.json" />
+    <None Remove="OpenApi\TestPlugins\oauth-securityV3_0.json" />
+    <None Remove="OpenApi\TestPlugins\openapi_feature_testsV3_0.json" />
     <None Remove="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <None Remove="OpenApi\TestPlugins\OpenApi.json" />
   </ItemGroup>
@@ -23,10 +27,15 @@
     <EmbeddedResource Include="Grpc\Protobuf\TestPlugins\protoV3.proto" />
     <EmbeddedResource Include="OpenApi\TestPlugins\ai-plugin.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\ai-plugin2.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\oauth-securityV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\no-securityV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\apikey-securityV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV2_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\repair-service.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\openapi_feature_testsV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ObjectResponseSchema.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ProductResponseSchema.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ValidProductContent.json" />
@@ -52,11 +61,23 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Connectors\Connectors.AI.OpenAI\Connectors.AI.OpenAI.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
     <ProjectReference Include="..\Functions.Grpc\Functions.Grpc.csproj" />
     <ProjectReference Include="..\Functions.Markdown\Functions.Markdown.csproj" />
-    <ProjectReference Include="..\Functions.OpenAPI\Functions.OpenAPI.csproj" />
+    <ProjectReference Include="..\Functions.OpenApi.Extensions\Functions.OpenApi.Extensions.csproj" />
+    <ProjectReference Include="..\Functions.OpenApi\Functions.OpenApi.csproj" />
     <ProjectReference Include="..\Functions.Yaml\Functions.Yaml.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="OpenApi\TestPlugins\multipart-form-data.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="OpenApi\TestPlugins\messages-apiplugin.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="OpenApi\TestPlugins\messages-openapi.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

@@ -2,12 +2,12 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.AI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class that contains information about node in prompt.
 /// </summary>
-internal class PromptNode
+internal sealed class PromptNode(string tagName)
 {
     private Dictionary<string, string>? _attributes;
     private List<PromptNode>? _childNodes;
@@ -15,7 +15,7 @@ internal class PromptNode
     /// <summary>
     /// Node tag name.
     /// </summary>
-    public string TagName { get; set; }
+    public string TagName { get; set; } = tagName;
 
     /// <summary>
     /// Node content.
@@ -27,7 +27,7 @@ internal class PromptNode
     /// </summary>
     public Dictionary<string, string> Attributes
     {
-        get => this._attributes ??= new();
+        get => this._attributes ??= [];
         set => this._attributes = value;
     }
 
@@ -36,16 +36,7 @@ internal class PromptNode
     /// </summary>
     public List<PromptNode> ChildNodes
     {
-        get => this._childNodes ??= new();
+        get => this._childNodes ??= [];
         set => this._childNodes = value;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PromptNode"/> class.
-    /// </summary>
-    /// <param name="tagName">Node tag name.</param>
-    public PromptNode(string tagName)
-    {
-        this.TagName = tagName;
     }
 }

@@ -33,7 +33,7 @@ public sealed class AggregatorPromptTemplateFactoryTests
     }
 
     [Fact]
-    public void ItThrowsExceptionForUnknowPromptTemplateFormat()
+    public void ItThrowsExceptionForUnknownPromptTemplateFormat()
     {
         // Arrange
         var templateString = "{{$input}}";
@@ -43,6 +43,39 @@ public sealed class AggregatorPromptTemplateFactoryTests
         // Act
         // Assert
         Assert.Throws<KernelException>(() => target.Create(promptConfig));
+    }
+
+    [Fact]
+    public void ItCreatesPromptFunctionsUsingCorrectFactory()
+    {
+        // Arrange
+        var templateString = "{{$input}}";
+        var kernel = new Kernel();
+        var factory1 = new MyPromptTemplateFactory1();
+        var factory2 = new MyPromptTemplateFactory2();
+        var target = new AggregatorPromptTemplateFactory(factory1, factory2);
+
+        // Act
+        var function1 = kernel.CreateFunctionFromPrompt(templateString, templateFormat: "my-format-1", promptTemplateFactory: target);
+        var function2 = kernel.CreateFunctionFromPrompt(templateString, templateFormat: "my-format-1", promptTemplateFactory: target);
+
+        // Assert
+        Assert.NotNull(function1);
+        Assert.NotNull(function2);
+    }
+
+    [Fact]
+    public void ItThrowsExceptionCreatePromptFunctionWithoutFormat()
+    {
+        // Arrange
+        var templateString = "{{$input}}";
+        var kernel = new Kernel();
+        var factory1 = new MyPromptTemplateFactory1();
+
+        // Act & Assert
+        var result = Assert.Throws<ArgumentException>(() => kernel.CreateFunctionFromPrompt(templateString, promptTemplateFactory: factory1));
+        Assert.Equal("templateFormat", result.ParamName);
+        Assert.Equal("Template format is required when providing a promptTemplateFactory (Parameter 'templateFormat')", result.Message);
     }
 
     #region private
@@ -61,14 +94,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-    private sealed class MyPromptTemplate1 : IPromptTemplate
+    private sealed class MyPromptTemplate1(PromptTemplateConfig promptConfig) : IPromptTemplate
     {
-        private readonly PromptTemplateConfig _promptModel;
-
-        public MyPromptTemplate1(PromptTemplateConfig promptConfig)
-        {
-            this._promptModel = promptConfig;
-        }
+        private readonly PromptTemplateConfig _promptModel = promptConfig;
 
         public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {
@@ -91,14 +119,9 @@ public sealed class AggregatorPromptTemplateFactoryTests
         }
     }
 
-    private sealed class MyPromptTemplate2 : IPromptTemplate
+    private sealed class MyPromptTemplate2(PromptTemplateConfig promptConfig) : IPromptTemplate
     {
-        private readonly PromptTemplateConfig _promptModel;
-
-        public MyPromptTemplate2(PromptTemplateConfig promptConfig)
-        {
-            this._promptModel = promptConfig;
-        }
+        private readonly PromptTemplateConfig _promptModel = promptConfig;
 
         public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
         {

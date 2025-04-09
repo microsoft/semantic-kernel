@@ -2,18 +2,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Http.ApiSchema;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
 using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Pinecone Document entity.
 /// </summary>
+[Experimental("SKEXP0020")]
 public class PineconeDocument
 {
     /// <summary>
@@ -27,7 +27,6 @@ public class PineconeDocument
     /// Vector dense data. This should be the same length as the dimension of the index being queried.
     /// </summary>
     [JsonPropertyName("values")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Values { get; set; }
 
     /// <summary>
@@ -101,7 +100,7 @@ public class PineconeDocument
     {
         this.Id = id ?? Guid.NewGuid().ToString();
         this.Values = values;
-        this.Metadata = metadata ?? new Dictionary<string, object>();
+        this.Metadata = metadata ?? [];
         this.SparseValues = sparseValues;
         this.Score = score;
     }
@@ -143,7 +142,7 @@ public class PineconeDocument
     {
         // return a dictionary from the metadata without the text, document_Id, and source_Id properties
 
-        if (this.Metadata == null)
+        if (this.Metadata is null)
         {
             return string.Empty;
         }

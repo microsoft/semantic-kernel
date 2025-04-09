@@ -2,17 +2,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
-using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Memory;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// An implementation of <see cref="IMemoryStore"/> for Pinecone Vector database.
@@ -24,6 +23,7 @@ namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone;
 /// For that reason, we use the term "Index" in Pinecone to refer to what is a "Collection" in IMemoryStore. So, in the case of Pinecone,
 ///  "Collection" is synonymous with "Index" when referring to IMemoryStore.
 /// </remarks>
+[Experimental("SKEXP0020")]
 public class PineconeMemoryStore : IPineconeMemoryStore
 {
     /// <summary>
@@ -36,7 +36,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = pineconeClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         ILoggerFactory? loggerFactory = null)
     {
         this._pineconeClient = new PineconeClient(pineconeEnvironment, apiKey, loggerFactory);
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(PineconeMemoryStore)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(PineconeMemoryStore)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>
@@ -116,7 +116,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         Task request = operationType switch
         {
-            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, new[] { vectorData }, indexNamespace, cancellationToken),
+            OperationType.Upsert => this._pineconeClient.UpsertAsync(indexName, [vectorData], indexNamespace, cancellationToken),
             OperationType.Update => this._pineconeClient.UpdateAsync(indexName, vectorData, indexNamespace, cancellationToken),
             OperationType.Skip => Task.CompletedTask,
             _ => Task.CompletedTask
@@ -157,8 +157,8 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        List<PineconeDocument> upsertDocuments = new();
-        List<PineconeDocument> updateDocuments = new();
+        List<PineconeDocument> upsertDocuments = [];
+        List<PineconeDocument> updateDocuments = [];
 
         foreach (MemoryRecord? record in records)
         {
@@ -186,7 +186,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             }
         }
 
-        List<Task> tasks = new();
+        List<Task> tasks = [];
 
         if (upsertDocuments.Count > 0)
         {
@@ -201,7 +201,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             tasks.AddRange(updates);
         }
 
-        PineconeDocument[] vectorData = upsertDocuments.Concat(updateDocuments).ToArray();
+        PineconeDocument[] vectorData = [.. upsertDocuments, .. updateDocuments];
 
         try
         {
@@ -245,12 +245,12 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             await foreach (PineconeDocument? record in this._pineconeClient.FetchVectorsAsync(
                                indexName,
-                               new[] { key },
+                               [key],
                                indexNamespace,
                                withEmbedding,
-                               cancellationToken))
+                               cancellationToken).ConfigureAwait(false))
             {
-                return record?.ToMemoryRecord(transferVectorOwnership: true);
+                return record?.ToMemoryRecord();
             }
         }
         catch (HttpOperationException ex)
@@ -291,7 +291,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         {
             MemoryRecord? record = await this.GetFromNamespaceAsync(indexName, indexNamespace, key, withEmbeddings, cancellationToken).ConfigureAwait(false);
 
-            if (record != null)
+            if (record is not null)
             {
                 yield return record;
             }
@@ -316,7 +316,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         bool withEmbedding = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord? record in this.GetWithDocumentIdBatchAsync(indexName, new[] { documentId }, limit, indexNamespace, withEmbedding, cancellationToken).ConfigureAwait(false))
+        await foreach (MemoryRecord? record in this.GetWithDocumentIdBatchAsync(indexName, [documentId], limit, indexNamespace, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             yield return record;
         }
@@ -343,7 +343,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
                  in documentIds.Select(
                      documentId => this.GetWithDocumentIdAsync(indexName, documentId, limit, indexNamespace, withEmbeddings, cancellationToken)))
         {
-            await foreach (MemoryRecord? record in records.WithCancellation(cancellationToken))
+            await foreach (MemoryRecord? record in records.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 yield return record;
             }
@@ -381,7 +381,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         foreach (PineconeDocument? record in vectorDataList)
         {
-            yield return record?.ToMemoryRecord(transferVectorOwnership: true);
+            yield return record?.ToMemoryRecord();
         }
     }
 
@@ -399,10 +399,10 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     {
         try
         {
-            await this._pineconeClient.DeleteAsync(indexName, new[]
-                {
+            await this._pineconeClient.DeleteAsync(indexName,
+                [
                     key
-                },
+                ],
                 indexNamespace,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
@@ -425,7 +425,18 @@ public class PineconeMemoryStore : IPineconeMemoryStore
     /// <inheritdoc />
     public async Task RemoveBatchFromNamespaceAsync(string indexName, string indexNamespace, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(keys.Select(async k => await this.RemoveFromNamespaceAsync(indexName, indexNamespace, k, cancellationToken).ConfigureAwait(false))).ConfigureAwait(false);
+        try
+        {
+            await this._pineconeClient.DeleteAsync(indexName,
+                keys,
+                indexNamespace,
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (HttpOperationException ex)
+        {
+            this._logger.LogError(ex, "Failed to remove vector data from Pinecone: {Message}", ex.Message);
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -552,9 +563,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             default,
             cancellationToken);
 
-        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
+        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(), result.Item2);
         }
     }
 
@@ -625,9 +636,9 @@ public class PineconeMemoryStore : IPineconeMemoryStore
             filter,
             cancellationToken);
 
-        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken))
+        await foreach ((PineconeDocument, double) result in results.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            yield return (result.Item1.ToMemoryRecord(transferVectorOwnership: true), result.Item2);
+            yield return (result.Item1.ToMemoryRecord(), result.Item2);
         }
     }
 
@@ -670,7 +681,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
 
         PineconeDocument vectorData = record.ToPineconeDocument();
 
-        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, new[] { key }, indexNamespace, false, cancellationToken)
+        PineconeDocument? existingRecord = await this._pineconeClient.FetchVectorsAsync(indexName, [key], indexNamespace, false, cancellationToken)
             .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         if (existingRecord is null)
@@ -679,7 +690,7 @@ public class PineconeMemoryStore : IPineconeMemoryStore
         }
 
         // compare metadata dictionaries
-        if (existingRecord.Metadata != null && vectorData.Metadata != null)
+        if (existingRecord.Metadata is not null && vectorData.Metadata is not null)
         {
             if (existingRecord.Metadata.SequenceEqual(vectorData.Metadata))
             {

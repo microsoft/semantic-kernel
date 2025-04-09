@@ -1,0 +1,12 @@
+{{#*inline "AdditionalContext"}}
+{{#if additionalContext}}
+{{#message role="user"}}
+Here is additional context that can help you achieve the goal. While the helpers provided are tools for building your template, the context here will inform the content and logic that guide your use of these tools.
+
+### Additional Context
+{{!-- Any domain knowledge or specific content that might help the model better fulfill the goal. Remember to keep the context relevant to the goal and helpers available.
+   -- This section should just hold static information that's the same for every request. It should not include variables, use KernelArguments when invoking the planner instead.--}}
+{{additionalContext}}
+{{/message}}
+{{/if}}
+{{/inline}}

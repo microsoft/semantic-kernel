@@ -1,0 +1,81 @@
+---
+title: ITextSearch
+---
+classDiagram
+    %% Use https://mermaid.live/ to preview this diagram. The VS Code extension does not handle namespaces.
+    direction TB
+
+    namespace Connectors_Memory_VectorStoreSearch {
+        class VectorStoreSearch~T~ {
+            SearchAsync~string~(query, searchSettings, cancellationToken) Task~KernelSearchResults~string~~
+            SearchAsync~TextSearchResult~(query, searchSettings, cancellationToken) Task~KernelSearchResults~TextSearchResult~~
+            SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
+        }
+    }
+
+    namespace Plugins_Web {
+        class BingTextSearch {
+            SearchAsync~string~(query, searchSettings, cancellationToken) Task~KernelSearchResults~string~~
+            SearchAsync~TextSearchResult~(query, searchSettings, cancellationToken) Task~KernelSearchResults~TextSearchResult~~
+            SearchAsync~BingWebPage~(query, searchSettings, cancellationToken) Task~KernelSearchResults~BingWebPage~~
+        }
+
+        class GoogleTextSearch {
+            SearchAsync~string~(query, searchSettings, cancellationToken) Task~KernelSearchResults~string~~
+            SearchAsync~TextSearchResult~(query, searchSettings, cancellationToken) Task~KernelSearchResults~TextSearchResult~~
+            SearchAsync~Result~(query, searchSettings, cancellationToken) Task~KernelSearchResults~Result~~
+        }
+    }
+
+    namespace Search {
+        class KernelSearchResults~T~ {
+            +long? TotalCount
+            +object? InnerContent
+            +IReadOnlyDictionary? Metadata
+            +IAsyncEnumerable~T~ Results
+        }
+
+        class ITextSearch~T~ {
+            <<interface>>
+            SearchAsync~T~(query, searchSettings, cancellationToken) Task~KernelSearchResults~T~~
+        }
+
+        class SearchOptions {
+            +string Index
+            +int Count
+            +int Offset
+            +BasicFilterOptions BasicFilter
+        }
+
+        class BasicFilterOptions {
+            +IEnumerable~FilterClause~ FilterClauses
+            Equality(field, value) BasicFilterOptions
+        }
+
+        class FilterClause {
+            +FilterClauseType Type
+        }
+
+        class FilterClauseType {
+            Equality
+        }
+
+        class TextSearchResult {
+            +string? Name
+            +string? Value
+            +string? Link
+        }
+    }
+
+    ITextSearch ..> SearchOptions
+    ITextSearch ..> KernelSearchResults
+    SearchOptions ..> BasicFilterOptions
+    BasicFilterOptions ..> FilterClause
+    BingTextSearch --|> ITextSearch
+    GoogleTextSearch --|> ITextSearch
+    AzureAISearch --|> ITextSearch
+
+    BingTextSearch ..> TextSearchResult
+    GoogleTextSearch ..> TextSearchResult
+    AzureAISearch ..> TextSearchResult
+

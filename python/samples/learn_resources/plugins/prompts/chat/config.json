@@ -1,0 +1,22 @@
+{
+    "schema": 1,
+    "description": "Summarizes the conversation.",
+    "execution_settings": {
+        "default": {
+            "max_tokens": 4000,
+            "temperature": 0.3
+        }
+    },
+    "input_variables": [
+        {
+            "name": "input",
+            "description": "The user's request.",
+            "default": ""
+        },
+        {
+            "name": "history",
+            "description": "The history of the conversation.",
+            "default": ""
+        }
+    ]
+}

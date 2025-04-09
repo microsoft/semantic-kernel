@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.TemplateEngine.Blocks;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
 
@@ -31,18 +30,8 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 /// [letter]         ::= "a" | "b" ... | "z" | "A" | "B" ... | "Z"
 /// [digit]          ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
 /// </summary>
-internal sealed class TemplateTokenizer
+internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
 {
-    /// <summary>
-    /// Create a new instance of SK tokenizer
-    /// </summary>
-    /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public TemplateTokenizer(ILoggerFactory? loggerFactory = null)
-    {
-        this._loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-        this._codeTokenizer = new CodeTokenizer(loggerFactory);
-    }
-
     /// <summary>
     /// Extract blocks from the given text
     /// </summary>
@@ -58,13 +47,13 @@ internal sealed class TemplateTokenizer
         // Render NULL to ""
         if (string.IsNullOrEmpty(text))
         {
-            return new List<Block> { new TextBlock(string.Empty, this._loggerFactory) };
+            return [new TextBlock(string.Empty, this._loggerFactory)];
         }
 
         // If the template is "empty" return the content as a text block
         if (text!.Length < MinCodeBlockLength)
         {
-            return new List<Block> { new TextBlock(text, this._loggerFactory) };
+            return [new TextBlock(text, this._loggerFactory)];
         }
 
         var blocks = new List<Block>();
@@ -203,8 +192,8 @@ internal sealed class TemplateTokenizer
 
     #region private ================================================================================
 
-    private readonly ILoggerFactory _loggerFactory;
-    private readonly CodeTokenizer _codeTokenizer;
+    private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+    private readonly CodeTokenizer _codeTokenizer = new(loggerFactory);
 
     private static string SubStr(string text, int startIndex, int stopIndex)
     {

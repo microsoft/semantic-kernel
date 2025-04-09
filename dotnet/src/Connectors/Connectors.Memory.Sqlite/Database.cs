@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Sqlite;
+namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
+[Experimental("SKEXP0020")]
 internal struct DatabaseEntry
 {
     public string Key { get; set; }
@@ -20,6 +22,7 @@ internal struct DatabaseEntry
     public string? Timestamp { get; set; }
 }
 
+[Experimental("SKEXP0020")]
 internal sealed class Database
 {
     private const string TableName = "SKMemoryTable";
@@ -56,30 +59,13 @@ internal sealed class Database
         await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task UpdateAsync(SqliteConnection conn,
+    public async Task UpsertAsync(SqliteConnection conn,
         string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
         cmd.CommandText = $@"
-             UPDATE {TableName}
-             SET metadata=@metadata, embedding=@embedding, timestamp=@timestamp
-             WHERE collection=@collection
-                AND key=@key ";
-        cmd.Parameters.AddWithValue("@collection", collection);
-        cmd.Parameters.AddWithValue("@key", key);
-        cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
-        cmd.Parameters.AddWithValue("@embedding", embedding ?? string.Empty);
-        cmd.Parameters.AddWithValue("@timestamp", timestamp ?? string.Empty);
-        await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    public async Task InsertOrIgnoreAsync(SqliteConnection conn,
-        string collection, string key, string? metadata, string? embedding, string? timestamp, CancellationToken cancellationToken = default)
-    {
-        using SqliteCommand cmd = conn.CreateCommand();
-        cmd.CommandText = $@"
-             INSERT OR IGNORE INTO {TableName}(collection, key, metadata, embedding, timestamp)
-             VALUES(@collection, @key, @metadata, @embedding, @timestamp); ";
+        INSERT OR REPLACE INTO {TableName}(collection, key, metadata, embedding, timestamp)
+        VALUES(@collection, @key, @metadata, @embedding, @timestamp);";
         cmd.Parameters.AddWithValue("@collection", collection);
         cmd.Parameters.AddWithValue("@key", key);
         cmd.Parameters.AddWithValue("@metadata", metadata ?? string.Empty);
@@ -163,6 +149,41 @@ internal sealed class Database
         return null;
     }
 
+    public async IAsyncEnumerable<DatabaseEntry> ReadBatchAsync(SqliteConnection conn,
+    string collectionName,
+    string[] keys,
+    bool withEmbeddings = false,
+    [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        using SqliteCommand cmd = conn.CreateCommand();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
+        var parameters = string.Join(", ", keyParameters);
+
+        var selectFieldQuery = withEmbeddings ? "*" : "key, metadata, timestamp";
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+             SELECT {selectFieldQuery} FROM {TableName}
+             WHERE collection=@collection
+                AND key IN ({parameters})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new SqliteParameter("@collection", collectionName));
+        for (int i = 0; i < keys.Length; i++)
+        {
+            cmd.Parameters.Add(new SqliteParameter($"@key{i}", keys[i]));
+        }
+
+        using var dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            string key = dataReader.GetString("key");
+            string metadata = dataReader.GetString("metadata");
+            string embedding = withEmbeddings ? dataReader.GetString("embedding") : string.Empty;
+            string timestamp = dataReader.GetString("timestamp");
+            yield return new DatabaseEntry() { Key = key, MetadataString = metadata, EmbeddingString = embedding, Timestamp = timestamp };
+        }
+    }
+
     public Task DeleteCollectionAsync(SqliteConnection conn, string collectionName, CancellationToken cancellationToken = default)
     {
         using SqliteCommand cmd = conn.CreateCommand();
@@ -182,6 +203,27 @@ internal sealed class Database
                 AND key=@key ";
         cmd.Parameters.AddWithValue("@collection", collectionName);
         cmd.Parameters.AddWithValue("@key", key);
+        return cmd.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public Task DeleteBatchAsync(SqliteConnection conn, string collectionName, string[] keys, CancellationToken cancellationToken = default)
+    {
+        using SqliteCommand cmd = conn.CreateCommand();
+        var keyParameters = keys.Select((key, index) => $"@key{index}");
+        var parameters = string.Join(", ", keyParameters);
+
+#pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
+        cmd.CommandText = $@"
+         DELETE FROM {TableName}
+         WHERE collection=@collection
+            AND key IN ({parameters})";
+#pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
+        cmd.Parameters.Add(new SqliteParameter("@collection", collectionName));
+        for (int i = 0; i < keys.Length; i++)
+        {
+            cmd.Parameters.Add(new SqliteParameter($"@key{i}", keys[i]));
+        }
         return cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 

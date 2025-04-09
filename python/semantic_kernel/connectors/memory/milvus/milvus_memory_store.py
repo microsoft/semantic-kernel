@@ -1,18 +1,57 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from logging import Logger
-from typing import List, Optional, Tuple
+import logging
+from datetime import datetime
+from typing import Any
 
 from numpy import array, expand_dims, ndarray
-from pymilvus.milvus_client import milvus_client
+from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connections, utility
 
+from semantic_kernel.exceptions import ServiceResourceNotFoundError, ServiceResponseException
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.null_logger import NullLogger
+from semantic_kernel.utils.feature_stage_decorator import experimental
+
+logger: logging.Logger = logging.getLogger(__name__)
+
+# Index parameters
+_INDEX_TYPE = "IVF_FLAT"
+_NLIST = 1024
+
+SEARCH_FIELD_ID = "id"
+SEARCH_FIELD_TEXT = "text"
+SEARCH_FIELD_EMBEDDING = "embedding"
+SEARCH_FIELD_SRC = "external_source_name"
+SEARCH_FIELD_DESC = "description"
+SEARCH_FIELD_METADATA = "additional_metadata"
+SEARCH_FIELD_IS_REF = "is_reference"
+SEARCH_FIELD_TIMESTAMP = "timestamp"
+
+OUTPUT_FIELDS_W_EMBEDDING = [
+    SEARCH_FIELD_ID,
+    SEARCH_FIELD_TEXT,
+    SEARCH_FIELD_SRC,
+    SEARCH_FIELD_DESC,
+    SEARCH_FIELD_METADATA,
+    SEARCH_FIELD_IS_REF,
+    SEARCH_FIELD_EMBEDDING,
+    SEARCH_FIELD_TIMESTAMP,
+]
+OUTPUT_FIELDS_WO_EMBEDDING = [
+    SEARCH_FIELD_ID,
+    SEARCH_FIELD_TEXT,
+    SEARCH_FIELD_SRC,
+    SEARCH_FIELD_DESC,
+    SEARCH_FIELD_METADATA,
+    SEARCH_FIELD_IS_REF,
+    SEARCH_FIELD_TIMESTAMP,
+]
 
 
-def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict:
+@experimental
+def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict[str, Any]:
     """Convert a memoryrecord into a dict.
+
     Args:
         mem (MemoryRecord): MemoryRecord to convert.
 
@@ -24,11 +63,14 @@ def memoryrecord_to_milvus_dict(mem: MemoryRecord) -> dict:
     for key, val in vars(mem).items():
         if val is not None:
             # Remove underscore
+            if isinstance(val, datetime):
+                val = val.isoformat()
             ret_dict[key[1:]] = val
     return ret_dict
 
 
-def milvus_dict_to_memoryrecord(milvus_dict: dict) -> MemoryRecord:
+@experimental
+def milvus_dict_to_memoryrecord(milvus_dict: dict[str, Any]) -> MemoryRecord:
     """Convert Milvus search result dict into MemoryRecord.
 
     Args:
@@ -38,40 +80,85 @@ def milvus_dict_to_memoryrecord(milvus_dict: dict) -> MemoryRecord:
         MemoryRecord
     """
     # Embedding needs conversion to numpy array
-    embedding = milvus_dict.get("embedding", None)
+    embedding = milvus_dict.get(SEARCH_FIELD_EMBEDDING)
     if embedding is not None:
         embedding = array(embedding)
     return MemoryRecord(
-        is_reference=milvus_dict.get("is_reference", None),
-        external_source_name=milvus_dict.get("external_source_name", None),
-        id=milvus_dict.get("id", None),
-        description=milvus_dict.get("description", None),
-        text=milvus_dict.get("text", None),
-        additional_metadata=milvus_dict.get("additional_metadata", None),
+        is_reference=milvus_dict.get(SEARCH_FIELD_IS_REF),
+        external_source_name=milvus_dict.get(SEARCH_FIELD_SRC),
+        id=milvus_dict.get(SEARCH_FIELD_ID),
+        description=milvus_dict.get(SEARCH_FIELD_DESC),
+        text=milvus_dict.get(SEARCH_FIELD_TEXT),
+        additional_metadata=milvus_dict.get(SEARCH_FIELD_METADATA),
         embedding=embedding,
-        key=milvus_dict.get("key", None),
-        timestamp=milvus_dict.get("timestamp", None),
+        key=milvus_dict.get("key"),
+        timestamp=milvus_dict.get(SEARCH_FIELD_TIMESTAMP),
     )
 
 
-# Default field values
-ID_FIELD = "id"
-ID_TYPE = "str"
-EMBEDDING_FIELD = "embedding"
+@experimental
+def create_fields(dimensions: int) -> list[FieldSchema]:
+    """Create the fields for the Milvus collection."""
+    return [
+        FieldSchema(
+            name=SEARCH_FIELD_ID,
+            dtype=DataType.VARCHAR,
+            is_primary=True,
+            auto_id=False,
+            max_length=100,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_TEXT,
+            dtype=DataType.VARCHAR,
+            max_length=65535,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_SRC,
+            dtype=DataType.VARCHAR,
+            max_length=400,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_DESC,
+            dtype=DataType.VARCHAR,
+            max_length=800,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_METADATA,
+            dtype=DataType.VARCHAR,
+            max_length=800,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_EMBEDDING,
+            dtype=DataType.FLOAT_VECTOR,
+            dim=dimensions,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_IS_REF,
+            dtype=DataType.BOOL,
+        ),
+        FieldSchema(
+            name=SEARCH_FIELD_TIMESTAMP,
+            dtype=DataType.VARCHAR,
+            max_length=100,
+        ),
+    ]
 
 
+@experimental
 class MilvusMemoryStore(MemoryStoreBase):
+    """Memory store based on Milvus."""
+
     def __init__(
         self,
         uri: str = "http://localhost:19530",
-        token: Optional[str] = None,
-        logger: Optional[Logger] = None,
+        token: str | None = None,
+        **kwargs: Any,
     ) -> None:
-        """MilvusMemoryStore allows for searching for records using Milvus/Zilliz Cloud.
+        """Memory store based on Milvus.
 
         For more details on how to get the service started, take a look here:
-            Milvus: https://milvus.io/docs/get_started.md
-            Zilliz Cloud: https://docs.zilliz.com/docs/quick-start
+        - Milvus: https://milvus.io/docs/get_started.md
+        - Zilliz Cloud: https://docs.zilliz.com/docs/quick-start
 
 
         Args:
@@ -79,22 +166,16 @@ class MilvusMemoryStore(MemoryStoreBase):
                 "http://localhost:19530".
             token (Optional[str], optional): The token to connect to the cluster if
                 authentication is required. Defaults to None.
-            logger (Optional[Logger], optional): Logger to use. Defaults to None.
+            **kwargs (Any): Unused.
         """
-        self._uri = uri
-        self._token = (token,)
-        self._logger = logger or NullLogger()
-        self._client = milvus_client.MilvusClient(
-            uri=uri,
-            token=token,
-        )
-        self._metric_cache = {}
+        connections.connect("default", uri=uri, token=token)
+        self.collections: dict[str, Collection] = {}
 
-    async def create_collection_async(
+    async def create_collection(
         self,
         collection_name: str,
-        dimension_num: Optional[int] = 1536,
-        distance_type: Optional[str] = "IP",
+        dimension_num: int = 1536,
+        distance_type: str | None = "IP",
         overwrite: bool = False,
         consistency: str = "Session",
     ) -> None:
@@ -111,46 +192,30 @@ class MilvusMemoryStore(MemoryStoreBase):
             consistency (str, optional): Which consistency level to use:
                 Strong, Session, Bounded, Eventually. Defaults to "Session".
         """
-        if collection_name in self._client.list_collections():
-            if overwrite:
-                self._client.drop_collection(collection_name=collection_name)
-                self._client.create_collection(
-                    collection_name=collection_name,
-                    dimension=dimension_num,
-                    primary_field_name=ID_FIELD,
-                    id_type=ID_TYPE,
-                    auto_id=False,
-                    vector_field_name=EMBEDDING_FIELD,
-                    metric_type=distance_type,
-                    max_length=65_535,
-                    consistency_level=consistency,
-                )
-        else:
-            self._client.create_collection(
-                collection_name=collection_name,
-                dimension=dimension_num,
-                primary_field_name=ID_FIELD,
-                id_type=ID_TYPE,
-                auto_id=False,
-                vector_field_name=EMBEDDING_FIELD,
-                metric_type=distance_type,
-                max_length=65_535,
-                consistency_level=consistency,
-            )
+        schema = CollectionSchema(
+            create_fields(dimension_num), "Semantic Kernel Milvus Collection", enable_dynamic_field=True
+        )
+        index_param = {"index_type": _INDEX_TYPE, "params": {"nlist": _NLIST}, "metric_type": distance_type}
+        if utility.has_collection(collection_name) and overwrite:
+            utility.drop_collection(collection_name=collection_name)
+        self.collections[collection_name] = Collection(
+            name=collection_name,
+            schema=schema,
+            consistency_level=consistency,
+        )
+        self.collections[collection_name].create_index(SEARCH_FIELD_EMBEDDING, index_param)
 
-    async def get_collections_async(
+    async def get_collections(
         self,
-    ) -> List[str]:
+    ) -> list[str]:
         """Return a list of present collections.
 
         Returns:
             List[str]: List of collection names.
         """
-        return self._client.list_collections()
+        return utility.list_collections()
 
-    async def delete_collection_async(
-        self, collection_name: str = "", all: bool = False
-    ) -> None:
+    async def delete_collection(self, collection_name: str | None = None, all: bool = False) -> None:
         """Delete the specified collection.
 
         If all is True, all collections in the cluster will be removed.
@@ -159,14 +224,16 @@ class MilvusMemoryStore(MemoryStoreBase):
             collection_name (str, optional): The name of the collection to delete. Defaults to "".
             all (bool, optional): Whether to delete all collections. Defaults to False.
         """
-        cols = self._client.list_collections()
+        if collection_name and utility.has_collection(collection_name):
+            utility.drop_collection(collection_name)
+            del self.collections[collection_name]
+            return
         if all:
-            for x in cols:
-                self._client.drop_collection(x)
-        elif collection_name in cols:
-            self._client.drop_collection(collection_name)
+            for collection in utility.list_collections():
+                utility.drop_collection(collection)
+            self.collections = {}
 
-    async def does_collection_exist_async(self, collection_name: str) -> bool:
+    async def does_collection_exist(self, collection_name: str) -> bool:
         """Return if the collection exists in the cluster.
 
         Args:
@@ -175,9 +242,9 @@ class MilvusMemoryStore(MemoryStoreBase):
         Returns:
             bool: True if it exists, False otherwise.
         """
-        return True if collection_name in self._client.list_collections() else False
+        return utility.has_collection(collection_name)
 
-    async def upsert_async(self, collection_name: str, record: MemoryRecord) -> str:
+    async def upsert(self, collection_name: str, record: MemoryRecord) -> str:
         """Upsert a single MemoryRecord into the collection.
 
         Args:
@@ -188,17 +255,15 @@ class MilvusMemoryStore(MemoryStoreBase):
             str: The ID of the inserted record.
         """
         # Use the batch insert with a total batch
-        res = await self.upsert_batch_async(
+        res = await self.upsert_batch(
             collection_name=collection_name,
             records=[record],
             batch_size=0,
         )
         return res[0]
 
-    async def upsert_batch_async(
-        self, collection_name: str, records: List[MemoryRecord], batch_size=100
-    ) -> List[str]:
-        """_summary_
+    async def upsert_batch(self, collection_name: str, records: list[MemoryRecord], batch_size=100) -> list[str]:
+        """_summary_.
 
         Args:
             collection_name (str): The collection name.
@@ -214,30 +279,20 @@ class MilvusMemoryStore(MemoryStoreBase):
             List[str]: A list of inserted ID's.
         """
         # Check if the collection exists.
-        if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot insert."
-            )
-            raise Exception(
-                f"Collection {collection_name} does not exist, cannot insert."
-            )
+        if collection_name not in utility.list_collections():
+            logger.debug(f"Collection {collection_name} does not exist, cannot insert.")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot insert.")
         # Convert the records to dicts
         insert_list = [memoryrecord_to_milvus_dict(record) for record in records]
-        # The ids to remove
-        delete_ids = [insert[ID_FIELD] for insert in insert_list]
         try:
-            # First delete then insert to have upsert
-            self._client.delete(collection_name=collection_name, pks=delete_ids)
-            return self._client.insert(
-                collection_name=collection_name, data=insert_list, batch_size=batch_size
-            )
+            ids = self.collections[collection_name].upsert(data=insert_list).primary_keys
+            self.collections[collection_name].flush()
+            return ids
         except Exception as e:
-            self._logger.debug(f"Upsert failed due to: {e}")
-            raise e
+            logger.debug(f"Upsert failed due to: {e}")
+            raise ServiceResponseException(f"Upsert failed due to: {e}") from e
 
-    async def get_async(
-        self, collection_name: str, key: str, with_embedding: bool
-    ) -> MemoryRecord:
+    async def get(self, collection_name: str, key: str, with_embedding: bool) -> MemoryRecord:
         """Get the MemoryRecord corresponding to the key.
 
         Args:
@@ -248,15 +303,11 @@ class MilvusMemoryStore(MemoryStoreBase):
         Returns:
             MemoryRecord: The MemoryRecord for the key.
         """
-        res = await self.get_batch_async(
-            collection_name=collection_name, keys=[key], with_embeddings=with_embedding
-        )
+        res = await self.get_batch(collection_name=collection_name, keys=[key], with_embeddings=with_embedding)
         return res[0]
 
-    async def get_batch_async(
-        self, collection_name: str, keys: List[str], with_embeddings: bool
-    ) -> List[MemoryRecord]:
-        """Get the MemoryRecords corresponding to the keys
+    async def get_batch(self, collection_name: str, keys: list[str], with_embeddings: bool) -> list[MemoryRecord]:
+        """Get the MemoryRecords corresponding to the keys.
 
         Args:
             collection_name (str): _description_
@@ -271,32 +322,31 @@ class MilvusMemoryStore(MemoryStoreBase):
             List[MemoryRecord]: _description_
         """
         # Check if the collection exists
-        if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot get."
-            )
-            raise Exception("Collection {collection_name} does not exist, cannot get.")
-        try:
-            gets = self._client.get(
-                collection_name=collection_name,
-                ids=keys,
-                output_fields=["*"] if not with_embeddings else ["*", EMBEDDING_FIELD],
-            )
-            return [milvus_dict_to_memoryrecord(get) for get in gets]
-        except Exception as e:
-            self._logger.debug(f"Get failed due to: {e}")
-            raise e
+        if not utility.has_collection(collection_name):
+            logger.debug(f"Collection {collection_name} does not exist, cannot get.")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot get.")
 
-    async def remove_async(self, collection_name: str, key: str) -> None:
+        try:
+            self.collections[collection_name].load()
+            gets = self.collections[collection_name].query(
+                expr=f"{SEARCH_FIELD_ID} in {keys}",
+                output_fields=OUTPUT_FIELDS_W_EMBEDDING if with_embeddings else OUTPUT_FIELDS_WO_EMBEDDING,
+            )
+        except Exception as e:
+            logger.debug(f"Get failed due to: {e}")
+            raise ServiceResponseException(f"Get failed due to: {e}") from e
+        return [milvus_dict_to_memoryrecord(get) for get in gets]
+
+    async def remove(self, collection_name: str, key: str) -> None:
         """Remove the specified record based on key.
 
         Args:
             collection_name (str): Collection to remove from.
             key (str): The key to remove.
         """
-        await self.remove_batch_async(collection_name=collection_name, keys=[key])
+        await self.remove_batch(collection_name=collection_name, keys=[key])
 
-    async def remove_batch_async(self, collection_name: str, keys: List[str]) -> None:
+    async def remove_batch(self, collection_name: str, keys: list[str]) -> None:
         """Remove multiple records based on keys.
 
         Args:
@@ -307,64 +357,32 @@ class MilvusMemoryStore(MemoryStoreBase):
             Exception: Collection doesnt exist.
             e: Failure to remove key.
         """
-        if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot remove."
-            )
-            raise Exception(
-                f"Collection {collection_name} does not exist, cannot remove."
-            )
+        if collection_name not in utility.list_collections():
+            logger.debug(f"Collection {collection_name} does not exist, cannot remove.")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot remove.")
         try:
-            self._client.delete(
-                collection_name=collection_name,
-                pks=keys,
+            self.collections[collection_name].load()
+            result = self.collections[collection_name].delete(
+                expr=f"{SEARCH_FIELD_ID} in {keys}",
             )
+            self.collections[collection_name].flush()
         except Exception as e:
-            self._logger.debug(f"Remove failed due to: {e}")
-            raise e
+            logger.debug(f"Remove failed due to: {e}")
+            raise ServiceResponseException(f"Remove failed due to: {e}") from e
+        if result.delete_count != len(keys):
+            logger.debug(f"Failed to remove all keys, {result.delete_count} removed out of {len(keys)}")
+            raise ServiceResponseException(
+                f"Failed to remove all keys, {result.delete_count} removed out of {len(keys)}"
+            )
 
-    def _search(self, collection_name, data, limit, distance_metric):
-        """Helper function to search with correct distance metric due to bug"""
-        # TODO Remove after https://github.com/milvus-io/milvus/issues/25504
-        # Simple way to select opposite
-        distance_pairs = {
-            "l2": "IP",
-            "ip": "L2",
-        }
-        try:
-            # Try with passed in metric
-            results = self._client.search(
-                collection_name=collection_name,
-                data=data,
-                limit=limit,
-                search_params={"metric_type": distance_metric},
-                output_fields=["*"],
-            )[0]
-            return results, distance_metric
-        except Exception as e:
-            self._logger.debug(f"Search failed with IP, testing L2: {e}")
-            try:
-                distance_metric = distance_pairs[distance_metric.lower()]
-                results = self._client.search(
-                    collection_name=collection_name,
-                    data=data,
-                    limit=limit,
-                    search_params={"metric_type": distance_metric},
-                    output_fields=["*"],
-                )[0]
-                return results, distance_metric
-            except Exception as e:
-                self._logger.debug(f"Search failed with L2: {e}")
-                raise e
-
-    async def get_nearest_matches_async(
+    async def get_nearest_matches(
         self,
         collection_name: str,
         embedding: ndarray,
         limit: int,
-        min_relevance_score: float = None,
+        min_relevance_score: float = 0.0,
         with_embeddings: bool = False,
-    ) -> List[Tuple[MemoryRecord, float]]:
+    ) -> list[tuple[MemoryRecord, float]]:
         """Find the nearest `limit` matches for an embedding.
 
         Args:
@@ -382,70 +400,40 @@ class MilvusMemoryStore(MemoryStoreBase):
             List[Tuple[MemoryRecord, float]]: MemoryRecord and distance tuple.
         """
         # Check if collection exists
-        if collection_name not in self._client.list_collections():
-            self._logger.debug(
-                f"Collection {collection_name} does not exist, cannot search."
-            )
-            raise Exception(
-                f"Collection {collection_name} does not exist, cannot search."
-            )
+        if collection_name not in utility.list_collections():
+            logger.debug(f"Collection {collection_name} does not exist, cannot search.")
+            raise ServiceResourceNotFoundError(f"Collection {collection_name} does not exist, cannot search.")
         # Search requests takes a list of requests.
         if len(embedding.shape) == 1:
             embedding = expand_dims(embedding, axis=0)
 
-        # Search based on the cached metric
-        results, search_type = self._search(
-            collection_name=collection_name,
-            data=embedding,
-            limit=limit,
-            distance_metric=self._metric_cache.get(collection_name, None) or "IP",
-        )
-
-        # Update cached metric
-        self._metric_cache[collection_name] = search_type
-
-        cleaned_results = []
-
-        if with_embeddings:
-            ids = []
-
-        # Clean up results, filter and get ids for fetch
-        for x in results:
-            if min_relevance_score is not None and x["distance"] < min_relevance_score:
-                continue
-            cleaned_results.append(x)
-            if with_embeddings:
-                ids.append(x[ID_FIELD])
-
-        if with_embeddings:
-            try:
-                vectors = self._client.get(
-                    collection_name=collection_name,
-                    ids=ids,
-                    output_fields=[EMBEDDING_FIELD],
-                )
-            except Exception as e:
-                self._logger.debug(f"Get embeddings in search failed due to: {e}.")
-                raise e
-
-            vectors = {res[ID_FIELD]: res[EMBEDDING_FIELD] for res in vectors}
-            for res in results:
-                res["entity"][EMBEDDING_FIELD] = vectors[res[ID_FIELD]]
-
-        results = [
-            (milvus_dict_to_memoryrecord(result["entity"]), result["distance"])
+        try:
+            self.collections[collection_name].load()
+            metric = self.collections[collection_name].index(index_name=SEARCH_FIELD_EMBEDDING).params["metric_type"]
+            # Try with passed in metric
+            results = self.collections[collection_name].search(
+                data=embedding,
+                anns_field=SEARCH_FIELD_EMBEDDING,
+                limit=limit,
+                output_fields=OUTPUT_FIELDS_W_EMBEDDING if with_embeddings else OUTPUT_FIELDS_WO_EMBEDDING,
+                param={"metric_type": metric},
+            )[0]
+        except Exception as e:
+            logger.debug(f"Search failed: {e}")
+            raise ServiceResponseException(f"Search failed: {e}") from e
+        return [
+            (milvus_dict_to_memoryrecord(result.fields), result.distance)
             for result in results
+            if result.distance >= min_relevance_score
         ]
 
-        return results
-
-    async def get_nearest_match_async(
+    async def get_nearest_match(
         self,
         collection_name: str,
         embedding: ndarray,
-        min_relevance_score: float = None,
+        min_relevance_score: float = 0.0,
         with_embedding: bool = False,
-    ) -> Tuple[MemoryRecord, float]:
+    ) -> tuple[MemoryRecord, float] | None:
         """Find the nearest match for an embedding.
 
         Args:
@@ -457,7 +445,7 @@ class MilvusMemoryStore(MemoryStoreBase):
         Returns:
             Tuple[MemoryRecord, float]: A tuple of record and distance.
         """
-        m = await self.get_nearest_matches_async(
+        m = await self.get_nearest_matches(
             collection_name,
             embedding,
             1,
@@ -466,5 +454,4 @@ class MilvusMemoryStore(MemoryStoreBase):
         )
         if len(m) > 0:
             return m[0]
-        else:
-            return None
+        return None

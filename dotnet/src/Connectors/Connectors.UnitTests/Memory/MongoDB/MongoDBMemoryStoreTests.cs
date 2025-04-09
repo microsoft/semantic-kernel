@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.Connectors.Memory.MongoDB;
+using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Memory;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
 using Moq;
 using Xunit;
 
-namespace SemanticKernel.Connectors.UnitTests.Memory.MongoDB;
+namespace SemanticKernel.Connectors.UnitTests.MongoDB;
 
 /// <summary>
 /// Unit tests for <see cref="MongoDBMemoryStore"/> class.
@@ -158,7 +158,7 @@ public class MongoDBMemoryStoreTests
     public async Task ItCanGetCollectionsAsync()
     {
         // Arrange
-        var collections = new[] { "collection1", "collection2", "collection3" };
+        string[] collections = ["collection1", "collection2", "collection3"];
         using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
         using var cursorMock = new AsyncCursorMock<string>(collections);
 
@@ -173,13 +173,16 @@ public class MongoDBMemoryStoreTests
         Assert.True(collections.SequenceEqual(actualCollections));
     }
 
-    [Fact]
-    public async Task ItCanGetNearestMatchAsync()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("myIndexName")]
+    public async Task ItCanGetNearestMatchAsync(string? indexName)
     {
         // Arrange
-        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 1, \"numCandidates\" : 10, \"index\" : \"default\" } }";
+        var actualIndexName = indexName ?? "default";
+        string expectedStage = $"{{ \"$vectorSearch\" : {{ \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 1, \"numCandidates\" : 10, \"index\" : \"{actualIndexName}\" }} }}";
 
-        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
+        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName, indexName);
         var memoryRecord = CreateRecord("id");
         using var cursorMock = new AsyncCursorMock<MongoDBMemoryEntry>(new MongoDBMemoryEntry(memoryRecord));
 
@@ -187,20 +190,23 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock
             .Setup(c => c.AggregateAsync<MongoDBMemoryEntry>(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default))
             .ReturnsAsync(cursorMock);
-        var match = await memoryStore.GetNearestMatchAsync(CollectionName, new(new[] { 1f }));
+        var match = await memoryStore.GetNearestMatchAsync(CollectionName, new[] { 1f });
 
         // Assert
         AssertMemoryRecordEqual(memoryRecord, match.Value.Item1);
-        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
+        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, expectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
-    [Fact]
-    public async Task ItCanGetNearestMatchesAsync()
+    [Theory]
+    [InlineData(null, 50)]
+    [InlineData("myIndexName", 100)]
+    public async Task ItCanGetNearestMatchesAsync(string? indexName, int limit)
     {
         // Arrange
-        const string ExpectedStage = "{ \"$vectorSearch\" : { \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : 100, \"numCandidates\" : 1000, \"index\" : \"default\" } }";
+        var actualIndexName = indexName ?? "default";
+        string expectedStage = $"{{ \"$vectorSearch\" : {{ \"queryVector\" : [1.0], \"path\" : \"embedding\", \"limit\" : {limit}, \"numCandidates\" : {limit * 10}, \"index\" : \"{actualIndexName}\" }} }}";
 
-        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName);
+        using var memoryStore = new MongoDBMemoryStore(this._mongoClientMock.Object, DatabaseName, indexName);
         var (memoryRecords, keys) = CreateRecords(10);
         using var cursorMock = new AsyncCursorMock<MongoDBMemoryEntry>(memoryRecords.Select(r => new MongoDBMemoryEntry(r)).ToArray());
 
@@ -208,7 +214,7 @@ public class MongoDBMemoryStoreTests
         this._mongoCollectionMock
             .Setup(c => c.AggregateAsync<MongoDBMemoryEntry>(It.IsAny<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(), It.IsAny<AggregateOptions>(), default))
             .ReturnsAsync(cursorMock);
-        var matches = await memoryStore.GetNearestMatchesAsync(CollectionName, new(new[] { 1f }), 100).ToListAsync();
+        var matches = await memoryStore.GetNearestMatchesAsync(CollectionName, new(new[] { 1f }), limit).ToListAsync();
 
         // Assert
         Assert.Equal(memoryRecords.Length, matches.Count);
@@ -218,7 +224,7 @@ public class MongoDBMemoryStoreTests
             AssertMemoryRecordEqual(memoryRecords[i], matches[i].Item1);
         }
 
-        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, ExpectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
+        this._mongoCollectionMock.Verify(a => a.AggregateAsync(It.Is<PipelineDefinition<MongoDBMemoryEntry, MongoDBMemoryEntry>>(p => VerifyPipeline(p, expectedStage)), It.IsAny<AggregateOptions>(), default), Times.Once());
     }
 
     [Fact]
@@ -325,16 +331,11 @@ public class MongoDBMemoryStoreTests
 
     #region private ================================================================================
 
-    private sealed class AsyncCursorMock<T> : IAsyncCursor<T>
+    private sealed class AsyncCursorMock<T>(params T[] items) : IAsyncCursor<T>
     {
-        private T[] _items;
+        private T[] _items = items ?? [];
 
         public IEnumerable<T>? Current { get; private set; }
-
-        public AsyncCursorMock(params T[] items)
-        {
-            this._items = items ?? Array.Empty<T>();
-        }
 
         public void Dispose()
         {
@@ -343,7 +344,7 @@ public class MongoDBMemoryStoreTests
         public bool MoveNext(CancellationToken cancellationToken = default)
         {
             this.Current = this._items;
-            this._items = Array.Empty<T>();
+            this._items = [];
 
             return this.Current.Any();
         }
@@ -363,7 +364,7 @@ public class MongoDBMemoryStoreTests
     private static (MemoryRecord[], string[]) CreateRecords(int count)
     {
         var keys = Enumerable.Range(0, count).Select(i => $"{i}").ToArray();
-        var memoryRecords = keys.Select(k => CreateRecord(k)).ToArray();
+        var memoryRecords = keys.Select(CreateRecord).ToArray();
 
         return (memoryRecords, keys);
     }

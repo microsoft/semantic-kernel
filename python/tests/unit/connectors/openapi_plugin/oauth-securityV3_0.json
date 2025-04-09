@@ -1,0 +1,89 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Semantic Kernel Open API Sample",
+    "description": "A sample Open API schema with endpoints which have security requirements defined.",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://example.org"
+    }
+  ],
+  "paths": {
+    "/use_global_security": {
+      "get": {
+        "summary": "No security defined on operation",
+        "description": "",
+        "operationId": "NoSecurity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "default"
+          }
+        }
+      },
+      "post": {
+        "summary": "Security defined on operation",
+        "description": "",
+        "operationId": "Security",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "default"
+          }
+        },
+        "security": [
+          {
+            "OAuth2Auth": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "Security defined on operation with new scope",
+        "description": "",
+        "operationId": "SecurityAndScope",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "default"
+          }
+        },
+        "security": [
+          {
+            "OAuth2Auth": [ "new_scope" ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2Auth": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.windows.net/common/oauth2/authorize",
+            "tokenUrl": "https://login.windows.net/common/oauth2/authorize",
+            "scopes": {}
+          }
+        }
+      },
+      "ApiKeyAuthHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      },
+      "ApiKeyAuthQuery": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "apiKey"
+      }
+    }
+  },
+  "security": [
+    {
+      "OAuth2Auth": []
+    }
+  ]
+}

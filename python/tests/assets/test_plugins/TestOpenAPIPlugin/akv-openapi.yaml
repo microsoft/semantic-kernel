@@ -1,0 +1,133 @@
+openapi: 3.1.0
+info:
+  title: Azure Key Vault [Sample]
+  description: "A sample connector for the Azure Key Vault service. This connector is built for the Azure Key Vault REST API. You can see the details of the API here: https://docs.microsoft.com/rest/api/keyvault/."
+  version: "1.0"
+servers:
+  - url: https://my-key-vault.vault.azure.net/
+paths:
+  /secrets/{secret-name}:
+    get:
+      summary: Get secret
+      description: "Get a specified secret from a given key vault. For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/get-secret/get-secret."
+      operationId: GetSecret
+      parameters:
+        - name: secret-name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "7.0"
+          x-ms-visibility: internal
+      responses:
+        '200':
+          description: default
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attributes:
+                    type: object
+                    properties:
+                      created:
+                        type: integer
+                        format: int32
+                        description: created
+                      enabled:
+                        type: boolean
+                        description: enabled
+                      recoverylevel:
+                        type: string
+                        description: recoverylevel
+                      updated:
+                        type: integer
+                        format: int32
+                        description: updated
+                  id:
+                    type: string
+                    description: id
+                  value:
+                    type: string
+                    format: byte
+                    description: value
+    put:
+      summary: Create or update secret value
+      description: "Sets a secret in a specified key vault. This operation adds a secret to the Azure Key Vault. If the named secret already exists, Azure Key Vault creates a new version of that secret. This operation requires the secrets/set permission. For details, see: https://learn.microsoft.com/en-us/rest/api/keyvault/secrets/set-secret/set-secret."
+      operationId: SetSecret
+      parameters:
+        - name: secret-name
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          required: true
+          schema:
+            type: string
+            default: "7.0"
+          x-ms-visibility: internal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      description: Determines whether the object is enabled.
+                value:
+                  type: string
+                  description: The value of the secret.
+              required:
+                - value
+      responses:
+        '200':
+          description: default
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  attributes:
+                    type: object
+                    properties:
+                      created:
+                        type: integer
+                        format: int32
+                        description: created
+                      enabled:
+                        type: boolean
+                        description: enabled
+                      recoverylevel:
+                        type: string
+                        description: recoverylevel
+                      updated:
+                        type: integer
+                        format: int32
+                        description: updated
+                  id:
+                    type: string
+                    description: id
+                  value:
+                    type: string
+                    description: value
+components:
+  securitySchemes:
+    oauth2_auth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://login.windows.net/common/oauth2/authorize
+          tokenUrl: https://login.windows.net/common/oauth2/token
+          scopes: {}

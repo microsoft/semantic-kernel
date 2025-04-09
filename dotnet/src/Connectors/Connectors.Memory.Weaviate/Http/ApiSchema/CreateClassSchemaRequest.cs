@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
-using Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Model;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Weaviate.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
+[Experimental("SKEXP0020")]
 internal sealed class CreateClassSchemaRequest
 {
     private CreateClassSchemaRequest(string @class, string description)
@@ -13,38 +14,38 @@ internal sealed class CreateClassSchemaRequest
         this.Description = description;
         this.Vectorizer = "none";
         // See: MemoryRecordMetadata, we also store the timestamp
-        this.Properties = new[]
-        {
+        this.Properties =
+        [
             new Property
             {
                 Name = "sk_timestamp",
-                DataType = new[] { "date" }
+                DataType = ["date"]
             },
             new Property
             {
                 Name = "sk_id",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             },
             new Property
             {
                 Name = "sk_description",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             },
             new Property
             {
                 Name = "sk_text",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             },
             new Property
             {
                 Name = "sk_additional_metadata",
-                DataType = new[] { "string" },
+                DataType = ["string"],
                 IndexInverted = false
             }
-        };
+        ];
     }
 
     public string Class { get; set; }

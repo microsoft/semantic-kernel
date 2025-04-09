@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.SemanticKernel.Connectors.Memory.Redis</AssemblyName>
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.Redis</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
@@ -20,6 +21,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="NRedisStack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Connectors.Redis.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>

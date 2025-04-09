@@ -1,0 +1,7 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)/dotnet/src/Experimental/Process.IntegrationTests.Shared/TestSettings/**/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/Experimental/Process.IntegrationTests.Shared/**/*Tests.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/Experimental/Process.IntegrationTests.Shared/CloudEvents/*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

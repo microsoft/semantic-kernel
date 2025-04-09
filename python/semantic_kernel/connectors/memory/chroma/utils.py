@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING, List
+import logging
+from typing import TYPE_CHECKING, Any
 
 from numpy import array, linalg, ndarray
 
@@ -9,8 +10,11 @@ from semantic_kernel.memory.memory_record import MemoryRecord
 if TYPE_CHECKING:
     from chromadb.api.types import QueryResult
 
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 def camel_to_snake(camel_str):
+    """Convert camel case to snake case."""
     snake_str = ""
     for i, char in enumerate(camel_str):
         if char.isupper():
@@ -22,13 +26,14 @@ def camel_to_snake(camel_str):
     return snake_str
 
 
-def query_results_to_records(
-    results: "QueryResult", with_embedding: bool
-) -> List[MemoryRecord]:
-    # if results has only one record, it will be a list instead of a nested list
-    # this is to make sure that results is always a nested list
-    # {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
-    # => {'ids': [['test_id1']], 'embeddings': [[[...]]], 'documents': [['sample text1']], 'metadatas': [[{...}]]}
+def query_results_to_records(results: "QueryResult", with_embedding: bool) -> list[MemoryRecord]:
+    """Turn query results into Memory Records.
+
+    If results has only one record, it will be a list instead of a nested list
+    this is to make sure that results is always a nested list
+    {'ids': ['test_id1'], 'embeddings': [[...]], 'documents': ['sample text1'], 'metadatas': [{...}]}
+    => {'ids': [['test_id1']], 'embeddings': [[[...]]], 'documents': [['sample text1']], 'metadatas': [[{...}]]}
+    """
     try:
         if isinstance(results["ids"][0], str):
             for k, v in results.items():
@@ -82,15 +87,16 @@ def query_results_to_records(
     return memory_records
 
 
-def chroma_compute_similarity_scores(
-    embedding: ndarray, embedding_array: ndarray, logger=None
-) -> ndarray:
+def chroma_compute_similarity_scores(embedding: ndarray, embedding_array: ndarray, **kwargs: Any) -> ndarray:
     """Computes the cosine similarity scores between a query embedding and a group of embeddings.
-    Arguments:
-        embedding {ndarray} -- The query embedding.
-        embedding_array {ndarray} -- The group of embeddings.
+
+    Args:
+        embedding (ndarray): The query embedding.
+        embedding_array (ndarray): The group of embeddings.
+        **kwargs: Additional keyword arguments.
+
     Returns:
-        ndarray -- The cosine similarity scores.
+        ndarray: The cosine similarity scores.
     """
     query_norm = linalg.norm(embedding)
     collection_norm = linalg.norm(embedding_array, axis=1)
@@ -103,18 +109,16 @@ def chroma_compute_similarity_scores(
     similarity_scores = array([-1.0] * embedding_array.shape[0])
 
     if valid_indices.any():
-        similarity_scores[valid_indices] = embedding.dot(
-            embedding_array[valid_indices].T
-        ) / (query_norm * collection_norm[valid_indices])
-        if not valid_indices.all() and logger:
+        similarity_scores[valid_indices] = embedding.dot(embedding_array[valid_indices].T) / (
+            query_norm * collection_norm[valid_indices]
+        )
+        if not valid_indices.all():
             logger.warning(
                 "Some vectors in the embedding collection are zero vectors."
                 "Ignoring cosine similarity score computation for those vectors."
             )
     else:
         raise ValueError(
-            f"Invalid vectors, cannot compute cosine similarity scores"
-            f"for zero vectors"
-            f"{embedding_array} or {embedding}"
+            f"Invalid vectors, cannot compute cosine similarity scoresfor zero vectors{embedding_array} or {embedding}"
         )
     return similarity_scores

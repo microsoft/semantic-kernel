@@ -52,11 +52,11 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         this._search = new CustomSearchAPIService(initializer);
         this._searchEngineId = searchEngineId;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(GoogleConnector)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(GoogleConnector)) ?? NullLogger.Instance;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<string>> SearchAsync(
+    public async Task<IEnumerable<T>> SearchAsync<T>(
         string query,
         int count,
         int offset,
@@ -80,19 +80,38 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 
         var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
-        return results.Items.Select(item => item.Snippet);
-    }
-
-    /// <summary>
-    /// Disposes the resources used by the <see cref="GoogleConnector"/> instance.
-    /// </summary>
-    /// <param name="disposing">True to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
-    private void Dispose(bool disposing)
-    {
-        if (disposing)
+        List<T>? returnValues = null;
+        if (results.Items is not null)
         {
-            this._search.Dispose();
+            if (typeof(T) == typeof(string))
+            {
+                returnValues = results.Items.Select(item => item.Snippet).ToList() as List<T>;
+            }
+            else if (typeof(T) == typeof(WebPage))
+            {
+                List<WebPage> webPages = [];
+                foreach (var item in results.Items)
+                {
+                    WebPage webPage = new()
+                    {
+                        Name = item.Title,
+                        Snippet = item.Snippet,
+                        Url = item.Link
+                    };
+                    webPages.Add(webPage);
+                }
+                returnValues = webPages.Take(count).ToList() as List<T>;
+            }
+            else
+            {
+                throw new NotSupportedException($"Type {typeof(T)} is not supported.");
+            }
         }
+
+        return
+            returnValues is null ? [] :
+            returnValues.Count <= count ? returnValues :
+            returnValues.Take(count);
     }
 
     /// <summary>
@@ -100,7 +119,6 @@ public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
     /// </summary>
     public void Dispose()
     {
-        this.Dispose(disposing: true);
-        GC.SuppressFinalize(this);
+        this._search.Dispose();
     }
 }

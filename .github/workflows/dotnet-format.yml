@@ -7,13 +7,13 @@ name: dotnet-format
 on:
   workflow_dispatch:
   pull_request:
-    branches: [ "main", "feature*" ]
+    branches: ["main", "feature*"]
     paths:
-      - 'dotnet/**'
-      - 'samples/dotnet/**'
-      - '**.cs'
-      - '**.csproj'
-      - '**.editorconfig'
+      - "dotnet/**"
+      - "samples/dotnet/**"
+      - "**.cs"
+      - "**.csproj"
+      - "**.editorconfig"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -25,9 +25,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        #- { dotnet: '6.0', configuration: Release, os: ubuntu-latest }
-        - { dotnet: '7.0', configuration: Release, os: ubuntu-latest }
-        #- { dotnet: '8.0', configuration: Release, os: ubuntu-latest }
+          - { dotnet: "8.0", configuration: Release, os: ubuntu-latest }
+          - { dotnet: "9.0", configuration: Release, os: ubuntu-latest }
 
     runs-on: ${{ matrix.os }}
     env:
@@ -38,6 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Get changed files
         id: changed-files
@@ -56,7 +56,7 @@ jobs:
         if: github.event_name != 'pull_request' || steps.changed-files.outputs.added_modified != '' || steps.changed-files.outcome == 'failure'
         run: |
           csproj_files=()
-          exclude_files=("Planners.Core.csproj" "Planners.Core.UnitTests.csproj" "Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")  
+          exclude_files=("Experimental.Orchestration.Flow.csproj" "Experimental.Orchestration.Flow.UnitTests.csproj" "Experimental.Orchestration.Flow.IntegrationTests.csproj")
           if [[ ${{ steps.changed-files.outcome }} == 'success' ]]; then
             for file in ${{ steps.changed-files.outputs.added_modified }}; do
               echo "$file was changed"
@@ -64,8 +64,8 @@ jobs:
               while [[ $dir != "." && $dir != "/" && $dir != $GITHUB_WORKSPACE ]]; do
                 if find "$dir" -maxdepth 1 -name "*.csproj" -print -quit | grep -q .; then
                   csproj_path="$(find "$dir" -maxdepth 1 -name "*.csproj" -print -quit)"
-                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then  
-                    csproj_files+=("$csproj_path")  
+                  if [[ ! "${exclude_files[@]}" =~ "${csproj_path##*/}" ]]; then
+                    csproj_files+=("$csproj_path")
                   fi
                   break
                 fi

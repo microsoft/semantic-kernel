@@ -6,10 +6,9 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.Memory.Postgres;
+using Microsoft.SemanticKernel.Connectors.Postgres;
 using Microsoft.SemanticKernel.Memory;
 using Npgsql;
-using Pgvector.Npgsql;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Postgres;
@@ -42,15 +41,17 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         this._connectionString = connectionString;
         this._databaseName = $"sk_it_{Guid.NewGuid():N}";
 
-        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString);
-        connectionStringBuilder.Database = this._databaseName;
+        await this.CreateDatabaseAsync();
+
+        NpgsqlConnectionStringBuilder connectionStringBuilder = new(this._connectionString)
+        {
+            Database = this._databaseName
+        };
 
         NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ToString());
         dataSourceBuilder.UseVector();
 
         this._dataSource = dataSourceBuilder.Build();
-
-        await this.CreateDatabaseAsync();
     }
 
     public async Task DisposeAsync()
@@ -151,7 +152,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
             id: "test",
             text: "text",
             description: "description",
-            embedding: new ReadOnlyMemory<float>(new float[] { 1, 2, 3 }),
+            embedding: new ReadOnlyMemory<float>([1, 2, 3]),
             key: null,
             timestamp: null);
         string collection = "test_collection";
@@ -282,7 +283,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     {
         // Arrange
         using PostgresMemoryStore memoryStore = this.CreateMemoryStore();
-        string[] testCollections = { "random_collection1", "random_collection2", "random_collection3" };
+        string[] testCollections = ["random_collection1", "random_collection2", "random_collection3"];
         await memoryStore.CreateCollectionAsync(testCollections[0]);
         await memoryStore.CreateCollectionAsync(testCollections[1]);
         await memoryStore.CreateCollectionAsync(testCollections[2]);
@@ -572,7 +573,7 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
         await memoryStore.CreateCollectionAsync(collection);
 
-        List<string> keys = new();
+        List<string> keys = [];
 
         // Act
         await foreach (var key in memoryStore.UpsertBatchAsync(collection, records))
@@ -635,10 +636,8 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
         await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
         {
-            await using (NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn))
-            {
-                await command.ExecuteNonQueryAsync();
-            }
+            await using NpgsqlCommand command = new($"CREATE DATABASE \"{this._databaseName}\"", conn);
+            await command.ExecuteNonQueryAsync();
         }
 
         await using (NpgsqlConnection conn = await this._dataSource.OpenConnectionAsync())
@@ -655,13 +654,9 @@ public class PostgresMemoryStoreTests : IAsyncLifetime
     private async Task DropDatabaseAsync()
     {
         using NpgsqlDataSource dataSource = NpgsqlDataSource.Create(this._connectionString);
-        await using (NpgsqlConnection conn = await dataSource.OpenConnectionAsync())
-        {
-            await using (NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn))
-            {
-                await command.ExecuteNonQueryAsync();
-            }
-        }
+        await using NpgsqlConnection conn = await dataSource.OpenConnectionAsync();
+        await using NpgsqlCommand command = new($"DROP DATABASE IF EXISTS \"{this._databaseName}\"", conn);
+        await command.ExecuteNonQueryAsync();
     }
 
     private PostgresMemoryStore CreateMemoryStore()

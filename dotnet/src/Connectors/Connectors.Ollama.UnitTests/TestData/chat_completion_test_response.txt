@@ -1,0 +1,1 @@
+{"model":"llama3.2","created_at":"2024-10-16T11:08:38.60342187Z","message":{"role":"assistant","content":"This is test completion response"},"done_reason":"stop","done":true,"total_duration":740574544,"load_duration":54994250,"prompt_eval_count":38,"prompt_eval_duration":69055000,"eval_count":45,"eval_duration":455657000}

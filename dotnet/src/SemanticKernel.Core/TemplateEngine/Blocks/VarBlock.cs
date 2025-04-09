@@ -3,9 +3,9 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.SemanticKernel.TemplateEngine.Blocks;
+namespace Microsoft.SemanticKernel.TemplateEngine;
 
-internal sealed class VarBlock : Block, ITextRendering
+internal sealed partial class VarBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Variable;
 
@@ -49,7 +49,7 @@ internal sealed class VarBlock : Block, ITextRendering
             return false;
         }
 
-        if (!s_validNameRegex.IsMatch(this.Name))
+        if (!ValidNameRegex().IsMatch(this.Name))
         {
             errorMsg = $"The variable name '{this.Name}' contains invalid characters. " +
                        "Only alphanumeric chars and underscore are allowed.";
@@ -64,7 +64,7 @@ internal sealed class VarBlock : Block, ITextRendering
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
-        if (arguments == null) { return null; }
+        if (arguments is null) { return null; }
 
         if (string.IsNullOrEmpty(this.Name))
         {
@@ -83,5 +83,11 @@ internal sealed class VarBlock : Block, ITextRendering
         return null;
     }
 
-    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$");
+#if NET
+    [GeneratedRegex("^[a-zA-Z0-9_]*$")]
+    private static partial Regex ValidNameRegex();
+#else
+    private static Regex ValidNameRegex() => s_validNameRegex;
+    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$", RegexOptions.Compiled);
+#endif
 }

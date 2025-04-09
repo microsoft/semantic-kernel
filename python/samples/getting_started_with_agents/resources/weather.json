@@ -1,0 +1,62 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "get weather data",
+    "description": "Retrieves current weather data for a location based on wttr.in.",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://wttr.in"
+    }
+  ],
+  "auth": [],
+  "paths": {
+    "/{location}": {
+      "get": {
+        "description": "Get weather information for a specific location",
+        "operationId": "GetCurrentWeather",
+        "parameters": [
+          {
+            "name": "location",
+            "in": "path",
+            "description": "City or location to retrieve the weather for",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "Always use j1 value for this parameter",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "j1"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Location not found"
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemes": {}
+  }
+}

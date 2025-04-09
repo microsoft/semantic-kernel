@@ -1,0 +1,651 @@
+{
+  "_type": "SearchResponse",
+  "queryContext": {
+    "originalQuery": "What is the Semantic Kernel?"
+  },
+  "webPages": {
+    "webSearchUrl": "https://www.bing.com/search?q=What+is+the+Semantic+Kernel%3f",
+    "totalEstimatedMatches": 2950000,
+    "value": [
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.0",
+        "name": "Introduction to Semantic Kernel | Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+        "datePublished": "2024-06-24T00:00:00.0000000",
+        "datePublishedDisplayText": "Jun 24, 2024",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://learn.microsoft.com/en-us/semantic-kernel/overview",
+        "snippet": "Semantic Kernel is a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your C#, Python, or Java codebase. It serves as an efficient middleware that enables rapid delivery of enterprise-grade solutions.",
+        "dateLastCrawled": "2024-08-22T02:09:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=5015255227771255&mkt=en-IE&setlang=en-US&w=JGnmTXq8RmXorOmdEVqiJ8lKCjkISADX",
+        "language": "en",
+        "isNavigational": true,
+        "noCache": false,
+        "siteName": "Microsoft Learn"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.1",
+        "name": "How to quickly start with Semantic Kernel | Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://learn.microsoft.com/en-us/semantic-kernel/get-started",
+        "snippet": "Semantic Kernel leverages function calling–a native feature of most LLMs–to provide planning. With function calling, LLMs can request (or call) a particular function to satisfy a user's request.",
+        "dateLastCrawled": "2024-08-21T16:18:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=5017003285436709&mkt=en-IE&setlang=en-US&w=1xMG5F7_bWfpeHO4aRZck_t4F3b55U8k",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Learn"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.2",
+        "name": "Semantic Kernel: What It Is and Why It Matters",
+        "url": "https://techcommunity.microsoft.com/t5/microsoft-developer-community/semantic-kernel-what-it-is-and-why-it-matters/ba-p/3877022",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://techcommunity.microsoft.com/t5/microsoft-developer-community/semantic-kernel...",
+        "snippet": "Semantic Kernel is a new AI SDK, and a simple and yet powerful programming model that lets you add large language capabilities to your app in just a matter of minutes. It uses natural language prompting to create and execute semantic kernel AI tasks across multiple languages and platforms.",
+        "dateLastCrawled": "2024-08-20T12:12:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=4550496811755148&mkt=en-IE&setlang=en-US&w=smJXCZ2nU74VU62SmVZCYCHG-9Tnc0wj",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Community"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.3",
+        "name": "Hello, Semantic Kernel! | Semantic Kernel",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/hello-world/",
+        "thumbnailUrl": "https://www.bing.com/th?id=OIP.4Dwh1vVBFk1G8b1OVf3EpAHaEK&w=80&h=80&c=1&pid=5.1",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel/hello-world",
+        "snippet": "Semantic Kernel (SK) is a lightweight SDK that lets you mix conventional programming languages, like C# and Python, with the latest in Large Language Model (LLM) AI “prompts” with prompt templating, chaining, and planning capabilities.",
+        "dateLastCrawled": "2024-08-21T20:02:00.0000000Z",
+        "primaryImageOfPage": {
+          "thumbnailUrl": "https://www.bing.com/th?id=OIP.4Dwh1vVBFk1G8b1OVf3EpAHaEK&w=80&h=80&c=1&pid=5.1",
+          "width": 80,
+          "height": 80,
+          "sourceWidth": 474,
+          "sourceHeight": 266,
+          "imageId": "OIP.4Dwh1vVBFk1G8b1OVf3EpAHaEK"
+        },
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=5054326543490084&mkt=en-IE&setlang=en-US&w=ZGj3kDSiCyD6cVFw7MK-bEe2ythGfu8N",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.4",
+        "name": "Understanding the kernel in Semantic Kernel | Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel",
+        "snippet": "The kernel is the central component of Semantic Kernel. At its simplest, the kernel is a Dependency Injection container that manages all of the services and plugins necessary to run your AI application.",
+        "dateLastCrawled": "2024-08-21T09:09:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=5021899541000153&mkt=en-IE&setlang=en-US&w=xs6dhWaZDOXrsmoqH3U3gH7FNFC6QPMT",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Learn"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.5",
+        "name": "GitHub - microsoft/semantic-kernel: Integrate cutting-edge LLM ...",
+        "url": "https://github.com/microsoft/semantic-kernel",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://github.com/microsoft/semantic-kernel",
+        "snippet": "The Semantic Kernel extension for Visual Studio Code makes it easy to design and test semantic functions. The extension provides an interface for designing semantic functions and allows you to test them with the push of a button with your existing models and data.",
+        "dateLastCrawled": "2024-08-22T06:17:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=4791607690403330&mkt=en-IE&setlang=en-US&w=l9U4HgvRrQGC-KP09i853uevrWxv5h63",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Github"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.6",
+        "name": "How to Get Started using Semantic Kernel .NET | Semantic Kernel",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic-kernel-net/",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel/how-to-get-started-using-semantic...",
+        "snippet": "Semantic Kernel is fully compatible with .Net Dependency Injection abstractions and supports the IServiceCollection pattern. In this step we are going through how you can leverage DI into your code.",
+        "dateLastCrawled": "2024-08-21T21:40:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=4526324736196760&mkt=en-IE&setlang=en-US&w=SVuaVqWSEaMKVYeanZ0u999uBdmACAt1",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.7",
+        "name": "Architecting AI Apps with Semantic Kernel | Semantic Kernel",
+        "url": "https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel/",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://devblogs.microsoft.com/semantic-kernel/architecting-ai-apps-with-semantic-kernel",
+        "snippet": "With Semantic Kernel, you can easily build agents that can call your existing code. This power lets you automate your business processes with models from OpenAI, Azure OpenAI, Hugging Face, and more! We often get asked though, “How do I architect my solution?” and “How does it actually work?”",
+        "dateLastCrawled": "2024-08-20T17:04:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=5018850117056078&mkt=en-IE&setlang=en-US&w=cczMXffWajvqT2CGXMi8SRmSm7P3b2ph",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "Microsoft Developer Blogs"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.8",
+        "name": "Semantic Kernel: A bridge between large language models and ... - InfoWorld",
+        "url": "https://www.infoworld.com/article/2338321/semantic-kernel-a-bridge-between-large-language-models-and-your-code.html",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://www.infoworld.com/article/2338321",
+        "snippet": "Semantic Kernel distinguishes between semantic functions, templated prompts, and native functions, i.e. the native computer code that processes data for use in the LLM’s semantic functions.",
+        "dateLastCrawled": "2024-08-20T23:30:00.0000000Z",
+        "cachedPageUrl": "http://cc.bingj.com/cache.aspx?q=What+is+the+Semantic+Kernel%3f&d=4710192294793884&mkt=en-IE&setlang=en-US&w=yYeWtMeyCuxd8pPpig3tVE6CMEAGaa-W",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": false,
+        "siteName": "InfoWorld"
+      },
+      {
+        "id": "https://api.bing.microsoft.com/api/v7/#WebPages.9",
+        "name": "Semantic Kernel: The New Way to Create Artificial Intelligence ... - Medium",
+        "url": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+        "isFamilyFriendly": true,
+        "displayUrl": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial...",
+        "snippet": "Semantic Kernel enables developers to easily blend cutting-edge AI with native code, opening up a world of new possibilities for AI applications. This article could go on to discuss...",
+        "dateLastCrawled": "2024-08-20T14:27:00.0000000Z",
+        "language": "en",
+        "isNavigational": false,
+        "noCache": true,
+        "siteName": "Medium"
+      }
+    ],
+    "someResultsRemoved": true
+  },
+  "images": {
+    "id": "https://api.bing.microsoft.com/api/v7/#Images",
+    "readLink": "https://api.bing.microsoft.com/api/v7/images/search?q=what+is+the+semantic+kernel%3f&qpvt=What+is+the+Semantic+Kernel%3f",
+    "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&qpvt=What+is+the+Semantic+Kernel%3f",
+    "isFamilyFriendly": true,
+    "value": [
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=8082801C0F70CC4E5955A112824292197B9F2F98&FORM=IQFRBA",
+        "name": "semantic-kernel-craig/GLOSSARY.md at main · Aaronsapa/semantic-kernel ...",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.EK_vVoFoOuMi0NqBFoPuawAAAA&pid=Api",
+        "datePublished": "2023-03-31T18:50:00.0000000Z",
+        "contentUrl": "https://user-images.githubusercontent.com/371009/221690406-caaff98e-87b5-40b7-9c58-cfa9623789b5.png",
+        "hostPageUrl": "https://github.com/Aaronsapa/semantic-kernel-craig/blob/main/docs/GLOSSARY.md",
+        "contentSize": "70550 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://github.com/Aaronsapa/semantic-kernel-craig/blob/main/docs/GLOSSARY.md",
+        "width": 474,
+        "height": 187,
+        "thumbnail": {
+          "width": 474,
+          "height": 187
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=A55273A9D4C4CAC780411B22A0232184392606C4&FORM=IQFRBA",
+        "name": "Semantic Kernel | AI Hub",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.7KLjqrdZCXtSsjaYLE8DBAHaJd&pid=Api",
+        "datePublished": "2024-01-18T08:20:00.0000000Z",
+        "contentUrl": "https://learn.microsoft.com/en-us/semantic-kernel/media/mind-and-body-of-semantic-kernel.png",
+        "hostPageUrl": "https://azure.github.io/aihub/docs/concepts/semantic-kernel/",
+        "contentSize": "18750 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://azure.github.io/aihub/docs/concepts/semantic-kernel/",
+        "width": 524,
+        "height": 669,
+        "thumbnail": {
+          "width": 474,
+          "height": 605
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=D1B72EDA2128EE00C546C62AD456CCE9D86ACB49&FORM=IQFRBA",
+        "name": "Semantic Kernel的實踐：Semantic Kernel - 認識 plugins - iT 邦幫忙::一起幫忙解決難題，拯救 ...",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.AM_5xXGhf1yVMTm3AnSbFAHaC-&pid=Api",
+        "datePublished": "2023-10-24T06:35:00.0000000Z",
+        "contentUrl": "https://learn.microsoft.com/en-us/semantic-kernel/media/cross-platform-plugins.png",
+        "hostPageUrl": "https://ithelp.ithome.com.tw/articles/10332177?sc=pt",
+        "contentSize": "37586 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://ithelp.ithome.com.tw/articles/10332177?sc=pt",
+        "width": 1805,
+        "height": 727,
+        "thumbnail": {
+          "width": 474,
+          "height": 190
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=A28CA69D26F4A5BC6E3C727D3A598AA02E50537E&FORM=IQFRBA",
+        "name": "MS Semantic Kernelを用いたAIアシスタントの作り方（ChatGPT、GPT-4版）【連載第1回】 #Azure - Qiita",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.myPHcDA_KmBUyrv5Cyj3jgHaD6&pid=Api",
+        "datePublished": "2023-07-09T07:46:00.0000000Z",
+        "contentUrl": "https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/3328834/ac8a988a-25df-7607-97ed-817af940b938.png",
+        "hostPageUrl": "https://qiita.com/YutaroOgawa2/items/87cf07110255c06a4aa9",
+        "contentSize": "266587 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://qiita.com/YutaroOgawa2/items/87cf07110255c06a4aa9",
+        "width": 1368,
+        "height": 723,
+        "thumbnail": {
+          "width": 474,
+          "height": 250
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=3E269EDB55FC3281A9B17509DE2FAF62153F7D70&FORM=IQFRBA",
+        "name": "Understanding Semantic Kernel",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.HVIcHw1JOAcXf9tlIEQKjAAAAA&pid=Api",
+        "datePublished": "2023-09-14T09:40:00.0000000Z",
+        "contentUrl": "https://app-vreplyweb-prod.azurewebsites.net/media/43601/semantic-kernel-1.png",
+        "hostPageUrl": "https://app-vreplyweb-prod.azurewebsites.net/post/understanding-semantic-kernel/",
+        "contentSize": "168092 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://app-vreplyweb-prod.azurewebsites.net/post/understanding-semantic-kernel/",
+        "width": 474,
+        "height": 266,
+        "thumbnail": {
+          "width": 474,
+          "height": 266
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=1B19C884FC6C80411B6E399969B0DA3606A32404&FORM=IQFRBA",
+        "name": "Understanding Semantic Kernel",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.TaRytyXesbZULelnSHi4sAHaFT&pid=Api",
+        "datePublished": "2023-08-08T23:58:00.0000000Z",
+        "contentUrl": "https://valoremreply.com/media/43602/semantic-kernel-2.png",
+        "hostPageUrl": "https://valoremreply.com/post/understanding-semantic-kernel/",
+        "contentSize": "333140 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://valoremreply.com/post/understanding-semantic-kernel/",
+        "width": 1448,
+        "height": 1038,
+        "thumbnail": {
+          "width": 474,
+          "height": 339
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=CE86E58C327BA64AD3D8B06B978EF9FB9485F1DE&FORM=IQFRBA",
+        "name": "Understanding AI plugins in Semantic Kernel and beyond | Microsoft Learn",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.EDJhL4WWyrUFuU6Ydngx-wHaEO&pid=Api",
+        "datePublished": "2023-03-17T22:33:00.0000000Z",
+        "contentUrl": "https://learn.microsoft.com/en-us/semantic-kernel/media/semantic-function-explainer.png",
+        "hostPageUrl": "https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins/",
+        "contentSize": "49233 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://learn.microsoft.com/en-us/semantic-kernel/ai-orchestration/plugins/",
+        "width": 1406,
+        "height": 802,
+        "thumbnail": {
+          "width": 474,
+          "height": 270
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=E213F76EB3BBB5890E1D59F06C2AB2B585B818B3&FORM=IQFRBA",
+        "name": "Orchestrate your AI with Semantic Kernel | Microsoft Learn",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.gruLOr3RC0iPaEoDSmko5wHaDl&pid=Api",
+        "datePublished": "2022-12-08T18:24:00.0000000Z",
+        "contentUrl": "https://learn.microsoft.com/en-us/semantic-kernel/media/kernel-flow.png",
+        "hostPageUrl": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+        "contentSize": "77965 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+        "width": 1802,
+        "height": 872,
+        "thumbnail": {
+          "width": 474,
+          "height": 229
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=CFE02D003E1EE84FA686F03DE651A2DE7226B7EE&FORM=IQFRBA",
+        "name": "Semantic Kernel Planner 101 – baeke.info",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.OeeOYAo6yc2BAvRXQVexDgHaBy&pid=Api",
+        "datePublished": "2023-06-01T14:27:00.0000000Z",
+        "contentUrl": "https://geertbaeke.files.wordpress.com/2023/05/image.png",
+        "hostPageUrl": "https://blog.baeke.info/2023/06/01/semantic-kernel-planner-101/",
+        "contentSize": "101185 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://blog.baeke.info/2023/06/01/semantic-kernel-planner-101/",
+        "width": 998,
+        "height": 242,
+        "thumbnail": {
+          "width": 474,
+          "height": 114
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=2DA1E19799AB838EAB88C8B8FB026B4208FEF094&FORM=IQFRBA",
+        "name": "Intro to Semantic Kernel – Part One",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.fR0yjDQZPR-zvJzh_kx50gAAAA&pid=Api",
+        "datePublished": "2023-10-06T09:31:00.0000000Z",
+        "contentUrl": "https://blog.brakmic.com/wp-content/uploads/2023/10/SK_Overview.png",
+        "hostPageUrl": "https://vuink.com/post/oybt-d-doenxzvp-d-dpbz/intro-to-semantic-kernel-part-one",
+        "contentSize": "38775 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://vuink.com/post/oybt-d-doenxzvp-d-dpbz/intro-to-semantic-kernel-part-one",
+        "width": 474,
+        "height": 265,
+        "thumbnail": {
+          "width": 474,
+          "height": 265
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=732F0B8D3BA4C886808C07368D24A6C831E58EE4&FORM=IQFRBA",
+        "name": "Microsoft Semantic Kernel Enables LLM Integration with Conventional ...",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.-b7r5XcgGF_mxkc_f_0IlwHaD4&pid=Api",
+        "datePublished": "2023-03-31T10:00:00.0000000Z",
+        "contentUrl": "https://res.infoq.com/news/2023/03/microsoft-semantic-kernel/en/card_header_image/generatedCard-1680253532804.jpg",
+        "hostPageUrl": "https://www.infoq.com/news/2023/03/microsoft-semantic-kernel/",
+        "contentSize": "125282 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://www.infoq.com/news/2023/03/microsoft-semantic-kernel/",
+        "width": 1200,
+        "height": 630,
+        "thumbnail": {
+          "width": 474,
+          "height": 248
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=A55273A9D4C4CAC78041C66358C763DE4FD3CBB5&FORM=IQFRBA",
+        "name": "Semantic Kernel | AI Hub",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.VNRxmPUIGurZqQ9-y32lwQHaF0&pid=Api",
+        "datePublished": "2024-01-18T08:20:00.0000000Z",
+        "contentUrl": "https://learn.microsoft.com/en-us/semantic-kernel/media/copilot-stack.png",
+        "hostPageUrl": "https://azure.github.io/aihub/docs/concepts/semantic-kernel/",
+        "contentSize": "24731 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://azure.github.io/aihub/docs/concepts/semantic-kernel/",
+        "width": 1086,
+        "height": 853,
+        "thumbnail": {
+          "width": 474,
+          "height": 372
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=15F686DEEC39FFE210B175B3DBBDB0E1E932AAFA&FORM=IQFRBA",
+        "name": "Getting Started with Semantic Kernel and C# - Accessible AI",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.rWMH34OzDKyvxAcCf1IRuQHaEM&pid=Api",
+        "datePublished": "2023-12-02T00:00:00.0000000Z",
+        "contentUrl": "https://accessibleai.dev/img/SK/A_SemanticKernelIntro.png",
+        "hostPageUrl": "https://accessibleai.dev/post/introtosemantickernel/",
+        "contentSize": "995694 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://accessibleai.dev/post/introtosemantickernel/",
+        "width": 1170,
+        "height": 663,
+        "thumbnail": {
+          "width": 474,
+          "height": 268
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=D5A9FAB46AEECC12DAFE965BA4BB3327AA4F8F78&FORM=IQFRBA",
+        "name": "Microsoft Semantic Kernel for AI Dev: A Chat with John Maeda - Learning ...",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.t6Wt_4Z9iueWM16hq9YtoQHaCW&pid=Api",
+        "datePublished": "2023-04-18T15:53:00.0000000Z",
+        "contentUrl": "https://cdn.thenewstack.io/media/2023/04/72a4b20e-skflowdiagram.png",
+        "hostPageUrl": "https://learningactors.com/microsoft-semantic-kernel-for-ai-dev-a-chat-with-john-maeda/",
+        "contentSize": "30457 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://learningactors.com/microsoft-semantic-kernel-for-ai-dev-a-chat-with-john-maeda/",
+        "width": 948,
+        "height": 301,
+        "thumbnail": {
+          "width": 474,
+          "height": 150
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=5BA9C55595677187D17F52568C51339EFD72C74C&FORM=IQFRBA",
+        "name": "Semantic Kernel for Natural Language Processing - Cloudbooklet",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.lj-_XzB2-IRzkcPtSs73vQHaEK&pid=Api",
+        "datePublished": "2023-05-26T23:07:00.0000000Z",
+        "contentUrl": "https://media.cloudbooklet.com/uploads/2023/05/26105956/Semantic_kernel.jpg",
+        "hostPageUrl": "https://www.cloudbooklet.com/developer/semantic-kernel-for-nlp",
+        "contentSize": "28269 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://www.cloudbooklet.com/developer/semantic-kernel-for-nlp",
+        "width": 1280,
+        "height": 720,
+        "thumbnail": {
+          "width": 474,
+          "height": 266
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=1B19C884FC6C80411B6E1EAE581CCA5C93FF0293&FORM=IQFRBA",
+        "name": "Understanding Semantic Kernel",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.MX76DJv2edx68MKPrtt2zgAAAA&pid=Api",
+        "datePublished": "2023-08-08T23:58:00.0000000Z",
+        "contentUrl": "https://valoremreply.com/media/43605/semantic-kernel-5.png?width=829&height=460&mode=max",
+        "hostPageUrl": "https://valoremreply.com/post/understanding-semantic-kernel/",
+        "contentSize": "120298 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://valoremreply.com/post/understanding-semantic-kernel/",
+        "width": 474,
+        "height": 263,
+        "thumbnail": {
+          "width": 474,
+          "height": 263
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=9E16DBE1736057F805AEDF240468B8D4F1BB9097&FORM=IQFRBA",
+        "name": "Unleashing the Power of Semantic Kernel & Azure Cognitive Search | Step ...",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.cGfIzaZUj8-orl30tekkAQAAAA&pid=Api",
+        "datePublished": "2023-07-01T13:42:00.0000000Z",
+        "contentUrl": "https://miro.medium.com/v2/resize:fit:1161/1*XcSztxjaBozRZ8OTs_9l3A.jpeg",
+        "hostPageUrl": "https://medium.com/@akshaykokane09/how-to-build-custom-chatgpt-with-semantic-kernel-and-azure-cognitive-search-ef899afba0b9",
+        "contentSize": "33443 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://medium.com/@akshaykokane09/how-to-build-custom-chatgpt-with-semantic-kernel-and-azure-cognitive-search-ef899afba0b9",
+        "width": 474,
+        "height": 151,
+        "thumbnail": {
+          "width": 474,
+          "height": 151
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=05AFA04A182DF85919CAC467925784D38069E123&FORM=IQFRBA",
+        "name": "image",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.s6-_L9Bxxags2pLn0cIzMgHaCZ&pid=Api",
+        "datePublished": "2023-03-19T23:08:00.0000000Z",
+        "contentUrl": "https://user-images.githubusercontent.com/371009/221690156-3f90a8c9-ef90-46f7-a097-beb483656e97.png",
+        "hostPageUrl": "https://raw.githubusercontent.com/microsoft/semantic-kernel/main/docs/GLOSSARY.md",
+        "contentSize": "43907 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://raw.githubusercontent.com/microsoft/semantic-kernel/main/docs/GLOSSARY.md",
+        "width": 1081,
+        "height": 349,
+        "thumbnail": {
+          "width": 474,
+          "height": 153
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=7852A29445B232EF66071D50586E86A86E57351B&FORM=IQFRBA",
+        "name": "Understanding the kernel in Semantic Kernel | Microsoft Learn",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.izfHKmjDoZZaydN22Ya6pQHaDf&pid=Api",
+        "datePublished": "2023-03-17T22:55:00.0000000Z",
+        "contentUrl": "https://learn.microsoft.com/en-us/semantic-kernel/media/the-kernel-is-at-the-center-of-everything.png",
+        "hostPageUrl": "https://learn.microsoft.com/en-us/semantic-kernel/agents/kernel/",
+        "contentSize": "260858 B",
+        "encodingFormat": "png",
+        "hostPageDisplayUrl": "https://learn.microsoft.com/en-us/semantic-kernel/agents/kernel/",
+        "width": 3424,
+        "height": 1612,
+        "thumbnail": {
+          "width": 474,
+          "height": 223
+        }
+      },
+      {
+        "webSearchUrl": "https://www.bing.com/images/search?q=what+is+the+semantic+kernel%3f&id=FD0CE5A6476E45397F5F9716731CEAB1427A8E99&FORM=IQFRBA",
+        "name": "09 - Microsoft Semantic Kernel - Unleashing the Power of Pre and Post ...",
+        "thumbnailUrl": "https://tse1.mm.bing.net/th?id=OIP.0EIsjzTl1ncjSyzihv2czgHaEK&pid=Api",
+        "datePublished": "2023-10-03T11:10:00.0000000Z",
+        "contentUrl": "https://i.ytimg.com/vi/1-fw9ZkEV8g/maxresdefault.jpg",
+        "hostPageUrl": "https://www.youtube.com/watch?v=1-fw9ZkEV8g",
+        "contentSize": "85828 B",
+        "encodingFormat": "jpeg",
+        "hostPageDisplayUrl": "https://www.youtube.com/watch?v=1-fw9ZkEV8g",
+        "width": 1280,
+        "height": 720,
+        "thumbnail": {
+          "width": 474,
+          "height": 266
+        }
+      }
+    ]
+  },
+  "relatedSearches": {
+    "id": "https://api.bing.microsoft.com/api/v7/#RelatedSearches",
+    "value": [
+      {
+        "text": "semantic kernel examples",
+        "displayText": "semantic kernel examples",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+examples"
+      },
+      {
+        "text": "getting started with semantic kernel",
+        "displayText": "getting started with semantic kernel",
+        "webSearchUrl": "https://www.bing.com/search?q=getting+started+with+semantic+kernel"
+      },
+      {
+        "text": "semantic kernel python example",
+        "displayText": "semantic kernel python example",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+python+example"
+      },
+      {
+        "text": "what is semantic kernel microsoft",
+        "displayText": "what is semantic kernel microsoft",
+        "webSearchUrl": "https://www.bing.com/search?q=what+is+semantic+kernel+microsoft"
+      },
+      {
+        "text": "semantic kernel samples",
+        "displayText": "semantic kernel samples",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+samples"
+      },
+      {
+        "text": "semantic kernel planner examples",
+        "displayText": "semantic kernel planner examples",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+planner+examples"
+      },
+      {
+        "text": "langchain vs semantic kernel",
+        "displayText": "langchain vs semantic kernel",
+        "webSearchUrl": "https://www.bing.com/search?q=langchain+vs+semantic+kernel"
+      },
+      {
+        "text": "semantic kernel code interpreter",
+        "displayText": "semantic kernel code interpreter",
+        "webSearchUrl": "https://www.bing.com/search?q=semantic+kernel+code+interpreter"
+      }
+    ]
+  },
+  "rankingResponse": {
+    "mainline": {
+      "items": [
+        {
+          "answerType": "WebPages",
+          "resultIndex": 0,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.0"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 1,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.1"
+          }
+        },
+        {
+          "answerType": "Images",
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#Images"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 2,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.2"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 3,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.3"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 4,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.4"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 5,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.5"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 6,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.6"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 7,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.7"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 8,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.8"
+          }
+        },
+        {
+          "answerType": "WebPages",
+          "resultIndex": 9,
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#WebPages.9"
+          }
+        },
+        {
+          "answerType": "RelatedSearches",
+          "value": {
+            "id": "https://api.bing.microsoft.com/api/v7/#RelatedSearches"
+          }
+        }
+      ]
+    },
+    "sidebar": {
+      "items": [
+        {
+          "answerType": "WebPages"
+        }
+      ]
+    }
+  }
+}

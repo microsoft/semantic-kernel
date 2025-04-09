@@ -2,11 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes: Used for Json Deserialization
+[Experimental("SKEXP0020")]
 internal sealed class GetVectorsResponse : QdrantResponse
 {
     internal sealed class Record
@@ -35,6 +37,6 @@ internal sealed class GetVectorsResponse : QdrantResponse
     /// Array of vectors and their associated metadata
     /// </summary>
     [JsonPropertyName("result")]
-    public IEnumerable<Record> Result { get; set; } = new List<Record>();
+    public IEnumerable<Record> Result { get; set; } = [];
 }
 #pragma warning restore CA1812 // Avoid uninstantiated internal classes

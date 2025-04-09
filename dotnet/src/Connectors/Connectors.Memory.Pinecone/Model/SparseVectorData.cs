@@ -2,14 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.Text;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Pinecone.Model;
+namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
 /// Represents a sparse vector data, which is a list of indices and a list of corresponding values, both of the same length.
 /// </summary>
+[Experimental("SKEXP0020")]
 public class SparseVectorData
 {
     /// <summary>
@@ -24,7 +25,6 @@ public class SparseVectorData
     /// </summary>
     /// <value>The corresponding values of the sparse data, which must be the same length as the indices.</value>
     [JsonPropertyName("values")]
-    [JsonConverter(typeof(ReadOnlyMemoryConverter))]
     public ReadOnlyMemory<float> Values { get; set; }
 
     /// <summary>

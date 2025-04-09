@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Implementation of <see cref="ISemanticTextMemory"/> that stores nothing.
 /// </summary>
-[Experimental("SKEXP0003")]
+[Experimental("SKEXP0001")]
 public sealed class NullMemory : ISemanticTextMemory
 {
     private static readonly Task<string> s_emptyStringTask = Task.FromResult(string.Empty);
@@ -87,7 +87,7 @@ public sealed class NullMemory : ISemanticTextMemory
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult<IList<string>>(new List<string>());
+        return Task.FromResult<IList<string>>([]);
     }
 
     private NullMemory()

@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Web;
 using System.Xml;
 
-namespace Microsoft.SemanticKernel.AI;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Class to parse text prompt from XML format.
@@ -16,15 +20,37 @@ internal static class XmlPromptParser
     /// <param name="prompt">Text prompt to parse.</param>
     /// <param name="result">Parsing output as collection of <see cref="PromptNode"/> instances.</param>
     /// <returns>Returns true if parsing was successful, otherwise false.</returns>
-    public static bool TryParse(string prompt, out List<PromptNode> result)
+    public static bool TryParse(string prompt, [NotNullWhen(true)] out List<PromptNode>? result)
     {
-        result = new List<PromptNode>();
-        var xmlDocument = new XmlDocument();
-        var xmlString = $"<root>{prompt}</root>";
+        result = null;
+
+        // The below parsing is _very_ expensive, especially when the content is not valid XML and an
+        // exception is thrown. Try to avoid it in the common case where the prompt is obviously not XML.
+        // To be valid XML, at a minimum:
+        // - the string would need to be non-null
+        // - it would need to contain the start of a tag
+        // - it would need to contain a closing tag, which could include either </ or />
+        int startPos;
+        if (prompt is null ||
+#pragma warning disable CA1307 // Specify StringComparison for clarity
+            (startPos = prompt.IndexOf('<')) < 0 ||
+#pragma warning restore CA1307
+            (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
+             prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0))
+        {
+            return false;
+        }
+
+        var xmlDocument = new XmlDocument()
+        {
+            // This is necessary to preserve whitespace within prompts as this may be significant.
+            // E.g. if the prompt contains well formatted code and we want the LLM to return well formatted code.
+            PreserveWhitespace = true
+        };
 
         try
         {
-            xmlDocument.LoadXml(xmlString);
+            xmlDocument.LoadXml($"<root>{prompt}</root>");
         }
         catch (XmlException)
         {
@@ -33,15 +59,13 @@ internal static class XmlPromptParser
 
         foreach (XmlNode node in xmlDocument.DocumentElement!.ChildNodes)
         {
-            var childPromptNode = GetPromptNode(node);
-
-            if (childPromptNode != null)
+            if (GetPromptNode(node) is { } childPromptNode)
             {
-                result.Add(childPromptNode);
+                (result ??= []).Add(childPromptNode);
             }
         }
 
-        return result.Count != 0;
+        return result is not null;
     }
 
     /// <summary>
@@ -55,11 +79,20 @@ internal static class XmlPromptParser
             return null;
         }
 
-        var nodeContent = node.InnerText.Trim();
+        // Since we're preserving whitespace for the contents within each XMLNode, we
+        // need to skip any whitespace nodes at the front of the children.
+        var firstNonWhitespaceChild = node.ChildNodes
+            .Cast<XmlNode>()
+            .FirstOrDefault(n => n.NodeType != XmlNodeType.Whitespace);
+
+        var isCData = firstNonWhitespaceChild?.NodeType == XmlNodeType.CDATA;
+        var nodeContent = isCData
+            ? node.InnerText.Trim()
+            : node.InnerXml.Trim();
 
         var promptNode = new PromptNode(node.Name)
         {
-            Content = !string.IsNullOrEmpty(nodeContent) ? nodeContent : null
+            Content = !string.IsNullOrEmpty(nodeContent) ? HttpUtility.HtmlDecode(nodeContent) : null
         };
 
         if (node.Attributes is not null)
@@ -74,7 +107,7 @@ internal static class XmlPromptParser
         {
             var childPromptNode = GetPromptNode(childNode);
 
-            if (childPromptNode != null)
+            if (childPromptNode is not null)
             {
                 promptNode.ChildNodes.Add(childPromptNode);
             }

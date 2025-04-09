@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 
@@ -42,7 +43,7 @@ public sealed class WebFileDownloadPlugin
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
         this._httpClient = httpClient;
-        this._logger = loggerFactory is not null ? loggerFactory.CreateLogger(typeof(WebFileDownloadPlugin)) : NullLogger.Instance;
+        this._logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -69,7 +70,7 @@ public sealed class WebFileDownloadPlugin
 
         this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        using Stream webStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync().ConfigureAwait(false);
+        using Stream webStream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         using FileStream outputFileStream = new(Environment.ExpandEnvironmentVariables(filePath), FileMode.Create);
 
         await webStream.CopyToAsync(outputFileStream, 81920 /*same value used by default*/, cancellationToken).ConfigureAwait(false);

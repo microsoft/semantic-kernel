@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.Memory.Qdrant.Http.ApiSchema;
+namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
+[Experimental("SKEXP0020")]
 internal sealed class DeleteVectorsRequest
 {
     [JsonPropertyName("points")]
@@ -46,7 +48,7 @@ internal sealed class DeleteVectorsRequest
 
     private DeleteVectorsRequest(string collectionName)
     {
-        this.Ids = new List<string>();
+        this.Ids = [];
         this._collectionName = collectionName;
     }
 

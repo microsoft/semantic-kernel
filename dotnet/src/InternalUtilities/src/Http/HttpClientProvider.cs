@@ -1,14 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+#if NET
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+#endif
 using Microsoft.Extensions.DependencyInjection;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2215 // Dispose methods should call base class dispose
+
+namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>
+[ExcludeFromCodeCoverage]
 internal static class HttpClientProvider
 {
     /// <summary>
@@ -38,14 +47,13 @@ internal static class HttpClientProvider
     /// <summary>
     /// Represents a singleton implementation of <see cref="HttpClientHandler"/> that is not disposable.
     /// </summary>
-    private sealed class NonDisposableHttpClientHandler : HttpClientHandler
+    private sealed class NonDisposableHttpClientHandler : DelegatingHandler
     {
         /// <summary>
         /// Private constructor to prevent direct instantiation of the class.
         /// </summary>
-        private NonDisposableHttpClientHandler()
+        private NonDisposableHttpClientHandler() : base(CreateHandler())
         {
-            this.CheckCertificateRevocationList = true;
         }
 
         /// <summary>
@@ -62,7 +70,35 @@ internal static class HttpClientProvider
         {
             // Do nothing if called explicitly from Dispose, as it may unintentionally affect all references.
             // The base.Dispose(disposing) is not called to avoid invoking the disposal of HttpClientHandler resources.
-            // This implementation assumes that the HttpClientHandler is being used as a singleton and should not be disposed directly.
+            // This implementation assumes that the HttpMessageHandler is being used as a singleton and should not be disposed directly.
         }
+
+#if NET
+        private static SocketsHttpHandler CreateHandler()
+        {
+            return new SocketsHttpHandler()
+            {
+                // Limit the lifetime of connections to better respect any DNS changes
+                PooledConnectionLifetime = TimeSpan.FromMinutes(2),
+
+                // Check cert revocation
+                SslOptions = new SslClientAuthenticationOptions()
+                {
+                    CertificateRevocationCheckMode = X509RevocationMode.Online,
+                },
+            };
+        }
+#else
+        private static HttpClientHandler CreateHandler()
+        {
+            var handler = new HttpClientHandler();
+            try
+            {
+                handler.CheckCertificateRevocationList = true;
+            }
+            catch (PlatformNotSupportedException) { } // not supported on older frameworks
+            return handler;
+        }
+#endif
     }
 }
