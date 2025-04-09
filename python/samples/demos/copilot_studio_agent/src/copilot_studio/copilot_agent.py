@@ -46,7 +46,7 @@ class CopilotAgent(Agent):
         directline_client: DirectLineClient,
     ) -> None:
         """
-        Initialize the DirectLine Agent.
+        Initialize the CopilotAgent.
         """
         super().__init__(id=id, name=name, description=description)
         self.directline_client = directline_client
@@ -61,16 +61,16 @@ class CopilotAgent(Agent):
         **kwargs,
     ) -> AgentResponseItem[CopilotMessageContent]:
         """
-        Get a response from the Copilot Agent.
+        Get a response from the agent on a thread.
 
         Args:
             messages: The input chat message content either as a string, ChatMessageContent or
                 a list of strings or ChatMessageContent.
-            thread: The thread to use for agent invocation.
+            thread: The thread to use for the agent.
             kwargs: Additional keyword arguments.
 
         Returns:
-            An AgentResponseItem of type ChatMessageContent.
+            AgentResponseItem[ChatMessageContent]: The response from the agent.
         """
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
@@ -103,22 +103,18 @@ class CopilotAgent(Agent):
         message_data: dict[str, Any] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[CopilotMessageContent]]:
-        """Send the latest message from the chat history to the DirectLine Bot
-        and yield responses. This sends the payload after ensuring that:
-          1. The token is fetched.
-          2. A conversation is started if thread ID (conversation ID) does not exist.
-          3. The activity payload is posted.
-          4. Activities are polled until an event "DynamicPlanFinished" is received.
+        """Invoke the agent on the specified thread.
 
         Args:
-            messages: The history of messages in the conversation.
-            thread: The thread ID (conversation ID).
+            messages: The input chat message content either as a string, ChatMessageContent or
+                a list of strings or ChatMessageContent.
+            thread: The thread to use for the agent.
             message_data: Optional dict that will be sent as the "value" field in the payload
                 for adaptive card responses.
             kwargs: Additional keyword arguments.
 
-        Returns:
-            An async iterable of AgentResponseItem[ChatMessageContent].
+        Yields:
+            AgentResponseItem[ChatMessageContent]: The response from the agent.
         """
         if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
             raise AgentInvokeException("Messages must be a string or a ChatMessageContent for Copilot Agent.")
@@ -165,16 +161,16 @@ class CopilotAgent(Agent):
         message_data: dict[str, Any] | None = None,
         thread_id: str | None = None,
     ) -> dict[str, Any]:
-        """
-        Build the message payload for the DirectLine Bot.
-        Uses the latest message from the chat history.
+        """Build the message payload for the DirectLine Bot.
 
         Args:
             message: The message content to send.
             message_data: Optional dict that will be sent as the "value" field in the payload
                 for adaptive card responses.
             thread_id: The thread ID (conversation ID).
-            
+
+        Returns:
+            A dictionary representing the payload to be sent to the DirectLine Bot.
         """
         payload = {
             "type": "message",
@@ -235,7 +231,6 @@ class CopilotAgent(Agent):
         if self.directline_client:
             await self.directline_client.close()
 
-    # TODO not implemented yet, maybe use websockets for this?
     @trace_agent_invocation
     @override
     async def invoke_stream(self, *args, **kwargs):
