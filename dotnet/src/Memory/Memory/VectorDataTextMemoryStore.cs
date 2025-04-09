@@ -91,6 +91,16 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
     {
         var vectorStoreRecordCollection = await this.EnsureCollectionCreatedAsync(cancellationToken).ConfigureAwait(false);
 
+        // If the database supports string keys, get using the namespace + document name.
+        if (typeof(TKey) == typeof(string))
+        {
+            var namespaceKey = $"{this._storageNamespace}:{documentName}";
+
+            var record = await vectorStoreRecordCollection.GetAsync((TKey)(object)namespaceKey, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return record?.MemoryText;
+        }
+
+        // Otherwise do a search with a filter on the document name and namespace.
         ReadOnlyMemory<float> vector = new(new float[this._vectorDimensions]);
         var searchResult = await vectorStoreRecordCollection.VectorizedSearchAsync(
             vector,
@@ -143,7 +153,7 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
 
         var memoryDocument = new MemoryDocument<TKey>
         {
-            Key = GenerateUniqueKey<TKey>(),
+            Key = GenerateUniqueKey<TKey>(this._storageNamespace, documentName),
             Namespace = this._storageNamespace,
             Name = documentName,
             MemoryText = memoryText,
@@ -202,12 +212,15 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
     /// <summary>
     /// Generates a unique key for the memory document.
     /// </summary>
+    /// <param name="storageNamespace">Storage namespace to use for string keys.</param>
+    /// <param name="documentName">An optional document name to use for the key if the database supports string keys.</param>
     /// <typeparam name="TDocumentKey">The type of the key to use, since different databases require/support different keys.</typeparam>
     /// <returns>A new unique key.</returns>
     /// <exception cref="NotSupportedException">Thrown if the requested key type is not supported.</exception>
-    private static TDocumentKey GenerateUniqueKey<TDocumentKey>()
+    private static TDocumentKey GenerateUniqueKey<TDocumentKey>(string storageNamespace, string? documentName)
         => typeof(TDocumentKey) switch
         {
+            _ when typeof(TDocumentKey) == typeof(string) && documentName is not null => (TDocumentKey)(object)$"{storageNamespace}:{documentName}",
             _ when typeof(TDocumentKey) == typeof(string) => (TDocumentKey)(object)Guid.NewGuid().ToString(),
             _ when typeof(TDocumentKey) == typeof(Guid) => (TDocumentKey)(object)Guid.NewGuid(),
 
