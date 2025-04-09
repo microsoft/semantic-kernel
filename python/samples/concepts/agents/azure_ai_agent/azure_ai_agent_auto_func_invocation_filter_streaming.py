@@ -6,13 +6,12 @@ from typing import Annotated
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
+from semantic_kernel.filters import (
     AutoFunctionInvocationContext,
+    FilterTypes,
 )
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import FunctionResult, kernel_function
 from semantic_kernel.kernel import Kernel
 
 """
@@ -140,6 +139,20 @@ async def main() -> None:
             # 6. Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
+
+        # Print the intermediate steps
+        print("\nIntermediate Steps:")
+        for msg in intermediate_steps:
+            if any(isinstance(item, FunctionResultContent) for item in msg.items):
+                for fr in msg.items:
+                    if isinstance(fr, FunctionResultContent):
+                        print(f"Function Result:> {fr.result} for function: {fr.name}")
+            elif any(isinstance(item, FunctionCallContent) for item in msg.items):
+                for fcc in msg.items:
+                    if isinstance(fcc, FunctionCallContent):
+                        print(f"Function Call:> {fcc.name} with arguments: {fcc.arguments}")
+            else:
+                print(f"{msg.role}: {msg.content}")
 
         """
         Sample Output:

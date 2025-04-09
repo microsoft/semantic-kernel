@@ -6,15 +6,12 @@ from typing import Annotated
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.function_call_content import FunctionCallContent
-from semantic_kernel.contents.function_result_content import FunctionResultContent
-from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
+from semantic_kernel.filters import (
     AutoFunctionInvocationContext,
+    FilterTypes,
 )
-from semantic_kernel.filters.filter_types import FilterTypes
-from semantic_kernel.functions.function_result import FunctionResult
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import FunctionResult, kernel_function
 from semantic_kernel.kernel import Kernel
 
 """
