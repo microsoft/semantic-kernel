@@ -9,15 +9,15 @@ from contextlib import AbstractAsyncContextManager, AsyncExitStack, _AsyncGenera
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
-from mcp import McpError, types
+from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.sse import sse_client
 from mcp.client.stdio import StdioServerParameters, stdio_client
 from mcp.client.websocket import websocket_client
-from mcp.server.lowlevel.server import Server
+from mcp.server.lowlevel import Server
 from mcp.shared.context import RequestContext
+from mcp.shared.exceptions import McpError
 from mcp.shared.session import RequestResponder
-from mcp.types import Prompt, Tool
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
@@ -27,8 +27,7 @@ from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.image_content import ImageContent
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
-from semantic_kernel.exceptions.function_exceptions import FunctionExecutionException
+from semantic_kernel.exceptions import FunctionExecutionException, KernelPluginInvalidConfigurationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel_types import OptionalOneOrMany
@@ -116,7 +115,7 @@ def _kernel_content_to_mcp_content_types(
             types.EmbeddedResource(
                 type="resource",
                 resource=types.BlobResourceContents(
-                    blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "kernel:///binary"
+                    blob=content.data_string, mimeType=content.mime_type, uri=content.uri or "sk://binary"
                 ),
             )
         ]
@@ -133,7 +132,7 @@ def _kernel_content_to_mcp_content_types(
 
 
 @experimental
-def _get_parameter_dict_from_mcp_prompt(prompt: Prompt) -> list[dict[str, Any]]:
+def _get_parameter_dict_from_mcp_prompt(prompt: types.Prompt) -> list[dict[str, Any]]:
     """Creates a MCPFunction instance from a prompt."""
     # Check if 'properties' is missing or not a dictionary
     if not prompt.arguments:
@@ -150,7 +149,7 @@ def _get_parameter_dict_from_mcp_prompt(prompt: Prompt) -> list[dict[str, Any]]:
 
 
 @experimental
-def _get_parameter_dicts_from_mcp_tool(tool: Tool) -> list[dict[str, Any]]:
+def _get_parameter_dicts_from_mcp_tool(tool: types.Tool) -> list[dict[str, Any]]:
     """Creates an MCPFunction instance from a tool."""
     properties = tool.inputSchema.get("properties", None)
     required = tool.inputSchema.get("required", [])
@@ -566,7 +565,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
 def create_mcp_server_from_kernel(
     kernel: Kernel,
     *,
-    server_name: str = "Semantic Kernel MCP Server",
+    server_name: str = "SK",
     version: str | None = None,
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
@@ -671,15 +670,21 @@ def create_mcp_server_from_kernel(
         )
 
     async def _log(level: types.LoggingLevel, data: Any) -> None:
-        """Log a message to the server."""
+        """Log a message to the server and logger."""
+        # Log to the local logger
         logger.log(LOG_LEVEL_MAPPING[level], data)
-        await server.request_context.session.send_log_message(level=level, data=data)
+        if server and server.request_context and server.request_context.session:
+            try:
+                await server.request_context.session.send_log_message(level=level, data=data)
+            except Exception as e:
+                logger.error("Failed to send log message to server: %s", e)
 
     @server.set_logging_level()
     async def _set_logging_level(level: types.LoggingLevel) -> None:
         """Set the logging level for the server."""
         logger.setLevel(LOG_LEVEL_MAPPING[level])
-        await _log(level="notice", data=f"Log level set to {level}")
+        # emit this log with the new minimum level
+        await _log(level=level, data=f"Log level set to {level}")
 
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
         function = kernel.get_function_from_fully_qualified_function_name(function_name)
