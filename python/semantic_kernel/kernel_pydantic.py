@@ -65,7 +65,7 @@ class KernelBaseSettings(BaseSettings):
             env_file_path = kwargs["env_file_path"]
         else:
             env_file_path = ".env"
-        cls.model_config.update(
+        cls.model_config.update(  # type: ignore
             env_prefix=cls.env_prefix,
             env_file=env_file_path,
             env_file_encoding=env_file_encoding,
