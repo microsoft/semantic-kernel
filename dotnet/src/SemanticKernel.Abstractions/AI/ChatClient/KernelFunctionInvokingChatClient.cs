@@ -257,7 +257,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
 
             // Add the responses from the function calls into the augmented history and also into the tracked
             // list of response messages.
-            var modeAndMessages = await this.ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await this.ProcessFunctionCallsAsync(augmentedHistory, options!, functionCallContents!, iteration, isStreaming: false, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
             // Clear the auto function invocation options.
@@ -337,7 +337,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             UpdateOptionsForAutoFunctionInvocation(ref options!, response.Messages.Last().ToChatMessageContent(), isStreaming: true);
 
             // Process all the functions, adding their results into the history.
-            var modeAndMessages = await this.ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, cancellationToken).ConfigureAwait(false);
+            var modeAndMessages = await this.ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, isStreaming: true, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
 
             // Clear the auto function invocation options.
@@ -547,21 +547,23 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <param name="options">The options used for the response being processed.</param>
     /// <param name="functionCallContents">The function call contents representing the functions to be invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
+    /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<(ContinueMode Mode, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        List<ChatMessage> messages, ChatOptions options, List<Microsoft.Extensions.AI.FunctionCallContent> functionCallContents, int iteration, CancellationToken cancellationToken)
+        List<ChatMessage> messages, ChatOptions options, List<Microsoft.Extensions.AI.FunctionCallContent> functionCallContents, int iteration, bool isStreaming, CancellationToken cancellationToken)
     {
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
         Debug.Assert(functionCallContents.Count > 0, "Expected at least one function call.");
+        ContinueMode continueMode = ContinueMode.Continue;
 
         // Process all functions. If there's more than one and concurrent invocation is enabled, do so in parallel.
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult result = await this.ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, cancellationToken).ConfigureAwait(false);
+                messages, options, functionCallContents, iteration, 0, isStreaming, cancellationToken).ConfigureAwait(false);
 
             IList<ChatMessage> added = this.CreateResponseMessages([result]);
             this.ThrowIfNoFunctionResultsAdded(added);
@@ -571,40 +573,54 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
         }
         else
         {
-            FunctionInvocationResult[] results;
+            List<FunctionInvocationResult> results = [];
 
+            var terminationRequested = false;
             if (this.AllowConcurrentInvocation)
             {
                 // Schedule the invocation of every function.
-                results = await Task.WhenAll(
+                results.AddRange(await Task.WhenAll(
                     from i in Enumerable.Range(0, functionCallContents.Count)
                     select Task.Run(() => this.ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, cancellationToken))).ConfigureAwait(false);
+                        iteration, i, isStreaming, cancellationToken))).ConfigureAwait(false));
+
+                terminationRequested = results.Any(r => r.ContinueMode == ContinueMode.Terminate);
             }
             else
             {
                 // Invoke each function serially.
-                results = new FunctionInvocationResult[functionCallContents.Count];
-                for (int i = 0; i < results.Length; i++)
+                for (int i = 0; i < functionCallContents.Count; i++)
                 {
-                    results[i] = await this.ProcessFunctionCallAsync(
+                    var result = await this.ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, cancellationToken).ConfigureAwait(false);
+                        iteration, i, isStreaming, cancellationToken).ConfigureAwait(false);
+
+                    results.Add(result);
+
+                    if (result.ContinueMode == ContinueMode.Terminate)
+                    {
+                        continueMode = ContinueMode.Terminate;
+                        terminationRequested = true;
+                        break;
+                    }
                 }
             }
 
-            ContinueMode continueMode = ContinueMode.Continue;
-
             IList<ChatMessage> added = this.CreateResponseMessages(results);
             this.ThrowIfNoFunctionResultsAdded(added);
-
             messages.AddRange(added);
-            foreach (FunctionInvocationResult fir in results)
+
+            if (!terminationRequested)
             {
-                if (fir.ContinueMode > continueMode)
+                // If any function requested termination, we'll terminate.
+                continueMode = ContinueMode.Continue;
+                foreach (FunctionInvocationResult fir in results)
                 {
-                    continueMode = fir.ContinueMode;
+                    if (fir.ContinueMode > continueMode)
+                    {
+                        continueMode = fir.ContinueMode;
+                    }
                 }
             }
 
@@ -629,11 +645,12 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <param name="callContents">The function call contents representing all the functions being invoked.</param>
     /// <param name="iteration">The iteration number of how many roundtrips have been made to the inner client.</param>
     /// <param name="functionCallIndex">The 0-based index of the function being called out of <paramref name="callContents"/>.</param>
+    /// <param name="isStreaming">Whether the function calls are being processed in a streaming context.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>A <see cref="ContinueMode"/> value indicating how the caller should proceed.</returns>
     private async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
         List<ChatMessage> messages, ChatOptions options, List<Microsoft.Extensions.AI.FunctionCallContent> callContents,
-        int iteration, int functionCallIndex, CancellationToken cancellationToken)
+        int iteration, int functionCallIndex, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
 
@@ -658,6 +675,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
             FunctionCount = callContents.Count,
+            IsStreaming = isStreaming
         };
 
         object? result;
@@ -700,10 +718,10 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
     /// <param name="results">Information about the function call invocations and results.</param>
     /// <returns>A list of all chat messages created from <paramref name="results"/>.</returns>
     internal IList<ChatMessage> CreateResponseMessages(
-        ReadOnlySpan<FunctionInvocationResult> results)
+        IReadOnlyList<FunctionInvocationResult> results)
     {
-        var contents = new List<AIContent>(results.Length);
-        for (int i = 0; i < results.Length; i++)
+        var contents = new List<AIContent>(results.Count);
+        for (int i = 0; i < results.Count; i++)
         {
             contents.Add(CreateFunctionResultContent(results[i]));
         }
@@ -829,7 +847,6 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                         result = await invocationContext.AIFunction.InvokeAsync(autoFunctionInvocationContext.Arguments, cancellationToken).ConfigureAwait(false);
                         context.Result = new FunctionResult(context.Function, result);
                 }).ConfigureAwait(false);
-
                 result = autoFunctionInvocationContext.Result.GetValue<object>();
             }
         }

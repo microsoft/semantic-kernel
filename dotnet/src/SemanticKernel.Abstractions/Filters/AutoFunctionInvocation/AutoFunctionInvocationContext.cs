@@ -37,10 +37,6 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
         this.ExecutionSettings = executionSettings;
 
-        options.AdditionalProperties.TryGetValue<bool?>(ChatOptionsExtensions.IsStreamingKey, out var isStreaming);
-        Verify.NotNull(isStreaming);
-        this.IsStreaming = isStreaming.Value;
-
         this.Result = new FunctionResult(this.Function) { Culture = kernel.Culture };
     }
 

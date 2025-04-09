@@ -248,10 +248,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         builder.Plugins.Add(plugin);
 
-        builder.Services.AddSingleton<IChatCompletionService, OpenAIChatCompletionService>((serviceProvider) =>
-        {
-            return new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
-        });
+        builder.Services.AddOpenAIChatClient("model-id", "test-api-key", "organization-id", httpClient: this._httpClient);
 
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter1);
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter2);
@@ -259,24 +256,21 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         var kernel = builder.Build();
 
-        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        });
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         if (isStreaming)
         {
             this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-            await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", arguments))
+            await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(settings)))
             { }
         }
         else
         {
             this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
-            await kernel.InvokePromptAsync("Test prompt", arguments);
+            await kernel.InvokePromptAsync("Test prompt", new(settings));
         }
 
         // Assert
@@ -439,13 +433,13 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
             filterInvocations++;
         });
 
-        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/filters_multiple_function_calls_test_response.json")) };
+        using var response1 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/filters_chatclient_multiple_function_calls_test_response.json")) };
         using var response2 = new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(File.ReadAllText("TestData/chat_completion_test_response.json")) };
 
         this._messageHandlerStub.ResponsesToReturn = [response1, response2];
 
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        var result = await kernel.InvokePromptAsync("Test prompt", new(new PromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
@@ -550,7 +544,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
         // Act
-        var result = await kernel.InvokePromptAsync("Test prompt", new(new OpenAIPromptExecutionSettings
+        var functionResult = await kernel.InvokePromptAsync("Test prompt", new(new PromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         }));
@@ -562,11 +556,12 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         Assert.Equal([0], functionSequenceNumbers);
 
         // Results of function invoked before termination should be returned
-        var lastMessageContent = result.GetValue<ChatMessageContent>();
-        Assert.NotNull(lastMessageContent);
+        var chatResponse = functionResult.GetValue<ChatResponse>();
+        Assert.NotNull(chatResponse);
 
-        Assert.Equal("function1-value", lastMessageContent.Content);
-        Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
+        var result = GetLastFunctionResultFromChatResponse(chatResponse);
+        Assert.NotNull(result);
+        Assert.Equal("function1-value", result.ToString());
     }
 
     [Fact]
@@ -598,12 +593,12 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         var executionSettings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
-        List<StreamingKernelContent> streamingContent = [];
+        List<ChatResponseUpdate> streamingContent = [];
 
         // Act
-        await foreach (var item in kernel.InvokePromptStreamingAsync("Test prompt", new(executionSettings)))
+        await foreach (var update in kernel.InvokePromptStreamingAsync<ChatResponseUpdate>("Test prompt", new(executionSettings)))
         {
-            streamingContent.Add(item);
+            streamingContent.Add(update);
         }
 
         // Assert
@@ -613,13 +608,14 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         Assert.Equal([0], functionSequenceNumbers);
 
         // Results of function invoked before termination should be returned
-        Assert.Equal(3, streamingContent.Count);
+        Assert.Equal(4, streamingContent.Count);
 
-        var lastMessageContent = streamingContent[^1] as StreamingChatMessageContent;
-        Assert.NotNull(lastMessageContent);
+        var chatResponse = streamingContent.ToChatResponse();
+        Assert.NotNull(chatResponse);
 
-        Assert.Equal("function1-value", lastMessageContent.Content);
-        Assert.Equal(AuthorRole.Tool, lastMessageContent.Role);
+        var result = GetLastFunctionResultFromChatResponse(chatResponse);
+        Assert.NotNull(result);
+        Assert.Equal("function1-value", result.ToString());
     }
 
     [Theory]
@@ -645,32 +641,26 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         builder.Plugins.Add(plugin);
 
-        builder.Services.AddSingleton<IChatCompletionService, OpenAIChatCompletionService>((serviceProvider) =>
-        {
-            return new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
-        });
+        builder.Services.AddOpenAIChatClient("model-id", "test-api-key", "organization-id", httpClient: this._httpClient);
 
         builder.Services.AddSingleton<IAutoFunctionInvocationFilter>(filter);
 
         var kernel = builder.Build();
 
-        var arguments = new KernelArguments(new OpenAIPromptExecutionSettings
-        {
-            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
-        });
+        var settings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
         // Act
         if (isStreaming)
         {
             this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-            await kernel.InvokePromptStreamingAsync("Test prompt", arguments).ToListAsync();
+            await kernel.InvokePromptStreamingAsync("Test prompt", new(settings)).ToListAsync();
         }
         else
         {
             this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingResponses();
 
-            await kernel.InvokePromptAsync("Test prompt", arguments);
+            await kernel.InvokePromptAsync("Test prompt", new(settings));
         }
 
         // Assert
