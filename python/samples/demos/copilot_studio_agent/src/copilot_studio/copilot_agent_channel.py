@@ -1,4 +1,5 @@
 import sys
+import logging
 from collections.abc import AsyncIterable
 from typing import TYPE_CHECKING, Any
 
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
 from copilot_studio.copilot_agent_thread import CopilotAgentThread
+
+logger = logging.getLogger(__name__)
 
 
 class CopilotStudioAgentChannel(AgentChannel, ChatHistory):
@@ -61,15 +64,17 @@ class CopilotStudioAgentChannel(AgentChannel, ChatHistory):
 
         try:
             # Pass thread object instead of just the ID
+            logger.debug(f"Invoking Copilot Studio agent: {agent.name} with thread ID: {self.thread.id}")
             async for response in agent.invoke(
                 messages=self.messages[-1],
                 thread=self.thread,
                 **kwargs,
             ):
-                # Append the response to the chat history
-                self.messages.append(response)
-                yield True, response
+                # Append the response to the chat history                
+                self.messages.append(response.message)
+                yield True, response.message
         except Exception as e:
+            logger.error(f"Error invoking Copilot Studio agent: {e}")
             raise AgentInvokeException(f"Error invoking Copilot Studio agent: {e}")
 
     @override

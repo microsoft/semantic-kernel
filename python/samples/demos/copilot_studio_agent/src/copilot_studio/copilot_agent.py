@@ -50,6 +50,22 @@ class CopilotAgent(Agent):
         """
         super().__init__(id=id, name=name, description=description)
         self.directline_client = directline_client
+        
+    @override
+    def get_channel_keys(self) -> list[str]:
+        """
+        Override to return agent ID instead of channel_type for Copilot agents.
+        
+        This is particularly important for CopilotAgent because each agent instance 
+        maintains its own conversation with a unique thread ID in the DirectLine API.
+        Without this override, multiple CopilotAgent instances in a group chat would 
+        share the same channel, causing thread ID conflicts and message routing issues.
+        
+        Returns:
+            A list containing the agent ID as the unique channel key, ensuring each 
+            CopilotAgent gets its own dedicated channel and thread.
+        """
+        return [self.id]
 
     @trace_agent_get_response
     @override
