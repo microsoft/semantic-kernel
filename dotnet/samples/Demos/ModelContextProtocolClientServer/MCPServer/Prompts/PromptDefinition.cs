@@ -10,7 +10,7 @@ namespace MCPServer.Prompts;
 /// <summary>
 /// Represents a prompt definition.
 /// </summary>
-internal sealed class PromptDefinition
+public sealed class PromptDefinition
 {
     /// <summary>
     /// Gets or sets the prompt.
@@ -32,13 +32,13 @@ internal sealed class PromptDefinition
     {
         PromptTemplateConfig promptTemplateConfig = PromptTemplateConfig.FromJson(jsonPrompt);
 
+        IPromptTemplate promptTemplate = new HandlebarsPromptTemplateFactory().Create(promptTemplateConfig);
+
         return new PromptDefinition()
         {
             Prompt = GetPrompt(promptTemplateConfig),
             Handler = (context, cancellationToken) =>
             {
-                IPromptTemplate promptTemplate = new HandlebarsPromptTemplateFactory().Create(promptTemplateConfig);
-
                 return GetPromptHandlerAsync(context, promptTemplateConfig, promptTemplate, kernel, cancellationToken);
             }
         };
@@ -103,7 +103,7 @@ internal sealed class PromptDefinition
                         Type = "text",
                         Text = renderedPrompt
                     },
-                    Role = Role.User
+                    Role = Role.Assistant
                 }
             ]
         };
