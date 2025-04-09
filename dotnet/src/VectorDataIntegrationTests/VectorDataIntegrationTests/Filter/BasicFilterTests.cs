@@ -341,12 +341,12 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                         IndexKind = this.IndexKind
                     },
 
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsFilterable = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.String), typeof(string)) { IsFilterable = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsFilterable = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsFilterable = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsFilterable = true },
-                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsFilterable = true }
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int), typeof(int)) { IsIndexed = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.String), typeof(string)) { IsIndexed = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Bool), typeof(bool)) { IsIndexed = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.Int2), typeof(int)) { IsIndexed = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringArray), typeof(string[])) { IsIndexed = true },
+                    new VectorStoreRecordDataProperty(nameof(FilterRecord.StringList), typeof(List<string>)) { IsIndexed = true }
                 ]
             };
 

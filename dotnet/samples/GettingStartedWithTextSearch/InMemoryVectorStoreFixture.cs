@@ -150,7 +150,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
         [TextSearchResultLink]
         public string Link { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

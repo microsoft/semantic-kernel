@@ -685,7 +685,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

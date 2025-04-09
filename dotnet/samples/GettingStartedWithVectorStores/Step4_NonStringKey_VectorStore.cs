@@ -65,7 +65,7 @@ public class Step4_NonStringKey_VectorStore(ITestOutputHelper output, VectorStor
         [VectorStoreRecordKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Category { get; set; }
 
         [VectorStoreRecordData]

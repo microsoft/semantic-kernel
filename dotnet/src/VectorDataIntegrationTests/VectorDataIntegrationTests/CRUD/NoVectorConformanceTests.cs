@@ -149,7 +149,7 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
                 Properties =
                 [
                     new VectorStoreRecordKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)),
-                    new VectorStoreRecordDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsIndexed = true },
                 ]
             };
 

@@ -184,8 +184,8 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
                 Properties = new List<VectorStoreRecordProperty>()
                 {
                     new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextSearchable = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
                     new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
                 }
             };
@@ -237,9 +237,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
                 Properties = new List<VectorStoreRecordProperty>()
                 {
                     new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                    new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextSearchable = true },
-                    new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextSearchable = true },
-                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsFilterable = true },
+                    new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
+                    new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
                     new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
                 }
             };

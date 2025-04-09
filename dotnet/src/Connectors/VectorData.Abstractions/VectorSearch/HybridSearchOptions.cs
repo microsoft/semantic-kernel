@@ -37,8 +37,8 @@ public class HybridSearchOptions<TRecord>
 
     /// <summary>
     /// Gets or sets the additional target property to do the text/keyword search on.
-    /// The property must have full text search enabled.
-    /// If not provided will look if there is a text property with full text search enabled, and
+    /// The property must have full text indexing enabled.
+    /// If not provided will look if there is a text property with full text indexing enabled, and
     /// will throw if either none or multiple exist.
     /// </summary>
     public Expression<Func<TRecord, object?>>? AdditionalProperty { get; init; }

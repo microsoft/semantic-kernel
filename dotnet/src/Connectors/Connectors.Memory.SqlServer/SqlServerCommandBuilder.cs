@@ -54,7 +54,7 @@ internal static class SqlServerCommandBuilder
 
         foreach (var dataProperty in model.DataProperties)
         {
-            if (dataProperty.IsFilterable)
+            if (dataProperty.IsIndexed)
             {
                 sb.AppendFormat("CREATE INDEX ");
                 sb.AppendIndexName(tableName, dataProperty.StorageName);
@@ -607,7 +607,7 @@ internal static class SqlServerCommandBuilder
         Type t when t == typeof(long) => "BIGINT",
         Type t when t == typeof(Guid) => "UNIQUEIDENTIFIER",
         Type t when t == typeof(string) && property is VectorStoreRecordKeyPropertyModel => "NVARCHAR(4000)",
-        Type t when t == typeof(string) && property is VectorStoreRecordDataPropertyModel { IsFilterable: true } => "NVARCHAR(4000)",
+        Type t when t == typeof(string) && property is VectorStoreRecordDataPropertyModel { IsIndexed: true } => "NVARCHAR(4000)",
         Type t when t == typeof(string) => "NVARCHAR(MAX)",
         Type t when t == typeof(byte[]) => "VARBINARY(MAX)",
         Type t when t == typeof(bool) => "BIT",

@@ -171,7 +171,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                     Properties =
                     [
                         new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordDataProperty("PropertyName", propertyType) { IsFilterable = true, IsFullTextSearchable = true },
+                        new VectorStoreRecordDataProperty("PropertyName", propertyType) { IsIndexed = true, IsFullTextIndexed = true },
                         new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
                     ]
                 },

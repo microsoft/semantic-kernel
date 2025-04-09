@@ -152,7 +152,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
         }
 
         // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._model.DataProperties.Where(x => x.IsFilterable);
+        var dataProperties = this._model.DataProperties.Where(x => x.IsIndexed);
         foreach (var dataProperty in dataProperties)
         {
             if (QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType))
@@ -167,7 +167,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
             else
             {
                 // TODO: This should move to model validation
-                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsFilterable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
             }
 
             await this.RunOperationAsync(
@@ -180,13 +180,13 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
         }
 
         // Add indexes for each of the data properties that require full text search.
-        dataProperties = this._model.DataProperties.Where(x => x.IsFullTextSearchable);
+        dataProperties = this._model.DataProperties.Where(x => x.IsFullTextIndexed);
         foreach (var dataProperty in dataProperties)
         {
             // TODO: This should move to model validation
             if (dataProperty.Type != typeof(string))
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
             }
 
             await this.RunOperationAsync(

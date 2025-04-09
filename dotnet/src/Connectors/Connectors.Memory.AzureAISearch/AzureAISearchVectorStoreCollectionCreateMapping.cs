@@ -33,27 +33,27 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information.</exception>
     public static SimpleField MapDataField(VectorStoreRecordDataPropertyModel dataProperty)
     {
-        if (dataProperty.IsFullTextSearchable)
+        if (dataProperty.IsFullTextIndexed)
         {
             if (dataProperty.Type != typeof(string))
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Azure AI Search VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Azure AI Search VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
             }
 
             return new SearchableField(dataProperty.StorageName)
             {
-                IsFilterable = dataProperty.IsFilterable,
+                IsFilterable = dataProperty.IsIndexed,
                 // Sometimes the users ask to also OrderBy given filterable property, so we make it sortable.
-                IsSortable = dataProperty.IsFilterable
+                IsSortable = dataProperty.IsIndexed
             };
         }
 
         var fieldType = AzureAISearchVectorStoreCollectionCreateMapping.GetSDKFieldDataType(dataProperty.Type);
         return new SimpleField(dataProperty.StorageName, fieldType)
         {
-            IsFilterable = dataProperty.IsFilterable,
+            IsFilterable = dataProperty.IsIndexed,
             // Sometimes the users ask to also OrderBy given filterable property, so we make it sortable.
-            IsSortable = dataProperty.IsFilterable && !fieldType.IsCollection
+            IsSortable = dataProperty.IsIndexed && !fieldType.IsCollection
         };
     }
 

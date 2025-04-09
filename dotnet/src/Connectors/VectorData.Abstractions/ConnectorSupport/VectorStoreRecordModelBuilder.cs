@@ -128,8 +128,8 @@ public class VectorStoreRecordModelBuilder
 
                 var dataProperty = new VectorStoreRecordDataPropertyModel(clrProperty.Name, clrProperty.PropertyType)
                 {
-                    IsFilterable = dataAttribute.IsFilterable,
-                    IsFullTextSearchable = dataAttribute.IsFullTextSearchable,
+                    IsIndexed = dataAttribute.IsIndexed,
+                    IsFullTextIndexed = dataAttribute.IsFullTextIndexed,
                 };
 
                 this.DataProperties.Add(dataProperty);
@@ -240,8 +240,8 @@ public class VectorStoreRecordModelBuilder
                             $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a data property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
-                    dataProperty.IsFilterable = definitionDataProperty.IsFilterable;
-                    dataProperty.IsFullTextSearchable = definitionDataProperty.IsFullTextSearchable;
+                    dataProperty.IsIndexed = definitionDataProperty.IsIndexed;
+                    dataProperty.IsFullTextIndexed = definitionDataProperty.IsFullTextIndexed;
 
                     break;
 

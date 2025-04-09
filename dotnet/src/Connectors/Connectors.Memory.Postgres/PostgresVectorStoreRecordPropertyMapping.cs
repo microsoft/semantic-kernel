@@ -213,7 +213,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
                     break;
 
                 case VectorStoreRecordDataPropertyModel dataProperty:
-                    if (dataProperty.IsFilterable)
+                    if (dataProperty.IsIndexed)
                     {
                         vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
                     }
