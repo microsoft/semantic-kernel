@@ -67,12 +67,7 @@ public sealed class QdrantVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid))
-        {
-            throw new NotSupportedException("Only ulong and Guid keys are supported.");
-        }
-
-        var recordCollection = new QdrantVectorStoreRecordCollection<TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>()
+        var recordCollection = new QdrantVectorStoreRecordCollection<TKey, TRecord>(this._qdrantClient, name, new QdrantVectorStoreRecordCollectionOptions<TRecord>()
         {
             HasNamedVectors = this._options.HasNamedVectors,
             VectorStoreRecordDefinition = vectorStoreRecordDefinition

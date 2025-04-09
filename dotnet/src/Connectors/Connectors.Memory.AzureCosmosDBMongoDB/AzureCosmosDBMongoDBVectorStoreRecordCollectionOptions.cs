@@ -7,7 +7,7 @@ using MongoDB.Bson;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 
 /// <summary>
-/// Options when creating a <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>
 {

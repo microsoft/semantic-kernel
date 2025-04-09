@@ -10,24 +10,24 @@ namespace VectorDataSpecificationTests.CRUD;
 public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) where TKey : notnull
 {
     [ConditionalFact]
-    public async Task GetBatchAsyncThrowsArgumentNullExceptionForNullKeys()
+    public virtual async Task GetBatchAsyncThrowsArgumentNullExceptionForNullKeys()
     {
         ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.GetAsync(keys: null!).ToArrayAsync().AsTask());
         Assert.Equal("keys", ex.ParamName);
     }
 
     [ConditionalFact]
-    public async Task GetBatchAsyncDoesNotThrowForEmptyBatch()
+    public virtual async Task GetBatchAsyncDoesNotThrowForEmptyBatch()
     {
         Assert.Empty(await fixture.Collection.GetAsync([]).ToArrayAsync());
     }
 
     [ConditionalFact]
-    public Task GetBatchAsyncReturnsInsertedRecords_WithVectors()
+    public virtual Task GetBatchAsync_WithVectors()
         => this.GetBatchAsyncReturnsInsertedRecords(includeVectors: true);
 
     [ConditionalFact]
-    public Task GetBatchAsyncReturnsInsertedRecords_WithoutVectors()
+    public virtual Task GetBatchAsync_WithoutVectors()
         => this.GetBatchAsyncReturnsInsertedRecords(includeVectors: false);
 
     private async Task GetBatchAsyncReturnsInsertedRecords(bool includeVectors)
@@ -44,27 +44,20 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
     }
 
     [ConditionalFact]
-    public async Task UpsertBatchAsyncThrowsArgumentNullExceptionForNullBatch()
+    public virtual async Task UpsertBatchAsyncThrowsArgumentNullExceptionForNullBatch()
     {
         ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.UpsertAsync(records: null!).ToArrayAsync().AsTask());
         Assert.Equal("records", ex.ParamName);
     }
 
     [ConditionalFact]
-    public async Task UpsertBatchAsyncDoesNotThrowForEmptyBatch()
+    public virtual async Task UpsertBatchAsyncDoesNotThrowForEmptyBatch()
     {
         Assert.Empty(await fixture.Collection.UpsertAsync([]).ToArrayAsync());
     }
 
     [ConditionalFact]
-    public Task UpsertBatchAsyncCanInsertNewRecord_WithVectors()
-        => this.UpsertBatchAsyncCanInsertNewRecords(includeVectors: true);
-
-    [ConditionalFact]
-    public Task UpsertBatchAsyncCanInsertNewRecord_WithoutVectors()
-        => this.UpsertBatchAsyncCanInsertNewRecords(includeVectors: false);
-
-    private async Task UpsertBatchAsyncCanInsertNewRecords(bool includeVectors)
+    public virtual async Task UpsertBatchAsyncCanInsertNewRecord()
     {
         var collection = fixture.Collection;
         SimpleRecord<TKey>[] inserted = Enumerable.Range(0, 10).Select(i => new SimpleRecord<TKey>()
@@ -80,22 +73,15 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
         var receivedKeys = await collection.UpsertAsync(inserted).ToArrayAsync();
         Assert.Equal(keys.ToHashSet(), receivedKeys.ToHashSet()); // .ToHashSet() to ignore order
 
-        var received = await collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
         foreach (var record in inserted)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
         }
     }
 
     [ConditionalFact]
-    public Task UpsertBatchAsyncCanUpdateExistingRecords_WithVectors()
-        => this.UpsertBatchAsyncCanUpdateExistingRecords(includeVectors: true);
-
-    [ConditionalFact]
-    public Task UpsertBatchAsyncCanUpdateExistingRecords_WithoutVectors()
-        => this.UpsertBatchAsyncCanUpdateExistingRecords(includeVectors: false);
-
-    private async Task UpsertBatchAsyncCanUpdateExistingRecords(bool includeVectors)
+    public virtual async Task UpsertBatchAsyncCanUpdateExistingRecords()
     {
         SimpleRecord<TKey>[] inserted = Enumerable.Range(0, 10).Select(i => new SimpleRecord<TKey>()
         {
@@ -119,22 +105,15 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
             updated.Select(r => r.Id).OrderBy(id => id).ToArray(),
             keys.OrderBy(id => id).ToArray());
 
-        var received = await fixture.Collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await fixture.Collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
         foreach (var record in updated)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
         }
     }
 
     [ConditionalFact]
-    public Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch_WithVectors()
-        => this.UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(includeVectors: true);
-
-    [ConditionalFact]
-    public Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch_WithoutVectors()
-        => this.UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(includeVectors: false);
-
-    private async Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch(bool includeVectors)
+    public virtual async Task UpsertCanBothInsertAndUpdateRecordsFromTheSameBatch()
     {
         SimpleRecord<TKey>[] records = Enumerable.Range(0, 10).Select(i => new SimpleRecord<TKey>()
         {
@@ -164,28 +143,28 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
             records.Select(r => r.Id).OrderBy(id => id).ToArray(),
             mixedKeys.OrderBy(id => id).ToArray());
 
-        var received = await fixture.Collection.GetAsync(mixedKeys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
+        var received = await fixture.Collection.GetAsync(mixedKeys, new() { IncludeVectors = true }).ToArrayAsync();
         foreach (var record in records)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
         }
     }
 
     [ConditionalFact]
-    public async Task DeleteBatchAsyncDoesNotThrowForEmptyBatch()
+    public virtual async Task DeleteBatchAsyncDoesNotThrowForEmptyBatch()
     {
         await fixture.Collection.DeleteAsync([]);
     }
 
     [ConditionalFact]
-    public async Task DeleteBatchAsyncThrowsArgumentNullExceptionForNullKeys()
+    public virtual async Task DeleteBatchAsyncThrowsArgumentNullExceptionForNullKeys()
     {
         ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.DeleteAsync(keys: null!));
         Assert.Equal("keys", ex.ParamName);
     }
 
     [ConditionalFact]
-    public async Task DeleteBatchAsyncDeletesTheRecords()
+    public virtual async Task DeleteBatchAsyncDeletesTheRecords()
     {
         TKey[] idsToRemove = [fixture.TestData[2].Id, fixture.TestData[3].Id];
 

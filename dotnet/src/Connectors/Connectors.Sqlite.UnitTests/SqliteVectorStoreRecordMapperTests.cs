@@ -65,7 +65,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelWithStringKeyReturnsValidGenericModel(bool includeVectors)
+    public void MapFromStorageToDataModelWithStringKeyReturnsValidDynamicModel(bool includeVectors)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);
@@ -106,7 +106,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void MapFromStorageToDataModelWithNumericKeyReturnsValidGenericModel(bool includeVectors)
+    public void MapFromStorageToDataModelWithNumericKeyReturnsValidDynamicModel(bool includeVectors)
     {
         // Arrange
         var vector = new ReadOnlyMemory<float>([1.1f, 2.2f, 3.3f, 4.4f]);

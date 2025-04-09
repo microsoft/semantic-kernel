@@ -102,7 +102,7 @@ public static class MongoDBServiceCollectionExtensions
                 var database = sp.GetRequiredService<IMongoDatabase>();
                 var selectedOptions = options ?? sp.GetService<MongoDBVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new MongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new MongoDBVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -143,7 +143,7 @@ public static class MongoDBServiceCollectionExtensions
 
                 var selectedOptions = options ?? sp.GetService<MongoDBVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new MongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new MongoDBVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

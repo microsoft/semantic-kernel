@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Contains tests for the <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class RedisJsonVectorStoreRecordCollectionTests
 {
@@ -52,7 +52,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-        var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
 
@@ -271,7 +271,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -422,7 +422,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
             .Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
 
         // Arrange target with custom mapper.
-        var sut = new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -513,9 +513,9 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 1, 2, 3, 4 }, results.First().Record.Vector2!.Value.ToArray());
     }
 
-    private RedisJsonVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
+    private RedisJsonVectorStoreRecordCollection<string, MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
-        return new RedisJsonVectorStoreRecordCollection<MultiPropsModel>(
+        return new RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()

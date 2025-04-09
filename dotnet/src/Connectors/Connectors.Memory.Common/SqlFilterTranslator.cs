@@ -43,10 +43,10 @@ internal abstract class SqlFilterTranslator
             this._sql.Append("WHERE ");
         }
 
-        this.Translate(this._lambdaExpression.Body, null);
+        this.Translate(this._lambdaExpression.Body, isSearchCondition: true);
     }
 
-    protected void Translate(Expression? node, Expression? parent)
+    protected void Translate(Expression? node, bool isSearchCondition = false)
     {
         switch (node)
         {
@@ -59,15 +59,15 @@ internal abstract class SqlFilterTranslator
                 return;
 
             case MemberExpression member:
-                this.TranslateMember(member, parent);
+                this.TranslateMember(member, isSearchCondition);
                 return;
 
             case MethodCallExpression methodCall:
-                this.TranslateMethodCall(methodCall);
+                this.TranslateMethodCall(methodCall, isSearchCondition);
                 return;
 
             case UnaryExpression unary:
-                this.TranslateUnary(unary);
+                this.TranslateUnary(unary, isSearchCondition);
                 return;
 
             default:
@@ -82,29 +82,29 @@ internal abstract class SqlFilterTranslator
         {
             case ExpressionType.Equal when IsNull(binary.Right):
                 this._sql.Append('(');
-                this.Translate(binary.Left, binary);
+                this.Translate(binary.Left);
                 this._sql.Append(" IS NULL)");
                 return;
             case ExpressionType.NotEqual when IsNull(binary.Right):
                 this._sql.Append('(');
-                this.Translate(binary.Left, binary);
+                this.Translate(binary.Left);
                 this._sql.Append(" IS NOT NULL)");
                 return;
 
             case ExpressionType.Equal when IsNull(binary.Left):
                 this._sql.Append('(');
-                this.Translate(binary.Right, binary);
+                this.Translate(binary.Right);
                 this._sql.Append(" IS NULL)");
                 return;
             case ExpressionType.NotEqual when IsNull(binary.Left):
                 this._sql.Append('(');
-                this.Translate(binary.Right, binary);
+                this.Translate(binary.Right);
                 this._sql.Append(" IS NOT NULL)");
                 return;
         }
 
         this._sql.Append('(');
-        this.Translate(binary.Left, binary);
+        this.Translate(binary.Left, isSearchCondition: binary.NodeType is ExpressionType.AndAlso or ExpressionType.OrElse);
 
         this._sql.Append(binary.NodeType switch
         {
@@ -122,7 +122,8 @@ internal abstract class SqlFilterTranslator
             _ => throw new NotSupportedException("Unsupported binary expression node type: " + binary.NodeType)
         });
 
-        this.Translate(binary.Right, binary);
+        this.Translate(binary.Right, isSearchCondition: binary.NodeType is ExpressionType.AndAlso or ExpressionType.OrElse);
+
         this._sql.Append(')');
 
         static bool IsNull(Expression expression)
@@ -172,12 +173,12 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private void TranslateMember(MemberExpression memberExpression, Expression? parent)
+    private void TranslateMember(MemberExpression memberExpression, bool isSearchCondition)
     {
         switch (memberExpression)
         {
-            case var _ when this.TryGetColumn(memberExpression, out var column):
-                this.TranslateColumn(column, memberExpression, parent);
+            case var _ when this.TryBindProperty(memberExpression, out var property):
+                this.GenerateColumn(property.StorageName, isSearchCondition);
                 return;
 
             case var _ when TryGetCapturedValue(memberExpression, out var name, out var value):
@@ -189,19 +190,24 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    protected virtual void TranslateColumn(string column, MemberExpression memberExpression, Expression? parent)
-        => this._sql.Append('"').Append(column).Append('"');
+    protected virtual void GenerateColumn(string column, bool isSearchCondition = false)
+        => this._sql.Append('"').Append(column.Replace("\"", "\"\"")).Append('"');
 
     protected abstract void TranslateCapturedVariable(string name, object? capturedValue);
 
-    private void TranslateMethodCall(MethodCallExpression methodCall)
+    private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {
         switch (methodCall)
         {
+            // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
+            case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
+                this.GenerateColumn(property.StorageName, isSearchCondition);
+                return;
+
             // Enumerable.Contains()
             case { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
                 when contains.Method.DeclaringType == typeof(Enumerable):
-                this.TranslateContains(source, item, methodCall);
+                this.TranslateContains(source, item);
                 return;
 
             // List.Contains()
@@ -215,7 +221,7 @@ internal abstract class SqlFilterTranslator
                 Object: Expression source,
                 Arguments: [var item]
             } when declaringType.GetGenericTypeDefinition() == typeof(List<>):
-                this.TranslateContains(source, item, methodCall);
+                this.TranslateContains(source, item);
                 return;
 
             default:
@@ -223,18 +229,18 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private void TranslateContains(Expression source, Expression item, MethodCallExpression parent)
+    private void TranslateContains(Expression source, Expression item)
     {
         switch (source)
         {
             // Contains over array column (r => r.Strings.Contains("foo"))
-            case var _ when this.TryGetColumn(source, out _):
-                this.TranslateContainsOverArrayColumn(source, item, parent);
+            case var _ when this.TryBindProperty(source, out _):
+                this.TranslateContainsOverArrayColumn(source, item);
                 return;
 
             // Contains over inline array (r => new[] { "foo", "bar" }.Contains(r.String))
             case NewArrayExpression newArray:
-                this.Translate(item, parent);
+                this.Translate(item);
                 this._sql.Append(" IN (");
 
                 var isFirst = true;
@@ -249,7 +255,7 @@ internal abstract class SqlFilterTranslator
                         this._sql.Append(", ");
                     }
 
-                    this.Translate(element, parent);
+                    this.Translate(element);
                 }
 
                 this._sql.Append(')');
@@ -257,7 +263,7 @@ internal abstract class SqlFilterTranslator
 
             // Contains over captured array (r => arrayLocalVariable.Contains(r.String))
             case var _ when TryGetCapturedValue(source, out _, out var value):
-                this.TranslateContainsOverCapturedArray(source, item, parent, value);
+                this.TranslateContainsOverCapturedArray(source, item, value);
                 return;
 
             default:
@@ -265,11 +271,11 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent);
+    protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item);
 
-    protected abstract void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value);
+    protected abstract void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value);
 
-    private void TranslateUnary(UnaryExpression unary)
+    private void TranslateUnary(UnaryExpression unary, bool isSearchCondition)
     {
         switch (unary.NodeType)
         {
@@ -286,8 +292,13 @@ internal abstract class SqlFilterTranslator
                 }
 
                 this._sql.Append("(NOT ");
-                this.Translate(unary.Operand, unary);
+                this.Translate(unary.Operand, isSearchCondition);
                 this._sql.Append(')');
+                return;
+
+            // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
+            case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
+                this.GenerateColumn(property.StorageName, isSearchCondition);
                 return;
 
             default:
@@ -295,22 +306,50 @@ internal abstract class SqlFilterTranslator
         }
     }
 
-    private bool TryGetColumn(Expression expression, [NotNullWhen(true)] out string? column)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
     {
-        if (expression is MemberExpression member && member.Expression == this._recordParameter)
+        Type? convertedClrType = null;
+
+        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
         {
-            if (!this._model.PropertyMap.TryGetValue(member.Member.Name, out var property))
-            {
-                throw new InvalidOperationException($"Property name '{member.Member.Name}' provided as part of the filter clause is not a valid property name.");
-            }
-
-            column = property.StorageName;
-
-            return true;
+            expression = unary.Operand;
+            convertedClrType = unary.Type;
         }
 
-        column = null;
-        return false;
+        var modelName = expression switch
+        {
+            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
+            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
+                => memberExpression.Member.Name,
+
+            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
+            MethodCallExpression
+            {
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
+                => keyName,
+
+            _ => null
+        };
+
+        if (modelName is null)
+        {
+            property = null;
+            return false;
+        }
+
+        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
+        {
+            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
+        }
+
+        if (convertedClrType is not null && convertedClrType != property.Type)
+        {
+            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+        }
+
+        return true;
     }
 
     private static bool TryGetCapturedValue(Expression expression, [NotNullWhen(true)] out string? name, out object? value)

@@ -7,7 +7,7 @@ using Pinecone;
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
-/// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
 {

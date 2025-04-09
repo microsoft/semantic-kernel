@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
@@ -39,47 +38,6 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
     /// </value>
     /// <seealso cref="Microsoft.Extensions.VectorData.DistanceFunction"/>
     public string? DistanceFunction { get; set; }
-
-    /// <inheritdoc/>
-    // TODO: Temporary, remove once we move to Dictionary<string, object?> as the dynamic representation
-    public override object? GetValueAsObject(object record)
-    {
-        if (this.PropertyInfo is null)
-        {
-            var type = record.GetType();
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
-            {
-                var vectorProperty = type.GetProperty("Vectors")!;
-                var dictionary = (Dictionary<string, object?>)vectorProperty.GetValue(record)!;
-                return dictionary.TryGetValue(this.ModelName, out var value)
-                    ? value
-                    : null;
-            }
-        }
-
-        return base.GetValueAsObject(record);
-    }
-
-    /// <inheritdoc/>
-    // TODO: Temporary, remove once we move to Dictionary<string, object?> as the dynamic representation
-    public override void SetValueAsObject(object record, object? value)
-    {
-        if (this.PropertyInfo is null)
-        {
-            var type = record.GetType();
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
-            {
-                var vectorProperty = type.GetProperty("Vectors")!;
-                var dictionary = (Dictionary<string, object?>)vectorProperty.GetValue(record)!;
-                dictionary[this.ModelName] = value;
-                return;
-            }
-        }
-
-        base.SetValueAsObject(record, value);
-    }
 
     /// <inheritdoc/>
     public override string ToString()

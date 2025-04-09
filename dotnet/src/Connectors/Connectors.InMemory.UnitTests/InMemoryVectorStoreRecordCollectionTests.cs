@@ -465,33 +465,23 @@ public class InMemoryVectorStoreRecordCollectionTests
     [Theory]
     [InlineData(TestRecordKey1, TestRecordKey2)]
     [InlineData(TestRecordIntKey1, TestRecordIntKey2)]
-    public async Task ItCanSearchUsingTheGenericDataModelAsync<TKey>(TKey testKey1, TKey testKey2)
+    public async Task ItCanSearchUsingTheDynamicDataModelAsync<TKey>(TKey testKey1, TKey testKey2)
         where TKey : notnull
     {
         // Arrange
-        var record1 = new VectorStoreGenericDataModel<TKey>(testKey1)
+        var record1 = new Dictionary<string, object?>
         {
-            Data = new Dictionary<string, object?>
-            {
-                ["Data"] = $"data {testKey1}",
-                ["Tags"] = new List<string> { "default tag", "tag " + testKey1 }
-            },
-            Vectors = new Dictionary<string, object?>
-            {
-                ["Vector"] = new ReadOnlyMemory<float>([1, 1, 1, 1])
-            }
+            ["Key"] = testKey1,
+            ["Data"] = $"data {testKey1}",
+            ["Tags"] = new List<string> { "default tag", "tag " + testKey1 },
+            ["Vector"] = new ReadOnlyMemory<float>([1, 1, 1, 1])
         };
-        var record2 = new VectorStoreGenericDataModel<TKey>(testKey2)
+        var record2 = new Dictionary<string, object?>
         {
-            Data = new Dictionary<string, object?>
-            {
-                ["Data"] = $"data {testKey2}",
-                ["Tags"] = new List<string> { "default tag", "tag " + testKey2 }
-            },
-            Vectors = new Dictionary<string, object?>
-            {
-                ["Vector"] = new ReadOnlyMemory<float>([-1, -1, -1, -1])
-            }
+            ["Key"] = testKey2,
+            ["Data"] = $"data {testKey2}",
+            ["Tags"] = new List<string> { "default tag", "tag " + testKey2 },
+            ["Vector"] = new ReadOnlyMemory<float>([-1, -1, -1, -1])
         };
 
         var collection = new ConcurrentDictionary<object, object>();
@@ -500,7 +490,7 @@ public class InMemoryVectorStoreRecordCollectionTests
 
         this._collectionStore.TryAdd(TestCollectionName, collection);
 
-        var sut = new InMemoryVectorStoreRecordCollection<TKey, VectorStoreGenericDataModel<TKey>>(
+        var sut = new InMemoryVectorStoreRecordCollection<TKey, Dictionary<string, object?>>(
             this._collectionStore,
             this._collectionStoreTypes,
             TestCollectionName,
@@ -513,18 +503,18 @@ public class InMemoryVectorStoreRecordCollectionTests
         var actual = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
             top: 3,
-            new() { IncludeVectors = true, VectorProperty = r => r.Vectors["Vector"] },
+            new() { IncludeVectors = true, VectorProperty = r => r["Vector"] },
             this._testCancellationToken);
 
         // Assert
         Assert.NotNull(actual);
         var actualResults = await actual.Results.ToListAsync();
         Assert.Equal(2, actualResults.Count);
-        Assert.Equal(testKey1, actualResults[0].Record.Key);
-        Assert.Equal($"data {testKey1}", actualResults[0].Record.Data["Data"]);
+        Assert.Equal(testKey1, actualResults[0].Record["Key"]);
+        Assert.Equal($"data {testKey1}", actualResults[0].Record["Data"]);
         Assert.Equal(1, actualResults[0].Score);
-        Assert.Equal(testKey2, actualResults[1].Record.Key);
-        Assert.Equal($"data {testKey2}", actualResults[1].Record.Data["Data"]);
+        Assert.Equal(testKey2, actualResults[1].Record["Key"]);
+        Assert.Equal($"data {testKey2}", actualResults[1].Record["Data"]);
         Assert.Equal(-1, actualResults[1].Score);
     }
 

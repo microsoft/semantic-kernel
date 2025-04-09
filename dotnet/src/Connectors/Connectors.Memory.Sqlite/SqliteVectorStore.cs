@@ -74,12 +74,7 @@ public sealed class SqliteVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(ulong))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(UInt64)} keys are supported.");
-        }
-
-        var recordCollection = new SqliteVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new SqliteVectorStoreRecordCollection<TKey, TRecord>(
             this._connectionString,
             name,
             new()

@@ -176,60 +176,41 @@ public sealed class VectorStoreRecordModel
     private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression, bool data)
         where TProperty : VectorStoreRecordPropertyModel
     {
-        string expectedGenericModelPropertyName = data
-            ? nameof(VectorStoreGenericDataModel<object>.Data)
-            : nameof(VectorStoreGenericDataModel<object>.Vectors);
+        var node = expression.Body;
 
-        MemberExpression? member = expression.Body as MemberExpression;
-        // (TRecord r) => r.PropertyName is translated into
-        // (TRecord r) => (object)r.PropertyName for properties that return struct like ReadOnlyMemory<float>.
-        if (member is null && expression.Body is UnaryExpression unary
-            && unary.Operand.NodeType == ExpressionType.MemberAccess)
+        // First, unwrap any object convert node: r => (object)r.PropertyName becomes r => r.PropertyName
+        if (expression.Body is UnaryExpression { NodeType: ExpressionType.Convert } convert
+            && convert.Type == typeof(object))
         {
-            member = unary.Operand as MemberExpression;
+            node = convert.Operand;
         }
 
-        if (member is { Member: PropertyInfo clrProperty }
-            && expression.Parameters.Count == 1
-            && member.Expression == expression.Parameters[0])
+        var propertyName = node switch
         {
-            foreach (var property in this.Properties)
-            {
-                if (property.PropertyInfo == clrProperty)
+            // Simple member expression over the lambda parameter (r => r.PropertyName)
+            MemberExpression { Member: PropertyInfo clrProperty } member when member.Expression == expression.Parameters[0]
+                => clrProperty.Name,
+
+            // Dictionary access over the lambda parameter, in dynamic mapping (r => r["PropertyName"])
+            MethodCallExpression { Method.Name: "get_Item", Arguments: [var keyExpression] } methodCall
+                => keyExpression switch
                 {
-                    // TODO: Property error checking if the wrong property type is selected.
-                    return (TProperty)property;
-                }
-            }
+                    ConstantExpression { Value: string text } => text,
+                    MemberExpression field when TryGetCapturedValue(field, out object? capturedValue) && capturedValue is string text => text,
+                    _ => throw new InvalidOperationException("Invalid dictionary key expression")
+                },
 
-            throw new InvalidOperationException($"The property {clrProperty.Name} of {typeof(TRecord).FullName} is not a {(data ? "Data" : "Vector")} property.");
-        }
-        // (VectorStoreGenericDataModel r) => r.Vectors["PropertyName"]
-        else if (expression.Body is MethodCallExpression methodCall
-            // It's a Func<VectorStoreGenericDataModel<TKey>, object>
-            && expression.Type.IsGenericType
-            && expression.Type.GenericTypeArguments.Length == 2
-            && expression.Type.GenericTypeArguments[0].IsGenericType
-            && expression.Type.GenericTypeArguments[0].GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>)
-            // It's accessing VectorStoreGenericDataModel.Vectors (or Data)
-            && methodCall.Object is MemberExpression memberAccess
-            && memberAccess.Member.Name == expectedGenericModelPropertyName
-            // and has a single argument
-            && methodCall.Arguments.Count == 1)
+            _ => throw new InvalidOperationException("Property selector lambda is invalid")
+        };
+
+        if (!this.PropertyMap.TryGetValue(propertyName, out var property))
         {
-            string name = methodCall.Arguments[0] switch
-            {
-                ConstantExpression constant when constant.Value is string text => text,
-                MemberExpression field when TryGetCapturedValue(field, out object? capturedValue) && capturedValue is string text => text,
-                _ => throw new InvalidOperationException($"The value of the provided {(data ? "Additional" : "Vector")}Property option is not a valid expression.")
-            };
-
-            // TODO: Property error checking if the wrong property type is selected.
-            return (TProperty)(this.Properties.FirstOrDefault(p => p.ModelName == name)
-                ?? throw new InvalidOperationException($"The {typeof(TRecord).FullName} type does not have a vector property named '{name}'."));
+            throw new InvalidOperationException($"Property '{propertyName}' could not be found.");
         }
 
-        throw new InvalidOperationException($"The value of the provided {(data ? "Additional" : "Vector")}Property option is not a valid expression.");
+        return property is TProperty typedProperty
+            ? typedProperty
+            : throw new InvalidOperationException($"Property '{propertyName}' isn't of type '{typeof(TProperty).Name}'.");
 
         static bool TryGetCapturedValue(Expression expression, out object? capturedValue)
         {

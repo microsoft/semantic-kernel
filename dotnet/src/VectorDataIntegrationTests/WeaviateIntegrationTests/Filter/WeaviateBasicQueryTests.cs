@@ -61,7 +61,7 @@ public class WeaviateBasicQueryTests(WeaviateBasicQueryTests.Fixture fixture)
     // In Weaviate, string equality on multi-word textual properties depends on tokenization
     // (https://weaviate.io/developers/weaviate/api/graphql/filters#multi-word-queries-in-equal-filters)
     public override Task Equal_with_string_is_not_Contains()
-        => Assert.ThrowsAsync<EqualException>(() => base.Equal_with_string_is_not_Contains());
+        => Assert.ThrowsAsync<FailException>(() => base.Equal_with_string_is_not_Contains());
 
     public new class Fixture : BasicQueryTests<Guid>.QueryFixture
     {

@@ -69,8 +69,8 @@ public static class PineconeServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
@@ -89,7 +89,7 @@ public static class PineconeServiceCollectionExtensions
                 var pineconeClient = sp.GetRequiredService<Sdk.PineconeClient>();
                 var selectedOptions = options ?? sp.GetService<PineconeVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new PineconeVectorStoreRecordCollection<TRecord>(
+                return new PineconeVectorStoreRecordCollection<string, TRecord>(
                     pineconeClient,
                     collectionName,
                     selectedOptions);
@@ -106,9 +106,9 @@ public static class PineconeServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="apiKey">The api key for Pinecone.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddPineconeVectorStoreRecordCollection<TRecord>(
@@ -126,7 +126,7 @@ public static class PineconeServiceCollectionExtensions
                 var pineconeClient = new Sdk.PineconeClient(apiKey);
                 var selectedOptions = options ?? sp.GetService<PineconeVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new PineconeVectorStoreRecordCollection<TRecord>(
+                return new PineconeVectorStoreRecordCollection<string, TRecord>(
                     pineconeClient,
                     collectionName,
                     selectedOptions);

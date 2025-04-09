@@ -14,7 +14,9 @@ public class MongoDBBasicQueryTests(MongoDBBasicQueryTests.Fixture fixture)
     // Specialized MongoDB syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
-        => this.TestFilterAsync(r => !new[] { 8, 10 }.Contains(r.Int));
+        => this.TestFilterAsync(
+            r => !new[] { 8, 10 }.Contains(r.Int),
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]!));
 
     // MongoDB currently doesn't support null checking ({ "Foo" : null }) in vector search pre-filters
     public override Task Equal_with_null_reference_type()

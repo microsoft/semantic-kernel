@@ -59,12 +59,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
             new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()

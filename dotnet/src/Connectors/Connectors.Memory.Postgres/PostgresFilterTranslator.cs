@@ -23,19 +23,19 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
     {
-        this.Translate(source, parent);
+        this.Translate(source);
         this._sql.Append(" @> ARRAY[");
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(']');
     }
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(" = ANY (");
-        this.Translate(source, parent);
+        this.Translate(source);
         this._sql.Append(')');
     }
 

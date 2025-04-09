@@ -45,34 +45,29 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-    protected override void TranslateColumn(string column, MemberExpression memberExpression, Expression? parent)
+    protected override void GenerateColumn(string column, bool isSearchCondition = false)
     {
+        this._sql.Append('[').Append(column).Append(']');
+
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
         // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is supported.
-        if (memberExpression.Type == typeof(bool)
-            && (parent is null // Where(x => x.Bool)
-                || parent is UnaryExpression { NodeType: ExpressionType.Not } // Where(x => !x.Bool)
-                || parent is BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse })) // Where(x => x.Bool && other)
+        if (isSearchCondition)
         {
-            this.TranslateBinary(Expression.Equal(memberExpression, Expression.Constant(true)));
-        }
-        else
-        {
-            this._sql.Append('[').Append(column).Append(']');
+            this._sql.Append(" = 1");
         }
     }
 
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
             throw new NotSupportedException("Unsupported Contains expression");
         }
 
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(" IN (");
 
         var isFirst = true;

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq.Expressions;
-using Microsoft.Extensions.VectorData;
 using PineconeIntegrationTests.Support;
 using VectorDataSpecificationTests.Filter;
 using VectorDataSpecificationTests.Support;
@@ -10,17 +8,17 @@ using Xunit;
 
 namespace PineconeIntegrationTests.Filter;
 
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+
 public class PineconeBasicQueryTests(PineconeBasicQueryTests.Fixture fixture)
     : BasicQueryTests<string>(fixture), IClassFixture<PineconeBasicQueryTests.Fixture>
 {
-    protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<string, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
-        // Pinecone doesn't support OrderBy in GetAsync, so we have to sort the results manually
-        => (await collection.GetAsync(filter, top).ToListAsync()).OrderBy(r => r.Int).ThenByDescending(r => r.String).ToList();
-
     // Specialized Pinecone syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
-        => this.TestFilterAsync(r => !new[] { 8, 10 }.Contains(r.Int));
+        => this.TestFilterAsync(
+            r => !new[] { 8, 10 }.Contains(r.Int),
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]));
 
     // Pinecone currently doesn't support null checking ({ "Foo" : null }) in vector search pre-filters
     public override Task Equal_with_null_reference_type()

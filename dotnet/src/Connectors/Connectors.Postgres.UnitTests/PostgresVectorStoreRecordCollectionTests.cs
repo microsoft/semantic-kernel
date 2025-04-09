@@ -42,11 +42,11 @@ public class PostgresVectorStoreRecordCollectionTests
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 100, DistanceFunction = DistanceFunction.ManhattanDistance }
             ]
         };
-        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<int>>()
+        var options = new PostgresVectorStoreRecordCollectionOptions<Dictionary<string, object?>>()
         {
             VectorStoreRecordDefinition = recordDefinition
         };
-        var sut = new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<int>>(this._postgresClientMock.Object, TestCollectionName, options);
+        var sut = new PostgresVectorStoreRecordCollection<object, Dictionary<string, object?>>(this._postgresClientMock.Object, TestCollectionName, options);
         this._postgresClientMock.Setup(x => x.DoesTableExistsAsync(TestCollectionName, this._testCancellationToken)).ReturnsAsync(false);
 
         // Act
@@ -67,13 +67,13 @@ public class PostgresVectorStoreRecordCollectionTests
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
             ]
         };
-        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>()
+        var options = new PostgresVectorStoreRecordCollectionOptions<Dictionary<string, object?>>()
         {
             VectorStoreRecordDefinition = recordDefinition
         };
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<ulong>>(this._postgresClientMock.Object, TestCollectionName, options));
+        Assert.Throws<NotSupportedException>(() => new PostgresVectorStoreRecordCollection<object, Dictionary<string, object?>>(this._postgresClientMock.Object, TestCollectionName, options));
     }
 
     [Fact]
