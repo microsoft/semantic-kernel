@@ -32,11 +32,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class CopilotAgent(Agent):
     """
-    An agent that facilitates communication with a Microsoft Copilot Studio bot via the Direct Line API.  
-    It serializes user inputs into Direct Line payloads, handles asynchronous response polling, and 
-    transforms bot activities into structured message content.  
+    An agent that facilitates communication with a Microsoft Copilot Studio bot via the Direct Line API.
+    It serializes user inputs into Direct Line payloads, handles asynchronous response polling, and
+    transforms bot activities into structured message content.
     Conversation state such as conversation ID and watermark is externally managed by CopilotAgentThread.
     """
+
     directline_client: DirectLineClient | None = None
 
     channel_type: ClassVar[type[AgentChannel]] = CopilotStudioAgentChannel
@@ -53,19 +54,19 @@ class CopilotAgent(Agent):
         """
         super().__init__(id=id, name=name, description=description)
         self.directline_client = directline_client
-        
+
     @override
     def get_channel_keys(self) -> list[str]:
         """
         Override to return agent ID instead of channel_type for Copilot agents.
-        
-        This is particularly important for CopilotAgent because each agent instance 
+
+        This is particularly important for CopilotAgent because each agent instance
         maintains its own conversation with a unique thread ID in the DirectLine API.
-        Without this override, multiple CopilotAgent instances in a group chat would 
+        Without this override, multiple CopilotAgent instances in a group chat would
         share the same channel, causing thread ID conflicts and message routing issues.
-        
+
         Returns:
-            A list containing the agent ID as the unique channel key, ensuring each 
+            A list containing the agent ID as the unique channel key, ensuring each
             CopilotAgent gets its own dedicated channel and thread.
         """
         return [self.id]
@@ -94,9 +95,7 @@ class CopilotAgent(Agent):
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: CopilotAgentThread(
-                directline_client=self.directline_client
-            ),
+            construct_thread=lambda: CopilotAgentThread(directline_client=self.directline_client),
             expected_type=CopilotAgentThread,
         )
         assert thread.id is not None  # nosec
@@ -110,9 +109,7 @@ class CopilotAgent(Agent):
             response_items.append(response_item)
 
         if not response_items:
-            raise AgentInvokeException(
-                "No response messages were returned from the agent."
-            )
+            raise AgentInvokeException("No response messages were returned from the agent.")
 
         return response_items[-1]
 
@@ -140,52 +137,40 @@ class CopilotAgent(Agent):
             AgentResponseItem[ChatMessageContent]: The response from the agent.
         """
         logger.debug("Received messages: %s", messages)
-        if not isinstance(messages, str) and not isinstance(
-            messages, ChatMessageContent
-        ):
-            raise AgentInvokeException(
-                "Messages must be a string or a ChatMessageContent for Copilot Agent."
-            )
+        if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
+            raise AgentInvokeException("Messages must be a string or a ChatMessageContent for Copilot Agent.")
 
         # Ensure DirectLine client is initialized
         if self.directline_client is None:
             raise AgentInvokeException("DirectLine client is not initialized.")
-        
+
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
             thread=thread,
-            construct_thread=lambda: CopilotAgentThread(
-                directline_client=self.directline_client
-            ),
+            construct_thread=lambda: CopilotAgentThread(directline_client=self.directline_client),
             expected_type=CopilotAgentThread,
         )
         assert thread.id is not None  # nosec
 
         normalized_message = (
-            ChatMessageContent(role=AuthorRole.USER, content=messages) 
-            if isinstance(messages, str) else messages
+            ChatMessageContent(role=AuthorRole.USER, content=messages) if isinstance(messages, str) else messages
         )
 
         payload = self._build_payload(normalized_message, message_data, thread.id)
         response_data = await self._send_message(payload, thread)
         if response_data is None or "activities" not in response_data:
-            raise AgentInvokeException(
-                f"Invalid response from DirectLine Bot.\n{response_data}"
-            )
+            raise AgentInvokeException(f"Invalid response from DirectLine Bot.\n{response_data}")
 
         # Process DirectLine activities and convert them to appropriate message content
         for activity in response_data["activities"]:
-            if (
-                activity.get("type") != "message"
-                or activity.get("from", {}).get("id") == "user"
-            ):
+            if activity.get("type") != "message" or activity.get("from", {}).get("id") == "user":
                 continue
-            
+
             # Create a CopilotMessageContent instance from the activity
             message = CopilotMessageContent.from_bot_activity(activity, name=self.name)
 
             logger.debug("Response message: %s", message.content)
-            
+
             yield AgentResponseItem(message=message, thread=thread)
 
     def _build_payload(
@@ -209,18 +194,16 @@ class CopilotAgent(Agent):
             "type": "message",
             "from": {"id": "user"},
         }
-        
+
         if message_data and "adaptive_card_response" in message_data:
             payload["value"] = message_data["adaptive_card_response"]
         else:
             payload["text"] = message.content
-            
+
         payload["conversationId"] = thread_id
         return payload
 
-    async def _send_message(
-        self, payload: dict[str, Any], thread: CopilotAgentThread
-    ) -> dict[str, Any] | None:
+    async def _send_message(self, payload: dict[str, Any], thread: CopilotAgentThread) -> dict[str, Any] | None:
         """
         Post the payload to the conversation and poll for responses.
         """
@@ -236,24 +219,17 @@ class CopilotAgent(Agent):
         while not finished:
             data = await thread.get_messages()
             activities = data.get("activities", [])
-            
+
             # Check for either DynamicPlanFinished event or message from bot
             if any(
-                (
-                    activity.get("type") == "event"
-                    and activity.get("name") == "DynamicPlanFinished"
-                )
-                or
-                (
-                    activity.get("type") == "message"
-                    and activity.get("from", {}).get("role") == "bot"
-                )
+                (activity.get("type") == "event" and activity.get("name") == "DynamicPlanFinished")
+                or (activity.get("type") == "message" and activity.get("from", {}).get("role") == "bot")
                 for activity in activities
             ):
                 collected_data = data
                 finished = True
                 break
-            
+
             await asyncio.sleep(1)
 
         return collected_data
@@ -269,7 +245,7 @@ class CopilotAgent(Agent):
     @override
     async def invoke_stream(self, *args, **kwargs):
         return super().invoke_stream(*args, **kwargs)
-    
+
     async def create_channel(self, thread_id: str | None = None) -> AgentChannel:
         """Create a Copilot Agent channel.
 

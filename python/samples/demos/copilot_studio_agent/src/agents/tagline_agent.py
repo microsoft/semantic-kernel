@@ -18,7 +18,7 @@ class TaglineGenerator(CopilotAgent):
     def __init__(self):
         directline_endpoint = os.getenv("DIRECTLINE_ENDPOINT")
         copilot_agent_secret = os.getenv("TAGLINE_AGENT_SECRET")
-        
+
         if not directline_endpoint or not copilot_agent_secret:
             raise ValueError("DIRECTLINE_ENDPOINT and TAGLINE_AGENT_SECRET must be set in environment variables.")
 

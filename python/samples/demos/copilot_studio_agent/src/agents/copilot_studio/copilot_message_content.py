@@ -20,10 +20,11 @@ class CopilotMessageContent(ChatMessageContent):
     Extended ChatMessageContent that supports various content types from Copilot Studio
     including text, adaptive cards, and suggested actions.
     """
+
     copilot_content_type: CopilotContentType = Field(default=CopilotContentType.TEXT)
     adaptive_card: dict[str, Any] | None = Field(default=None)
     suggested_actions: list[dict[str, Any]] | None = Field(default=None)
-    
+
     def __init__(
         self,
         role: AuthorRole,
@@ -32,52 +33,47 @@ class CopilotMessageContent(ChatMessageContent):
         copilot_content_type: CopilotContentType = CopilotContentType.TEXT,
         adaptive_card: dict[str, Any] | None = None,
         suggested_actions: list[dict[str, Any]] | None = None,
-        **kwargs
+        **kwargs,
     ):
-        super().__init__(
-            role=role,
-            content=content,
-            name=name,
-            **kwargs
-        )
-        
+        super().__init__(role=role, content=content, name=name, **kwargs)
+
         self.copilot_content_type = copilot_content_type
         self.adaptive_card = adaptive_card
         self.suggested_actions = suggested_actions
-            
+
         # Store rich content in metadata for preservation
         if adaptive_card:
             self.metadata["adaptive_card"] = adaptive_card
         if suggested_actions:
             self.metadata["suggested_actions"] = suggested_actions
-            
+
     @classmethod
     def from_bot_activity(cls, activity: dict[str, Any], name: str = None) -> "CopilotMessageContent":
         """
         Create a CopilotMessageContent instance from a DirectLine activity.
-        
+
         Args:
             activity: The DirectLine activity object
             name: Optional name for the copilot agent sending the message
-            
+
         Returns:
             A CopilotMessageContent instance with the appropriate content type
         """
         role = activity.get("from", {}).get("role", "assistant")
         if role == "bot":
             role = "assistant"
-            
+
         # Get the base text content
         content = activity.get("text", "")
         name = name or activity.get("from", {}).get("name")
-        
+
         # Check for suggested actions
         suggested_actions = activity.get("suggestedActions", {}).get("actions", [])
-        
+
         # Check for adaptive card attachments
         attachments = activity.get("attachments", [])
         adaptive_card = None
-        
+
         if attachments and attachments[0].get("contentType") == "application/vnd.microsoft.card.adaptive":
             adaptive_card = attachments[0].get("content", {})
             return cls(

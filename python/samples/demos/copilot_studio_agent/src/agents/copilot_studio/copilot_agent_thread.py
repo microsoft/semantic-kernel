@@ -67,7 +67,7 @@ class CopilotAgentThread(AgentThread):
         """Called when a new message has been contributed to the chat."""
         # Not implemented for DirectLine
         pass
-    
+
     async def update_watermark(self, watermark: str) -> None:
         """Update the watermark for the conversation.
 
@@ -75,40 +75,40 @@ class CopilotAgentThread(AgentThread):
             watermark: The new watermark.
         """
         self.watermark = watermark
-    
+
     async def post_message(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Post a message to the DirectLine conversation.
-        
+
         Args:
             payload: The message payload to post.
-            
+
         Returns:
             The response from the DirectLine API.
-            
+
         Raises:
             AgentInvokeException: If posting the message fails or the thread ID is not set.
         """
         if not self._id:
             raise AgentInvokeException("Thread ID (conversation ID) is not set. Create the thread first.")
-        
+
         try:
             return await self._directline_client.post_activity(self._id, payload)
         except Exception as e:
             logger.error(f"Failed to post message to thread {self._id}: {str(e)}")
             raise AgentInvokeException(f"Failed to post message: {str(e)}")
-    
+
     async def get_messages(self) -> dict[str, Any]:
         """Get messages from the DirectLine conversation using the current watermark.
-        
+
         Returns:
             The activities data from the DirectLine API.
-            
+
         Raises:
             AgentInvokeException: If getting messages fails or the thread ID is not set.
         """
         if not self._id:
             raise AgentInvokeException("Thread ID (conversation ID) is not set. Create the thread first.")
-        
+
         try:
             data = await self._directline_client.get_activities(self._id, self.watermark)
             watermark = data.get("watermark")

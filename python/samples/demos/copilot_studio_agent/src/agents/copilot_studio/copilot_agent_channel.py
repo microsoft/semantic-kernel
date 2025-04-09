@@ -72,7 +72,7 @@ class CopilotStudioAgentChannel(AgentChannel, ChatHistory):
                 thread=self.thread,
                 **kwargs,
             ):
-                # Append the response to the chat history                
+                # Append the response to the chat history
                 self.messages.append(response.message)
                 yield True, response.message
         except Exception as e:
