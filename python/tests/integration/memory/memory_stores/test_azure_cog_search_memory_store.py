@@ -77,6 +77,8 @@ async def test_upsert():
         except:
             await memory_store.delete_collection(collection)
             raise
+        finally:
+            await memory_store.delete_collection(collection)
 
         await memory_store.delete_collection(collection)
 
@@ -101,6 +103,8 @@ async def test_record_not_found():
         except:
             await memory_store.delete_collection(collection)
             raise
+        finally:
+            await memory_store.delete_collection(collection)
 
         try:
             await memory_store.remove(collection, id)
@@ -114,8 +118,8 @@ async def test_record_not_found():
             assert False
         except MemoryConnectorResourceNotFound:
             pass
-
-        await memory_store.delete_collection(collection)
+        finally:
+            await memory_store.delete_collection(collection)
 
 
 async def test_search():
@@ -141,5 +145,5 @@ async def test_search():
         except:
             await memory_store.delete_collection(collection)
             raise
-
-        await memory_store.delete_collection(collection)
+        finally:
+            await memory_store.delete_collection(collection)

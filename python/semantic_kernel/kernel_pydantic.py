@@ -2,6 +2,7 @@
 
 
 from typing import Annotated, Any, ClassVar, TypeVar
+from warnings import warn
 
 from pydantic import BaseModel, ConfigDict, Field, UrlConstraints
 from pydantic.networks import AnyUrl
@@ -36,21 +37,44 @@ class KernelBaseSettings(BaseSettings):
 
     env_prefix: ClassVar[str] = ""
     env_file_path: str | None = Field(default=None, exclude=True)
-    env_file_encoding: str = Field(default="utf-8", exclude=True)
+    env_file_encoding: str | None = Field(default="utf-8", exclude=True)
 
     model_config = SettingsConfigDict(
         extra="ignore",
         case_sensitive=False,
     )
 
+    def __init__(
+        self,
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the settings class."""
+        # Remove any None values from the kwargs so that defaults are used.
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+
+        super().__init__(**kwargs)
+
+    def __new__(cls: type["T"], *args: Any, **kwargs: Any) -> "T":
+        """Override the __new__ method to set the env_prefix."""
+        # for both, if supplied but None, set to default
+        if "env_file_encoding" in kwargs and kwargs["env_file_encoding"] is not None:
+            env_file_encoding = kwargs["env_file_encoding"]
+        else:
+            env_file_encoding = "utf-8"
+        if "env_file_path" in kwargs and kwargs["env_file_path"] is not None:
+            env_file_path = kwargs["env_file_path"]
+        else:
+            env_file_path = ".env"
+        cls.model_config.update(
+            env_prefix=cls.env_prefix,
+            env_file=env_file_path,
+            env_file_encoding=env_file_encoding,
+        )
+        cls.model_rebuild()
+        return super().__new__(cls)
+
     @classmethod
     def create(cls: type["T"], **data: Any) -> "T":
         """Update the model_config with the prefix."""
-        cls.model_config["env_prefix"] = cls.env_prefix
-        if data.get("env_file_path"):
-            cls.model_config["env_file"] = data["env_file_path"]
-        else:
-            cls.model_config["env_file"] = ".env"
-        cls.model_config["env_file_encoding"] = data.get("env_file_encoding", "utf-8")
-        data = {k: v for k, v in data.items() if v is not None}
+        warn("Create is deprecated, use the class constructor instead.", DeprecationWarning, 2)
         return cls(**data)

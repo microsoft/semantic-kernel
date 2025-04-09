@@ -94,7 +94,7 @@ def get_openai_chat_completion_service_and_request_settings(
     """
     from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 
-    chat_service = OpenAIChatCompletion(service_id=service_id, instruction_role=instruction_role)
+    chat_service = OpenAIChatCompletion(service_id=service_id, instruction_role=instruction_role, env_file_path=".env")
     request_settings = OpenAIChatPromptExecutionSettings(
         service_id=service_id, max_tokens=2000, temperature=0.7, top_p=0.8
     )
@@ -393,7 +393,7 @@ def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
         OpenAISettings,
     )
 
-    openai_settings = OpenAISettings.create()
+    openai_settings = OpenAISettings()
     if not openai_settings.api_key:
         raise ServiceInitializationError("The DeepSeek API key is required.")
     if not openai_settings.chat_model_id:
