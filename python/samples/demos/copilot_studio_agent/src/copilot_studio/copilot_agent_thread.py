@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Any
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -10,8 +11,8 @@ from copilot_studio.directline_client import DirectLineClient
 
 from semantic_kernel.agents.agent import AgentThread
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 
-# Logger setup
 logger = logging.getLogger(__name__)
 
 
@@ -72,3 +73,46 @@ class CopilotAgentThread(AgentThread):
             watermark: The new watermark.
         """
         self.watermark = watermark
+    
+    async def post_message(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Post a message to the DirectLine conversation.
+        
+        Args:
+            payload: The message payload to post.
+            
+        Returns:
+            The response from the DirectLine API.
+            
+        Raises:
+            AgentInvokeException: If posting the message fails or the thread ID is not set.
+        """
+        if not self._id:
+            raise AgentInvokeException("Thread ID (conversation ID) is not set. Create the thread first.")
+        
+        try:
+            return await self._directline_client.post_activity(self._id, payload)
+        except Exception as e:
+            logger.error(f"Failed to post message to thread {self._id}: {str(e)}")
+            raise AgentInvokeException(f"Failed to post message: {str(e)}")
+    
+    async def get_messages(self) -> dict[str, Any]:
+        """Get messages from the DirectLine conversation using the current watermark.
+        
+        Returns:
+            The activities data from the DirectLine API.
+            
+        Raises:
+            AgentInvokeException: If getting messages fails or the thread ID is not set.
+        """
+        if not self._id:
+            raise AgentInvokeException("Thread ID (conversation ID) is not set. Create the thread first.")
+        
+        try:
+            data = await self._directline_client.get_activities(self._id, self.watermark)
+            watermark = data.get("watermark")
+            if watermark:
+                await self.update_watermark(watermark)
+            return data
+        except Exception as e:
+            logger.error(f"Failed to get messages from thread {self._id}: {str(e)}")
+            raise AgentInvokeException(f"Failed to get messages: {str(e)}")

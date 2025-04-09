@@ -116,6 +116,7 @@ class CopilotAgent(Agent):
         Yields:
             AgentResponseItem[ChatMessageContent]: The response from the agent.
         """
+        logger.debug("Received messages: %s", messages)
         if not isinstance(messages, str) and not isinstance(messages, ChatMessageContent):
             raise AgentInvokeException("Messages must be a string or a ChatMessageContent for Copilot Agent.")
 
@@ -140,8 +141,6 @@ class CopilotAgent(Agent):
                 f"Invalid response from DirectLine Bot.\n{response_data}"
             )
 
-        logger.debug("DirectLine Bot response: %s", response_data)
-
         # Process DirectLine activities and convert them to appropriate message content
         for activity in response_data["activities"]:
             if (
@@ -152,6 +151,8 @@ class CopilotAgent(Agent):
             
             # Create a CopilotMessageContent instance from the activity
             message = CopilotMessageContent.from_bot_activity(activity, name=self.name)
+
+            logger.debug("Response message: %s", message.content)
             
             yield AgentResponseItem(message=message, thread=thread)
 
@@ -193,14 +194,13 @@ class CopilotAgent(Agent):
             raise AgentInvokeException("DirectLine client is not initialized.")
 
         # Post the message payload
-        await self.directline_client.post_activity(thread.id, payload)
+        await thread.post_message(payload)
 
         # Poll for new activities using watermark until DynamicPlanFinished event is found
         finished = False
         collected_data = None
         while not finished:
-            data = await self.directline_client.get_activities(thread.id, thread.watermark)
-            await thread.update_watermark(data.get("watermark"))
+            data = await thread.get_messages()
             activities = data.get("activities", [])
             
             # Check for either DynamicPlanFinished event or message from bot

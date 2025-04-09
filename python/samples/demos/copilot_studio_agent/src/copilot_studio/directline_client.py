@@ -92,6 +92,7 @@ class DirectLineClient:
         session = await self.get_session()
         activities_url = f"{self.directline_endpoint}/conversations/{conversation_id}/activities"
         
+        logger.debug(f"Posting activity to {activities_url}")
         async with session.post(activities_url, json=payload) as resp:
             if resp.status != 200:
                 logger.error("Failed to post activity. Status: %s", resp.status)
@@ -120,8 +121,6 @@ class DirectLineClient:
         if watermark:
             activities_url = f"{activities_url}?watermark={watermark}"
             
-        logger.debug(f"Polling activities at {activities_url}")
-        
         async with session.get(activities_url) as resp:
             if resp.status != 200:
                 logger.error("Error polling activities. Status: %s", resp.status)
