@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents.Memory;
 /// A memory component that can retrieve, maintain and store user preferences that
 /// are learned from the user's interactions with the agent.
 /// </summary>
-public class UserPreferencesMemoryComponent : ThreadExtension
+public class UserPreferencesMemoryComponent : ConversationStateExtension
 {
     private readonly Kernel _kernel;
     private readonly TextMemoryStore _textMemoryStore;
@@ -103,7 +103,7 @@ public class UserPreferencesMemoryComponent : ThreadExtension
     }
 
     /// <inheritdoc/>
-    public override async Task OnThreadDeleteAsync(string threadId, CancellationToken cancellationToken = default)
+    public override async Task OnThreadDeleteAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         await this._textMemoryStore.SaveMemoryAsync("UserPreferences", this._userPreferences, cancellationToken).ConfigureAwait(false);
     }

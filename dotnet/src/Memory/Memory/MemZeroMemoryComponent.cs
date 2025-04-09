@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// A component that listenes to messages added to the conversation thread, and automatically captures
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
 /// </summary>
-public class MemZeroMemoryComponent : ThreadExtension
+public class MemZeroMemoryComponent : ConversationStateExtension
 {
     private static readonly Uri s_searchUri = new("/search", UriKind.Relative);
     private static readonly Uri s_createMemoryUri = new("/memories", UriKind.Relative);

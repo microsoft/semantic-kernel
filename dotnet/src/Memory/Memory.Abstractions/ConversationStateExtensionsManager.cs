@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,40 +9,41 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// A container class for thread extension components that manages their lifecycle and interactions.
+/// A container class for <see cref="ConversationStateExtension"/> objects that manages their lifecycle and interactions.
 /// </summary>
-public class ThreadExtensionsManager
+[Experimental("SKEXP0130")]
+public class ConversationStateExtensionsManager
 {
-    private readonly List<ThreadExtension> _threadExtensions = new();
+    private readonly List<ConversationStateExtension> _conversationStateExtensions = new();
 
     /// <summary>
-    /// Gets the list of registered thread extensions.
+    /// Gets the list of registered conversation state extensions.
     /// </summary>
-    public virtual IReadOnlyList<ThreadExtension> ThreadExtensions => this._threadExtensions;
+    public virtual IReadOnlyList<ConversationStateExtension> ConversationStateExtensions => this._conversationStateExtensions;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ThreadExtensionsManager"/> class.
+    /// Initializes a new instance of the <see cref="ConversationStateExtensionsManager"/> class.
     /// </summary>
-    public ThreadExtensionsManager()
+    public ConversationStateExtensionsManager()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ThreadExtensionsManager"/> class with the specified thread extensions.
+    /// Initializes a new instance of the <see cref="ConversationStateExtensionsManager"/> class with the specified conversation state extensions.
     /// </summary>
-    /// <param name="threadExtensions">The thread extensions to add to the manager.</param>
-    public ThreadExtensionsManager(IEnumerable<ThreadExtension> threadExtensions)
+    /// <param name="conversationtStateExtensions">The conversation state extensions to add to the manager.</param>
+    public ConversationStateExtensionsManager(IEnumerable<ConversationStateExtension> conversationtStateExtensions)
     {
-        this._threadExtensions.AddRange(threadExtensions);
+        this._conversationStateExtensions.AddRange(conversationtStateExtensions);
     }
 
     /// <summary>
-    /// Registers a new thread extensions.
+    /// Registers a new conversation state extensions.
     /// </summary>
-    /// <param name="threadExtension">The thread extensions to register.</param>
-    public virtual void RegisterThreadExtension(ThreadExtension threadExtension)
+    /// <param name="conversationtStateExtension">The conversation state extensions to register.</param>
+    public virtual void RegisterThreadExtension(ConversationStateExtension conversationtStateExtension)
     {
-        this._threadExtensions.Add(threadExtension);
+        this._conversationStateExtensions.Add(conversationtStateExtension);
     }
 
     /// <summary>
@@ -52,7 +54,7 @@ public class ThreadExtensionsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual async Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnThreadCreatedAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.ConversationStateExtensions.Select(x => x.OnThreadCreatedAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -63,7 +65,7 @@ public class ThreadExtensionsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual async Task OnThreadDeleteAsync(string threadId, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnThreadDeleteAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.ConversationStateExtensions.Select(x => x.OnThreadDeleteAsync(threadId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -74,7 +76,7 @@ public class ThreadExtensionsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public virtual async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnNewMessageAsync(newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.ConversationStateExtensions.Select(x => x.OnNewMessageAsync(newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -82,20 +84,20 @@ public class ThreadExtensionsManager
     /// </summary>
     /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation, containing the combined context from all thread extensions.</returns>
+    /// <returns>A task that represents the asynchronous operation, containing the combined context from all conversation state extensions.</returns>
     public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        var subContexts = await Task.WhenAll(this.ThreadExtensions.Select(x => x.OnAIInvocationAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
+        var subContexts = await Task.WhenAll(this.ConversationStateExtensions.Select(x => x.OnAIInvocationAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         return string.Join("\n", subContexts);
     }
 
     /// <summary>
-    /// Registers plugins required by all thread extensions contained by this manager on the provided <see cref="Kernel"/>.
+    /// Registers plugins required by all conversation state extensions contained by this manager on the provided <see cref="Kernel"/>.
     /// </summary>
     /// <param name="kernel">The kernel to register the plugins on.</param>
     public virtual void RegisterPlugins(Kernel kernel)
     {
-        foreach (var threadExtension in this.ThreadExtensions)
+        foreach (var threadExtension in this.ConversationStateExtensions)
         {
             threadExtension.RegisterPlugins(kernel);
         }

@@ -1,15 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// Base class for all thread extensions.
+/// Base class for all conversation state extensions.
 /// </summary>
-public abstract class ThreadExtension
+/// <remarks>
+/// A conversation state extension is a component that can be used to store additional state related
+/// to a conversation, listen to changes in the conversation state, and provide additional context to
+/// the AI model in use just before invocation.
+/// </remarks>
+[Experimental("SKEXP0130")]
+public abstract class ConversationStateExtension
 {
     /// <summary>
     /// Called just after a new thread is created.
@@ -18,7 +25,7 @@ public abstract class ThreadExtension
     /// Implementers can use this method to do any operations required at the creation of a new thread.
     /// For exmple, checking long term storage for any data that is relevant to the current session based on the input text.
     /// </remarks>
-    /// <param name="threadId">The ID of the new thread.</param>
+    /// <param name="threadId">The ID of the new thread, if the thread has an ID.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been loaded.</returns>
     public virtual Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
@@ -47,10 +54,10 @@ public abstract class ThreadExtension
     /// Implementers can use this method to do any operations required before a thread is deleted.
     /// For exmple, storing the context to long term storage.
     /// </remarks>
-    /// <param name="threadId">The id of the thread that will be deleted.</param>
+    /// <param name="threadId">The ID of the thread that will be deleted, if the thread has an ID.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been saved.</returns>
-    public virtual Task OnThreadDeleteAsync(string threadId, CancellationToken cancellationToken = default)
+    public virtual Task OnThreadDeleteAsync(string? threadId, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }

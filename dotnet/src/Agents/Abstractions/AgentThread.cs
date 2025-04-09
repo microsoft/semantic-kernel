@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Memory;
@@ -29,9 +30,10 @@ public abstract class AgentThread
     public virtual bool IsDeleted { get; protected set; } = false;
 
     /// <summary>
-    /// Gets or sets the container for thread extension components that manages their lifecycle and interactions.
+    /// Gets or sets the container for conversation state extension components that manages their lifecycle and interactions.
     /// </summary>
-    public virtual ThreadExtensionsManager ThreadExtensionsManager { get; init; } = new ThreadExtensionsManager();
+    [Experimental("SKEXP0130")]
+    public virtual ConversationStateExtensionsManager ThreadExtensionsManager { get; init; } = new ConversationStateExtensionsManager();
 
     /// <summary>
     /// Creates the thread and returns the thread id.
@@ -53,7 +55,9 @@ public abstract class AgentThread
 
         this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.ThreadExtensionsManager.OnThreadCreatedAsync(this.Id!, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>
@@ -74,7 +78,9 @@ public abstract class AgentThread
             throw new InvalidOperationException("This thread cannot be deleted, since it has not been created.");
         }
 
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.ThreadExtensionsManager.OnThreadDeleteAsync(this.Id!, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.DeleteInternalAsync(cancellationToken).ConfigureAwait(false);
 
@@ -86,7 +92,8 @@ public abstract class AgentThread
     /// </summary>
     /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation, containing the combined context from all thread extensions.</returns>
+    /// <returns>A task that represents the asynchronous operation, containing the combined context from all conversation state extensions.</returns>
+    [Experimental("SKEXP0130")]
     public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
         return await this.ThreadExtensionsManager.OnAIInvocationAsync(newMessages, cancellationToken).ConfigureAwait(false);
@@ -114,7 +121,9 @@ public abstract class AgentThread
             await this.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.ThreadExtensionsManager.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.OnNewMessageInternalAsync(newMessage, cancellationToken).ConfigureAwait(false);
     }

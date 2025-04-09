@@ -411,8 +411,10 @@ public sealed partial class OpenAIAssistantAgent : Agent
             AdditionalInstructions = options?.AdditionalInstructions,
         });
 
-        // Get the thread extensions context contributions
-        var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        // Get the conversation state extensions context contributions
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var extensionsContext = await openAIAssistantAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
@@ -551,8 +553,10 @@ public sealed partial class OpenAIAssistantAgent : Agent
             () => new OpenAIAssistantAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the thread extensions context contributions
-        var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        // Get the conversation state extensions context contributions
+#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var extensionsContext = await openAIAssistantAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Create options that use the RunCreationOptions from the options param if provided or
         // falls back to creating a new RunCreationOptions if additional instructions is provided
