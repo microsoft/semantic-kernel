@@ -1,7 +1,9 @@
 import asyncio
 import logging
 import sys
-from typing import Any, AsyncIterable, ClassVar
+from typing import Any, ClassVar
+
+from collections.abc import AsyncIterable
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover

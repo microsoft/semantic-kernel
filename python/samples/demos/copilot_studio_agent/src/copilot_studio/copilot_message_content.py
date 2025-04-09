@@ -1,6 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 from pydantic import Field
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
@@ -18,17 +17,17 @@ class CopilotMessageContent(ChatMessageContent):
     including text, adaptive cards, and suggested actions.
     """
     copilot_content_type: CopilotContentType = Field(default=CopilotContentType.TEXT)
-    adaptive_card: Optional[Dict[str, Any]] = Field(default=None)
-    suggested_actions: Optional[List[Dict[str, Any]]] = Field(default=None)
+    adaptive_card: dict[str, Any] | None = Field(default=None)
+    suggested_actions: list[dict[str, Any]] | None = Field(default=None)
     
     def __init__(
         self,
         role: AuthorRole,
         content: str = "",
-        name: Optional[str] = None,
+        name: str | None = None,
         copilot_content_type: CopilotContentType = CopilotContentType.TEXT,
-        adaptive_card: Optional[Dict[str, Any]] = None,
-        suggested_actions: Optional[List[Dict[str, Any]]] = None,
+        adaptive_card: dict[str, Any] | None = None,
+        suggested_actions: list[dict[str, Any]] | None = None,
         **kwargs
     ):
         super().__init__(
@@ -49,7 +48,7 @@ class CopilotMessageContent(ChatMessageContent):
             self.metadata["suggested_actions"] = suggested_actions
             
     @classmethod
-    def from_bot_activity(cls, activity: Dict[str, Any], name: str = None) -> "CopilotMessageContent":
+    def from_bot_activity(cls, activity: dict[str, Any], name: str = None) -> "CopilotMessageContent":
         """
         Create a CopilotMessageContent instance from a DirectLine activity.
         

@@ -26,7 +26,7 @@ class DirectLineClient:
         """
         self.directline_endpoint = directline_endpoint
         self.copilot_agent_secret = copilot_agent_secret
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
     async def get_session(self) -> aiohttp.ClientSession:
         """
@@ -74,7 +74,7 @@ class DirectLineClient:
             
             return conversation_id
 
-    async def post_activity(self, conversation_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def post_activity(self, conversation_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         """
         Post an activity to a DirectLine conversation.
         
@@ -99,7 +99,7 @@ class DirectLineClient:
             return await resp.json()
 
       
-    async def get_activities(self, conversation_id: str, watermark: Optional[str] = None) -> Dict[str, Any]:
+    async def get_activities(self, conversation_id: str, watermark: str | None = None) -> dict[str, Any]:
         """
         Get activities from a DirectLine conversation.
         Use watermark to retrieve new activities since the last retrieved activity.
@@ -129,7 +129,7 @@ class DirectLineClient:
             
             return await resp.json()
         
-    async def end_conversation(self, conversation_id: str, user_id: str = "user1") -> Dict[str, Any]:
+    async def end_conversation(self, conversation_id: str, user_id: str = "user1") -> dict[str, Any]:
         """
         End a DirectLine conversation by sending an endOfConversation activity.
         
