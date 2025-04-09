@@ -69,7 +69,7 @@ public abstract class Agent
     /// <summary>
     /// Gets or sets a prompt template based on the agent instructions.
     /// </summary>
-    protected IPromptTemplate? Template { get; set; }
+    public IPromptTemplate? Template { get; set; }
 
     /// <summary>
     /// Invoke the agent with no message assuming that all required instructions are already provided to the agent or on the thread.

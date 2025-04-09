@@ -418,7 +418,10 @@ class ChatCompletionAgent(Agent):
                 role = response.role
                 response.name = self.name
                 response_builder.append(response.content)
-                yield AgentResponseItem(message=response, thread=thread)
+                if role == AuthorRole.ASSISTANT:
+                    # Do not yield non-assistant messages
+                    # Those can be yielded by using the on_intermediate_message callback
+                    yield AgentResponseItem(message=response, thread=thread)
 
         await self._capture_mutated_messages(
             agent_chat_history,
