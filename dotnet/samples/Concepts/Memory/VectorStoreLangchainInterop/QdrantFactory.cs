@@ -48,6 +48,7 @@ public static class QdrantFactory
 
         public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
             where TKey : notnull
+            where TRecord : notnull
         {
             // Create a Qdrant collection. To be compatible with Langchain
             // we need to use a custom record definition that matches the

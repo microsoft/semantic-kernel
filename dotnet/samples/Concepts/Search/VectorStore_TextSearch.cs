@@ -122,6 +122,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);

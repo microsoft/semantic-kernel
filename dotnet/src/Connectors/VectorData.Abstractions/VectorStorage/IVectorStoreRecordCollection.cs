@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.VectorData;
 public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
+    where TRecord : notnull
 {
     /// <summary>
     /// Gets the name of the collection.

@@ -24,6 +24,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<Guid, TRecord>, IKeywordHybridSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+    where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;

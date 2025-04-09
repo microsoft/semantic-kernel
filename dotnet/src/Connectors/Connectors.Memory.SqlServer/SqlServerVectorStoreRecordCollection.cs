@@ -19,7 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711
-    : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
+    : IVectorStoreRecordCollection<TKey, TRecord>
+    where TKey : notnull
+    where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
@@ -429,7 +431,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         {
             foreach (var record in records)
             {
-                yield return ((VectorStoreGenericDataModel<TKey>)(object)record!).Key;
+                yield return ((VectorStoreGenericDataModel<TKey>)(object)record).Key;
             }
         }
         else
@@ -437,7 +439,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             var keyProperty = this._model.KeyProperty;
             foreach (var record in records)
             {
-                yield return (TKey)keyProperty.GetValueAsObject(record!)!;
+                yield return (TKey)keyProperty.GetValueAsObject(record)!;
             }
         }
     }

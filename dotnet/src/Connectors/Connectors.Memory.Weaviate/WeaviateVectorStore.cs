@@ -53,6 +53,7 @@ public sealed class WeaviateVectorStore : IVectorStore
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)

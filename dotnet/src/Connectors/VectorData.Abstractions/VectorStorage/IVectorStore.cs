@@ -32,7 +32,8 @@ public interface IVectorStore
     /// <seealso cref="VectorStoreRecordDataAttribute"/>
     /// <seealso cref="VectorStoreRecordVectorAttribute"/>
     IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
-        where TKey : notnull;
+        where TKey : notnull
+        where TRecord : notnull;
 
     /// <summary>
     /// Retrieves the names of all the collections in the vector store.
