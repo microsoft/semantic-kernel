@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -129,4 +131,16 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets matching records from the vector store. Does not guarantee that the collection exists.
+    /// </summary>
+    /// <param name="filter">The predicate to filter the records.</param>
+    /// <param name="top">The maximum number of results to return.</param>
+    /// <param name="options">Options for retrieving the records.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The records matching given predicate.</returns>
+    /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
+    /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
+    IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default);
 }

@@ -125,6 +125,64 @@ internal static class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder
         return queryDefinition;
     }
 
+    internal static QueryDefinition BuildSearchQuery<TRecord>(
+        VectorStoreRecordModel model,
+        string whereClause, Dictionary<string, object?> filterParameters,
+        GetFilteredRecordOptions<TRecord> filterOptions,
+        int top)
+    {
+        var tableVariableName = AzureCosmosDBNoSQLConstants.ContainerAlias;
+
+        IEnumerable<VectorStoreRecordPropertyModel> projectionProperties = model.Properties;
+        if (!filterOptions.IncludeVectors)
+        {
+            projectionProperties = projectionProperties.Where(p => p is not VectorStoreRecordVectorPropertyModel);
+        }
+
+        var fieldsArgument = projectionProperties.Select(field => $"{tableVariableName}.{field}");
+
+        var selectClauseArguments = string.Join(SelectClauseDelimiter, [.. fieldsArgument]);
+
+        // If Offset is not configured, use Top parameter instead of Limit/Offset
+        // since it's more optimized.
+        var topArgument = filterOptions.Skip == 0 ? $"TOP {top} " : string.Empty;
+
+        var builder = new StringBuilder();
+
+        builder.AppendLine($"SELECT {topArgument}{selectClauseArguments}");
+        builder.AppendLine($"FROM {tableVariableName}");
+        builder.Append("WHERE ").AppendLine(whereClause);
+
+        if (filterOptions.OrderBy.Values.Count > 0)
+        {
+            builder.Append("ORDER BY ");
+
+            foreach (var sortInfo in filterOptions.OrderBy.Values)
+            {
+                builder.AppendFormat("{0}.{1} {2},", tableVariableName,
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
+            }
+
+            builder.Length--; // remove the last comma
+            builder.AppendLine();
+        }
+
+        if (string.IsNullOrEmpty(topArgument))
+        {
+            builder.AppendLine($"OFFSET {filterOptions.Skip} LIMIT {top}");
+        }
+
+        var queryDefinition = new QueryDefinition(builder.ToString());
+
+        foreach (var queryParameter in filterParameters)
+        {
+            queryDefinition.WithParameter(queryParameter.Key, queryParameter.Value);
+        }
+
+        return queryDefinition;
+    }
+
     /// <summary>
     /// Builds <see cref="QueryDefinition"/> to get items from Azure CosmosDB NoSQL.
     /// </summary>

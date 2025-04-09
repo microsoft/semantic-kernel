@@ -512,6 +512,62 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var translatedFilter = new QdrantFilterTranslator().Translate(filter, this._model);
+
+        // Specify whether to include vectors in the search results.
+        WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
+
+        var sortInfo = options.OrderBy.Values.Count switch
+        {
+            0 => null,
+            1 => options.OrderBy.Values[0],
+            _ => throw new NotSupportedException("Qdrant does not support ordering by more than one property.")
+        };
+
+        OrderBy? orderBy = null;
+        if (sortInfo is not null)
+        {
+            var orderByName = this._model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
+            orderBy = new(orderByName)
+            {
+                Direction = sortInfo.Ascending ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc
+            };
+        }
+
+        var scrollResponse = await this.RunOperationAsync(
+            "Scroll",
+            () => this._qdrantClient.ScrollAsync(
+                this.CollectionName,
+                translatedFilter,
+                vectorsSelector,
+                limit: (uint)(top + options.Skip),
+                orderBy,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantVectorStoreCollectionSearchMapping.MapRetrievedPointToVectorSearchResult(
+                point,
+                this._mapper,
+                options.IncludeVectors,
+                QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
+                this._collectionName,
+                "Scroll"));
+
+        foreach (var mappedResult in mappedResults)
+        {
+            yield return mappedResult;
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);

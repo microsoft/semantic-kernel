@@ -324,6 +324,43 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             null;
     }
 
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
+            .AsQueryable()
+            .Where(filter);
+
+        if (options.OrderBy.Values.Count > 0)
+        {
+            var first = options.OrderBy.Values[0];
+            var sorted = first.Ascending
+                    ? records.OrderBy(first.PropertySelector)
+                    : records.OrderByDescending(first.PropertySelector);
+
+            for (int i = 1; i < options.OrderBy.Values.Count; i++)
+            {
+                var next = options.OrderBy.Values[i];
+                sorted = next.Ascending
+                    ? sorted.ThenBy(next.PropertySelector)
+                    : sorted.ThenByDescending(next.PropertySelector);
+            }
+
+            records = sorted;
+        }
+
+        return records
+            .Skip(options.Skip)
+            .Take(top)
+            .ToAsyncEnumerable();
+    }
+
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>

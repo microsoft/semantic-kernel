@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -308,6 +309,29 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             this._model);
 
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildQuery(
+            filter,
+            top,
+            options,
+            this.CollectionName,
+            this._model);
+
+        var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken).ConfigureAwait(false);
+        await foreach (var record in results.Results.ConfigureAwait(false))
+        {
+            yield return record.Record;
+        }
     }
 
     /// <inheritdoc />

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
@@ -374,6 +375,65 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
+    internal static SqlCommand SelectWhere<TRecord>(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        GetFilteredRecordOptions<TRecord> options,
+        SqlConnection connection, string? schema, string tableName,
+        VectorStoreRecordModel model)
+    {
+        SqlCommand command = connection.CreateCommand();
+
+        StringBuilder sb = new(200);
+        sb.AppendFormat("SELECT ");
+        sb.AppendColumnNames(model.Properties, includeVectors: options.IncludeVectors);
+        sb.AppendLine();
+        sb.Append("FROM ");
+        sb.AppendTableName(schema, tableName);
+        sb.AppendLine();
+        if (filter is not null)
+        {
+            int startParamIndex = command.Parameters.Count;
+
+            SqlServerFilterTranslator translator = new(model, filter, sb, startParamIndex: startParamIndex);
+            translator.Translate(appendWhere: true);
+            List<object> parameters = translator.ParameterValues;
+
+            foreach (object parameter in parameters)
+            {
+                command.AddParameter(property: null, $"@_{startParamIndex++}", parameter);
+            }
+            sb.AppendLine();
+        }
+
+        if (options.OrderBy.Values.Count > 0)
+        {
+            sb.Append("ORDER BY ");
+
+            foreach (var sortInfo in options.OrderBy.Values)
+            {
+                sb.AppendFormat("[{0}] {1},",
+                    model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName,
+                    sortInfo.Ascending ? "ASC" : "DESC");
+            }
+
+            sb.Length--; // remove the last comma
+            sb.AppendLine();
+        }
+        else
+        {
+            // no order by properties, but we need to add something for OFFSET and NEXT to work
+            sb.AppendLine("ORDER BY (SELECT 1)");
+        }
+
+        // Negative Skip and Top values are rejected by the GetFilteredRecordOptions property setters.
+        // 0 is a legal value for OFFSET.
+        sb.AppendFormat("OFFSET {0} ROWS FETCH NEXT {1} ROWS ONLY;", options.Skip, top);
+
+        command.CommandText = sb.ToString();
+        return command;
+    }
+
     internal static StringBuilder AppendParameterName(this StringBuilder sb, VectorStoreRecordPropertyModel property, ref int paramIndex, out string parameterName)
     {
         // In SQL Server, parameter names cannot be just a number like "@1".
@@ -516,11 +576,11 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-    private static void AddParameter(this SqlCommand command, VectorStoreRecordPropertyModel property, string name, object? value)
+    private static void AddParameter(this SqlCommand command, VectorStoreRecordPropertyModel? property, string name, object? value)
     {
         switch (value)
         {
-            case null when property.Type == typeof(byte[]):
+            case null when property?.Type == typeof(byte[]):
                 command.Parameters.Add(name, System.Data.SqlDbType.VarBinary).Value = DBNull.Value;
                 break;
             case null:

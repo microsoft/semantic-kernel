@@ -315,6 +315,64 @@ public sealed class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRe
     }
 
     /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        // Translate the filter now, so if it fails, we throw immediately.
+        var translatedFilter = new MongoDBFilterTranslator().Translate(filter, this._model);
+        SortDefinition<BsonDocument>? sortDefinition = null;
+        if (options.OrderBy.Values.Count > 0)
+        {
+            sortDefinition = Builders<BsonDocument>.Sort.Combine(
+                options.OrderBy.Values.Select(pair =>
+                {
+                    var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
+
+                    return pair.Ascending
+                        ? Builders<BsonDocument>.Sort.Ascending(storageName)
+                        : Builders<BsonDocument>.Sort.Descending(storageName);
+                }));
+        }
+
+        using IAsyncCursor<BsonDocument> cursor = await this.RunOperationWithRetryAsync(
+            "GetAsync",
+            this._options.MaxRetries,
+            this._options.DelayInMilliseconds,
+            async () =>
+            {
+                return await this._mongoCollection.FindAsync(translatedFilter,
+                    new()
+                    {
+                        Limit = top,
+                        Skip = options.Skip,
+                        Sort = sortDefinition
+                    },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            },
+            cancellationToken).ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    MongoDBConstants.VectorStoreSystemName,
+                    this._collectionMetadata.VectorStoreName,
+                    this.CollectionName,
+                    "GetAsync",
+                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+
+                yield return record;
+            }
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);

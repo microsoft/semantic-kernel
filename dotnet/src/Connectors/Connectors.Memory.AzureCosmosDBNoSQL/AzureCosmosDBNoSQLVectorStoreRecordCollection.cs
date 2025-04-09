@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -350,6 +351,39 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord> :
             searchOptions.IncludeVectors,
             cancellationToken);
         return Task.FromResult(new VectorSearchResults<TRecord>(mappedResults));
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var (whereClause, filterParameters) = new AzureCosmosDBNoSqlFilterTranslator().Translate(filter, this._model);
+
+        var queryDefinition = AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilder.BuildSearchQuery(
+            this._model,
+            whereClause,
+            filterParameters,
+            options,
+            top);
+
+        var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
+
+        await foreach (var jsonObject in searchResults.ConfigureAwait(false))
+        {
+            var record = VectorStoreErrorHandler.RunModelConversion(
+                AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
+                this.CollectionName,
+                "GetAsync",
+                () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = options.IncludeVectors }));
+
+            yield return record;
+        }
     }
 
     /// <inheritdoc />

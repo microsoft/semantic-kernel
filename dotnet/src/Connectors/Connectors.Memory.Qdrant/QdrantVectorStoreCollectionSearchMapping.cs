@@ -133,4 +133,36 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors })),
             point.Score);
     }
+
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+    internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point,
+        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+        bool includeVectors,
+        string vectorStoreSystemName,
+        string? vectorStoreName,
+        string collectionName,
+        string operationName)
+#pragma warning restore CS0618
+    {
+        // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
+        var pointStruct = new PointStruct
+        {
+            Id = point.Id,
+            Vectors = point.Vectors,
+            Payload = { }
+        };
+
+        foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
+        {
+            pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
+        }
+
+        // Do the mapping with error handling.
+        return VectorStoreErrorHandler.RunModelConversion(
+                vectorStoreSystemName,
+                vectorStoreName,
+                collectionName,
+                operationName,
+                () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
+    }
 }
