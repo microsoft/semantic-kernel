@@ -349,21 +349,18 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         var chatClient = kernel.GetRequiredService<IChatClient>();
 
         var executionSettings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
-
-        var chatHistory = new ChatHistory();
-        chatHistory.AddSystemMessage("System message");
+        var options = executionSettings.ToChatOptions(kernel);
+        List<ChatMessage> messageList = [new(ChatRole.System, "System message")];
 
         // Act
-        var messageList = chatHistory.ToChatMessageList();
-        var options = executionSettings.ToChatOptions(kernel);
         var resultMessages = await chatClient.GetResponseAsync(messageList, options, CancellationToken.None);
 
+        // Assert
         var firstToolMessage = resultMessages.Messages.First(m => m.Role == ChatRole.Tool);
         Assert.NotNull(firstToolMessage);
         var firstFunctionResult = firstToolMessage.Contents[^2] as Microsoft.Extensions.AI.FunctionResultContent;
         var secondFunctionResult = firstToolMessage.Contents[^1] as Microsoft.Extensions.AI.FunctionResultContent;
 
-        // Assert
         Assert.NotNull(firstFunctionResult);
         Assert.NotNull(secondFunctionResult);
         Assert.Equal("Result from filter", firstFunctionResult.Result!.ToString());
@@ -392,21 +389,30 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
 
         this._messageHandlerStub.ResponsesToReturn = GetFunctionCallingStreamingResponses();
 
-        var chatCompletion = new OpenAIChatCompletionService("model-id", "test-api-key", "organization-id", this._httpClient);
+        var chatClient = kernel.GetRequiredService<IChatClient>();
 
-        var chatHistory = new ChatHistory();
-        var executionSettings = new OpenAIPromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var executionSettings = new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
+        var options = executionSettings.ToChatOptions(kernel);
+        List<ChatMessage> messageList = [];
 
         // Act
-        await foreach (var item in chatCompletion.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel))
-        { }
-
-        var firstFunctionResult = chatHistory[^2].Content;
-        var secondFunctionResult = chatHistory[^1].Content;
+        List<ChatResponseUpdate> streamingContent = [];
+        await foreach (var update in chatClient.GetStreamingResponseAsync(messageList, options, CancellationToken.None))
+        {
+            streamingContent.Add(update);
+        }
+        var chatResponse = streamingContent.ToChatResponse();
 
         // Assert
-        Assert.Equal("Result from filter", firstFunctionResult);
-        Assert.Equal("Result from Function2", secondFunctionResult);
+        var firstToolMessage = chatResponse.Messages.First(m => m.Role == ChatRole.Tool);
+        Assert.NotNull(firstToolMessage);
+        var firstFunctionResult = firstToolMessage.Contents[^2] as Microsoft.Extensions.AI.FunctionResultContent;
+        var secondFunctionResult = firstToolMessage.Contents[^1] as Microsoft.Extensions.AI.FunctionResultContent;
+
+        Assert.NotNull(firstFunctionResult);
+        Assert.NotNull(secondFunctionResult);
+        Assert.Equal("Result from filter", firstFunctionResult.Result!.ToString());
+        Assert.Equal("Result from Function2", secondFunctionResult.Result!.ToString());
     }
 
     [Fact]
