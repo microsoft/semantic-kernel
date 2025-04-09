@@ -40,6 +40,7 @@ from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
@@ -486,6 +487,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             return
         setattr(inputs, field_to_store, vectors[0])
 
+    @experimental
     def as_mcp_server(
         self,
         server_name: str = "Semantic Kernel MCP Server",

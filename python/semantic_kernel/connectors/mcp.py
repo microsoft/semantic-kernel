@@ -562,6 +562,7 @@ class MCPWebsocketPlugin(MCPPluginBase):
 # region: Kernel as MCP Server
 
 
+@experimental
 def create_mcp_server_from_kernel(
     kernel: Kernel,
     *,
