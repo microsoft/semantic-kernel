@@ -5,7 +5,6 @@ import logging
 import chainlit as cl
 from dotenv import load_dotenv
 
-from semantic_kernel.contents.chat_history import ChatHistory
 from product_advisor import ProductAdvisor
 
 load_dotenv(override=True)
@@ -18,7 +17,7 @@ product_advisor_agent = ProductAdvisor()
 
 @cl.on_chat_start
 async def on_chat_start():
-    cl.user_session.set("chat_history", ChatHistory())
+    cl.user_session.set("agent_threads", {})
 
 
 @cl.on_message
