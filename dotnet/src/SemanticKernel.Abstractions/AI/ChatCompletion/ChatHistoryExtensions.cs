@@ -82,6 +82,9 @@ public static class ChatHistoryExtensions
         return chatHistory;
     }
 
-    internal static List<ChatMessage> ToChatMessageList(this ChatHistory chatHistory)
+    /// <summary>Converts a <see cref="ChatHistory"/> to a <see cref="ChatMessage"/> list.</summary>
+    /// <param name="chatHistory">The chat history to convert.</param>
+    /// <returns>A list of <see cref="ChatMessage"/> objects.</returns>
+    public static List<ChatMessage> ToChatMessageList(this ChatHistory chatHistory)
         => chatHistory.Select(m => m.ToChatMessage()).ToList();
 }
