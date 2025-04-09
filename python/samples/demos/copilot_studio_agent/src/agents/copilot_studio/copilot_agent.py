@@ -9,10 +9,10 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from copilot_studio.copilot_agent_channel import CopilotStudioAgentChannel
-from copilot_studio.copilot_agent_thread import CopilotAgentThread
-from copilot_studio.copilot_message_content import CopilotMessageContent
-from copilot_studio.directline_client import DirectLineClient
+from agents.copilot_studio.copilot_agent_channel import CopilotStudioAgentChannel
+from agents.copilot_studio.copilot_agent_thread import CopilotAgentThread
+from agents.copilot_studio.copilot_message_content import CopilotMessageContent
+from agents.copilot_studio.directline_client import DirectLineClient
 
 from semantic_kernel.agents import Agent
 from semantic_kernel.agents.agent import AgentResponseItem, AgentThread
@@ -261,7 +261,7 @@ class CopilotAgent(Agent):
         Returns:
             An instance of AgentChannel.
         """
-        from copilot_studio.copilot_agent_channel import CopilotStudioAgentChannel
+        from agents.copilot_studio.copilot_agent_channel import CopilotStudioAgentChannel
 
         if self.directline_client is None:
             raise AgentInvokeException("DirectLine client is not initialized.")

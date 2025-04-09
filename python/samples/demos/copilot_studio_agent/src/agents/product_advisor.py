@@ -1,7 +1,7 @@
 import os
 
-from copilot_studio.copilot_agent import CopilotAgent
-from copilot_studio.directline_client import DirectLineClient
+from agents.copilot_studio.copilot_agent import CopilotAgent
+from agents.copilot_studio.directline_client import DirectLineClient
 from dotenv import load_dotenv
 
 load_dotenv(override=True)

@@ -7,7 +7,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-from copilot_studio.directline_client import DirectLineClient
+from agents.copilot_studio.directline_client import DirectLineClient
 
 from semantic_kernel.agents.agent import AgentThread
 from semantic_kernel.contents.chat_message_content import ChatMessageContent

@@ -17,7 +17,7 @@ from semantic_kernel.exceptions.agent_exceptions import AgentChatException, Agen
 if TYPE_CHECKING:
     from semantic_kernel.agents.agent import Agent
 
-from copilot_studio.copilot_agent_thread import CopilotAgentThread
+from agents.copilot_studio.copilot_agent_thread import CopilotAgentThread
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class CopilotStudioAgentChannel(AgentChannel, ChatHistory):
             An async iterable of ChatMessageContent with a boolean indicating if the
             message should be visible external to the agent.
         """
-        from copilot_studio.copilot_agent import CopilotAgent
+        from agents.copilot_studio.copilot_agent import CopilotAgent
 
         if not isinstance(agent, CopilotAgent):
             raise ValueError("Agent must be an instance of CopilotAgent.")

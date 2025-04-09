@@ -1,15 +1,25 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import logging
+import sys
 
 import chainlit as cl
 from dotenv import load_dotenv
-from product_advisor import ProductAdvisor
+from agents.product_advisor import ProductAdvisor
 
 load_dotenv(override=True)
 
-logging.basicConfig(level=logging.INFO)
-logging.getLogger("direct_line_agent").setLevel(logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout,
+    force=True
+)
+
+# Set log levels for specific libraries that might be too verbose
+logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger('aiohttp').setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 product_advisor_agent = ProductAdvisor()
