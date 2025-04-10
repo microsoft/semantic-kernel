@@ -6,7 +6,6 @@ from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
-from semantic_kernel.contents import ChatHistory
 
 """
 The following sample demonstrates how to create a AzureAIAgent that
@@ -47,14 +46,11 @@ async def main():
         print("Once the first prompt is answered, you can further ask questions, use `exit` to exit.")
         user_input = "Find the latest untriaged, unassigned issues and suggest new assignees."
         print(f"# User: {user_input}")
-        messages = ChatHistory()
-        messages.add_user_message(user_input)
         try:
             while user_input.lower() != "exit":
                 # 5. Invoke the agent for a response
-                response = await agent.get_response(messages=messages, thread=thread)
+                response = await agent.get_response(messages=user_input, thread=thread)
                 print(f"# {response.name}: {response} ")
-                messages.add_message(response.content)
                 thread = response.thread
                 # 6. Get a new user input
                 user_input = input("# User: ")
