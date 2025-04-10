@@ -77,6 +77,9 @@ public abstract class ServiceAgentProvider
     /// <param name="limit">The maximum number of messages to be retrieved.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An enumeration of the thread's messages.</returns>
+    /// <remarks>
+    /// Messages are returned in decending order (newest first).
+    /// </remarks>
     protected async IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(
         string threadId,
         int? limit = null,
@@ -93,7 +96,7 @@ public abstract class ServiceAgentProvider
                     threadId,
                     runId: null,
                     limit: 100,
-                    order: ListSortOrder.Ascending,
+                    order: ListSortOrder.Descending,
                     after: null,
                     before: null,
                     cancellationToken: cancellationToken).ConfigureAwait(false);

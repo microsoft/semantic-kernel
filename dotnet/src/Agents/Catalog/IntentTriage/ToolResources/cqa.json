@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Microsoft Cognitive Language Service - Custom Question Answering",
-    "description": "A question answering service.",
+    "description": "An API to get answer on questions related to business operation",
     "version": "2023-04-01"
   },
   "servers": [

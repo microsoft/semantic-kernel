@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -18,11 +19,31 @@ public static class ServiceAgentProviderFactory
     private static readonly string ServiceProviderAttributeName = typeof(ServiceAgentProviderAttribute<>).Name;
 
     /// <summary>
+    /// Enumerate all the <see cref="ServiceAgent"/> types in the specified assembly
+    /// that available for invocation.
+    /// </summary>
+    /// <param name="assembly">The specified assembly</param>
+    /// <returns>An enumeration of all <see cref="ServiceAgent"/> types available for invocation</returns>
+    public static IEnumerable<Type> GetAgentTypes(Assembly assembly)
+    {
+        foreach (Type type in assembly.GetTypes())
+        {
+            if (typeof(ServiceAgent).IsAssignableFrom(type) &&
+                !type.IsAbstract &&
+                type.GetCustomAttribute(typeof(ServiceAgentProviderAttribute<>)) != null)
+            {
+                yield return type;
+            }
+        }
+    }
+
+    /// <summary>
     /// Creates the <see cref="ServiceAgentProvider"/> associated with a <see cref="ServiceAgent"/>.
     /// </summary>
     /// <param name="agentType">The type of the specific <see cref="ServiceAgent"/>.</param>
     /// <param name="configuration">The active configuration.</param>
     /// <param name="loggerFactory">The logging services for the <see cref="ServiceAgent"/>.</param>
+    /// <returns>A <see cref="ServiceAgentProvider"/> associated with the requested agent <see cref="Type"/>.</returns>
     public static ServiceAgentProvider CreateServicesProvider(Type agentType, IConfiguration configuration, ILoggerFactory loggerFactory)
     {
         Verify.NotNull(configuration, nameof(configuration));

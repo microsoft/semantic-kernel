@@ -12,7 +12,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 
 /// <summary>
-/// Provider to create a <see cref="IntentTriageAgent2"/> instance and
+/// Provider to create a <see cref="IntentTriageAgent3"/> instance and
 /// its associated <see cref="AgentThread"/>.
 /// </summary>
 public class IntentTriageAgentProvider3(IConfiguration configuration, ILoggerFactory loggerFactory)
@@ -21,9 +21,13 @@ public class IntentTriageAgentProvider3(IConfiguration configuration, ILoggerFac
     /// <inheritdoc/>
     public override async ValueTask<Agent> CreateAgentAsync(string id, string? name, CancellationToken cancellationToken)
     {
-        Kernel kernel = await KernelFactory.CreateKernelAsync(this.Client, this.FoundrySettings.DeploymentName, this.LoggerFactory);
-
         IntentTriageLanguageSettings languageSettings = IntentTriageLanguageSettings.FromConfiguration(this.Configuration);
+
+        Kernel kernel =
+            await KernelFactory.CreateKernelAsync(
+                this.Client,
+                this.FoundrySettings.DeploymentName,
+                this.LoggerFactory);
 
         IntentTriageAgent3 agent =
             new(languageSettings)
@@ -39,7 +43,7 @@ public class IntentTriageAgentProvider3(IConfiguration configuration, ILoggerFac
     /// <inheritdoc/>
     public override async ValueTask<AgentThread> CreateThreadAsync(string threadId, CancellationToken cancellationToken)
     {
-        // We only need the most recent message to analyze
+        // Only retrieve the most recent message to analyze
         IAsyncEnumerable<ChatMessageContent> messages = this.GetThreadMessagesAsync(threadId, limit: 1, cancellationToken);
         ChatHistory history = [.. await messages.ToArrayAsync(cancellationToken)];
 

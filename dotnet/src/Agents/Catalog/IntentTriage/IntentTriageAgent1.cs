@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +13,14 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 
 /// <summary>
-/// An example <see cref="ServiceAgent"/> based on chat-completion API.
+/// An example <see cref="ServiceAgent"/> based on chat-completion and
+/// two remote API's as tooling.
 /// </summary>s
 /// <remarks>
-/// This agent invokes language services directly and only resorts to
-/// using the LLM when there's no acceptable service result. (Explicit approach)
+/// This agent invokes the language service API's directly
+/// and only resorts to calling the LLM when there's no acceptable
+/// result from the language services API's.
+/// (Manual approach)
 /// </remarks>
 [ServiceAgentProvider<IntentTriageAgentProvider1>]
 public sealed class IntentTriageAgent1 : ServiceAgent

@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Service;
@@ -14,14 +11,18 @@ using Microsoft.SemanticKernel.Plugins.OpenApi;
 namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 
 /// <summary>
-/// An example <see cref="ServiceAgent"/> based on chat-completion API.
-/// </summary>
+/// An example <see cref="ComposedServiceAgent"/> based on an
+/// inner <see cref="ChatCompletionAgent"/> that relies on two
+/// language service API's as tooling.  The language service API's only
+/// defined by their Open API (JSON) spec.
+/// </summary>s
 /// <remarks>
-/// This agent configures the language services as tools for the LLM
-/// to invoke and the LLM drives response generation. (Typical approach)
+/// This agent configures the language service API's as tools for the LLM
+/// to invoke and as part of the model's tool calling protocol.
+/// (OpenAPI approach)
 /// </remarks>
-[ServiceAgentProvider<IntentTriageAgentProvider2>]
-public sealed partial class IntentTriageAgent3 : ComposedServiceAgent
+[ServiceAgentProvider<IntentTriageAgentProvider3>]
+public sealed class IntentTriageAgent3 : ComposedServiceAgent
 {
     private static class Names
     {
@@ -29,16 +30,10 @@ public sealed partial class IntentTriageAgent3 : ComposedServiceAgent
         public const string QuestionAndAnswerPlugin = nameof(QuestionAndAnswerPlugin);
     }
 
-    private static class Resources
-    {
-        public const string CognitiveLanguage = "ToolResources.clu.json";
-        public const string QuestionAndAnswer = "ToolResources.cqa.json";
-    }
-
     private readonly IntentTriageLanguageSettings _settings;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="IntentTriageAgent1"/> class.
+    /// Initializes a new instance of the <see cref="IntentTriageAgent3"/> class.
     /// </summary>
     /// <param name="settings">Settings for usinge the language services.</param>
     public IntentTriageAgent3(IntentTriageLanguageSettings settings)
@@ -72,18 +67,7 @@ public sealed partial class IntentTriageAgent3 : ComposedServiceAgent
 
     internal async ValueTask<KernelPlugin> DefineCognitiveLanguageToolsAsync(CancellationToken cancellationToken)
     {
-        await using Stream resourceStream = AgentResources.OpenStream(Resources.CognitiveLanguage, Assembly.GetExecutingAssembly());
-
-        string apispec = await this.BindSpecAsync(
-            resourceStream,
-            new()
-            {
-                { "language.resourceUrl", this._settings.ApiEndpoint},
-                { "language.resourceConnectionName", "xyz"},
-                { "language.resourceVersion", this._settings.ApiVersion},
-            },
-            cancellationToken);
-
+        string apispec = await LanguageApiSpec.LoadCLUSpecAsync(this._settings, cancellationToken);
         await using Stream streamSpec = ToStream(apispec);
 
         HttpClient client = new();
@@ -105,20 +89,7 @@ public sealed partial class IntentTriageAgent3 : ComposedServiceAgent
 
     private async ValueTask<KernelPlugin> DefineQuestionAndAnswerToolsAsync(CancellationToken cancellationToken)
     {
-        await using Stream resourceStream = AgentResources.OpenStream(Resources.QuestionAndAnswer, Assembly.GetExecutingAssembly());
-
-        string apispec = await this.BindSpecAsync(
-            resourceStream,
-            new()
-            {
-                { "language.resourceUrl", this._settings.ApiEndpoint},
-                { "language.resourceConnectionName", "xyz"},
-                { "language.resourceVersion", this._settings.ApiVersion},
-                { "cqa.projectName", this._settings.QueryProject},
-                { "cqa.deploymentName", this._settings.QueryDeployment},
-            },
-            cancellationToken);
-
+        string apispec = await LanguageApiSpec.LoadCQASpecAsync(this._settings, cancellationToken);
         await using Stream streamSpec = ToStream(apispec);
 
         HttpClient client = new();
@@ -138,40 +109,23 @@ public sealed partial class IntentTriageAgent3 : ComposedServiceAgent
         return plugin;
     }
 
-    private async ValueTask<string> BindSpecAsync(Stream resourceStream, Dictionary<string, string> parameters, CancellationToken cancellationToken)
-    {
-        using StreamReader reader = new(resourceStream);
-        string apispec = await reader.ReadToEndAsync(cancellationToken);
-
-        return SpecParameterBindingExpression().Replace(
-            apispec,
-            match =>
-            {
-                string key = match.Groups[1].Value;
-                return parameters.TryGetValue(key, out string? value) ? value : match.Value;
-            });
-    }
-
     private static MemoryStream ToStream(string input)
     {
         byte[] byteArray = Encoding.UTF8.GetBytes(input);
         return new MemoryStream(byteArray);
     }
 
-    [GeneratedRegex(@"\$\{([^}]+)\}")]
-    private static partial Regex SpecParameterBindingExpression();
-
     private string GetInstructions() =>
         $$$"""
         You are a triage agent. Your goal is to answer questions and redirect message according to their intent. You have at your disposition 2 tools: 
-         1. cqa_api: to answer customer questions such as procedures and FAQs
-         2. clu_api: to extract the intent of the message. 
+        1. cqa_api: to answer customer questions such as procedures and FAQs
+        2. clu_api: to extract the intent of the message. 
         You must use the tools to perform your task. Only if the tools are not able to provide information you can answer according to your general knowledge. 
-          - When you return answers from the cqa_api return the exact answer without rewriting the answer. 
-          - When you return answers from the clu_api return 'Detected Intent: {intent response}' and fill {intent response} with the intent returned from the api. 
+        - When you return answers from the cqa_api return the exact answer without rewriting the answer. 
+        - When you return answers from the clu_api return 'Detected Intent: {intent response}' and fill {intent response} with the intent returned from the api. 
         To call the clu_api, the following parameters values should be used in the payload: 
-          - 'projectName': value must be '${{{this._settings.AnalyzeProject}}}' 
-          - 'deploymentName': value must be '${{{this._settings.AnalyzeDeployment}}}'
-          - 'text': must be the input from the user.
+        - 'projectName': value must be '{{{this._settings.AnalyzeProject}}}' 
+        - 'deploymentName': value must be '{{{this._settings.AnalyzeDeployment}}}'
+        - 'text': must be the input from the user.
         """;
 }

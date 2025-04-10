@@ -38,7 +38,7 @@ public class IntentTriageAgentProvider2(IConfiguration configuration, ILoggerFac
     /// <inheritdoc/>
     public override async ValueTask<AgentThread> CreateThreadAsync(string threadId, CancellationToken cancellationToken)
     {
-        // We only need the most recent message to analyze
+        // Only retrieve the most recent message to analyze
         IAsyncEnumerable<ChatMessageContent> messages = this.GetThreadMessagesAsync(threadId, limit: 1, cancellationToken);
         ChatHistory history = [.. await messages.ToArrayAsync(cancellationToken)];
 

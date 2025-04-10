@@ -79,8 +79,7 @@ internal sealed class LanguagePlugin
     {
         Uri uriEndpoint = new(this._settings.ApiEndpoint);
         Uri uriOperation =
-            new(
-                uriEndpoint,
+            new(uriEndpoint,
                 $"{EndpointCQA}?projectName={this._settings.QueryProject}&deploymentName={this._settings.QueryDeployment}&api-version={this._settings.ApiVersion}");
 
         string requestBody =

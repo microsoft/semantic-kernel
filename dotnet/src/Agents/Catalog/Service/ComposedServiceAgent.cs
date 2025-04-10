@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel.Agents.Service;
 
 /// <summary>
-/// A <see cref="ServiceAgent"/> specialiation that is generates responses
-/// via an inner agent.
+/// A <see cref="ServiceAgent"/> specialization that provides its
+/// response via an inner agent.
 /// </summary>
 public abstract class ComposedServiceAgent : ServiceAgent
 {

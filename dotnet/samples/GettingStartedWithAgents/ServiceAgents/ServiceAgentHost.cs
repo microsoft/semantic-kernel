@@ -12,56 +12,73 @@ using Foundry = Azure.AI.Projects;
 namespace ServiceAgents;
 
 /// <summary>
-/// An approximation of the Agent Container to be hosted as an AI-Service.
+/// A local mock of the Agent Host needed to run SK Agents in the cloud.
 /// </summary>
-internal sealed class ServiceAgentHost(
+/// <remarks>
+/// This isn't intended for inform or resemble the shape of a real agent host.
+/// Its only purpose is to interact with the Service Agents using generalized
+/// factory/provider pattern.  That is, it doesn't have any specific knowledge
+/// of the actual agent implementation (other than its .NET type).
+/// </remarks>
+internal sealed class ServiceAgentHost<TAgent>(
     Foundry.AIProjectClient client,
     IConfiguration configuration,
     ILoggerFactory loggerFactory)
+    where TAgent : ServiceAgent
 {
     private Foundry.AgentsClient Client { get; } = client.GetAgentsClient();
+
+    public async Task<Agent> CreateAgentAsync()
+    {
+        return (await this.InitializeAgentAsync()).Agent;
+    }
 
     /// <summary>
     /// Simulate the primary ability of service container to invoke the agent with the current thread state.
     /// </summary>
-    /// <param name="agentType"></param>
-    /// <param name="threadId"></param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(Type agentType, string threadId)
+    public async IAsyncEnumerable<ChatMessageContent> InvokeAgentAsync(string threadId)
     {
         // Initialize the agent with container supplied parameters.
-        ServiceAgentProvider serviceProvider = ServiceAgentProviderFactory.CreateServicesProvider(agentType, configuration, loggerFactory);
-        Agent agent = await serviceProvider.CreateAgentAsync(Guid.NewGuid().ToString(), "TestAgent");
+        (ServiceAgentProvider serviceProvider, Agent agent) = await this.InitializeAgentAsync();
 
         // Create a agent thread based on a foundry thread.
         AgentThread thread = await serviceProvider.CreateThreadAsync(threadId);
 
+
+        AgentInvokeOptions options =
+            new()
+            {
+                // Sample Only: Container expected to manage adding agent response to the foundry thread
+                OnIntermediateMessage = HandleNewMessage
+            };
+
         // Invoke the agent with the current thread state.
         Stopwatch timer = Stopwatch.StartNew();
-        await foreach (ChatMessageContent response in agent.InvokeAsync([], thread))
+        await foreach (ChatMessageContent response in agent.InvokeAsync([], thread, options))
         {
-            // Container expected to manage adding agent response to the foundry thead
-            await this.Client.CreateMessageAsync(threadId, Foundry.MessageRole.Agent, response.Content).ConfigureAwait(false);
-
             // Yield the response back to the sample for display.
             // Not expected functionality for the service container.
             yield return response;
         }
         timer.Stop();
         Console.WriteLine($"Duration: {timer}");
+
+        // Callback to handle new messages from the agent
+        async Task HandleNewMessage(ChatMessageContent message)
+        {
+            // Updating the external thread with the agent response, including function calls and reslts.
+            // The agent is expected to _not_ mutate the external thread.
+            await this.Client.CreateMessageAsync(threadId, Foundry.MessageRole.Agent, message.Content).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
     /// Simulate the primary ability of service container to invoke the agent with the current thread state.
     /// </summary>
-    /// <param name="agentType"></param>
-    /// <param name="threadId"></param>
-    /// <returns></returns>
-    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(Type agentType, string threadId)
+    public async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(string threadId)
     {
         // Initialize the agent with container supplied parameters.
-        ServiceAgentProvider serviceProvider = ServiceAgentProviderFactory.CreateServicesProvider(agentType, configuration, loggerFactory);
-        Agent agent = await serviceProvider.CreateAgentAsync(Guid.NewGuid().ToString(), "TestAgent");
+        (ServiceAgentProvider serviceProvider, Agent agent) = await this.InitializeAgentAsync();
 
         // Create a agent thread based on a foundry thread.
         AgentThread thread = await serviceProvider.CreateThreadAsync(threadId);
@@ -84,6 +101,8 @@ internal sealed class ServiceAgentHost(
         // Callback to handle new messages from the agent
         async Task HandleNewMessage(ChatMessageContent message)
         {
+            // Updating the external thread with the agent response, including function calls and reslts.
+            // The agent is expected to _not_ mutate the external thread.
             await this.Client.CreateMessageAsync(threadId, Foundry.MessageRole.Agent, message.Content).ConfigureAwait(false);
         }
     }
@@ -114,7 +133,8 @@ internal sealed class ServiceAgentHost(
     }
 
     /// <summary>
-    /// Utility to retrieve all messages from the thread for the sample to access.
+    /// Utility to retrieve all messages from the thread for the sample to access
+    /// so the sample might display the entire history of the thread.
     /// </summary>
     public async IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(string threadId)
     {
@@ -144,5 +164,12 @@ internal sealed class ServiceAgentHost(
             }
         }
         while (hasMore);
+    }
+
+    private async Task<(ServiceAgentProvider Provider, Agent Agent)> InitializeAgentAsync()
+    {
+        ServiceAgentProvider provider = ServiceAgentProviderFactory.CreateServicesProvider(typeof(TAgent), configuration, loggerFactory);
+        Agent agent = await provider.CreateAgentAsync(Guid.NewGuid().ToString(), "TestAgent");
+        return (provider, agent);
     }
 }
