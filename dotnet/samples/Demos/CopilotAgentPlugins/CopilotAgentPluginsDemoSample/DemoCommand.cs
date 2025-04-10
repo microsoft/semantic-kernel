@@ -440,6 +440,16 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             "uniqueId",
             "uniqueIdType",
             "webLink",
+            "aggregationFilters",
+            "aggregations",
+            "collapseProperties",
+            "contentSources",
+            "enableTopResults",
+            "fields",
+            "region",
+            "resultTemplateOptions",
+            "sortProperties",
+
         ],
         StringComparer.OrdinalIgnoreCase
     );
@@ -500,6 +510,7 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     {
 #pragma warning restore SKEXP0040
         if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
+            ("search_query".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) ||
             ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
             "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
         {
