@@ -45,15 +45,16 @@ public static class KernelFunctionPrompty
     /// Create a <see cref="PromptTemplateConfig"/> from a prompty template.
     /// </summary>
     /// <param name="promptyTemplate">Prompty representation of a prompt-based <see cref="KernelFunction"/>.</param>
+    /// <param name="promptyFilePath">Optional: File path to the prompty file.</param>
     /// <returns>The created <see cref="PromptTemplateConfig"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="promptyTemplate"/> is null.</exception>
     /// <exception cref="ArgumentException"><paramref name="promptyTemplate"/> is empty or composed entirely of whitespace.</exception>
-    public static PromptTemplateConfig ToPromptTemplateConfig(string promptyTemplate)
+    public static PromptTemplateConfig ToPromptTemplateConfig(string promptyTemplate, string? promptyFilePath = null)
     {
         Verify.NotNullOrWhiteSpace(promptyTemplate);
 
         Dictionary<string, object> globalConfig = [];
-        PromptyCore.Prompty prompty = PromptyCore.Prompty.Load(promptyTemplate, globalConfig);
+        PromptyCore.Prompty prompty = PromptyCore.Prompty.Load(promptyTemplate, globalConfig, promptyFilePath);
 
         var promptTemplateConfig = new PromptTemplateConfig
         {
