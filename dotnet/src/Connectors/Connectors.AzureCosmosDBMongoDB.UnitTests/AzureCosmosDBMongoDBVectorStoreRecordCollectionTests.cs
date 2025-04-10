@@ -585,7 +585,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         }
         else
         {
-            var actual = await sut.VectorizedSearchAsync(vector, top: 3).ToListAsync();
+            var actual = await sut.VectorizedSearchAsync(vector, top: 3).FirstOrDefaultAsync();
 
             Assert.NotNull(actual);
         }
