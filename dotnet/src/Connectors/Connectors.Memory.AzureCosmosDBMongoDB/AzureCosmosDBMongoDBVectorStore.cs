@@ -57,12 +57,7 @@ public sealed class AzureCosmosDBMongoDBVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        var recordCollection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecord>(
             this._mongoDatabase,
             name,
             new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;

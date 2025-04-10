@@ -19,7 +19,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
     private const string ScorePropertyName = "TestScore";
 
     private readonly VectorStoreRecordModel _model = new AzureCosmosDBNoSqlVectorStoreModelBuilder().Build(
-        typeof(VectorStoreGenericDataModel<string>),
+        typeof(Dictionary<string, object?>),
         new()
         {
             Properties =
@@ -193,7 +193,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
         const string PartitionKeyPropertyName = "TestProperty1";
 
         var model = new AzureCosmosDBNoSqlVectorStoreModelBuilder().Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =

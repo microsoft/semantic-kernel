@@ -68,7 +68,7 @@ public class VectorStoreRecordModelBuilder
     [RequiresUnreferencedCode("Currently not compatible with trimming")] // TODO
     public virtual VectorStoreRecordModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        var dynamicMapping = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>);
+        var dynamicMapping = type == typeof(Dictionary<string, object?>);
 
         if (!dynamicMapping)
         {

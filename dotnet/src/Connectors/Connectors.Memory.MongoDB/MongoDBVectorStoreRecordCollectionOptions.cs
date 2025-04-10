@@ -7,7 +7,7 @@ using MongoDB.Bson;
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// Options when creating a <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
 {

@@ -193,6 +193,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         foreach (var key in keys)
         {
             var record = await this.GetAsync(key, options, cancellationToken).ConfigureAwait(false);
@@ -216,6 +218,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         var collectionDictionary = this.GetCollectionDictionary();
 
         foreach (var key in keys)
@@ -242,6 +246,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(records);
+
         foreach (var record in records)
         {
             yield return await this.UpsertAsync(record, cancellationToken).ConfigureAwait(false);

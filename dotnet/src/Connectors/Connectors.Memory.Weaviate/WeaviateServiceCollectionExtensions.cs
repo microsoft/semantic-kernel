@@ -73,7 +73,7 @@ public static class WeaviateServiceCollectionExtensions
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
                 var selectedOptions = options ?? sp.GetService<WeaviateVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new WeaviateVectorStoreRecordCollection<TRecord>(selectedHttpClient, collectionName, selectedOptions);
+                return new WeaviateVectorStoreRecordCollection<Guid, TRecord>(selectedHttpClient, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

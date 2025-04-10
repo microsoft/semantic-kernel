@@ -91,7 +91,7 @@ public static class QdrantServiceCollectionExtensions
                 var qdrantClient = sp.GetRequiredService<QdrantClient>();
                 var selectedOptions = options ?? sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return (new QdrantVectorStoreRecordCollection<TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                return (new QdrantVectorStoreRecordCollection<TKey, TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);
@@ -133,7 +133,7 @@ public static class QdrantServiceCollectionExtensions
                 var qdrantClient = new QdrantClient(host, port, https, apiKey);
                 var selectedOptions = options ?? sp.GetService<QdrantVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return (new QdrantVectorStoreRecordCollection<TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
+                return (new QdrantVectorStoreRecordCollection<TKey, TRecord>(qdrantClient, collectionName, selectedOptions) as IVectorStoreRecordCollection<TKey, TRecord>)!;
             });
 
         AddVectorizedSearch<TKey, TRecord>(services, serviceId);

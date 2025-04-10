@@ -22,6 +22,8 @@ public sealed class WeaviateTestStore : TestStore
 
     public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
+    public override string DefaultDistanceFunction => DistanceFunction.CosineDistance;
+
     public WeaviateVectorStore GetVectorStore(WeaviateVectorStoreOptions options)
         => new(this.Client, options);
 

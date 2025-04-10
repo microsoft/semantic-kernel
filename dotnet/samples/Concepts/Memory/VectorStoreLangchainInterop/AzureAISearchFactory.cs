@@ -63,7 +63,7 @@ public static class AzureAISearchFactory
             // since the Langchain schema includes a metadata field that is
             // a JSON string containing the source property. Parsing this
             // string and extracting the source is not supported by the default mapper.
-            return (new AzureAISearchVectorStoreRecordCollection<TRecord>(
+            return (new AzureAISearchVectorStoreRecordCollection<string, TRecord>(
                 _searchIndexClient,
                 name,
                 new()

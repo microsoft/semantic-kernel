@@ -65,12 +65,7 @@ public sealed class WeaviateVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(Guid))
-        {
-            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
-        }
-
-        var recordCollection = new WeaviateVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
             this._httpClient,
             name,
             new()
@@ -80,7 +75,7 @@ public sealed class WeaviateVectorStore : IVectorStore
                 ApiKey = this._options.ApiKey
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-        return recordCollection!;
+        return recordCollection;
     }
 
     /// <inheritdoc />

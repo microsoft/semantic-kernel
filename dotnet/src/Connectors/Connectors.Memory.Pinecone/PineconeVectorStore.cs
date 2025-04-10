@@ -54,12 +54,7 @@ public sealed class PineconeVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        return (new PineconeVectorStoreRecordCollection<TRecord>(
+        return (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
             new PineconeVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>)!;

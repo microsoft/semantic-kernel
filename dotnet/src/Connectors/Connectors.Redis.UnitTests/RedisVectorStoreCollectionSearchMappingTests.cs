@@ -242,8 +242,8 @@ public class RedisVectorStoreCollectionSearchMappingTests
 #pragma warning restore CA1812
 
     private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
-        => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<DummyType>.ModelBuildingOptions)
+        => new VectorStoreRecordModelBuilder(RedisHashSetVectorStoreRecordCollection<string, DummyType>.ModelBuildingOptions)
             .Build(
-                typeof(VectorStoreGenericDataModel<string>),
+                typeof(Dictionary<string, object?>),
                 new() { Properties = properties });
 }

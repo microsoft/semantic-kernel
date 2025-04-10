@@ -8,156 +8,139 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.Collections;
 
-public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixture) where TKey : notnull
+public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixture)
+    where TKey : notnull
 {
-    [ConditionalFact]
-    public Task DeleteCollectionDoesNotThrowForNonExistingCollection()
-         => this.DeleteNonExistingCollection<SimpleRecord<TKey>>();
-
-    [ConditionalFact]
-    public Task DeleteCollectionDoesNotThrowForNonExistingCollection_GenericDataModel()
-        => this.DeleteNonExistingCollection<VectorStoreGenericDataModel<TKey>>();
-
-    [ConditionalFact]
-    public Task CreateCollectionCreatesTheCollection()
-        => this.CreateCollection<SimpleRecord<TKey>>();
-
-    [ConditionalFact]
-    public Task CreateCollectionCreatesTheCollection_GenericDataModel()
-        => this.CreateCollection<VectorStoreGenericDataModel<TKey>>();
-
-    [ConditionalFact]
-    public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow()
-        => this.CreateCollectionIfNotExistsMoreThanOnce<SimpleRecord<TKey>>();
-
-    [ConditionalFact]
-    public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow_GenericDataModel()
-        => this.CreateCollectionIfNotExistsMoreThanOnce<VectorStoreGenericDataModel<TKey>>();
-
-    [ConditionalFact]
-    public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException()
-        => this.CreateCollectionMoreThanOnce<SimpleRecord<TKey>>();
-
-    [ConditionalFact]
-    public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException_GenericDataModel()
-        => this.CreateCollectionMoreThanOnce<VectorStoreGenericDataModel<TKey>>();
-
-    private async Task<IVectorStoreRecordCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
+    [ConditionalTheory]
+    [MemberData(nameof(UseDynamicMappingData))]
+    public Task DeleteCollectionDoesNotThrowForNonExistingCollection(bool useDynamicMapping)
     {
-        var collectionName = fixture.GetUniqueCollectionName();
-        VectorStoreRecordDefinition? definition = null;
-        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<TKey>))
+        return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
+
+        async Task Core<TRecord>() where TRecord : notnull
         {
-            definition = new()
-            {
-                Properties =
-                [
-                    new VectorStoreRecordKeyProperty(nameof(VectorStoreGenericDataModel<TKey>.Key), typeof(TKey)),
-                    new VectorStoreRecordDataProperty("string", typeof(string)),
-                    new VectorStoreRecordDataProperty("integer", typeof(int)),
-                    new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
-                ]
-            };
+            var collection = await this.GetNonExistingCollectionAsync<TRecord>();
+
+            await collection.DeleteCollectionAsync();
         }
+    }
 
-        var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(collectionName, definition);
+    [ConditionalTheory]
+    [MemberData(nameof(UseDynamicMappingData))]
+    public Task CreateCollectionCreatesTheCollection(bool useDynamicMapping)
+    {
+        return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
 
-        Assert.False(await collection.CollectionExistsAsync());
+        async Task Core<TRecord>() where TRecord : notnull
+        {
+            var collection = await this.GetNonExistingCollectionAsync<TRecord>();
 
+            await collection.CreateCollectionAsync();
+
+            try
+            {
+                Assert.True(await collection.CollectionExistsAsync());
+
+                var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+
+                Assert.NotNull(collectionMetadata);
+                Assert.NotNull(collectionMetadata.VectorStoreSystemName);
+                Assert.NotNull(collectionMetadata.CollectionName);
+
+                Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
+            }
+            finally
+            {
+                await collection.DeleteCollectionAsync();
+            }
+        }
+    }
+
+    [ConditionalTheory]
+    [MemberData(nameof(UseDynamicMappingData))]
+    public Task CreateCollectionIfNotExistsCalledMoreThanOnceDoesNotThrow(bool useDynamicMapping)
+    {
+        return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
+
+        async Task Core<TRecord>() where TRecord : notnull
+        {
+            var collection = await this.GetNonExistingCollectionAsync<TRecord>();
+
+            await collection.CreateCollectionIfNotExistsAsync();
+
+            try
+            {
+                Assert.True(await collection.CollectionExistsAsync());
+
+                var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+
+                Assert.NotNull(collectionMetadata);
+                Assert.NotNull(collectionMetadata.VectorStoreSystemName);
+                Assert.NotNull(collectionMetadata.CollectionName);
+
+                Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
+
+                await collection.CreateCollectionIfNotExistsAsync();
+            }
+            finally
+            {
+                await collection.DeleteCollectionAsync();
+            }
+        }
+    }
+
+    [ConditionalTheory]
+    [MemberData(nameof(UseDynamicMappingData))]
+    public Task CreateCollectionCalledMoreThanOnceThrowsVectorStoreOperationException(bool useDynamicMapping)
+    {
+        return useDynamicMapping ? Core<Dictionary<string, object?>>() : Core<SimpleRecord<TKey>>();
+
+        async Task Core<TRecord>() where TRecord : notnull
+        {
+            var collection = await this.GetNonExistingCollectionAsync<TRecord>();
+
+            await collection.CreateCollectionAsync();
+
+            try
+            {
+                Assert.True(await collection.CollectionExistsAsync());
+
+                var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+
+                Assert.NotNull(collectionMetadata);
+                Assert.NotNull(collectionMetadata.VectorStoreSystemName);
+                Assert.NotNull(collectionMetadata.CollectionName);
+
+                Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
+
+                await collection.CreateCollectionIfNotExistsAsync();
+
+                await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.CreateCollectionAsync());
+            }
+            finally
+            {
+                await collection.DeleteCollectionAsync();
+            }
+        }
+    }
+
+    protected virtual async Task<IVectorStoreRecordCollection<TKey, TRecord>> GetNonExistingCollectionAsync<TRecord>() where TRecord : notnull
+    {
+        var definition = new VectorStoreRecordDefinition()
+        {
+            Properties =
+            [
+                new VectorStoreRecordKeyProperty(nameof(SimpleRecord<object>.Id), typeof(TKey)) { StoragePropertyName = "key" },
+                new VectorStoreRecordDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StoragePropertyName = "text" },
+                new VectorStoreRecordDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StoragePropertyName = "number" },
+                new VectorStoreRecordVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10)
+            ]
+        };
+
+        var collection = fixture.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(fixture.GetUniqueCollectionName(), definition);
+        await collection.DeleteCollectionAsync();
         return collection;
     }
 
-    private async Task DeleteNonExistingCollection<TRecord>() where TRecord : notnull
-    {
-        var collection = await this.GetNonExistingCollectionAsync<TRecord>();
-
-        await collection.DeleteCollectionAsync();
-    }
-
-    private async Task CreateCollection<TRecord>() where TRecord : notnull
-    {
-        var collection = await this.GetNonExistingCollectionAsync<TRecord>();
-
-        await collection.CreateCollectionAsync();
-
-        try
-        {
-            Assert.True(await collection.CollectionExistsAsync());
-
-#pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
-#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-            Assert.NotNull(collectionMetadata);
-            Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-            Assert.NotNull(collectionMetadata.VectorStoreName);
-            Assert.NotNull(collectionMetadata.CollectionName);
-
-            Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
-        }
-        finally
-        {
-            await collection.DeleteCollectionAsync();
-        }
-    }
-
-    private async Task CreateCollectionIfNotExistsMoreThanOnce<TRecord>() where TRecord : notnull
-    {
-        var collection = await this.GetNonExistingCollectionAsync<TRecord>();
-
-        await collection.CreateCollectionIfNotExistsAsync();
-
-        try
-        {
-            Assert.True(await collection.CollectionExistsAsync());
-
-#pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
-#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-            Assert.NotNull(collectionMetadata);
-            Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-            Assert.NotNull(collectionMetadata.VectorStoreName);
-            Assert.NotNull(collectionMetadata.CollectionName);
-
-            Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
-
-            await collection.CreateCollectionIfNotExistsAsync();
-        }
-        finally
-        {
-            await collection.DeleteCollectionAsync();
-        }
-    }
-
-    private async Task CreateCollectionMoreThanOnce<TRecord>() where TRecord : notnull
-    {
-        var collection = await this.GetNonExistingCollectionAsync<TRecord>();
-
-        await collection.CreateCollectionAsync();
-
-        try
-        {
-            Assert.True(await collection.CollectionExistsAsync());
-
-#pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            var collectionMetadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
-#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-            Assert.NotNull(collectionMetadata);
-            Assert.NotNull(collectionMetadata.VectorStoreSystemName);
-            Assert.NotNull(collectionMetadata.VectorStoreName);
-            Assert.NotNull(collectionMetadata.CollectionName);
-
-            Assert.True(await fixture.TestStore.DefaultVectorStore.ListCollectionNamesAsync().ContainsAsync(collectionMetadata.CollectionName));
-
-            await collection.CreateCollectionIfNotExistsAsync();
-
-            await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.CreateCollectionAsync());
-        }
-        finally
-        {
-            await collection.DeleteCollectionAsync();
-        }
-    }
+    public static readonly IEnumerable<object[]> UseDynamicMappingData = [[false], [true]];
 }

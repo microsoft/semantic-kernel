@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
@@ -20,7 +21,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
     private readonly VectorStoreRecordModel _model =
         new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
         .Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =

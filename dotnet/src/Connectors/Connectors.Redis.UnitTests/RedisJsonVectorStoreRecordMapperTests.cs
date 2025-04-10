@@ -20,7 +20,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromDataToStorageModel()
     {
         // Arrange.
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<MultiPropsModel>.ModelBuildingOptions)
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), null, JsonSerializerOptions.Default);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
@@ -42,7 +42,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     {
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<MultiPropsModel>.ModelBuildingOptions)
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), null, jsonSerializerOptions);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, jsonSerializerOptions);
 
@@ -63,7 +63,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     public void MapsAllFieldsFromStorageToDataModel()
     {
         // Arrange.
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<MultiPropsModel>.ModelBuildingOptions)
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), null, JsonSerializerOptions.Default);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, JsonSerializerOptions.Default);
 
@@ -89,7 +89,7 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
     {
         // Arrange.
         var jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<MultiPropsModel>.ModelBuildingOptions)
+        var model = new VectorStoreRecordJsonModelBuilder(RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>.ModelBuildingOptions)
             .Build(typeof(MultiPropsModel), null, jsonSerializerOptions);
         var sut = new RedisJsonVectorStoreRecordMapper<MultiPropsModel>(model, jsonSerializerOptions);
 

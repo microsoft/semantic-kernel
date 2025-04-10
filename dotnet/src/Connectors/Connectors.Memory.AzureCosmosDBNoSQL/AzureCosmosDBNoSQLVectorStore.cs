@@ -60,12 +60,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(AzureCosmosDBNoSQLCompositeKey)} keys are supported.");
-        }
-
-        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>(
             this._database,
             name,
             new()

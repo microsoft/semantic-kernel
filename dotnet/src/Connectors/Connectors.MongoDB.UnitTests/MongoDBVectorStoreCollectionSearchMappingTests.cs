@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -18,7 +19,7 @@ public sealed class MongoDBVectorStoreCollectionSearchMappingTests
 {
     private readonly VectorStoreRecordModel _model = new MongoDBModelBuilder()
         .Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =

@@ -46,7 +46,7 @@ public class AzureAISearchVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<AzureAISearchVectorStoreRecordCollection<SinglePropsModel>>(actual);
+        Assert.IsType<AzureAISearchVectorStoreRecordCollection<string, SinglePropsModel>>(actual);
     }
 
 #pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactory is obsolete

@@ -11,7 +11,7 @@ using Sdk = Pinecone;
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class PineconeVectorStoreRecordCollectionTests
 {
@@ -39,7 +39,7 @@ public class PineconeVectorStoreRecordCollectionTests
         var pineconeClient = new Sdk.PineconeClient("fake api key");
 
         // Act.
-        var sut = new PineconeVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new PineconeVectorStoreRecordCollection<string, SinglePropsModel>(
             pineconeClient,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, VectorCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, Sdk.Vector>>() });
