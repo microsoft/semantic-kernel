@@ -34,8 +34,9 @@ public sealed class ResourceTemplateDefinition
 
     /// <summary>
     /// Gets or sets the kernel instance to invoke the resource template handler.
+    /// If not provided, an instance registered in DI container will be used.
     /// </summary>
-    public required Kernel Kernel { get; init; }
+    public Kernel? Kernel { get; set; }
 
     /// <summary>
     /// Checks if the given Uri matches the resource template.
@@ -58,6 +59,10 @@ public sealed class ResourceTemplateDefinition
         {
             this._kernelFunction = KernelFunctionFactory.CreateFromMethod(this.Handler);
         }
+
+        this.Kernel
+            ??= context.Server.Services?.GetRequiredService<Kernel>()
+            ?? throw new InvalidOperationException("Kernel is not available.");
 
         KernelArguments args = new(source: this.GetArguments(context.Params!.Uri!))
         {

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -28,9 +27,9 @@ public class AIFunctionExtensionsTests
     {
         public override string Name => name;
 
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<object?>(null);
+            return ValueTask.FromResult<object?>(null);
         }
     }
 }
