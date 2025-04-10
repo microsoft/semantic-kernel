@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.IntentTriage;
 /// An example <see cref="ComposedServiceAgent"/> based on an
 /// inner <see cref="ChatCompletionAgent"/> that relies on two
 /// language service  API's as tooling.  The invocation of the
-/// language service API's are perfomed within a <see cref="KernelPlugin"/>.
+/// language service API's are performed within a <see cref="KernelPlugin"/>.
 /// </summary>s
 /// <remarks>
 /// This agent configures the language service API's as tools for the LLM

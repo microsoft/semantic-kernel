@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.Template;
 /// <summary>
 /// An example <see cref="ServiceAgent"/> based on chat-completion API.
 /// As a <see cref="ComposedServiceAgent"/>, the inner agent is entirely
-/// responsible to provide the reponse based on its definition and tooling.
+/// responsible to provide the response based on its definition and tooling.
 /// </summary>
 [ServiceAgentProvider<ChatServiceAgentProvider>()]
 public sealed class ChatServiceAgent : ComposedServiceAgent

@@ -78,7 +78,7 @@ public abstract class ServiceAgentProvider
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An enumeration of the thread's messages.</returns>
     /// <remarks>
-    /// Messages are returned in decending order (newest first).
+    /// Messages are returned in descending order (newest first).
     /// </remarks>
     protected async IAsyncEnumerable<ChatMessageContent> GetThreadMessagesAsync(
         string threadId,
