@@ -98,9 +98,9 @@ public class RedisVectorStoreCollectionCreateMappingTests
     }
 
     [Theory]
-    [InlineData(null)]
+    [InlineData(-1)]
     [InlineData(0)]
-    public void MapToSchemaThrowsOnInvalidVectorDimensions(int? dimensions)
+    public void MapToSchemaThrowsOnInvalidVectorDimensions(int dimensions)
     {
         // Arrange.
         VectorStoreRecordPropertyModel[] properties =

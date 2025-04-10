@@ -532,7 +532,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             {
                 new VectorStoreRecordKeyProperty(nameof(SinglePropsModel.Key), typeof(string)),
                 new VectorStoreRecordDataProperty(nameof(SinglePropsModel.OriginalNameData), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel.Vector), typeof(ReadOnlyMemory<float>?), 4),
             }
         };
 
@@ -625,7 +625,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)),
             new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data_storage_name" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector_storage_name", DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 

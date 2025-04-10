@@ -67,7 +67,7 @@ public class RedisHashSetGenericDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringData", typeof(string)),
                 new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         };
 
@@ -145,7 +145,7 @@ public class RedisHashSetGenericDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringData", typeof(string)),
                 new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         };
 

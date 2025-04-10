@@ -155,7 +155,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
                 new VectorStoreRecordDataProperty("StringProperty", typeof(string)),
                 new VectorStoreRecordDataProperty("IntProperty", typeof(int)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             }
         };
     }

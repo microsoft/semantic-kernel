@@ -16,6 +16,7 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorAttribute"/> class.
     /// </summary>
+    [Obsolete("This constructor is obsolete, since Dimensions is now a required parameter.", error: true)]
     public VectorStoreRecordVectorAttribute()
     {
     }
@@ -26,6 +27,11 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// <param name="Dimensions">The number of dimensions that the vector has.</param>
     public VectorStoreRecordVectorAttribute(int Dimensions)
     {
+        if (Dimensions <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(Dimensions), "Dimensions must be greater than zero.");
+        }
+
         this.Dimensions = Dimensions;
     }
 
@@ -60,7 +66,7 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// This property is required when creating collections, but can be omitted if not using that functionality.
     /// If not provided when trying to create a collection, create will fail.
     /// </remarks>
-    public int? Dimensions { get; private set; }
+    public int Dimensions { get; private set; }
 
     /// <summary>
     /// Gets the kind of index to use.
@@ -86,5 +92,5 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// <remarks>
     /// For example, the property name might be "MyProperty" and the storage name might be "my_property".
     /// </remarks>
-    public string? StoragePropertyName { get; set; }
+    public string? StoragePropertyName { get; init; }
 }

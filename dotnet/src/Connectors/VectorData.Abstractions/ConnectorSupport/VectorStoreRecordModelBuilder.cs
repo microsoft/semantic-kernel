@@ -252,10 +252,7 @@ public class VectorStoreRecordModelBuilder
                             $"Property '{property.ModelName}' is present in the {nameof(VectorStoreRecordDefinition)} as a vector property, but the .NET property on type '{type?.Name}' has an incompatible attribute.");
                     }
 
-                    if (definitionVectorProperty.Dimensions is not null)
-                    {
-                        vectorProperty.Dimensions = definitionVectorProperty.Dimensions;
-                    }
+                    vectorProperty.Dimensions = definitionVectorProperty.Dimensions;
 
                     if (definitionVectorProperty.IndexKind is not null)
                     {

@@ -55,10 +55,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
                     new VectorStoreRecordKeyProperty(nameof(VectorStoreGenericDataModel<TKey>.Key), typeof(TKey)),
                     new VectorStoreRecordDataProperty("string", typeof(string)),
                     new VectorStoreRecordDataProperty("integer", typeof(int)),
-                    new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>))
-                    {
-                        Dimensions = 10
-                    }
+                    new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
                 ]
             };
         }

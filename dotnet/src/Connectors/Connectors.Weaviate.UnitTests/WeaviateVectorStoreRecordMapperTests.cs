@@ -41,7 +41,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
                         new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
                         new VectorStoreRecordDataProperty("HotelName", typeof(string)),
                         new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                        new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>))
+                        new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10)
                     ]
                 },
                 s_jsonSerializerOptions),

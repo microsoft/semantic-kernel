@@ -95,7 +95,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
         CreateIndexRequest request = new()
         {
             Name = this.CollectionName,
-            Dimension = vectorProperty.Dimensions ?? throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection."),
+            Dimension = vectorProperty.Dimensions,
             Metric = MapDistanceFunction(vectorProperty),
             Spec = new ServerlessIndexSpec
             {
@@ -405,7 +405,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
             // "Either 'vector' or 'ID' must be provided"
             // Since we are doing a query, we don't have a vector to provide, so we fake one.
             // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
-            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions!.Value]),
+            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions]),
             Filter = new PineconeFilterTranslator().Translate(filter, this._model),
         };
 

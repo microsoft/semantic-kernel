@@ -422,7 +422,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
         [VectorStoreRecordData]
         public string FunctionInfo { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> FunctionInfoEmbedding { get; set; }
     }
 

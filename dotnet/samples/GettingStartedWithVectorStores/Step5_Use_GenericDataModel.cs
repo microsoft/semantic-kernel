@@ -44,7 +44,7 @@ public class Step5_Use_GenericDataModel(ITestOutputHelper output, VectorStoresFi
                 new VectorStoreRecordDataProperty("Category", typeof(string)),
                 new VectorStoreRecordDataProperty("Term", typeof(string)),
                 new VectorStoreRecordDataProperty("Definition", typeof(string)),
-                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536 },
+                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536),
             }
         };
 

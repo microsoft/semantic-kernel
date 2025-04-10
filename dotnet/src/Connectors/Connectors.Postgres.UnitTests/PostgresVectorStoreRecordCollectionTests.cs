@@ -39,7 +39,7 @@ public class PostgresVectorStoreRecordCollectionTests
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 100, DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 100) { DistanceFunction = DistanceFunction.ManhattanDistance }
             ]
         };
         var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<int>>()

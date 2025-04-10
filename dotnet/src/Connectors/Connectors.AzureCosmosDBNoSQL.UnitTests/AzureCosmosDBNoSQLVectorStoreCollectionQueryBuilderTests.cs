@@ -25,7 +25,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreCollectionQueryBuilderTests
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordVectorProperty("TestProperty1", typeof(string)) { StoragePropertyName = "test_property_1" },
+                new VectorStoreRecordVectorProperty("TestProperty1", typeof(string), 10) { StoragePropertyName = "test_property_1" },
                 new VectorStoreRecordDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
                 new VectorStoreRecordDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
             ]

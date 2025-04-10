@@ -87,7 +87,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
         };
         var vectorSearchProfile = new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName);
 
-        return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions.Value, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
+        return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
     }
 
     /// <summary>

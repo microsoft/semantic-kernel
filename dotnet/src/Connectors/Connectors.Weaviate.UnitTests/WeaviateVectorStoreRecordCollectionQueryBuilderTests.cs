@@ -42,7 +42,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
                     new VectorStoreRecordDataProperty("HotelName", typeof(string)) { StoragePropertyName = "hotelName" },
                     new VectorStoreRecordDataProperty("HotelCode", typeof(string)) { StoragePropertyName = "hotelCode" },
                     new VectorStoreRecordDataProperty("Tags", typeof(string[])) { StoragePropertyName = "tags" },
-                    new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "descriptionEmbeddding" },
+                    new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "descriptionEmbeddding" },
                 ]
             });
 

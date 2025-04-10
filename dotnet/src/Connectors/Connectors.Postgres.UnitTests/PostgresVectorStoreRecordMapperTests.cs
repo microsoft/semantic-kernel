@@ -163,7 +163,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
                 new VectorStoreRecordDataProperty("StringProperty", typeof(string)),
                 new VectorStoreRecordDataProperty("IntProperty", typeof(int)),
                 new VectorStoreRecordDataProperty("StringArray", typeof(IEnumerable<string>)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             }
         };
     }

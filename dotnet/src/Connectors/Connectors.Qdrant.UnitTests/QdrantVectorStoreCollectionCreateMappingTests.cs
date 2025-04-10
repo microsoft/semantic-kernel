@@ -52,9 +52,9 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     }
 
     [Theory]
-    [InlineData(null)]
+    [InlineData(-1)]
     [InlineData(0)]
-    public void MapSingleVectorThrowsIfDimensionsIsInvalid(int? dimensions)
+    public void MapSingleVectorThrowsIfDimensionsIsInvalid(int dimensions)
     {
         // Arrange.
         var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = dimensions };

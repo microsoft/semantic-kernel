@@ -20,7 +20,7 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
     /// This property is required when creating collections, but can be omitted if not using that functionality.
     /// If not provided when trying to create a collection, create will fail.
     /// </remarks>
-    public int? Dimensions { get; set; }
+    public int Dimensions { get; set; }
 
     /// <summary>
     /// The kind of index to use.
