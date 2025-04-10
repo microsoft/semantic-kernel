@@ -68,7 +68,7 @@ chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
 google = [
-    "google-cloud-aiplatform == 1.86.0",
+    "google-cloud-aiplatform == 1.87.0",
     "google-generativeai ~= 0.8"
 ]
 faiss = [
@@ -124,7 +124,7 @@ usearch = [
     "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
-    "weaviate-client>=4.10,<5.0",
+    "weaviate-client>=4.10,<4.13",
 ]
 pandas = [
     "pandas ~= 2.2"
