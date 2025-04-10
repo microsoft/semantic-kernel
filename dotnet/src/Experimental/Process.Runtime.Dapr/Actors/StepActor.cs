@@ -234,7 +234,14 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
                 functionParameters = this._inputs[message.FunctionName];
             }
 
-            functionParameters![kvp.Key] = kvp.Value;
+            if (kvp.Value is KernelProcessEventData proxyData)
+            {
+                functionParameters![kvp.Key] = proxyData.ToObject();
+            }
+            else
+            {
+                functionParameters![kvp.Key] = kvp.Value;
+            }
         }
     }
 
@@ -301,24 +308,22 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             await this.StateManager.SaveStateAsync().ConfigureAwait(false);
 
             await this.EmitEventAsync(
-                new ProcessEvent
-                {
-                    Namespace = this._eventNamespace!,
-                    SourceId = $"{targetFunction}.OnResult",
-                    Data = invokeResult.GetValue<object>()
-                }).ConfigureAwait(false);
+                ProcessEvent.Create(
+                    invokeResult.GetValue<object>(),
+                    this._eventNamespace!,
+                    sourceId: $"{targetFunction}.OnResult",
+                    eventVisibility: KernelProcessEventVisibility.Public)).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             this._logger?.LogError(ex, "Error in Step {StepName}: {ErrorMessage}", this.Name, ex.Message);
             await this.EmitEventAsync(
-                new ProcessEvent
-                {
-                    Namespace = this._eventNamespace!,
-                    SourceId = $"{targetFunction}.OnError",
-                    Data = KernelProcessError.FromException(ex),
-                    IsError = true
-                }).ConfigureAwait(false);
+                ProcessEvent.Create(
+                    KernelProcessError.FromException(ex),
+                    this._eventNamespace!,
+                    sourceId: $"{targetFunction}.OnError",
+                    eventVisibility: KernelProcessEventVisibility.Public,
+                    isError: true)).ConfigureAwait(false);
         }
         finally
         {

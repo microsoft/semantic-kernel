@@ -14,6 +14,7 @@ from azure.ai.projects.models import (
     MessageTextFileCitationAnnotation,
     MessageTextFilePathAnnotation,
     MessageTextUrlCitationAnnotation,
+    RequiredFunctionToolCall,
     RunStep,
     RunStepDeltaCodeInterpreterDetailItemObject,
     RunStepDeltaCodeInterpreterImageOutput,
@@ -214,7 +215,7 @@ def get_function_call_contents(
     if not isinstance(tool_calls, (list, tuple)):
         return function_call_contents
     for tool_call in tool_calls:
-        if not isinstance(tool_call, RunStepFunctionToolCall):
+        if not isinstance(tool_call, RequiredFunctionToolCall):
             continue
         fcc = FunctionCallContent(
             id=tool_call.id,

@@ -19,6 +19,17 @@ using ChatTokenUsage = OpenAI.Chat.ChatTokenUsage;
 public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     /// <summary>
+    /// Gets the root client for the service.
+    /// </summary>
+    protected abstract TClient Client { get; }
+}
+
+/// <summary>
+/// Base class for samples that demonstrate the usage of agents.
+/// </summary>
+public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
+{
+    /// <summary>
     /// Metadata key to indicate the assistant as created for a sample.
     /// </summary>
     protected const string SampleMetadataKey = "sksample";
@@ -37,17 +48,6 @@ public abstract class BaseAgentsTest<TClient>(ITestOutputHelper output) : BaseAg
             { SampleMetadataKey, bool.TrueString }
         });
 
-    /// <summary>
-    /// Gets the root client for the service.
-    /// </summary>
-    protected abstract TClient Client { get; }
-}
-
-/// <summary>
-/// Base class for samples that demonstrate the usage of agents.
-/// </summary>
-public abstract class BaseAgentsTest(ITestOutputHelper output) : BaseTest(output, redirectSystemConsoleOutput: true)
-{
     /// <summary>
     /// Common method to write formatted agent chat content to the console.
     /// </summary>
