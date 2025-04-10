@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 /// <summary>
 /// Represents a conversation thread for an Open AI Assistant agent.
 /// </summary>
-public sealed class OpenAIAssistantAgentThread : AgentThread
+public class OpenAIAssistantAgentThread : AgentThread
 {
     private readonly bool _useThreadConstructorExtension = false;
     private readonly AssistantClient _client;

@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Represents a conversation thread for an Azure AI agent.
 /// </summary>
-public sealed class AzureAIAgentThread : AgentThread
+public class AzureAIAgentThread : AgentThread
 {
     private readonly AgentsClient _client;
     private readonly IEnumerable<ThreadMessageOptions>? _messages;
