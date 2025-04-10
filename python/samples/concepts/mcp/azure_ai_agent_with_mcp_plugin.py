@@ -4,77 +4,64 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import (
-    AzureAIAgent,
-    AzureAIAgentSettings,
-    ChatHistoryAgentThread,
-)
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
+from semantic_kernel.contents import ChatHistory
 
 """
-The following sample demonstrates how to create a chat completion agent that
-answers questions about Github using a Semantic Kernel Plugin from a MCP server. 
-The Chat Completion Service is passed directly via the ChatCompletionAgent constructor.
-Additionally, the plugin is supplied via the constructor.
+The following sample demonstrates how to create a AzureAIAgent that
+answers questions about Github using a Semantic Kernel Plugin from a MCP server.
 """
 
 
 async def main():
-    # 1. Create the agent
-    ai_agent_settings = AzureAIAgentSettings.create()
-
     async with (
+        # 1. Login to Azure and create a Azure AI Project Client
+        DefaultAzureCredential() as creds,
+        AzureAIAgent.create_client(credential=creds) as client,
+        # 2. Create the MCP plugin
         MCPStdioPlugin(
             name="github",
             description="Github Plugin",
             command="npx",
             args=["-y", "@modelcontextprotocol/server-github"],
         ) as github_plugin,
-        DefaultAzureCredential() as creds,
-        AzureAIAgent.create_client(
-            credential=creds,
-            conn_str=ai_agent_settings.project_connection_string.get_secret_value(),
-        ) as client,
     ):
-        agent_definition = await client.agents.create_agent(
-            model=ai_agent_settings.model_deployment_name,
-            name="GithubAgent",
-            instructions="You are a microsoft/semantic-kernel Issue Triage Agent. "
-            "You look at all issues that have the tag: 'triage' and 'python'."
-            "When you find one that is untriaged, you will suggest a new assignee "
-            "based on the issue description, look at recent closed PR's for issues in the same area. "
-            "You will also suggest additional context if needed, like related issues or a bug fix. ",
-        )
+        # 3. Create the agent, with the MCP plugin and the thread
         agent = AzureAIAgent(
             client=client,
-            definition=agent_definition,
+            definition=await client.agents.create_agent(
+                model=AzureAIAgentSettings.create().model_deployment_name,
+                name="GithubAgent",
+                instructions="You are a microsoft/semantic-kernel Issue Triage Agent. "
+                "You look at all issues that have the tag: 'triage' and 'python'."
+                "When you find one that is untriaged, you will suggest a new assignee "
+                "based on the issue description, look at recent closed PR's for issues in the same area. "
+                "You will also suggest additional context if needed, like related issues or a bug fix. ",
+            ),
             plugins=[github_plugin],  # add the sample plugin to the agent
         )
+        thread: AzureAIAgentThread | None = None
+        # 4. Print instructions and set the initial user input
         print("Starting Azure AI Agent with MCP Plugin sample...")
         print("Once the first prompt is answered, you can further ask questions, use `exit` to exit.")
-        # Initial user input
-        # This is the first message that will be sent to the agent
         user_input = "Find the latest untriaged, unassigned issues and suggest new assignees."
         print(f"# User: {user_input}")
-        # 2. Create a thread to hold the conversation
-        # If no thread is provided, a new thread will be
-        # created and returned with the initial response
-        thread: ChatHistoryAgentThread | None = None
-        messages = []
+        messages = ChatHistory()
+        messages.add_user_message(user_input)
         try:
             while user_input.lower() != "exit":
-                # 3. Invoke the agent for a response
-                messages.append(ChatMessageContent(role=AuthorRole.USER, content=user_input))
+                # 5. Invoke the agent for a response
                 response = await agent.get_response(messages=messages, thread=thread)
                 print(f"# {response.name}: {response} ")
+                messages.add_message(response.content)
                 thread = response.thread
+                # 6. Get a new user input
                 user_input = input("# User: ")
         finally:
-            # 4. Cleanup: Clear the thread
+            # 7. Cleanup: Clear the thread
             await thread.delete() if thread else None
-            await client.agents.delete_agent(agent_definition.id)
+            await client.agents.delete_agent(agent.definition.id)
 
         """
         Sample output:
