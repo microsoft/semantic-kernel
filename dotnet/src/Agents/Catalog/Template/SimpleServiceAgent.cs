@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Template;
 /// responsible to provide the response based on its definition and tooling.
 /// </summary>
 /// <remarks>
-/// This approach doesn't provide for the introducion of custom code
+/// This approach doesn't provide for the introduction of custom code
 /// to manipulate or intercept the response.  This works well for
 /// a case where the focus is the agent's tooling and avoids the need
 /// to navigate internal patterns for implementing a customer agent.
