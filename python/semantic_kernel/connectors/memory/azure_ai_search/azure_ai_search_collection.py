@@ -17,9 +17,14 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.record_definition import (
+    VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
+    VectorStoreRecordVectorField,
+)
 from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
 from semantic_kernel.data.vector_search import (
+    KeywordHybridSearchMixin,
     VectorizableTextSearchMixin,
     VectorizedSearchMixin,
     VectorSearchFilter,
@@ -33,6 +38,7 @@ from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
@@ -49,6 +55,7 @@ class AzureAISearchCollection(
     VectorizableTextSearchMixin[TKey, TModel],
     VectorizedSearchMixin[TKey, TModel],
     VectorTextSearchMixin[TKey, TModel],
+    KeywordHybridSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """Azure AI Search collection implementation."""
@@ -241,6 +248,7 @@ class AzureAISearchCollection(
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
+        keywords: OptionalOneOrMany[str] = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         search_args: dict[str, Any] = {
@@ -248,6 +256,7 @@ class AzureAISearchCollection(
             "skip": options.skip,
             "include_total_count": options.include_total_count,
         }
+        vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
         if options.filter.filters:
             search_args["filter"] = self._build_filter_string(options.filter)
         if search_text is not None:
@@ -257,15 +266,29 @@ class AzureAISearchCollection(
                 VectorizableTextQuery(
                     text=vectorizable_text,
                     k_nearest_neighbors=options.top,
-                    fields=options.vector_field_name,
+                    fields=vector_field.name if vector_field else None,
                 )
             ]
         if vector is not None:
+            if keywords is not None:
+                # hybrid search
+                search_args["search_fields"] = (
+                    [options.keyword_field_name]
+                    if options.keyword_field_name
+                    else [
+                        field.name
+                        for field in self.data_model_definition.fields
+                        if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_searchable
+                    ]
+                )
+                if not search_args["search_fields"]:
+                    raise VectorStoreOperationException("No searchable fields found for hybrid search.")
+                search_args["search_text"] = keywords if isinstance(keywords, str) else ", ".join(keywords)
             search_args["vector_queries"] = [
                 VectorizedQuery(
                     vector=vector,
                     k_nearest_neighbors=options.top,
-                    fields=options.vector_field_name,
+                    fields=vector_field.name if vector_field else None,
                 )
             ]
         if "vector_queries" not in search_args and "search_text" not in search_args:

@@ -44,7 +44,7 @@ from semantic_kernel.data import (
     vectorstoremodel,
 )
 from semantic_kernel.data.const import DISTANCE_FUNCTION_DIRECTION_HELPER, DistanceFunction, IndexKind
-from semantic_kernel.data.vector_search import add_vector_to_records
+from semantic_kernel.data.vector_search import KeywordHybridSearchMixin, add_vector_to_records
 
 # This is a rather complex sample, showing how to use the vector store
 # with a number of different collections.
@@ -279,6 +279,29 @@ async def main(collection: str, use_azure_openai: bool):
         print_with_color("Now we can start searching.", Colors.CBLUE)
         print_with_color("  For each type of search, enter a search term, for instance `python`.", Colors.CBLUE)
         print_with_color("  Enter exit to exit, and skip or nothing to skip this search.", Colors.CBLUE)
+        if isinstance(record_collection, KeywordHybridSearchMixin):
+            search_text = input("Enter search text for hybrid text search: ")
+            if search_text.lower() == "exit":
+                await cleanup(record_collection)
+                return
+            if not search_text or search_text.lower() != "skip":
+                print("-" * 30)
+                print_with_color(
+                    f"Using hybrid text search, for {distance_function.value}, "
+                    f"the {'higher' if DISTANCE_FUNCTION_DIRECTION_HELPER[distance_function](1, 0) else 'lower'} the score the better",  # noqa: E501
+                    Colors.CBLUE,
+                )
+                try:
+                    vector = (await embedder.generate_raw_embeddings([search_text]))[0]
+                    search_results = await record_collection.hybrid_search(
+                        keywords=search_text, vector=vector, options=options
+                    )
+                    if search_results.total_count == 0:
+                        print("\nNothing found...\n")
+                    else:
+                        [print_record(result) async for result in search_results.results]
+                except Exception as e:
+                    print(f"Error: {e}")
         if isinstance(record_collection, VectorTextSearchMixin):
             search_text = input("Enter search text for text search: ")
             if search_text.lower() == "exit":
