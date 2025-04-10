@@ -17,6 +17,8 @@ public abstract class BaseTest : TextWriter
     /// </summary>
     protected virtual bool ForceOpenAI { get; } = false;
 
+    protected IConfigurationRoot Configuration { get; }
+
     protected ITestOutputHelper Output { get; }
 
     protected ILoggerFactory LoggerFactory { get; }
@@ -83,13 +85,13 @@ public abstract class BaseTest : TextWriter
         this.Output = output;
         this.LoggerFactory = new XunitLogger(output);
 
-        IConfigurationRoot configRoot = new ConfigurationBuilder()
+        this.Configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Development.json", true)
             .AddEnvironmentVariables()
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
 
-        TestConfiguration.Initialize(configRoot);
+        TestConfiguration.Initialize(this.Configuration);
 
         // Redirect System.Console output to the test output if requested
         if (redirectSystemConsoleOutput)

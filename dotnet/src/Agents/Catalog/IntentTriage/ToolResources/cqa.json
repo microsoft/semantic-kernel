@@ -1,0 +1,477 @@
+﻿{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Microsoft Cognitive Language Service - Custom Question Answering",
+    "description": "An API to get answer on questions related to business operation",
+    "version": "2023-04-01"
+  },
+  "servers": [
+    {
+      "url": "${language.resourceUrl}/language"
+    }
+  ],
+  "security": [
+    {
+      "${language.resourceConnectionName}": []
+    }
+  ],
+  "paths": {
+    "/:query-knowledgebases": {
+      "post": {
+        "description": "Answers the specified question using your knowledge base.",
+        "operationId": "CQA_Query_Knowledgebases",
+        "parameters": [
+          {
+            "name": "projectName",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "${cqa.projectName}"
+            },
+            "description": "The name of the project to use. value must be '${cqa.projectName}'"
+          },
+          {
+            "name": "deploymentName",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "${cqa.deploymentName}"
+            },
+            "description": "The name of the specific deployment of the project to use. value must be '${cqa.deploymentName}'"
+          },
+          {
+            "name": "api-version",
+            "in": "query",
+            "description": "The API version to use for this operation.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "${language.resourceVersion}"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The payload required to invoke the service and retrieve an answer from the knowledge base",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryKBInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "A successful response to get answers from knowledge base.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryKBResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [ "error" ],
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "$ref": "#/components/schemas/Error"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "Error response."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+  },
+  "components": {
+    "securitySchemes": {
+      "${language.resourceConnectionName}": {
+        "type": "apiKey",
+        "description": "A subscription key for a Language service resource.",
+        "name": "ocp-apim-subscription-key",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "QueryKBInput": {
+        "type": "object",
+        "description": "payload to query a knowledge base.",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "User question to query against the knowledge base."
+          },
+          "top": {
+            "type": "integer",
+            "description": "Max number of answers to be returned for the question.",
+            "format": "int32",
+            "default": 5
+          },
+          "confidenceScoreThreshold": {
+            "type": "number",
+            "format": "double",
+            "description": "Minimum threshold score for answers, value ranges from 0 to 1. Default value is 0.6",
+            "maximum": 1,
+            "minimum": 0,
+            "default": 0.6
+          },
+          "rankerType": {
+            "type": "string",
+            "description": "Type of ranker to be used.",
+            "x-ms-enum": {
+              "name": "RankerKind",
+              "modelAsString": true,
+              "values": [
+                {
+                  "value": "QuestionOnly",
+                  "description": "Question only ranker."
+                },
+                {
+                  "value": "Default",
+                  "description": "Default ranker."
+                }
+              ]
+            },
+            "enum": [ "Default", "QuestionOnly" ]
+          }
+        }
+      },
+      "QueryKBResult": {
+        "type": "object",
+        "description": "Represents List of Question Answers.",
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "type": "array",
+            "description": "Represents Answer Result list.",
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeBaseAnswer"
+            }
+          }
+        }
+      },
+      "KnowledgeBaseAnswer": {
+        "type": "object",
+        "description": "Represents knowledge base answer.",
+        "additionalProperties": false,
+        "properties": {
+          "questions": {
+            "type": "array",
+            "description": "List of questions associated with the answer.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "answer": {
+            "type": "string",
+            "description": "Answer text."
+          },
+          "confidenceScore": {
+            "type": "number",
+            "format": "double",
+            "description": "Answer confidence score, value ranges from 0 to 1.",
+            "maximum": 1,
+            "minimum": 0
+          },
+          "id": {
+            "type": "integer",
+            "description": "ID of the QnA result.",
+            "format": "int32"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of QnA result."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadata associated with the answer, useful to categorize or filter question answers.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "dialog": {
+            "$ref": "#/components/schemas/KnowledgeBaseAnswerDialog"
+          },
+          "answerSpan": {
+            "$ref": "#/components/schemas/AnswerSpan"
+          }
+        }
+      },
+      "KnowledgeBaseAnswerDialog": {
+        "type": "object",
+        "description": "Dialog associated with Answer.",
+        "properties": {
+          "isContextOnly": {
+            "type": "boolean",
+            "description": "To mark if a prompt is relevant only with a previous question or not. If true, do not include this QnA as search result for queries without context; otherwise, if false, ignores context and includes this QnA in search result."
+          },
+          "prompts": {
+            "type": "array",
+            "description": "List of prompts associated with the answer.",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeBaseAnswerPrompt"
+            }
+          }
+        }
+      },
+      "KnowledgeBaseAnswerPrompt": {
+        "type": "object",
+        "description": "Prompt for an answer.",
+        "properties": {
+          "displayOrder": {
+            "type": "integer",
+            "description": "Index of the prompt - used in ordering of the prompts.",
+            "format": "int32"
+          },
+          "qnaId": {
+            "type": "integer",
+            "description": "QnA ID corresponding to the prompt.",
+            "format": "int32"
+          },
+          "displayText": {
+            "type": "string",
+            "description": "Text displayed to represent a follow up question prompt.",
+            "maxLength": 200
+          }
+        }
+      },
+      "QueryFilters": {
+        "type": "object",
+        "description": "filters over knowledge base.",
+        "additionalProperties": false,
+        "properties": {
+          "metadataFilter": {
+            "type": "object",
+            "$ref": "#/components/schemas/MetadataFilter"
+          },
+          "sourceFilter": {
+            "type": "object",
+            "$ref": "#/components/schemas/SourceFilter"
+          },
+          "logicalOperation": {
+            "type": "string",
+            "description": "Logical operation used to join metadata filter with source filter.",
+            "$ref": "#/components/schemas/LogicalOperationKind",
+            "default": "AND"
+          }
+        }
+      },
+      "MetadataFilter": {
+        "type": "object",
+        "description": "Find QnAs that are associated with the given list of metadata.",
+        "additionalProperties": false,
+        "properties": {
+          "metadata": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetadataRecord"
+            }
+          },
+          "logicalOperation": {
+            "type": "string",
+            "description": "Operation used to join metadata filters.",
+            "$ref": "#/components/schemas/LogicalOperationKind",
+            "default": "AND"
+          }
+        }
+      },
+      "MetadataRecord": {
+        "type": "object",
+        "description": "Object to provide the key value pair for each metadata.",
+        "additionalProperties": false,
+        "required": [ "key", "value" ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Metadata Key from Metadata dictionary used in the QnA."
+          },
+          "value": {
+            "type": "string",
+            "description": "Metadata Value from Metadata dictionary used in the QnA."
+          }
+        }
+      },
+      "LogicalOperationKind": {
+        "type": "string",
+        "description": "Set to 'OR' or 'AND' for using corresponding logical operation.",
+        "x-ms-enum": {
+          "name": "LogicalOperationKind",
+          "modelAsString": true
+        },
+        "enum": [ "AND", "OR" ]
+      },
+      "SourceFilter": {
+        "type": "array",
+        "description": "Find QnAs that are associated with any of the given list of sources in knowledge base.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "AnswerSpan": {
+        "type": "object",
+        "description": "Answer span object of QnA.",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Predicted text of answer span."
+          },
+          "confidenceScore": {
+            "type": "number",
+            "x-ms-client-name": "confidence",
+            "description": "Predicted score of answer span, value ranges from 0 to 1.",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "description": "The answer span offset from the start of answer.",
+            "format": "int32"
+          },
+          "length": {
+            "type": "integer",
+            "description": "The length of the answer span.",
+            "format": "int32"
+          }
+        }
+      },
+      "Error": {
+        "required": [ "code", "message" ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable representation of the error."
+          },
+          "target": {
+            "type": "string",
+            "description": "The target of the error."
+          },
+          "details": {
+            "type": "array",
+            "description": "An array of details about specific errors that led to this reported error.",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            }
+          },
+          "innererror": {
+            "$ref": "#/components/schemas/InnerErrorModel"
+          }
+        },
+        "additionalProperties": true,
+        "description": "The error object."
+      },
+      "InnerErrorModel": {
+        "required": [ "code", "message" ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/InnerErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message."
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Error details."
+          },
+          "target": {
+            "type": "string",
+            "description": "Error target."
+          },
+          "innererror": {
+            "$ref": "#/components/schemas/InnerErrorModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "An object containing more specific information about the error."
+      },
+      "ErrorCode": {
+        "type": "string",
+        "description": "Human-readable error code.",
+        "enum": [
+          "InvalidRequest",
+          "InvalidArgument",
+          "Unauthorized",
+          "Forbidden",
+          "NotFound",
+          "ProjectNotFound",
+          "OperationNotFound",
+          "AzureCognitiveSearchNotFound",
+          "AzureCognitiveSearchIndexNotFound",
+          "TooManyRequests",
+          "AzureCognitiveSearchThrottling",
+          "AzureCognitiveSearchIndexLimitReached",
+          "InternalServerError",
+          "ServiceUnavailable",
+          "Timeout",
+          "QuotaExceeded",
+          "Conflict",
+          "Warning"
+        ],
+        "x-ms-enum": {
+          "name": "ErrorCode",
+          "modelAsString": true
+        }
+      },
+      "InnerErrorCode": {
+        "type": "string",
+        "description": "Human-readable error code.",
+        "enum": [
+          "InvalidRequest",
+          "InvalidParameterValue",
+          "KnowledgeBaseNotFound",
+          "AzureCognitiveSearchNotFound",
+          "AzureCognitiveSearchThrottling",
+          "ExtractionFailure",
+          "InvalidRequestBodyFormat",
+          "EmptyRequest",
+          "MissingInputDocuments",
+          "InvalidDocument",
+          "ModelVersionIncorrect",
+          "InvalidDocumentBatch",
+          "UnsupportedLanguageCode",
+          "InvalidCountryHint"
+        ],
+        "x-ms-enum": {
+          "name": "InnerErrorCode",
+          "modelAsString": true
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Error response.",
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/Error"
+          }
+        },
+        "required": [ "error" ]
+      }
+    }
+  }
+}
