@@ -51,7 +51,7 @@ public static class McpServerBuilderExtensions
                 }
             }
 
-            return [.. tools];
+            return tools;
         });
 
         return builder;
