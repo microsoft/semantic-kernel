@@ -94,7 +94,7 @@ def get_openai_chat_completion_service_and_request_settings(
     """
     from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
 
-    chat_service = OpenAIChatCompletion(service_id=service_id, instruction_role=instruction_role, env_file_path=".env")
+    chat_service = OpenAIChatCompletion(service_id=service_id, instruction_role=instruction_role)
     request_settings = OpenAIChatPromptExecutionSettings(
         service_id=service_id, max_tokens=2000, temperature=0.7, top_p=0.8
     )

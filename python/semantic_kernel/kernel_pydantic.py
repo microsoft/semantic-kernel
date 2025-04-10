@@ -1,14 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import logging
 from typing import Annotated, Any, ClassVar, TypeVar
-from warnings import warn
 
 from pydantic import BaseModel, ConfigDict, Field, UrlConstraints
 from pydantic.networks import AnyUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 HttpsUrl = Annotated[AnyUrl, UrlConstraints(max_length=2083, allowed_schemes=["https"])]
+
+logger = logging.getLogger("semantic_kernel")
 
 
 class KernelBaseModel(BaseModel):
@@ -51,7 +53,6 @@ class KernelBaseSettings(BaseSettings):
         """Initialize the settings class."""
         # Remove any None values from the kwargs so that defaults are used.
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
-
         super().__init__(**kwargs)
 
     def __new__(cls: type["T"], *args: Any, **kwargs: Any) -> "T":
@@ -76,5 +77,7 @@ class KernelBaseSettings(BaseSettings):
     @classmethod
     def create(cls: type["T"], **data: Any) -> "T":
         """Update the model_config with the prefix."""
-        warn("Create is deprecated, use the class constructor instead.", DeprecationWarning, 2)
+        logger.warning(
+            "The create method is deprecated. Use the __new__ method instead.",
+        )
         return cls(**data)
