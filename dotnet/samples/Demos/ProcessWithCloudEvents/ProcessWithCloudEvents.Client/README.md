@@ -1,54 +1,54 @@
-# React + TypeScript + Vite
+# React App for SK Process with Cloud Events
+## Getting Started
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Follow the steps below to set up, run, and debug the React app for SK Process with Cloud Events.
 
-Currently, two official plugins are available:
+### Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (LTS version recommended)
+- Yarn (package manager)
 
-## Expanding the ESLint configuration
+### Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Navigate to the project directory:
+  ```bash
+  cd <repo>/dotnet/samples/Demos/ProcessWithCloudEvents/ProcessWithCloudEvents.Client
+  ```
+2. Install the dependencies:
+  ```bash
+  yarn install
+  ```
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+Alternatively, you can use the existing Visual Studio Code task:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. Open the Command Palette in Visual Studio Code (`Ctrl+Shift+P` or `Cmd+Shift+P` on macOS).
+2. Search for and select `Tasks: Run Task`.
+3. Choose the `yarn: install` task from the list to install the dependencies.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Running the Application
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+1. Ensure that the backend server is running.
+
+2. Start the development server:
+  ```bash
+  yarn: run dev
+  ```
+  Alternatively, you can use the existing Visual Studio Code task `yarn: run dev`.
+
+3. Open your browser and navigate to `http://localhost:5173` to view the app.
+
+### Usage
+
+1. Select cloud technology to be used.
+2. Select SK Process to be used.
+3. Interact with the UI to send events/messages to the backend. The UI will display any incoming events/messages from the backend.
+4. Use the provided buttons/inputs to trigger specific actions or events as needed.
+
+### Debugging
+
+1. Run the application.
+2. Start the app in debug mode:
+  - If using Visual Studio Code, go to the "Run and Debug" panel and select `Launch Edge against localhost`.
+3. Set breakpoints in your code to inspect and debug as needed.
+
+For more details, refer to the official React documentation: [React Docs](https://reactjs.org/docs/getting-started.html).
