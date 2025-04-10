@@ -15,10 +15,10 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace Microsoft.SemanticKernel.Agents.Template;
 
 /// <summary>
-/// Provider to create a <see cref="ChatServiceAgent"/> instance and
+/// Provider to create a <see cref="SimpleServiceAgent"/> instance and
 /// its associated <see cref="AgentThread"/>.
 /// </summary>
-public class ChatServiceAgentProvider(IConfiguration configuration, ILoggerFactory loggerFactory)
+public class SimpleServiceAgentProvider(IConfiguration configuration, ILoggerFactory loggerFactory)
     : ServiceAgentProvider(configuration, loggerFactory)
 {
     /// <inheritdoc/>
@@ -26,21 +26,25 @@ public class ChatServiceAgentProvider(IConfiguration configuration, ILoggerFacto
     {
         Kernel kernel = await this.CreateKernelAsync();
 
-        ChatServiceAgent agent =
+        SimpleServiceAgent agent =
             new()
             {
                 Id = id,
-                Name = name ?? "DemoAgent",
+                Name = name ?? "SimpleAgent",
                 Kernel = kernel,
             };
 
         return agent;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Responsible for creating and initializing the agent thread to be
+    /// passed to the agent during invocation.
+    /// </summary>
     public override async ValueTask<AgentThread> CreateThreadAsync(string threadId, CancellationToken cancellationToken)
     {
-        IAsyncEnumerable<ChatMessageContent> messages = this.GetThreadMessagesAsync(threadId, limit: null, cancellationToken);
+        // Only retrieve the most recent message from the external thread.
+        IAsyncEnumerable<ChatMessageContent> messages = this.GetThreadMessagesAsync(threadId, limit: 1, cancellationToken);
 
         ChatHistory history = [.. await messages.ToArrayAsync(cancellationToken)];
 
@@ -49,6 +53,11 @@ public class ChatServiceAgentProvider(IConfiguration configuration, ILoggerFacto
         return agentThread;
     }
 
+    // NOTE: A OOTB agent will exist in a particular user subscription and Foundry project
+    // The ability to connect to AI services from this project is absolute required.
+    // Specifics on how this is managed by the hosting container may evolve, but for now
+    // the expected approach is being used here.
+    // The target model will be defined as part of the agent configuration.
     private async ValueTask<Kernel> CreateKernelAsync()
     {
         ConnectionProperties openAIConnectionProperties = await this.Client.GetConnectionAsync();

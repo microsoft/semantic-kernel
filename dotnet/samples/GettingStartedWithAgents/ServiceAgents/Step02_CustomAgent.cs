@@ -5,16 +5,15 @@ using Microsoft.SemanticKernel.Agents.Template;
 namespace GettingStarted.ServiceAgents;
 
 /// <summary>
-/// Demonstrate invocation of <see cref="ChatServiceAgent"/>.
+/// Demonstrate invocation of <see cref="CustomServiceAgent"/>.
 /// </summary>
-public class Step01_ChatAgent(ITestOutputHelper output)
-    : BaseServiceAgentSample<ChatServiceAgent>(output)
+public class Step02_CustomAgent(ITestOutputHelper output)
+    : BaseServiceAgentSample<CustomServiceAgent>(output)
 {
     protected override string[] Questions =>
         [
-            "Hello",
             "Why is the sky blue?",
             "How big is a rainbow?",
-            "Thank you"
+            "Have you heard of louis wain? he created fantastic cat drawings."
         ];
 }

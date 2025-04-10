@@ -7,7 +7,7 @@ namespace GettingStarted.ServiceAgents;
 /// <summary>
 /// Demonstrate invocation of an IntentTriageAgent.
 /// </summary>
-public class Step02_IntentTriage(ITestOutputHelper output)
+public class Step03_IntentTriage(ITestOutputHelper output)
         : BaseServiceAgentSample<IntentTriageAgent3>(output)
 {
     protected override string[] Questions =>
