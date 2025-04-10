@@ -7,8 +7,8 @@
 - Support ability to allow devs to create custom patterns for orchestrating multiple SK agents
   - Well-defined building blocks for custom patterns
     - Abstractions
-      - Wrapper
-        - Naming: container?, actor?
+      - Actor
+        - Naming: [SK agent / Orchestration] <- Orchestration/Agent actor <- Orchestration
         - agent
         - agent thread
         - chat history
@@ -19,6 +19,8 @@
         - Internal orchestration agent
           - Capture results from the agents
           - Relay messages
+      - Transitions
+        - Data transform logic
 
 - Use those building blocks to build out-of-the-box patterns
   - Built-in patterns
@@ -90,7 +92,6 @@
   - In the orchestration level?
   - In the agent level?
 
-
 ## Building blocks
 
 ### Diagram
@@ -101,8 +102,13 @@ graph TD
   EXT_Topic[External Topic]
 
   %% Outer Block
-  subgraph Pattern
-    subgraph PG[Pattern Graph]
+  subgraph Orchestration
+    subgraph Orchestration Actor
+      RelayResult[Relay Result → External Topic]
+      RelayTask[Relay Task ← External Topic]
+    end
+
+    subgraph PG[Orchestration Graph]
       AG0[agent 0]
       AG1[agent 1]
       AG2[agent 2]
@@ -112,14 +118,44 @@ graph TD
 
     IT[Internal Topic]
 
-    subgraph Pattern Actor
-      RelayResult[Relay Result → External Topic]
-      RelayTask[Relay Task ← External Topic]
-    end
-
   end
 
   %% Connections
-  PG --> IT --> RelayResult --> EXT_Topic
-  EXT_Topic --> RelayTask --> IT --> PG
+  EXT_Topic --> |1\. Task start message type| RelayTask
+  RelayTask --> |2\. Task start message type| IT
+  IT --> |3\. Task start message type| PG
+
+  PG --> |4\. Other message types| IT
+  IT --> |4\. Other message types| PG
+
+  PG --> |5\. Result message type| IT
+  IT --> |6\. Result message type| RelayResult
+  RelayResult --> |7\. Result message type| EXT_Topic
+```
+
+```mermaid
+graph TD
+  subgraph Sample
+    Concurrent
+    subgraph Sequential_0
+        AgentA_0
+        AgentB_0
+        AgentC_0
+        AgentA_0 --> AgentB_0
+        AgentB_0 --> AgentC_0
+    end
+
+    subgraph Sequential_1
+        AgentA_1
+        AgentB_1
+        AgentC_1
+        AgentA_1 --> AgentB_1
+        AgentB_1 --> AgentC_1
+    end
+
+    Concurrent --> Sequential_0
+    Concurrent --> Sequential_1
+    Sequential_0 --> RC[Result Collection]
+    Sequential_1 --> RC[Result Collection]
+  end
 ```
