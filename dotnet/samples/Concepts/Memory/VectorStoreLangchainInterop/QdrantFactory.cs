@@ -37,14 +37,18 @@ public static class QdrantFactory
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateQdrantLangchainInteropVectorStore(QdrantClient qdrantClient)
-        => new QdrantLangchainInteropVectorStore(qdrantClient);
+        => new QdrantLangchainInteropVectorStore(new QdrantVectorStore(qdrantClient), qdrantClient);
 
-    private sealed class QdrantLangchainInteropVectorStore(QdrantClient qdrantClient)
-        : QdrantVectorStore(qdrantClient)
+    private sealed class QdrantLangchainInteropVectorStore(
+        IVectorStore innerStore,
+        QdrantClient qdrantClient)
+        : IVectorStore
     {
         private readonly QdrantClient _qdrantClient = qdrantClient;
 
-        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey : notnull
+            where TRecord : notnull
         {
             // Create a Qdrant collection. To be compatible with Langchain
             // we need to use a custom record definition that matches the
@@ -53,7 +57,7 @@ public static class QdrantFactory
             // a struct and this isn't supported by the default mapper.
             // Since langchain creates collections without named vector support
             // we should set HasNamedVectors to false.
-            var collection = new QdrantVectorStoreRecordCollection<LangchainDocument<Guid>>(
+            var collection = new QdrantVectorStoreRecordCollection<Guid, LangchainDocument<Guid>>(
                 _qdrantClient,
                 name,
                 new()
@@ -90,6 +94,10 @@ public static class QdrantFactory
 
             throw new NotSupportedException("This VectorStore is only usable with Guid keys and LangchainDocument<Guid> record types or string keys and LangchainDocument<string> record types");
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
     }
 
     /// <summary>

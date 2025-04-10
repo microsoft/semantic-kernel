@@ -4,6 +4,8 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 internal static class AzureCosmosDBNoSQLConstants
 {
+    internal const string VectorStoreSystemName = "azure.cosmosdbnosql";
+
     /// <summary>
     /// Reserved key property name in Azure CosmosDB NoSQL.
     /// </summary>

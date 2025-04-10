@@ -41,6 +41,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         var lines = await File.ReadAllLinesAsync("./TestData/semantic-kernel-info.txt");
 
@@ -108,6 +109,16 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
 
             return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken);
         }
+
+        /// <inheritdoc />
+        public object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            ArgumentNullException.ThrowIfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+                vectorizedSearch.GetService(serviceType, serviceKey);
+        }
     }
 
     /// <summary>
@@ -130,7 +141,7 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         [VectorStoreRecordData]
         public required string Link { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

@@ -13,6 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 [ExcludeFromCodeCoverage]
 internal static class MongoDBConstants
 {
+    internal const string VectorStoreSystemName = "mongodb";
+
     /// <summary>Default ratio of number of nearest neighbors to number of documents to return.</summary>
     internal const int DefaultNumCandidatesRatio = 10;
 

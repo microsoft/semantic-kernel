@@ -39,14 +39,18 @@ public static class AzureAISearchFactory
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
     /// <returns>The <see cref="IVectorStore"/>.</returns>
     public static IVectorStore CreateQdrantLangchainInteropVectorStore(SearchIndexClient searchIndexClient)
-        => new AzureAISearchLangchainInteropVectorStore(searchIndexClient);
+        => new AzureAISearchLangchainInteropVectorStore(new AzureAISearchVectorStore(searchIndexClient), searchIndexClient);
 
-    private sealed class AzureAISearchLangchainInteropVectorStore(SearchIndexClient searchIndexClient, AzureAISearchVectorStoreOptions? options = default)
-        : AzureAISearchVectorStore(searchIndexClient, options)
+    private sealed class AzureAISearchLangchainInteropVectorStore(
+        IVectorStore innerStore,
+        SearchIndexClient searchIndexClient)
+        : IVectorStore
     {
         private readonly SearchIndexClient _searchIndexClient = searchIndexClient;
 
-        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey : notnull
+            where TRecord : notnull
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -59,7 +63,7 @@ public static class AzureAISearchFactory
             // since the Langchain schema includes a metadata field that is
             // a JSON string containing the source property. Parsing this
             // string and extracting the source is not supported by the default mapper.
-            return (new AzureAISearchVectorStoreRecordCollection<TRecord>(
+            return (new AzureAISearchVectorStoreRecordCollection<string, TRecord>(
                 _searchIndexClient,
                 name,
                 new()
@@ -68,6 +72,10 @@ public static class AzureAISearchFactory
                     JsonObjectCustomMapper = new LangchainInteropMapper() as IVectorStoreRecordMapper<TRecord, JsonObject>
                 }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
     }
 
     /// <summary>

@@ -25,12 +25,12 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
     private async Task CanSplitBatchToAccountForMaxParameterLimit(bool includeVectors)
     {
         var collection = fixture.Collection;
-        SimpleModel<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleModel<string>()
+        SimpleRecord<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleRecord<string>()
         {
             Id = fixture.GenerateNextKey<string>(),
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
         var keys = inserted.Select(record => record.Id).ToArray();
 
@@ -52,13 +52,13 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
     public async Task UpsertBatchIsAtomic()
     {
         var collection = fixture.Collection;
-        SimpleModel<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleModel<string>()
+        SimpleRecord<string>[] inserted = Enumerable.Range(0, SqlServerMaxParameters + 1).Select(i => new SimpleRecord<string>()
         {
             // The last Id is set to NULL, so it must not be inserted and the whole batch should fail
             Id = i < SqlServerMaxParameters ? fixture.GenerateNextKey<string>() : null!,
             Number = 100 + i,
             Text = i.ToString(),
-            Floats = Enumerable.Range(0, SimpleModel<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
+            Floats = Enumerable.Range(0, SimpleRecord<string>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
 
         var keys = inserted.Select(record => record.Id).Where(key => key is not null).ToArray();
@@ -66,7 +66,11 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
 
         VectorStoreOperationException ex = await Assert.ThrowsAsync<VectorStoreOperationException>(() => collection.UpsertAsync(inserted).ToArrayAsync().AsTask());
         Assert.Equal("UpsertBatch", ex.OperationName);
-        Assert.Equal(collection.CollectionName, ex.CollectionName);
+
+        var metadata = collection.GetService(typeof(VectorStoreRecordCollectionMetadata)) as VectorStoreRecordCollectionMetadata;
+
+        Assert.NotNull(metadata?.CollectionName);
+        Assert.Equal(metadata.CollectionName, ex.CollectionName);
 
         // Make sure that no records were inserted!
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());

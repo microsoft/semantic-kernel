@@ -191,9 +191,6 @@ internal static class VectorStoreRecordPropertyVerification
         return null;
     }
 
-    internal static bool IsGenericDataModel(Type recordType)
-        => recordType.IsGenericType && recordType.GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>);
-
 #if NET6_0_OR_GREATER
     private static readonly ConstructorInfo s_objectGetDefaultConstructorInfo = typeof(object).GetConstructor(Type.EmptyTypes)!;
 #endif

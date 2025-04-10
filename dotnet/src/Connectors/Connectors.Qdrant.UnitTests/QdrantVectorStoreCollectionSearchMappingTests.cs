@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
@@ -20,7 +21,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
     private readonly VectorStoreRecordModel _model =
         new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
         .Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =
@@ -119,7 +120,7 @@ public class QdrantVectorStoreCollectionSearchMappingTests
         mapperMock.Setup(x => x.MapFromStorageToDataModel(It.IsAny<PointStruct>(), It.IsAny<StorageToDataModelMapperOptions>())).Returns(new DataModel { Id = 1, DataField = "data 1", Embedding = new float[] { 1, 2, 3 } });
 
         // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult<DataModel>(scoredPoint, mapperMock.Object, true, "Qdrant", "mycollection", "query");
+        var actual = QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult<DataModel>(scoredPoint, mapperMock.Object, true, "Qdrant", "myvectorstore", "mycollection", "query");
 
         // Assert.
         Assert.Equal(1ul, actual.Record.Id);

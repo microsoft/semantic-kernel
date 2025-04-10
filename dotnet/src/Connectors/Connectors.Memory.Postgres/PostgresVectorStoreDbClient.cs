@@ -27,9 +27,11 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 {
     private readonly string _schema = schema;
 
-    private IPostgresVectorStoreCollectionSqlBuilder _sqlBuilder = new PostgresVectorStoreCollectionSqlBuilder();
+    private readonly NpgsqlConnectionStringBuilder _connectionStringBuilder = new(dataSource.ConnectionString);
 
     public NpgsqlDataSource DataSource { get; } = dataSource;
+
+    public string? DatabaseName => this._connectionStringBuilder.Database;
 
     /// <inheritdoc />
     public async Task<bool> DoesTableExistsAsync(string tableName, CancellationToken cancellationToken = default)
@@ -38,7 +40,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildDoesTableExistCommand(this._schema, tableName);
+            var commandInfo = PostgresSqlBuilder.BuildDoesTableExistCommand(this._schema, tableName);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -57,7 +59,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildGetTablesCommand(this._schema);
+            var commandInfo = PostgresSqlBuilder.BuildGetTablesCommand(this._schema);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -71,11 +73,11 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     public async Task CreateTableAsync(string tableName, VectorStoreRecordModel model, bool ifNotExists = true, CancellationToken cancellationToken = default)
     {
         // Prepare the SQL commands.
-        var commandInfo = this._sqlBuilder.BuildCreateTableCommand(this._schema, tableName, model, ifNotExists);
+        var commandInfo = PostgresSqlBuilder.BuildCreateTableCommand(this._schema, tableName, model, ifNotExists);
         var createIndexCommands =
             PostgresVectorStoreRecordPropertyMapping.GetIndexInfo(model.Properties)
                 .Select(index =>
-                    this._sqlBuilder.BuildCreateIndexCommand(this._schema, tableName, index.column, index.kind, index.function, index.isVector, ifNotExists));
+                    PostgresSqlBuilder.BuildCreateIndexCommand(this._schema, tableName, index.column, index.kind, index.function, index.isVector, ifNotExists));
 
         // Execute the commands in a transaction.
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -111,21 +113,21 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     /// <inheritdoc />
     public async Task DeleteTableAsync(string tableName, CancellationToken cancellationToken = default)
     {
-        var commandInfo = this._sqlBuilder.BuildDropTableCommand(this._schema, tableName);
+        var commandInfo = PostgresSqlBuilder.BuildDropTableCommand(this._schema, tableName);
         await this.ExecuteNonQueryAsync(commandInfo, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task UpsertAsync(string tableName, Dictionary<string, object?> row, string keyColumn, CancellationToken cancellationToken = default)
     {
-        var commandInfo = this._sqlBuilder.BuildUpsertCommand(this._schema, tableName, keyColumn, row);
+        var commandInfo = PostgresSqlBuilder.BuildUpsertCommand(this._schema, tableName, keyColumn, row);
         await this.ExecuteNonQueryAsync(commandInfo, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async Task UpsertBatchAsync(string tableName, IEnumerable<Dictionary<string, object?>> rows, string keyColumn, CancellationToken cancellationToken = default)
     {
-        var commandInfo = this._sqlBuilder.BuildUpsertBatchCommand(this._schema, tableName, keyColumn, rows.ToList());
+        var commandInfo = PostgresSqlBuilder.BuildUpsertBatchCommand(this._schema, tableName, keyColumn, rows.ToList());
         await this.ExecuteNonQueryAsync(commandInfo, cancellationToken).ConfigureAwait(false);
     }
 
@@ -136,7 +138,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildGetCommand(this._schema, tableName, model, key, includeVectors);
+            var commandInfo = PostgresSqlBuilder.BuildGetCommand(this._schema, tableName, model, key, includeVectors);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             if (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -164,7 +166,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildGetBatchCommand(this._schema, tableName, model, listOfKeys, includeVectors);
+            var commandInfo = PostgresSqlBuilder.BuildGetBatchCommand(this._schema, tableName, model, listOfKeys, includeVectors);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
@@ -177,7 +179,7 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     /// <inheritdoc />
     public async Task DeleteAsync<TKey>(string tableName, string keyColumn, TKey key, CancellationToken cancellationToken = default)
     {
-        var commandInfo = this._sqlBuilder.BuildDeleteCommand(this._schema, tableName, keyColumn, key);
+        var commandInfo = PostgresSqlBuilder.BuildDeleteCommand(this._schema, tableName, keyColumn, key);
         await this.ExecuteNonQueryAsync(commandInfo, cancellationToken).ConfigureAwait(false);
     }
 
@@ -192,13 +194,31 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
 
         await using (connection)
         {
-            var commandInfo = this._sqlBuilder.BuildGetNearestMatchCommand(this._schema, tableName, model, vectorProperty, vectorValue, legacyFilter, newFilter, skip, includeVectors, limit);
+            var commandInfo = PostgresSqlBuilder.BuildGetNearestMatchCommand(this._schema, tableName, model, vectorProperty, vectorValue, legacyFilter, newFilter, skip, includeVectors, limit);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 var distance = dataReader.GetDouble(dataReader.GetOrdinal(PostgresConstants.DistanceColumnName));
                 yield return (Row: this.GetRecord(dataReader, model, includeVectors), Distance: distance);
+            }
+        }
+    }
+
+    public async IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, VectorStoreRecordModel model,
+        Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        await using (connection)
+        {
+            var commandInfo = PostgresSqlBuilder.BuildSelectWhereCommand(this._schema, tableName, model, filter, top, options);
+            using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
+            using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield return this.GetRecord(dataReader, model, options.IncludeVectors);
             }
         }
     }
@@ -212,26 +232,9 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
             return;
         }
 
-        var commandInfo = this._sqlBuilder.BuildDeleteBatchCommand(this._schema, tableName, keyColumn, listOfKeys);
+        var commandInfo = PostgresSqlBuilder.BuildDeleteBatchCommand(this._schema, tableName, keyColumn, listOfKeys);
         await this.ExecuteNonQueryAsync(commandInfo, cancellationToken).ConfigureAwait(false);
     }
-
-    #region internal ===============================================================================
-
-    /// <summary>
-    /// Sets the SQL builder for the client.
-    /// </summary>
-    /// <param name="sqlBuilder"></param>
-    /// <remarks>
-    /// This method is used for other Semnatic Kernel connectors that may need to override the default SQL
-    /// used by this client.
-    /// </remarks>
-    internal void SetSqlBuilder(IPostgresVectorStoreCollectionSqlBuilder sqlBuilder)
-    {
-        this._sqlBuilder = sqlBuilder;
-    }
-
-    #endregion
 
     #region private ================================================================================
 

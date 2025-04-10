@@ -99,13 +99,13 @@ public class VectorStore_HybridSearch_Simple_AzureAISearch(ITestOutputHelper out
         [VectorStoreRecordKey]
         public string Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Category { get; set; }
 
         [VectorStoreRecordData]
         public string Term { get; set; }
 
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsFullTextIndexed = true)]
         public string Definition { get; set; }
 
         [VectorStoreRecordVector(1536)]

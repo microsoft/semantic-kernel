@@ -8,7 +8,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
-/// Options when creating a <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class RedisJsonVectorStoreRecordCollectionOptions<TRecord>
 {

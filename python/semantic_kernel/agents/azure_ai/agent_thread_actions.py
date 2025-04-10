@@ -491,10 +491,8 @@ class AgentThreadActions:
                                 if sub_content:
                                     yield sub_content
 
-                        if action_result.function_result_streaming_content:
-                            yield action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_result_streaming_content)
+                        if action_result.function_result_streaming_content and output_messages is not None:
+                            output_messages.append(action_result.function_result_streaming_content)
 
                         break
 

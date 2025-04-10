@@ -16,7 +16,7 @@ public sealed record WeaviateHotel
     public Guid HotelId { get; init; }
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>
@@ -37,7 +37,7 @@ public sealed record WeaviateHotel
     public List<string> Tags { get; set; } = [];
 
     /// <summary>A data field.</summary>
-    [VectorStoreRecordData(IsFullTextSearchable = true)]
+    [VectorStoreRecordData(IsFullTextIndexed = true)]
     public string Description { get; set; }
 
     [VectorStoreRecordData]

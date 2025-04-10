@@ -59,7 +59,7 @@ public sealed class SqliteVectorStoreRecordPropertyMappingTests
         var properties = new List<VectorStoreRecordPropertyModel>()
         {
             new VectorStoreRecordKeyPropertyModel("Key", typeof(string)) { StorageName = "Key" },
-            new VectorStoreRecordDataPropertyModel("Data", typeof(int)) { StorageName = "my_data", IsFilterable = true },
+            new VectorStoreRecordDataPropertyModel("Data", typeof(int)) { StorageName = "my_data", IsIndexed = true },
             new VectorStoreRecordVectorPropertyModel("Vector", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 4,

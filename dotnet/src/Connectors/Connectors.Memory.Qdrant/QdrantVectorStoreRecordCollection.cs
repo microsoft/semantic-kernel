@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -18,22 +20,22 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Qdrant as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="Guid"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class QdrantVectorStoreRecordCollection<TRecord> :
-    IVectorStoreRecordCollection<ulong, TRecord>,
-    IVectorStoreRecordCollection<Guid, TRecord>,
-    IKeywordHybridSearch<TRecord>
+public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IKeywordHybridSearch<TRecord>
+    where TKey : notnull
+    where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
+
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
-
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "Qdrant";
 
     /// <summary>The name of the upsert operation for telemetry purposes.</summary>
     private const string UpsertName = "Upsert";
@@ -44,7 +46,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly MockableQdrantClient _qdrantClient;
 
-    /// <summary>The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
@@ -59,10 +61,10 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 #pragma warning restore CS0618
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
@@ -72,10 +74,10 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
@@ -84,6 +86,11 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(qdrantClient);
         Verify.NotNullOrWhiteSpace(collectionName);
+
+        if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException("Only ulong and Guid keys are supported (and object for dynamic mapping).");
+        }
 
         // Assign.
         this._qdrantClient = qdrantClient;
@@ -96,13 +103,19 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.PointStructCustomMapper ?? new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
 #pragma warning restore CS0618
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
     public string CollectionName => this._collectionName;
 
     /// <inheritdoc />
-    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "CollectionExists",
@@ -110,7 +123,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         if (!this._options.HasNamedVectors)
         {
@@ -146,7 +159,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         }
 
         // Add indexes for each of the data properties that require filtering.
-        var dataProperties = this._model.DataProperties.Where(x => x.IsFilterable);
+        var dataProperties = this._model.DataProperties.Where(x => x.IsIndexed);
         foreach (var dataProperty in dataProperties)
         {
             if (QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType))
@@ -161,7 +174,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             else
             {
                 // TODO: This should move to model validation
-                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsFilterable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
+                throw new InvalidOperationException($"Property {nameof(VectorStoreRecordDataProperty.IsIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not supported for filtering. The Qdrant VectorStore supports filtering on {string.Join(", ", QdrantVectorStoreCollectionCreateMapping.s_schemaTypeMap.Keys.Select(x => x.Name))} properties only.");
             }
 
             await this.RunOperationAsync(
@@ -174,13 +187,13 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         }
 
         // Add indexes for each of the data properties that require full text search.
-        dataProperties = this._model.DataProperties.Where(x => x.IsFullTextSearchable);
+        dataProperties = this._model.DataProperties.Where(x => x.IsFullTextIndexed);
         foreach (var dataProperty in dataProperties)
         {
             // TODO: This should move to model validation
             if (dataProperty.Type != typeof(string))
             {
-                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string properties only.");
+                throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
             }
 
             await this.RunOperationAsync(
@@ -194,7 +207,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -203,7 +216,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("DeleteCollection",
             async () =>
             {
@@ -226,7 +239,7 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             });
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -235,185 +248,49 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(Guid key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(key);
-
-        var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
-        return retrievedPoints.FirstOrDefault();
-    }
-
-    /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<ulong> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
-    {
-        return this.GetBatchByPointIdAsync(keys, key => new PointId { Num = key }, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public virtual IAsyncEnumerable<TRecord> GetAsync(IEnumerable<Guid> keys, GetRecordOptions? options = default, CancellationToken cancellationToken = default)
-    {
-        return this.GetBatchByPointIdAsync(keys, key => new PointId { Uuid = key.ToString("D") }, options, cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public virtual Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(key);
-
-        return this.RunOperationAsync(
-            DeleteName,
-            () => this._qdrantClient.DeleteAsync(
-                this._collectionName,
-                key,
-                wait: true,
-                cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public virtual Task DeleteAsync(Guid key, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(key);
-
-        return this.RunOperationAsync(
-            DeleteName,
-            () => this._qdrantClient.DeleteAsync(
-                this._collectionName,
-                key,
-                wait: true,
-                cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public virtual Task DeleteAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        return this.RunOperationAsync(
-            DeleteName,
-            () => this._qdrantClient.DeleteAsync(
-                this._collectionName,
-                keys.ToList(),
-                wait: true,
-                cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public virtual Task DeleteAsync(IEnumerable<Guid> keys, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(keys);
-
-        return this.RunOperationAsync(
-            DeleteName,
-            () => this._qdrantClient.DeleteAsync(
-                this._collectionName,
-                keys.ToList(),
-                wait: true,
-                cancellationToken: cancellationToken));
-    }
-
-    /// <inheritdoc />
-    public virtual async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(record);
-
-        // Create point from record.
-        var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this._collectionName,
-            UpsertName,
-            () => this._mapper.MapFromDataToStorageModel(record));
-
-        // Upsert.
-        await this.RunOperationAsync(
-            UpsertName,
-            () => this._qdrantClient.UpsertAsync(this._collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
-        return pointStruct.Id.Num;
-    }
-
-    /// <inheritdoc />
-    async Task<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(TRecord record, CancellationToken cancellationToken)
-    {
-        Verify.NotNull(record);
-
-        // Create point from record.
-        var pointStruct = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this._collectionName,
-            UpsertName,
-            () => this._mapper.MapFromDataToStorageModel(record));
-
-        // Upsert.
-        await this.RunOperationAsync(
-            UpsertName,
-            () => this._qdrantClient.UpsertAsync(this._collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
-        return Guid.Parse(pointStruct.Id.Uuid);
-    }
-
-    /// <inheritdoc />
-    public virtual async IAsyncEnumerable<ulong> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(records);
-
-        // Create points from records.
-        var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this._collectionName,
-            UpsertName,
-            () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
-
-        // Upsert.
-        await this.RunOperationAsync(
-            UpsertName,
-            () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        foreach (var pointStruct in pointStructs)
-        {
-            yield return pointStruct.Id.Num;
-        }
-    }
-
-    /// <inheritdoc />
-    async IAsyncEnumerable<Guid> IVectorStoreRecordCollection<Guid, TRecord>.UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        Verify.NotNull(records);
-
-        // Create points from records.
-        var pointStructs = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
-            this._collectionName,
-            UpsertName,
-            () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
-
-        // Upsert.
-        await this.RunOperationAsync(
-            UpsertName,
-            () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
-
-        foreach (var pointStruct in pointStructs)
-        {
-            yield return Guid.Parse(pointStruct.Id.Uuid);
-        }
-    }
-
-    /// <summary>
-    /// Get the requested records from the Qdrant store using the provided keys.
-    /// </summary>
-    /// <param name="keys">The keys of the points to retrieve.</param>
-    /// <param name="keyConverter">Function to convert the provided keys to point ids.</param>
-    /// <param name="options">The retrieval options.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The retrieved points.</returns>
-    private async IAsyncEnumerable<TRecord> GetBatchByPointIdAsync<TKey>(
+    public async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<TKey> keys,
-        Func<TKey, PointId> keyConverter,
-        GetRecordOptions? options,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        GetRecordOptions? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "Retrieve";
+
         Verify.NotNull(keys);
 
         // Create options.
-        var pointsIds = keys.Select(key => keyConverter(key)).ToArray();
+        var pointsIds = new List<PointId>();
+
+        Type? keyType = null;
+
+        foreach (var key in keys)
+        {
+            switch (key)
+            {
+                case ulong id:
+                    if (keyType == typeof(Guid))
+                    {
+                        throw new NotSupportedException("Mixing ulong and Guid keys is not supported");
+                    }
+
+                    keyType = typeof(ulong);
+                    pointsIds.Add(new PointId { Num = id });
+                    break;
+
+                case Guid id:
+                    if (keyType == typeof(ulong))
+                    {
+                        throw new NotSupportedException("Mixing ulong and Guid keys is not supported");
+                    }
+
+                    pointsIds.Add(new PointId { Uuid = id.ToString("D") });
+                    keyType = typeof(Guid);
+                    break;
+
+                default:
+                    throw new NotSupportedException($"The provided key type '{key.GetType().Name}' is not supported by Qdrant.");
+            }
+        }
+
         var includeVectors = options?.IncludeVectors ?? false;
 
         // Retrieve data points.
@@ -437,7 +314,8 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
             }
 
             yield return VectorStoreErrorHandler.RunModelConversion(
-                DatabaseName,
+                QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
@@ -445,7 +323,180 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(key);
+
+        return this.RunOperationAsync(
+            DeleteName,
+            () => key switch
+            {
+                ulong id => this._qdrantClient.DeleteAsync(this._collectionName, id, wait: true, cancellationToken: cancellationToken),
+                Guid id => this._qdrantClient.DeleteAsync(this._collectionName, id, wait: true, cancellationToken: cancellationToken),
+                _ => throw new NotSupportedException($"The provided key type '{key.GetType().Name}' is not supported by Qdrant.")
+            });
+    }
+
+    /// <inheritdoc />
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(keys);
+
+        IList? keyList = null;
+
+        switch (keys)
+        {
+            case IEnumerable<ulong> k:
+                keyList = k.ToList();
+                break;
+
+            case IEnumerable<Guid> k:
+                keyList = k.ToList();
+                break;
+
+            case IEnumerable<object> objectKeys:
+            {
+                // We need to cast the keys to a list of the same type as the first element.
+                List<Guid>? guidKeys = null;
+                List<ulong>? ulongKeys = null;
+
+                var isFirst = true;
+                foreach (var key in objectKeys)
+                {
+                    if (isFirst)
+                    {
+                        switch (key)
+                        {
+                            case ulong l:
+                                ulongKeys = new List<ulong> { l };
+                                keyList = ulongKeys;
+                                break;
+
+                            case Guid g:
+                                guidKeys = new List<Guid> { g };
+                                keyList = guidKeys;
+                                break;
+
+                            default:
+                                throw new NotSupportedException($"The provided key type '{key.GetType().Name}' is not supported by Qdrant.");
+                        }
+
+                        isFirst = false;
+                        continue;
+                    }
+
+                    switch (key)
+                    {
+                        case ulong u when ulongKeys is not null:
+                            ulongKeys.Add(u);
+                            continue;
+
+                        case Guid g when guidKeys is not null:
+                            guidKeys.Add(g);
+                            continue;
+
+                        case Guid or ulong:
+                            throw new NotSupportedException("Mixing ulong and Guid keys is not supported");
+
+                        default:
+                            throw new NotSupportedException($"The provided key type '{key.GetType().Name}' is not supported by Qdrant.");
+                    }
+                }
+
+                break;
+            }
+        }
+
+        return this.RunOperationAsync(
+            DeleteName,
+            () => keyList switch
+            {
+                List<ulong> keysList => this._qdrantClient.DeleteAsync(
+                    this._collectionName,
+                    keysList,
+                    wait: true,
+                    cancellationToken: cancellationToken),
+
+                List<Guid> keysList => this._qdrantClient.DeleteAsync(
+                    this._collectionName,
+                    keysList,
+                    wait: true,
+                    cancellationToken: cancellationToken),
+
+                _ => throw new UnreachableException()
+            });
+    }
+
+    /// <inheritdoc />
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(record);
+
+        // Create point from record.
+        var pointStruct = VectorStoreErrorHandler.RunModelConversion(
+            QdrantConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this._collectionName,
+            UpsertName,
+            () => this._mapper.MapFromDataToStorageModel(record));
+
+        // Upsert.
+        await this.RunOperationAsync(
+            UpsertName,
+            () => this._qdrantClient.UpsertAsync(this._collectionName, [pointStruct], true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        return pointStruct.Id switch
+        {
+            { HasNum: true } => (TKey)(object)pointStruct.Id.Num,
+            { HasUuid: true } => (TKey)(object)Guid.Parse(pointStruct.Id.Uuid),
+            _ => throw new UnreachableException("The Qdrant point ID is neither a number nor a UUID.")
+        };
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(records);
+
+        // Create points from records.
+        var pointStructs = VectorStoreErrorHandler.RunModelConversion(
+            QdrantConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this._collectionName,
+            UpsertName,
+            () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
+
+        // Upsert.
+        await this.RunOperationAsync(
+            UpsertName,
+            () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        if (pointStructs.Count > 0)
+        {
+            switch (pointStructs[0].Id)
+            {
+                case { HasNum: true }:
+                    foreach (var pointStruct in pointStructs)
+                    {
+                        yield return (TKey)(object)pointStruct.Id.Num;
+                    }
+                    break;
+
+                case { HasUuid: true }:
+                    foreach (var pointStruct in pointStructs)
+                    {
+                        yield return (TKey)(object)Guid.Parse(pointStruct.Id.Uuid);
+                    }
+                    break;
+
+                default:
+                    throw new UnreachableException("The Qdrant point ID is neither a number nor a UUID.");
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -492,11 +543,68 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                DatabaseName,
+                QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "Query"));
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var translatedFilter = new QdrantFilterTranslator().Translate(filter, this._model);
+
+        // Specify whether to include vectors in the search results.
+        WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
+
+        var sortInfo = options.OrderBy.Values.Count switch
+        {
+            0 => null,
+            1 => options.OrderBy.Values[0],
+            _ => throw new NotSupportedException("Qdrant does not support ordering by more than one property.")
+        };
+
+        OrderBy? orderBy = null;
+        if (sortInfo is not null)
+        {
+            var orderByName = this._model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
+            orderBy = new(orderByName)
+            {
+                Direction = sortInfo.Ascending ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc
+            };
+        }
+
+        var scrollResponse = await this.RunOperationAsync(
+            "Scroll",
+            () => this._qdrantClient.ScrollAsync(
+                this.CollectionName,
+                translatedFilter,
+                vectorsSelector,
+                limit: (uint)(top + options.Skip),
+                orderBy,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantVectorStoreCollectionSearchMapping.MapRetrievedPointToVectorSearchResult(
+                point,
+                this._mapper,
+                options.IncludeVectors,
+                QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
+                this._collectionName,
+                "Scroll"));
+
+        foreach (var mappedResult in mappedResults)
+        {
+            yield return mappedResult;
+        }
     }
 
     /// <inheritdoc />
@@ -577,11 +685,25 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
                 point,
                 this._mapper,
                 internalOptions.IncludeVectors,
-                DatabaseName,
+                QdrantConstants.VectorStoreSystemName,
+                this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 "Query"));
 
         return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(QdrantClient) ? this._qdrantClient.QdrantClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <summary>
@@ -600,7 +722,8 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };
@@ -624,7 +747,8 @@ public class QdrantVectorStoreRecordCollection<TRecord> :
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this._collectionName,
                 OperationName = operationName
             };

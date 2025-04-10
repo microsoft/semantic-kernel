@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
@@ -14,27 +15,27 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
     internal PostgresFilterTranslator(
         VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
-        int startParamIndex)
-        : base(model, lambdaExpression, sql: null)
+        int startParamIndex,
+        StringBuilder? sql = null) : base(model, lambdaExpression, sql)
     {
         this._parameterIndex = startParamIndex;
     }
 
     internal List<object> ParameterValues => this._parameterValues;
 
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
     {
-        this.Translate(source, parent);
+        this.Translate(source);
         this._sql.Append(" @> ARRAY[");
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(']');
     }
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(" = ANY (");
-        this.Translate(source, parent);
+        this.Translate(source);
         this._sql.Append(')');
     }
 

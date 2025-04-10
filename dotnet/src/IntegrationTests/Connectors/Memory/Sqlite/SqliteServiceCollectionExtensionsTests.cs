@@ -42,11 +42,11 @@ public sealed class SqliteServiceCollectionExtensionsTests
         // Assert
         var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(collection);
+        Assert.IsType<SqliteVectorStoreRecordCollection<string, TestRecord>>(collection);
 
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+        Assert.IsType<SqliteVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
     }
 
     [Fact(Skip = SkipReason)]
@@ -60,11 +60,11 @@ public sealed class SqliteServiceCollectionExtensionsTests
         // Assert
         var collection = serviceProvider.GetRequiredService<IVectorStoreRecordCollection<ulong, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(collection);
+        Assert.IsType<SqliteVectorStoreRecordCollection<ulong, TestRecord>>(collection);
 
         var vectorizedSearch = serviceProvider.GetRequiredService<IVectorizedSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<SqliteVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+        Assert.IsType<SqliteVectorStoreRecordCollection<ulong, TestRecord>>(vectorizedSearch);
     }
 
     #region private

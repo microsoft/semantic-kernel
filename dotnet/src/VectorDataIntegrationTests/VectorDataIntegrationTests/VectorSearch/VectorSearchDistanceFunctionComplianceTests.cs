@@ -171,8 +171,8 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
                     DistanceFunction = distanceFunction,
                     IndexKind = this.IndexKind
                 },
-                new VectorStoreRecordDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty(nameof(SearchRecord.String), typeof(string)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty(nameof(SearchRecord.Int), typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty(nameof(SearchRecord.String), typeof(string)) { IsIndexed = true },
             ]
         };
 

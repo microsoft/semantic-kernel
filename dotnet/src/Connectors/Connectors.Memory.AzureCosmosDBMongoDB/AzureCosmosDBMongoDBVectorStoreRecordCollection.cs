@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -21,13 +22,16 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBMongoDB;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Azure CosmosDB MongoDB as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+    where TKey : notnull
+    where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureCosmosDBMongoDB";
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
@@ -59,10 +63,10 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     public string CollectionName { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public AzureCosmosDBMongoDBVectorStoreRecordCollection(
         IMongoDatabase mongoDatabase,
@@ -73,6 +77,11 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         Verify.NotNull(mongoDatabase);
         Verify.NotNullOrWhiteSpace(collectionName);
 
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+        }
+
         // Assign.
         this._mongoDatabase = mongoDatabase;
         this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
@@ -80,14 +89,21 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         this._options = options ?? new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
         this._mapper = this.InitializeMapper();
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+            VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
-    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("ListCollectionNames", () => this.InternalCollectionExistsAsync(cancellationToken));
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
         // To make sure that all the connectors are consistent, we throw when the collection exists.
@@ -95,7 +111,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             throw new VectorStoreOperationException("Collection already exists.")
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = "CreateCollection"
             };
@@ -105,7 +122,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         await this.RunOperationAsync("CreateCollection",
             () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
@@ -115,40 +132,42 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
+        var stringKey = this.GetStringKey(key);
 
-        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(key), cancellationToken))
+        await this.RunOperationAsync("DeleteOne", () => this._mongoCollection.DeleteOneAsync(this.GetFilterById(stringKey), cancellationToken))
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(keys), cancellationToken))
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+
+        await this.RunOperationAsync("DeleteMany", () => this._mongoCollection.DeleteManyAsync(this.GetFilterByIds(stringKeys), cancellationToken))
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
         => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.CollectionName, cancellationToken));
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
-
         const string OperationName = "Find";
+
+        var stringKey = this.GetStringKey(key);
 
         var includeVectors = options?.IncludeVectors ?? false;
 
         var record = await this.RunOperationAsync(OperationName, async () =>
         {
             using var cursor = await this
-                .FindAsync(this.GetFilterById(key), options, cancellationToken)
+                .FindAsync(this.GetFilterById(stringKey), options, cancellationToken)
                 .ConfigureAwait(false);
 
             return await cursor.SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
@@ -160,15 +179,16 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         }
 
         return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetAsync(
-        IEnumerable<string> keys,
+    public async IAsyncEnumerable<TRecord> GetAsync(
+        IEnumerable<TKey> keys,
         GetRecordOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -176,8 +196,10 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         const string OperationName = "Find";
 
+        var stringKeys = keys is IEnumerable<string> k ? k : keys.Cast<string>();
+
         using var cursor = await this
-            .FindAsync(this.GetFilterByIds(keys), options, cancellationToken)
+            .FindAsync(this.GetFilterByIds(stringKeys), options, cancellationToken)
             .ConfigureAwait(false);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
@@ -187,7 +209,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
                 if (record is not null)
                 {
                     yield return VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
+                        AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                        this._collectionMetadata.VectorStoreName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(record, new()));
@@ -197,7 +220,7 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public virtual Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -205,7 +228,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
 
         var replaceOptions = new ReplaceOptions { IsUpsert = true };
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -218,12 +242,12 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
                 .ReplaceOneAsync(this.GetFilterById(key), storageModel, replaceOptions, cancellationToken)
                 .ConfigureAwait(false);
 
-            return key;
+            return (TKey)(object)key;
         });
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -234,13 +258,13 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             if (result is not null)
             {
-                yield return result;
+                yield return (TKey)(object)result;
             }
         }
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
@@ -308,6 +332,76 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
             .ConfigureAwait(false);
 
         return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(IMongoDatabase) ? this._mongoDatabase :
+            serviceType == typeof(IMongoCollection<BsonDocument>) ? this._mongoCollection :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        // Translate the filter now, so if it fails, we throw immediately.
+        var translatedFilter = new AzureCosmosDBMongoDBFilterTranslator().Translate(filter, this._model);
+
+        SortDefinition<BsonDocument>? sortDefinition = null;
+        if (options.OrderBy.Values.Count > 0)
+        {
+            sortDefinition = Builders<BsonDocument>.Sort.Combine(
+                options.OrderBy.Values.Select(pair =>
+                {
+                    var storageName = this._model.GetDataOrKeyProperty(pair.PropertySelector).StorageName;
+
+                    return pair.Ascending
+                        ? Builders<BsonDocument>.Sort.Ascending(storageName)
+                        : Builders<BsonDocument>.Sort.Descending(storageName);
+                }));
+        }
+
+        using IAsyncCursor<BsonDocument> cursor = await this.RunOperationAsync(
+            "GetAsync",
+            async () =>
+            {
+                return await this._mongoCollection.FindAsync(translatedFilter,
+                    new()
+                    {
+                        Limit = top,
+                        Skip = options.Skip,
+                        Sort = sortDefinition
+                    },
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            }).ConfigureAwait(false);
+
+        while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
+        {
+            foreach (var response in cursor.Current)
+            {
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                    this._collectionMetadata.VectorStoreName,
+                    this.CollectionName,
+                    "GetAsync",
+                    () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
+
+                yield return record;
+            }
+        }
     }
 
     #region private
@@ -383,7 +477,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
                 {
                     var score = response[ScorePropertyName].AsDouble;
                     var record = VectorStoreErrorHandler.RunModelConversion(
-                        DatabaseName,
+                        AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                        this._collectionMetadata.VectorStoreName,
                         this.CollectionName,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
@@ -422,7 +517,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -439,7 +535,8 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -488,14 +585,25 @@ public class AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord> : IVectorS
             return this._options.BsonDocumentCustomMapper;
         }
 
-        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
-            return (new MongoDBGenericDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
+            return (new MongoDBDynamicDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
         }
 
         return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
     }
 #pragma warning restore CS0618
+
+    private string GetStringKey(TKey key)
+    {
+        Verify.NotNull(key);
+
+        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+
+        Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
+
+        return stringKey;
+    }
 
     #endregion
 }

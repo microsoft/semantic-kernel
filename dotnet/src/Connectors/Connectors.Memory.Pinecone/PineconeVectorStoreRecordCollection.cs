@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -17,14 +18,18 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Pinecone as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
+public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+    where TKey : notnull
+    where TRecord : notnull
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
-    private const string DatabaseName = "Pinecone";
-
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
@@ -38,31 +43,41 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     public string CollectionName { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and vectors in a Pinecone store.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="pineconeClient"/> is null.</exception>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
     public PineconeVectorStoreRecordCollection(Sdk.PineconeClient pineconeClient, string collectionName, PineconeVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         Verify.NotNull(pineconeClient);
         VerifyCollectionName(collectionName);
 
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping)");
+        }
+
         this._pineconeClient = pineconeClient;
         this.CollectionName = collectionName;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new VectorStoreRecordModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._mapper = this._options.VectorCustomMapper ?? new PineconeVectorStoreRecordMapper<TRecord>(this._model);
 #pragma warning restore CS0618
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+            CollectionName = collectionName
+        };
     }
 
     /// <inheritdoc />
-    public virtual Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
+    public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
         => this.RunCollectionOperationAsync(
             "CollectionExists",
             async () =>
@@ -73,7 +88,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             });
 
     /// <inheritdoc />
-    public virtual Task CreateCollectionAsync(CancellationToken cancellationToken = default)
+    public Task CreateCollectionAsync(CancellationToken cancellationToken = default)
     {
         // we already run through record property validation, so a single VectorStoreRecordVectorProperty is guaranteed.
         var vectorProperty = this._model.VectorProperty!;
@@ -104,7 +119,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
+    public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -120,7 +135,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -134,7 +149,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", other)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = "DeleteCollection"
             };
@@ -142,14 +158,12 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(key);
-
         Sdk.FetchRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
-            Ids = [key]
+            Ids = [this.GetStringKey(key)]
         };
 
         var response = await this.RunIndexOperationAsync(
@@ -164,21 +178,30 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         return VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PineconeConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             "Get",
             () => this._mapper.MapFromStorageToDataModel(result, mapperOptions));
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<TRecord> GetAsync(
-        IEnumerable<string> keys,
+    public async IAsyncEnumerable<TRecord> GetAsync(
+        IEnumerable<TKey> keys,
         GetRecordOptions? options = default,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        List<string> keysList = keys.ToList();
+#pragma warning disable CA1851 // Bogus: Possible multiple enumerations of 'IEnumerable' collection
+        var keysList = keys switch
+        {
+            IEnumerable<string> k => k.ToList(),
+            IEnumerable<object> k => k.Cast<string>().ToList(),
+            _ => throw new UnreachableException("string key should have been validated during model building")
+        };
+#pragma warning restore CA1851
+
         if (keysList.Count == 0)
         {
             yield break;
@@ -200,7 +223,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options?.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PineconeConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             "GetBatch",
             () => response.Vectors.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
@@ -212,14 +236,12 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
-
         Sdk.DeleteRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
-            Ids = [key]
+            Ids = [this.GetStringKey(key)]
         };
 
         return this.RunIndexOperationAsync(
@@ -228,11 +250,17 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual Task DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        List<string> keysList = keys.ToList();
+        var keysList = keys switch
+        {
+            IEnumerable<string> k => k.ToList(),
+            IEnumerable<object> k => k.Cast<string>().ToList(),
+            _ => throw new UnreachableException("string key should have been validated during model building")
+        };
+
         if (keysList.Count == 0)
         {
             return Task.CompletedTask;
@@ -250,12 +278,13 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
     }
 
     /// <inheritdoc />
-    public virtual async Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
         var vector = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PineconeConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             "Upsert",
             () => this._mapper.MapFromDataToStorageModel(record));
@@ -270,16 +299,17 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             "Upsert",
             indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        return vector.Id;
+        return (TKey)(object)vector.Id;
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         var vectors = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PineconeConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
             "UpsertBatch",
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
@@ -301,12 +331,12 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         foreach (var vector in vectors)
         {
-            yield return vector.Id;
+            yield return (TKey)(object)vector.Id;
         }
     }
 
     /// <inheritdoc />
-    public virtual async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -340,7 +370,7 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         };
 
         Sdk.QueryResponse response = await this.RunIndexOperationAsync(
-            "Query",
+            "VectorizedSearch",
             indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         if (response.Matches is null)
@@ -354,9 +384,10 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
 
         StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
         var records = VectorStoreErrorHandler.RunModelConversion(
-            DatabaseName,
+            PineconeConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
             this.CollectionName,
-            "Query",
+            "VectorizedSearch",
             () => skippedResults.Select(x => new VectorSearchResult<TRecord>(this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
             {
                 Id = x.Id,
@@ -367,6 +398,74 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
             .ToAsyncEnumerable();
 
         return new(records);
+    }
+
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        if (options?.OrderBy.Values.Count > 0)
+        {
+            throw new NotSupportedException("Pinecone does not support ordering.");
+        }
+
+        options ??= new();
+
+        Sdk.QueryRequest request = new()
+        {
+            TopK = (uint)(top + options.Skip),
+            Namespace = this._options.IndexNamespace,
+            IncludeValues = options.IncludeVectors,
+            IncludeMetadata = true,
+            // "Either 'vector' or 'ID' must be provided"
+            // Since we are doing a query, we don't have a vector to provide, so we fake one.
+            // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
+            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions!.Value]),
+            Filter = new PineconeFilterTranslator().Translate(filter, this._model),
+        };
+
+        Sdk.QueryResponse response = await this.RunIndexOperationAsync(
+            "Get",
+            indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
+
+        if (response.Matches is null)
+        {
+            yield break;
+        }
+
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors is true };
+        var records = VectorStoreErrorHandler.RunModelConversion(
+            PineconeConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this.CollectionName,
+            "Query",
+            () => response.Matches.Skip(options.Skip).Select(x => this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
+            {
+                Id = x.Id,
+                Values = x.Values ?? Array.Empty<float>(),
+                Metadata = x.Metadata,
+                SparseValues = x.SparseValues
+            }, mapperOptions)));
+
+        foreach (var record in records)
+        {
+            yield return record;
+        }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     private async Task<T> RunIndexOperationAsync<T>(string operationName, Func<IndexClient, Task<T>> operation)
@@ -387,7 +486,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -404,7 +504,8 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
                 CollectionName = this.CollectionName,
                 OperationName = operationName
             };
@@ -441,5 +542,16 @@ public class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCo
                 throw new ArgumentException("Collection name must contain only ASCII lowercase letters, digits and dashes.", nameof(collectionName));
             }
         }
+    }
+
+    private string GetStringKey(TKey key)
+    {
+        Verify.NotNull(key);
+
+        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+
+        Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
+
+        return stringKey;
     }
 }

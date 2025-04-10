@@ -20,7 +20,7 @@ public class QdrantVectorStoreTests(QdrantVectorStoreFixture fixture)
         var collectionFromVS = sut.GetCollection<ulong, QdrantVectorStoreFixture.HotelInfo>("SettingsPassedCollection");
         await collectionFromVS.CreateCollectionIfNotExistsAsync();
 
-        var directCollection = new QdrantVectorStoreRecordCollection<QdrantVectorStoreFixture.HotelInfo>(fixture.QdrantClient, "SettingsPassedCollection", new() { HasNamedVectors = true });
+        var directCollection = new QdrantVectorStoreRecordCollection<ulong, QdrantVectorStoreFixture.HotelInfo>(fixture.QdrantClient, "SettingsPassedCollection", new() { HasNamedVectors = true });
         await directCollection.UpsertAsync(new QdrantVectorStoreFixture.HotelInfo
         {
             HotelId = 1ul,

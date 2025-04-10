@@ -17,10 +17,10 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class AzureAISearchVectorStore : IVectorStore
+public sealed class AzureAISearchVectorStore : IVectorStore
 {
-    /// <summary>The name of this database for telemetry purposes.</summary>
-    private const string DatabaseName = "AzureAISearch";
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</summary>
     private readonly SearchIndexClient _searchIndexClient;
@@ -39,11 +39,18 @@ public class AzureAISearchVectorStore : IVectorStore
 
         this._searchIndexClient = searchIndexClient;
         this._options = options ?? new AzureAISearchVectorStoreOptions();
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+            VectorStoreName = searchIndexClient.ServiceName
+        };
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -52,12 +59,7 @@ public class AzureAISearchVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
             new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()
@@ -70,17 +72,30 @@ public class AzureAISearchVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
         var indexNamesEnumerator = indexNamesEnumerable.GetAsyncEnumerator();
 
-        var nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+        var nextResult = await this.GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         while (nextResult.more)
         {
             yield return nextResult.name;
-            nextResult = await GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
+            nextResult = await this.GetNextIndexNameAsync(indexNamesEnumerator).ConfigureAwait(false);
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 
     /// <summary>
@@ -90,7 +105,8 @@ public class AzureAISearchVectorStore : IVectorStore
     /// </summary>
     /// <param name="enumerator">The enumerator to get the next result from.</param>
     /// <returns>A value indicating whether there are more results and the current string if true.</returns>
-    private static async Task<(string name, bool more)> GetNextIndexNameAsync(ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
+    private async Task<(string name, bool more)> GetNextIndexNameAsync(
+        ConfiguredCancelableAsyncEnumerable<string>.Enumerator enumerator)
     {
         const string OperationName = "GetIndexNames";
 
@@ -103,7 +119,8 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = OperationName
             };
         }
@@ -111,7 +128,8 @@ public class AzureAISearchVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = OperationName
             };
         }

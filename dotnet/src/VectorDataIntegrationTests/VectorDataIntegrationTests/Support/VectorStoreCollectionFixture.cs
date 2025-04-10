@@ -4,12 +4,15 @@ using Microsoft.Extensions.VectorData;
 
 namespace VectorDataSpecificationTests.Support;
 
+#pragma warning disable CA1721 // Property names should not match get methods
+
 /// <summary>
 /// A test fixture that sets up a single collection in the test vector store, with a specific record definition
 /// and test data.
 /// </summary>
 public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreFixture
     where TKey : notnull
+    where TRecord : notnull
 {
     private List<TRecord>? _testData;
 
@@ -20,14 +23,14 @@ public abstract class VectorStoreCollectionFixture<TKey, TRecord> : VectorStoreF
     protected virtual string DistanceFunction => this.TestStore.DefaultDistanceFunction;
     protected virtual string IndexKind => this.TestStore.DefaultIndexKind;
 
-    protected virtual IVectorStoreRecordCollection<TKey, TRecord> CreateCollection()
+    protected virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection()
         => this.TestStore.DefaultVectorStore.GetCollection<TKey, TRecord>(this.CollectionName, this.GetRecordDefinition());
 
     public override async Task InitializeAsync()
     {
         await base.InitializeAsync();
 
-        this.Collection = this.CreateCollection();
+        this.Collection = this.GetCollection();
 
         if (await this.Collection.CollectionExistsAsync())
         {

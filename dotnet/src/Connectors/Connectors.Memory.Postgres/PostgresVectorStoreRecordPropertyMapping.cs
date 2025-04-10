@@ -185,6 +185,10 @@ internal static class PostgresVectorStoreRecordPropertyMapping
         {
             switch (property)
             {
+                case VectorStoreRecordKeyPropertyModel:
+                    // There is no need to create a separate index for the key property.
+                    break;
+
                 case VectorStoreRecordVectorPropertyModel vectorProperty:
                     var indexKind = vectorProperty.IndexKind ?? PostgresConstants.DefaultIndexKind;
                     var distanceFunction = vectorProperty.DistanceFunction ?? PostgresConstants.DefaultDistanceFunction;
@@ -209,7 +213,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
                     break;
 
                 case VectorStoreRecordDataPropertyModel dataProperty:
-                    if (dataProperty.IsFilterable)
+                    if (dataProperty.IsIndexed)
                     {
                         vectorIndexesToCreate.Add((dataProperty.StorageName, "", "", isVector: false));
                     }

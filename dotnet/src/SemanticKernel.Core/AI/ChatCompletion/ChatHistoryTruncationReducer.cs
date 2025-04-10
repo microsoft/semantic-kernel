@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +17,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// is provided (recommended), reduction will scan within the threshold window in an attempt to
 /// avoid orphaning a user message from an assistant response.
 /// </remarks>
-[Experimental("SKEXP0001")]
 public class ChatHistoryTruncationReducer : IChatHistoryReducer
 {
     /// <summary>

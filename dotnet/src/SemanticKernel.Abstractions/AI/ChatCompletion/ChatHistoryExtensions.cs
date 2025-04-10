@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// <summary>
 /// Extension methods for chat history.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class ChatHistoryExtensions
 {
     /// <summary>

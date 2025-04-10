@@ -75,6 +75,7 @@ public abstract class TestStore
         Expression<Func<TRecord, bool>>? filter = null,
         int vectorSize = 3)
         where TKey : notnull
+        where TRecord : notnull
     {
         var vector = new float[vectorSize];
         for (var i = 0; i < vectorSize; i++)
