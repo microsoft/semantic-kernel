@@ -11,11 +11,11 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override  # pragma: no cover
 
-import requests
+import httpx
 from openai import AsyncStream, BadRequestError
 from openai.lib._parsing._completions import type_to_response_format_param
-from openai.types import Completion
-from openai.types.chat.chat_completion import ChatCompletion, Choice
+from openai.types import CompletionUsage as OpenAICompletionUsage
+from openai.types.chat.chat_completion import Choice
 from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDeltaFunctionCall, ChoiceDeltaToolCall
 from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 from openai.types.chat.chat_completion_message import FunctionCall
@@ -90,10 +90,7 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
         settings.messages = self._prepare_chat_history_for_request(chat_history)
         settings.ai_model_id = settings.ai_model_id or self.ai_model_id
 
-        response = await self._send_completion_request(settings)
-        assert isinstance(response, ChatCompletion)  # nosec
-        response_metadata = self._get_metadata_from_chat_response(response)
-        return [self._create_chat_message_content(response, choice, response_metadata) for choice in response.choices]
+        return await self._send_completion_request(settings)
 
     @override
     @trace_streaming_chat_completion(MODEL_PROVIDER_NAME)
@@ -171,15 +168,22 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
     async def _send_completion_request(
         self,
         settings: OpenAIChatPromptExecutionSettings,
-    ) -> ChatCompletion | Completion | AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]:
+    ) -> list[ChatMessageContent]:
         """Execute the appropriate call to self-hosted agents."""
         try:
             settings_dict = settings.prepare_settings_dict()
             self._handle_structured_output(settings, settings_dict)
             if settings.tools is None:
                 settings_dict.pop("parallel_tool_calls", None)
-            response = requests.post(self.url, json=settings_dict, timeout=30).json()
-            return ChatCompletion(**response)
+            async with httpx.AsyncClient(timeout=30) as client:
+                raw_response = await client.post(self.url, json=settings_dict, timeout=30)
+                response = raw_response.json()
+                response_metadata = self._get_metadata_from_chat_response(response)
+                return [
+                    self._create_chat_message_content(response, Choice(**choice), response_metadata)
+                    for choice in response["choices"]
+                ]
+                # return ChatCompletion(**response)
         except BadRequestError as ex:
             if ex.code == "content_filter":
                 raise ContentFilterAIException(
@@ -216,7 +220,7 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
                 settings["response_format"] = response_format
 
     def _create_chat_message_content(
-        self, response: ChatCompletion, choice: Choice, response_metadata: dict[str, Any]
+        self, response: Any, choice: Choice, response_metadata: dict[str, Any]
     ) -> "ChatMessageContent":
         """Create a chat message content object from a choice."""
         metadata = self._get_metadata_from_chat_choice(choice)
@@ -264,13 +268,15 @@ class SelfHostedChatCompletion(ChatCompletionClientBase):
             function_invoke_attempt=function_invoke_attempt,
         )
 
-    def _get_metadata_from_chat_response(self, response: ChatCompletion) -> dict[str, Any]:
+    def _get_metadata_from_chat_response(self, response: Any) -> dict[str, Any]:
         """Get metadata from a chat response."""
         return {
-            "id": response.id,
-            "created": response.created,
-            "system_fingerprint": response.system_fingerprint,
-            "usage": CompletionUsage.from_openai(response.usage) if response.usage is not None else None,
+            "id": response["id"],
+            "created": response["created"],
+            "system_fingerprint": response["system_fingerprint"],
+            "usage": CompletionUsage.from_openai(OpenAICompletionUsage(**response["usage"]))
+            if response["usage"] is not None
+            else None,
         }
 
     def _get_metadata_from_streaming_chat_response(self, response: ChatCompletionChunk) -> dict[str, Any]:

@@ -9,10 +9,8 @@ from self_hosted_api_chat_completion import SelfHostedChatCompletion
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.kernel import Kernel
 
 load_dotenv()
@@ -42,30 +40,18 @@ async def main():
     try:
         kernel = Kernel()
 
-        kernel.add_service(
-            SelfHostedChatCompletion(
-                url=os.getenv("REVIEWER_AGENT_URL") or "", ai_model_id=REVIEWER_NAME, service_id=REVIEWER_NAME
-            )
-        )
-
-        kernel.add_service(
-            SelfHostedChatCompletion(
-                url=os.getenv("COPYWRITER_AGENT_URL") or "", ai_model_id=COPYWRITER_NAME, service_id=COPYWRITER_NAME
-            )
-        )
-
         agent_reviewer = ChatCompletionAgent(
-            service_id="artdirector",
+            id="artdirector",
             kernel=kernel,
             name=REVIEWER_NAME,
-            arguments=KernelArguments(settings=PromptExecutionSettings(service_id=REVIEWER_NAME)),
+            service=SelfHostedChatCompletion(url=os.getenv("REVIEWER_AGENT_URL") or "", ai_model_id=REVIEWER_NAME),
         )
 
         agent_writer = ChatCompletionAgent(
-            service_id="copywriter",
+            id="copywriter",
             kernel=kernel,
             name=COPYWRITER_NAME,
-            arguments=KernelArguments(settings=PromptExecutionSettings(service_id=COPYWRITER_NAME)),
+            service=SelfHostedChatCompletion(url=os.getenv("COPYWRITER_AGENT_URL") or "", ai_model_id=COPYWRITER_NAME),
         )
 
         chat = AgentGroupChat(
