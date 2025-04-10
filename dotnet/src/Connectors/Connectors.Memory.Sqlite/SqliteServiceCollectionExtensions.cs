@@ -92,7 +92,7 @@ public static class SqliteServiceCollectionExtensions
         services.AddKeyedSingleton<IVectorStoreRecordCollection<TKey, TRecord>>(
             serviceId,
             (sp, _) => (
-                new SqliteVectorStoreRecordCollection<TRecord>(
+                new SqliteVectorStoreRecordCollection<TKey, TRecord>(
                     connectionString,
                     collectionName,
                     options ?? sp.GetService<SqliteVectorStoreRecordCollectionOptions<TRecord>>())

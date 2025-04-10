@@ -89,7 +89,7 @@ public static class RedisServiceCollectionExtensions
                 var database = sp.GetRequiredService<IDatabase>();
                 var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -123,7 +123,7 @@ public static class RedisServiceCollectionExtensions
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
                 var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -155,7 +155,7 @@ public static class RedisServiceCollectionExtensions
                 var database = sp.GetRequiredService<IDatabase>();
                 var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisJsonVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -189,7 +189,7 @@ public static class RedisServiceCollectionExtensions
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
                 var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisJsonVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

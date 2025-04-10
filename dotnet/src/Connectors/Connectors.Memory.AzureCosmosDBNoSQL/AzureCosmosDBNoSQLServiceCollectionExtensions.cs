@@ -103,7 +103,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var database = sp.GetRequiredService<Database>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -145,7 +145,7 @@ public static class AzureCosmosDBNoSQLServiceCollectionExtensions
                 var database = cosmosClient.GetDatabase(databaseName);
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

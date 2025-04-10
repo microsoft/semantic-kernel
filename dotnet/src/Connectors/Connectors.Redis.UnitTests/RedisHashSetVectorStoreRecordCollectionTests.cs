@@ -15,7 +15,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Redis.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="RedisHashSetVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="RedisHashSetVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class RedisHashSetVectorStoreRecordCollectionTests
 {
@@ -48,7 +48,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         {
             SetupExecuteMock(this._redisDatabaseMock, new RedisServerException("Unknown index name"));
         }
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             collectionName);
 
@@ -71,7 +71,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
     {
         // Arrange.
         SetupExecuteMock(this._redisDatabaseMock, string.Empty);
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(this._redisDatabaseMock.Object, TestCollectionName);
 
         // Act.
         await sut.CreateCollectionAsync();
@@ -259,7 +259,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -399,7 +399,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
             .Returns((TestRecordKey1, hashEntries));
 
         // Arrange target with custom mapper.
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()
@@ -537,16 +537,16 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         };
 
         // Act.
-        var sut = new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        var sut = new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, HashEntriesCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, (string key, HashEntry[] hashEntries)>>() });
     }
 #pragma warning restore CS0618
 
-    private RedisHashSetVectorStoreRecordCollection<SinglePropsModel> CreateRecordCollection(bool useDefinition)
+    private RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel> CreateRecordCollection(bool useDefinition)
     {
-        return new RedisHashSetVectorStoreRecordCollection<SinglePropsModel>(
+        return new RedisHashSetVectorStoreRecordCollection<string, SinglePropsModel>(
             this._redisDatabaseMock.Object,
             TestCollectionName,
             new()

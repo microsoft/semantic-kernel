@@ -23,7 +23,7 @@ public class CommonRedisHashsetVectorStoreRecordCollectionTests(RedisVectorStore
 
     protected override IVectorStoreRecordCollection<string, TRecord> GetTargetRecordCollection<TRecord>(string recordCollectionName, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
     {
-        return new RedisHashSetVectorStoreRecordCollection<TRecord>(fixture.Database, recordCollectionName + "hashset", new()
+        return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(fixture.Database, recordCollectionName + "hashset", new()
         {
             VectorStoreRecordDefinition = vectorStoreRecordDefinition
         });

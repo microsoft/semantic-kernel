@@ -9,7 +9,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
-/// Options when creating a <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
 {

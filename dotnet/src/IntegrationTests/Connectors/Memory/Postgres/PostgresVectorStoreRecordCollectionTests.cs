@@ -281,31 +281,28 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
     }
 
     [Fact]
-    public async Task ItCanUpsertAndRetrieveUsingTheGenericMapperAsync()
+    public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         const int HotelId = 5;
 
-        var sut = fixture.GetCollection<int, VectorStoreGenericDataModel<int>>("GenericMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
+        var sut = fixture.GetCollection<object, Dictionary<string, object?>>("DynamicMapperWithNumericKey", GetVectorStoreRecordDefinition<int>());
 
         await sut.CreateCollectionAsync();
 
         var record = new PostgresHotel<int> { HotelId = (int)HotelId, HotelName = "Hotel 1", HotelCode = 1, ParkingIncluded = true, HotelRating = 4.5f, Tags = ["tag1", "tag2"] };
 
         // Act
-        var upsertResult = await sut.UpsertAsync(new VectorStoreGenericDataModel<int>(HotelId)
+        var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            Data =
-            {
-                { "HotelName", "Generic Mapper Hotel" },
-                { "Description", "This is a generic mapper hotel" },
-                { "HotelCode", 1 },
-                { "ParkingIncluded", true },
-                { "HotelRating", 3.6f }
-            },
-            Vectors =
-            {
-                { "DescriptionEmbedding", new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]) }
-            }
+            ["HotelId"] = HotelId,
+
+            ["HotelName"] = "Dynamic Mapper Hotel",
+            ["Description"] = "This is a dynamic mapper hotel",
+            ["HotelCode"] = 1,
+            ["ParkingIncluded"] = true,
+            ["HotelRating"] = 3.6f,
+
+            ["DescriptionEmbedding"] = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f])
         });
 
         var localGetResult = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
@@ -314,35 +311,32 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         Assert.Equal(HotelId, upsertResult);
 
         Assert.NotNull(localGetResult);
-        Assert.Equal("Generic Mapper Hotel", localGetResult.Data["HotelName"]);
-        Assert.Equal("This is a generic mapper hotel", localGetResult.Data["Description"]);
-        Assert.True((bool?)localGetResult.Data["ParkingIncluded"]);
-        Assert.Equal(3.6f, localGetResult.Data["HotelRating"]);
-        Assert.Equal([30f, 31f, 32f, 33f], ((ReadOnlyMemory<float>)localGetResult.Vectors["DescriptionEmbedding"]!).ToArray());
+        Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
+        Assert.Equal("This is a dynamic mapper hotel", localGetResult["Description"]);
+        Assert.True((bool?)localGetResult["ParkingIncluded"]);
+        Assert.Equal(3.6f, localGetResult["HotelRating"]);
+        Assert.Equal([30f, 31f, 32f, 33f], ((ReadOnlyMemory<float>)localGetResult["DescriptionEmbedding"]!).ToArray());
 
         // Act - update with null embeddings
         // Act
-        var upsertResult2 = await sut.UpsertAsync(new VectorStoreGenericDataModel<int>(HotelId)
+        var upsertResult2 = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            Data =
-            {
-                { "HotelName", "Generic Mapper Hotel" },
-                { "Description", "This is a generic mapper hotel" },
-                { "HotelCode", 1 },
-                { "ParkingIncluded", true },
-                { "HotelRating", 3.6f }
-            },
-            Vectors =
-            {
-                { "DescriptionEmbedding", null }
-            }
+            ["HotelId"] = HotelId,
+
+            ["HotelName"] = "Dynamic Mapper Hotel",
+            ["Description"] = "This is a dynamic mapper hotel",
+            ["HotelCode"] = 1,
+            ["ParkingIncluded"] = true,
+            ["HotelRating"] = 3.6f,
+
+            ["DescriptionEmbedding"] = null
         });
 
         var localGetResult2 = await sut.GetAsync(HotelId, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(localGetResult2);
-        Assert.Null(localGetResult2.Vectors["DescriptionEmbedding"]);
+        Assert.Null(localGetResult2["DescriptionEmbedding"]);
     }
 
     [Theory]

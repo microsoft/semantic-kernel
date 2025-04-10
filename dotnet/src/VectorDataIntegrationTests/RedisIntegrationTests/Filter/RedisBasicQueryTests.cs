@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using RedisIntegrationTests.Support;
@@ -14,19 +13,6 @@ namespace RedisIntegrationTests.Filter;
 public abstract class RedisBasicQueryTests(BasicQueryTests<string>.QueryFixture fixture)
     : BasicQueryTests<string>(fixture)
 {
-    // Redis does not support ordering by multiple fields, so we order by only one field.
-    protected override List<FilterRecord> GetOrderedRecords(IQueryable<FilterRecord> filtered)
-        => filtered.OrderBy(r => r.Int2).ToList();
-
-    protected override async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<string, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
-    {
-        GetFilteredRecordOptions<FilterRecord> options = new();
-
-        options.OrderBy.Ascending(r => r.Int2);
-
-        return await collection.GetAsync(filter, top, options).ToListAsync();
-    }
-
     #region Equality with null
 
     public override Task Equal_with_null_reference_type()
@@ -95,8 +81,8 @@ public class RedisJsonCollectionBasicQueryTests(RedisJsonCollectionBasicQueryTes
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(bool)).ToList()
             };
 
-        protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
-            => new RedisJsonVectorStoreRecordCollection<FilterRecord>(
+        protected override IVectorStoreRecordCollection<string, FilterRecord> GetCollection()
+            => new RedisJsonVectorStoreRecordCollection<string, FilterRecord>(
                 RedisTestStore.JsonInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });
@@ -142,8 +128,8 @@ public class RedisHashSetCollectionBasicQueryTests(RedisHashSetCollectionBasicQu
                     p.PropertyType != typeof(List<string>)).ToList()
             };
 
-        protected override IVectorStoreRecordCollection<string, FilterRecord> CreateCollection()
-            => new RedisHashSetVectorStoreRecordCollection<FilterRecord>(
+        protected override IVectorStoreRecordCollection<string, FilterRecord> GetCollection()
+            => new RedisHashSetVectorStoreRecordCollection<string, FilterRecord>(
                 RedisTestStore.HashSetInstance.Database,
                 this.CollectionName,
                 new() { VectorStoreRecordDefinition = this.GetRecordDefinition() });

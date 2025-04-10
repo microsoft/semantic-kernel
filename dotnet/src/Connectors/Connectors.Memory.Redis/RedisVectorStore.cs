@@ -58,19 +58,14 @@ public sealed class RedisVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
         if (this._options.StorageType == RedisStorageType.HashSet)
         {
-            var recordCollection = new RedisHashSetVectorStoreRecordCollection<TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            var recordCollection = new RedisHashSetVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
             return recordCollection!;
         }
         else
         {
-            var recordCollection = new RedisJsonVectorStoreRecordCollection<TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            var recordCollection = new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(this._database, name, new RedisJsonVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
             return recordCollection!;
         }
     }

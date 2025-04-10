@@ -138,7 +138,7 @@ public class SqlServerCommandBuilderTests
             expectedCommand = "IF OBJECT_ID(N'[schema].[table]', N'U') IS NULL" + Environment.NewLine + expectedCommand;
         }
 
-        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class SqlServerCommandBuilderTests
         OUTPUT inserted.[id];
         """";
 
-        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
         Assert.Equal(DBNull.Value, command.Parameters[0].Value);
         Assert.Equal("@simpleString_1", command.Parameters[1].ParameterName);
@@ -237,7 +237,7 @@ public class SqlServerCommandBuilderTests
         SELECT KeyColumn FROM @InsertedKeys;
         """";
 
-        AssertEqualIgnoreNewLines(expectedCommand, command.CommandText);
+        Assert.Equal(expectedCommand, command.CommandText, ignoreLineEndingDifferences: true);
 
         for (int i = 0; i < records.Length; i++)
         {
@@ -299,12 +299,12 @@ public class SqlServerCommandBuilderTests
 
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(connection, "schema", "tableName", model, 123L, includeVectors: true);
 
-        AssertEqualIgnoreNewLines(
+        Assert.Equal(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
         WHERE [id] = @id_0
-        """"", command.CommandText);
+        """"", command.CommandText, ignoreLineEndingDifferences: true);
         Assert.Equal(123L, command.Parameters[0].Value);
         Assert.Equal("@id_0", command.Parameters[0].ParameterName);
     }
@@ -327,24 +327,18 @@ public class SqlServerCommandBuilderTests
         Assert.True(SqlServerCommandBuilder.SelectMany(command,
             "schema", "tableName", model, keys, includeVectors: true));
 
-        AssertEqualIgnoreNewLines(
+        Assert.Equal(
         """""
         SELECT [id],[name],[age],[embedding]
         FROM [schema].[tableName]
         WHERE [id] IN (@id_0,@id_1,@id_2)
-        """"", command.CommandText);
+        """"", command.CommandText, ignoreLineEndingDifferences: true);
         for (int i = 0; i < keys.Length; i++)
         {
             Assert.Equal(keys[i], command.Parameters[i].Value);
             Assert.Equal($"@id_{i}", command.Parameters[i].ParameterName);
         }
     }
-
-    // This repo is configured with eol=lf, so the expected string should always use \n
-    // as long given IDE does not use \r\n.
-    // The actual string may use \r\n, so we just normalize both.
-    private static void AssertEqualIgnoreNewLines(string expected, string actual)
-        => Assert.Equal(expected.Replace("\r\n", "\n"), actual.Replace("\r\n", "\n"));
 
     // We create a connection using a fake connection string just to be able to create the SqlCommand.
     private static SqlConnection CreateConnection()
@@ -353,6 +347,6 @@ public class SqlServerCommandBuilderTests
     private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
         => new VectorStoreRecordModelBuilder(SqlServerConstants.ModelBuildingOptions)
             .Build(
-                typeof(VectorStoreGenericDataModel<string>),
+                typeof(Dictionary<string, object?>),
                 new() { Properties = properties });
 }

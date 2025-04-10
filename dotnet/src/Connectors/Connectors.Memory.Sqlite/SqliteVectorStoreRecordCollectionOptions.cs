@@ -7,7 +7,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
-/// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord>
 {

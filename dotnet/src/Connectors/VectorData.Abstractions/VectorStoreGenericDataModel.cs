@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Extensions.VectorData;
@@ -8,6 +9,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Represents a generic data model that can be used to store and retrieve any data from a vector store.
 /// </summary>
 /// <typeparam name="TKey">The data type of the record key.</typeparam>
+[Obsolete($"{nameof(VectorStoreGenericDataModel<TKey>)} has been replaced by Dictionary<string, object?>", error: true)]
 public sealed class VectorStoreGenericDataModel<TKey>
 {
     /// <summary>

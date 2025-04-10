@@ -10,14 +10,20 @@ namespace VectorDataSpecificationTests.CRUD;
 public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) where TKey : notnull
 {
     [ConditionalFact]
-    public async Task GetAsyncThrowsArgumentNullExceptionForNullKey()
+    public virtual async Task GetAsyncThrowsArgumentNullExceptionForNullKey()
     {
+        // Skip this test for value type keys
+        if (default(TKey) is not null)
+        {
+            return;
+        }
+
         ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.GetAsync((TKey)default!));
         Assert.Equal("key", ex.ParamName);
     }
 
     [ConditionalFact]
-    public async Task GetAsyncReturnsNullForNonExistingKey()
+    public virtual async Task GetAsyncReturnsNullForNonExistingKey()
     {
         TKey key = fixture.GenerateNextKey<TKey>();
 
@@ -25,11 +31,11 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
     }
 
     [ConditionalFact]
-    public Task GetAsyncReturnsInsertedRecord_WithVectors()
+    public virtual Task GetAsync_WithVectors()
         => this.GetAsyncReturnsInsertedRecord(includeVectors: true);
 
     [ConditionalFact]
-    public Task GetAsyncReturnsInsertedRecord_WithoutVectors()
+    public virtual Task GetAsync_WithoutVectors()
         => this.GetAsyncReturnsInsertedRecord(includeVectors: false);
 
     private async Task GetAsyncReturnsInsertedRecord(bool includeVectors)
@@ -42,14 +48,7 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
     }
 
     [ConditionalFact]
-    public Task UpsertAsyncCanInsertNewRecord_WithVectors()
-        => this.UpsertAsyncCanInsertNewRecord(includeVectors: true);
-
-    [ConditionalFact]
-    public Task UpsertAsyncCanInsertNewRecord_WithoutVectors()
-        => this.UpsertAsyncCanInsertNewRecord(includeVectors: false);
-
-    private async Task UpsertAsyncCanInsertNewRecord(bool includeVectors)
+    public virtual async Task UpsertAsyncCanInsertNewRecord()
     {
         var collection = fixture.Collection;
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
@@ -65,19 +64,12 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
         TKey key = await collection.UpsertAsync(inserted);
         Assert.Equal(expectedKey, key);
 
-        var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = includeVectors });
-        inserted.AssertEqual(received, includeVectors);
+        var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = true });
+        inserted.AssertEqual(received, includeVectors: true);
     }
 
     [ConditionalFact]
-    public Task UpsertAsyncCanUpdateExistingRecord_WithVectors()
-        => this.UpsertAsyncCanUpdateExistingRecord(includeVectors: true);
-
-    [ConditionalFact]
-    public Task UpsertAsyncCanUpdateExistingRecord__WithoutVectors()
-        => this.UpsertAsyncCanUpdateExistingRecord(includeVectors: false);
-
-    private async Task UpsertAsyncCanUpdateExistingRecord(bool includeVectors)
+    public virtual async Task UpsertAsyncCanUpdateExistingRecord()
     {
         var collection = fixture.Collection;
         var existingRecord = fixture.TestData[1];
@@ -93,12 +85,12 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
         TKey key = await collection.UpsertAsync(updated);
         Assert.Equal(existingRecord.Id, key);
 
-        var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = includeVectors });
-        updated.AssertEqual(received, includeVectors);
+        var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = true });
+        updated.AssertEqual(received, includeVectors: true);
     }
 
     [ConditionalFact]
-    public async Task DeleteAsyncDoesNotThrowForNonExistingKey()
+    public virtual async Task DeleteAsyncDoesNotThrowForNonExistingKey()
     {
         TKey key = fixture.GenerateNextKey<TKey>();
 
@@ -106,7 +98,7 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
     }
 
     [ConditionalFact]
-    public async Task DeleteAsyncDeletesTheRecord()
+    public virtual async Task DeleteAsyncDeletesTheRecord()
     {
         var recordToRemove = fixture.TestData[2];
 

@@ -140,8 +140,8 @@ internal class AzureCosmosDBNoSqlFilterTranslator
     {
         switch (memberExpression)
         {
-            case var _ when this.TryGetPropertyAccess(memberExpression, out var column):
-                this._sql.Append(AzureCosmosDBNoSQLConstants.ContainerAlias).Append("[\"").Append(column).Append("\"]");
+            case var _ when this.TryBindProperty(memberExpression, out var property):
+                this.GeneratePropertyAccess(property);
                 return;
 
             // Identify captured lambda variables, translate to Cosmos parameters (@foo, @bar...)
@@ -189,6 +189,11 @@ internal class AzureCosmosDBNoSqlFilterTranslator
     {
         switch (methodCall)
         {
+            // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
+            case MethodCallExpression when this.TryBindProperty(methodCall, out var property):
+                this.GeneratePropertyAccess(property);
+                return;
+
             // Enumerable.Contains()
             case { Method.Name: nameof(Enumerable.Contains), Arguments: [var source, var item] } contains
                 when contains.Method.DeclaringType == typeof(Enumerable):
@@ -244,26 +249,63 @@ internal class AzureCosmosDBNoSqlFilterTranslator
                 this._sql.Append(')');
                 return;
 
+            // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
+            case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
+                this.GeneratePropertyAccess(property);
+                return;
+
             default:
                 throw new NotSupportedException("Unsupported unary expression node type: " + unary.NodeType);
         }
     }
 
-    private bool TryGetPropertyAccess(Expression expression, [NotNullWhen(true)] out string? column)
-    {
-        if (expression is MemberExpression member && member.Expression == this._recordParameter)
-        {
-            if (!this._model.PropertyMap.TryGetValue(member.Member.Name, out var property))
-            {
-                throw new InvalidOperationException($"Property name '{member.Member.Name}' provided as part of the filter clause is not a valid property name.");
-            }
+    protected virtual void GeneratePropertyAccess(VectorStoreRecordPropertyModel property)
+        => this._sql.Append(AzureCosmosDBNoSQLConstants.ContainerAlias).Append("[\"").Append(property.StorageName).Append("\"]");
 
-            column = property.StorageName;
-            return true;
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
+    {
+        Type? convertedClrType = null;
+
+        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        {
+            expression = unary.Operand;
+            convertedClrType = unary.Type;
         }
 
-        column = null;
-        return false;
+        var modelName = expression switch
+        {
+            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
+            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
+                => memberExpression.Member.Name,
+
+            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
+            MethodCallExpression
+            {
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
+                => keyName,
+
+            _ => null
+        };
+
+        if (modelName is null)
+        {
+            property = null;
+            return false;
+        }
+
+        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
+        {
+            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
+        }
+
+        if (convertedClrType is not null && convertedClrType != property.Type)
+        {
+            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+        }
+
+        return true;
     }
 
     private static bool TryGetCapturedValue(Expression expression, [NotNullWhen(true)] out string? name, out object? value)
