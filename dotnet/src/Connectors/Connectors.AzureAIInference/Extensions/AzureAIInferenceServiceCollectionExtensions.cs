@@ -50,7 +50,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             var builder = new Azure.AI.Inference.ChatCompletionsClient(endpoint, new Azure.AzureKeyCredential(apiKey ?? SingleSpace), options)
-                .AsChatClient(modelId)
+                .AsIChatClient(modelId)
                 .AsBuilder()
                 .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
@@ -96,7 +96,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             var builder = new Azure.AI.Inference.ChatCompletionsClient(endpoint, credential, options)
-                .AsChatClient(modelId)
+                .AsIChatClient(modelId)
                 .AsBuilder()
                 .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
@@ -131,39 +131,7 @@ public static class AzureAIInferenceServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             var builder = chatClient
-                .AsChatClient(modelId)
-                .AsBuilder()
-                .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
-
-            if (loggerFactory is not null)
-            {
-                builder.UseLogging(loggerFactory);
-            }
-
-            return builder.Build(serviceProvider).AsChatCompletionService(serviceProvider);
-        });
-    }
-
-    /// <summary>
-    /// Adds an Azure AI Inference <see cref="IChatCompletionService"/> to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/> instance to augment.</param>
-    /// <param name="chatClient"><see cref="AzureAIInferenceChatClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
-    /// <param name="serviceId">A local identifier for the given AI service</param>
-    /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddAzureAIInferenceChatCompletion(this IServiceCollection services,
-        AzureAIInferenceChatClient? chatClient = null,
-        string? serviceId = null)
-    {
-        Verify.NotNull(services);
-
-        return services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-        {
-            chatClient ??= serviceProvider.GetRequiredService<AzureAIInferenceChatClient>();
-
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-            var builder = chatClient
+                .AsIChatClient(modelId)
                 .AsBuilder()
                 .UseFunctionInvocation(loggerFactory, f => f.MaximumIterationsPerRequest = MaxInflightAutoInvokes);
 
