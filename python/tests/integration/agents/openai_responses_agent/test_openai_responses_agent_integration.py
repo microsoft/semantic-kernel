@@ -191,6 +191,7 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["openai-web-search-get-response"],
     )
+    @pytest.mark.xfail(reason="The Responses API is unstable when using the web search tool.")
     async def test_web_search_get_response(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = "Find articles about the latest AI trends."
@@ -343,6 +344,7 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-get-response", "openai-structured-outputs-get-response"],
     )
+    @pytest.mark.xfail(reason="The Responses API is unstable when configuring structured outputs.")
     async def test_structured_outputs_get_response(
         self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
     ):
@@ -364,6 +366,7 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke", "openai-structured-outputs-invoke"],
     )
+    @pytest.mark.xfail(reason="The Responses API is unstable when configuring structured outputs.")
     async def test_structured_outputs_invoke(
         self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
     ):
@@ -387,6 +390,7 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke-stream", "openai-structured-outputs-invoke-stream"],
     )
+    @pytest.mark.xfail(reason="The Responses API is unstable when configuring structured outputs.")
     async def test_structured_outputs_stream(
         self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
     ):
