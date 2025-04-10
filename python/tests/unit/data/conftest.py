@@ -26,6 +26,7 @@ from semantic_kernel.data.vector_search import (
     VectorTextSearchMixin,
 )
 from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+from semantic_kernel.kernel_types import OptionalOneOrMany
 
 
 @fixture
@@ -75,6 +76,7 @@ def DictVectorStoreRecordCollection() -> type[VectorSearchBase]:
         async def _inner_search(
             self,
             options: Any = None,
+            keywords: OptionalOneOrMany[str] = None,
             search_text: str | None = None,
             vectorizable_text: str | None = None,
             vector: list[float | int] | None = None,

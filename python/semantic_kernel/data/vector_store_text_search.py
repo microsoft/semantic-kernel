@@ -8,6 +8,7 @@ from pydantic import model_validator
 from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.data.text_search import KernelSearchResults, TextSearch, TextSearchResult
 from semantic_kernel.data.vector_search import (
+    KeywordHybridSearchMixin,
     VectorizableTextSearchMixin,
     VectorizedSearchMixin,
     VectorSearchOptions,
@@ -46,6 +47,7 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
     vectorizable_text_search: VectorizableTextSearchMixin | None = None
     vectorized_search: VectorizedSearchMixin | None = None
     vector_text_search: VectorTextSearchMixin | None = None
+    keyword_hybrid_search: KeywordHybridSearchMixin | None = None
     embedding_service: EmbeddingGeneratorBase | None = None
     string_mapper: Callable[[TModel], str] | None = None
     text_search_results_mapper: Callable[[TModel], TextSearchResult] | None = None
@@ -59,9 +61,11 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
                 not data.get("vectorizable_text_search")
                 and not data.get("vectorized_search")
                 and not data.get("vector_text_search")
+                and not data.get("keyword_hybrid_search")
             ):
                 raise VectorStoreInitializationException(
-                    "At least one of vectorizable_text_search, vectorized_search or vector_text_search is required."
+                    "At least one of vectorizable_text_search, vectorized_search, vector_text_search or "
+                    "keyword_hybrid_search is required."
                 )
             if data.get("vectorized_search") and not data.get("embedding_service"):
                 raise VectorStoreInitializationException("embedding_service is required when using vectorized_search.")
@@ -112,6 +116,22 @@ class VectorStoreTextSearch(KernelBaseModel, TextSearch, Generic[TModel]):
         """Create a new VectorStoreTextSearch from a VectorStoreRecordCollection."""
         return cls(
             vector_text_search=vector_text_search,
+            string_mapper=string_mapper,
+            text_search_results_mapper=text_search_results_mapper,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_keyword_hybrid_search(
+        cls: type[_T],
+        keyword_hybrid_search: KeywordHybridSearchMixin,
+        string_mapper: Callable | None = None,
+        text_search_results_mapper: Callable | None = None,
+        **kwargs: Any,
+    ) -> _T:
+        """Create a new VectorStoreTextSearch from a VectorStoreRecordCollection."""
+        return cls(
+            keyword_hybrid_search=keyword_hybrid_search,
             string_mapper=string_mapper,
             text_search_results_mapper=text_search_results_mapper,
             **kwargs,
