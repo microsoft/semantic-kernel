@@ -21,7 +21,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
     /// </summary>
     [Fact]
-    public async Task AzureAIAgentWithConfigurationAsync()
+    public async Task AzureAIAgentWithConfiguration()
     {
         var text =
             """
@@ -47,7 +47,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithKernelAsync()
+    public async Task AzureAIAgentWithKernel()
     {
         var text =
             """
@@ -67,7 +67,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithCodeInterpreterAsync()
+    public async Task AzureAIAgentWithCodeInterpreter()
     {
         var text =
             """
@@ -89,7 +89,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithFunctionsAsync()
+    public async Task AzureAIAgentWithFunctions()
     {
         var text =
             """
@@ -127,7 +127,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithBingGroundingAsync()
+    public async Task AzureAIAgentWithBingGrounding()
     {
         var text =
             $"""
@@ -157,7 +157,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithFileSearchAsync()
+    public async Task AzureAIAgentWithFileSearch()
     {
         var text =
             $"""
@@ -188,7 +188,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithOpenAPIAsync()
+    public async Task AzureAIAgentWithOpenAPI()
     {
         var text =
             """
@@ -278,7 +278,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithOpenAPIYamlAsync()
+    public async Task AzureAIAgentWithOpenAPIYaml()
     {
         var text =
             """
@@ -345,7 +345,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
     }
 
     [Fact]
-    public async Task AzureAIAgentWithTemplateAsync()
+    public async Task AzureAIAgentWithTemplate()
     {
         var text =
             """

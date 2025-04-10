@@ -14,7 +14,7 @@ namespace GettingStarted;
 public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public async Task UseChatCompletionWithPluginAsync()
+    public async Task UseChatCompletionWithPlugin()
     {
         // Define the agent
         ChatCompletionAgent agent = CreateAgentWithPlugin(
@@ -33,7 +33,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
     [Fact]
-    public async Task UseChatCompletionWithPluginEnumParameterAsync()
+    public async Task UseChatCompletionWithPluginEnumParameter()
     {
         // Define the agent
         ChatCompletionAgent agent = CreateAgentWithPlugin(
@@ -47,7 +47,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
     [Fact]
-    public async Task UseChatCompletionWithTemplateExecutionSettingsAsync()
+    public async Task UseChatCompletionWithTemplateExecutionSettings()
     {
         // Read the template resource
         string autoInvokeYaml = EmbeddedResource.Read("AutoInvokeTools.yaml");

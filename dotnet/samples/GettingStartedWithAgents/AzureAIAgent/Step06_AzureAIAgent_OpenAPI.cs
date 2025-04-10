@@ -17,7 +17,7 @@ namespace GettingStarted.AzureAgents;
 public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseOpenAPIToolWithAgentAsync()
+    public async Task UseOpenAPIToolWithAgent()
     {
         // Retrieve Open API specifications
         string apiCountries = EmbeddedResource.Read("countries.json");

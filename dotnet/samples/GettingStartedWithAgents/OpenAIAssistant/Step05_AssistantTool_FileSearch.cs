@@ -15,7 +15,7 @@ namespace GettingStarted.OpenAIAssistants;
 public class Step05_AssistantTool_FileSearch(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
-    public async Task UseFileSearchToolWithAssistantAgentAsync()
+    public async Task UseFileSearchToolWithAssistantAgent()
     {
         // Define the assistant
         Assistant assistant =

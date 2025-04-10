@@ -32,7 +32,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     /// This example uses <see cref="XunitLogger"/> to output logs to the test console, but any compatible logging provider can be used.
     /// </summary>
     [Fact]
-    public async Task LoggingAsync()
+    public async Task Logging()
     {
         await RunExampleAsync(loggerFactory: this.LoggerFactory);
 
@@ -55,7 +55,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     [InlineData(false, false)]
     [InlineData(true, true)]
     [InlineData(false, true)]
-    public async Task TracingAsync(bool useApplicationInsights, bool useStreaming)
+    public async Task Tracing(bool useApplicationInsights, bool useStreaming)
     {
         using var tracerProvider = GetTracerProvider(useApplicationInsights);
 
