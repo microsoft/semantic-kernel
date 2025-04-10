@@ -98,7 +98,6 @@ public class Step02_ConversationState(ITestOutputHelper output) : BaseResponsesA
             await foreach (AgentResponseItem<ChatMessageContent> responseItem in responseItems)
             {
                 agentThread = responseItem.Thread;
-                this.Output.WriteLine(agentThread.Id);
                 WriteAgentChatMessage(responseItem.Message);
             }
         }
