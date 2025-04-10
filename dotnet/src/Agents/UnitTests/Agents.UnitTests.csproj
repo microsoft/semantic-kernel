@@ -41,6 +41,7 @@
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Yaml\Agents.Yaml.csproj" />
     <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
   </ItemGroup>
 

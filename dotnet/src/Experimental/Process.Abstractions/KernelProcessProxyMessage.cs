@@ -44,5 +44,5 @@ public sealed record KernelProcessProxyMessage
     /// </summary>
     [DataMember]
     [JsonPropertyName("eventData")]
-    public object? EventData { get; init; }
+    public KernelProcessEventData? EventData { get; init; }
 }
