@@ -8,14 +8,14 @@ using Microsoft.SemanticKernel.Agents.Bedrock;
 /// <summary>
 /// Base class for samples that demonstrate the usage of AWS Bedrock agents.
 /// </summary>
-public abstract class BaseBedrockAgentTest : BaseTest
+public abstract class BaseBedrockAgentTest : BaseAgentsTest
 {
     protected const string AgentDescription = "A helpful assistant who helps users find information.";
     protected const string AgentInstruction = "You're a helpful assistant who helps users find information.";
     protected readonly AmazonBedrockAgentClient Client;
     protected readonly AmazonBedrockAgentRuntimeClient RuntimeClient;
 
-    protected BaseBedrockAgentTest(ITestOutputHelper output) : base(output, redirectSystemConsoleOutput: true)
+    protected BaseBedrockAgentTest(ITestOutputHelper output) : base(output)
     {
         Client = new AmazonBedrockAgentClient();
         RuntimeClient = new AmazonBedrockAgentRuntimeClient();
