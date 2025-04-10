@@ -27,11 +27,15 @@ internal sealed class OptionalBoolJsonConverter : JsonConverter<bool?>
             {
                 return null;
             }
-            if (value.Equals("true", StringComparison.OrdinalIgnoreCase))
+            if (bool.TryParse(value, out var boolValue))
+            {
+                return boolValue;
+            }
+            if (value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            else if (value.Equals("false", StringComparison.OrdinalIgnoreCase))
+            else if (value.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

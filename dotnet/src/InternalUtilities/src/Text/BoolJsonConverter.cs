@@ -27,13 +27,9 @@ internal sealed class BoolJsonConverter : JsonConverter<bool>
             {
                 return false;
             }
-            if (value.Equals("true", StringComparison.OrdinalIgnoreCase))
+            if (bool.TryParse(value, out var boolValue))
             {
-                return true;
-            }
-            else if (value.Equals("false", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
+                return boolValue;
             }
 
             throw new ArgumentException($"Value '{value}' can be parsed as a boolean value");
@@ -53,6 +49,6 @@ internal sealed class BoolJsonConverter : JsonConverter<bool>
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)
     {
-        writer.WriteBooleanValue((bool)value);
+        writer.WriteBooleanValue(value);
     }
 }

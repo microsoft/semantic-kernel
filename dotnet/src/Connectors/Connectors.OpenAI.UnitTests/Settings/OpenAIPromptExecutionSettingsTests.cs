@@ -451,9 +451,6 @@ public class OpenAIPromptExecutionSettingsTests
 
     [Theory]
     [InlineData("")]
-    [InlineData(" true ")]
-    [InlineData("true ")]
-    [InlineData(" true")]
     [InlineData("123")]
     [InlineData("Foo")]
     [InlineData(1)]
