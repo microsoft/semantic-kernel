@@ -10,6 +10,7 @@ from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
 from semantic_kernel.functions import kernel_function
+from tests.integration.agents.agent_test_base import AgentTestBase
 
 
 class WeatherPlugin:
@@ -39,7 +40,9 @@ class TestAzureAIAgentIntegration:
 
             if params.get("enable_file_search"):
                 pdf_file_path = os.path.join(
-                    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "resources", "employees.pdf"
+                    os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                    "resources",
+                    "employees.pdf",
                 )
                 file = await client.agents.upload_file_and_poll(file_path=pdf_file_path, purpose="assistants")
                 vector_store = await client.agents.create_vector_store_and_poll(
@@ -71,190 +74,195 @@ class TestAzureAIAgentIntegration:
             # cleanup
             await azureai_agent.client.agents.delete_agent(azureai_agent.id)
 
-    async def test_get_response(self, azureai_agent: AzureAIAgent):
+    async def test_get_response(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent."""
-        response = await azureai_agent.get_response(messages="Hello")
+        response = await agent_test_base.get_response_with_retry(azureai_agent, messages="Hello")
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
 
-    async def test_get_response_with_thread(self, azureai_agent: AzureAIAgent):
+    async def test_get_response_with_thread(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent with a thread."""
         thread = None
         user_messages = ["Hello, I am John Doe.", "What is my name?"]
         for user_message in user_messages:
-            response = await azureai_agent.get_response(messages=user_message, thread=thread)
+            response = await agent_test_base.get_response_with_retry(
+                azureai_agent, messages=user_message, thread=thread
+            )
             thread = response.thread
             assert thread is not None
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
+
         await thread.delete() if thread else None
 
-    async def test_invoke(self, azureai_agent: AzureAIAgent):
+    async def test_invoke(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent."""
-        async for response in azureai_agent.invoke(messages="Hello"):
+        responses = await agent_test_base.get_invoke_with_retry(azureai_agent, messages="Hello")
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
-    async def test_invoke_with_thread(self, azureai_agent: AzureAIAgent):
+    async def test_invoke_with_thread(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent with a thread."""
         thread = None
         user_messages = ["Hello, I am John Doe.", "What is my name?"]
         for user_message in user_messages:
-            async for response in azureai_agent.invoke(messages=user_message, thread=thread):
+            responses = await agent_test_base.get_invoke_with_retry(azureai_agent, messages=user_message, thread=thread)
+            assert len(responses) > 0
+            for response in responses:
                 thread = response.thread
                 assert thread is not None
                 assert isinstance(response.message, ChatMessageContent)
                 assert response.message.role == AuthorRole.ASSISTANT
                 assert response.message.content is not None
+
         await thread.delete() if thread else None
 
-    async def test_invoke_stream(self, azureai_agent: AzureAIAgent):
+    async def test_invoke_stream(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test invoke stream of the agent."""
-        async for response in azureai_agent.invoke_stream(messages="Hello"):
+        responses = await agent_test_base.get_invoke_stream_with_retry(azureai_agent, messages="Hello")
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_code_interpreter": True}], indirect=True)
-    async def test_invoke_stream_with_thread(self, azureai_agent: AzureAIAgent):
+    async def test_invoke_stream_with_thread(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test invoke stream of the agent with a thread."""
         thread = None
         user_messages = ["Hello, I am John Doe.", "What is my name?"]
         for user_message in user_messages:
-            async for response in azureai_agent.invoke_stream(messages=user_message, thread=thread):
+            responses = await agent_test_base.get_invoke_stream_with_retry(
+                azureai_agent, messages=user_message, thread=thread
+            )
+            assert len(responses) > 0
+            for response in responses:
                 thread = response.thread
                 assert thread is not None
                 assert isinstance(response.message, StreamingChatMessageContent)
                 assert response.message.role == AuthorRole.ASSISTANT
                 assert response.message.content is not None
+
         await thread.delete() if thread else None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_code_interpreter": True}], indirect=True)
-    async def test_code_interpreter_get_response(self, azureai_agent: AzureAIAgent):
+    async def test_code_interpreter_get_response(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = """
 Create a bar chart for the following data:
 Panda   5
-Tiger   8 
+Tiger   8
 Lion    3
 Monkey  6
 Dolphin  2
 """
-        response = await azureai_agent.get_response(messages=input_text)
+        response = await agent_test_base.get_response_with_retry(azureai_agent, messages=input_text)
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_code_interpreter": True}], indirect=True)
-    async def test_code_interpreter_invoke(self, azureai_agent: AzureAIAgent):
+    async def test_code_interpreter_invoke(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = """
 Create a bar chart for the following data:
 Panda   5
-Tiger   8 
+Tiger   8
 Lion    3
 Monkey  6
 Dolphin  2
 """
-        async for response in azureai_agent.invoke(messages=input_text):
+        responses = await agent_test_base.get_invoke_with_retry(azureai_agent, messages=input_text)
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_code_interpreter": True}], indirect=True)
-    async def test_code_interpreter_invoke_stream(self, azureai_agent: AzureAIAgent):
+    async def test_code_interpreter_invoke_stream(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter streaming."""
         input_text = """
 Create a bar chart for the following data:
 Panda   5
-Tiger   8 
+Tiger   8
 Lion    3
 Monkey  6
 Dolphin  2
 """
-        async for response in azureai_agent.invoke_stream(messages=input_text):
+        responses = await agent_test_base.get_invoke_stream_with_retry(azureai_agent, messages=input_text)
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_file_search": True}], indirect=True)
-    async def test_file_search_get_response(self, azureai_agent: AzureAIAgent):
+    async def test_file_search_get_response(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = "Who is the youngest employee?"
-        response = await azureai_agent.get_response(messages=input_text)
+        response = await agent_test_base.get_response_with_retry(azureai_agent, messages=input_text)
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_file_search": True}], indirect=True)
-    async def test_file_search_invoke(self, azureai_agent: AzureAIAgent):
+    async def test_file_search_invoke(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = "Who is the youngest employee?"
-        async for response in azureai_agent.invoke(messages=input_text):
+        responses = await agent_test_base.get_invoke_with_retry(azureai_agent, messages=input_text)
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
 
     @pytest.mark.parametrize("azureai_agent", [{"enable_file_search": True}], indirect=True)
-    async def test_file_search_invoke_stream(self, azureai_agent: AzureAIAgent):
+    async def test_file_search_invoke_stream(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test code interpreter streaming."""
         input_text = "Who is the youngest employee?"
-        async for response in azureai_agent.invoke_stream(messages=input_text):
+        responses = await agent_test_base.get_invoke_stream_with_retry(azureai_agent, messages=input_text)
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
 
-    @pytest.mark.parametrize(
-        "azureai_agent",
-        [
-            {
-                "enable_kernel_function": True,
-            },
-        ],
-        indirect=True,
-    )
-    async def test_function_calling_get_response(self, azureai_agent: AzureAIAgent):
+    @pytest.mark.parametrize("azureai_agent", [{"enable_kernel_function": True}], indirect=True)
+    async def test_function_calling_get_response(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test function calling."""
-        response = await azureai_agent.get_response(
+        response = await agent_test_base.get_response_with_retry(
+            azureai_agent,
             messages="What is the weather in Seattle?",
         )
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert "sunny" in response.message.content
 
-    @pytest.mark.parametrize(
-        "azureai_agent",
-        [
-            {
-                "enable_kernel_function": True,
-            },
-        ],
-        indirect=True,
-    )
-    async def test_function_calling_invoke(self, azureai_agent: AzureAIAgent):
+    @pytest.mark.parametrize("azureai_agent", [{"enable_kernel_function": True}], indirect=True)
+    async def test_function_calling_invoke(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test function calling."""
-        async for response in azureai_agent.invoke(
+        responses = await agent_test_base.get_invoke_with_retry(
+            azureai_agent,
             messages="What is the weather in Seattle?",
-        ):
+        )
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert "sunny" in response.message.content
 
-    @pytest.mark.parametrize(
-        "azureai_agent",
-        [
-            {
-                "enable_kernel_function": True,
-            },
-        ],
-        indirect=True,
-    )
-    async def test_function_calling_stream(self, azureai_agent: AzureAIAgent):
+    @pytest.mark.parametrize("azureai_agent", [{"enable_kernel_function": True}], indirect=True)
+    async def test_function_calling_stream(self, azureai_agent: AzureAIAgent, agent_test_base: AgentTestBase):
         """Test function calling streaming."""
         full_message: str = ""
-        async for response in azureai_agent.invoke_stream(
-            messages="What is the weather in Seattle?",
-        ):
+        responses = await agent_test_base.get_invoke_stream_with_retry(
+            azureai_agent, messages="What is the weather in Seattle?"
+        )
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             full_message += response.message.content
