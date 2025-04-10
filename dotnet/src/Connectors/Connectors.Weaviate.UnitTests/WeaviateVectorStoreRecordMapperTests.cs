@@ -33,7 +33,7 @@ public sealed class WeaviateVectorStoreRecordMapperTests
             "CollectionName",
             new WeaviateModelBuilder()
             .Build(
-                typeof(VectorStoreGenericDataModel<Guid>),
+                typeof(Dictionary<string, object?>),
                 new VectorStoreRecordDefinition
                 {
                     Properties =

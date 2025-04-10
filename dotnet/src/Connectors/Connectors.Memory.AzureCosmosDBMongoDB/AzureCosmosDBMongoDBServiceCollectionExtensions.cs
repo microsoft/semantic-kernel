@@ -102,7 +102,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
                 var database = sp.GetRequiredService<IMongoDatabase>();
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -143,7 +143,7 @@ public static class AzureCosmosDBMongoDBServiceCollectionExtensions
 
                 var selectedOptions = options ?? sp.GetService<AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new AzureCosmosDBMongoDBVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);

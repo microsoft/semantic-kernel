@@ -16,9 +16,9 @@ namespace Microsoft.Extensions.VectorData;
 /// <remarks>
 /// <para>Unless otherwise documented, implementations of this interface can be expected to be thread-safe, and can be used concurrently from multiple threads.</para>
 /// </remarks>
-#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch<TRecord>
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+#pragma warning restore CA1711
     where TKey : notnull
     where TRecord : notnull
 {

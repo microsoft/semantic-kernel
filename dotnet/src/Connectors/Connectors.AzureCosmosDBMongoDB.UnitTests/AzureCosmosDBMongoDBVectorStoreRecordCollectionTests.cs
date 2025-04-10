@@ -19,7 +19,7 @@ using MEVD = Microsoft.Extensions.VectorData;
 namespace SemanticKernel.Connectors.AzureCosmosDBMongoDB.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TRecord}"/> class.
+/// Unit tests for <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 {
@@ -37,7 +37,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<NotSupportedException>(() => new AzureCosmosDBMongoDBVectorStoreRecordCollection<object>(this._mockMongoDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, object>(this._mockMongoDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
     }
 
@@ -45,7 +45,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        var collection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var collection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -62,7 +62,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         };
 
         // Act
-        var collection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TestModel>(
+        var collection = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TestModel>(
             this._mockMongoDatabase.Object,
             "collection",
             new() { VectorStoreRecordDefinition = definition });
@@ -90,7 +90,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             collectionName);
 
@@ -144,7 +144,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.ListCollectionNamesAsync(It.IsAny<ListCollectionNamesOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(this._mockMongoDatabase.Object, CollectionName);
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(this._mockMongoDatabase.Object, CollectionName);
 
         // Act
         await sut.CreateCollectionAsync();
@@ -207,7 +207,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.Indexes)
             .Returns(mockMongoIndexManager.Object);
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             CollectionName);
 
@@ -231,7 +231,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         const string RecordKey = "key";
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -255,7 +255,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         List<string> recordKeys = ["key1", "key2"];
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -279,7 +279,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             CollectionName);
 
@@ -316,7 +316,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -354,7 +354,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(mockCursor.Object);
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -385,7 +385,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         var documentSerializer = serializerRegistry.GetSerializer<BsonDocument>();
         var expectedDefinition = Builders<BsonDocument>.Filter.Eq(document => document["_id"], "key");
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -413,7 +413,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         var hotel2 = new AzureCosmosDBMongoDBHotelModel("key2") { HotelName = "Test Name 2" };
         var hotel3 = new AzureCosmosDBMongoDBHotelModel("key3") { HotelName = "Test Name 3" };
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -502,7 +502,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.MapFromDataToStorageModel(It.IsAny<AzureCosmosDBMongoDBHotelModel>()))
             .Returns(new BsonDocument { ["_id"] = "key", ["my_name"] = "Test Name" });
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection",
             new() { BsonDocumentCustomMapper = mockMapper.Object });
@@ -552,7 +552,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             .Setup(l => l.MapFromStorageToDataModel(It.IsAny<BsonDocument>(), It.IsAny<StorageToDataModelMapperOptions>()))
             .Returns(new AzureCosmosDBMongoDBHotelModel(RecordKey) { HotelName = "Name from mapper" });
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection",
             new() { BsonDocumentCustomMapper = mockMapper.Object });
@@ -574,7 +574,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -634,7 +634,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
 
         this.MockCollectionForSearch();
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<VectorSearchModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, VectorSearchModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -667,7 +667,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -683,7 +683,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
         // Arrange
         this.MockCollectionForSearch();
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<AzureCosmosDBMongoDBHotelModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, AzureCosmosDBMongoDBHotelModel>(
             this._mockMongoDatabase.Object,
             "collection");
 
@@ -773,7 +773,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollectionTests
             new() { VectorStoreRecordDefinition = definition } :
             null;
 
-        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<TDataModel>(
+        var sut = new AzureCosmosDBMongoDBVectorStoreRecordCollection<string, TDataModel>(
             this._mockMongoDatabase.Object,
             "collection",
             options);

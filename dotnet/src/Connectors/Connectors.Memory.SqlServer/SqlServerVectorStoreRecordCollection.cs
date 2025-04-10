@@ -427,20 +427,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             };
         }
 
-        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<TKey>))
+        var keyProperty = this._model.KeyProperty;
+
+        foreach (var record in records)
         {
-            foreach (var record in records)
-            {
-                yield return ((VectorStoreGenericDataModel<TKey>)(object)record).Key;
-            }
-        }
-        else
-        {
-            var keyProperty = this._model.KeyProperty;
-            foreach (var record in records)
-            {
-                yield return (TKey)keyProperty.GetValueAsObject(record)!;
-            }
+            yield return (TKey)keyProperty.GetValueAsObject(record!)!;
         }
     }
 

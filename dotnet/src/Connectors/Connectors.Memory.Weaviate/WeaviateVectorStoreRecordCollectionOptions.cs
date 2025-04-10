@@ -7,7 +7,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
-/// Options when creating a <see cref="WeaviateVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
 {

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -22,11 +23,13 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses Redis JSON as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be either <see cref="string"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCollection<string, TRecord>
-#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
+public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+    where TKey : notnull
     where TRecord : notnull
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
@@ -59,7 +62,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     /// <summary>The Redis database to read/write records from.</summary>
     private readonly IDatabase _database;
 
-    /// <summary>The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> will access.</summary>
+    /// <summary>The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
     /// <summary>Optional configuration options for this class.</summary>
@@ -80,10 +83,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="database">The Redis database to read/write records from.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
     public RedisJsonVectorStoreRecordCollection(IDatabase database, string collectionName, RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = null)
@@ -91,6 +94,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Verify.
         Verify.NotNull(database);
         Verify.NotNullOrWhiteSpace(collectionName);
+
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException("Only string keys are supported (and object for dynamic mapping).");
+        }
 
         // Assign.
         this._database = database;
@@ -110,12 +118,9 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             // Custom Mapper.
             this._mapper = this._options.JsonNodeCustomMapper;
         }
-        else if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<string>))
+        else if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
-            // Generic data model mapper.
-            this._mapper = (new RedisJsonGenericDataModelMapper(
-                this._model.Properties,
-                this._jsonSerializerOptions) as IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>)!;
+            this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>)new RedisJsonDynamicDataModelMapper(this._model, this._jsonSerializerOptions);
         }
         else
         {
@@ -207,12 +212,12 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
+        var stringKey = this.GetStringKey(key);
 
         // Create Options
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(key);
+        var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
         var includeVectors = options?.IncludeVectors ?? false;
 
         // Get the Redis value.
@@ -248,15 +253,23 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             () =>
             {
                 var node = JsonSerializer.Deserialize<JsonNode>(redisResultString, this._jsonSerializerOptions)!;
-                return this._mapper.MapFromStorageToDataModel((key, node), new() { IncludeVectors = includeVectors });
+                return this._mapper.MapFromStorageToDataModel((stringKey, node), new() { IncludeVectors = includeVectors });
             });
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<string> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = default, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
-        var keysList = keys.ToList();
+
+#pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+        var keysList = keys switch
+        {
+            IEnumerable<string> k => k.ToList(),
+            IEnumerable<object> k => k.Cast<string>().ToList(),
+            _ => throw new UnreachableException()
+        };
+#pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
         // Create Options
         var maybePrefixedKeys = keysList.Select(key => this.PrefixKeyIfNeeded(key));
@@ -304,12 +317,12 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        Verify.NotNullOrWhiteSpace(key);
+        var stringKey = this.GetStringKey(key);
 
         // Create Options
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(key);
+        var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
 
         // Remove.
         return this.RunOperationAsync(
@@ -320,7 +333,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public Task DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
@@ -330,7 +343,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public async Task<string> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
@@ -358,11 +371,11 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
                     "$",
                     redisJsonRecord.SerializedRecord)).ConfigureAwait(false);
 
-        return redisJsonRecord.Key;
+        return (TKey)(object)redisJsonRecord.Key;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<string> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -397,7 +410,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
         // Return keys of upserted records.
         foreach (var record in redisRecords)
         {
-            yield return record.originalKey;
+            yield return (TKey)(object)record.originalKey;
         }
     }
 
@@ -581,5 +594,16 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
                 OperationName = operationName
             };
         }
+    }
+
+    private string GetStringKey(TKey key)
+    {
+        Verify.NotNull(key);
+
+        var stringKey = key as string ?? throw new UnreachableException("string key should have been validated during model building");
+
+        Verify.NotNullOrWhiteSpace(stringKey, nameof(key));
+
+        return stringKey;
     }
 }

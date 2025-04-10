@@ -28,7 +28,7 @@ public class CommonWeaviateVectorStoreRecordCollectionTests(WeaviateVectorStoreF
         var recordCollectionNameChars = recordCollectionName.ToCharArray();
         recordCollectionNameChars[0] = char.ToUpperInvariant(recordCollectionNameChars[0]);
 
-        return new WeaviateVectorStoreRecordCollection<TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
+        return new WeaviateVectorStoreRecordCollection<Guid, TRecord>(fixture.HttpClient!, new string(recordCollectionNameChars), new()
         {
             VectorStoreRecordDefinition = vectorStoreRecordDefinition
         });

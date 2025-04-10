@@ -18,13 +18,13 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <summary>
 /// Service for storing and retrieving vector records, that uses SQLite as the underlying storage.
 /// </summary>
+/// <typeparam name="TKey">The data type of the record key. Can be <see cref="string"/> or <see cref="ulong"/>, or <see cref="object"/> for dynamic mapping.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public sealed class SqliteVectorStoreRecordCollection<TRecord> :
-    IVectorStoreRecordCollection<ulong, TRecord>,
-    IVectorStoreRecordCollection<string, TRecord>
-#pragma warning restore CA1711 // Identifiers should not have incorrect
+public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
+    where TKey : notnull
     where TRecord : notnull
+#pragma warning restore CA1711 // Identifiers should not have incorrect
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
@@ -77,10 +77,10 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
     public string CollectionName { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="connectionString">The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</param>
-    /// <param name="collectionName">The name of the collection/table that this <see cref="SqliteVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection/table that this <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public SqliteVectorStoreRecordCollection(
         string connectionString,
@@ -90,6 +90,11 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         // Verify.
         Verify.NotNull(connectionString);
         Verify.NotNullOrWhiteSpace(collectionName);
+
+        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(object))
+        {
+            throw new NotSupportedException($"Only {nameof(String)} and {nameof(UInt64)} keys are supported (and object for dynamic mapping).");
+        }
 
         // Assign.
         this._connectionString = connectionString;
@@ -297,115 +302,125 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    #region Implementation of IVectorStoreRecordCollection<ulong, TRecord>
-
     /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(ulong key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this.InternalGetAsync(connection, key, options, cancellationToken).ConfigureAwait(false);
-    }
+        Verify.NotNull(key);
 
-    /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<ulong> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var record in this.InternalGetBatchAsync(connection, keys, options, cancellationToken).ConfigureAwait(false))
+
+        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key)
         {
-            yield return record;
-        }
-    }
+            TableName = this._dataTableName
+        };
 
-    /// <inheritdoc />
-    public async Task<ulong> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this.InternalUpsertAsync<ulong>(connection, record, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<ulong> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var record in this.InternalUpsertBatchAsync<ulong>(connection, records, cancellationToken)
-                           .ConfigureAwait(false))
-        {
-            yield return record;
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task DeleteAsync(ulong key, CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this.InternalDeleteAsync(connection, key, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async Task DeleteAsync(IEnumerable<ulong> keys, CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this.InternalDeleteBatchAsync(connection, keys, cancellationToken).ConfigureAwait(false);
-    }
-
-    #endregion
-
-    #region Implementation of IVectorStoreRecordCollection<string, TRecord>
-
-    /// <inheritdoc />
-    public async Task<TRecord?> GetAsync(string key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this.InternalGetAsync(connection, key, options, cancellationToken).ConfigureAwait(false);
-    }
-
-    /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<string> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var record in this.InternalGetBatchAsync(connection, keys, options, cancellationToken).ConfigureAwait(false))
-        {
-            yield return record;
-        }
-    }
-
-    /// <inheritdoc />
-    async Task<string> IVectorStoreRecordCollection<string, TRecord>.UpsertAsync(TRecord record, CancellationToken cancellationToken)
-    {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        return await this.InternalUpsertAsync<string>(connection, record, cancellationToken)
+        return await this.InternalGetBatchAsync(connection, condition, options, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    async IAsyncEnumerable<string> IVectorStoreRecordCollection<string, TRecord>.UpsertAsync(
-        IEnumerable<TRecord> records,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await foreach (var record in this.InternalUpsertBatchAsync<string>(connection, records, cancellationToken)
-                           .ConfigureAwait(false))
+
+        Verify.NotNull(keys);
+
+        var keysList = keys.Cast<object>().ToList();
+
+        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
+
+        var condition = new SqliteWhereInCondition(this._keyStorageName, keysList)
+        {
+            TableName = this._dataTableName
+        };
+
+        await foreach (var record in this.InternalGetBatchAsync(connection, condition, options, cancellationToken).ConfigureAwait(false))
         {
             yield return record;
         }
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(string key, CancellationToken cancellationToken = default)
+    public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
+        const string OperationName = "Upsert";
+
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this.InternalDeleteAsync(connection, key, cancellationToken)
+
+        var storageModel = VectorStoreErrorHandler.RunModelConversion(
+            SqliteConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this.CollectionName,
+            OperationName,
+            () => this._mapper.MapFromDataToStorageModel(record));
+
+        var key = storageModel[this._keyStorageName];
+
+        Verify.NotNull(key);
+
+        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
+
+        var upsertedRecordKey = await this.InternalUpsertBatchAsync(connection, [storageModel], condition, cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        return upsertedRecordKey ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
     /// <inheritdoc />
-    public async Task DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        const string OperationName = "UpsertBatch";
+
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        await this.InternalDeleteBatchAsync(connection, keys, cancellationToken).ConfigureAwait(false);
+
+        var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
+            SqliteConstants.VectorStoreSystemName,
+            this._collectionMetadata.VectorStoreName,
+            this.CollectionName,
+            OperationName,
+            () => this._mapper.MapFromDataToStorageModel(record))).ToList();
+
+        var keys = storageModels.Select(model => model[this._keyStorageName]!).ToList();
+
+        var condition = new SqliteWhereInCondition(this._keyStorageName, keys);
+
+        await foreach (var record in this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false))
+        {
+            yield return record;
+        }
     }
 
-    #endregion
+    /// <inheritdoc />
+    public async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(key);
+
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
+
+        await this.InternalDeleteBatchAsync(connection, condition, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(keys);
+
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+
+        var keysList = keys.Cast<object>().ToList();
+
+        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
+
+        var condition = new SqliteWhereInCondition(
+            this._keyStorageName,
+            keysList);
+
+        await this.InternalDeleteBatchAsync(connection, condition, cancellationToken).ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
@@ -531,44 +546,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         return this.RunOperationAsync(OperationName, () => command.ExecuteNonQueryAsync(cancellationToken));
     }
 
-    private async Task<TRecord?> InternalGetAsync<TKey>(
-        SqliteConnection connection,
-        TKey key,
-        GetRecordOptions? options,
-        CancellationToken cancellationToken)
-    {
-        Verify.NotNull(key);
-
-        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key)
-        {
-            TableName = this._dataTableName
-        };
-
-        return await this.InternalGetBatchAsync(connection, condition, options, cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private IAsyncEnumerable<TRecord> InternalGetBatchAsync<TKey>(
-        SqliteConnection connection,
-        IEnumerable<TKey> keys,
-        GetRecordOptions? options,
-        CancellationToken cancellationToken)
-    {
-        Verify.NotNull(keys);
-
-        var keysList = keys.Cast<object>().ToList();
-
-        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
-
-        var condition = new SqliteWhereInCondition(this._keyStorageName, keysList)
-        {
-            TableName = this._dataTableName
-        };
-
-        return this.InternalGetBatchAsync(connection, condition, options, cancellationToken);
-    }
-
     private async IAsyncEnumerable<TRecord> InternalGetBatchAsync(
         SqliteConnection connection,
         SqliteWhereCondition condition,
@@ -619,49 +596,7 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
         }
     }
 
-    private async Task<TKey> InternalUpsertAsync<TKey>(SqliteConnection connection, TRecord record, CancellationToken cancellationToken)
-    {
-        const string OperationName = "Upsert";
-
-        var storageModel = VectorStoreErrorHandler.RunModelConversion(
-            SqliteConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record));
-
-        var key = storageModel[this._keyStorageName];
-
-        Verify.NotNull(key);
-
-        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
-
-        var upsertedRecordKey = await this.InternalUpsertBatchAsync<TKey>(connection, [storageModel], condition, cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return upsertedRecordKey ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
-    }
-
-    private IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(SqliteConnection connection, IEnumerable<TRecord> records, CancellationToken cancellationToken)
-    {
-        const string OperationName = "UpsertBatch";
-
-        var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
-            SqliteConstants.VectorStoreSystemName,
-            this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
-            OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record))).ToList();
-
-        var keys = storageModels.Select(model => model[this._keyStorageName]!).ToList();
-
-        var condition = new SqliteWhereInCondition(this._keyStorageName, keys);
-
-        return this.InternalUpsertBatchAsync<TKey>(connection, storageModels, condition, cancellationToken);
-    }
-
-    private async IAsyncEnumerable<TKey> InternalUpsertBatchAsync<TKey>(
+    private async IAsyncEnumerable<TKey> InternalUpsertBatchAsync(
         SqliteConnection connection,
         List<Dictionary<string, object?>> storageModels,
         SqliteWhereCondition condition,
@@ -712,30 +647,6 @@ public sealed class SqliteVectorStoreRecordCollection<TRecord> :
 
             await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
         }
-    }
-
-    private Task InternalDeleteAsync<TKey>(SqliteConnection connection, TKey key, CancellationToken cancellationToken)
-    {
-        Verify.NotNull(key);
-
-        var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
-
-        return this.InternalDeleteBatchAsync(connection, condition, cancellationToken);
-    }
-
-    private Task InternalDeleteBatchAsync<TKey>(SqliteConnection connection, IEnumerable<TKey> keys, CancellationToken cancellationToken)
-    {
-        Verify.NotNull(keys);
-
-        var keysList = keys.Cast<object>().ToList();
-
-        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
-
-        var condition = new SqliteWhereInCondition(
-            this._keyStorageName,
-            keysList);
-
-        return this.InternalDeleteBatchAsync(connection, condition, cancellationToken);
     }
 
     private Task InternalDeleteBatchAsync(SqliteConnection connection, SqliteWhereCondition condition, CancellationToken cancellationToken)

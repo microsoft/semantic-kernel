@@ -47,9 +47,9 @@ internal class AzureCosmosDBMongoDBFilterTranslator
             UnaryExpression { NodeType: ExpressionType.Not } not
                 => this.TranslateNot(not),
 
-            // MemberExpression is generally handled within e.g. TranslateEqualityComparison; this is used to translate direct bool inside filter (e.g. Filter => r => r.Bool)
-            MemberExpression member when member.Type == typeof(bool) && this.TryTranslateFieldAccess(member, out _)
-                => this.TranslateEqualityComparison(Expression.Equal(member, Expression.Constant(true))),
+            // Special handling for bool constant as the filter expression (r => r.Bool)
+            Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
+                => this.GenerateEqualityComparison(property, value: true, ExpressionType.Equal),
 
             MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
 
@@ -57,36 +57,36 @@ internal class AzureCosmosDBMongoDBFilterTranslator
         };
 
     private BsonDocument TranslateEqualityComparison(BinaryExpression binary)
+        => (this.TryBindProperty(binary.Left, out var property) && TryGetConstant(binary.Right, out var value))
+            || (this.TryBindProperty(binary.Right, out property) && TryGetConstant(binary.Left, out value))
+                ? this.GenerateEqualityComparison(property, value, binary.NodeType)
+                : throw new NotSupportedException("Invalid equality/comparison");
+
+    private BsonDocument GenerateEqualityComparison(VectorStoreRecordPropertyModel property, object? value, ExpressionType nodeType)
     {
-        if ((this.TryTranslateFieldAccess(binary.Left, out var storagePropertyName) && TryGetConstant(binary.Right, out var value))
-            || (this.TryTranslateFieldAccess(binary.Right, out storagePropertyName) && TryGetConstant(binary.Left, out value)))
+        if (value is null)
         {
-            if (value is null)
-            {
-                throw new NotSupportedException("MongogDB does not support null checks in vector search pre-filters");
-            }
-
-            // Short form of equality (instead of $eq)
-            if (binary.NodeType is ExpressionType.Equal)
-            {
-                return new BsonDocument { [storagePropertyName] = BsonValue.Create(value) };
-            }
-
-            var filterOperator = binary.NodeType switch
-            {
-                ExpressionType.NotEqual => "$ne",
-                ExpressionType.GreaterThan => "$gt",
-                ExpressionType.GreaterThanOrEqual => "$gte",
-                ExpressionType.LessThan => "$lt",
-                ExpressionType.LessThanOrEqual => "$lte",
-
-                _ => throw new UnreachableException()
-            };
-
-            return new BsonDocument { [storagePropertyName] = new BsonDocument { [filterOperator] = BsonValue.Create(value) } };
+            throw new NotSupportedException("MongogDB does not support null checks in vector search pre-filters");
         }
 
-        throw new NotSupportedException("Invalid equality/comparison");
+        // Short form of equality (instead of $eq)
+        if (nodeType is ExpressionType.Equal)
+        {
+            return new BsonDocument { [property.StorageName] = BsonValue.Create(value) };
+        }
+
+        var filterOperator = nodeType switch
+        {
+            ExpressionType.NotEqual => "$ne",
+            ExpressionType.GreaterThan => "$gt",
+            ExpressionType.GreaterThanOrEqual => "$gte",
+            ExpressionType.LessThan => "$lt",
+            ExpressionType.LessThanOrEqual => "$lte",
+
+            _ => throw new UnreachableException()
+        };
+
+        return new BsonDocument { [property.StorageName] = new BsonDocument { [filterOperator] = BsonValue.Create(value) } };
     }
 
     private BsonDocument TranslateAndOr(BinaryExpression andOr)
@@ -131,9 +131,9 @@ internal class AzureCosmosDBMongoDBFilterTranslator
                         binary.Left,
                         binary.Right));
 
-            // Not over bool field (Filter => r => !r.Bool)
-            case MemberExpression member when member.Type == typeof(bool) && this.TryTranslateFieldAccess(member, out _):
-                return this.TranslateEqualityComparison(Expression.Equal(member, Expression.Constant(false)));
+            // Not over bool field (r => !r.Bool)
+            case var negated when negated.Type == typeof(bool) && this.TryBindProperty(negated, out var property):
+                return this.GenerateEqualityComparison(property, false, ExpressionType.Equal);
         }
 
         var operand = this.Translate(not.Operand);
@@ -175,7 +175,7 @@ internal class AzureCosmosDBMongoDBFilterTranslator
         switch (source)
         {
             // Contains over array column (r => r.Strings.Contains("foo"))
-            case var _ when this.TryTranslateFieldAccess(source, out _):
+            case var _ when this.TryBindProperty(source, out _):
                 throw new NotSupportedException("MongoDB does not support Contains within array fields ($elemMatch) in vector search pre-filters");
 
             // Contains over inline enumerable
@@ -205,14 +205,14 @@ internal class AzureCosmosDBMongoDBFilterTranslator
 
         BsonDocument ProcessInlineEnumerable(IEnumerable elements, Expression item)
         {
-            if (!this.TryTranslateFieldAccess(item, out var storagePropertyName))
+            if (!this.TryBindProperty(item, out var property))
             {
                 throw new NotSupportedException("Unsupported item type in Contains");
             }
 
             return new BsonDocument
             {
-                [storagePropertyName] = new BsonDocument
+                [property.StorageName] = new BsonDocument
                 {
                     ["$in"] = new BsonArray(from object? element in elements select BsonValue.Create(element))
                 }
@@ -220,21 +220,50 @@ internal class AzureCosmosDBMongoDBFilterTranslator
         }
     }
 
-    private bool TryTranslateFieldAccess(Expression expression, [NotNullWhen(true)] out string? storagePropertyName)
+    private bool TryBindProperty(Expression expression, [NotNullWhen(true)] out VectorStoreRecordPropertyModel? property)
     {
-        if (expression is MemberExpression memberExpression && memberExpression.Expression == this._recordParameter)
-        {
-            if (!this._model.PropertyMap.TryGetValue(memberExpression.Member.Name, out var property))
-            {
-                throw new InvalidOperationException($"Property name '{memberExpression.Member.Name}' provided as part of the filter clause is not a valid property name.");
-            }
+        Type? convertedClrType = null;
 
-            storagePropertyName = property.StorageName;
-            return true;
+        if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+        {
+            expression = unary.Operand;
+            convertedClrType = unary.Type;
         }
 
-        storagePropertyName = null;
-        return false;
+        var modelName = expression switch
+        {
+            // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
+            MemberExpression memberExpression when memberExpression.Expression == this._recordParameter
+                => memberExpression.Member.Name,
+
+            // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
+            MethodCallExpression
+            {
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == this._recordParameter && declaringType == typeof(Dictionary<string, object?>)
+                => keyName,
+
+            _ => null
+        };
+
+        if (modelName is null)
+        {
+            property = null;
+            return false;
+        }
+
+        if (!this._model.PropertyMap.TryGetValue(modelName, out property))
+        {
+            throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
+        }
+
+        if (convertedClrType is not null && convertedClrType != property.Type)
+        {
+            throw new InvalidCastException($"Property '{property.ModelName}' is being cast to type '{convertedClrType.Name}', but its configured type is '{property.Type.Name}'.");
+        }
+
+        return true;
     }
 
     private static bool TryGetConstant(Expression expression, out object? constantValue)

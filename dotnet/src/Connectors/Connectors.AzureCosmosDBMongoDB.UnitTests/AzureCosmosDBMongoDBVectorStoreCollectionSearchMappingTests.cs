@@ -20,7 +20,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
 {
     private readonly VectorStoreRecordModel _model = new MongoDBModelBuilder()
         .Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =
@@ -104,6 +104,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreCollectionSearchMappingTests
     private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
     => new MongoDBModelBuilder()
         .Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new() { Properties = properties });
 }

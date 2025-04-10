@@ -20,7 +20,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder()
             .Build(
-                typeof(VectorStoreGenericDataModel<Guid>),
+                typeof(Dictionary<string, object?>),
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -43,7 +43,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder()
             .Build(
-                typeof(VectorStoreGenericDataModel<Guid>),
+                typeof(Dictionary<string, object?>),
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -67,7 +67,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder()
             .Build(
-                typeof(VectorStoreGenericDataModel<Guid>),
+                typeof(Dictionary<string, object?>),
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -92,7 +92,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder()
             .Build(
-                typeof(VectorStoreGenericDataModel<Guid>),
+                typeof(Dictionary<string, object?>),
                 new VectorStoreRecordDefinition
                 {
                     Properties =
@@ -165,7 +165,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
         // Arrange
         var model = new WeaviateModelBuilder()
             .Build(
-                typeof(VectorStoreGenericDataModel<Guid>),
+                typeof(Dictionary<string, object?>),
                 new VectorStoreRecordDefinition
                 {
                     Properties =

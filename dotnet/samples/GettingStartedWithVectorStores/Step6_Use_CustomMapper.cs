@@ -43,7 +43,7 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
 
         // Construct an Azure AI Search vector store collection and
         // pass in the custom mapper and record definition.
-        var collection = new AzureAISearchVectorStoreRecordCollection<ComplexGlossary>(
+        var collection = new AzureAISearchVectorStoreRecordCollection<string, ComplexGlossary>(
             new SearchIndexClient(
                 new Uri(TestConfiguration.AzureAISearch.Endpoint),
                 new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey)),

@@ -93,11 +93,11 @@ public sealed class AzureCosmosDBNoSQLKernelBuilderExtensionsTests
 
         var collection = kernel.Services.GetRequiredService<IVectorStoreRecordCollection<string, TestRecord>>();
         Assert.NotNull(collection);
-        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>>(collection);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TestRecord>>(collection);
 
         var vectorizedSearch = kernel.Services.GetRequiredService<IVectorizedSearch<TestRecord>>();
         Assert.NotNull(vectorizedSearch);
-        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<TestRecord>>(vectorizedSearch);
+        Assert.IsType<AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TestRecord>>(vectorizedSearch);
     }
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
