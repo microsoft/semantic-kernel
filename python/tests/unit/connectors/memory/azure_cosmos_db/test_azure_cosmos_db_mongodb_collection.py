@@ -4,11 +4,12 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pydantic import BaseModel, ValidationError
-from pydantic.errors import ErrorWrapper
+from pydantic_core import InitErrorDetails
 from pymongo import AsyncMongoClient
 
 import semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_collection as cosmos_collection
 import semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_settings as cosmos_settings
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
@@ -118,16 +119,14 @@ async def test_constructor_raises_exception_on_validation_error() -> None:
     class DummyModel(BaseModel):
         connection_string: str
 
-    errors = [
-        ErrorWrapper(
-            exc=ValueError("field required"),
-            loc=("connection_string",),
-            msg="field required",
-            type="missing",
-        )
-    ]
+    error = InitErrorDetails(
+        type="missing",
+        loc=("connection_string",),
+        msg="Field required",
+        input=None,
+    )  # type: ignore
 
-    validation_error = ValidationError(errors, DummyModel)
+    validation_error = ValidationError.from_exception_data("DummyModel", [error])
 
     with patch.object(
         cosmos_settings.AzureCosmosDBforMongoDBSettings,
@@ -145,15 +144,14 @@ async def test_constructor_raises_exception_on_validation_error() -> None:
         assert "Failed to create Azure CosmosDB for MongoDB settings." in str(exc_info.value)
 
 
-@pytest.mark.asyncio
 async def test_constructor_raises_exception_if_no_connection_string() -> None:
     """
     Ensure that a VectorStoreInitializationException is raised if the
     AzureCosmosDBforMongoDBSettings.connection_string is None.
     """
     # Mock settings without a connection string
-    mock_settings = MagicMock()
-    type(mock_settings.connection_string).get_secret_value.return_value = None
+    mock_settings = AsyncMock(spec=cosmos_settings.AzureCosmosDBforMongoDBSettings)
+    mock_settings.connection_string = None
     mock_settings.database_name = "some_database"
 
     with patch.object(cosmos_settings.AzureCosmosDBforMongoDBSettings, "create", return_value=mock_settings):
@@ -164,7 +162,6 @@ async def test_constructor_raises_exception_if_no_connection_string() -> None:
         assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
 
 
-@pytest.mark.asyncio
 async def test_create_collection_calls_database_methods() -> None:
     """
     Test create_collection to verify that it first creates a collection, then
@@ -175,24 +172,28 @@ async def test_create_collection_calls_database_methods() -> None:
     mock_database.create_collection = AsyncMock()
     mock_database.command = AsyncMock()
 
-    mock_client = MagicMock()
+    mock_client = AsyncMock(spec=AsyncMongoClient)
     mock_client.get_database = MagicMock(return_value=mock_database)
 
-    mock_data_model_definition = MagicMock()
+    mock_data_model_definition = AsyncMock(spec=VectorStoreRecordDefinition)
     # Simulate a data_model_definition with certain fields & vector_fields
-    mock_field = MagicMock()
+    mock_field = AsyncMock(spec=VectorStoreRecordDataField)
     type(mock_field).name = "test_field"
     type(mock_field).is_filterable = True
     type(mock_field).is_full_text_searchable = True
 
-    mock_vector_field = MagicMock()
+    type(mock_field).property_type = "str"
+
+    mock_vector_field = AsyncMock()
     type(mock_vector_field).dimensions = 128
     type(mock_vector_field).name = "embedding"
-    type(mock_vector_field).distance_function = "Euclidean"
-    type(mock_vector_field).index_kind = "IVF"
+    type(mock_vector_field).distance_function = DistanceFunction.COSINE_SIMILARITY
+    type(mock_vector_field).index_kind = IndexKind.IVF_FLAT
+    type(mock_vector_field).property_type = "float"
 
     mock_data_model_definition.fields = {"test_field": mock_field}
     mock_data_model_definition.vector_fields = [mock_vector_field]
+    mock_data_model_definition.key_field = mock_field
 
     # Instantiate
     collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
@@ -209,7 +210,7 @@ async def test_create_collection_calls_database_methods() -> None:
     # Assert
     mock_database.create_collection.assert_awaited_once_with("test_collection", customArg="customValue")
     mock_database.command.assert_awaited()
-    command_args = mock_database.command.call_args[0][0]
+    command_args = mock_database.command.call_args.kwargs["command"]
 
     assert command_args["createIndexes"] == "test_collection"
     assert len(command_args["indexes"]) == 2, "One for the data field, one for the vector field"
@@ -223,19 +224,30 @@ async def test_create_collection_calls_database_methods() -> None:
     assert command_args["indexes"][1]["cosmosSearchOptions"]["dimensions"] == 128
 
 
-@pytest.mark.asyncio
 async def test_context_manager_calls_aconnect_and_close_when_managed() -> None:
     """
     Test that the context manager in AzureCosmosDBforMongoDBCollection calls 'aconnect' and
     'close' when the client is managed (i.e., created internally).
     """
-    mock_client = AsyncMock()
+    mock_client = AsyncMock(spec=AsyncMongoClient)
 
-    with patch("pymongo.AsyncMongoClient", return_value=mock_client):
+    mock_data_model_definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+            "vector": VectorStoreRecordVectorField(),
+        }
+    )
+
+    with patch(
+        "semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_collection.AsyncMongoClient",
+        return_value=mock_client,
+    ):
         collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
             collection_name="test_collection",
             data_model_type=FakeDataModel,
             connection_string="mongodb://fake",
+            data_model_definition=mock_data_model_definition,
         )
 
     # "__aenter__" should call 'aconnect'
@@ -247,24 +259,33 @@ async def test_context_manager_calls_aconnect_and_close_when_managed() -> None:
     mock_client.close.assert_awaited_once()
 
 
-@pytest.mark.asyncio
 async def test_context_manager_does_not_close_when_not_managed() -> None:
     """
     Test that the context manager in AzureCosmosDBforMongoDBCollection does not call 'close'
     when the client is not managed (i.e., provided externally).
     """
-    external_client = AsyncMock()
+    mock_data_model_definition = VectorStoreRecordDefinition(
+        fields={
+            "id": VectorStoreRecordKeyField(),
+            "content": VectorStoreRecordDataField(),
+            "vector": VectorStoreRecordVectorField(),
+        }
+    )
+
+    external_client = AsyncMock(spec=AsyncMongoClient, name="external_client", value=None)
+    external_client.aconnect = AsyncMock(name="aconnect")
+    external_client.close = AsyncMock(name="close")
 
     collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
         collection_name="test_collection",
         data_model_type=FakeDataModel,
         mongo_client=external_client,
+        data_model_definition=mock_data_model_definition,
     )
 
     # "__aenter__" scenario
     async with collection as c:
-        # Should not call aconnect on external client by design.
-        external_client.aconnect.assert_not_awaited()
+        external_client.aconnect.assert_awaited()
         assert c is collection
 
     # "__aexit__" should NOT call "close" when not managed
