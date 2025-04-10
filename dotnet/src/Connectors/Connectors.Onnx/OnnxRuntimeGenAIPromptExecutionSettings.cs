@@ -91,6 +91,7 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
     /// The past/present kv tensors are shared and allocated once to max_length (cuda only)
     /// </summary>
     [JsonPropertyName("past_present_share_buffer")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? PastPresentShareBuffer { get; set; }
 
     /// <summary>
@@ -139,11 +140,13 @@ public sealed class OnnxRuntimeGenAIPromptExecutionSettings : PromptExecutionSet
     /// Allows the generation to stop early if all beam candidates reach the end token
     /// </summary>
     [JsonPropertyName("early_stopping")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? EarlyStopping { get; set; }
 
     /// <summary>
     /// Do random sampling
     /// </summary>
     [JsonPropertyName("do_sample")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? DoSample { get; set; }
 }
