@@ -26,9 +26,11 @@ public sealed class PromptDefinition
     /// Gets this prompt definition.
     /// </summary>
     /// <param name="jsonPrompt">The JSON prompt template.</param>
-    /// <param name="kernel">An instance of the kernel to render the prompt.</param>
+    /// <param name="kernel">An instance of the kernel to render the prompt.
+    /// If not provided, an instance registered in DI container will be used.
+    /// </param>
     /// <returns>The prompt definition.</returns>
-    public static PromptDefinition Create(string jsonPrompt, Kernel kernel)
+    public static PromptDefinition Create(string jsonPrompt, Kernel? kernel = null)
     {
         PromptTemplateConfig promptTemplateConfig = PromptTemplateConfig.FromJson(jsonPrompt);
 
@@ -82,8 +84,11 @@ public sealed class PromptDefinition
     /// <param name="kernel">The kernel to render the prompt.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The prompt.</returns>
-    private static async Task<GetPromptResult> GetPromptHandlerAsync(RequestContext<GetPromptRequestParams> context, PromptTemplateConfig promptTemplateConfig, IPromptTemplate promptTemplate, Kernel kernel, CancellationToken cancellationToken)
+    private static async Task<GetPromptResult> GetPromptHandlerAsync(RequestContext<GetPromptRequestParams> context, PromptTemplateConfig promptTemplateConfig, IPromptTemplate promptTemplate, Kernel? kernel, CancellationToken cancellationToken)
     {
+        // Use either explicitly provided kernel or the one registered in DI container
+        kernel ??= context.Server.Services?.GetRequiredService<Kernel>() ?? throw new InvalidOperationException("Kernel is not available.");
+
         // Render the prompt
         string renderedPrompt = await promptTemplate.RenderAsync(
             kernel: kernel,
