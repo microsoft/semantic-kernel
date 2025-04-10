@@ -489,11 +489,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         foreach (var property in this._model.VectorProperties)
         {
-            if (property.Dimensions is not > 0)
-            {
-                throw new VectorStoreOperationException($"Property {nameof(property.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{property.ModelName}' must be set to a positive integer to create a collection.");
-            }
-
             var path = $"/{property.StorageName}";
 
             var embedding = new Embedding
