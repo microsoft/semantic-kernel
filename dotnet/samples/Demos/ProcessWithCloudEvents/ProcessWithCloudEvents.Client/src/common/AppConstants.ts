@@ -26,7 +26,7 @@ export const AppPagesDetails = new Map<AppPages, EnumDetails>([
 ]);
 
 // When more cloud technologies are added, add them to this enum and the CloudTechnologiesDetails map below.
-// Addionally update the CloudTechnologiesDetails map to include the new technology and its details.
+// Additionally update the CloudTechnologiesDetails map to include the new technology and its details.
 export enum CloudTechnology {
     GRPC = "GRPC",
 }
