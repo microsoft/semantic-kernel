@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using WeaviateIntegrationTests.Support;
-using VectorDataSpecificationTests.VectorSearch;
-using Xunit;
 using Microsoft.Extensions.VectorData;
+using VectorDataSpecificationTests.VectorSearch;
+using WeaviateIntegrationTests.Support;
+using Xunit;
 
 namespace WeaviateIntegrationTests.VectorSearch;
 
