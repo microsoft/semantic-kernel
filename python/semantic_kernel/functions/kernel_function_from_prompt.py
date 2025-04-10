@@ -211,7 +211,7 @@ through prompt_template_config or in the prompt_template."
         if isinstance(prompt_render_result.ai_service, TextToImageClientBase):
             try:
                 images = await prompt_render_result.ai_service.get_image_content(
-                    prompt=unescape(prompt_render_result.rendered_prompt),
+                    description=unescape(prompt_render_result.rendered_prompt),
                     settings=prompt_render_result.execution_settings,
                 )
             except Exception as exc:
