@@ -44,7 +44,6 @@ internal sealed class ServiceAgentHost<TAgent>(
         // Create a agent thread based on a foundry thread.
         AgentThread thread = await serviceProvider.CreateThreadAsync(threadId);
 
-
         AgentInvokeOptions options =
             new()
             {
