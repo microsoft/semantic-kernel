@@ -14,7 +14,7 @@ using OpenAI.Responses;
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
-/// Represents a <see cref="Agent"/> specialization based on Open AI Assistant / GPT.
+/// Represents a <see cref="Agent"/> specialization based on OpenAI Response API.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public sealed class OpenAIResponseAgent : Agent
@@ -45,11 +45,7 @@ public sealed class OpenAIResponseAgent : Agent
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new OpenAIResponseAgentThread(this.Client, this.StoreEnabled),
-            cancellationToken).ConfigureAwait(false);
+        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(messages, thread, cancellationToken).ConfigureAwait(false);
 
         // Invoke responses with the updated chat history.
         var chatHistory = new ChatHistory();
@@ -97,10 +93,20 @@ public sealed class OpenAIResponseAgent : Agent
     }
 
     #region private
+    private async Task<AgentThread> EnsureThreadExistsWithMessagesAsync(ICollection<ChatMessageContent> messages, AgentThread? thread, CancellationToken cancellationToken)
+    {
+        if (this.StoreEnabled)
+        {
+            return await this.EnsureThreadExistsWithMessagesAsync(messages, thread, () => new OpenAIResponseAgentThread(this.Client), cancellationToken).ConfigureAwait(false);
+        }
+
+        return await this.EnsureThreadExistsWithMessagesAsync(messages, thread, () => new ChatHistoryAgentThread(), cancellationToken).ConfigureAwait(false);
+    }
+
     private async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync(
         string? agentName,
         ChatHistory history,
-        OpenAIResponseAgentThread agentThread,
+        AgentThread agentThread,
         AgentInvokeOptions? options,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
@@ -110,7 +116,7 @@ public sealed class OpenAIResponseAgent : Agent
         if (!this.StoreEnabled)
         {
             // Use the thread chat history
-            overrideHistory = [.. agentThread.ChatHistory, .. history];
+            overrideHistory = [.. this.GetChatHistory(agentThread), .. history];
         }
 
         var inputItems = overrideHistory.Select(c => c.ToResponseItem());
@@ -118,11 +124,11 @@ public sealed class OpenAIResponseAgent : Agent
         {
             EndUserId = this.GetDisplayName(),
             Instructions = $"{this.Instructions}\n{options?.AdditionalInstructions}",
-            StoredOutputEnabled = agentThread.StoreEnabled,
+            StoredOutputEnabled = this.StoreEnabled,
         };
-        if (agentThread.StoreEnabled && agentThread.ResponseId != null)
+        if (this.StoreEnabled && agentThread.Id != null)
         {
-            creationOptions.PreviousResponseId = agentThread.ResponseId;
+            creationOptions.PreviousResponseId = agentThread.Id;
         }
 
         var clientResult = await this.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
@@ -130,8 +136,7 @@ public sealed class OpenAIResponseAgent : Agent
 
         if (this.StoreEnabled)
         {
-            // Update the response id
-            agentThread.ResponseId = response.Id;
+            this.UpdateResponseId(agentThread, response.Id);
         }
 
         var messages = response.OutputItems.Select(o => o.ToChatMessageContent());
@@ -142,6 +147,27 @@ public sealed class OpenAIResponseAgent : Agent
 
             yield return message;
         }
+    }
+
+    private ChatHistory GetChatHistory(AgentThread agentThread)
+    {
+        if (agentThread is ChatHistoryAgentThread chatHistoryAgentThread)
+        {
+            return chatHistoryAgentThread.ChatHistory;
+        }
+
+        throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");
+    }
+
+    private void UpdateResponseId(AgentThread agentThread, string id)
+    {
+        if (agentThread is OpenAIResponseAgentThread openAIResponseAgentThread)
+        {
+            openAIResponseAgentThread.ResponseId = id;
+            return;
+        }
+
+        throw new InvalidOperationException("The agent thread is not an OpenAIResponseAgentThread.");
     }
     #endregion
 }
