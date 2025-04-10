@@ -78,10 +78,10 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync("How do two software applications interact with another?");
 
         // Search the vector store.
-        var searchResult = await collection.VectorizedSearchAsync(
+        var searchResult = collection.VectorizedSearchAsync(
             searchVector,
             top: 1);
-        var searchResultItem = await searchResult.Results.FirstAsync();
+        var searchResultItem = await searchResult.FirstAsync();
 
         // Write the search result with its score to the console.
         Console.WriteLine(searchResultItem.Record.Metadata.Term);

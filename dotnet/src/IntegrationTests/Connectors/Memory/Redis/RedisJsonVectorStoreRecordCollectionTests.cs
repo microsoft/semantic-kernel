@@ -64,7 +64,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         await sut.CreateCollectionAsync();
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync("Upsert-10", new GetRecordOptions { IncludeVectors = true });
-        var actual = await sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 30f, 31f, 32f, 33f }),
             top: 3,
             new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 10) });
@@ -88,7 +88,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         Assert.Equal(record.Description, getResult?.Description);
         Assert.Equal(record.DescriptionEmbedding?.ToArray(), getResult?.DescriptionEmbedding?.ToArray());
 
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         Assert.Single(searchResults);
         Assert.Equal(1, searchResults.First().Score);
         var searchResultRecord = searchResults.First().Record;
@@ -347,13 +347,13 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelCode", 1) : new VectorSearchFilter().AnyTagEqualTo("Tags", "pool");
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             vector,
             top: 3,
             new() { IncludeVectors = true, OldFilter = filter });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         Assert.Single(searchResults);
         Assert.Equal(1, searchResults.First().Score);
         var searchResult = searchResults.First().Record;
@@ -386,7 +386,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var vector = new ReadOnlyMemory<float>([1.0f, 1.0f, 1.0f, 1.0f]);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             vector,
             top: 3,
             new()
@@ -395,7 +395,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         Assert.Equal(3, searchResults.Count);
         Assert.True(searchResults.Select(x => x.Record.HotelId).SequenceEqual(["TopSkip_3", "TopSkip_4", "TopSkip_5"]));
     }
@@ -416,7 +416,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
         var vector = new ReadOnlyMemory<double>([2.0d, 2.1d, 2.2d, 2.3d]);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             vector,
             top: 1,
             new()
@@ -425,7 +425,7 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         Assert.Single(searchResults);
         var searchResult = searchResults.First().Record;
         Assert.Equal("Float64_2", searchResult?.HotelId);

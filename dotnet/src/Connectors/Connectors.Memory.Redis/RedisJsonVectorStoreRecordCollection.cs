@@ -402,7 +402,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -450,7 +450,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TRecord> : IVectorStore
             return new VectorSearchResult<TRecord>(mappedRecord, score);
         });
 
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+        foreach (var result in mappedResults)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />

@@ -457,7 +457,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -509,7 +509,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
                 this._collectionName,
                 "Query"));
 
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+        foreach (var result in mappedResults)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -569,7 +572,7 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -651,7 +654,10 @@ public sealed class QdrantVectorStoreRecordCollection<TRecord> :
                 this._collectionName,
                 "Query"));
 
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+        foreach (var result in mappedResults)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />

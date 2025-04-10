@@ -122,7 +122,7 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         return this._decoratedVectorStoreRecordCollection.VectorizedSearchAsync(vector, top, options, cancellationToken);
     }
@@ -135,7 +135,7 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var embeddingValue = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return await this.VectorizedSearchAsync(embeddingValue, top, options, cancellationToken).ConfigureAwait(false);
+        return new VectorSearchResults<TRecord>(this.VectorizedSearchAsync(embeddingValue, top, options, cancellationToken));
     }
 
     /// <inheritdoc />

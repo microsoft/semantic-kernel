@@ -56,10 +56,10 @@ public class Step5_Use_GenericDataModel(ITestOutputHelper output, VectorStoresFi
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the generic data model collection and get the single most relevant result.
-        var searchResult = await genericDataModelCollection.VectorizedSearchAsync(
+        var searchResult = genericDataModelCollection.VectorizedSearchAsync(
             searchVector,
             top: 1);
-        var searchResultItems = await searchResult.Results.ToListAsync();
+        var searchResultItems = await searchResult.ToListAsync();
 
         // Write the search result with its score to the console.
         // Note that here we can loop through all the data properties

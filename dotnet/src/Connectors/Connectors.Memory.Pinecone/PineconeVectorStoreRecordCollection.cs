@@ -319,7 +319,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -358,7 +358,7 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
         if (response.Matches is null)
         {
-            return new VectorSearchResults<TRecord>(Array.Empty<VectorSearchResult<TRecord>>().ToAsyncEnumerable());
+            yield break;
         }
 
         // Pinecone does not provide a way to skip results, so we need to do it manually.
@@ -377,10 +377,12 @@ public sealed class PineconeVectorStoreRecordCollection<TRecord> : IVectorStoreR
                 Values = x.Values ?? Array.Empty<float>(),
                 Metadata = x.Metadata,
                 SparseValues = x.SparseValues
-            }, mapperOptions), x.Score)))
-            .ToAsyncEnumerable();
+            }, mapperOptions), x.Score)));
 
-        return new(records);
+        foreach (var record in records)
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc/>

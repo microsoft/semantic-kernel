@@ -253,7 +253,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
 
@@ -280,24 +280,23 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
         var limit = top + searchOptions.Skip;
 
-        return this.RunOperationAsync(OperationName, () =>
-        {
-            var results = this._client.GetNearestMatchesAsync(
-                this.CollectionName,
-                this._model,
-                vectorProperty,
-                pgVector,
-                top,
+        var results = this._client.GetNearestMatchesAsync(
+            this.CollectionName,
+            this._model,
+            vectorProperty,
+            pgVector,
+            top,
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
-                searchOptions.OldFilter,
+            searchOptions.OldFilter,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
-                searchOptions.Filter,
-                searchOptions.Skip,
-                searchOptions.IncludeVectors,
-                cancellationToken)
-            .SelectAsync(result =>
-                {
-                    var record = VectorStoreErrorHandler.RunModelConversion(
+            searchOptions.Filter,
+            searchOptions.Skip,
+            searchOptions.IncludeVectors,
+            cancellationToken);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            var record = VectorStoreErrorHandler.RunModelConversion(
                         PostgresConstants.VectorStoreSystemName,
                         this._collectionMetadata.VectorStoreName,
                         this.CollectionName,
@@ -306,11 +305,8 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
                             result.Row, new StorageToDataModelMapperOptions() { IncludeVectors = searchOptions.IncludeVectors })
                     );
 
-                    return new VectorSearchResult<TRecord>(record, result.Distance);
-                }, cancellationToken);
-
-            return Task.FromResult(new VectorSearchResults<TRecord>(results));
-        });
+            yield return new VectorSearchResult<TRecord>(record, result.Distance);
+        }
     }
 
     /// <inheritdoc />

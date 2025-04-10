@@ -256,7 +256,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     protected virtual async Task<List<FilterRecord>> GetResults(IVectorStoreRecordCollection<TKey, FilterRecord> collection, Expression<Func<FilterRecord, bool>> filter, int top)
     {
-        var results = await collection.VectorizedSearchAsync(
+        var results = collection.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 2, 3]),
             top: fixture.TestData.Count,
             new()
@@ -264,7 +264,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                 Filter = filter
             });
 
-        return await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
+        return await results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
     }
 
     [Obsolete("Legacy filter support")]
@@ -286,7 +286,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Fail("The test returns all results, and so is unreliable");
         }
 
-        var results = await fixture.Collection.VectorizedSearchAsync(
+        var results = fixture.Collection.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 2, 3]),
             top: fixture.TestData.Count,
             new()
@@ -294,7 +294,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                 OldFilter = legacyFilter
             });
 
-        var actual = await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
+        var actual = (await results.ToListAsync()).Select(r => r.Record).OrderBy(r => r.Key).ToList();
 
         Assert.Equal(expected, actual, (e, a) =>
             e.Int == a.Int &&

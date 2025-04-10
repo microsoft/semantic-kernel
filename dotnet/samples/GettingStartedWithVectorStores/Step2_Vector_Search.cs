@@ -43,10 +43,10 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the store and get the single most relevant result.
-        var searchResult = await collection.VectorizedSearchAsync(
+        var searchResult = collection.VectorizedSearchAsync(
             searchVector,
             top: 1);
-        var searchResultItems = await searchResult.Results.ToListAsync();
+        var searchResultItems = await searchResult.ToListAsync();
         return searchResultItems.First();
     }
 
@@ -63,14 +63,14 @@ public class Step2_Vector_Search(ITestOutputHelper output, VectorStoresFixture f
         var searchVector = await fixture.TextEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
 
         // Search the store with a filter and get the single most relevant result.
-        var searchResult = await collection.VectorizedSearchAsync(
+        var searchResult = collection.VectorizedSearchAsync(
             searchVector,
             top: 1,
             new()
             {
                 Filter = g => g.Category == "AI"
             });
-        var searchResultItems = await searchResult.Results.ToListAsync();
+        var searchResultItems = await searchResult.ToListAsync();
 
         // Write the search result with its score to the console.
         Console.WriteLine(searchResultItems.First().Record.Definition);

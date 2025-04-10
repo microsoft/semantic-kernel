@@ -149,7 +149,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         {
             var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken);
+            return new VectorSearchResults<TRecord>(vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken));
         }
 
         /// <inheritdoc />

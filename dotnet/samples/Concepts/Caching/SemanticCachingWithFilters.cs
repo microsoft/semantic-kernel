@@ -199,8 +199,8 @@ public class SemanticCachingWithFilters(ITestOutputHelper output) : BaseTest(out
             await collection.CreateCollectionIfNotExistsAsync();
 
             // Search for similar prompts in cache.
-            var searchResults = await collection.VectorizedSearchAsync(promptEmbedding, top: 1, cancellationToken: context.CancellationToken);
-            var searchResult = (await searchResults.Results.FirstOrDefaultAsync())?.Record;
+            var searchResults = collection.VectorizedSearchAsync(promptEmbedding, top: 1, cancellationToken: context.CancellationToken);
+            var searchResult = (await searchResults.FirstOrDefaultAsync())?.Record;
 
             // If result exists, return it.
             if (searchResult is not null)

@@ -505,13 +505,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(vector, top: 3, new()
+        var actual = sut.VectorizedSearchAsync(vector, top: 3, new()
         {
             IncludeVectors = includeVectors
         });
 
         // Assert
-        var results = await actual.Results.ToListAsync();
+        var results = await actual.ToListAsync();
         Assert.Single(results);
 
         var score = results[0].Score;
@@ -547,7 +547,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3)).Results.ToListAsync());
+            await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
     }
 
     [Fact]
@@ -558,11 +558,11 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await (await sut.VectorizedSearchAsync(
+            await sut.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>([1f, 2f, 3f]),
                 top: 3,
-                new() { VectorProperty = r => "non-existent-property" }))
-                .Results.ToListAsync());
+                new() { VectorProperty = r => "non-existent-property" })
+                .ToListAsync());
     }
 
     public void Dispose()

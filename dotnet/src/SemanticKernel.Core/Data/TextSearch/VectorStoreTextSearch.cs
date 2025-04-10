@@ -209,7 +209,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         {
             var vectorizedQuery = await this._textEmbeddingGeneration!.GenerateEmbeddingAsync(query, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await this._vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false);
+            return new VectorSearchResults<TRecord>(this._vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, searchOptions.Top, vectorSearchOptions, cancellationToken));
         }
 
         return await this._vectorizableTextSearch!.VectorizableTextSearchAsync(query, searchOptions.Top, vectorSearchOptions, cancellationToken).ConfigureAwait(false);

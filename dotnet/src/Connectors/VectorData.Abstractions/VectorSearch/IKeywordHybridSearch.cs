@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -24,7 +23,7 @@ public interface IKeywordHybridSearch<TRecord>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the hybrid search, including their result scores.</returns>
-    Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(
+    IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(
         TVector vector,
         ICollection<string> keywords,
         int top,

@@ -445,7 +445,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -481,16 +481,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             searchOptions,
             allowed);
 
-        return await ExceptionWrapper.WrapAsync(connection, command,
-            (cmd, ct) =>
-            {
-                var results = this.ReadVectorSearchResultsAsync(connection, cmd, searchOptions.IncludeVectors, ct);
-                return Task.FromResult(new VectorSearchResults<TRecord>(results));
-            },
-            "VectorizedSearch",
-            this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
-            cancellationToken).ConfigureAwait(false);
+        var results = this.ReadVectorSearchResultsAsync(connection, command, searchOptions.IncludeVectors, cancellationToken);
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -515,10 +510,21 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         {
             StorageToDataModelMapperOptions options = new() { IncludeVectors = includeVectors };
             var vectorProperties = includeVectors ? this._model.VectorProperties : [];
-            using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+                static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+                "VectorizedSearch",
+                this._collectionMetadata.VectorStoreName,
+                this.CollectionName,
+                cancellationToken).ConfigureAwait(false);
 
             int scoreIndex = -1;
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            while (await ExceptionWrapper.WrapReadAsync(
+                reader,
+                "VectorizedSearch",
+                this._collectionMetadata.VectorStoreName,
+                this.CollectionName,
+                cancellationToken).ConfigureAwait(false))
             {
                 if (scoreIndex < 0)
                 {

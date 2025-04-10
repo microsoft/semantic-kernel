@@ -451,7 +451,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel.Data), "data 1");
 
         // Act.
-        var actual = await sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
             new()
@@ -499,7 +499,7 @@ public class RedisHashSetVectorStoreRecordCollectionTests
                     It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
                 Times.Once);
 
-        var results = await actual.Results.ToListAsync();
+        var results = await actual.ToListAsync();
         Assert.Single(results);
         Assert.Equal(TestRecordKey1, results.First().Record.Key);
         Assert.Equal(0.25d, results.First().Score);

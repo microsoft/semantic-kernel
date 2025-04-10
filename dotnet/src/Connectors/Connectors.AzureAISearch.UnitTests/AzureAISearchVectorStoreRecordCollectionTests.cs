@@ -578,7 +578,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1
             },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert.
         this._searchClientMock.Verify(

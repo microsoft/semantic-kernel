@@ -328,7 +328,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -379,7 +379,10 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TRecord> : IVectorSt
             return new VectorSearchResult<TRecord>(dataModel, score);
         });
 
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+        foreach (var result in mappedResults)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />

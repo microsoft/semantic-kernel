@@ -563,7 +563,7 @@ public class QdrantVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
-        var actual = await sut.VectorizedSearchAsync(
+        var actual = sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
             new() { IncludeVectors = true, OldFilter = filter, Skip = 2 },
@@ -591,7 +591,7 @@ public class QdrantVectorStoreRecordCollectionTests
                     this._testCancellationToken),
                 Times.Once);
 
-        var results = await actual.Results.ToListAsync();
+        var results = await actual.ToListAsync();
         Assert.Single(results);
         Assert.Equal(testRecordKey, results.First().Record.Key);
         Assert.Equal("data 1", results.First().Record.OriginalNameData);

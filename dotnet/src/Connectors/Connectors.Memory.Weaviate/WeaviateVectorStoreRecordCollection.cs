@@ -286,11 +286,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorSearch";
 
@@ -309,7 +309,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             searchOptions,
             this._model);
 
-        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+        var results = await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+        foreach (var record in results)
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />
@@ -329,14 +333,14 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             this._model);
 
         var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken).ConfigureAwait(false);
-        await foreach (var record in results.Results.ConfigureAwait(false))
+        foreach (var record in results)
         {
             yield return record.Record;
         }
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
 
@@ -358,7 +362,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             s_jsonSerializerOptions,
             searchOptions);
 
-        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+        var results = await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+        foreach (var record in results)
+        {
+            yield return record;
+        }
     }
 
     /// <inheritdoc />
@@ -376,7 +384,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
     #region private
 
-    private async Task<VectorSearchResults<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, CancellationToken cancellationToken)
+    private async Task<IEnumerable<VectorSearchResult<TRecord>>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, CancellationToken cancellationToken)
     {
         using var request = new WeaviateVectorSearchRequest(query).Build();
 
@@ -395,7 +403,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
             };
         }
 
-        var mappedResults = collectionResults.Where(x => x is not null).Select(result =>
+        return collectionResults.Where(x => x is not null).Select(result =>
         {
             var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName);
 
@@ -408,8 +416,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TRecord> : IVectorStoreR
 
             return new VectorSearchResult<TRecord>(record, score);
         });
-
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
     }
 
     private Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)

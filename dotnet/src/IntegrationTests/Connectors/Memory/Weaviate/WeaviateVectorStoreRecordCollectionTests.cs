@@ -226,13 +226,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
+        var actual = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             IncludeVectors = includeVectors
         });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
 
         Assert.Equal("11111111-1111-1111-1111-111111111111", ids[0]);
@@ -264,13 +264,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var actual = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
         });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
 
         Assert.Equal("33333333-3333-3333-3333-333333333333", ids[0]);
@@ -297,13 +297,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
+        var actual = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
         {
             OldFilter = filter,
         });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         var actualIds = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
 
         Assert.Equal(expectedIds, actualIds);
@@ -341,13 +341,13 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]).ToListAsync();
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
+        var actual = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
         {
             OldFilter = filter,
         });
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
+        var searchResults = await actual.ToListAsync();
         var actualIds = searchResults.Select(l => l.Record.HotelId.ToString()).ToList();
 
         Assert.Single(actualIds);
