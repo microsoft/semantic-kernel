@@ -281,12 +281,14 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-        => (await this.UpsertAsync([record], cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false))!;
+    {
+        var keys = await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
+
+        return keys.Single();
+    }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         const string OperationName = "UpsertCollectionObject";
 
@@ -301,7 +303,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (jsonObjects.Count == 0)
         {
-            yield break;
+            return [];
         }
 
         var responses = await this.RunOperationAsync(OperationName, async () =>
@@ -311,16 +313,20 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             return await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
         }).ConfigureAwait(false);
 
+        var keys = new List<TKey>(jsonObjects.Count);
+
         if (responses is not null)
         {
             foreach (var response in responses)
             {
                 if (response?.Result?.IsSuccess is true)
                 {
-                    yield return (TKey)(object)response.Id;
+                    keys.Add((TKey)(object)response.Id);
                 }
             }
         }
+
+        return keys;
     }
 
     /// <inheritdoc />

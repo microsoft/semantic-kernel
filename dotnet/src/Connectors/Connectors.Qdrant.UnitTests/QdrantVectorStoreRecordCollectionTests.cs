@@ -458,7 +458,7 @@ public class QdrantVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.UpsertAsync(
             models,
-            cancellationToken: this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.NotNull(actual);

@@ -329,7 +329,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act
-        var results = await sut.UpsertAsync([hotel1, hotel2]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2]);
 
         // Assert
         Assert.Contains(id1, results);

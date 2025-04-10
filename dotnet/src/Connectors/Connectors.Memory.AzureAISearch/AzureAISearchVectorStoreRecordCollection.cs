@@ -283,12 +283,12 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
         if (!records.Any())
         {
-            yield break;
+            return [];
         }
 
         // Create Options
@@ -297,11 +297,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         // Upsert records
         var results = await this.MapToStorageModelAndUploadDocumentAsync(records, innerOptions, cancellationToken).ConfigureAwait(false);
 
-        // Get results
-        foreach (var key in results.Value.Results.Select(x => x.Key))
-        {
-            yield return (TKey)(object)key;
-        }
+        return results.Value.Results.Select(x => (TKey)(object)x.Key).ToList();
     }
 
     /// <inheritdoc />
