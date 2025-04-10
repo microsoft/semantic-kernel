@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel;
@@ -26,13 +27,10 @@ public static class KernelPluginFactoryExtensions
             throw new ArgumentNullException(nameof(agents));
         }
 
-        var functions = new List<KernelFunction>();
-        foreach (var agent in agents)
-        {
-            functions.Add(AgentKernelFunctionFactory.CreateFromAgent(agent));
-        }
+        KernelFunction[] functions = agents
+            .Select(agent => AgentKernelFunctionFactory.CreateFromAgent(agent))
+            .ToArray();
 
-        // Call the public method in SemanticKernel.Core
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 
