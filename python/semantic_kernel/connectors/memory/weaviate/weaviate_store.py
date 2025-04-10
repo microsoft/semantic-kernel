@@ -128,7 +128,7 @@ class WeaviateStore(VectorStore):
     @override
     async def __aenter__(self) -> "VectorStore":
         """Enter the context manager."""
-        if not await self.async_client.is_live():
+        if not self.async_client.is_connected():
             try:
                 await self.async_client.connect()
             except WeaviateConnectionError as exc:
