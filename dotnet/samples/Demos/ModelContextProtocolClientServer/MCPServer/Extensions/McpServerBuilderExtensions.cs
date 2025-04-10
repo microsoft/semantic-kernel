@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MCPServer.Prompts;
 using MCPServer.Resources;
 using Microsoft.SemanticKernel;
 using ModelContextProtocol.Protocol.Types;
@@ -16,17 +17,58 @@ public static class McpServerBuilderExtensions
     /// Adds all functions of the kernel plugins as tools to the server.
     /// </summary>
     /// <param name="builder">The MCP builder instance.</param>
-    /// <param name="plugins">The kernel plugins to add as tools to the server.</param>
+    /// <param name="plugins">The kernel plugins to add as tools to the server if specified.
+    /// Otherwise, all functions from the kernel plugins registered in DI container will be added.</param>
     /// <returns>The builder instance.</returns>
-    public static IMcpServerBuilder WithTools(this IMcpServerBuilder builder, KernelPluginCollection plugins)
+    public static IMcpServerBuilder WithTools(this IMcpServerBuilder builder, KernelPluginCollection? plugins = null)
     {
-        foreach (var plugin in plugins)
+        // If plugins are provided directly, add them as tools
+        if (plugins is not null)
         {
-            foreach (var function in plugin)
+            foreach (var plugin in plugins)
             {
-                builder.Services.AddSingleton(services => McpServerTool.Create(function.AsAIFunction()));
+                foreach (var function in plugin)
+                {
+                    builder.Services.AddSingleton(McpServerTool.Create(function.AsAIFunction()));
+                }
             }
+
+            return builder;
         }
+
+        // If no plugins are provided explicitly, add all functions from the kernel plugins registered in DI container as tools
+        builder.Services.AddSingleton<IEnumerable<McpServerTool>>(services =>
+        {
+            IEnumerable<KernelPlugin> plugins = services.GetServices<KernelPlugin>();
+
+            List<McpServerTool> tools = new(plugins.Count());
+
+            foreach (var plugin in plugins)
+            {
+                foreach (var function in plugin)
+                {
+                    tools.Add(McpServerTool.Create(function.AsAIFunction()));
+                }
+            }
+
+            return tools;
+        });
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a resource template to the server.
+    /// </summary>
+    /// <param name="builder">The MCP server builder.</param>
+    /// <param name="templateDefinition">The resource template definition.</param>
+    /// <returns>The builder instance.</returns>
+    public static IMcpServerBuilder WithPrompt(this IMcpServerBuilder builder, PromptDefinition templateDefinition)
+    {
+        PromptRegistry.RegisterPrompt(templateDefinition);
+
+        builder.WithListPromptsHandler(PromptRegistry.HandlerListPromptRequestsAsync);
+        builder.WithGetPromptHandler(PromptRegistry.HandlerGetPromptRequestsAsync);
 
         return builder;
     }

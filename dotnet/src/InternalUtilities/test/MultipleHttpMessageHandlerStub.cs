@@ -37,6 +37,16 @@ internal sealed class MultipleHttpMessageHandlerStub : DelegatingHandler
         });
     }
 
+    internal void AddImageResponse(byte[] image)
+    {
+        var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(image)
+        };
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+        this.ResponsesToReturn.Add(response);
+    }
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         this._callIteration++;

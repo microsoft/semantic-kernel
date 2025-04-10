@@ -3,7 +3,6 @@
 using System;
 using Azure;
 using Azure.AI.Inference;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -18,13 +17,11 @@ public sealed class AzureAIInferenceServiceCollectionExtensionsTests
     [Theory]
     [InlineData(InitializationType.ApiKey)]
     [InlineData(InitializationType.ClientInline)]
-    [InlineData(InitializationType.ChatClientInline)]
     [InlineData(InitializationType.ClientInServiceProvider)]
     public void ItCanAddChatCompletionService(InitializationType type)
     {
         // Arrange
         var client = new ChatCompletionsClient(this._endpoint, new AzureKeyCredential("key"));
-        using var chatClient = new AzureAIInferenceChatClient(client, "model-id");
         var builder = Kernel.CreateBuilder();
 
         builder.Services.AddSingleton(client);
@@ -34,7 +31,6 @@ public sealed class AzureAIInferenceServiceCollectionExtensionsTests
         {
             InitializationType.ApiKey => builder.Services.AddAzureAIInferenceChatCompletion("modelId", "api-key", this._endpoint),
             InitializationType.ClientInline => builder.Services.AddAzureAIInferenceChatCompletion("modelId", client),
-            InitializationType.ChatClientInline => builder.Services.AddAzureAIInferenceChatCompletion(chatClient),
             InitializationType.ClientInServiceProvider => builder.Services.AddAzureAIInferenceChatCompletion("modelId", chatClient: null),
             _ => builder.Services
         };
