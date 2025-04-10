@@ -72,9 +72,9 @@ dotnet user-secrets set "foundry:deploymentname" "gpt-4o-mini"
 
 ## Running
 
-Both agents can be executed in the [`Step02_IntentTriage`](../../../../samples/GettingStartedWithAgents/ServiceAgents/Step02_IntentTriage.cs) sample.
+Both agents can be executed in the [`Step03_IntentTriage`](../../../../samples/GettingStartedWithAgents/ServiceAgents/Step03_IntentTriage.cs) sample.
 
-> Manually change the types on lines 41 & 43 of the `Step02_IntentTriage` to control which agent is used.
+> Manually change the types on lines 41 & 43 of the `Step03_IntentTriage` to control which agent is used.
 
 Test have two modes and each mode invoked streaming and non-streaming results.
 
