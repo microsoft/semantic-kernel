@@ -63,10 +63,10 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
         var hashEntriesDictionary = storageModel.HashEntries.ToDictionary(x => (string)x.Name!, x => x.Value);
 
         // Construct the output record.
-        var outputRecord = model.CreateRecord<TConsumerDataModel>();
+        var outputRecord = model.CreateRecord<TConsumerDataModel>()!;
 
         // Set Key.
-        model.KeyProperty.SetValueAsObject(outputRecord!, storageModel.Key);
+        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Key);
 
         // Set each vector property if embeddings should be returned.
         if (options?.IncludeVectors is true)
@@ -75,6 +75,12 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
             {
                 if (hashEntriesDictionary.TryGetValue(property.StorageName, out var vector))
                 {
+                    if (vector.IsNull)
+                    {
+                        property.SetValueAsObject(outputRecord!, null);
+                        continue;
+                    }
+
                     property.SetValueAsObject(outputRecord!, property.Type switch
                     {
                         Type t when t == typeof(ReadOnlyMemory<float>) || t == typeof(ReadOnlyMemory<float>?)
@@ -91,6 +97,12 @@ internal sealed class RedisHashSetVectorStoreRecordMapper<TConsumerDataModel>(Ve
         {
             if (hashEntriesDictionary.TryGetValue(property.StorageName, out var hashValue))
             {
+                if (hashValue.IsNull)
+                {
+                    property.SetValueAsObject(outputRecord!, null);
+                    continue;
+                }
+
                 var typeOrNullableType = Nullable.GetUnderlyingType(property.Type) ?? property.Type;
                 var value = Convert.ChangeType(hashValue, typeOrNullableType);
                 property.SetValueAsObject(outputRecord!, value);

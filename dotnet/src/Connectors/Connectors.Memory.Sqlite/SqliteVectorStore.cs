@@ -62,6 +62,7 @@ public sealed class SqliteVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // ISqliteVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -73,12 +74,7 @@ public sealed class SqliteVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(ulong))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(UInt64)} keys are supported.");
-        }
-
-        var recordCollection = new SqliteVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new SqliteVectorStoreRecordCollection<TKey, TRecord>(
             this._connectionString,
             name,
             new()

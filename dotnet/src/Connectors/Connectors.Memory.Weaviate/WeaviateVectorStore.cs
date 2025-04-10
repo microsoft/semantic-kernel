@@ -53,6 +53,7 @@ public sealed class WeaviateVectorStore : IVectorStore
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IWeaviateVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -64,12 +65,7 @@ public sealed class WeaviateVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(Guid))
-        {
-            throw new NotSupportedException($"Only {nameof(Guid)} key is supported.");
-        }
-
-        var recordCollection = new WeaviateVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new WeaviateVectorStoreRecordCollection<TKey, TRecord>(
             this._httpClient,
             name,
             new()
@@ -80,7 +76,7 @@ public sealed class WeaviateVectorStore : IVectorStore
                 HasNamedVectors = this._options.HasNamedVectors
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
-        return recordCollection!;
+        return recordCollection;
     }
 
     /// <inheritdoc />

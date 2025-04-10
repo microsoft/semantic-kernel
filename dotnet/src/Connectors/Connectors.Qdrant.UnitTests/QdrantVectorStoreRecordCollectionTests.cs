@@ -14,7 +14,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Connectors.Qdrant.UnitTests;
 
 /// <summary>
-/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class QdrantVectorStoreRecordCollectionTests
 {
@@ -39,7 +39,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CollectionExistsReturnsCollectionStateAsync(string collectionName, bool expectedExists)
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, collectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CollectionExistsAsync(
@@ -58,7 +58,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanCreateCollectionAsync()
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.CreateCollectionAsync(
@@ -119,7 +119,7 @@ public class QdrantVectorStoreRecordCollectionTests
     public async Task CanDeleteCollectionAsync()
     {
         // Arrange.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(this._qdrantClientMock.Object, TestCollectionName);
 
         this._qdrantClientMock
             .Setup(x => x.DeleteCollectionAsync(
@@ -270,7 +270,7 @@ public class QdrantVectorStoreRecordCollectionTests
             .Returns(CreateModel(UlongTestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
@@ -501,7 +501,7 @@ public class QdrantVectorStoreRecordCollectionTests
             .Returns(pointStruct);
 
         // Arrange target with custom mapper.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
@@ -542,7 +542,7 @@ public class QdrantVectorStoreRecordCollectionTests
         };
 
         // Act.
-        var sut = new QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>(
+        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
@@ -769,7 +769,7 @@ public class QdrantVectorStoreRecordCollectionTests
     private IVectorStoreRecordCollection<T, SinglePropsModel<T>> CreateRecordCollection<T>(bool useDefinition, bool hasNamedVectors)
         where T : notnull
     {
-        var store = new QdrantVectorStoreRecordCollection<SinglePropsModel<T>>(
+        var store = new QdrantVectorStoreRecordCollection<T, SinglePropsModel<T>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
             new()
@@ -799,8 +799,8 @@ public class QdrantVectorStoreRecordCollectionTests
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", keyType),
-                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("Data", typeof(string)) { IsFilterable = true, StoragePropertyName = "data_storage_name" },
+                new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreRecordDataProperty("Data", typeof(string)) { IsIndexed = true, StoragePropertyName = "data_storage_name" },
                 new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
             ]
         };
@@ -811,11 +811,11 @@ public class QdrantVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public required T Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true, IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsIndexed = true, IsFullTextIndexed = true)]
         public string OriginalNameData { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_data_json_name")]
-        [VectorStoreRecordData(IsFilterable = true, StoragePropertyName = "data_storage_name")]
+        [VectorStoreRecordData(IsIndexed = true, StoragePropertyName = "data_storage_name")]
         public string Data { get; set; } = string.Empty;
 
         [JsonPropertyName("ignored_vector_json_name")]

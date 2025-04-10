@@ -103,23 +103,23 @@ public sealed class WeaviateVectorStoreRecordMapperTests
     #region private
 
     private static WeaviateVectorStoreRecordMapper<WeaviateHotel> GetMapper(bool hasNamedVectors) => new(
-        "CollectionName",
-        hasNamedVectors,
-        new WeaviateModelBuilder(hasNamedVectors)
-        .Build(
-            typeof(VectorStoreGenericDataModel<Guid>),
-            new VectorStoreRecordDefinition
-            {
-                Properties =
-                [
-                    new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
-                    new VectorStoreRecordDataProperty("HotelName", typeof(string)),
-                    new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
-                    new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>))
-                ]
-            },
-            s_jsonSerializerOptions),
-        s_jsonSerializerOptions);
+            "CollectionName",
+            hasNamedVectors,
+            new WeaviateModelBuilder(hasNamedVectors)
+            .Build(
+                typeof(Dictionary<string, object?>),
+                new VectorStoreRecordDefinition
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
+                        new VectorStoreRecordDataProperty("HotelName", typeof(string)),
+                        new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
+                        new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>))
+                    ]
+                },
+                s_jsonSerializerOptions),
+            s_jsonSerializerOptions);
 
     #endregion
 }

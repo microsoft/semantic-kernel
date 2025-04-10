@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,9 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711
-    : IVectorStoreRecordCollection<TKey, TRecord> where TKey : notnull
+    : IVectorStoreRecordCollection<TKey, TRecord>
+    where TKey : notnull
+    where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
@@ -424,20 +427,11 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             };
         }
 
-        if (typeof(TRecord) == typeof(VectorStoreGenericDataModel<TKey>))
+        var keyProperty = this._model.KeyProperty;
+
+        foreach (var record in records)
         {
-            foreach (var record in records)
-            {
-                yield return ((VectorStoreGenericDataModel<TKey>)(object)record!).Key;
-            }
-        }
-        else
-        {
-            var keyProperty = this._model.KeyProperty;
-            foreach (var record in records)
-            {
-                yield return (TKey)keyProperty.GetValueAsObject(record!)!;
-            }
+            yield return (TKey)keyProperty.GetValueAsObject(record!)!;
         }
     }
 
@@ -530,6 +524,37 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         finally
         {
             connection.Dispose();
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        using SqlConnection connection = new(this._connectionString);
+        using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
+            filter,
+            top,
+            options,
+            connection,
+            this._options.Schema,
+            this.CollectionName,
+            this._model);
+
+        using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+            static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+            "GetAsync", this._collectionMetadata.VectorStoreName, this.CollectionName, cancellationToken).ConfigureAwait(false);
+
+        var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
+        StorageToDataModelMapperOptions mapperOptions = new() { IncludeVectors = options.IncludeVectors };
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            yield return this._mapper.MapFromStorageToDataModel(new SqlDataReaderDictionary(reader, vectorProperties), mapperOptions);
         }
     }
 }

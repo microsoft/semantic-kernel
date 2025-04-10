@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -53,20 +54,26 @@ public abstract class VectorStoreRecordPropertyModel(string modelName, Type type
     /// <summary>
     /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
     /// </summary>
-    // TODO: Temporary, remove virtual once we move to Dictionary<string, object?> as the dynamic representation
     public virtual object? GetValueAsObject(object record)
     {
-        if (this.PropertyInfo is not null)
+        if (this.PropertyInfo is null)
         {
-            // We have a .NET property (non-dynamic POCO mapping)
+            if (record is Dictionary<string, object?> dictionary)
+            {
+                return dictionary.TryGetValue(this.ModelName, out var value)
+                    ? value
+                    : null;
+            }
 
-            // TODO: Implement compiled delegates for better performance, #11122
-            // TODO: Implement source-generated accessors for NativeAOT, #10256
-
-            return this.PropertyInfo.GetValue(record);
+            throw new UnreachableException("Non-dynamic mapping but PropertyInfo is null.");
         }
 
-        throw new UnreachableException("Must be overridden by derived class (for now).");
+        // We have a CLR property (non-dynamic POCO mapping)
+
+        // TODO: Implement compiled delegates for better performance, #11122
+        // TODO: Implement source-generated accessors for NativeAOT, #10256
+
+        return this.PropertyInfo.GetValue(record);
     }
 
     /// <summary>
@@ -74,23 +81,28 @@ public abstract class VectorStoreRecordPropertyModel(string modelName, Type type
     /// </summary>s
     public virtual void SetValueAsObject(object record, object? value)
     {
-        if (this.PropertyInfo is not null)
+        if (this.PropertyInfo is null)
         {
-            // We have a .NET property (non-dynamic POCO mapping)
-
-            // TODO: Implement compiled delegates for better performance, #11122
-            // TODO: Implement source-generated accessors for NativeAOT, #10256
-
-            // If the value is null, no need to set the property (it's the CLR default)
-            if (value is not null)
+            if (record.GetType() == typeof(Dictionary<string, object?>))
             {
-                this.PropertyInfo.SetValue(record, value);
+                var dictionary = (Dictionary<string, object?>)record;
+                dictionary[this.ModelName] = value;
+                return;
             }
 
-            return;
+            throw new UnreachableException("Non-dynamic mapping but ClrProperty is null.");
         }
 
-        throw new UnreachableException("Must be overridden by derived class (for now).");
+        // We have a CLR property (non-dynamic POCO mapping)
+
+        // TODO: Implement compiled delegates for better performance, #11122
+        // TODO: Implement source-generated accessors for NativeAOT, #10256
+
+        // If the value is null, no need to set the property (it's the CLR default)
+        if (value is not null)
+        {
+            this.PropertyInfo.SetValue(record, value);
+        }
     }
 
     // TODO: implement the generic accessors to avoid boxing, and make use of them in connectors

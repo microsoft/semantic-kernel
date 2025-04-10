@@ -48,6 +48,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -59,12 +60,7 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey))
-        {
-            throw new NotSupportedException($"Only {nameof(String)} and {nameof(AzureCosmosDBNoSQLCompositeKey)} keys are supported.");
-        }
-
-        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>(
             this._database,
             name,
             new()

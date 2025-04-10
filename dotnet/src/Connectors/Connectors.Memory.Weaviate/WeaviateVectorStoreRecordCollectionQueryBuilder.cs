@@ -69,6 +69,51 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     }
 
     /// <summary>
+    /// Builds Weaviate search query.
+    /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
+    /// </summary>
+    public static string BuildQuery<TRecord>(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        GetFilteredRecordOptions<TRecord> queryOptions,
+        string collectionName,
+        VectorStoreRecordModel model)
+    {
+        var vectorsQuery = queryOptions.IncludeVectors ?
+            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
+            string.Empty;
+
+        var sortPaths = string.Join(",", queryOptions.OrderBy.Values.Select(sortInfo =>
+        {
+            string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
+
+            return $$"""{ path: ["{{sortPath}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
+        }));
+
+        var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
+
+        return $$"""
+        {
+          Get {
+            {{collectionName}} (
+              limit: {{top}}
+              offset: {{queryOptions.Skip}}
+              where: {{translatedFilter}}
+              sort: [ {{sortPaths}} ]
+            ) {
+              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
+              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                {{WeaviateConstants.ReservedKeyPropertyName}}
+                {{WeaviateConstants.ScorePropertyName}}
+                {{vectorsQuery}}
+              }
+            }
+          }
+        }
+        """;
+    }
+
+    /// <summary>
     /// Builds Weaviate hybrid search query.
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/get"/>.
     /// </summary>

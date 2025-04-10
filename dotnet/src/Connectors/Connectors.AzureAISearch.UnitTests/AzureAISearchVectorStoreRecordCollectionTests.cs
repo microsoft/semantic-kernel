@@ -23,7 +23,7 @@ namespace SemanticKernel.Connectors.AzureAISearch.UnitTests;
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
 
 /// <summary>
-/// Contains tests for the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> class.
+/// Contains tests for the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public class AzureAISearchVectorStoreRecordCollectionTests
 {
@@ -65,7 +65,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 .ThrowsAsync(new RequestFailedException(404, "Index not found"));
         }
 
-        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(this._searchIndexClientMock.Object, collectionName);
+        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(this._searchIndexClientMock.Object, collectionName);
 
         // Act.
         var actual = await sut.CollectionExistsAsync(this._testCancellationToken);
@@ -293,7 +293,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .Returns(CreateModel(TestRecordKey1, true));
 
         // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -508,7 +508,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .Returns(storageObject);
 
         // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -546,7 +546,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         };
 
         // Act.
-        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });
@@ -563,7 +563,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
 
-        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName);
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
@@ -605,7 +605,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             .Setup(x => x.SearchAsync<MultiPropsModel>(null, It.IsAny<SearchOptions>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response.FromValue(searchResultsMock, Mock.Of<Response>()));
 
-        var sut = new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName);
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
@@ -637,9 +637,9 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             Times.Once);
     }
 
-    private AzureAISearchVectorStoreRecordCollection<MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
+    private AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel> CreateRecordCollection(bool useDefinition, bool useCustomJsonSerializerOptions = false)
     {
-        return new AzureAISearchVectorStoreRecordCollection<MultiPropsModel>(
+        return new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
             new()
@@ -685,7 +685,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         public string Key { get; set; } = string.Empty;
 
         [JsonPropertyName("storage_data1")]
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Data1 { get; set; } = string.Empty;
 
         [VectorStoreRecordData]

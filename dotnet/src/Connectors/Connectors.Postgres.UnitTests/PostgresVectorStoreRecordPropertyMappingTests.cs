@@ -95,8 +95,8 @@ public sealed class PostgresVectorStoreRecordPropertyMappingTests
             new VectorStoreRecordVectorPropertyModel("vector1", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 1000 },
             new VectorStoreRecordVectorPropertyModel("vector2", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Flat, Dimensions = 3000 },
             new VectorStoreRecordVectorPropertyModel("vector3", typeof(ReadOnlyMemory<float>?)) { IndexKind = IndexKind.Hnsw, Dimensions = 900, DistanceFunction = DistanceFunction.ManhattanDistance },
-            new VectorStoreRecordDataPropertyModel("data1", typeof(string)) { IsFilterable = true },
-            new VectorStoreRecordDataPropertyModel("data2", typeof(string)) { IsFilterable = false }
+            new VectorStoreRecordDataPropertyModel("data1", typeof(string)) { IsIndexed = true },
+            new VectorStoreRecordDataPropertyModel("data2", typeof(string)) { IsIndexed = false }
         ];
 
         // Act

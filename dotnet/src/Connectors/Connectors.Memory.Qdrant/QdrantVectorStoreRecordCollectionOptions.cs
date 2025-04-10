@@ -7,7 +7,7 @@ using Qdrant.Client.Grpc;
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
-/// Options when creating a <see cref="QdrantVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class QdrantVectorStoreRecordCollectionOptions<TRecord>
 {

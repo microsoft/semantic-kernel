@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.VectorData;
@@ -33,7 +34,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
 
     private readonly VectorStoreRecordModel _model = new WeaviateModelBuilder(hasNamedVectors: true)
         .Build(
-            typeof(VectorStoreGenericDataModel<string>),
+            typeof(Dictionary<string, object?>),
             new()
             {
                 Properties =

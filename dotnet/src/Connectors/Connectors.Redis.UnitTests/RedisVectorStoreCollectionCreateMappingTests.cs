@@ -25,13 +25,13 @@ public class RedisVectorStoreCollectionCreateMappingTests
         [
             new VectorStoreRecordKeyPropertyModel("Key", typeof(string)),
 
-            new VectorStoreRecordDataPropertyModel("FilterableString", typeof(string)) { IsFilterable = true },
-            new VectorStoreRecordDataPropertyModel("FullTextSearchableString", typeof(string)) { IsFullTextSearchable = true },
-            new VectorStoreRecordDataPropertyModel("FilterableStringEnumerable", typeof(string[])) { IsFilterable = true },
-            new VectorStoreRecordDataPropertyModel("FullTextSearchableStringEnumerable", typeof(string[])) { IsFullTextSearchable = true },
+            new VectorStoreRecordDataPropertyModel("FilterableString", typeof(string)) { IsIndexed = true },
+            new VectorStoreRecordDataPropertyModel("FullTextSearchableString", typeof(string)) { IsFullTextIndexed = true },
+            new VectorStoreRecordDataPropertyModel("FilterableStringEnumerable", typeof(string[])) { IsIndexed = true },
+            new VectorStoreRecordDataPropertyModel("FullTextSearchableStringEnumerable", typeof(string[])) { IsFullTextIndexed = true },
 
-            new VectorStoreRecordDataPropertyModel("FilterableInt", typeof(int)) { IsFilterable = true },
-            new VectorStoreRecordDataPropertyModel("FilterableNullableInt", typeof(int)) { IsFilterable = true },
+            new VectorStoreRecordDataPropertyModel("FilterableInt", typeof(int)) { IsIndexed = true },
+            new VectorStoreRecordDataPropertyModel("FilterableNullableInt", typeof(int)) { IsIndexed = true },
 
             new VectorStoreRecordDataPropertyModel("NonFilterableString", typeof(string)),
 

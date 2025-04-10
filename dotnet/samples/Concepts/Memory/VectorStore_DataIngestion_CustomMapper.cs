@@ -142,16 +142,17 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
 
         public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
             where TKey : notnull
+            where TRecord : notnull
         {
             // If the record definition is the glossary definition and the record type is the generic data model, inject the custom mapper into the collection options.
             if (vectorStoreRecordDefinition == s_glossaryDefinition && typeof(TRecord) == typeof(GenericDataModel))
             {
-                var customCollection = new RedisJsonVectorStoreRecordCollection<GenericDataModel>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition, JsonNodeCustomMapper = new Mapper() }) as IVectorStoreRecordCollection<TKey, TRecord>;
+                var customCollection = new RedisJsonVectorStoreRecordCollection<string, GenericDataModel>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition, JsonNodeCustomMapper = new Mapper() }) as IVectorStoreRecordCollection<TKey, TRecord>;
                 return customCollection!;
             }
 
             // Otherwise, just create a standard collection with the default mapper.
-            var collection = new RedisJsonVectorStoreRecordCollection<TRecord>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            var collection = new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
             return collection!;
         }
 

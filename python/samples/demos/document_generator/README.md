@@ -11,7 +11,7 @@ To learn more about the Semantic Kernel Agent Framework, please refer to the [Se
 
 ## Design
 
-### Tools/PLugins
+### Tools/Plugins
 
 - **Code Execution Plugin**: This plugin offers a sandbox environment to execute Python snippets. It returns the output of the program or errors if any.
 - **Repository File Plugin**: This plugin allows the AI to retrieve files from the Semantic Kernel repository.
@@ -46,9 +46,13 @@ To learn more about the Semantic Kernel Agent Framework, please refer to the [Se
 
 ### Step 1: Set up the environment
 
+The Document Generator demo currently supports two different AI Services. If integrating into your own code, other AI services can be used. See Semantic Kernel's Learn Site [page](https://learn.microsoft.com/en-us/semantic-kernel/concepts/ai-services/chat-completion/?tabs=csharp-AzureOpenAI%2Cpython-AzureOpenAI%2Cjava-AzureOpenAI&pivots=programming-language-python) about other available Chat Completion services.
+
+#### OpenAI
+
 Make sure you have the following environment variables set:
 
-```env
+```bash
 OPENAI_CHAT_MODEL_ID=<model-id>
 OPENAI_API_KEY=<your-key>
 ```
@@ -56,8 +60,16 @@ OPENAI_API_KEY=<your-key>
 > gpt-4o-2024-08-06 was used to generate [GENERATED_DOCUMENT.md](GENERATED_DOCUMENT.md).
 > Feel free to use other models from OpenAI or other providers. When you use models from another provider, make sure to update the chat completion services accordingly.
 
-```env
+#### Azure OpenAI
 
+```bash
+AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=<deployment-name>
+AZURE_OPENAI_ENDPOINT=<endpoint>  # in the form of `https://<resource>.openai.azure.com/`
+AZURE_OPENAI_API_KEY=<api-key>  # only required if using api key auth
+AZURE_OPENAI_API_VERSION=<api-version>  # optional, defaults to the latest Azure OpenAI GA API version of `2024-10-21` if not provided
+```
+
+```bash
 ### Step 2: Run the app
 
 ```bash

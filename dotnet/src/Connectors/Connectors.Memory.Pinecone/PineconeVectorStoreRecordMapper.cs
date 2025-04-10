@@ -69,12 +69,11 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecord
         {
             foreach (var property in model.DataProperties)
             {
-                if (storageModel.Metadata.TryGetValue(property.StorageName, out var metadataValue))
-                {
-                    property.SetValueAsObject(
-                        outputRecord,
-                        metadataValue is null ? null : PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(metadataValue, property.Type));
-                }
+                property.SetValueAsObject(
+                    outputRecord,
+                    storageModel.Metadata.TryGetValue(property.StorageName, out var metadataValue) && metadataValue is not null
+                        ? PineconeVectorStoreRecordFieldMapping.ConvertFromMetadataValueToNativeType(metadataValue, property.Type)
+                        : null);
             }
         }
 

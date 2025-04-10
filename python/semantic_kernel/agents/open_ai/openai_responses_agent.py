@@ -333,7 +333,7 @@ class OpenAIResponsesAgent(Agent):
         """
         try:
             openai_settings = OpenAISettings.create(
-                response_model_id=ai_model_id,
+                responses_model_id=ai_model_id,
                 api_key=api_key,
                 org_id=org_id,
                 env_file_path=env_file_path,

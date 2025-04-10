@@ -67,14 +67,14 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     // Do nothing, since key is not stored as part of the payload and therefore doesn't have to be added to the index.
                     continue;
 
-                case VectorStoreRecordDataPropertyModel dataProperty when dataProperty.IsFilterable || dataProperty.IsFullTextSearchable:
-                    if (dataProperty.IsFilterable && dataProperty.IsFullTextSearchable)
+                case VectorStoreRecordDataPropertyModel dataProperty when dataProperty.IsIndexed || dataProperty.IsFullTextIndexed:
+                    if (dataProperty.IsIndexed && dataProperty.IsFullTextIndexed)
                     {
-                        throw new InvalidOperationException($"Property '{dataProperty.ModelName}' has both {nameof(VectorStoreRecordDataProperty.IsFilterable)} and {nameof(VectorStoreRecordDataProperty.IsFullTextSearchable)} set to true, and this is not supported by the Redis VectorStore.");
+                        throw new InvalidOperationException($"Property '{dataProperty.ModelName}' has both {nameof(VectorStoreRecordDataProperty.IsIndexed)} and {nameof(VectorStoreRecordDataProperty.IsFullTextIndexed)} set to true, and this is not supported by the Redis VectorStore.");
                     }
 
                     // Add full text search field index.
-                    if (dataProperty.IsFullTextSearchable)
+                    if (dataProperty.IsFullTextIndexed)
                     {
                         if (dataProperty.Type == typeof(string) || (typeof(IEnumerable).IsAssignableFrom(dataProperty.Type) && GetEnumerableType(dataProperty.Type) == typeof(string)))
                         {
@@ -82,12 +82,12 @@ internal static class RedisVectorStoreCollectionCreateMapping
                         }
                         else
                         {
-                            throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextSearchable)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string or IEnumerable<string>. The Redis VectorStore supports {nameof(dataProperty.IsFullTextSearchable)} on string or IEnumerable<string> properties only.");
+                            throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreRecordDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string or IEnumerable<string>. The Redis VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string or IEnumerable<string> properties only.");
                         }
                     }
 
                     // Add filter field index.
-                    if (dataProperty.IsFilterable)
+                    if (dataProperty.IsIndexed)
                     {
                         if (dataProperty.Type == typeof(string))
                         {
@@ -103,7 +103,7 @@ internal static class RedisVectorStoreCollectionCreateMapping
                         }
                         else
                         {
-                            throw new InvalidOperationException($"Property '{dataProperty.ModelName}' is marked as {nameof(VectorStoreRecordDataProperty.IsFilterable)}, but the property type '{dataProperty.Type}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
+                            throw new InvalidOperationException($"Property '{dataProperty.ModelName}' is marked as {nameof(VectorStoreRecordDataProperty.IsIndexed)}, but the property type '{dataProperty.Type}' is not supported. Only string, IEnumerable<string> and numeric properties are supported for filtering by the Redis VectorStore.");
                         }
                     }
 

@@ -45,6 +45,7 @@ public static class PineconeFactory
 
         public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
             where TKey : notnull
+            where TRecord : notnull
         {
             if (typeof(TKey) != typeof(string) || typeof(TRecord) != typeof(LangchainDocument<string>))
             {
@@ -54,7 +55,7 @@ public static class PineconeFactory
             // Create a Pinecone collection and pass in our custom record definition that matches
             // the schema used by Langchain so that the default mapper can use the storage names
             // in it, to map to the storage scheme.
-            return (new PineconeVectorStoreRecordCollection<TRecord>(
+            return (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
                 _pineconeClient,
                 name,
                 new()

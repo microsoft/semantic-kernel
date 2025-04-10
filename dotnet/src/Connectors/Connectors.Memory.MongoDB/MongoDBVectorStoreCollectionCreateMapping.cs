@@ -49,7 +49,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
         // Create separate index for each data property
         foreach (var property in dataProperties)
         {
-            if (property.IsFilterable)
+            if (property.IsIndexed)
             {
                 var indexDocument = new BsonDocument
                 {
@@ -75,7 +75,7 @@ internal static class MongoDBVectorStoreCollectionCreateMapping
         // Create separate index for each data property
         foreach (var property in dataProperties)
         {
-            if (property.IsFullTextSearchable)
+            if (property.IsFullTextIndexed)
             {
                 fieldElements.Add(new BsonElement(property.StorageName, new BsonArray()
                 {

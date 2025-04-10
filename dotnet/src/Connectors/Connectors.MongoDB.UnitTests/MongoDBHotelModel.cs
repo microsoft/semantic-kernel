@@ -14,7 +14,7 @@ public class MongoDBHotelModel(string hotelId)
     public string HotelId { get; init; } = hotelId;
 
     /// <summary>A string metadata field.</summary>
-    [VectorStoreRecordData(IsFilterable = true)]
+    [VectorStoreRecordData(IsIndexed = true)]
     public string? HotelName { get; set; }
 
     /// <summary>An int metadata field.</summary>

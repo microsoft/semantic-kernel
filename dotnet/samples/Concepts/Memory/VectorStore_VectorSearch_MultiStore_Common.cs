@@ -128,7 +128,7 @@ public class VectorStore_VectorSearch_MultiStore_Common(IVectorStore vectorStore
         [VectorStoreRecordKey]
         public TKey Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Category { get; set; }
 
         [VectorStoreRecordData]

@@ -50,6 +50,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
     /// <inheritdoc />
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IAzureAISearchVectorStoreRecordCollectionFactor is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -58,12 +59,7 @@ public sealed class AzureAISearchVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TRecord>(
+        var recordCollection = new AzureAISearchVectorStoreRecordCollection<TKey, TRecord>(
             this._searchIndexClient,
             name,
             new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>()

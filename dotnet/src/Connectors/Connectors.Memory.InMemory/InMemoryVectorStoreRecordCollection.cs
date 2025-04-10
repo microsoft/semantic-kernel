@@ -22,6 +22,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
+    where TRecord : notnull
 {
     /// <summary>Metadata about vector store record collection.</summary>
     private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
@@ -86,7 +87,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // TODO: Make generic to avoid boxing
 #pragma warning disable MEVD9000 // KeyResolver and VectorResolver are experimental
         this._keyResolver = this._options.KeyResolver is null
-            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record!)!
+            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record)!
             : this._options.KeyResolver;
 
         this._vectorResolver = this._options.VectorResolver is not null
@@ -103,7 +104,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
                     throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
                 }
 
-                return property.GetValueAsObject(record!);
+                return property.GetValueAsObject(record);
             };
 #pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -192,6 +193,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         foreach (var key in keys)
         {
             var record = await this.GetAsync(key, options, cancellationToken).ConfigureAwait(false);
@@ -215,6 +218,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         var collectionDictionary = this.GetCollectionDictionary();
 
         foreach (var key in keys)
@@ -241,6 +246,8 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(records);
+
         foreach (var record in records)
         {
             yield return await this.UpsertAsync(record, cancellationToken).ConfigureAwait(false);
@@ -322,6 +329,43 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
             serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
             serviceType.IsInstanceOfType(this) ? this :
             null;
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
+            .AsQueryable()
+            .Where(filter);
+
+        if (options.OrderBy.Values.Count > 0)
+        {
+            var first = options.OrderBy.Values[0];
+            var sorted = first.Ascending
+                    ? records.OrderBy(first.PropertySelector)
+                    : records.OrderByDescending(first.PropertySelector);
+
+            for (int i = 1; i < options.OrderBy.Values.Count; i++)
+            {
+                var next = options.OrderBy.Values[i];
+                sorted = next.Ascending
+                    ? sorted.ThenBy(next.PropertySelector)
+                    : sorted.ThenByDescending(next.PropertySelector);
+            }
+
+            records = sorted;
+        }
+
+        return records
+            .Skip(options.Skip)
+            .Take(top)
+            .ToAsyncEnumerable();
     }
 
     /// <summary>

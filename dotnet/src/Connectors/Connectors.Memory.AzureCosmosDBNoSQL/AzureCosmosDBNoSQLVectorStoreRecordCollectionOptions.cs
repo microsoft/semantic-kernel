@@ -9,7 +9,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 /// <summary>
-/// Options when creating a <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>
 {

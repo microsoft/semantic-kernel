@@ -48,6 +48,7 @@ public static class QdrantFactory
 
         public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
             where TKey : notnull
+            where TRecord : notnull
         {
             // Create a Qdrant collection. To be compatible with Langchain
             // we need to use a custom record definition that matches the
@@ -56,7 +57,7 @@ public static class QdrantFactory
             // a struct and this isn't supported by the default mapper.
             // Since langchain creates collections without named vector support
             // we should set HasNamedVectors to false.
-            var collection = new QdrantVectorStoreRecordCollection<LangchainDocument<Guid>>(
+            var collection = new QdrantVectorStoreRecordCollection<Guid, LangchainDocument<Guid>>(
                 _qdrantClient,
                 name,
                 new()
