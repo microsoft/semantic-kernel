@@ -26,11 +26,10 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         JsonSerializerOptions jsonSerializerOptions,
         int top,
         VectorSearchOptions<TRecord> searchOptions,
-        VectorStoreRecordModel model)
+        VectorStoreRecordModel model,
+        bool hasNamedVectors)
     {
-        var vectorsQuery = searchOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
-            string.Empty;
+        var vectorsQuery = GetVectorsPropertyQuery(searchOptions.IncludeVectors, hasNamedVectors, model);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
@@ -52,7 +51,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               offset: {{searchOptions.Skip}}
               {{(filter is null ? "" : "where: " + filter)}}
               nearVector: {
-                targetVectors: ["{{vectorPropertyName}}"]
+                {{GetTargetVectorsQuery(hasNamedVectors, vectorPropertyName)}}
                 vector: {{vectorArray}}
               }
             ) {
@@ -77,11 +76,10 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         int top,
         GetFilteredRecordOptions<TRecord> queryOptions,
         string collectionName,
-        VectorStoreRecordModel model)
+        VectorStoreRecordModel model,
+        bool hasNamedVectors)
     {
-        var vectorsQuery = queryOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
-            string.Empty;
+        var vectorsQuery = GetVectorsPropertyQuery(queryOptions.IncludeVectors, hasNamedVectors, model);
 
         var sortPaths = string.Join(",", queryOptions.OrderBy.Values.Select(sortInfo =>
         {
@@ -126,11 +124,10 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
         VectorStoreRecordVectorPropertyModel vectorProperty,
         VectorStoreRecordDataPropertyModel textProperty,
         JsonSerializerOptions jsonSerializerOptions,
-        HybridSearchOptions<TRecord> searchOptions)
+        HybridSearchOptions<TRecord> searchOptions,
+        bool hasNamedVectors)
     {
-        var vectorsQuery = searchOptions.IncludeVectors ?
-            $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}" :
-            string.Empty;
+        var vectorsQuery = GetVectorsPropertyQuery(searchOptions.IncludeVectors, hasNamedVectors, model);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = searchOptions switch
@@ -154,7 +151,7 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
               hybrid: {
                 query: "{{keywords}}"
                 properties: ["{{textProperty.StorageName}}"]
-                targetVectors: ["{{vectorProperty.StorageName}}"]
+                {{GetTargetVectorsQuery(hasNamedVectors, vectorProperty.StorageName)}}
                 vector: {{vectorArray}}
                 fusionType: rankedFusion
               }
@@ -172,6 +169,23 @@ internal static class WeaviateVectorStoreRecordCollectionQueryBuilder
     }
 
     #region private
+
+    private static string GetTargetVectorsQuery(bool hasNamedVectors, string vectorPropertyName)
+    {
+        return hasNamedVectors ? $"targetVectors: [\"{vectorPropertyName}\"]" : string.Empty;
+    }
+
+    private static string GetVectorsPropertyQuery(
+        bool includeVectors,
+        bool hasNamedVectors,
+        VectorStoreRecordModel model)
+    {
+        return includeVectors
+            ? hasNamedVectors
+                ? $"vectors {{ {string.Join(" ", model.VectorProperties.Select(p => p.StorageName))} }}"
+                : WeaviateConstants.ReservedSingleVectorPropertyName
+            : string.Empty;
+    }
 
 #pragma warning disable CS0618 // Type or member is obsolete
     /// <summary>

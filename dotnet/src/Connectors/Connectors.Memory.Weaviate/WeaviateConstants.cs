@@ -30,4 +30,7 @@ internal sealed class WeaviateConstants
 
     /// <summary>Additional properties property name in Weaviate.</summary>
     internal const string AdditionalPropertiesPropertyName = "_additional";
+
+    /// <summary>Default vectorizer for vector properties in Weaviate.</summary>
+    internal const string DefaultVectorizer = "none";
 }

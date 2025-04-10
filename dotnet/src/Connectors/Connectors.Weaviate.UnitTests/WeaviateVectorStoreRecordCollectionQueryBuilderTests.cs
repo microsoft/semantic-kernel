@@ -49,8 +49,10 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
 
     private readonly ReadOnlyMemory<float> _vector = new([31f, 32f, 33f, 34f]);
 
-    [Fact]
-    public void BuildSearchQueryByDefaultReturnsValidQuery()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BuildSearchQueryByDefaultReturnsValidQuery(bool hasNamedVectors)
     {
         // Arrange
         var expectedQuery = $$"""
@@ -61,7 +63,7 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
               offset: 2
               {{string.Empty}}
               nearVector: {
-                targetVectors: ["descriptionEmbedding"]
+                {{(hasNamedVectors ? "targetVectors: [\"descriptionEmbedding\"]" : string.Empty)}}
                 vector: [31,32,33,34]
               }
             ) {
@@ -89,7 +91,8 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             s_jsonSerializerOptions,
             top: 3,
             searchOptions,
-            this._model);
+            this._model,
+            hasNamedVectors);
 
         // Assert
         Assert.Equal(expectedQuery, query);
@@ -98,8 +101,10 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
         Assert.DoesNotContain("where", query);
     }
 
-    [Fact]
-    public void BuildSearchQueryWithIncludedVectorsReturnsValidQuery()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BuildSearchQueryWithIncludedVectorsReturnsValidQuery(bool hasNamedVectors)
     {
         // Arrange
         var searchOptions = new VectorSearchOptions<DummyType>
@@ -116,10 +121,13 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             s_jsonSerializerOptions,
             top: 3,
             searchOptions,
-            this._model);
+            this._model,
+            hasNamedVectors);
 
         // Assert
-        Assert.Contains("vectors { DescriptionEmbedding }", query);
+        var vectorQuery = hasNamedVectors ? "vectors { DescriptionEmbedding }" : "vector";
+
+        Assert.Contains(vectorQuery, query);
     }
 
     [Fact]
@@ -145,7 +153,8 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             s_jsonSerializerOptions,
             top: 3,
             searchOptions,
-            this._model);
+            this._model,
+            hasNamedVectors: true);
 
         // Assert
         Assert.Contains(ExpectedFirstSubquery, query);
@@ -170,7 +179,8 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             s_jsonSerializerOptions,
             top: 3,
             searchOptions,
-            this._model));
+            this._model,
+            hasNamedVectors: true));
     }
 
     [Fact]
@@ -191,7 +201,8 @@ public sealed class WeaviateVectorStoreRecordCollectionQueryBuilderTests
             s_jsonSerializerOptions,
             top: 3,
             searchOptions,
-            this._model));
+            this._model,
+            hasNamedVectors: true));
     }
 
     #region private

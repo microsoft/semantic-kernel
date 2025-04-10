@@ -140,10 +140,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         const string OperationName = "CreateCollectionSchema";
 
+        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
+            this.CollectionName,
+            this._options.HasNamedVectors,
+            this._model);
+
         return this.RunOperationAsync(OperationName, () =>
         {
-            var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(this.CollectionName, this._model);
-
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
@@ -346,7 +349,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             s_jsonSerializerOptions,
             top,
             searchOptions,
-            this._model);
+            this._model,
+            this._options.HasNamedVectors);
 
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
@@ -365,7 +369,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             top,
             options,
             this.CollectionName,
-            this._model);
+            this._model,
+            this._options.HasNamedVectors);
 
         var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken).ConfigureAwait(false);
         await foreach (var record in results.Results.ConfigureAwait(false))
@@ -395,7 +400,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             vectorProperty,
             textDataProperty,
             s_jsonSerializerOptions,
-            searchOptions);
+            searchOptions,
+            this._options.HasNamedVectors);
 
         return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
     }
@@ -436,7 +442,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         var mappedResults = collectionResults.Where(x => x is not null).Select(result =>
         {
-            var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName);
+            var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName, this._options.HasNamedVectors);
 
             var record = VectorStoreErrorHandler.RunModelConversion(
                 WeaviateConstants.VectorStoreSystemName,
@@ -541,7 +547,11 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
-            var mapper = new WeaviateDynamicDataModelMapper(this.CollectionName, this._model, s_jsonSerializerOptions);
+            var mapper = new WeaviateDynamicDataModelMapper(
+                this.CollectionName,
+                this._options.HasNamedVectors,
+                this._model,
+                s_jsonSerializerOptions);
 
             return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
         }

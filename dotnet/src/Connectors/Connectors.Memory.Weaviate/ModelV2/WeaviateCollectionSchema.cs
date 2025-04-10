@@ -21,4 +21,13 @@ internal sealed class WeaviateCollectionSchema
 
     [JsonPropertyName("properties")]
     public List<WeaviateCollectionSchemaProperty> Properties { get; set; } = [];
+
+    [JsonPropertyName("vectorizer")]
+    public string Vectorizer { get; set; } = WeaviateConstants.DefaultVectorizer;
+
+    [JsonPropertyName("vectorIndexType")]
+    public string? VectorIndexType { get; set; }
+
+    [JsonPropertyName("vectorIndexConfig")]
+    public WeaviateCollectionSchemaVectorIndexConfig? VectorIndexConfig { get; set; }
 }
