@@ -238,7 +238,7 @@ Build a system of specialized agents that can collaborate:
 
 ```python
 import asyncio
-from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion, OpenAIChatCompletion
 
 billing_agent = ChatCompletionAgent(
@@ -261,7 +261,7 @@ triage_agent = ChatCompletionAgent(
     plugins=[billing_agent, refund_agent],
 )
 
-thread: None
+thread: ChatHistoryAgentThread = None
 
 async def main() -> None:
     print("Welcome to the chat bot!\n  Type 'exit' to exit.\n  Try to get some billing or refund help.")
