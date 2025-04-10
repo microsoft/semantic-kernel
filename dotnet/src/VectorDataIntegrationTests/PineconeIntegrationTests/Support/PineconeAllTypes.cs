@@ -48,7 +48,7 @@ public record PineconeAllTypes()
     [VectorStoreRecordData]
     public List<string>? NullableStringList { get; set; }
 
-    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction: DistanceFunction.DotProductSimilarity)]
+    [VectorStoreRecordVector(Dimensions: 8, DistanceFunction = DistanceFunction.DotProductSimilarity)]
     public ReadOnlyMemory<float>? Embedding { get; set; }
 
     internal void AssertEqual(PineconeAllTypes other)

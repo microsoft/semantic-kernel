@@ -553,7 +553,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         [VectorStoreRecordKey]
         public int Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding { get; set; }
 
         [VectorStoreRecordData]

@@ -186,7 +186,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public int? IntProperty { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
     }
 #pragma warning restore CA1812

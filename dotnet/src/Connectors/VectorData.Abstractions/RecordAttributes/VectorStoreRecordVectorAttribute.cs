@@ -40,6 +40,7 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// </summary>
     /// <param name="Dimensions">The number of dimensions that the vector has.</param>
     /// <param name="DistanceFunction">The distance function to use when comparing vectors.</param>
+    [Obsolete("This constructor is obsolete. Use the constructor that takes Dimensions as a parameter and set the DistanceFunction property directly, e.g. [[VectorStoreRecordVector(Dimensions: 1536, DistanceFunction = DistanceFunction.CosineSimilarity)]]", error: true)]
     public VectorStoreRecordVectorAttribute(int Dimensions, string? DistanceFunction)
     {
         this.Dimensions = Dimensions;
@@ -52,6 +53,7 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// <param name="Dimensions">The number of dimensions that the vector has.</param>
     /// <param name="DistanceFunction">The distance function to use when comparing vectors.</param>
     /// <param name="IndexKind">The kind of index to use.</param>
+    [Obsolete("This constructor is obsolete. Use the constructor that takes Dimensions as a parameter and set the DistanceFunction and IndexKind properties directly, e.g. [[VectorStoreRecordVector(Dimensions: 1536, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]]", error: true)]
     public VectorStoreRecordVectorAttribute(int Dimensions, string? DistanceFunction, string? IndexKind)
     {
         this.Dimensions = Dimensions;
@@ -75,7 +77,9 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// The default value varies by database type. See the documentation of your chosen database connector for more information.
     /// </value>
     /// <seealso cref="IndexKind"/>
-    public string? IndexKind { get; private set; }
+#pragma warning disable CA1019 // Define accessors for attribute arguments: The constructor overload that contains this property is obsolete.
+    public string? IndexKind { get; init; }
+#pragma warning restore CA1019
 
     /// <summary>
     /// Gets the distance function to use when comparing vectors.
@@ -84,7 +88,9 @@ public sealed class VectorStoreRecordVectorAttribute : Attribute
     /// The default value varies by database type. See the documentation of your chosen database connector for more information.
     /// </value>
     /// <seealso cref="DistanceFunction"/>
-    public string? DistanceFunction { get; private set; }
+#pragma warning disable CA1019 // Define accessors for attribute arguments: The constructor overload that contains this property is obsolete.
+    public string? DistanceFunction { get; init; }
+#pragma warning restore CA1019
 
     /// <summary>
     /// Gets or sets an optional name to use for the property in storage, if different from the property name.

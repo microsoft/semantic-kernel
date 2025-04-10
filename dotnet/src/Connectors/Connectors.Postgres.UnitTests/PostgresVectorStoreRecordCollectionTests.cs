@@ -190,7 +190,7 @@ public class PostgresVectorStoreRecordCollectionTests
         [VectorStoreRecordData]
         public string? Data { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Vector { get; set; }
     }
 
