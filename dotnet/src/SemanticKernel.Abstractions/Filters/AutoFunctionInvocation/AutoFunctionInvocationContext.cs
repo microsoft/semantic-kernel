@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -141,6 +140,7 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         get => this.Options?.AdditionalProperties?[ChatOptionsExtensions.PromptExecutionSettingsKey] as PromptExecutionSettings;
         init
         {
+            this.Options ??= new();
             this.Options.AdditionalProperties ??= [];
             this.Options.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = value;
         }

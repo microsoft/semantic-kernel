@@ -130,13 +130,16 @@ internal static class ChatOptionsExtensions
     /// </summary>
     /// <param name="options">Chat options.</param>
     /// <param name="kernel">Kernel to be used for auto function invocation.</param>
-    internal static ChatOptions? AddKernel(this ChatOptions options, Kernel kernel)
+    internal static ChatOptions AddKernel(this ChatOptions options, Kernel? kernel)
     {
         Verify.NotNull(options);
-        Verify.NotNull(kernel);
 
-        options.AdditionalProperties ??= [];
-        options.AdditionalProperties?.TryAdd(KernelKey, kernel);
+        // Only add the kernel if it is provided
+        if (kernel is not null)
+        {
+            options.AdditionalProperties ??= [];
+            options.AdditionalProperties?.TryAdd(KernelKey, kernel);
+        }
 
         return options;
     }

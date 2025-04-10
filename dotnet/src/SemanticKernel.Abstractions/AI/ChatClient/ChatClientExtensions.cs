@@ -29,10 +29,7 @@ public static class ChatClientExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatOptions = executionSettings?.ToChatOptions(kernel);
-
-        // Passing by reference to be used by AutoFunctionInvocationFilters
-        chatOptions.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = executionSettings;
+        var chatOptions = GetChatOptionsFromSettings(executionSettings, kernel);
 
         // Try to parse the text as a chat history
         if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
@@ -58,10 +55,7 @@ public static class ChatClientExtensions
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        var chatOptions = executionSettings?.ToChatOptions(kernel);
-
-        // Passing by reference to be used by AutoFunctionInvocationFilters
-        chatOptions.AdditionalProperties[ChatOptionsExtensions.PromptExecutionSettingsKey] = executionSettings;
+        var chatOptions = GetChatOptionsFromSettings(executionSettings, kernel);
 
         return chatClient.GetStreamingResponseAsync(prompt, chatOptions, cancellationToken);
     }
@@ -108,5 +102,14 @@ public static class ChatClientExtensions
         return client is KernelFunctionInvokingChatClient kernelFunctionInvocationClient
             ? kernelFunctionInvocationClient
             : new KernelFunctionInvokingChatClient(client, logger);
+    }
+
+    private static ChatOptions GetChatOptionsFromSettings(PromptExecutionSettings? executionSettings, Kernel? kernel)
+    {
+        ChatOptions chatOptions = executionSettings?.ToChatOptions(kernel) ?? new ChatOptions().AddKernel(kernel);
+
+        // Passing by reference to be used by AutoFunctionInvocationFilters
+        chatOptions.AdditionalProperties![ChatOptionsExtensions.PromptExecutionSettingsKey] = executionSettings;
+        return chatOptions;
     }
 }
