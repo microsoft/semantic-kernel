@@ -68,7 +68,7 @@ class PromptExecutionSettings(KernelBaseModel):
     @property
     def keys(self):
         """Get the keys of the prompt execution settings."""
-        return self.model_fields.keys()
+        return self.__class__.model_fields.keys()
 
     def prepare_settings_dict(self, **kwargs) -> dict[str, Any]:
         """Prepare the settings as a dictionary for sending to the AI service.
@@ -86,7 +86,7 @@ class PromptExecutionSettings(KernelBaseModel):
             by_alias=True,
         )
 
-    def update_from_prompt_execution_settings(self, config: _T) -> None:
+    def update_from_prompt_execution_settings(self, config: "PromptExecutionSettings") -> None:
         """Update the prompt execution settings from a completion config."""
         if config.service_id is not None:
             self.service_id = config.service_id
@@ -95,7 +95,7 @@ class PromptExecutionSettings(KernelBaseModel):
         self.unpack_extension_data()
 
     @classmethod
-    def from_prompt_execution_settings(cls: type[_T], config: _T) -> _T:
+    def from_prompt_execution_settings(cls: type[_T], config: "PromptExecutionSettings") -> _T:
         """Create a prompt execution settings from a completion config."""
         config.pack_extension_data()
         return cls(

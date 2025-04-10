@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Transport;
 using ModelContextProtocol.Protocol.Types;
@@ -22,7 +21,7 @@ internal sealed class Program
     {
         await UseMCPToolsAsync();
 
-        await UseMCPToolsAndPromptAsync();
+        await UseMCPPromptAsync();
 
         await UseMCPResourcesAsync();
 
@@ -175,59 +174,50 @@ internal sealed class Program
     }
 
     /// <summary>
-    /// Demonstrates how to use the MCP tools and MCP prompt with the Semantic Kernel.
+    /// Demonstrates how to use the MCP prompt with the Semantic Kernel.
     /// The code in this method:
     /// 1. Creates an MCP client.
-    /// 2. Retrieves the list of tools provided by the MCP server.
-    /// 3. Retrieves the list of prompts provided by the MCP server.
-    /// 4. Creates a kernel and registers the MCP tools as Kernel functions.
-    /// 5. Requests the `GetCurrentWeatherForCity` prompt from the MCP server.
-    /// 6. The MCP server renders the prompt using the `Boston` as value for the `city` parameter and the result of the `DateTimeUtils-GetCurrentDateTimeInUtc` server-side invocation added to the prompt as part of prompt rendering.
-    /// 7. Converts the MCP server prompt: list of messages where each message is represented by content and role to a chat history.
-    /// 8. Sends the chat history to the AI model together with the MCP tools represented as Kernel functions.
-    /// 9. The AI model calls WeatherUtils-GetWeatherForCity function with the current date time and the `Boston` arguments extracted from the prompt to get the weather information.
-    /// 10. Having received the weather information from the function call, the AI model returns the answer to the prompt.
+    /// 2. Retrieves the list of prompts provided by the MCP server.
+    /// 3. Gets the current weather for Boston and Sydney using the `GetCurrentWeatherForCity` prompt.
+    /// 4. Adds the MCP server prompts to the chat history and prompts the AI model to compare the weather in the two cities and suggest the best place to go for a walk.
+    /// 5. After receiving and processing the weather data for both cities and the prompt, the AI model returns an answer.
     /// </summary>
-    private static async Task UseMCPToolsAndPromptAsync()
+    private static async Task UseMCPPromptAsync()
     {
-        Console.WriteLine($"Running the {nameof(UseMCPToolsAndPromptAsync)} sample.");
+        Console.WriteLine($"Running the {nameof(UseMCPPromptAsync)} sample.");
 
         // Create an MCP client
         await using IMcpClient mcpClient = await CreateMcpClientAsync();
-
-        // Retrieve and display the list provided by the MCP server
-        IList<McpClientTool> tools = await mcpClient.ListToolsAsync();
-        DisplayTools(tools);
 
         // Retrieve and display the list of prompts provided by the MCP server
         IList<McpClientPrompt> prompts = await mcpClient.ListPromptsAsync();
         DisplayPrompts(prompts);
 
-        // Create a kernel and register the MCP tools
+        // Create a kernel
         Kernel kernel = CreateKernelWithChatCompletionService();
-        kernel.Plugins.AddFromFunctions("Tools", tools.Select(aiFunction => aiFunction.AsKernelFunction()));
 
-        // Enable automatic function calling
-        OpenAIPromptExecutionSettings executionSettings = new()
-        {
-            Temperature = 0,
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
-        };
+        // Get weather for Boston using the `GetCurrentWeatherForCity` prompt from the MCP server
+        GetPromptResult bostonWeatherPrompt = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Boston", ["time"] = DateTime.UtcNow.ToString() });
 
-        // Retrieve the `GetCurrentWeatherForCity` prompt from the MCP server and convert it to a chat history
-        GetPromptResult promptResult = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Boston" });
+        // Get weather for Sydney using the `GetCurrentWeatherForCity` prompt from the MCP server
+        GetPromptResult sydneyWeatherPrompt = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Sydney", ["time"] = DateTime.UtcNow.ToString() });
 
-        ChatHistory chatHistory = promptResult.ToChatHistory();
+        // Add the prompts to the chat history
+        ChatHistory chatHistory = [];
+        chatHistory.AddRange(bostonWeatherPrompt.ToChatMessageContents());
+        chatHistory.AddRange(sydneyWeatherPrompt.ToChatMessageContents());
+        chatHistory.AddUserMessage("Compare the weather in the two cities and suggest the best place to go for a walk.");
 
         // Execute a prompt using the MCP tools and prompt
         IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
-        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, kernel: kernel);
 
         Console.WriteLine(result);
         Console.WriteLine();
 
-        // The expected output is: The weather in Boston as of 2025-04-02 16:39:40 is 61°F and rainy.
+        // The expected output is: Given these conditions, Sydney would be the better choice for a pleasant walk, as the sunny and warm weather is ideal for outdoor activities.
+        // The rain in Boston could make walking less enjoyable and potentially inconvenient.
     }
 
     /// <summary>
@@ -264,23 +254,12 @@ internal sealed class Program
     /// <returns>An instance of <see cref="IMcpClient"/>.</returns>
     private static Task<IMcpClient> CreateMcpClientAsync()
     {
-        return McpClientFactory.CreateAsync(
-            new McpServerConfig()
-            {
-                Id = "MCPServer",
-                Name = "MCPServer",
-                TransportType = TransportTypes.StdIo,
-                TransportOptions = new()
-                {
-                    // Point the client to the MCPServer server executable
-                    ["command"] = GetMCPServerPath()
-                }
-            },
-            new McpClientOptions()
-            {
-                ClientInfo = new() { Name = "MCPClient", Version = "1.0.0" }
-            }
-        );
+        return McpClientFactory.CreateAsync(new StdioClientTransport(new()
+        {
+            Name = "MCPServer",
+            // Point the client to the MCPServer server executable
+            Command = GetMCPServerPath()
+        }));
     }
 
     /// <summary>
