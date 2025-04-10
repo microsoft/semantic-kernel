@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Transport;
 using ModelContextProtocol.Protocol.Types;
@@ -255,23 +254,12 @@ internal sealed class Program
     /// <returns>An instance of <see cref="IMcpClient"/>.</returns>
     private static Task<IMcpClient> CreateMcpClientAsync()
     {
-        return McpClientFactory.CreateAsync(
-            new McpServerConfig()
-            {
-                Id = "MCPServer",
-                Name = "MCPServer",
-                TransportType = TransportTypes.StdIo,
-                TransportOptions = new()
-                {
-                    // Point the client to the MCPServer server executable
-                    ["command"] = GetMCPServerPath()
-                }
-            },
-            new McpClientOptions()
-            {
-                ClientInfo = new() { Name = "MCPClient", Version = "1.0.0" }
-            }
-        );
+        return McpClientFactory.CreateAsync(new StdioClientTransport(new()
+        {
+            Name = "MCPServer",
+            // Point the client to the MCPServer server executable
+            Command = GetMCPServerPath()
+        }));
     }
 
     /// <summary>
