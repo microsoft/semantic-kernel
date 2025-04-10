@@ -33,6 +33,7 @@
     <PackageVersion Include="Grpc.AspNetCore" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
+    <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.70.0" />
     <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.7" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
