@@ -21,7 +21,7 @@ from semantic_kernel.data.vector_search import (
 )
 from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.list_handler import empty_generator
 
 if sys.version_info >= (3, 12):
@@ -105,6 +105,7 @@ class InMemoryVectorCollection(
     async def _inner_search(
         self,
         options: VectorSearchOptions | None = None,
+        keywords: OptionalOneOrMany[str] = None,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,

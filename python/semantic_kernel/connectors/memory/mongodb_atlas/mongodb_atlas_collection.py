@@ -34,6 +34,7 @@ from semantic_kernel.exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -245,6 +246,7 @@ class MongoDBAtlasCollection(
     async def _inner_search(
         self,
         options: VectorSearchOptions,
+        keywords: OptionalOneOrMany[str] = None,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,

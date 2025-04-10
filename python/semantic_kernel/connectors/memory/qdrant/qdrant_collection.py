@@ -25,7 +25,7 @@ from semantic_kernel.exceptions import (
     VectorStoreModelValidationError,
     VectorStoreOperationException,
 )
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
@@ -175,6 +175,7 @@ class QdrantCollection(
     async def _inner_search(
         self,
         options: VectorSearchOptions,
+        keywords: OptionalOneOrMany[str] = None,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
