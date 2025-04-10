@@ -209,7 +209,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         const string OperationName = "ReplaceOne";
 
-        var replacement = CreateReplaceOne(record, OperationName);
+        var replacement = this.CreateReplaceOne(record, OperationName);
 
         return this.RunOperationAsync(OperationName, async () =>
         {
@@ -228,7 +228,7 @@ public class MongoDBVectorStoreRecordCollection<TRecord> : IVectorStoreRecordCol
 
         const string OperationName = "ReplaceOne.BulkWrite";
 
-        var replacements = records.Select(r => CreateReplaceOne(r, OperationName));
+        var replacements = records.Select(r => this.CreateReplaceOne(r, OperationName));
 
         await this.RunOperationAsync(OperationName, async () =>
         {
