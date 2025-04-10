@@ -111,7 +111,7 @@ public sealed class OpenAIClientProvider
         return new(client, [client.GetType().FullName!, client.GetHashCode().ToString()]);
     }
 
-    private static AzureOpenAIClientOptions CreateAzureClientOptions(HttpClient? httpClient)
+    internal static AzureOpenAIClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
         AzureOpenAIClientOptions options = new()
         {
@@ -123,7 +123,7 @@ public sealed class OpenAIClientProvider
         return options;
     }
 
-    private static OpenAIClientOptions CreateOpenAIClientOptions(Uri? endpoint, HttpClient? httpClient)
+    internal static OpenAIClientOptions CreateOpenAIClientOptions(Uri? endpoint, HttpClient? httpClient)
     {
         OpenAIClientOptions options = new()
         {
