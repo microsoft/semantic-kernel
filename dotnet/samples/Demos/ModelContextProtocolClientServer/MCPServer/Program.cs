@@ -26,7 +26,7 @@ kernelBuilder.Plugins.AddFromType<WeatherUtils>();
 kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(modelId, apiKey);
 kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
 
-// Register <
+// Register MCP server
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
