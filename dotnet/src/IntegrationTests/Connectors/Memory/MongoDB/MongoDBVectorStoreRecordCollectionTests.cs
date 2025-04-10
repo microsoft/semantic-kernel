@@ -18,7 +18,7 @@ namespace SemanticKernel.IntegrationTests.Connectors.MongoDB;
 public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture fixture)
 {
     // If null, all tests will be enabled
-    private const string? SkipReason = "The tests are for manual verification.";
+    private const string? SkipReason = null;
 
     [Theory(Skip = SkipReason)]
     [InlineData("sk-test-hotels", true)]
@@ -39,13 +39,15 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
     public async Task ItCanCreateCollectionAsync()
     {
         // Arrange
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, fixture.TestCollection);
+        var newCollection = Guid.NewGuid().ToString();
+        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, newCollection);
 
         // Act
         await sut.CreateCollectionAsync();
 
         // Assert
         Assert.True(await sut.CollectionExistsAsync());
+        await sut.DeleteCollectionAsync();
     }
 
     [Theory(Skip = SkipReason)]
@@ -59,6 +61,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
         const string HotelId = "55555555-5555-5555-5555-555555555555";
 
         var collectionNamePostfix = useRecordDefinition ? "with-definition" : "with-type";
+        collectionNamePostfix += includeVectors ? "-with-vectors" : "-without-vectors";
         var collectionName = $"collection-{collectionNamePostfix}";
 
         var options = new MongoDBVectorStoreRecordCollectionOptions<MongoDBHotel>
@@ -66,7 +69,7 @@ public class MongoDBVectorStoreRecordCollectionTests(MongoDBVectorStoreFixture f
             VectorStoreRecordDefinition = useRecordDefinition ? fixture.HotelVectorStoreRecordDefinition : null
         };
 
-        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName);
+        var sut = new MongoDBVectorStoreRecordCollection<string, MongoDBHotel>(fixture.MongoDatabase, collectionName, options);
 
         var record = this.CreateTestHotel(HotelId);
 
