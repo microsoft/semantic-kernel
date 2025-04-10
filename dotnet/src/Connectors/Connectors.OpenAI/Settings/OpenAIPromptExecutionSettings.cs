@@ -28,7 +28,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <para>- <see cref="string"/> values: <c>"low"</c>, <c>"medium"</c>, <c>"high"</c>;</para>
     /// <para>- <see cref="ChatReasoningEffortLevel"/> object;</para>
     /// </remarks>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("reasoning_effort")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ReasoningEffort
@@ -175,7 +174,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <para>- <see cref="ChatResponseFormat"/> object;</para>
     /// <para>- <see cref="Type"/> object, which will be used to automatically create a JSON schema.</para>
     /// </remarks>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("response_format")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ResponseFormat
@@ -299,7 +297,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// Whether to return log probabilities of the output tokens or not.
     /// If true, returns the log probabilities of each output token returned in the `content` of `message`.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("logprobs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Logprobs
@@ -316,7 +313,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// An integer specifying the number of most likely tokens to return at each token position, each with an associated log probability.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("top_logprobs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopLogprobs
@@ -333,7 +329,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Developer-defined tags and values used for filtering completions in the OpenAI dashboard.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("metadata")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, string>? Metadata
@@ -350,7 +345,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Whether or not to store the output of this chat completion request for use in the OpenAI model distillation or evals products.
     /// </summary>
-    [Experimental("SKEXP0010")]
     [JsonPropertyName("store")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? Store
@@ -361,6 +355,90 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         {
             this.ThrowIfFrozen();
             this._store = value;
+        }
+    }
+
+    /// <summary>
+    /// An object to allow models to search the web for the latest information before generating a response.
+    /// </summary>
+    /// <remarks>
+    /// Supported types are:
+    /// <para>- <see cref="ChatWebSearchOptions"/> object;</para>
+    /// <para>- <see cref="JsonElement"/>, which will be used to automatically deserialize into <see cref="ChatWebSearchOptions"/>.</para>
+    /// <para>- <see cref="string"/>, which will be used to automatically deserialize into <see cref="ChatWebSearchOptions"/>.</para>
+    /// <para>
+    /// Currently, you need to use one of these models to use web search in Chat Completions:
+    /// <list type="bullet">
+    /// <item>gpt-4o-search-preview</item>
+    /// <item>gpt-4o-mini-search-preview</item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("web_search_options")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? WebSearchOptions
+    {
+        get => this._webSearchOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._webSearchOptions = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the response modalities to use for the completion.
+    /// </summary>
+    /// <remarks>
+    /// Specifies the modalities to use for the response. This can be represented in several ways:
+    /// <list type="bullet">
+    /// <item><description>As a <see cref="ChatResponseModalities"/> flags enum: <c>ChatResponseModalities.Text | ChatResponseModalities.Audio</c></description></item>
+    /// <item><description>As an <see cref="IEnumerable{String}"/> of modality names: <c>new[] { "text", "audio" }</c></description></item>
+    /// <item><description>As a <see cref="string"/> representation: <c>"Text, Audio"</c></description></item>
+    /// <item><description>As a <see cref="JsonElement"/> containing either a string or an array of strings</description></item>
+    /// </list>
+    /// If this property is null, <see cref="ChatResponseModalities.Default"/> will be used, which typically means text-only responses.
+    /// When audio is enabled, you should also set the <see cref="Audio"/> property.
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("modalities")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? Modalities
+    {
+        get => this._responseModalities;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._responseModalities = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the audio options to use for the completion when audio modality is enabled.
+    /// </summary>
+    /// <remarks>
+    /// Use this property to configure the output audio voice and format when the <see cref="Modalities"/> property includes audio.
+    /// This can be represented in several ways:
+    /// <list type="bullet">
+    /// <item><description>As a <see cref="ChatAudioOptions"/> object: <c>new ChatAudioOptions(ChatOutputAudioVoice.Alloy, ChatOutputAudioFormat.Mp3)</c></description></item>
+    /// <item><description>As a <see cref="JsonElement"/> containing the serialized audio options</description></item>
+    /// <item><description>As a <see cref="string"/> containing the JSON representation of the audio options</description></item>
+    /// </list>
+    /// </remarks>
+    [Experimental("SKEXP0010")]
+    [JsonPropertyName("audio")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? Audio
+    {
+        get => this._audioOptions;
+
+        set
+        {
+            this.ThrowIfFrozen();
+            this._audioOptions = value;
         }
     }
 
@@ -456,12 +534,16 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
             TopLogprobs = this.TopLogprobs,
             Store = this.Store,
             Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
-            ReasoningEffort = this.ReasoningEffort
+            ReasoningEffort = this.ReasoningEffort,
+            WebSearchOptions = this.WebSearchOptions,
+            Modalities = this.Modalities,
+            Audio = this.Audio,
         };
     }
 
     #region private ================================================================================
 
+    private object? _webSearchOptions;
     private object? _reasoningEffort;
     private double? _temperature;
     private double? _topP;
@@ -480,6 +562,8 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private int? _topLogprobs;
     private bool? _store;
     private IDictionary<string, string>? _metadata;
+    private object? _responseModalities;
+    private object? _audioOptions;
 
     #endregion
 }

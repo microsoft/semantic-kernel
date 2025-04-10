@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using OpenAI.Assistants;
 using Resources;
@@ -25,7 +26,7 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
             templateFactory: new KernelPromptTemplateFactory(),
             templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
-            Arguments =
+            Arguments = new()
             {
                 { "topic", "Dog" },
                 { "length", "3" }
@@ -33,7 +34,7 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
         };
 
         // Create a thread for the agent conversation.
-        string threadId = await this.AssistantClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new OpenAIAssistantAgentThread(this.AssistantClient, metadata: SampleMetadata);
 
         try
         {
@@ -50,14 +51,14 @@ public class Step01_Assistant(ITestOutputHelper output) : BaseAssistantTest(outp
         }
         finally
         {
-            await this.AssistantClient.DeleteThreadAsync(threadId);
+            await thread.DeleteAsync();
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync(threadId, arguments))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(thread, options: new() { KernelArguments = arguments }))
             {
                 WriteAgentChatMessage(response);
             }

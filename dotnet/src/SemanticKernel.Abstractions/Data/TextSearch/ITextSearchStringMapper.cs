@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Data;
 
 /// <summary>
 /// Interface for mapping between a <see cref="ITextSearch" /> implementation result value, and a <see cref="string" /> instance.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface ITextSearchStringMapper
 {
     /// <summary>

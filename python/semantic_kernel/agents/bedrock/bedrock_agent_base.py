@@ -15,6 +15,8 @@ from semantic_kernel.agents.bedrock.models.bedrock_action_group_model import Bed
 from semantic_kernel.agents.bedrock.models.bedrock_agent_model import BedrockAgentModel
 from semantic_kernel.agents.bedrock.models.bedrock_agent_status import BedrockAgentStatus
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
+from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.utils.async_utils import run_in_executor
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -348,14 +350,17 @@ class BedrockAgentBase(Agent):
 
     async def _invoke_agent(
         self,
-        session_id: str,
-        input_text: str,
+        thread_id: str,
+        message: str | ChatMessageContent,
         agent_alias: str | None = None,
         **kwargs,
     ) -> dict[str, Any]:
         """Invoke an agent."""
         if not self.agent_model.agent_id:
             raise ValueError("Agent does not exist. Please create the agent before invoking it.")
+
+        if isinstance(message, ChatMessageContent) and message.role != AuthorRole.USER:
+            raise ValueError("Only user messages are supported for invoking a Bedrock agent.")
 
         agent_alias = agent_alias or self.WORKING_DRAFT_AGENT_ALIAS
 
@@ -366,8 +371,8 @@ class BedrockAgentBase(Agent):
                     self.bedrock_runtime_client.invoke_agent,
                     agentAliasId=agent_alias,
                     agentId=self.agent_model.agent_id,
-                    sessionId=session_id,
-                    inputText=input_text,
+                    sessionId=thread_id,
+                    inputText=message if isinstance(message, str) else message.content,
                     **kwargs,
                 ),
             )

@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
+using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
 
@@ -158,11 +162,8 @@ public class BedrockAgentTests
 
         // Act
         Kernel kernel = new();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
-        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object)
-        {
-            Kernel = kernel,
-        };
+        var bedrockAgent = new BedrockAgent(agentModel, mockClient.Object, mockRuntimeClient.Object);
+        bedrockAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
 
         // Assert
         this.VerifyAgent(bedrockAgent);
@@ -206,6 +207,30 @@ public class BedrockAgentTests
 
         // Assert
         Assert.Single(bedrockAgent.GetChannelKeys());
+    }
+
+    /// <summary>
+    /// Verify the InvokeAsync method throws when an incorrect thread type is provided.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task VerifyInvokeWithWrongThreadTypeThrowsAsync()
+    {
+        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
+        var bedrockAgent = new BedrockAgent(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var messages = new List<ChatMessageContent>
+        {
+            new (AuthorRole.User, "Hello, how are you?")
+        };
+        var agentThread = new Mock<AgentThread>();
+
+        // Act
+        await Assert.ThrowsAsync<KernelException>(async () =>
+        {
+            await foreach (var response in bedrockAgent.InvokeAsync(messages, agentThread.Object, null, default))
+            {
+            }
+        });
     }
 
     private (Mock<AmazonBedrockAgentClient>, Mock<AmazonBedrockAgentRuntimeClient>) CreateMockClients()
@@ -267,6 +292,11 @@ public class BedrockAgentTests
                 AgentStatus = AgentStatus.PREPARED,
             }
         });
+
+        mockRuntimeClient.Setup(x => x.InvokeAgentAsync(
+            It.IsAny<InvokeAgentRequest>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new InvokeAgentResponse() { HttpStatusCode = System.Net.HttpStatusCode.OK });
 
         return (mockClient, mockRuntimeClient);
     }

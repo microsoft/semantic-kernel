@@ -4,8 +4,7 @@ import asyncio
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AgentGroupChat
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
+from semantic_kernel.agents import AgentGroupChat, AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.contents import AuthorRole
 

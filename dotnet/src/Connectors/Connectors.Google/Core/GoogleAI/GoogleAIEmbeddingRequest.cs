@@ -11,7 +11,7 @@ internal sealed class GoogleAIEmbeddingRequest
     [JsonPropertyName("requests")]
     public IList<RequestEmbeddingContent> Requests { get; set; } = null!;
 
-    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId) => new()
+    public static GoogleAIEmbeddingRequest FromData(IEnumerable<string> data, string modelId, int? dimensions = null) => new()
     {
         Requests = data.Select(text => new RequestEmbeddingContent
         {
@@ -25,7 +25,8 @@ internal sealed class GoogleAIEmbeddingRequest
                         Text = text
                     }
                 ]
-            }
+            },
+            Dimensions = dimensions
         }).ToList()
     };
 
@@ -45,5 +46,9 @@ internal sealed class GoogleAIEmbeddingRequest
         [JsonPropertyName("taskType")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? TaskType { get; set; } // todo: enum
+
+        [JsonPropertyName("outputDimensionality")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? Dimensions { get; set; }
     }
 }

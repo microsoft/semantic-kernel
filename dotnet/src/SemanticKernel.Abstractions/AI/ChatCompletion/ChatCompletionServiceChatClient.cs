@@ -35,30 +35,44 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public async Task<Extensions.AI.ChatResponse> GetResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Extensions.AI.ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chatMessages);
+        Verify.NotNull(messages);
+
+        ChatHistory chatHistory = new(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+        int preCount = chatHistory.Count;
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            chatHistory,
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
 
-        return new(ChatCompletionServiceExtensions.ToChatMessage(response))
+        ChatResponse chatResponse = new()
         {
             ModelId = response.ModelId,
             RawRepresentation = response.InnerContent,
         };
+
+        // Add all messages that were added to the history.
+        // Then add the result message.
+        for (int i = preCount; i < chatHistory.Count; i++)
+        {
+            chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(chatHistory[i]));
+        }
+
+        chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(response));
+
+        return chatResponse;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chatMessages);
+        Verify.NotNull(messages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            new ChatHistory(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
@@ -181,7 +195,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 
         if (options.Tools is { Count: > 0 })
         {
-            var functions = options.Tools.OfType<AIFunction>().Select(f => new AIFunctionKernelFunction(f));
+            var functions = options.Tools.OfType<AIFunction>().Select(aiFunction => aiFunction.AsKernelFunction());
             settings.FunctionChoiceBehavior =
                 options.ToolMode is null or AutoChatToolMode ? FunctionChoiceBehavior.Auto(functions, autoInvoke: false) :
                 options.ToolMode is RequiredChatToolMode { RequiredFunctionName: null } ? FunctionChoiceBehavior.Required(functions, autoInvoke: false) :
@@ -200,7 +214,6 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         {
             AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
             AuthorName = content.AuthorName,
-            ChoiceIndex = content.ChoiceIndex,
             ModelId = content.ModelId,
             RawRepresentation = content,
             Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,

@@ -5,8 +5,7 @@ from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.contents import AuthorRole
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.functions import kernel_function
 
 """
@@ -61,31 +60,27 @@ async def main() -> None:
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
-            # Optionally configure polling options
-            # polling_options=RunPollingOptions(run_polling_interval=timedelta(seconds=1)),
+            plugins=[MenuPlugin()],  # Add the plugin to the agent
         )
 
-        # 3. Add a plugin to the agent via the kernel
-        agent.kernel.add_plugin(MenuPlugin(), plugin_name="menu")
-
-        # 4. Create a new thread on the Azure AI agent service
-        thread = await client.agents.create_thread()
+        # 3. Create a thread for the agent
+        # If no thread is provided, a new thread will be
+        # created and returned with the initial response
+        thread = None
 
         try:
             for user_input in USER_INPUTS:
-                # 5. Add the user input as a chat message
-                await agent.add_chat_message(thread_id=thread.id, message=user_input)
                 print(f"# User: {user_input}")
-                # 6. Invoke the agent for the specified thread for response
-                async for content in agent.invoke(
-                    thread_id=thread.id,
-                    temperature=0.2,  # override the agent-level temperature setting with a run-time value
+                # 4. Invoke the agent for the specified thread for response
+                async for response in agent.invoke(
+                    messages=user_input,
+                    thread=thread,
                 ):
-                    if content.role != AuthorRole.TOOL:
-                        print(f"# Agent: {content.content}")
+                    print(f"# {response.name}: {response}")
+                    thread = response.thread
         finally:
-            # 7. Cleanup: Delete the thread and agent
-            await client.agents.delete_thread(thread.id)
+            # 5. Cleanup: Delete the thread and agent
+            await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
         """

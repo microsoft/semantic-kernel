@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -40,7 +41,7 @@ internal static class OpenAIAssistantResponseContent
             messageHandlerStub.ResponseQueue.Enqueue(
                 new(statusCode)
                 {
-                    Content = new StringContent(item)
+                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(item)))
                 });
 #pragma warning restore CA2000 // Dispose objects before losing scope
         }

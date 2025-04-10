@@ -6,8 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -108,6 +110,7 @@ public sealed class OpenAIAssistantAgentTests
     /// function result contents.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentFunctionCallResultAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -135,6 +138,7 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Azure OpenAI services.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentTokensAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -163,10 +167,60 @@ public sealed class OpenAIAssistantAgentTests
     }
 
     /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> adding additional messages to a thread on invocation via custom options.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureOpenAIAssistantAgentWithThreadCustomOptionsAsync()
+    {
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
+
+        ThreadCreationOptions threadOptions = new()
+        {
+            InitialMessages =
+            {
+                new ChatMessageContent(AuthorRole.User, "Hello").ToThreadInitializationMessage(),
+                new ChatMessageContent(AuthorRole.User, "How may I help you?").ToThreadInitializationMessage(),
+            }
+        };
+        OpenAIAssistantAgentThread agentThread = new(clientProvider.AssistantClient, threadOptions);
+
+        try
+        {
+            var originalMessages = await agentThread.GetMessagesAsync().ToArrayAsync();
+            Assert.Equal(2, originalMessages.Length);
+
+            RunCreationOptions invocationOptions = new()
+            {
+                AdditionalMessages = {
+                    new ChatMessageContent(AuthorRole.User, "This is my real question...in three parts:").ToThreadInitializationMessage(),
+                    new ChatMessageContent(AuthorRole.User, "Part 1").ToThreadInitializationMessage(),
+                    new ChatMessageContent(AuthorRole.User, "Part 2").ToThreadInitializationMessage(),
+                    new ChatMessageContent(AuthorRole.User, "Part 3").ToThreadInitializationMessage(),
+                }
+            };
+
+            var responseMessages = await agent.InvokeAsync([], agentThread, options: new() { RunCreationOptions = invocationOptions }).ToArrayAsync();
+            Assert.Single(responseMessages);
+
+            var finalMessages = await agentThread.GetMessagesAsync().ToArrayAsync();
+            Assert.Equal(7, finalMessages.Length);
+        }
+        finally
+        {
+            await agentThread.DeleteAsync();
+            await clientProvider.AssistantClient.DeleteAssistantAsync(agent.Id);
+        }
+    }
+
+    /// <summary>
     /// Integration test for <see cref="OpenAIAssistantAgent"/> adding additional message to a thread.
     /// function result contents.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentAdditionalMessagesAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -216,6 +270,7 @@ public sealed class OpenAIAssistantAgentTests
     /// and targeting Open AI services.
     /// </summary>
     [Fact]
+    [Obsolete("Test is testing obsolete method")]
     public async Task AzureOpenAIAssistantAgentStreamingFileSearchAsync()
     {
         AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
@@ -252,6 +307,94 @@ public sealed class OpenAIAssistantAgentTests
             await clientProvider.AssistantClient.DeleteAssistantAsync(agent.Id);
             await vectorStoreClient.DeleteVectorStoreAsync(result.VectorStoreId);
             await fileClient.DeleteFileAsync(fileInfo.Id);
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> adding override instructions to a thread on invocation via custom options.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureOpenAIAssistantAgentWithThreadCustomOptionsStreamingAsync()
+    {
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
+        Assistant definition = await clientProvider.AssistantClient.CreateAssistantAsync(azureOpenAIConfiguration.ChatDeploymentName!);
+        OpenAIAssistantAgent agent = new(definition, clientProvider.AssistantClient);
+
+        OpenAIAssistantAgentThread agentThread = new(clientProvider.AssistantClient);
+
+        try
+        {
+            RunCreationOptions invocationOptions = new()
+            {
+                InstructionsOverride = "Respond to all user questions with 'Computer says no'.",
+            };
+
+            var message = new ChatMessageContent(AuthorRole.User, "What is the capital of France?");
+            var responseMessages = await agent.InvokeStreamingAsync(
+                message,
+                agentThread,
+                new OpenAIAssistantAgentInvokeOptions() { RunCreationOptions = invocationOptions }).ToArrayAsync();
+            var responseText = string.Join(string.Empty, responseMessages.Select(x => x.Message.Content));
+
+            Assert.Contains("Computer says no", responseText);
+        }
+        finally
+        {
+            await agentThread.DeleteAsync();
+            await clientProvider.AssistantClient.DeleteAssistantAsync(agent.Id);
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="OpenAIAssistantAgent"/> created declaratively.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureOpenAIAssistantAgentDeclarativeAsync()
+    {
+        AzureOpenAIConfiguration azureOpenAIConfiguration = this.ReadAzureConfiguration();
+        OpenAIClientProvider clientProvider = CreateClientProvider(azureOpenAIConfiguration);
+
+        var text =
+            $"""
+            type: openai_assistant
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
+            model:
+              id: {azureOpenAIConfiguration.ChatDeploymentName}
+              connection:
+                type: azure_openai
+                endpoint: {azureOpenAIConfiguration.Endpoint}
+            """;
+        OpenAIAssistantAgentFactory factory = new();
+
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
+        var kernel = builder.Build();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
+        Assert.NotNull(agent);
+
+        OpenAIAssistantAgentThread agentThread = new(clientProvider.AssistantClient);
+        try
+        {
+            RunCreationOptions invocationOptions = new()
+            {
+                InstructionsOverride = "Respond to all user questions with 'Computer says no'.",
+            };
+
+            var response = await agent.InvokeAsync(
+                "What is the capital of France?",
+                agentThread,
+                new OpenAIAssistantAgentInvokeOptions() { RunCreationOptions = invocationOptions }).FirstAsync();
+
+            Assert.Contains("Computer says no", response.Message.Content);
+        }
+        finally
+        {
+            await agentThread.DeleteAsync();
+            await clientProvider.AssistantClient.DeleteAssistantAsync(agent.Id);
         }
     }
 

@@ -3,8 +3,9 @@
 using System.ComponentModel;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
-using Microsoft.SemanticKernel.Agents.Bedrock.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -28,19 +29,14 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
         var userQuery = "What is the current weather in Seattle and what is the weather forecast in Seattle?";
         try
         {
-            // Customize the request for advanced scenarios
-            InvokeAgentRequest invokeAgentRequest = new()
+            AgentThread agentThread = new BedrockAgentThread(this.RuntimeClient);
+            BedrockAgentInvokeOptions options = new()
             {
-                AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = bedrockAgent.Id,
-                SessionId = BedrockAgent.CreateSessionId(),
-                InputText = userQuery,
-                // Enable trace to inspect the agent's thought process
                 EnableTrace = true,
             };
 
-            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null);
-            await foreach (var response in responses)
+            var responses = bedrockAgent.InvokeAsync([new ChatMessageContent(AuthorRole.User, userQuery)], agentThread, options);
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {
@@ -144,15 +140,11 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
     {
         // Create a new agent on the Bedrock Agent service and prepare it for use
         var agentModel = await this.Client.CreateAndPrepareAgentAsync(this.GetCreateAgentRequest(agentName));
-        // Create a new kernel with plugins
-        Kernel kernel = new();
-        kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
         // Create a new BedrockAgent instance with the agent model and the client
         // so that we can interact with the agent using Semantic Kernel contents.
-        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient)
-        {
-            Kernel = kernel,
-        };
+        var bedrockAgent = new BedrockAgent(agentModel, this.Client, this.RuntimeClient);
+        // Initialize kernel with plugins
+        bedrockAgent.Kernel.Plugins.Add(KernelPluginFactory.CreateFromType<WeatherPlugin>());
         // Create the kernel function action group and prepare the agent for interaction
         await bedrockAgent.CreateKernelFunctionActionGroupAsync();
 

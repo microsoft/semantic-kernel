@@ -22,14 +22,14 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
                 instructions: "Answer questions about the menu.",
                 name: "Host");
 
-        /// Create the chat history to capture the agent interaction.
-        ChatHistory chat = [];
+        /// Create the chat history thread to capture the agent interaction.
+        AgentThread thread = new ChatHistoryAgentThread();
 
         // Respond to user input, invoking functions where appropriate.
-        await InvokeAgentAsync(agent, chat, "Hello");
-        await InvokeAgentAsync(agent, chat, "What is the special soup and its price?");
-        await InvokeAgentAsync(agent, chat, "What is the special drink and its price?");
-        await InvokeAgentAsync(agent, chat, "Thank you");
+        await InvokeAgentAsync(agent, thread, "Hello");
+        await InvokeAgentAsync(agent, thread, "What is the special soup and its price?");
+        await InvokeAgentAsync(agent, thread, "What is the special drink and its price?");
+        await InvokeAgentAsync(agent, thread, "Thank you");
     }
 
     [Fact]
@@ -39,11 +39,11 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         ChatCompletionAgent agent = CreateAgentWithPlugin(
                 KernelPluginFactory.CreateFromType<WidgetFactory>());
 
-        /// Create the chat history to capture the agent interaction.
-        ChatHistory chat = [];
+        /// Create the chat history thread to capture the agent interaction.
+        AgentThread thread = new ChatHistoryAgentThread();
 
         // Respond to user input, invoking functions where appropriate.
-        await InvokeAgentAsync(agent, chat, "Create a beautiful red colored widget for me.");
+        await InvokeAgentAsync(agent, thread, "Create a beautiful red colored widget for me.");
     }
 
     [Fact]
@@ -64,11 +64,11 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 
         agent.Kernel.Plugins.AddFromType<WidgetFactory>();
 
-        /// Create the chat history to capture the agent interaction.
-        ChatHistory chat = [];
+        /// Create the chat history thread to capture the agent interaction.
+        AgentThread thread = new ChatHistoryAgentThread();
 
         // Respond to user input, invoking functions where appropriate.
-        await InvokeAgentAsync(agent, chat, "Create a beautiful red colored widget for me.");
+        await InvokeAgentAsync(agent, thread, "Create a beautiful red colored widget for me.");
     }
 
     private ChatCompletionAgent CreateAgentWithPlugin(
@@ -92,17 +92,13 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
     }
 
     // Local function to invoke agent and display the conversation messages.
-    private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistory chat, string input)
+    private async Task InvokeAgentAsync(ChatCompletionAgent agent, AgentThread thread, string input)
     {
         ChatMessageContent message = new(AuthorRole.User, input);
-        chat.Add(message);
-
         this.WriteAgentChatMessage(message);
 
-        await foreach (ChatMessageContent response in agent.InvokeAsync(chat))
+        await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
         {
-            chat.Add(response);
-
             this.WriteAgentChatMessage(response);
         }
     }

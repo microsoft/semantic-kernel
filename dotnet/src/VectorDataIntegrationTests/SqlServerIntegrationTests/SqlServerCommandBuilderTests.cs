@@ -130,7 +130,7 @@ public class SqlServerCommandBuilderTests
         BEGIN
         CREATE TABLE [schema].[table] (
         [id] BIGINT NOT NULL,
-        [simpleName] NVARCHAR(255),
+        [simpleName] NVARCHAR(MAX),
         [with space] INT,
         [embedding] VECTOR(10),
         PRIMARY KEY ([id])
@@ -228,8 +228,10 @@ public class SqlServerCommandBuilderTests
         ];
 
         using SqlConnection connection = CreateConnection();
-        using SqlCommand command = SqlServerCommandBuilder.MergeIntoMany(connection, "schema", "table",
-            keyProperty, properties, records)!;
+        using SqlCommand command = connection.CreateCommand();
+
+        Assert.True(SqlServerCommandBuilder.MergeIntoMany(command, "schema", "table",
+            keyProperty, properties, records));
 
         string expectedCommand =
         """"
@@ -283,9 +285,9 @@ public class SqlServerCommandBuilderTests
         string[] keys = ["key1", "key2"];
         VectorStoreRecordKeyProperty keyProperty = new("id", typeof(string));
         using SqlConnection connection = CreateConnection();
+        using SqlCommand command = connection.CreateCommand();
 
-        using SqlCommand command = SqlServerCommandBuilder.DeleteMany(connection,
-            "schema", "tableName", keyProperty, keys)!;
+        Assert.True(SqlServerCommandBuilder.DeleteMany(command, "schema", "tableName", keyProperty, keys));
 
         Assert.Equal("DELETE FROM [schema].[tableName] WHERE [id] IN (@id_0,@id_1)", command.CommandText);
         for (int i = 0; i < keys.Length; i++)
@@ -338,9 +340,10 @@ public class SqlServerCommandBuilderTests
         ];
         long[] keys = [123L, 456L, 789L];
         using SqlConnection connection = CreateConnection();
+        using SqlCommand command = connection.CreateCommand();
 
-        using SqlCommand command = SqlServerCommandBuilder.SelectMany(connection,
-            "schema", "tableName", keyProperty, properties, keys, includeVectors: true)!;
+        Assert.True(SqlServerCommandBuilder.SelectMany(command,
+            "schema", "tableName", keyProperty, properties, keys, includeVectors: true));
 
         AssertEqualIgnoreNewLines(
         """""

@@ -30,6 +30,8 @@ jobs:
       dotnetChanges: ${{ steps.filter.outputs.dotnet }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -68,6 +70,8 @@ jobs:
     environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup dotnet ${{ matrix.dotnet }}
         uses: actions/setup-dotnet@v3
         with:
@@ -145,6 +149,10 @@ jobs:
           AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}
           AzureAIInference__Endpoint: ${{ secrets.AZUREAIINFERENCE__ENDPOINT }}
           AzureAIInference__ChatModelId: ${{ vars.AZUREAIINFERENCE__CHATMODELID }}
+          # Azure AI Foundry
+          AzureAI__Endpoint: ${{ secrets.AZUREAI__ENDPOINT }}
+          AzureAI__ConnectionString: ${{ secrets.AZUREAI__CONNECTIONSTRING }}
+          AzureAI__ChatModelId: ${{ vars.AZUREAI__CHATMODELID }}
 
       # Generate test reports and check coverage
       - name: Generate test reports

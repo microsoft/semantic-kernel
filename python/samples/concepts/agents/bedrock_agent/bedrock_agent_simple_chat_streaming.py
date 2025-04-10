@@ -2,7 +2,7 @@
 
 import asyncio
 
-from semantic_kernel.agents.bedrock.bedrock_agent import BedrockAgent
+from semantic_kernel.agents import BedrockAgent, BedrockAgentThread
 
 """
 This sample shows how to interact with a Bedrock agent via streaming in the simplest way.
@@ -17,7 +17,7 @@ INSTRUCTION = "You are a friendly assistant. You help people find information."
 
 async def main():
     bedrock_agent = await BedrockAgent.create_and_prepare_agent(AGENT_NAME, instructions=INSTRUCTION)
-    session_id = BedrockAgent.create_session_id()
+    thread: BedrockAgentThread = None
 
     try:
         while True:
@@ -27,13 +27,11 @@ async def main():
                 break
 
             # Invoke the agent
-            # The chat history is maintained in the session
+            # The chat history is maintained in the thread
             print("Bedrock agent: ", end="")
-            async for response in bedrock_agent.invoke_stream(
-                session_id=session_id,
-                input_text=user_input,
-            ):
+            async for response in bedrock_agent.invoke_stream(messages=user_input, thread=thread):
                 print(response, end="")
+                thread = response.thread
             print()
     except KeyboardInterrupt:
         print("\n\nExiting chat...")
@@ -44,6 +42,7 @@ async def main():
     finally:
         # Delete the agent
         await bedrock_agent.delete_agent()
+        await thread.delete() if thread else None
 
     # Sample output (using anthropic.claude-3-haiku-20240307-v1:0):
     # User:> Hi, my name is John.

@@ -7,8 +7,8 @@ namespace Agents;
 
 /// <summary>
 /// Demonstrate service selection for <see cref="ChatCompletionAgent"/> through setting service-id
-/// on <see cref="KernelAgent.Arguments"/> and also providing override <see cref="KernelArguments"/>
-/// when calling <see cref="ChatCompletionAgent.InvokeAsync"/>
+/// on <see cref="Agent.Arguments"/> and also providing override <see cref="KernelArguments"/>
+/// when calling <see cref="ChatCompletionAgent.InvokeAsync(ChatHistory, KernelArguments?, Kernel?, CancellationToken)"/>
 /// </summary>
 public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAgentsTest(output)
 {
@@ -75,11 +75,11 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
         // Local function to invoke agent and display the conversation messages.
         async Task InvokeAgentAsync(ChatCompletionAgent agent, KernelArguments? arguments = null)
         {
-            ChatHistory chat = [new(AuthorRole.User, "Hello")];
-
             try
             {
-                await foreach (ChatMessageContent response in agent.InvokeAsync(chat, arguments))
+                await foreach (ChatMessageContent response in agent.InvokeAsync(
+                    new ChatMessageContent(AuthorRole.User, "Hello"),
+                    options: new() { KernelArguments = arguments }))
                 {
                     Console.WriteLine(response.Content);
                 }

@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 import asyncio
 
-from semantic_kernel.agents.open_ai import AzureAssistantAgent
+from semantic_kernel.agents import AssistantAgentThread, AzureAssistantAgent
 
 """
 The following sample demonstrates how to create an OpenAI assistant using either
@@ -19,6 +19,7 @@ conversation history.
 USER_INPUTS = [
     "Why is the sky blue?",
     "What is the speed of light?",
+    "What have we been talking about?",
 ]
 
 
@@ -39,34 +40,31 @@ async def main():
         definition=definition,
     )
 
-    # 4. Create a new thread on the Azure OpenAI assistant service
-    thread = await agent.client.beta.threads.create()
+    # 4. Create a new thread for use with the assistant
+    # If no thread is provided, a new thread will be
+    # created and returned with the initial response
+    thread: AssistantAgentThread = None
 
     try:
         for user_input in USER_INPUTS:
-            # 5. Add the user input to the chat thread
-            await agent.add_chat_message(
-                thread_id=thread.id,
-                message=user_input,
-            )
             print(f"# User: '{user_input}'")
             # 6. Invoke the agent for the current thread and print the response
-            response = await agent.get_response(thread_id=thread.id)
-            print(f"# {response.name}: {response.content}")
-
+            response = await agent.get_response(messages=user_input, thread=thread)
+            print(f"# {response.name}: {response}")
+            thread = response.thread
     finally:
         # 7. Clean up the resources
-        await agent.client.beta.threads.delete(thread.id)
+        await thread.delete() if thread else None
         await agent.client.beta.assistants.delete(assistant_id=agent.id)
 
     """
     You should see output similar to the following:
 
     # User: 'Why is the sky blue?'
-    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue 
+    # Agent: The sky appears blue because molecules in the atmosphere scatter sunlight in all directions, and blue
         light is scattered more than other colors because it travels in shorter, smaller waves.
     # User: 'What is the speed of light?'
-    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second 
+    # Agent: The speed of light in a vacuum is approximately 299,792,458 meters per second
         (about 186,282 miles per second).
      """
 

@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using Azure.AI.Projects;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Resources;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -20,14 +19,14 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");
         PromptTemplateConfig templateConfig = KernelFunctionYaml.ToPromptTemplateConfig(generateStoryYaml);
         // Instructions, Name and Description properties defined via the PromptTemplateConfig.
-        Agent definition = await this.AgentsClient.CreateAgentAsync("gpt-4o", templateConfig.Name, templateConfig.Description, templateConfig.Template);
+        Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(TestConfiguration.AzureAI.ChatModelId, templateConfig.Name, templateConfig.Description, templateConfig.Template);
         AzureAIAgent agent = new(
             definition,
             this.AgentsClient,
             templateFactory: new KernelPromptTemplateFactory(),
             templateFormat: PromptTemplateConfig.SemanticKernelTemplateFormat)
         {
-            Arguments =
+            Arguments = new()
             {
                 { "topic", "Dog" },
                 { "length", "3" }
@@ -35,7 +34,7 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         };
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         try
         {
@@ -52,14 +51,14 @@ public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
         // Local function to invoke agent and display the response.
         async Task InvokeAgentAsync(KernelArguments? arguments = null)
         {
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id, arguments))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(thread, new() { KernelArguments = arguments }))
             {
                 WriteAgentChatMessage(response);
             }

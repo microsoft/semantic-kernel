@@ -4,7 +4,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Resources;
-using Agent = Azure.AI.Projects.Agent;
 
 namespace GettingStarted.AzureAgents;
 
@@ -32,13 +31,10 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAg
                 new OpenApiToolDefinition("RestCountries", "Retrieve country information", BinaryData.FromString(apiCountries), new OpenApiAnonymousAuthDetails()),
                 new OpenApiToolDefinition("Weather", "Retrieve weather by location", BinaryData.FromString(apiWeather), new OpenApiAnonymousAuthDetails())
             ]);
-        AzureAIAgent agent = new(definition, this.AgentsClient)
-        {
-            Kernel = new Kernel(),
-        };
+        AzureAIAgent agent = new(definition, this.AgentsClient);
 
         // Create a thread for the agent conversation.
-        AgentThread thread = await this.AgentsClient.CreateThreadAsync(metadata: SampleMetadata);
+        Microsoft.SemanticKernel.Agents.AgentThread thread = new AzureAIAgentThread(this.AgentsClient, metadata: SampleMetadata);
 
         // Respond to user input
         try
@@ -48,7 +44,7 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAg
         }
         finally
         {
-            await this.AgentsClient.DeleteThreadAsync(thread.Id);
+            await thread.DeleteAsync();
             await this.AgentsClient.DeleteAgentAsync(agent.Id);
         }
 
@@ -56,10 +52,9 @@ public class Step06_AzureAIAgent_OpenAPI(ITestOutputHelper output) : BaseAzureAg
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            await agent.AddChatMessageAsync(thread.Id, message);
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in agent.InvokeAsync(thread.Id))
+            await foreach (ChatMessageContent response in agent.InvokeAsync(message, thread))
             {
                 this.WriteAgentChatMessage(response);
             }

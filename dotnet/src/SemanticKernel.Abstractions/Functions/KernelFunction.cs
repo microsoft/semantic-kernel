@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -97,6 +98,15 @@ public abstract class KernelFunction
     /// The instances of <see cref="PromptExecutionSettings"/> are frozen and cannot be modified.
     /// </remarks>
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+
+    /// <summary>
+    /// Gets the underlying <see cref="MethodInfo"/> that this function might be wrapping.
+    /// </summary>
+    /// <remarks>
+    /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return null.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    public MethodInfo? UnderlyingMethod { get; internal init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -528,7 +538,7 @@ public abstract class KernelFunction
             this._kernel = kernel;
             this.Name = string.IsNullOrWhiteSpace(kernelFunction.PluginName) ?
                 kernelFunction.Name :
-                $"{kernelFunction.PluginName}-{kernelFunction.Name}";
+                $"{kernelFunction.PluginName}_{kernelFunction.Name}";
 
             this.JsonSchema = BuildFunctionSchema(kernelFunction);
         }
