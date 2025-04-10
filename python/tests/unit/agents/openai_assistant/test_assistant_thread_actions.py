@@ -743,9 +743,9 @@ async def test_handle_streaming_requires_action_returns_result():
         ),
         patch(
             "semantic_kernel.agents.open_ai.assistant_thread_actions.merge_streaming_function_results",
-            return_value=[dummy_function_result_streaming_content],
+            return_value=dummy_function_result_streaming_content,
         ),
-        patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=None)),
+        patch.object(AssistantThreadActions, "_invoke_function_calls", new=AsyncMock(return_value=[None])),
         patch.object(AssistantThreadActions, "_format_tool_outputs", return_value=dummy_tool_outputs),
     ):
         result = await AssistantThreadActions._handle_streaming_requires_action(

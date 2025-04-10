@@ -48,14 +48,14 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
-        object? result = await this._aiFunction.InvokeAsync(arguments, cancellationToken).ConfigureAwait(false);
+        object? result = await this._aiFunction.InvokeAsync(new(arguments), cancellationToken).ConfigureAwait(false);
         return new FunctionResult(this, result);
     }
 
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel, KernelArguments arguments, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        object? result = await this._aiFunction.InvokeAsync(arguments, cancellationToken).ConfigureAwait(false);
+        object? result = await this._aiFunction.InvokeAsync(new(arguments), cancellationToken).ConfigureAwait(false);
         yield return (TResult)result!;
     }
 
@@ -65,7 +65,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         {
             return Array.Empty<KernelParameterMetadata>();
         }
-
         HashSet<string>? requiredParameters = GetRequiredParameterNames(aiFunction.JsonSchema);
 
         List<KernelParameterMetadata> kernelParams = [];
