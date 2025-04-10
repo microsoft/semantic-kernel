@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 
+import asyncio
 from unittest.mock import MagicMock, Mock, patch
 
 from pytest import fixture, mark, raises
@@ -14,6 +15,7 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     data_model_definition_to_azure_ai_search_index,
     get_search_index_client,
 )
+from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     VectorStoreInitializationException,
@@ -70,6 +72,17 @@ def mock_get():
     with patch(f"{BASE_PATH_SEARCH_CLIENT}.get_document") as mock_get_document:
         mock_get_document.return_value = {"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
         yield mock_get_document
+
+
+@fixture
+def mock_search():
+    async def iter_search_results(*args, **kwargs):
+        yield {"id": "id1", "content": "content", "vector": [1.0, 2.0, 3.0]}
+        await asyncio.sleep(0.0)
+
+    with patch(f"{BASE_PATH_SEARCH_CLIENT}.search") as mock_search:
+        mock_search.side_effect = iter_search_results
+        yield mock_search
 
 
 @fixture
@@ -293,3 +306,93 @@ def test_get_search_index_client(azure_ai_search_unit_test_env):
 
     with raises(ServiceInitializationError):
         get_search_index_client(settings)
+
+
+@mark.parametrize("include_vectors", [True, False])
+async def test_search_text_search(collection, mock_search, include_vectors):
+    options = VectorSearchOptions(include_vectors=include_vectors)
+    results = await collection.text_search("test", options=options)
+    assert results is not None
+    async for result in results.results:
+        assert result is not None
+        assert result.record is not None
+        assert result.record["id"] == "id1"
+        assert result.record["content"] == "content"
+        if include_vectors:
+            assert result.record["vector"] == [1.0, 2.0, 3.0]
+    mock_search.assert_awaited_once_with(
+        top=3,
+        skip=0,
+        include_total_count=False,
+        search_text="test",
+        select=["*"] if include_vectors else ["id", "content"],
+    )
+
+
+@mark.parametrize("include_vectors", [True, False])
+async def test_search_vectorized_search(collection, mock_search, include_vectors):
+    options = VectorSearchOptions(include_vectors=include_vectors)
+    results = await collection.vectorized_search([0.1, 0.2, 0.3], options=options)
+    assert results is not None
+    async for result in results.results:
+        assert result is not None
+        assert result.record is not None
+        assert result.record["id"] == "id1"
+        assert result.record["content"] == "content"
+        if include_vectors:
+            assert result.record["vector"] == [1.0, 2.0, 3.0]
+    for call in mock_search.call_args_list:
+        assert call[1]["top"] == 3
+        assert call[1]["skip"] == 0
+        assert call[1]["include_total_count"] is False
+        assert call[1]["select"] == ["*"] if include_vectors else ["id", "content"]
+        assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
+        assert call[1]["vector_queries"][0].fields == "vector"
+        assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
+
+
+@mark.parametrize("include_vectors", [True, False])
+async def test_search_vectorizable_search(collection, mock_search, include_vectors):
+    options = VectorSearchOptions(include_vectors=include_vectors)
+    results = await collection.vectorizable_text_search("test", options=options)
+    assert results is not None
+    async for result in results.results:
+        assert result is not None
+        assert result.record is not None
+        assert result.record["id"] == "id1"
+        assert result.record["content"] == "content"
+        if include_vectors:
+            assert result.record["vector"] == [1.0, 2.0, 3.0]
+    for call in mock_search.call_args_list:
+        assert call[1]["top"] == 3
+        assert call[1]["skip"] == 0
+        assert call[1]["include_total_count"] is False
+        assert call[1]["select"] == ["*"] if include_vectors else ["id", "content"]
+        assert call[1]["vector_queries"][0].text == "test"
+        assert call[1]["vector_queries"][0].fields == "vector"
+        assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
+
+
+@mark.parametrize("include_vectors", [True, False])
+@mark.parametrize("keywords", ["test", ["test1", "test2"]], ids=["single", "multiple"])
+async def test_search_keyword_hybrid_search(collection, mock_search, include_vectors, keywords):
+    options = VectorSearchOptions(include_vectors=include_vectors, keyword_field_name="content")
+    results = await collection.hybrid_search(keywords=keywords, vector=[0.1, 0.2, 0.3], options=options)
+    assert results is not None
+    async for result in results.results:
+        assert result is not None
+        assert result.record is not None
+        assert result.record["id"] == "id1"
+        assert result.record["content"] == "content"
+        if include_vectors:
+            assert result.record["vector"] == [1.0, 2.0, 3.0]
+    for call in mock_search.call_args_list:
+        assert call[1]["top"] == 3
+        assert call[1]["skip"] == 0
+        assert call[1]["include_total_count"] is False
+        assert call[1]["select"] == ["*"] if include_vectors else ["id", "content"]
+        assert call[1]["search_fields"] == ["content"]
+        assert call[1]["search_text"] == "test" if keywords == "test" else "test1, test2"
+        assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
+        assert call[1]["vector_queries"][0].fields == "vector"
+        assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
