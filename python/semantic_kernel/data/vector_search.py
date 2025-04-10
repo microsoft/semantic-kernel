@@ -32,7 +32,7 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.list_handler import desync_list
 
@@ -82,6 +82,7 @@ class VectorSearchOptions(SearchOptions):
 
     filter: VectorSearchFilter = Field(default_factory=VectorSearchFilter)
     vector_field_name: str | None = None
+    keyword_field_name: str | None = None
     top: Annotated[int, Field(gt=0)] = 3
     skip: Annotated[int, Field(ge=0)] = 0
     include_vectors: bool = False
@@ -116,6 +117,7 @@ class VectorSearchBase(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TMo
     async def _inner_search(
         self,
         options: VectorSearchOptions,
+        keywords: OptionalOneOrMany[str] = None,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
@@ -144,6 +146,7 @@ class VectorSearchBase(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TMo
 
         Args:
             options: The search options, can be None.
+            keywords: The text to search for, optional.
             search_text: The text to search for, optional.
             vectorizable_text: The text to search for, will be vectorized downstream, optional.
             vector: The vector to search for, optional.
@@ -216,7 +219,7 @@ class VectorSearchBase(VectorStoreRecordHandler[TKey, TModel], Generic[TKey, TMo
 
 @experimental
 class VectorizedSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel]):
-    """The mixin for searching with vectors."""
+    """The mixin for searching with vectors. To be used in combination with VectorStoreRecordCollection."""
 
     async def vectorized_search(
         self,
@@ -280,7 +283,7 @@ class VectorizedSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel
 class VectorizableTextSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel]):
     """The mixin for searching with text that get's vectorized downstream.
 
-    To be used in combination with VectorSearchBase.
+    To be used in combination with VectorStoreRecordCollection.
     """
 
     async def vectorizable_text_search(
@@ -341,7 +344,7 @@ class VectorizableTextSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, 
 
 @experimental
 class VectorTextSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel]):
-    """The mixin for text search, to be used in combination with VectorSearchBase."""
+    """The mixin for text search, to be used in combination with VectorStoreRecordCollection."""
 
     async def text_search(
         self,
@@ -366,6 +369,66 @@ class VectorTextSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel
         options = create_options(self.options_class, options, **kwargs)  # type: ignore
         try:
             return await self._inner_search(search_text=search_text, options=options)  # type: ignore
+        except (VectorStoreModelDeserializationException, VectorSearchOptionsException, VectorSearchExecutionException):
+            raise  # pragma: no cover
+        except Exception as exc:
+            raise VectorSearchExecutionException(f"An error occurred during the search: {exc}") from exc
+
+    def create_text_search_from_vector_text_search(
+        self,
+        string_mapper: Callable[[TModel], str] | None = None,
+        text_search_results_mapper: Callable[[TModel], TextSearchResult] | None = None,
+    ) -> "VectorStoreTextSearch[TModel]":
+        """Create a VectorStoreTextSearch object.
+
+        This method is used to create a VectorStoreTextSearch object that can be used to search the vector store
+        for records that match the given text and filter.
+        The text string will be vectorized downstream and used for the vector search.
+
+        Args:
+            string_mapper: A function that maps the record to a string.
+            text_search_results_mapper: A function that maps the record to a TextSearchResult.
+
+        Returns:
+            VectorStoreTextSearch: The created VectorStoreTextSearch object.
+        """
+        from semantic_kernel.data.vector_store_text_search import VectorStoreTextSearch
+
+        return VectorStoreTextSearch.from_vector_text_search(self, string_mapper, text_search_results_mapper)
+
+
+# region: Keyword Hybrid Search
+
+
+@experimental
+class KeywordHybridSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel]):
+    """The mixin for hybrid vector and text search, to be used in combination with VectorStoreRecordCollection."""
+
+    async def hybrid_search(
+        self,
+        vector: list[float | int],
+        keywords: OneOrMany[str],
+        options: SearchOptions | None = None,
+        **kwargs: Any,
+    ) -> "KernelSearchResults[VectorSearchResult[TModel]]":
+        """Search the vector store for records that match the given text and filters.
+
+        Args:
+            vector: The vector to search for.
+            keywords: The keywords to search for.
+            options: options, should include query_text
+            **kwargs: if options are not set, this is used to create them.
+
+        Raises:
+            VectorSearchExecutionException: If an error occurs during the search.
+            VectorStoreModelDeserializationException: If an error occurs during deserialization.
+            VectorSearchOptionsException: If the search options are invalid.
+            VectorStoreMixinException: raised when the method is not used in combination with the VectorSearchBase.
+
+        """
+        options = create_options(self.options_class, options, **kwargs)  # type: ignore
+        try:
+            return await self._inner_search(vector=vector, keywords=keywords, options=options)  # type: ignore
         except (VectorStoreModelDeserializationException, VectorSearchOptionsException, VectorSearchExecutionException):
             raise  # pragma: no cover
         except Exception as exc:
