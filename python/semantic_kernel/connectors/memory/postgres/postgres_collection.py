@@ -41,7 +41,7 @@ from semantic_kernel.data.vector_search import (
 from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreModelValidationError, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorSearchExecutionException
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
@@ -454,6 +454,7 @@ class PostgresCollection(
     async def _inner_search(
         self,
         options: VectorSearchOptions,
+        keywords: OptionalOneOrMany[str] = None,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,

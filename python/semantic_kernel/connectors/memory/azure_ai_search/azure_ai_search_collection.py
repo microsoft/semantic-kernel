@@ -245,10 +245,10 @@ class AzureAISearchCollection(
     async def _inner_search(
         self,
         options: VectorSearchOptions,
+        keywords: OptionalOneOrMany[str] = None,
         search_text: str | None = None,
         vectorizable_text: str | None = None,
         vector: list[float | int] | None = None,
-        keywords: OptionalOneOrMany[str] = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
         search_args: dict[str, Any] = {

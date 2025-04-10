@@ -434,7 +434,7 @@ class KeywordHybridSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TMo
         except Exception as exc:
             raise VectorSearchExecutionException(f"An error occurred during the search: {exc}") from exc
 
-    def create_text_search_from_vector_text_search(
+    def create_text_search_from_keyword_hybrid_search(
         self,
         string_mapper: Callable[[TModel], str] | None = None,
         text_search_results_mapper: Callable[[TModel], TextSearchResult] | None = None,
@@ -454,7 +454,7 @@ class KeywordHybridSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TMo
         """
         from semantic_kernel.data.vector_store_text_search import VectorStoreTextSearch
 
-        return VectorStoreTextSearch.from_vector_text_search(self, string_mapper, text_search_results_mapper)
+        return VectorStoreTextSearch.from_keyword_hybrid_search(self, string_mapper, text_search_results_mapper)
 
 
 # region: add_vector_to_records
