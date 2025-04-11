@@ -89,6 +89,59 @@ public sealed class SearchUrlPlugin
     }
 
     /**
+    * Brave Search URLSs
+    **/
+    /// <summary>
+    /// Get search URL for Brave
+    /// </summary>
+    [KernelFunction, Description("Return URL for Brave search query.")]
+    public string BraveSearchUrl([Description("Text to search for")] string query)
+    {
+        string encoded = UrlEncoder.Default.Encode(query);
+        return $"https://search.brave.com/search?q={encoded}";
+    }
+
+    /// <summary>
+    /// Get search URL for Brave Images
+    /// </summary>
+    [KernelFunction, Description("Return URL for Brave Images search query.")]
+    public string BraveImagesSearchUrl([Description("Text to search for")] string query)
+    {
+        string encoded = UrlEncoder.Default.Encode(query);
+        return $"https://search.brave.com/images?q={encoded}";
+    }
+
+    /// <summary>
+    /// Get search URL for Brave News
+    /// </summary>
+    [KernelFunction, Description("Return URL for Brave News search query.")]
+    public string BraveNewsSearchUrl([Description("Text to search for")] string query)
+    {
+        string encoded = UrlEncoder.Default.Encode(query);
+        return $"https://search.brave.com/news?q={encoded}";
+    }
+
+    /// <summary>
+    /// Get search URL for Brave Googles
+    /// </summary>
+    [KernelFunction, Description("Return URL for Brave Googles search query.")]
+    public string BraveGooglesSearchUrl([Description("Text to search for")] string query)
+    {
+        string encoded = UrlEncoder.Default.Encode(query);
+        return $"https://search.brave.com/goggles?q={encoded}";
+    }
+
+    /// <summary>
+    /// Get search URL for Brave Videos
+    /// </summary>
+    [KernelFunction, Description("Return URL for Brave Videos search query.")]
+    public string BraveVideosSearchUrl([Description("Text to search for")] string query)
+    {
+        string encoded = UrlEncoder.Default.Encode(query);
+        return $"https://search.brave.com/videos?q={encoded}";
+    }
+
+    /**
      * Facebook Search URLs
      */
     /// <summary>
