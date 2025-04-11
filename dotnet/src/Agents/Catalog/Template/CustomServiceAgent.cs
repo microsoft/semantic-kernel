@@ -28,7 +28,7 @@ public sealed class CustomServiceAgent : ServiceAgent
 {
     private const string FinalAgentInstructions =
         """
-        You job is provide a conversational response that share an image and the reason for the image.
+        Your job is to provide a conversational response that shares an image and the reason for the image.
 
         Always include the IMAGE URL in your response without encoding.
 
