@@ -59,8 +59,8 @@ async def main():
         ) as release_notes_plugin,
     ):
         # Create the agent
-        # Using the OllamaChatCompletion service
         agent = ChatCompletionAgent(
+            # Using the OllamaChatCompletion service
             service=OllamaChatCompletion(),
             name="GithubAgent",
             instructions="You interact with the user to help them with the Microsoft semantic-kernel github project. "
