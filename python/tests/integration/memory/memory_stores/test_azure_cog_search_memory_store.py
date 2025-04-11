@@ -97,21 +97,19 @@ async def test_record_not_found():
                 embedding=np.array([0.2, 0.1, 0.2, 0.7]),
             )
             id = await memory_store.upsert(collection, rec)
-        finally:
-            await memory_store.delete_collection(collection)
-
-        try:
+            await asyncio.sleep(1)
             await memory_store.remove(collection, id)
             await asyncio.sleep(1)
 
             # KeyError exception should occur
             await memory_store.get(collection, id)
 
-            # Clean up and fail
-            await memory_store.delete_collection(collection)
+            # Fail when no exception is raised
             assert False
         except MemoryConnectorResourceNotFound:
             pass
+        finally:
+            await memory_store.delete_collection(collection)
 
 
 async def test_search():
