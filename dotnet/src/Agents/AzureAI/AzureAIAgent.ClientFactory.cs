@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 /// <summary>
 /// Provides an <see cref="AIProjectClient"/> for use by <see cref="AzureAIAgent"/>.
 /// </summary>
-public sealed partial class AzureAIAgent : KernelAgent
+public sealed partial class AzureAIAgent : Agent
 {
     /// <summary>
     /// Produces a <see cref="AIProjectClient"/>.

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -11,7 +10,6 @@ namespace Microsoft.SemanticKernel.Data;
 /// <remarks>
 /// The characteristics defined here will influence how the property is treated when converting a record to a <see cref="TextSearchResult"/>.
 /// </remarks>
-[Experimental("SKEXP0001")]
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public sealed class TextSearchResultNameAttribute : Attribute
 {

@@ -3,7 +3,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.AI;
@@ -138,7 +137,6 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// <summary>
     /// The execution settings associated with the operation.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public PromptExecutionSettings? ExecutionSettings
     {
         get => this.Options?.AdditionalProperties?[ChatOptionsExtensions.PromptExecutionSettingsKey] as PromptExecutionSettings;

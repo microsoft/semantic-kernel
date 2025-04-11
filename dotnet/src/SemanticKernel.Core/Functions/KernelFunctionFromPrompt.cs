@@ -91,7 +91,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         string promptTemplate,
         JsonSerializerOptions jsonSerializerOptions,
@@ -164,7 +163,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         PromptTemplateConfig promptConfig,
         JsonSerializerOptions jsonSerializerOptions,
@@ -211,7 +209,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,

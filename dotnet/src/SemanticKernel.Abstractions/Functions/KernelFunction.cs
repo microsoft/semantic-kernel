@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
@@ -97,6 +98,15 @@ public abstract class KernelFunction
     /// The instances of <see cref="PromptExecutionSettings"/> are frozen and cannot be modified.
     /// </remarks>
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
+
+    /// <summary>
+    /// Gets the underlying <see cref="MethodInfo"/> that this function might be wrapping.
+    /// </summary>
+    /// <remarks>
+    /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return null.
+    /// </remarks>
+    [Experimental("SKEXP0001")]
+    public MethodInfo? UnderlyingMethod { get; internal init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -538,8 +548,7 @@ public abstract class KernelFunction
         public override string Description => this._kernelFunction.Description;
         public override JsonSerializerOptions JsonSerializerOptions => this._kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
 
-        protected override async Task<object?> InvokeCoreAsync(
-            IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
+        protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
             Verify.NotNull(arguments);
 

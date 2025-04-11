@@ -13,15 +13,14 @@ from pydantic import BaseModel
 from semantic_kernel.connectors.memory.postgres import PostgresSettings, PostgresStore
 from semantic_kernel.connectors.memory.postgres.postgres_collection import PostgresCollection
 from semantic_kernel.data import (
-    DistanceFunction,
-    IndexKind,
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
-    vectorstoremodel,
 )
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.const import DistanceFunction, IndexKind
+from semantic_kernel.data.record_definition import vectorstoremodel
+from semantic_kernel.data.vector_search import VectorSearchOptions
 from semantic_kernel.exceptions.memory_connector_exceptions import (
     MemoryConnectorConnectionException,
     MemoryConnectorInitializationError,
@@ -35,7 +34,7 @@ try:
 except ImportError:
     psycopg_pool_installed = False
 
-pg_settings: PostgresSettings = PostgresSettings.create()
+pg_settings: PostgresSettings = PostgresSettings()
 try:
     connection_params_present = any(pg_settings.get_connection_args().values())
 except MemoryConnectorInitializationError:

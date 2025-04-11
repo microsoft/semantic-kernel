@@ -3,12 +3,7 @@
 import logging
 import sys
 from collections.abc import Mapping, Sequence
-from typing import Any, ClassVar, Generic, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, ClassVar, Generic
 
 from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
@@ -16,12 +11,14 @@ from qdrant_client.models import FieldCondition, Filter, MatchAny, PointStruct, 
 
 from semantic_kernel.connectors.memory.qdrant.const import DISTANCE_FUNCTION_MAP, TYPE_MAPPER_VECTOR
 from semantic_kernel.connectors.memory.qdrant.utils import AsyncQdrantClientWrapper
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorSearchResult,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -32,16 +29,18 @@ from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
-logger: logging.Logger = logging.getLogger(__name__)
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
-TModel = TypeVar("TModel")
-TKey = TypeVar("TKey", str, int)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @experimental
 class QdrantCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """A QdrantCollection is a memory collection that uses Qdrant as the backend."""
@@ -112,7 +111,7 @@ class QdrantCollection(
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 
         try:
-            settings = QdrantSettings.create(
+            settings = QdrantSettings(
                 url=url,
                 api_key=api_key,
                 host=host,

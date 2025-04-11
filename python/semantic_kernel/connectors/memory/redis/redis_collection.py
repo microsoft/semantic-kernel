@@ -10,11 +10,6 @@ from collections.abc import Sequence
 from copy import copy
 from typing import Any, ClassVar, Generic, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 import numpy as np
 from pydantic import ValidationError
 from redis.asyncio.client import Redis
@@ -36,17 +31,19 @@ from semantic_kernel.connectors.memory.redis.utils import (
     data_model_definition_to_redis_fields,
 )
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorTextSearchMixin,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorSearchOptionsException,
@@ -56,19 +53,21 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.list_handler import desync_list
 
-logger: logging.Logger = logging.getLogger(__name__)
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
-TKey = TypeVar("TKey", bound=str)
-TModel = TypeVar("TModel")
+logger: logging.Logger = logging.getLogger(__name__)
 
 TQuery = TypeVar("TQuery", bound=BaseQuery)
 
 
 @experimental
 class RedisCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
-    VectorTextSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
+    VectorTextSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """A vector store record collection implementation using Redis."""
@@ -112,7 +111,7 @@ class RedisCollection(
         try:
             from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 
-            redis_settings = RedisSettings.create(
+            redis_settings = RedisSettings(
                 connection_string=connection_string,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

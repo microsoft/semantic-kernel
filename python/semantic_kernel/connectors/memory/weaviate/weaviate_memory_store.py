@@ -125,7 +125,7 @@ class WeaviateMemoryStore(MemoryStoreBase):
         """
         from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
 
-        self.settings = WeaviateSettings.create(
+        self.settings = WeaviateSettings(
             url=url,
             api_key=api_key,
             use_embed=use_embed,

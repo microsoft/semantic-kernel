@@ -35,7 +35,7 @@ logging.basicConfig(level=logging.INFO)
 # }
 
 # Create the data source settings
-azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = AzureAISearchSettings()
 
 az_source = AzureAISearchDataSource.from_azure_ai_search_settings(azure_ai_search_settings=azure_ai_search_settings)
 extra = ExtraBody(data_sources=[az_source])

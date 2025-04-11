@@ -106,7 +106,7 @@ class LoggingAsyncClient(httpx.AsyncClient):
 
 @pytest_asyncio.fixture
 async def async_clients() -> AsyncGenerator[tuple[AsyncOpenAI, LoggingAsyncClient], None]:
-    openai_settings = OpenAISettings.create()
+    openai_settings = OpenAISettings()
     logging_async_client = LoggingAsyncClient()
     async with AsyncOpenAI(
         api_key=openai_settings.api_key.get_secret_value(), http_client=logging_async_client
