@@ -332,8 +332,8 @@ class OpenAIResponsesAgent(Agent):
             An OpenAI client instance and the configured Response model name
         """
         try:
-            openai_settings = OpenAISettings.create(
-                response_model_id=ai_model_id,
+            openai_settings = OpenAISettings(
+                responses_model_id=ai_model_id,
                 api_key=api_key,
                 org_id=org_id,
                 env_file_path=env_file_path,

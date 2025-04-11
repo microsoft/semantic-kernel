@@ -57,7 +57,7 @@ class AzureAssistantAgent(OpenAIAssistantAgent):
             An Azure OpenAI client instance and the configured deployment name (model)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(
+            azure_openai_settings = AzureOpenAISettings(
                 api_key=api_key,
                 base_url=base_url,
                 endpoint=endpoint,

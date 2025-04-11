@@ -17,7 +17,7 @@ TASK = "Use code to determine the values in the Fibonacci sequence that that are
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,

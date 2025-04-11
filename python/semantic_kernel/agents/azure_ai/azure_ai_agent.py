@@ -255,7 +255,7 @@ class AzureAIAgent(Agent):
             AIProjectClient: The Azure AI Project client
         """
         if conn_str is None:
-            ai_agent_settings = AzureAIAgentSettings.create()
+            ai_agent_settings = AzureAIAgentSettings()
             if not ai_agent_settings.project_connection_string:
                 raise AgentInitializationException("Please provide a valid Azure AI connection string.")
             conn_str = ai_agent_settings.project_connection_string.get_secret_value()

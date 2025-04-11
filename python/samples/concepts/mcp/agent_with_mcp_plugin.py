@@ -41,7 +41,7 @@ async def main():
             # 2. Create a thread to hold the conversation
             # If no thread is provided, a new thread will be
             # created and returned with the initial response
-            thread: ChatHistoryAgentThread = None
+            thread: ChatHistoryAgentThread | None = None
 
             print(f"# User: {user_input}")
             # 3. Invoke the agent for a response

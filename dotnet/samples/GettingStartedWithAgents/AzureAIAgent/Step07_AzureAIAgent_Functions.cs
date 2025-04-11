@@ -18,7 +18,7 @@ public class Step07_AzureAIAgent_Functions(ITestOutputHelper output) : BaseAzure
     private const string HostInstructions = "Answer questions about the menu.";
 
     [Fact]
-    public async Task UseSingleAgentWithFunctionToolsAsync()
+    public async Task UseSingleAgentWithFunctionTools()
     {
         // Define the agent
         // In this sample the function tools are added to the agent this is
