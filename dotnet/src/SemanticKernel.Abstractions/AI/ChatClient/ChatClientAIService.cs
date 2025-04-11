@@ -33,7 +33,7 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
         var metadata = this._chatClient.GetService<ChatClientMetadata>();
         Verify.NotNull(metadata);
 
-        this._internalAttributes[nameof(metadata.ModelId)] = metadata.ModelId;
+        this._internalAttributes["ModelId"] = metadata.DefaultModelId;
         this._internalAttributes[nameof(metadata.ProviderName)] = metadata.ProviderName;
         this._internalAttributes[nameof(metadata.ProviderUri)] = metadata.ProviderUri;
     }

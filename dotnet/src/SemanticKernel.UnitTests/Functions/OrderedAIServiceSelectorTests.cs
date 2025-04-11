@@ -527,7 +527,7 @@ public class OrderedAIServiceSelectorTests
 
         public ChatClient(string modelId)
         {
-            this.Metadata = new ChatClientMetadata(modelId: modelId);
+            this.Metadata = new ChatClientMetadata(defaultModelId: modelId);
         }
 
         public Task<IReadOnlyList<Microsoft.SemanticKernel.TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)

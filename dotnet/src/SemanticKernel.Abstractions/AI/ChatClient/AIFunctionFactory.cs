@@ -194,8 +194,8 @@ internal static partial class AIFunctionFactory
         public override MethodInfo UnderlyingMethod => FunctionDescriptor.Method;
         public override JsonElement JsonSchema => FunctionDescriptor.JsonSchema;
         public override JsonSerializerOptions JsonSerializerOptions => FunctionDescriptor.JsonSerializerOptions;
-        protected override Task<object?> InvokeCoreAsync(
-            IEnumerable<KeyValuePair<string, object?>>? arguments,
+        protected override ValueTask<object?> InvokeCoreAsync(
+            AIFunctionArguments? arguments,
             CancellationToken cancellationToken)
         {
             var paramMarshallers = FunctionDescriptor.ParameterMarshallers;
@@ -283,7 +283,7 @@ internal static partial class AIFunctionFactory
         public JsonSerializerOptions JsonSerializerOptions { get; }
         public JsonElement JsonSchema { get; }
         public Func<IReadOnlyDictionary<string, object?>, CancellationToken, object?>[] ParameterMarshallers { get; }
-        public Func<object?, CancellationToken, Task<object?>> ReturnParameterMarshaller { get; }
+        public Func<object?, CancellationToken, ValueTask<object?>> ReturnParameterMarshaller { get; }
         public ReflectionAIFunction? CachedDefaultInstance { get; set; }
 
         private static string GetFunctionName(MethodInfo method)
@@ -395,7 +395,7 @@ internal static partial class AIFunctionFactory
         /// <summary>
         /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
         /// </summary>
-        private static Func<object?, CancellationToken, Task<object?>> GetReturnParameterMarshaller(MethodInfo method, JsonSerializerOptions serializerOptions)
+        private static Func<object?, CancellationToken, ValueTask<object?>> GetReturnParameterMarshaller(MethodInfo method, JsonSerializerOptions serializerOptions)
         {
             Type returnType = method.ReturnType;
             JsonTypeInfo returnTypeInfo;
@@ -403,7 +403,7 @@ internal static partial class AIFunctionFactory
             // Void
             if (returnType == typeof(void))
             {
-                return static (_, _) => Task.FromResult<object?>(null);
+                return static (_, _) => new ValueTask<object?>((object?)null);
             }
 
             // Task
@@ -461,7 +461,7 @@ internal static partial class AIFunctionFactory
             returnTypeInfo = serializerOptions.GetTypeInfo(returnType);
             return (result, cancellationToken) => SerializeResultAsync(result, returnTypeInfo, cancellationToken);
 
-            static async Task<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
+            static async ValueTask<object?> SerializeResultAsync(object? result, JsonTypeInfo returnTypeInfo, CancellationToken cancellationToken)
             {
                 if (returnTypeInfo.Kind is JsonTypeInfoKind.None)
                 {

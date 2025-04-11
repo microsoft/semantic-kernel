@@ -70,7 +70,7 @@ public class CustomAIChatClientSelectorTests
 
         public ChatClientTest()
         {
-            this._metadata = new ChatClientMetadata(modelId: "Value1");
+            this._metadata = new ChatClientMetadata(defaultModelId: "Value1");
         }
 
         public void Dispose()

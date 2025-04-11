@@ -85,7 +85,7 @@ public static class ChatClientExtensions
     {
         Verify.NotNull(client);
 
-        return client.GetService<ChatClientMetadata>()?.ModelId;
+        return client.GetService<ChatClientMetadata>()?.DefaultModelId;
     }
 
     /// <summary>

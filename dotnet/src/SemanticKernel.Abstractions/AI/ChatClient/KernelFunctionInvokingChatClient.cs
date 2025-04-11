@@ -844,7 +844,7 @@ internal sealed partial class KernelFunctionInvokingChatClient : DelegatingChatC
                         // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                         // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                         // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                        result = await invocationContext.AIFunction.InvokeAsync(autoFunctionInvocationContext.Arguments, cancellationToken).ConfigureAwait(false);
+                        result = await invocationContext.AIFunction.InvokeAsync(new(autoFunctionInvocationContext.Arguments), cancellationToken).ConfigureAwait(false);
                         context.Result = new FunctionResult(context.Function, result);
                     }).ConfigureAwait(false);
                 result = autoFunctionInvocationContext.Result.GetValue<object>();

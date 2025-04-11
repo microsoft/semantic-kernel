@@ -47,11 +47,11 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
-            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<OpenAIChatClient>();
+            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<IChatClient>();
 
-            return new Microsoft.Extensions.AI.OpenAIChatClient(
-                openAIClient: new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), options: GetClientOptions(orgId: orgId, httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider))),
-                modelId: modelId)
+            return new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), options: GetClientOptions(orgId: orgId, httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
+                .GetChatClient(modelId)
+                .AsIChatClient()
                 .AsKernelFunctionInvokingChatClient(logger);
         }
 
@@ -77,11 +77,11 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
-            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<OpenAIChatClient>();
+            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<IChatClient>();
 
-            return new Microsoft.Extensions.AI.OpenAIChatClient(
-                openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>(),
-                modelId)
+            return (openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>())
+                .GetChatClient(modelId)
+                .AsIChatClient()
                 .AsKernelFunctionInvokingChatClient(logger);
         }
 
@@ -114,11 +114,11 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
-            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<OpenAIChatClient>();
+            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<IChatClient>();
 
-            return new Microsoft.Extensions.AI.OpenAIChatClient(
-                openAIClient: new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), GetClientOptions(endpoint, orgId, HttpClientProvider.GetHttpClient(httpClient, serviceProvider))),
-                modelId: modelId)
+            return new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), GetClientOptions(endpoint, orgId, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
+                .GetChatClient(modelId)
+                .AsIChatClient()
                 .AsKernelFunctionInvokingChatClient(logger);
         }
 
