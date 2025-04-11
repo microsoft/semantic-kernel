@@ -539,7 +539,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
             new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
             new VectorStoreRecordDataProperty("HotelRating", typeof(float)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
+            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.IvfFlat, DistanceFunction = DistanceFunction.CosineDistance }
         ]
     };
 
@@ -574,13 +574,13 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         [VectorStoreRecordKey]
         public ulong Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding1 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
         public ReadOnlyMemory<float>? Embedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.ManhattanDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.ManhattanDistance)]
         public ReadOnlyMemory<float>? Embedding3 { get; set; }
     }
 #pragma warning restore CA1812

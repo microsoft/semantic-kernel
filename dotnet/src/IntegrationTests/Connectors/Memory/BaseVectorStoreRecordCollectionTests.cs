@@ -123,7 +123,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = vectorDimensions, DistanceFunction = distanceFunction },
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), vectorDimensions) { DistanceFunction = distanceFunction },
             ],
         };
 

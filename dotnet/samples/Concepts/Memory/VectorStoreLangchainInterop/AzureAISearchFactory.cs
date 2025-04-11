@@ -29,7 +29,7 @@ public static class AzureAISearchFactory
             new VectorStoreRecordKeyProperty("id", typeof(string)),
             new VectorStoreRecordDataProperty("content", typeof(string)),
             new VectorStoreRecordDataProperty("metadata", typeof(string)),
-            new VectorStoreRecordVectorProperty("content_vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536 }
+            new VectorStoreRecordVectorProperty("content_vector", typeof(ReadOnlyMemory<float>), 1536)
         }
     };
 

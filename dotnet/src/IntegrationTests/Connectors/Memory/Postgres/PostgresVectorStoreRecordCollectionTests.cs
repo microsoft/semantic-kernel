@@ -515,7 +515,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
             new VectorStoreRecordDataProperty("ListInts", typeof(List<int>)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
+            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
         ]
     };
 
@@ -553,7 +553,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         [VectorStoreRecordKey]
         public int Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding { get; set; }
 
         [VectorStoreRecordData]

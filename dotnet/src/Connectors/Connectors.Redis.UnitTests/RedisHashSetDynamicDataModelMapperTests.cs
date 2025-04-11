@@ -67,7 +67,7 @@ public class RedisHashSetDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
                 new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         });
 
@@ -136,7 +136,7 @@ public class RedisHashSetDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
                 new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             }
         });
 
@@ -170,7 +170,7 @@ public class RedisHashSetDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringData", typeof(string)) { StoragePropertyName = "storage_string_data" },
                 new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>?), 10),
             }
         });
 

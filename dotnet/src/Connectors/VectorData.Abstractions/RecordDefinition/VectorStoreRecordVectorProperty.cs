@@ -12,14 +12,29 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
 {
+    private int _dimensions;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class.
     /// </summary>
     /// <param name="propertyName">The name of the property.</param>
     /// <param name="propertyType">The type of the property.</param>
+    [Obsolete("This constructor is obsolete, since dimensions is now a required parameter.", error: true)]
     public VectorStoreRecordVectorProperty(string propertyName, Type propertyType)
         : base(propertyName, propertyType)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VectorStoreRecordVectorProperty"/> class.
+    /// </summary>
+    /// <param name="propertyName">The name of the property.</param>
+    /// <param name="propertyType">The type of the property.</param>
+    /// <param name="dimensions">The number of dimensions that the vector has.</param>
+    public VectorStoreRecordVectorProperty(string propertyName, Type propertyType, int dimensions)
+        : base(propertyName, propertyType)
+    {
+        this.Dimensions = dimensions;
     }
 
     /// <summary>
@@ -41,7 +56,20 @@ public sealed class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
     /// This property is required when creating collections, but can be omitted if not using that functionality.
     /// If not provided when trying to create a collection, create will fail.
     /// </remarks>
-    public int? Dimensions { get; init; }
+    public int Dimensions
+    {
+        get => this._dimensions;
+
+        init
+        {
+            if (value <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Dimensions must be greater than zero.");
+            }
+
+            this._dimensions = value;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the kind of index to use.

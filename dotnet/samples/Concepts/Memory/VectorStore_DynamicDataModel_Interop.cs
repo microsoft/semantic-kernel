@@ -31,7 +31,7 @@ public class VectorStore_DynamicDataModel_Interop(ITestOutputHelper output, Vect
             new VectorStoreRecordKeyProperty("Key", typeof(ulong)),
             new VectorStoreRecordDataProperty("Term", typeof(string)),
             new VectorStoreRecordDataProperty("Definition", typeof(string)),
-            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536 }
+            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
         }
     };
 

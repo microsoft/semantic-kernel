@@ -69,7 +69,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var model = BuildModel(
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act.
@@ -93,7 +93,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         var model = BuildModel(
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "storage_Vector" }
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_Vector" }
         ]);
         var selectFields = new string[] { "storage_Field1", "storage_Field2" };
 
@@ -130,7 +130,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act.
@@ -165,7 +165,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act & Assert.
@@ -184,7 +184,7 @@ public class RedisVectorStoreCollectionSearchMappingTests
         [
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Data1", typeof(string)) { StoragePropertyName = "storage_Data1" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         // Act & Assert.

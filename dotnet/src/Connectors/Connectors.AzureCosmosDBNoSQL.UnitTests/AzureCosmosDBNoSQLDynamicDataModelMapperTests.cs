@@ -42,15 +42,15 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
                     new VectorStoreRecordDataProperty("NullableDateTimeOffsetDataProp", typeof(DateTimeOffset?)),
                     new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
         #if NET5_0_OR_GREATER
-                    new VectorStoreRecordVectorProperty("HalfVector", typeof(ReadOnlyMemory<Half>)),
-                    new VectorStoreRecordVectorProperty("NullableHalfVector", typeof(ReadOnlyMemory<Half>?)),
+                    new VectorStoreRecordVectorProperty("HalfVector", typeof(ReadOnlyMemory<Half>), 10),
+                    new VectorStoreRecordVectorProperty("NullableHalfVector", typeof(ReadOnlyMemory<Half>?), 10),
         #endif
-                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-                    new VectorStoreRecordVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>)),
-                    new VectorStoreRecordVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?)),
-                    new VectorStoreRecordVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>)),
-                    new VectorStoreRecordVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?)),
+                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                    new VectorStoreRecordVectorProperty("ByteVector", typeof(ReadOnlyMemory<byte>), 10),
+                    new VectorStoreRecordVectorProperty("NullableByteVector", typeof(ReadOnlyMemory<byte>?), 10),
+                    new VectorStoreRecordVectorProperty("SByteVector", typeof(ReadOnlyMemory<sbyte>), 10),
+                    new VectorStoreRecordVectorProperty("NullableSByteVector", typeof(ReadOnlyMemory<sbyte>?), 10),
                 },
             });
 
@@ -141,7 +141,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         };
 
@@ -241,7 +241,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
+                new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
             },
         };
 
@@ -288,7 +288,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
             {
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             },
         };
 
@@ -314,7 +314,7 @@ public sealed class AzureCosmosDBNoSQLDynamicDataModelMapperTests
             {
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             },
         };
 
