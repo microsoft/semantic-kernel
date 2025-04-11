@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -94,10 +95,7 @@ public static class PromptYamlKernelExtensions
         var functions = new List<KernelFunction>();
         ILogger logger = loggerFactory.CreateLogger(typeof(Kernel)) ?? NullLogger.Instance;
 
-        string[] functionFiles = [
-            ..Directory.GetFiles(pluginDirectory, "*.yaml"),
-            ..Directory.GetFiles(pluginDirectory, "*.yml")
-        ];
+        var functionFiles = Directory.GetFiles(pluginDirectory, "*.yaml").Concat(Directory.GetFiles(pluginDirectory, "*.yml"));
 
         foreach (string functionFile in functionFiles)
         {
