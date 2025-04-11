@@ -222,7 +222,7 @@ public sealed class BraveTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterSkResponseJson));
-        TextSearchOptions searchOptions = new() { Top = 5, Skip = 0, Filter = new TextSearchFilter().Equality("country", null) };
+        TextSearchOptions searchOptions = new() { Top = 5, Skip = 0, Filter = new TextSearchFilter().Equality("country", null!) };
 
         // Create an ITextSearch instance using Brave search
         var textSearch = new BraveTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });

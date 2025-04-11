@@ -57,7 +57,7 @@ public sealed class BraveConnector : IWebSearchEngineConnector
     /// <inheritdoc/>
     public async Task<IEnumerable<T>> SearchAsync<T>(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(query) ;
+        Verify.NotNull(query);
 
         if (count is <= 0 or >= 21)
         {
@@ -66,7 +66,13 @@ public sealed class BraveConnector : IWebSearchEngineConnector
 
         if (offset is < 0 or > 10)
         {
-            throw new ArgumentOutOfRangeException(nameof(offset),offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
+            /* Unmerged change from project 'Plugins.Web(netstandard2.0)'
+            Before:
+                        throw new ArgumentOutOfRangeException(nameof(offset),offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
+            After:
+                        throw new ArgumentOutOfRangeException(nameof(offset), offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
+            */
+            throw new ArgumentOutOfRangeException(nameof(offset), offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
         }
 
         Uri uri = new($"{this._uri}={Uri.EscapeDataString(query.Trim())}&count={count}&offset={offset}");
