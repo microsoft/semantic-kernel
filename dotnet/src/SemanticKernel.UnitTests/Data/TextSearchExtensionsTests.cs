@@ -163,7 +163,7 @@ public class TextSearchExtensionsTests
                 new KernelParameterMetadata("query") { Description = "What to search for", IsRequired = true },
                 new KernelParameterMetadata("custom") { Description = "Some custom parameter", IsRequired = true },
             ],
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new() { ParameterType = typeof(List<string>) },
         };
     #endregion
 }

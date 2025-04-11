@@ -8,9 +8,9 @@ namespace SemanticKernel.AotTests.JsonSerializerContexts;
 
 [JsonSerializable(typeof(CustomResult))]
 [JsonSerializable(typeof(int))]
-[JsonSerializable(typeof(KernelSearchResults<string>))]
-[JsonSerializable(typeof(KernelSearchResults<TextSearchResult>))]
-[JsonSerializable(typeof(KernelSearchResults<object>))]
+[JsonSerializable(typeof(IAsyncEnumerable<string>))]
+[JsonSerializable(typeof(IAsyncEnumerable<TextSearchResult>))]
+[JsonSerializable(typeof(IAsyncEnumerable<object>))]
 internal sealed partial class CustomResultJsonSerializerContext : JsonSerializerContext
 {
 }

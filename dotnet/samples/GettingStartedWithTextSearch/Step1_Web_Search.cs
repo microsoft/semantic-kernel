@@ -23,8 +23,8 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results
-        KernelSearchResults<string> searchResults = await textSearch.SearchAsync(query, new() { Top = 4 });
-        await foreach (string result in searchResults.Results)
+        IAsyncEnumerable<string> searchResults = textSearch.SearchAsync(query, 4);
+        await foreach (string result in searchResults)
         {
             Console.WriteLine(result);
         }
@@ -44,8 +44,8 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results
-        KernelSearchResults<string> searchResults = await textSearch.SearchAsync(query, new() { Top = 4 });
-        await foreach (string result in searchResults.Results)
+        IAsyncEnumerable<string> searchResults = textSearch.SearchAsync(query, 4);
+        await foreach (string result in searchResults)
         {
             Console.WriteLine(result);
         }
@@ -69,11 +69,11 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results using the implementation specific data model
-        KernelSearchResults<object> objectResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<object> objectResults = textSearch.GetSearchResultsAsync(query, 4);
         if (this.UseBingSearch)
         {
             Console.WriteLine("\n--- Bing Web Page Results ---\n");
-            await foreach (BingWebPage webPage in objectResults.Results)
+            await foreach (BingWebPage webPage in objectResults)
             {
                 Console.WriteLine($"Name:            {webPage.Name}");
                 Console.WriteLine($"Snippet:         {webPage.Snippet}");
@@ -85,7 +85,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         else
         {
             Console.WriteLine("\n——— Google Web Page Results ———\n");
-            await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in objectResults.Results)
+            await foreach (Google.Apis.CustomSearchAPI.v1.Data.Result result in objectResults)
             {
                 Console.WriteLine($"Title:       {result.Title}");
                 Console.WriteLine($"Snippet:     {result.Snippet}");
@@ -118,9 +118,9 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as TextSearchResult items
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 4);
         Console.WriteLine("\n--- Text Search Results ---\n");
-        await foreach (TextSearchResult result in textResults.Results)
+        await foreach (TextSearchResult result in textResults)
         {
             Console.WriteLine($"Name:  {result.Name}");
             Console.WriteLine($"Value: {result.Value}");
