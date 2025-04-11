@@ -96,8 +96,7 @@ public class VectorStore_Langchain_Interop(ITestOutputHelper output) : BaseTest(
         // Search the data set.
         var searchString = "I'm looking for an animal that is loyal and will make a great companion";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = collection.VectorizedSearchAsync(searchVector, top: 1);
-        var resultRecords = await searchResult.ToListAsync();
+        var resultRecords = await collection.VectorizedSearchAsync(searchVector, top: 1).ToListAsync();
 
         this.Output.WriteLine("Search string: " + searchString);
         this.Output.WriteLine("Source: " + resultRecords.First().Record.Source);

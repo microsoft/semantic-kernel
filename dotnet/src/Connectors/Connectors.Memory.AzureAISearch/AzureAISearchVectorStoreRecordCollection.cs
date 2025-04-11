@@ -333,7 +333,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             VectorSearch = new(),
             Size = top,
             Skip = internalOptions.Skip,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
         };
 
         if (filter is not null)
@@ -358,8 +357,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -400,11 +399,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             searchOptions.OrderBy.Add(name);
         }
 
-        var vectorSearchResults = this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
-        await foreach (var result in vectorSearchResults.ConfigureAwait(false))
-        {
-            yield return result.Record;
-        }
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)
+            .SelectAsync(result => result.Record, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -445,7 +441,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             VectorSearch = new(),
             Size = top,
             Skip = internalOptions.Skip,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
         };
 
         if (filter is not null)

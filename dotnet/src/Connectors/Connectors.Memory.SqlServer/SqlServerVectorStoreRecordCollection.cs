@@ -432,7 +432,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -454,11 +454,10 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        // This connection will be disposed by the ReadVectorSearchResultsAsync
+        // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
         SqlConnection connection = new(this._connectionString);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+        SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
             this._options.Schema,
             this.CollectionName,
@@ -467,12 +466,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             top,
             searchOptions,
             allowed);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-        var results = this.ReadVectorSearchResultsAsync(connection, command, searchOptions.IncludeVectors, cancellationToken);
-        await foreach (var result in results.ConfigureAwait(false))
-        {
-            yield return result;
-        }
+        return this.ReadVectorSearchResultsAsync(connection, command, searchOptions.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -525,6 +521,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         }
         finally
         {
+            command.Dispose();
             connection.Dispose();
         }
     }

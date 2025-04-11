@@ -505,13 +505,12 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var actual = sut.VectorizedSearchAsync(vector, top: 3, new()
+        var results = await sut.VectorizedSearchAsync(vector, top: 3, new()
         {
             IncludeVectors = includeVectors
-        });
+        }).ToListAsync();
 
         // Assert
-        var results = await actual.ToListAsync();
         Assert.Single(results);
 
         var score = results[0].Score;

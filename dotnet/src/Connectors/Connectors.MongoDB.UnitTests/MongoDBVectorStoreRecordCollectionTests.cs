@@ -585,9 +585,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         }
         else
         {
-            var actual = await sut.VectorizedSearchAsync(vector, top: 3).FirstOrDefaultAsync();
-
-            Assert.NotNull(actual);
+            Assert.NotNull(await sut.VectorizedSearchAsync(vector, top: 3).FirstOrDefaultAsync());
         }
     }
 
@@ -642,13 +640,13 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         };
 
         // Act
-        var actual = sut.VectorizedSearchAsync(vector, top: actualTop, new()
+        var actual = await sut.VectorizedSearchAsync(vector, top: actualTop, new()
         {
             VectorProperty = vectorSelector,
-        });
+        }).FirstOrDefaultAsync();
 
         // Assert
-        Assert.NotNull(await actual.FirstOrDefaultAsync());
+        Assert.NotNull(actual);
 
         this._mockMongoCollection.Verify(l => l.AggregateAsync(
             It.Is<PipelineDefinition<BsonDocument, BsonDocument>>(pipeline =>
@@ -684,10 +682,9 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var actual = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
+        var result = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).FirstOrDefaultAsync();
 
         // Assert
-        var result = await actual.FirstOrDefaultAsync();
         Assert.NotNull(result);
         Assert.Equal("key", result.Record.HotelId);
         Assert.Equal("Test Name", result.Record.HotelName);

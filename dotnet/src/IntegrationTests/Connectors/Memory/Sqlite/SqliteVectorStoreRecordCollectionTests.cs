@@ -355,12 +355,10 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             IncludeVectors = includeVectors
-        });
-
-        var results = await searchResults.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -392,12 +390,10 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
-        });
-
-        var results = await searchResults.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -425,12 +421,10 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
         {
             OldFilter = new VectorSearchFilter().EqualTo(nameof(SqliteHotel<string>.HotelName), "My Hotel key2")
-        });
-
-        var results = await searchResults.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();

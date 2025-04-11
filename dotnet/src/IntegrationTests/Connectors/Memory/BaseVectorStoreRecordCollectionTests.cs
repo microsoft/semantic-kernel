@@ -97,10 +97,9 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
-        var searchResult = sut.VectorizedSearchAsync(baseVector, top: 3);
+        var results = await sut.VectorizedSearchAsync(baseVector, top: 3).ToListAsync();
 
         // Assert
-        var results = await searchResult.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.Equal(keyDictionary[resultOrder[0]], results[0].Record.Key);

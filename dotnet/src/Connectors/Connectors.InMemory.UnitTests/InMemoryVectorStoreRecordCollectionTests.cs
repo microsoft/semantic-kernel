@@ -291,15 +291,13 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<TKey>(useDefinition);
 
         // Act
-        var actual = sut.VectorizedSearchAsync(
+        var actualResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
             top: 3,
             new() { IncludeVectors = true },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert
-        Assert.NotNull(actual);
-        var actualResults = await actual.ToListAsync();
         Assert.Equal(2, actualResults.Count);
         Assert.Equal(testKey1, actualResults[0].Record.Key);
         Assert.Equal($"data {testKey1}", actualResults[0].Record.Data);
@@ -336,15 +334,13 @@ public class InMemoryVectorStoreRecordCollectionTests
 
         // Act
         var filter = filterType == "Equality" ? new VectorSearchFilter().EqualTo("Data", $"data {testKey2}") : new VectorSearchFilter().AnyTagEqualTo("Tags", $"tag {testKey2}");
-        var actual = sut.VectorizedSearchAsync(
+        var actualResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
             top: 3,
-            new() { IncludeVectors = true, OldFilter = filter, IncludeTotalCount = true },
-            this._testCancellationToken);
+            new() { IncludeVectors = true, OldFilter = filter },
+            this._testCancellationToken).ToListAsync();
 
         // Assert
-        Assert.NotNull(actual);
-        var actualResults = await actual.ToListAsync();
         Assert.Single(actualResults);
         Assert.Equal(testKey2, actualResults[0].Record.Key);
         Assert.Equal($"data {testKey2}", actualResults[0].Record.Data);
@@ -389,15 +385,13 @@ public class InMemoryVectorStoreRecordCollectionTests
             });
 
         // Act
-        var actual = sut.VectorizedSearchAsync(
+        var actualResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
             top: 3,
             new() { IncludeVectors = true },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert
-        Assert.NotNull(actual);
-        var actualResults = await actual.ToListAsync();
         Assert.Equal(2, actualResults.Count);
         Assert.Equal(TestRecordKey1, actualResults[0].Record.Key);
         Assert.Equal($"data {TestRecordKey1}", actualResults[0].Record.Data);
@@ -431,14 +425,13 @@ public class InMemoryVectorStoreRecordCollectionTests
         var sut = this.CreateRecordCollection<int>(useDefinition);
 
         // Act
-        var actual = sut.VectorizedSearchAsync(
+        var actualResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new float[] { 1, 1, 1, 1 }),
             top: 10,
-            new() { IncludeVectors = true, Skip = 10, IncludeTotalCount = true },
-            this._testCancellationToken);
+            new() { IncludeVectors = true, Skip = 10 },
+            this._testCancellationToken).ToListAsync();
 
         // Assert that top was respected
-        var actualResults = await actual.ToListAsync();
         Assert.Equal(10, actualResults.Count);
         var actualIds = actualResults.Select(r => r.Record.Key).ToList();
         for (int i = 0; i < 10; i++)
@@ -494,15 +487,13 @@ public class InMemoryVectorStoreRecordCollectionTests
             });
 
         // Act
-        var actual = sut.VectorizedSearchAsync(
+        var actualResults = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>([1, 1, 1, 1]),
             top: 3,
             new() { IncludeVectors = true, VectorProperty = r => r["Vector"] },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert
-        Assert.NotNull(actual);
-        var actualResults = await actual.ToListAsync();
         Assert.Equal(2, actualResults.Count);
         Assert.Equal(testKey1, actualResults[0].Record["Key"]);
         Assert.Equal($"data {testKey1}", actualResults[0].Record["Data"]);

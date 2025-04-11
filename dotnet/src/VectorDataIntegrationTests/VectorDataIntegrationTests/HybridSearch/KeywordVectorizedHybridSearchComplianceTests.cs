@@ -29,10 +29,8 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         // Act
         // All records have the same vector, but the third contains Grapes, so searching for
         // Grapes should return the third record first.
-        var searchResult = hybridSearch!.HybridSearchAsync(vector, ["Grapes"], top: 3);
-
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["Grapes"], top: 3).ToListAsync();
         // Assert
-        var results = await searchResult.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.Equal(3, results[0].Record.Code);
@@ -55,10 +53,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
             OldFilter = new VectorSearchFilter().EqualTo("Code", 1)
         };
 #pragma warning restore CS0618 // Type or member is obsolete
-        var searchResult = hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, options);
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, options).ToListAsync();
 
         // Assert
-        var results = await searchResult.ToListAsync();
         Assert.Single(results);
 
         Assert.Equal(1, results[0].Record.Code);
@@ -75,10 +72,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         // Act
         // All records have the same vector, but the second contains Oranges, so the
         // second should be returned first.
-        var searchResult = hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 1);
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 1).ToListAsync();
 
         // Assert
-        var results = await searchResult.ToListAsync();
         Assert.Single(results);
 
         Assert.Equal(2, results[0].Record.Code);
@@ -95,10 +91,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         // Act
         // All records have the same vector, but the first and third contain healthy,
         // so when skipping the first two results, we should get the second record.
-        var searchResult = hybridSearch!.HybridSearchAsync(vector, ["healthy"], top: 3, new() { Skip = 2 });
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["healthy"], top: 3, new() { Skip = 2 }).ToListAsync();
 
         // Assert
-        var results = await searchResult.ToListAsync();
         Assert.Single(results);
 
         Assert.Equal(2, results[0].Record.Code);
@@ -113,10 +108,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
-        var searchResult = hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"], top: 3);
+        var results = await hybridSearch!.HybridSearchAsync(vector, ["tangy", "nourishing"], top: 3).ToListAsync();
 
         // Assert
-        var results = await searchResult.ToListAsync();
         Assert.Equal(3, results.Count);
 
         Assert.True(results[0].Record.Code.Equals(1) || results[0].Record.Code.Equals(2));
@@ -133,17 +127,15 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
         var vector = new ReadOnlyMemory<float>([1, 0, 0, 0]);
 
         // Act
-        var searchResult1 = hybridSearch!.HybridSearchAsync(vector, ["Apples"], top: 3, new() { AdditionalProperty = r => r.Text2 });
-        var searchResult2 = hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, new() { AdditionalProperty = r => r.Text2 });
+        var results1 = await hybridSearch!.HybridSearchAsync(vector, ["Apples"], top: 3, new() { AdditionalProperty = r => r.Text2 }).ToListAsync();
+        var results2 = await hybridSearch!.HybridSearchAsync(vector, ["Oranges"], top: 3, new() { AdditionalProperty = r => r.Text2 }).ToListAsync();
 
         // Assert
-        var results1 = await searchResult1.ToListAsync();
         Assert.Equal(2, results1.Count);
 
         Assert.Equal(2, results1[0].Record.Code);
         Assert.Equal(1, results1[1].Record.Code);
 
-        var results2 = await searchResult2.ToListAsync();
         Assert.Equal(2, results2.Count);
 
         Assert.Equal(1, results2[0].Record.Code);

@@ -361,12 +361,10 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
         {
             IncludeVectors = includeVectors
-        });
-
-        var results = await searchResults.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -399,15 +397,13 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
             OldFilter = new([
                 new EqualToFilterClause("HotelRating", 2.5f)
             ])
-        });
-
-        var results = await searchResults.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();
@@ -431,15 +427,13 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
         {
             IncludeVectors = false,
             OldFilter = new([
                 new AnyTagEqualToFilterClause("Tags", "tag2")
             ])
-        });
-
-        var results = await searchResults.ToListAsync();
+        }).ToListAsync();
 
         // Assert
         var ids = results.Select(l => l.Record.HotelId).ToList();

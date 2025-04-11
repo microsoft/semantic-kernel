@@ -298,13 +298,6 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Get the non-null results since any record with a null vector results in a null result.
         var nonNullResults = results.Where(x => x.HasValue).Select(x => x!.Value);
 
-        // Calculate the total results count if requested.
-        long? count = null;
-        if (internalOptions.IncludeTotalCount)
-        {
-            count = nonNullResults.Count();
-        }
-
         // Sort the results appropriately for the selected distance function and get the right page of results .
         var sortedScoredResults = InMemoryVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :

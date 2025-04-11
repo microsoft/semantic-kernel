@@ -606,9 +606,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var actual = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
-
-        var results = await actual.ToListAsync();
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).ToListAsync();
         var result = results[0];
 
         // Assert
