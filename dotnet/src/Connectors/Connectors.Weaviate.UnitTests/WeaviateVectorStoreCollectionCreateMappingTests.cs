@@ -203,7 +203,7 @@ public sealed class WeaviateVectorStoreCollectionCreateMappingTests
                     Properties =
                     [
                         new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+                        new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4)
                         {
                             DistanceFunction = DistanceFunction.CosineDistance,
                             IndexKind = IndexKind.Hnsw

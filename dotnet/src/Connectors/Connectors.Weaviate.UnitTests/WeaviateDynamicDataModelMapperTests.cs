@@ -410,7 +410,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 4)
             ]
         };
 
@@ -442,7 +442,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 4)
             ]
         };
 
