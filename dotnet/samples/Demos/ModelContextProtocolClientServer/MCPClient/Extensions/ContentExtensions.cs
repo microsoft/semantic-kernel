@@ -8,6 +8,7 @@ namespace MCPClient;
 
 /// <summary>
 /// Extension methods for the <see cref="Content"/> class.
+/// </summary>
 public static class ContentExtensions
 {
     /// <summary>
