@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -11,6 +12,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Memory;
+using Microsoft.SemanticKernel.Memory.TextRag;
 using SemanticKernel.IntegrationTests.TestSettings;
 using Xunit;
 
@@ -85,5 +87,105 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
         // Cleanup
         await this.Fixture.DeleteThread(agentThread1);
         await this.Fixture.DeleteThread(agentThread2);
+    }
+
+    [Fact]
+    public virtual async Task RagComponentWithoutMatchesAsync()
+    {
+        // Arrange
+        var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+
+        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
+
+        var vectorStore = new InMemoryVectorStore();
+        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "Memories", 1536, "group/g1");
+        var ragComponent = new TextRagComponent(ragStore, new TextRagComponentOptions());
+
+        await ragStore.UpsertDocumentsAsync(GetSampleDocuments());
+
+        var agent = this.Fixture.Agent;
+
+        // Act
+        var agentThread = new ChatHistoryAgentThread();
+        agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
+
+        var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
+        var results1 = await asyncResults1.ToListAsync();
+
+        // Assert
+        Assert.DoesNotContain("174", results1.First().Message.Content);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(agentThread);
+    }
+
+    [Fact]
+    public virtual async Task RagComponentWithMatchesAsync()
+    {
+        // Arrange
+        var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+
+        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
+
+        var vectorStore = new InMemoryVectorStore();
+        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "Memories", 1536, "group/g2");
+        var ragComponent = new TextRagComponent(ragStore, new TextRagComponentOptions());
+
+        await ragStore.UpsertDocumentsAsync(GetSampleDocuments());
+
+        var agent = this.Fixture.Agent;
+
+        // Act
+        var agentThread = new ChatHistoryAgentThread();
+        agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
+
+        var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
+        var results1 = await asyncResults1.ToListAsync();
+
+        // Assert
+        Assert.Contains("174", results1.First().Message.Content);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(agentThread);
+    }
+
+    private static IEnumerable<TextRagDocument> GetSampleDocuments()
+    {
+        yield return new TextRagDocument("The financial results of Contoso Corp for 2024 is as follows:\nIncome EUR 154 000 000\nExpenses EUR 142 000 000")
+        {
+            SourceName = "Contoso 2024 Financial Report",
+            SourceReference = "https://www.consoso.com/reports/2024.pdf",
+            Namespaces = ["group/g1"]
+        };
+        yield return new TextRagDocument("The financial results of Contoso Corp for 2023 is as follows:\nIncome EUR 174 000 000\nExpenses EUR 152 000 000")
+        {
+            SourceName = "Contoso 2023 Financial Report",
+            SourceReference = "https://www.consoso.com/reports/2023.pdf",
+            Namespaces = ["group/g2"]
+        };
+        yield return new TextRagDocument("The financial results of Contoso Corp for 2022 is as follows:\nIncome EUR 184 000 000\nExpenses EUR 162 000 000")
+        {
+            SourceName = "Contoso 2022 Financial Report",
+            SourceReference = "https://www.consoso.com/reports/2022.pdf",
+            Namespaces = ["group/g2"]
+        };
+        yield return new TextRagDocument("The Contoso Corporation is a multinational business with its headquarters in Paris. The company is a manufacturing, sales, and support organization with more than 100,000 products.")
+        {
+            SourceName = "About Contoso",
+            SourceReference = "https://www.consoso.com/about-us",
+            Namespaces = ["group/g2"]
+        };
+        yield return new TextRagDocument("The financial results of AdventureWorks for 2021 is as follows:\nIncome USD 223 000 000\nExpenses USD 210 000 000")
+        {
+            SourceName = "AdventureWorks 2021 Financial Report",
+            SourceReference = "https://www.adventure-works.com/reports/2021.pdf",
+            Namespaces = ["group/g1", "group/g2"]
+        };
+        yield return new TextRagDocument("AdventureWorks is a large American business that specializaes in adventure parks and family entertainment.")
+        {
+            SourceName = "About AdventureWorks",
+            SourceReference = "https://www.adventure-works.com/about-us",
+            Namespaces = ["group/g1", "group/g2"]
+        };
     }
 }
