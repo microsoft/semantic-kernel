@@ -67,7 +67,7 @@ async def main() -> None:
     # The filter is used for demonstration purposes to show the function invocation.
     kernel.add_filter("function_invocation", function_invocation_filter)
 
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,

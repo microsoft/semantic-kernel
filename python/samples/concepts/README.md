@@ -7,6 +7,8 @@
 #### [Azure AI Agent](../../semantic_kernel/agents/azure_ai/azure_ai_agent.py)
 
 - [Azure AI Agent as Kernel Function](./agents/azure_ai_agent/azure_ai_agent_as_kernel_function.py)
+- [Azure AI Agent with Auto Function Invocation Filter Streaming](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter_streaming.py)
+- [Azure AI Agent with Auto Function Invocation Filter](./agents/azure_ai_agent/azure_ai_agent_auto_func_invocation_filter.py)
 - [Azure AI Agent with Azure AI Search](./agents/azure_ai_agent/azure_ai_agent_azure_ai_search.py)
 - [Azure AI Agent File Manipulation](./agents/azure_ai_agent/azure_ai_agent_file_manipulation.py)
 - [Azure AI Agent Prompt Templating](./agents/azure_ai_agent/azure_ai_agent_prompt_templating.py)
@@ -14,6 +16,7 @@
 - [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 - [Azure AI Agent Structured Outputs](./agents/azure_ai_agent/azure_ai_agent_structured_outputs.py)
+- [Azure AI Agent Truncation Strategy](./agents/azure_ai_agent/azure_ai_agent_truncation_strategy.py)
 
 #### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
 
@@ -50,6 +53,8 @@
 
 #### [OpenAI Assistant Agent](../../semantic_kernel/agents/open_ai/open_ai_assistant_agent.py)
 
+- [OpenAI Assistant Auto Function Invocation Filter Streaming](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter_streaming.py)
+- [OpenAI Assistant Auto Function Invocation Filter](./agents/openai_assistant/openai_assistant_auto_func_invocation_filter.py)
 - [OpenAI Assistant Chart Maker Streaming](./agents/openai_assistant/openai_assistant_chart_maker_streaming.py)
 - [OpenAI Assistant Chart Maker](./agents/openai_assistant/openai_assistant_chart_maker.py)
 - [OpenAI Assistant File Manipulation Streaming](./agents/openai_assistant/openai_assistant_file_manipulation_streaming.py)

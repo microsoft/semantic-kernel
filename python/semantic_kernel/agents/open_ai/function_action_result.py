@@ -14,6 +14,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 class FunctionActionResult:
     """Function Action Result."""
 
-    function_call_streaming_content: StreamingChatMessageContent | None
-    function_result_streaming_content: StreamingChatMessageContent | None
-    tool_outputs: list[dict[str, str]] | None
+    function_call_streaming_content: StreamingChatMessageContent
+    function_result_streaming_content: StreamingChatMessageContent
+    tool_outputs: list[dict[str, str]]

@@ -47,7 +47,7 @@ class OpenAITextToAudio(OpenAIConfigBase, OpenAITextToAudioBase):
             env_file_encoding: The encoding of the environment settings file. (Optional)
         """
         try:
-            openai_settings = OpenAISettings.create(
+            openai_settings = OpenAISettings(
                 api_key=api_key,
                 org_id=org_id,
                 text_to_audio_model_id=ai_model_id,

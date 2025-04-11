@@ -26,11 +26,11 @@ from azure.ai.projects.models import (
     MessageTextFilePathDetails,
     MessageTextUrlCitationAnnotation,
     MessageTextUrlCitationDetails,
+    RequiredFunctionToolCall,
     RunStep,
     RunStepDeltaFunction,
     RunStepDeltaFunctionToolCall,
     RunStepDeltaToolCallObject,
-    RunStepFunctionToolCall,
     ThreadMessage,
 )
 
@@ -263,7 +263,7 @@ def test_get_function_call_contents_submit_tool_outputs():
     fake_function.name = "test_function"
     fake_function.arguments = {"arg": "val"}
 
-    fake_tool_call = MagicMock(spec=RunStepFunctionToolCall)
+    fake_tool_call = MagicMock(spec=RequiredFunctionToolCall)
     fake_tool_call.id = "tool_id"
     fake_tool_call.function = fake_function
 

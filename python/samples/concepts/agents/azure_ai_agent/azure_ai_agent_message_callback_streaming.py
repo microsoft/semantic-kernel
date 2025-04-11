@@ -47,7 +47,7 @@ async def handle_streaming_intermediate_steps(message: ChatMessageContent) -> No
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,
