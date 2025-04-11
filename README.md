@@ -132,6 +132,7 @@ await foreach (AgentResponseItem<ChatMessageContent> response
 Enhance your agent with custom tools (plugins) and structured output:
 
 ```python
+import asyncio
 from typing import Annotated
 from pydantic import BaseModel
 from semantic_kernel.agents import ChatCompletionAgent
