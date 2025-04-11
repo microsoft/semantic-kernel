@@ -17,7 +17,7 @@ public class OpenAIAssistantAgentWithMemoryTests() : AgentWithMemoryTests<OpenAI
     {
         // Arrange
         var agent = this.Fixture.Agent;
-        var memoryComponent = new UserPreferencesMemoryComponent(this.Fixture.Agent.Kernel);
+        var memoryComponent = new UserFactsMemoryComponent(this.Fixture.Agent.Kernel);
 
         var agentThread1 = new OpenAIAssistantAgentThread(this.Fixture.AssistantClient);
         agentThread1.ThreadExtensionsManager.RegisterThreadExtension(memoryComponent);

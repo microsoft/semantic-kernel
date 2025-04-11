@@ -10,45 +10,45 @@ using Microsoft.SemanticKernel.Memory;
 namespace Microsoft.SemanticKernel.Agents.Memory;
 
 /// <summary>
-/// A memory component that can retrieve, maintain and store user preferences that
+/// A memory component that can retrieve, maintain and store user facts that
 /// are learned from the user's interactions with the agent.
 /// </summary>
-public class UserPreferencesMemoryComponent : ConversationStateExtension
+public class UserFactsMemoryComponent : ConversationStateExtension
 {
     private readonly Kernel _kernel;
     private readonly TextMemoryStore _textMemoryStore;
-    private string _userPreferences = string.Empty;
+    private string _userFacts = string.Empty;
     private bool _contextLoaded = false;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserPreferencesMemoryComponent"/> class.
+    /// Initializes a new instance of the <see cref="UserFactsMemoryComponent"/> class.
     /// </summary>
     /// <param name="kernel">A kernel to use for making chat completion calls.</param>
     /// <param name="textMemoryStore">The memory store to retrieve and save memories from and to.</param>
-    public UserPreferencesMemoryComponent(Kernel kernel, TextMemoryStore textMemoryStore)
+    public UserFactsMemoryComponent(Kernel kernel, TextMemoryStore textMemoryStore)
     {
         this._kernel = kernel;
         this._textMemoryStore = textMemoryStore;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserPreferencesMemoryComponent"/> class.
+    /// Initializes a new instance of the <see cref="UserFactsMemoryComponent"/> class.
     /// </summary>
     /// <param name="kernel">A kernel to use for making chat completion calls.</param>
-    /// <param name="userPreferencesStoreName">The service key that the <see cref="TextMemoryStore"/> for user preferences is registered under in DI.</param>
-    public UserPreferencesMemoryComponent(Kernel kernel, string? userPreferencesStoreName = "UserPreferencesStore")
+    /// <param name="userFactsStoreName">The service key that the <see cref="TextMemoryStore"/> for user facts is registered under in DI.</param>
+    public UserFactsMemoryComponent(Kernel kernel, string? userFactsStoreName = "UserFactsStore")
     {
         this._kernel = kernel;
-        this._textMemoryStore = new OptionalTextMemoryStore(kernel, userPreferencesStoreName);
+        this._textMemoryStore = new OptionalTextMemoryStore(kernel, userFactsStoreName);
     }
 
     /// <summary>
-    /// Gets or sets the name of the document to use for storing user preferences.
+    /// Gets or sets the name of the document to use for storing user preferfactsences.
     /// </summary>
-    public string UserPreferencesDocumentName { get; init; } = "UserPreferences";
+    public string UserFactsDocumentName { get; init; } = "UserFacts";
 
     /// <summary>
-    /// Gets or sets the prompt template to use for extracting user preferences and merging them with existing preferences.
+    /// Gets or sets the prompt template to use for extracting user facts and merging them with existing facts.
     /// </summary>
     public string MaintainencePromptTemplate { get; init; } =
         """
@@ -82,7 +82,7 @@ public class UserPreferencesMemoryComponent : ConversationStateExtension
         Return output for the following inputs like shown in the examples above:
 
         Input text: {{$inputText}}
-        Input facts: {{$existingPreferences}}
+        Input facts: {{existingFacts}}
         """;
 
     /// <inheritdoc/>
@@ -90,12 +90,12 @@ public class UserPreferencesMemoryComponent : ConversationStateExtension
     {
         if (!this._contextLoaded)
         {
-            this._userPreferences = string.Empty;
+            this._userFacts = string.Empty;
 
-            var memoryText = await this._textMemoryStore.GetMemoryAsync("UserPreferences", cancellationToken).ConfigureAwait(false);
+            var memoryText = await this._textMemoryStore.GetMemoryAsync(this.UserFactsDocumentName, cancellationToken).ConfigureAwait(false);
             if (memoryText is not null)
             {
-                this._userPreferences = memoryText;
+                this._userFacts = memoryText;
             }
 
             this._contextLoaded = true;
@@ -105,7 +105,7 @@ public class UserPreferencesMemoryComponent : ConversationStateExtension
     /// <inheritdoc/>
     public override async Task OnThreadDeleteAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        await this._textMemoryStore.SaveMemoryAsync("UserPreferences", this._userPreferences, cancellationToken).ConfigureAwait(false);
+        await this._textMemoryStore.SaveMemoryAsync(this.UserFactsDocumentName, this._userFacts, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -121,7 +121,7 @@ public class UserPreferencesMemoryComponent : ConversationStateExtension
     /// <inheritdoc/>
     public override Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult("The following list contains facts about the user:\n" + this._userPreferences);
+        return Task.FromResult("The following list contains facts about the user:\n" + this._userFacts);
     }
 
     /// <inheritdoc/>
@@ -130,29 +130,29 @@ public class UserPreferencesMemoryComponent : ConversationStateExtension
         Verify.NotNull(kernel);
 
         base.RegisterPlugins(kernel);
-        kernel.Plugins.AddFromObject(this, "UserPreferencesMemory");
+        kernel.Plugins.AddFromObject(this, "UserFactsMemory");
     }
 
     /// <summary>
-    /// Plugin method to clear user preferences stored in memory.
+    /// Plugin method to clear user facts stored in memory.
     /// </summary>
     [KernelFunction]
-    [Description("Deletes any user preferences stored about the user.")]
-    public async Task ClearUserPreferencesAsync(CancellationToken cancellationToken = default)
+    [Description("Deletes any user facts stored about the user.")]
+    public async Task ClearUserFactsAsync(CancellationToken cancellationToken = default)
     {
-        this._userPreferences = string.Empty;
-        await this._textMemoryStore.SaveMemoryAsync("UserPreferences", this._userPreferences, cancellationToken).ConfigureAwait(false);
+        this._userFacts = string.Empty;
+        await this._textMemoryStore.SaveMemoryAsync(this.UserFactsDocumentName, this._userFacts, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task ExtractAndSaveMemoriesAsync(string inputText, CancellationToken cancellationToken = default)
     {
         var result = await this._kernel.InvokePromptAsync(
             this.MaintainencePromptTemplate,
-            new KernelArguments() { ["inputText"] = inputText, ["existingPreferences"] = this._userPreferences },
+            new KernelArguments() { ["inputText"] = inputText, ["existingFacts"] = this._userFacts },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        this._userPreferences = result.ToString();
+        this._userFacts = result.ToString();
 
-        await this._textMemoryStore.SaveMemoryAsync("UserPreferences", this._userPreferences, cancellationToken).ConfigureAwait(false);
+        await this._textMemoryStore.SaveMemoryAsync(this.UserFactsDocumentName, this._userFacts, cancellationToken).ConfigureAwait(false);
     }
 }

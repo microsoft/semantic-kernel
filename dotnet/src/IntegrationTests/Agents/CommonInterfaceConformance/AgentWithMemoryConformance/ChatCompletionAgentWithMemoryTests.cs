@@ -32,7 +32,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
     {
         // Arrange
         var agent = this.Fixture.Agent;
-        var memoryComponent = new UserPreferencesMemoryComponent(this.Fixture.Agent.Kernel);
+        var memoryComponent = new UserFactsMemoryComponent(this.Fixture.Agent.Kernel);
 
         var agentThread1 = new ChatHistoryAgentThread();
         agentThread1.ThreadExtensionsManager.RegisterThreadExtension(memoryComponent);
@@ -69,14 +69,14 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Act - First invocation with first thread.
         var agentThread1 = new ChatHistoryAgentThread();
-        agentThread1.ThreadExtensionsManager.RegisterThreadExtension(new UserPreferencesMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
+        agentThread1.ThreadExtensionsManager.RegisterThreadExtension(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
 
         var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
         var results1 = await asyncResults1.ToListAsync();
 
         // Act - Second invocation with second thread.
         var agentThread2 = new ChatHistoryAgentThread();
-        agentThread2.ThreadExtensionsManager.RegisterThreadExtension(new UserPreferencesMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
+        agentThread2.ThreadExtensionsManager.RegisterThreadExtension(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
 
         var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
         var results2 = await asyncResults2.ToListAsync();
