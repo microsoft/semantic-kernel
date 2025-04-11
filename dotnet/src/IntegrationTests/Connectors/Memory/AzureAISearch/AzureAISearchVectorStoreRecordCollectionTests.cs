@@ -387,17 +387,16 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = new VectorSearchFilter().EqualTo("HotelName", "Hotel 3");
-        var actual = await sut.VectorizableTextSearchAsync(
+        var searchResults = await sut.VectorizableTextSearchAsync(
             "A hotel with great views.",
             top: 3,
             new()
             {
                 VectorProperty = r => r.DescriptionEmbedding,
                 OldFilter = filter,
-            });
+            }).ToListAsync();
 
         // Assert.
-        var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
     }
 

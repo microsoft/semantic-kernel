@@ -10,12 +10,12 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorizableTextSea
 
     public MockVectorizableTextSearch(IEnumerable<VectorSearchResult<TRecord>> searchResults)
     {
-        this._searchResults = ToAsyncEnumerable(searchResults);
+        this._searchResults = searchResults.ToAsyncEnumerable();
     }
 
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new VectorSearchResults<TRecord>(this._searchResults));
+        return this._searchResults;
     }
 
     /// <inheritdoc />
@@ -26,13 +26,5 @@ internal sealed class MockVectorizableTextSearch<TRecord> : IVectorizableTextSea
         return
             serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
             null;
-    }
-
-    private static async IAsyncEnumerable<VectorSearchResult<TRecord>> ToAsyncEnumerable(IEnumerable<VectorSearchResult<TRecord>> searchResults)
-    {
-        foreach (var result in searchResults)
-        {
-            yield return result;
-        }
     }
 }

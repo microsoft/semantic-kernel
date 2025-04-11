@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,7 +21,7 @@ public interface IVectorizableTextSearch<TRecord>
     /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The records found by the vector search, including their result scores.</returns>
-    Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(
+    IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(
         string searchText,
         int top,
         VectorSearchOptions<TRecord>? options = default,

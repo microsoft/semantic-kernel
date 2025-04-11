@@ -611,7 +611,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "Data1FilterValue");
 
         // Act.
-        var searchResults = await (await sut.VectorizableTextSearchAsync(
+        var searchResults = await sut.VectorizableTextSearchAsync(
             "search string",
             top: 5,
             new()
@@ -620,7 +620,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1
             },
-            this._testCancellationToken)).Results.ToListAsync();
+            this._testCancellationToken).ToListAsync();
 
         // Assert.
         this._searchClientMock.Verify(

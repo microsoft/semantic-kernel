@@ -2,6 +2,7 @@
 
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -127,10 +128,13 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         => this._decoratedVectorStoreRecordCollection.GetAsync(filter, top, options, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var embeddingValue = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return new VectorSearchResults<TRecord>(this.VectorizedSearchAsync(embeddingValue, top, options, cancellationToken));
+        await foreach (var result in this.VectorizedSearchAsync(embeddingValue, top, options, cancellationToken))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
