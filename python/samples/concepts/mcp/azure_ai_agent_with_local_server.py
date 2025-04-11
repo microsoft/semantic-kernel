@@ -4,9 +4,13 @@ import asyncio
 import os
 from pathlib import Path
 
-from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
-from semantic_kernel.connectors.ai import FunctionChoiceBehavior
-from semantic_kernel.connectors.ai.ollama import OllamaChatCompletion
+from azure.identity.aio import DefaultAzureCredential
+
+from semantic_kernel.agents import (
+    AzureAIAgent,
+    AzureAIAgentSettings,
+    AzureAIAgentThread,
+)
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
 from semantic_kernel.functions import KernelArguments
 
@@ -40,6 +44,9 @@ USER_INPUTS = [
 async def main():
     # Load the MCP Servers as Plugins
     async with (
+        # 1. Login to Azure and create a Azure AI Project Client
+        DefaultAzureCredential() as creds,
+        AzureAIAgent.create_client(credential=creds) as client,
         MCPStdioPlugin(
             name="Github",
             description="Github Plugin",
@@ -58,33 +65,25 @@ async def main():
             ],
         ) as release_notes_plugin,
     ):
-        # Create the agent
-        agent = ChatCompletionAgent(
-            # Using the OllamaChatCompletion service
-            service=OllamaChatCompletion(),
-            name="GithubAgent",
-            instructions="You interact with the user to help them with the Microsoft semantic-kernel github project. "
-            "You have dedicated tools for this, including one to write release notes, "
-            "make sure to use that when needed. The repo is always semantic-kernel (aka SK) with owner Microsoft. "
-            "and when doing lists, always return 5 items and sort descending by created or updated"
-            "You are specialized in Python, so always include label, python, in addition to the other labels.",
-            plugins=[github_plugin, release_notes_plugin],
-            function_choice_behavior=FunctionChoiceBehavior.Auto(
-                filters={
-                    # exclude a bunch of functions because the local models have trouble with too many functions
-                    "included_functions": [
-                        "Github-list_issues",
-                        "ReleaseNotes-release_notes_prompt",
-                    ]
-                }
+        # 3. Create the agent, with the MCP plugin and the thread
+        agent = AzureAIAgent(
+            client=client,
+            definition=await client.agents.create_agent(
+                model=AzureAIAgentSettings().model_deployment_name,
+                name="GithubAgent",
+                instructions="You interact with the user to help them with the Microsoft semantic-kernel github "
+                "project. You have dedicated tools for this, including one to write release notes, "
+                "make sure to use that when needed. The repo is always semantic-kernel (aka SK) with owner Microsoft. "
+                "and when doing lists, always return 5 items and sort descending by created or updated"
+                "You are specialized in Python, so always include label, python, in addition to the other labels.",
             ),
+            plugins=[github_plugin, release_notes_plugin],  # add the sample plugin to the agent
         )
-        print(f"Agent uses Ollama with the {agent.service.ai_model_id} model")
 
         # Create a thread to hold the conversation
         # If no thread is provided, a new thread will be
         # created and returned with the initial response
-        thread: ChatHistoryAgentThread | None = None
+        thread: AzureAIAgentThread | None = None
         for user_input in USER_INPUTS:
             print(f"# User: {user_input}", end="\n\n")
             first_chunk = True
