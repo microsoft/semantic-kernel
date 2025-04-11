@@ -18,7 +18,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// Demonstrates creating and using a Bedrock Agent with using configuration settings.
     /// </summary>
     [Fact]
-    public async Task BedrockAgentWithConfigurationAsync()
+    public async Task BedrockAgentWithConfiguration()
     {
         var text =
             """
@@ -43,7 +43,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// Demonstrates creating and using a Bedrock Agent with a code interpreter.
     /// </summary>
     [Fact]
-    public async Task BedrockAgentWithCodeInterpreterAsync()
+    public async Task BedrockAgentWithCodeInterpreter()
     {
         var text =
             """
@@ -70,7 +70,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// Demonstrates creating and using a Bedrock Agent with functions.
     /// </summary>
     [Fact]
-    public async Task BedrockAgentWithFunctionsAsync()
+    public async Task BedrockAgentWithFunctions()
     {
         var text =
             """
@@ -117,7 +117,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
     /// Demonstrates creating and using a Bedrock Agent with a knowledge base.
     /// </summary>
     [Fact]
-    public async Task BedrockAgentWithKnowledgeBaseAsync()
+    public async Task BedrockAgentWithKnowledgeBase()
     {
         var text =
             """
