@@ -53,7 +53,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        var results = textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -78,7 +78,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -105,7 +105,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        var results = textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 10, Skip = 0 });
+        var results = textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 10, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -135,7 +135,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             options: new() { StringMapper = new TestTextSearchStringMapper() });
 
         // Act
-        var results = textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -163,7 +163,7 @@ public sealed class GoogleTextSearchTests : IDisposable
             options: new() { ResultMapper = new TestTextSearchResultMapper() });
 
         // Act
-        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -203,8 +203,8 @@ public sealed class GoogleTextSearchTests : IDisposable
             searchEngineId: "SearchEngineId");
 
         // Act
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
-        var results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions).ToListAsync();
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
+        var results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, searchOptions).ToListAsync();
 
         // Assert
         var requestUris = this._messageHandlerStub.RequestUris;
@@ -219,14 +219,14 @@ public sealed class GoogleTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality("fooBar", "Baz") };
 
         using var textSearch = new GoogleTextSearch(
             initializer: new() { ApiKey = "ApiKey", HttpClientFactory = this._clientFactory },
             searchEngineId: "SearchEngineId");
 
         // Act && Assert
-        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions).ToListAsync());
+        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, searchOptions).ToListAsync());
         Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of cr,dateRestrict,exactTerms,excludeTerms,filter,gl,hl,linkSite,lr,orTerms,rights,siteSearch (Parameter 'searchOptions')", e.Message);
     }
 

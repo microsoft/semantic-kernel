@@ -164,12 +164,11 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = count,
                 Skip = skip,
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var results = textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken);
+            var results = textSearch.SearchAsync(query?.ToString()!, count, searchOptions, cancellationToken);
             return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -201,12 +200,11 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = count,
                 Skip = skip,
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var results = textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken);
+            var results = textSearch.SearchAsync(query?.ToString()!, count, searchOptions, cancellationToken);
             return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -240,12 +238,11 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = count,
                 Skip = skip,
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var results = textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            var results = textSearch.GetTextSearchResultsAsync(query?.ToString()!, count, searchOptions, cancellationToken);
             return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -277,12 +274,11 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = count,
                 Skip = skip,
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var results = textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            var results = textSearch.GetTextSearchResultsAsync(query?.ToString()!, count, searchOptions, cancellationToken);
             return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -316,12 +312,11 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = count,
                 Skip = skip,
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var results = textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            var results = textSearch.GetSearchResultsAsync(query?.ToString()!, count, searchOptions, cancellationToken);
             return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -353,12 +348,11 @@ public static class TextSearchExtensions
 
             searchOptions ??= new()
             {
-                Top = count,
                 Skip = skip,
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var results = textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            var results = textSearch.GetSearchResultsAsync(query?.ToString()!, count, searchOptions, cancellationToken);
             return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 

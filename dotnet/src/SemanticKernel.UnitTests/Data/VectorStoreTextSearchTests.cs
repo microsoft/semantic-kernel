@@ -50,7 +50,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
 
         // Act.
-        IAsyncEnumerable<string> searchResults = sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<string> searchResults = sut.SearchAsync("What is the Semantic Kernel?", 2, new() { Skip = 0 });
         var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
@@ -63,7 +63,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
 
         // Act.
-        IAsyncEnumerable<TextSearchResult> searchResults = sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<TextSearchResult> searchResults = sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", 2, new() { Skip = 0 });
         var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
@@ -76,7 +76,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchFromVectorizedSearchAsync();
 
         // Act.
-        IAsyncEnumerable<object> searchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<object> searchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", 2, new() { Skip = 0 });
         var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
@@ -89,7 +89,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
 
         // Act.
-        IAsyncEnumerable<string> searchResults = sut.SearchAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<string> searchResults = sut.SearchAsync("What is the Semantic Kernel?", 2, new() { Skip = 0 });
         var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
@@ -102,7 +102,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
 
         // Act.
-        IAsyncEnumerable<TextSearchResult> searchResults = sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<TextSearchResult> searchResults = sut.GetTextSearchResultsAsync("What is the Semantic Kernel?", 2, new() { Skip = 0 });
         var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
@@ -115,7 +115,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var sut = await CreateVectorStoreTextSearchFromVectorizableTextSearchAsync();
 
         // Act.
-        IAsyncEnumerable<object> searchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<object> searchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", 2, new() { Skip = 0 });
         var results = await searchResults.ToListAsync();
 
         Assert.Equal(2, results.Count);
@@ -132,16 +132,14 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         oddFilter.Equality("Tag", "Odd");
 
         // Act.
-        IAsyncEnumerable<object> evenSearchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        IAsyncEnumerable<object> evenSearchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", 2, new()
         {
-            Top = 2,
             Skip = 0,
             Filter = evenFilter
         });
         var evenResults = await evenSearchResults.ToListAsync();
-        IAsyncEnumerable<object> oddSearchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", new()
+        IAsyncEnumerable<object> oddSearchResults = sut.GetSearchResultsAsync("What is the Semantic Kernel?", 2, new()
         {
-            Top = 2,
             Skip = 0,
             Filter = oddFilter
         });

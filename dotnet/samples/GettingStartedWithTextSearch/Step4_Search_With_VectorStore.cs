@@ -31,7 +31,7 @@ public class Step4_Search_With_VectorStore(ITestOutputHelper output, InMemoryVec
 
         // Search and return results as TextSearchResult items
         var query = "What is the Semantic Kernel?";
-        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 2, new() { Skip = 0 });
         Console.WriteLine("\n--- Text Search Results ---\n");
         await foreach (TextSearchResult result in textResults)
         {

@@ -30,7 +30,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, 4);
 
         // Assert
         Assert.NotNull(stringResults);
@@ -54,7 +54,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 4);
 
         // Assert
         Assert.NotNull(textResults);
@@ -84,7 +84,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, 4);
 
         // Assert
         Assert.NotNull(fullResults);
@@ -105,7 +105,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var filter = this.GetTextSearchFilter();
 
         // Act
-        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, new() { Top = 4, Filter = filter });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, 4, new() { Filter = filter });
 
         // Assert
         Assert.NotNull(fullResults);

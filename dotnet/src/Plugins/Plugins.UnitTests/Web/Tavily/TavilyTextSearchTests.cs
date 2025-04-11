@@ -51,7 +51,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        var results = textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -74,7 +74,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -99,7 +99,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeRawContent = true });
 
         // Act
-        var results = textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -126,7 +126,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, StringMapper = new TestTextSearchStringMapper() });
 
         // Act
-        var results = textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -151,7 +151,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, ResultMapper = new TestTextSearchResultMapper() });
 
         // Act
-        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -177,7 +177,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeAnswer = true });
 
         // Act
-        var results = textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -200,7 +200,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true });
 
         // Act
-        var results = textSearch.SearchAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.SearchAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -223,7 +223,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeAnswer = true });
 
         // Act
-        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -248,7 +248,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient, IncludeImages = true, IncludeImageDescriptions = true });
 
         // Act
-        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", new() { Top = 4, Skip = 0 });
+        var results = textSearch.GetTextSearchResultsAsync("What is the Semantic Kernel?", 4, new() { Skip = 0 });
 
         // Assert
         Assert.NotNull(results);
@@ -286,8 +286,8 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
-        var results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions).ToListAsync();
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
+        var results = await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, searchOptions).ToListAsync();
 
         // Assert
         var requestContents = this._messageHandlerStub.RequestContents;
@@ -303,13 +303,13 @@ public sealed class TavilyTextSearchTests : IDisposable
     {
         // Arrange
         this._messageHandlerStub.AddJsonResponse(File.ReadAllText(SiteFilterDevBlogsResponseJson));
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality(paramName, paramValue) };
 
         // Create an ITextSearch instance using Tavily search
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act && Assert
-        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", searchOptions).ToListAsync());
+        var e = await Assert.ThrowsAsync<ArgumentException>(async () => await textSearch.GetSearchResultsAsync("What is the Semantic Kernel?", 4, searchOptions).ToListAsync());
         Assert.Equal("Unknown equality filter clause field name 'fooBar', must be one of topic,time_range,days,include_domain,exclude_domain (Parameter 'searchOptions')", e.Message);
     }
 
@@ -323,7 +323,7 @@ public sealed class TavilyTextSearchTests : IDisposable
         var textSearch = new TavilyTextSearch(apiKey: "ApiKey", options: new() { HttpClient = this._httpClient });
 
         // Act && Assert
-        var e = await Assert.ThrowsAsync<ArgumentNullException>(async () => await textSearch.GetSearchResultsAsync(null!).ToListAsync());
+        var e = await Assert.ThrowsAsync<ArgumentNullException>(async () => await textSearch.GetSearchResultsAsync(null!, 4).ToListAsync());
         Assert.Equal("Value cannot be null. (Parameter 'query')", e.Message);
     }
 

@@ -317,15 +317,15 @@ public class Step2_Search_For_RAG(ITestOutputHelper output) : BaseTest(output)
 public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITextSearch
 {
     /// <inheritdoc/>
-    public IAsyncEnumerable<object> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<object> GetSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        return searchDelegate.GetSearchResultsAsync(query, searchOptions, cancellationToken);
+        return searchDelegate.GetSearchResultsAsync(query, top, searchOptions, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var results = searchDelegate.GetTextSearchResultsAsync(query, searchOptions, cancellationToken);
+        var results = searchDelegate.GetTextSearchResultsAsync(query, top, searchOptions, cancellationToken);
 
         var resultList = new List<TextSearchResult>();
 
@@ -355,10 +355,56 @@ public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITex
     }
 
     /// <inheritdoc/>
-    public IAsyncEnumerable<string> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> SearchAsync(string query, int top, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        return searchDelegate.SearchAsync(query, top, searchOptions, cancellationToken);
+    }
+
+    #region obsolete
+    /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
+    public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        return searchDelegate.GetSearchResultsAsync(query, searchOptions, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
+    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    {
+        var results = await searchDelegate.GetTextSearchResultsAsync(query, searchOptions, cancellationToken);
+
+        var resultList = new List<TextSearchResult>();
+
+        using HttpClient client = new();
+        await foreach (var item in results.Results.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            string? value = item.Value;
+            try
+            {
+                if (item.Link is not null)
+                {
+                    value = await client.GetStringAsync(new Uri(item.Link), cancellationToken);
+                    value = ConvertHtmlToPlainText(value);
+                }
+            }
+            catch (HttpRequestException)
+            {
+            }
+
+            resultList.Add(new(value) { Name = item.Name, Link = item.Link });
+        }
+
+        return new KernelSearchResults<TextSearchResult>(resultList.ToAsyncEnumerable<TextSearchResult>(), results.TotalCount, results.Metadata);
+    }
+
+    /// <inheritdoc/>
+    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
+    public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         return searchDelegate.SearchAsync(query, searchOptions, cancellationToken);
     }
+    #endregion
 
     /// <summary>
     /// Convert HTML to plain text.

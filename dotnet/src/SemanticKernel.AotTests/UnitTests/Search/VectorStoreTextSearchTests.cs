@@ -21,7 +21,7 @@ internal sealed class VectorStoreTextSearchTests
         VectorStoreTextSearch<DataModel> textSearch = new(new MockVectorizableTextSearch<DataModel>(testData));
 
         // Act
-        IAsyncEnumerable<TextSearchResult> searchResults = textSearch.GetTextSearchResultsAsync("query");
+        IAsyncEnumerable<TextSearchResult> searchResults = textSearch.GetTextSearchResultsAsync("query", 5);
 
         List<TextSearchResult> results = [];
 
@@ -54,7 +54,7 @@ internal sealed class VectorStoreTextSearchTests
         Assert.IsNotNull(textSearch);
 
         // Assert
-        IAsyncEnumerable<TextSearchResult> searchResults = textSearch.GetTextSearchResultsAsync("query");
+        IAsyncEnumerable<TextSearchResult> searchResults = textSearch.GetTextSearchResultsAsync("query", 5);
 
         List<TextSearchResult> results = [];
 

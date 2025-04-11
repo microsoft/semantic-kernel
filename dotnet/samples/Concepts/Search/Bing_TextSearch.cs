@@ -27,7 +27,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as a string items
-        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, new() { Top = 4, Skip = 0 });
+        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, 4, new() { Skip = 0 });
         Console.WriteLine("--- String Results ---\n");
         await foreach (string result in stringResults)
         {
@@ -36,7 +36,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return results as TextSearchResult items
-        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, new() { Top = 4, Skip = 4 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 4, new() { Skip = 4 });
         Console.WriteLine("\n--- Text Search Results ---\n");
         await foreach (TextSearchResult result in textResults)
         {
@@ -47,7 +47,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return s results as BingWebPage items
-        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, new() { Top = 4, Skip = 8 });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, 4, new() { Skip = 8 });
         Console.WriteLine("\n--- Bing Web Page Results ---\n");
         await foreach (BingWebPage result in fullResults)
         {
@@ -80,7 +80,7 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, 2, new() { Skip = 0 });
         Console.WriteLine("--- Serialized JSON Results ---");
         await foreach (string result in stringResults)
         {
@@ -109,8 +109,8 @@ public class Bing_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search with TextSearchResult textResult type
-        TextSearchOptions searchOptions = new() { Top = 4, Skip = 0, Filter = new TextSearchFilter().Equality("site", "devblogs.microsoft.com") };
-        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, searchOptions);
+        TextSearchOptions searchOptions = new() { Skip = 0, Filter = new TextSearchFilter().Equality("site", "devblogs.microsoft.com") };
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 4, searchOptions);
         Console.WriteLine("--- Microsoft Developer Blogs Results ---");
         await foreach (TextSearchResult result in textResults)
         {

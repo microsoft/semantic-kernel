@@ -23,7 +23,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results
-        IAsyncEnumerable<string> searchResults = textSearch.SearchAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<string> searchResults = textSearch.SearchAsync(query, 4);
         await foreach (string result in searchResults)
         {
             Console.WriteLine(result);
@@ -44,7 +44,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results
-        IAsyncEnumerable<string> searchResults = textSearch.SearchAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<string> searchResults = textSearch.SearchAsync(query, 4);
         await foreach (string result in searchResults)
         {
             Console.WriteLine(result);
@@ -69,7 +69,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results using the implementation specific data model
-        IAsyncEnumerable<object> objectResults = textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<object> objectResults = textSearch.GetSearchResultsAsync(query, 4);
         if (this.UseBingSearch)
         {
             Console.WriteLine("\n--- Bing Web Page Results ---\n");
@@ -118,7 +118,7 @@ public class Step1_Web_Search(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as TextSearchResult items
-        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 4);
         Console.WriteLine("\n--- Text Search Results ---\n");
         await foreach (TextSearchResult result in textResults)
         {

@@ -65,7 +65,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         var query = "What is the Semantic Kernel?";
 
         // Search and return results as a string items
-        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, 2, new() { Skip = 0 });
         Console.WriteLine("--- String Results ---\n");
         await foreach (string result in stringResults)
         {
@@ -74,7 +74,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and return results as TextSearchResult items
-        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, 2, new() { Skip = 0 });
         Console.WriteLine("\n--- Text Search Results ---\n");
         await foreach (TextSearchResult result in textResults)
         {
@@ -85,7 +85,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         }
 
         // Search and returns results as DataModel items
-        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, new() { Top = 2, Skip = 0 });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, 2, new() { Skip = 0 });
         Console.WriteLine("\n--- DataModel Results ---\n");
         await foreach (DataModel result in fullResults)
         {
