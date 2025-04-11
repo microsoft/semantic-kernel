@@ -37,6 +37,7 @@ from semantic_kernel.functions.kernel_function_from_prompt import KernelFunction
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
 from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
+from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
@@ -490,6 +491,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
     @experimental
     def as_mcp_server(
         self,
+        prompts: list[PromptTemplateBase] | None = None,
         server_name: str = "Semantic Kernel MCP Server",
         version: str | None = None,
         instructions: str | None = None,
@@ -508,6 +510,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
 
         Args:
             kernel: The kernel instance to use.
+            prompts: A list of prompt templates to expose as prompts.
             server_name: The name of the server.
             version: The version of the server.
             instructions: The instructions to use for the server.
@@ -524,7 +527,8 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
 
         return create_mcp_server_from_kernel(
-            self,
+            kernel=self,
+            prompts=prompts,
             server_name=server_name,
             version=version,
             instructions=instructions,
