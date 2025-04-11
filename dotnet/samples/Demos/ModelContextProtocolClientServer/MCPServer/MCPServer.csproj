@@ -13,11 +13,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Prompts\getCurrentWeatherForCity.json" />
-    <EmbeddedResource Include="Resources\cat.jpg">
+    <None Remove="ProjectResources\EmployeeBirthdaysAndPositions.png" />
+    <None Remove="ProjectResources\SalesReport2014.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectResources\EmployeeBirthdaysAndPositions.png" />
+    <EmbeddedResource Include="ProjectResources\getCurrentWeatherForCity.json" />
+    <EmbeddedResource Include="ProjectResources\cat.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\semantic-kernel-info.txt">
+    <EmbeddedResource Include="ProjectResources\SalesReport2014.png" />
+    <EmbeddedResource Include="ProjectResources\semantic-kernel-info.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

@@ -63,7 +63,7 @@ ChatCompletionAgent agent = new()
     Instructions = "Answer questions about GitHub repositories.",
     Name = "GitHubAgent",
     Kernel = kernel,
-    Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+    Arguments = new KernelArguments(executionSettings),
 };
 
 // Respond to user input, invoking functions where appropriate.
