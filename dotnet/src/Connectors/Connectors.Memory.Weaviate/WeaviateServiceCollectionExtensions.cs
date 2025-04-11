@@ -64,6 +64,7 @@ public static class WeaviateServiceCollectionExtensions
         HttpClient? httpClient = default,
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<Guid, TRecord>>(
             serviceId,
@@ -72,7 +73,7 @@ public static class WeaviateServiceCollectionExtensions
                 var selectedHttpClient = HttpClientProvider.GetHttpClient(httpClient, sp);
                 var selectedOptions = options ?? sp.GetService<WeaviateVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new WeaviateVectorStoreRecordCollection<TRecord>(selectedHttpClient, collectionName, selectedOptions);
+                return new WeaviateVectorStoreRecordCollection<Guid, TRecord>(selectedHttpClient, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -86,7 +87,7 @@ public static class WeaviateServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

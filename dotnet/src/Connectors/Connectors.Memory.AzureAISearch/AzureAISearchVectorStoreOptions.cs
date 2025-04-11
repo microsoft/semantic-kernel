@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 public sealed class AzureAISearchVectorStoreOptions
 {
     /// <summary>
-    /// An optional factory to use for constructing <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
+    /// An optional factory to use for constructing <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
     [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
     public IAzureAISearchVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }

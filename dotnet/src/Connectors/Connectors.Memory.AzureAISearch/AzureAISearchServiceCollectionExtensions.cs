@@ -113,8 +113,8 @@ public static class AzureAISearchServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
@@ -122,6 +122,7 @@ public static class AzureAISearchServiceCollectionExtensions
         string collectionName,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         // If we are not constructing the SearchIndexClient, add the IVectorStore as transient, since we
         // cannot make assumptions about how SearchIndexClient is being managed.
@@ -132,7 +133,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = sp.GetRequiredService<SearchIndexClient>();
                 var selectedOptions = options ?? sp.GetService<AzureAISearchVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new AzureAISearchVectorStoreRecordCollection<TRecord>(
+                return new AzureAISearchVectorStoreRecordCollection<string, TRecord>(
                     searchIndexClient,
                     collectionName,
                     selectedOptions);
@@ -149,10 +150,10 @@ public static class AzureAISearchServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="tokenCredential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
@@ -162,6 +163,7 @@ public static class AzureAISearchServiceCollectionExtensions
         TokenCredential tokenCredential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
@@ -175,7 +177,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
 
                 // Construct the vector store.
-                return new AzureAISearchVectorStoreRecordCollection<TRecord>(
+                return new AzureAISearchVectorStoreRecordCollection<string, TRecord>(
                     searchIndexClient,
                     collectionName,
                     selectedOptions);
@@ -192,10 +194,10 @@ public static class AzureAISearchServiceCollectionExtensions
     /// </summary>
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to register the <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> on.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="endpoint">The service endpoint for Azure AI Search.</param>
     /// <param name="credential">The credential to authenticate to Azure AI Search with.</param>
-    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TRecord}"/>.</param>
+    /// <param name="options">Optional configuration options to pass to the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/>.</param>
     /// <param name="serviceId">An optional service id to use as the service key.</param>
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddAzureAISearchVectorStoreRecordCollection<TRecord>(
@@ -205,6 +207,7 @@ public static class AzureAISearchServiceCollectionExtensions
         AzureKeyCredential credential,
         AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         Verify.NotNull(endpoint);
         Verify.NotNull(credential);
@@ -218,7 +221,7 @@ public static class AzureAISearchServiceCollectionExtensions
                 var searchIndexClient = new SearchIndexClient(endpoint, credential, searchClientOptions);
 
                 // Construct the vector store.
-                return new AzureAISearchVectorStoreRecordCollection<TRecord>(
+                return new AzureAISearchVectorStoreRecordCollection<string, TRecord>(
                     searchIndexClient,
                     collectionName,
                     selectedOptions);
@@ -235,7 +238,7 @@ public static class AzureAISearchServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

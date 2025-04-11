@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 public class VectorSearchOptions<TRecord>
 {
-    private int _top = 3, _skip = 0;
+    private int _skip = 0;
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
@@ -43,24 +43,6 @@ public class VectorSearchOptions<TRecord>
     /// will throw if either none or multiple exist.
     /// </value>
     public Expression<Func<TRecord, object?>>? VectorProperty { get; init; }
-
-    /// <summary>
-    /// Gets or sets the maximum number of results to return.
-    /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is less than 1.</exception>
-    public int Top
-    {
-        get => this._top;
-        init
-        {
-            if (value < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), "Top must be greater than or equal to 1.");
-            }
-
-            this._top = value;
-        }
-    }
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.

@@ -13,6 +13,8 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 [ExcludeFromCodeCoverage]
 internal static class MongoDBConstants
 {
+    internal const string VectorStoreSystemName = "mongodb";
+
     /// <summary>Default ratio of number of nearest neighbors to number of documents to return.</summary>
     internal const int DefaultNumCandidatesRatio = 10;
 
@@ -44,20 +46,13 @@ internal static class MongoDBConstants
     internal static readonly HashSet<Type> SupportedDataTypes =
     [
         typeof(bool),
-        typeof(bool?),
         typeof(string),
         typeof(int),
-        typeof(int?),
         typeof(long),
-        typeof(long?),
         typeof(float),
-        typeof(float?),
         typeof(double),
-        typeof(double?),
         typeof(decimal),
-        typeof(decimal?),
         typeof(DateTime),
-        typeof(DateTime?),
     ];
 
     /// <summary>A <see cref="HashSet{Type}"/> containing the supported vector types.</summary>

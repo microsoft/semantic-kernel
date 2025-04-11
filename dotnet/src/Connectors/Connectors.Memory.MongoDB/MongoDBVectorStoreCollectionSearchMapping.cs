@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -13,20 +14,17 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 internal static class MongoDBVectorStoreCollectionSearchMapping
 {
-    /// <summary>Returns distance function specified on vector property or default.</summary>
-    public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : DistanceFunction.CosineSimilarity;
-
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
     /// Build MongoDB filter from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
     /// <param name="vectorSearchFilter">The <see cref="VectorSearchFilter"/> to build MongoDB filter from.</param>
-    /// <param name="storagePropertyNames">A dictionary that maps from a property name to the storage name.</param>
+    /// <param name="model">The model.</param>
     /// <exception cref="NotSupportedException">Thrown when the provided filter type is unsupported.</exception>
     /// <exception cref="InvalidOperationException">Thrown when property name specified in filter doesn't exist.</exception>
     public static BsonDocument? BuildLegacyFilter(
         VectorSearchFilter vectorSearchFilter,
-        Dictionary<string, string> storagePropertyNames)
+        VectorStoreRecordModel model)
     {
         const string EqualOperator = "$eq";
 
@@ -59,25 +57,25 @@ internal static class MongoDBVectorStoreCollectionSearchMapping
                         nameof(EqualToFilterClause)])}");
             }
 
-            if (!storagePropertyNames.TryGetValue(propertyName, out var storagePropertyName))
+            if (!model.PropertyMap.TryGetValue(propertyName, out var property))
             {
                 throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            if (filter.Contains(storagePropertyName))
+            if (filter.Contains(property.StorageName))
             {
-                if (filter[storagePropertyName] is BsonDocument document && document.Contains(filterOperator))
+                if (filter[property.StorageName] is BsonDocument document && document.Contains(filterOperator))
                 {
                     throw new NotSupportedException(
                         $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " +
                         "Multiple filters of the same type in the same property are not supported.");
                 }
 
-                filter[storagePropertyName][filterOperator] = propertyValue;
+                filter[property.StorageName][filterOperator] = propertyValue;
             }
             else
             {
-                filter[storagePropertyName] = new BsonDocument() { [filterOperator] = propertyValue };
+                filter[property.StorageName] = new BsonDocument() { [filterOperator] = propertyValue };
             }
         }
 

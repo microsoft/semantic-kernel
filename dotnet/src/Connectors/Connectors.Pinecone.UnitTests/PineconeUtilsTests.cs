@@ -11,6 +11,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.Pinecone.UnitTests;
 
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public class PineconeUtilsTests
 {
     [Fact]

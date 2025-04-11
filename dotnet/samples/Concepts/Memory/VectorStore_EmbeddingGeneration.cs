@@ -45,12 +45,12 @@ public class VectorStore_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         await collection.CreateCollectionIfNotExistsAsync();
 
         // Create and upsert glossary entries into the collection.
-        await collection.UpsertBatchAsync(CreateGlossaryEntries()).ToListAsync();
+        await collection.UpsertAsync(CreateGlossaryEntries());
 
         // Search the collection using a vectorizable text search.
         var search = collection as IVectorizableTextSearch<Glossary>;
         var searchString = "What is an Application Programming Interface";
-        var searchResult = await search!.VectorizableTextSearchAsync(searchString, new() { Top = 1 });
+        var searchResult = await search!.VectorizableTextSearchAsync(searchString, top: 1);
         var resultRecords = await searchResult.Results.ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
@@ -73,7 +73,7 @@ public class VectorStore_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         [VectorStoreRecordKey]
         public ulong Key { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string Category { get; set; }
 
         [VectorStoreRecordData]

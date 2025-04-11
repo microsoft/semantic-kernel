@@ -122,6 +122,7 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -144,11 +145,21 @@ public class VectorStore_TextSearch(ITestOutputHelper output) : BaseTest(output)
     private sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
     {
         /// <inheritdoc/>
-        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
         {
             var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, options, cancellationToken);
+            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public object? GetService(Type serviceType, object? serviceKey = null)
+        {
+            ArgumentNullException.ThrowIfNull(serviceType);
+
+            return
+                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+                vectorizedSearch.GetService(serviceType, serviceKey);
         }
     }
 

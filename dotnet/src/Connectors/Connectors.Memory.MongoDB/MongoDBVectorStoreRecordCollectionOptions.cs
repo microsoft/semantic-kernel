@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// Options when creating a <see cref="MongoDBVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the MongoDB BSON object.
     /// </summary>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, BsonDocument>? BsonDocumentCustomMapper { get; init; } = null;
 
     /// <summary>

@@ -25,5 +25,6 @@ public interface IWeaviateVectorStoreRecordCollectionFactory
         HttpClient httpClient,
         string name,
         VectorStoreRecordDefinition? vectorStoreRecordDefinition)
-        where TKey : notnull;
+        where TKey : notnull
+        where TRecord : notnull;
 }

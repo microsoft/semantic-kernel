@@ -2,19 +2,36 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal static class SqlServerConstants
 {
+    internal const string VectorStoreSystemName = "microsoft.sql_server";
+
     // The actual number is actually higher (2_100), but we want to avoid any kind of "off by one" errors.
     internal const int MaxParameterCount = 2_000;
 
+    internal const int MaxIndexNameLength = 128;
+
+    public static readonly VectorStoreRecordModelBuildingOptions ModelBuildingOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
+
+        SupportedKeyPropertyTypes = SqlServerConstants.SupportedKeyTypes,
+        SupportedDataPropertyTypes = SqlServerConstants.SupportedDataTypes,
+        SupportedEnumerableDataPropertyElementTypes = [],
+        SupportedVectorPropertyTypes = SqlServerConstants.SupportedVectorTypes
+    };
+
     internal static readonly HashSet<Type> SupportedKeyTypes =
     [
-        typeof(int), // INT 
+        typeof(int), // INT
         typeof(long), // BIGINT
-        typeof(string), // VARCHAR 
+        typeof(string), // VARCHAR
         typeof(Guid), // UNIQUEIDENTIFIER
         typeof(DateTime), // DATETIME2
         typeof(byte[]) // VARBINARY

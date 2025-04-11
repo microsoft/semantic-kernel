@@ -53,6 +53,7 @@ public static class RedisKernelBuilderExtensions
         string collectionName,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddRedisHashSetVectorStoreRecordCollection(collectionName, options, serviceId);
         return builder;
@@ -75,6 +76,7 @@ public static class RedisKernelBuilderExtensions
         string redisConnectionConfiguration,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddRedisHashSetVectorStoreRecordCollection(collectionName, redisConnectionConfiguration, options, serviceId);
         return builder;
@@ -95,6 +97,7 @@ public static class RedisKernelBuilderExtensions
         string collectionName,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddRedisJsonVectorStoreRecordCollection(collectionName, options, serviceId);
         return builder;
@@ -117,6 +120,7 @@ public static class RedisKernelBuilderExtensions
         string redisConnectionConfiguration,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         builder.Services.AddRedisJsonVectorStoreRecordCollection(collectionName, redisConnectionConfiguration, options, serviceId);
         return builder;

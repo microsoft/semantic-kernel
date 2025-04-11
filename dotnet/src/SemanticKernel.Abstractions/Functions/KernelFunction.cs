@@ -161,7 +161,7 @@ public abstract class KernelFunction
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
-        Verify.ParametersUniqueness(parameters);
+        KernelVerify.ParametersUniqueness(parameters);
 
         this.Metadata = new KernelFunctionMetadata(name)
         {
@@ -197,7 +197,7 @@ public abstract class KernelFunction
     internal KernelFunction(string name, string? pluginName, string description, IReadOnlyList<KernelParameterMetadata> parameters, JsonSerializerOptions jsonSerializerOptions, KernelReturnParameterMetadata? returnParameter = null, Dictionary<string, PromptExecutionSettings>? executionSettings = null, ReadOnlyDictionary<string, object?>? additionalMetadata = null)
     {
         Verify.NotNull(name);
-        Verify.ParametersUniqueness(parameters);
+        KernelVerify.ParametersUniqueness(parameters);
         Verify.NotNull(jsonSerializerOptions);
 
         this.Metadata = new KernelFunctionMetadata(name)

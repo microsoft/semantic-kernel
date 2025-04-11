@@ -16,12 +16,13 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// <remarks>
 /// This class can be used with collections of any schema type, but requires you to provide schema information when getting a collection.
 /// </remarks>
-public class PineconeVectorStore : IVectorStore
+public sealed class PineconeVectorStore : IVectorStore
 {
-    private const string DatabaseName = "Pinecone";
-
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreOptions _options;
+
+    /// <summary>Metadata about vector store.</summary>
+    private readonly VectorStoreMetadata _metadata;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStore"/> class.
@@ -34,11 +35,17 @@ public class PineconeVectorStore : IVectorStore
 
         this._pineconeClient = pineconeClient;
         this._options = options ?? new PineconeVectorStoreOptions();
+
+        this._metadata = new()
+        {
+            VectorStoreSystemName = PineconeConstants.VectorStoreSystemName
+        };
     }
 
     /// <inheritdoc />
-    public virtual IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
         where TKey : notnull
+        where TRecord : notnull
     {
 #pragma warning disable CS0618 // IPineconeVectorStoreRecordCollectionFactory is obsolete
         if (this._options.VectorStoreCollectionFactory is not null)
@@ -47,19 +54,14 @@ public class PineconeVectorStore : IVectorStore
         }
 #pragma warning restore CS0618
 
-        if (typeof(TKey) != typeof(string))
-        {
-            throw new NotSupportedException("Only string keys are supported.");
-        }
-
-        return (new PineconeVectorStoreRecordCollection<TRecord>(
+        return (new PineconeVectorStoreRecordCollection<TKey, TRecord>(
             this._pineconeClient,
             name,
             new PineconeVectorStoreRecordCollectionOptions<TRecord>() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>)!;
     }
 
     /// <inheritdoc />
-    public virtual async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         IndexList indexList;
 
@@ -71,7 +73,8 @@ public class PineconeVectorStore : IVectorStore
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
-                VectorStoreType = DatabaseName,
+                VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
+                VectorStoreName = this._metadata.VectorStoreName,
                 OperationName = "ListCollections"
             };
         }
@@ -83,5 +86,18 @@ public class PineconeVectorStore : IVectorStore
                 yield return index.Name;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
+            serviceType == typeof(Sdk.PineconeClient) ? this._pineconeClient :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
     }
 }

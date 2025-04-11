@@ -75,6 +75,7 @@ public abstract class TestStore
         Expression<Func<TRecord, bool>>? filter = null,
         int vectorSize = 3)
         where TKey : notnull
+        where TRecord : notnull
     {
         var vector = new float[vectorSize];
         for (var i = 0; i < vectorSize; i++)
@@ -86,9 +87,9 @@ public abstract class TestStore
         {
             var results = await collection.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(vector),
+                top: recordCount,
                 new()
                 {
-                    Top = recordCount,
                     // In some databases (Azure AI Search), the data shows up but the filtering index isn't yet updated,
                     // so filtered searches show empty results. Add a filter to the seed data check below.
                     Filter = filter

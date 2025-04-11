@@ -1,48 +1,27 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
+using System.IO;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
-using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory.Sqlite;
 
-public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
+public class SqliteVectorStoreFixture : IDisposable
 {
-    /// <summary>
-    /// SQLite extension name for vector search.
-    /// More information here: <see href="https://github.com/asg017/sqlite-vec"/>.
-    /// </summary>
-    private const string VectorSearchExtensionName = "vec0";
+    private readonly string _databasePath = Path.GetTempFileName();
 
-    public SqliteConnection Connection { get; }
+    public string ConnectionString => $"Data Source={this._databasePath}";
 
-    public SqliteVectorStoreFixture()
-    {
-        this.Connection = new SqliteConnection("Data Source=:memory:");
-    }
-
-    public SqliteVectorStoreRecordCollection<TRecord> GetCollection<TRecord>(
+    public SqliteVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
         string collectionName,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
+        where TKey : notnull
+        where TRecord : notnull
     {
-        return new SqliteVectorStoreRecordCollection<TRecord>(
-            this.Connection,
+        return new SqliteVectorStoreRecordCollection<TKey, TRecord>(
+            this.ConnectionString,
             collectionName,
             options);
-    }
-
-    public Task DisposeAsync()
-    {
-        return Task.CompletedTask;
-    }
-
-    public async Task InitializeAsync()
-    {
-        await this.Connection.OpenAsync();
-
-        this.Connection.LoadExtension(VectorSearchExtensionName);
     }
 
     public void Dispose()
@@ -55,7 +34,7 @@ public class SqliteVectorStoreFixture : IAsyncLifetime, IDisposable
     {
         if (disposing)
         {
-            this.Connection.Dispose();
+            File.Delete(this._databasePath);
         }
     }
 }

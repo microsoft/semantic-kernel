@@ -113,6 +113,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
         string[] entries,
         CreateRecord<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         // Get and create collection if it doesn't exist.
         var collection = this.InMemoryVectorStore.GetCollection<TKey, TRecord>(this.CollectionName);
@@ -150,7 +151,7 @@ public class InMemoryVectorStoreFixture : IAsyncLifetime
         [TextSearchResultLink]
         public string Link { get; init; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public required string Tag { get; init; }
 
         [VectorStoreRecordVector(1536)]

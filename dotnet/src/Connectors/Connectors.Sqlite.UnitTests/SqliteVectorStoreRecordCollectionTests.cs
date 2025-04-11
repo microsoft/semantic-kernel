@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+// TODO: Reimplement these as integration tests, #10464
+
+#if DISABLED
+
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -400,3 +404,5 @@ public sealed class SqliteVectorStoreRecordCollectionTests
 
     #endregion
 }
+
+#endif

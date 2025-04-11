@@ -49,9 +49,9 @@ public class VectorStore_VectorSearch_Paging(ITestOutputHelper output) : BaseTes
             // Get the next page of results by asking for 10 results, and using 'Skip' to skip the results from the previous pages.
             var currentPageResults = await collection.VectorizedSearchAsync(
                 searchVector,
+                top: 10,
                 new()
                 {
-                    Top = 10,
                     Skip = page * 10
                 });
 

@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
 using Xunit;
 
@@ -17,7 +17,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorCreatesVectorParams()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.DotProductSimilarity };
+        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.DotProductSimilarity };
 
         // Act.
         var actual = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty);
@@ -32,7 +32,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorDefaultsToCosine()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 };
+        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 };
 
         // Act.
         var actual = QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty);
@@ -45,19 +45,7 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapSingleVectorThrowsForUnsupportedDistanceFunction()
     {
         // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
-
-        // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData(0)]
-    public void MapSingleVectorThrowsIfDimensionsIsInvalid(int? dimensions)
-    {
-        // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorProperty("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = dimensions };
+        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, DistanceFunction = DistanceFunction.CosineDistance };
 
         // Act and assert.
         Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
@@ -67,20 +55,23 @@ public class QdrantVectorStoreCollectionCreateMappingTests
     public void MapNamedVectorsCreatesVectorParamsMap()
     {
         // Arrange.
-        var vectorProperties = new VectorStoreRecordVectorProperty[]
+        var vectorProperties = new VectorStoreRecordVectorPropertyModel[]
         {
-            new("testvector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, DistanceFunction = DistanceFunction.EuclideanDistance },
-            new("testvector2", typeof(ReadOnlyMemory<float>)) { Dimensions = 20 }
-        };
-
-        var storagePropertyNames = new Dictionary<string, string>
-        {
-            { "testvector1", "storage_testvector1" },
-            { "testvector2", "storage_testvector2" }
+            new("testvector1", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 10,
+                DistanceFunction = DistanceFunction.EuclideanDistance,
+                StorageName = "storage_testvector1"
+            },
+            new("testvector2", typeof(ReadOnlyMemory<float>))
+            {
+                Dimensions = 20,
+                StorageName = "storage_testvector2"
+            }
         };
 
         // Act.
-        var actual = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties, storagePropertyNames);
+        var actual = QdrantVectorStoreCollectionCreateMapping.MapNamedVectors(vectorProperties);
 
         // Assert.
         Assert.NotNull(actual);

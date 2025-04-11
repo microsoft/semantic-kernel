@@ -80,6 +80,7 @@ public static class RedisServiceCollectionExtensions
         string collectionName,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -88,7 +89,7 @@ public static class RedisServiceCollectionExtensions
                 var database = sp.GetRequiredService<IDatabase>();
                 var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -113,6 +114,7 @@ public static class RedisServiceCollectionExtensions
         string redisConnectionConfiguration,
         RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -121,7 +123,7 @@ public static class RedisServiceCollectionExtensions
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
                 var selectedOptions = options ?? sp.GetService<RedisHashSetVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisHashSetVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisHashSetVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -144,6 +146,7 @@ public static class RedisServiceCollectionExtensions
         string collectionName,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -152,7 +155,7 @@ public static class RedisServiceCollectionExtensions
                 var database = sp.GetRequiredService<IDatabase>();
                 var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisJsonVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -177,6 +180,7 @@ public static class RedisServiceCollectionExtensions
         string redisConnectionConfiguration,
         RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
+        where TRecord : notnull
     {
         services.AddKeyedSingleton<IVectorStoreRecordCollection<string, TRecord>>(
             serviceId,
@@ -185,7 +189,7 @@ public static class RedisServiceCollectionExtensions
                 var database = ConnectionMultiplexer.Connect(redisConnectionConfiguration).GetDatabase();
                 var selectedOptions = options ?? sp.GetService<RedisJsonVectorStoreRecordCollectionOptions<TRecord>>();
 
-                return new RedisJsonVectorStoreRecordCollection<TRecord>(database, collectionName, selectedOptions);
+                return new RedisJsonVectorStoreRecordCollection<string, TRecord>(database, collectionName, selectedOptions);
             });
 
         AddVectorizedSearch<TRecord>(services, serviceId);
@@ -199,7 +203,7 @@ public static class RedisServiceCollectionExtensions
     /// <typeparam name="TRecord">The type of the data model that the collection should contain.</typeparam>
     /// <param name="services">The service collection to register on.</param>
     /// <param name="serviceId">The service id that the registrations should use.</param>
-    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId)
+    private static void AddVectorizedSearch<TRecord>(IServiceCollection services, string? serviceId) where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

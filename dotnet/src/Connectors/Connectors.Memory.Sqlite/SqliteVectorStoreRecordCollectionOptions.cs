@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
 /// <summary>
-/// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class SqliteVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the SQLite record.
     /// </summary>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>? DictionaryCustomMapper { get; set; }
 
     /// <summary>

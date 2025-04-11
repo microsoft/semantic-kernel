@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -12,19 +13,11 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 /// This class is used to provide a dictionary-like interface to a <see cref="SqlDataReader"/>.
 /// The goal is to avoid the need of allocating a new dictionary for each row read from the database.
 /// </summary>
-internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
+internal sealed class SqlDataReaderDictionary(SqlDataReader sqlDataReader, IReadOnlyList<VectorStoreRecordVectorPropertyModel> vectorProperties)
+    : IDictionary<string, object?>
 {
-    private readonly SqlDataReader _sqlDataReader;
-    private readonly IReadOnlyList<string> _vectorPropertyStoragePropertyNames;
-
     // This field will get instantiated lazily, only if needed by a custom mapper.
     private Dictionary<string, object?>? _dictionary;
-
-    internal SqlDataReaderDictionary(SqlDataReader sqlDataReader, IReadOnlyList<string> vectorPropertyStoragePropertyNames)
-    {
-        this._sqlDataReader = sqlDataReader;
-        this._vectorPropertyStoragePropertyNames = vectorPropertyStoragePropertyNames;
-    }
 
     private object? Unwrap(string storageName, object? value)
     {
@@ -35,11 +28,11 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
         }
 
         // If the value is a vector, we need to deserialize it.
-        if (this._vectorPropertyStoragePropertyNames.Count > 0 && value is string text)
+        if (vectorProperties.Count > 0 && value is string text)
         {
-            for (int i = 0; i < this._vectorPropertyStoragePropertyNames.Count; i++)
+            for (int i = 0; i < vectorProperties.Count; i++)
             {
-                if (string.Equals(storageName, this._vectorPropertyStoragePropertyNames[i], StringComparison.Ordinal))
+                if (string.Equals(storageName, vectorProperties[i].StorageName, StringComparison.Ordinal))
                 {
                     try
                     {
@@ -71,7 +64,7 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     // This is the only method used by the default mapper.
     public object? this[string key]
     {
-        get => this.Unwrap(key, this._sqlDataReader[key]);
+        get => this.Unwrap(key, sqlDataReader[key]);
         set => throw new InvalidOperationException();
     }
 
@@ -79,7 +72,7 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
 
     public ICollection<object?> Values => this.GetDictionary().Values;
 
-    public int Count => this._sqlDataReader.FieldCount;
+    public int Count => sqlDataReader.FieldCount;
 
     public bool IsReadOnly => true;
 
@@ -96,7 +89,7 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     {
         try
         {
-            return this._sqlDataReader.GetOrdinal(key) >= 0;
+            return sqlDataReader.GetOrdinal(key) >= 0;
         }
         catch (IndexOutOfRangeException)
         {
@@ -121,7 +114,7 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     {
         try
         {
-            value = this.Unwrap(key, this._sqlDataReader[key]);
+            value = this.Unwrap(key, sqlDataReader[key]);
             return true;
         }
         catch (IndexOutOfRangeException)
@@ -135,11 +128,11 @@ internal sealed class SqlDataReaderDictionary : IDictionary<string, object?>
     {
         if (this._dictionary is null)
         {
-            Dictionary<string, object?> dictionary = new(this._sqlDataReader.FieldCount, StringComparer.Ordinal);
-            for (int i = 0; i < this._sqlDataReader.FieldCount; i++)
+            Dictionary<string, object?> dictionary = new(sqlDataReader.FieldCount, StringComparer.Ordinal);
+            for (int i = 0; i < sqlDataReader.FieldCount; i++)
             {
-                string name = this._sqlDataReader.GetName(i);
-                dictionary.Add(name, this.Unwrap(name, this._sqlDataReader[i]));
+                string name = sqlDataReader.GetName(i);
+                dictionary.Add(name, this.Unwrap(name, sqlDataReader[i]));
             }
             this._dictionary = dictionary;
         }

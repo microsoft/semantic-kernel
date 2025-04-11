@@ -38,7 +38,7 @@ public class QdrantVectorStoreTests
 
         // Assert.
         Assert.NotNull(actual);
-        Assert.IsType<QdrantVectorStoreRecordCollection<SinglePropsModel<ulong>>>(actual);
+        Assert.IsType<QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>>(actual);
     }
 
 #pragma warning disable CS0618 // IQdrantVectorStoreRecordCollectionFactory is obsolete

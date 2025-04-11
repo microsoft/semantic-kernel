@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
 namespace SemanticKernel.Connectors.AzureCosmosDBNoSQL.UnitTests;
 
 /// <summary>
-/// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/> class.
+/// Unit tests for <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> class.
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 {
@@ -26,24 +27,44 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
     public AzureCosmosDBNoSQLVectorStoreRecordCollectionTests()
     {
+        this._mockDatabase.Setup(l => l.GetContainer(It.IsAny<string>())).Returns(this._mockContainer.Object);
+
+        var mockClient = new Mock<CosmosClient>();
+
+        mockClient.Setup(l => l.ClientOptions).Returns(new CosmosClientOptions() { UseSystemTextJsonSerializerWithOptions = JsonSerializerOptions.Default });
+
         this._mockDatabase
-            .Setup(l => l.GetContainer(It.IsAny<string>()))
-            .Returns(this._mockContainer.Object);
+            .Setup(l => l.Client)
+            .Returns(mockClient.Object);
     }
 
     [Fact]
     public void ConstructorForModelWithoutKeyThrowsException()
     {
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<object>(this._mockDatabase.Object, "collection"));
+        var exception = Assert.Throws<NotSupportedException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, object>(this._mockDatabase.Object, "collection"));
         Assert.Contains("No key property found", exception.Message);
+    }
+
+    [Fact]
+    public void ConstructorWithoutSystemTextJsonSerializerOptionsThrowsArgumentException()
+    {
+        // Arrange
+        var mockDatabase = new Mock<Database>();
+        var mockClient = new Mock<CosmosClient>();
+
+        mockDatabase.Setup(l => l.Client).Returns(mockClient.Object);
+
+        // Act & Assert
+        var exception = Assert.Throws<ArgumentException>(() => new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(mockDatabase.Object, "collection"));
+        Assert.Contains(nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions), exception.Message);
     }
 
     [Fact]
     public void ConstructorWithDeclarativeModelInitializesCollection()
     {
         // Act & Assert
-        var collection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var collection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -60,7 +81,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         };
 
         // Act
-        var collection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TestModel>(
+        var collection = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TestModel>(
             this._mockDatabase.Object,
             "collection",
             new() { VectorStoreRecordDefinition = definition });
@@ -96,7 +117,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             collectionName);
 
@@ -116,7 +137,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Arrange
         const string CollectionName = "collection";
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<TestIndexingModel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, TestIndexingModel>(
             this._mockDatabase.Object,
             CollectionName,
             new() { IndexingMode = indexingMode, Automatic = indexingMode != IndexingMode.None });
@@ -216,7 +237,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             CollectionName);
 
@@ -243,18 +264,22 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         const string RecordKey = "recordKey";
         const string PartitionKey = "partitionKey";
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
-            this._mockDatabase.Object,
-            "collection");
-
         // Act
         if (useCompositeKeyCollection)
         {
+            var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>(
+                this._mockDatabase.Object,
+                "collection");
+
             await ((IVectorStoreRecordCollection<AzureCosmosDBNoSQLCompositeKey, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
                 new AzureCosmosDBNoSQLCompositeKey(RecordKey, PartitionKey));
         }
         else
         {
+            var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
+                this._mockDatabase.Object,
+                "collection");
+
             await ((IVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>)sut).DeleteAsync(
                 RecordKey);
         }
@@ -274,12 +299,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Arrange
         List<string> recordKeys = ["key1", "key2"];
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
         // Act
-        await sut.DeleteBatchAsync(recordKeys);
+        await sut.DeleteAsync(recordKeys);
 
         // Assert
         foreach (var key in recordKeys)
@@ -297,7 +322,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     public async Task DeleteCollectionInvokesValidMethodsAsync()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -341,7 +366,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -384,12 +409,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
         // Act
-        var results = await sut.GetBatchAsync(["key1", "key2", "key3"]).ToListAsync();
+        var results = await sut.GetAsync(["key1", "key2", "key3"]).ToListAsync();
 
         // Assert
         Assert.NotNull(results[0]);
@@ -411,7 +436,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         // Arrange
         var hotel = new AzureCosmosDBNoSQLHotel("key") { HotelName = "Test Name" };
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -439,12 +464,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         var hotel2 = new AzureCosmosDBNoSQLHotel("key2") { HotelName = "Test Name 2" };
         var hotel3 = new AzureCosmosDBNoSQLHotel("key3") { HotelName = "Test Name 3" };
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
         // Act
-        var results = await sut.UpsertBatchAsync([hotel1, hotel2, hotel3]).ToListAsync();
+        var results = await sut.UpsertAsync([hotel1, hotel2, hotel3]);
 
         // Assert
         Assert.NotNull(results);
@@ -455,6 +480,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key3", results[2]);
     }
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     [Fact]
     public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
     {
@@ -467,7 +493,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             .Setup(l => l.MapFromDataToStorageModel(It.IsAny<AzureCosmosDBNoSQLHotel>()))
             .Returns(new JsonObject { ["id"] = "key", ["my_name"] = "Test Name" });
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection",
             new() { JsonObjectCustomMapper = mockMapper.Object });
@@ -524,7 +550,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
             .Returns(new AzureCosmosDBNoSQLHotel(RecordKey) { HotelName = "Name from mapper" });
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection",
             new() { JsonObjectCustomMapper = mockMapper.Object });
@@ -537,6 +563,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal(RecordKey, result.HotelId);
         Assert.Equal("Name from mapper", result.HotelName);
     }
+#pragma warning restore CS0618
 
     [Fact]
     public async Task VectorizedSearchReturnsValidRecordAsync()
@@ -574,12 +601,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
                 It.IsAny<QueryRequestOptions>()))
             .Returns(mockFeedIterator.Object);
 
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]));
+        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
 
         var results = await actual.Results.ToListAsync();
         var result = results[0];
@@ -595,20 +622,20 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
     public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]))).Results.ToListAsync());
+            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3)).Results.ToListAsync());
     }
 
     [Fact]
     public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
     {
         // Arrange
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<AzureCosmosDBNoSQLHotel>(
+        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
             this._mockDatabase.Object,
             "collection");
 
@@ -616,7 +643,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), searchOptions)).Results.ToListAsync());
+            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, searchOptions)).Results.ToListAsync());
     }
 
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()
@@ -695,19 +722,19 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         [VectorStoreRecordKey]
         public string? Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction: DistanceFunction.CosineSimilarity, IndexKind: IndexKind.Flat)]
+        [VectorStoreRecordVector(Dimensions: 2, DistanceFunction = DistanceFunction.CosineSimilarity, IndexKind = IndexKind.Flat)]
         public ReadOnlyMemory<float>? DescriptionEmbedding2 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction: DistanceFunction.DotProductSimilarity, IndexKind: IndexKind.QuantizedFlat)]
+        [VectorStoreRecordVector(Dimensions: 3, DistanceFunction = DistanceFunction.DotProductSimilarity, IndexKind = IndexKind.QuantizedFlat)]
         public ReadOnlyMemory<byte>? DescriptionEmbedding3 { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance, IndexKind: IndexKind.DiskAnn)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance, IndexKind = IndexKind.DiskAnn)]
         public ReadOnlyMemory<sbyte>? DescriptionEmbedding4 { get; set; }
 
-        [VectorStoreRecordData(IsFilterable = true)]
+        [VectorStoreRecordData(IsIndexed = true)]
         public string? IndexableData1 { get; set; }
 
-        [VectorStoreRecordData(IsFullTextSearchable = true)]
+        [VectorStoreRecordData(IsFullTextIndexed = true)]
         public string? IndexableData2 { get; set; }
 
         [VectorStoreRecordData]

@@ -12,6 +12,8 @@ using StackExchange.Redis;
 
 namespace Memory;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// An example showing how to ingest data into a vector store using <see cref="RedisVectorStore"/> with a custom mapper.
 /// In this example, the storage model differs significantly from the data model, so a custom mapper is used to map between the two.
@@ -48,7 +50,7 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Term", typeof(string)),
             new VectorStoreRecordDataProperty("Definition", typeof(string)),
-            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536, DistanceFunction = DistanceFunction.DotProductSimilarity }
+            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536) { DistanceFunction = DistanceFunction.DotProductSimilarity }
         }
     };
 
@@ -64,7 +66,9 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
         // Initiate the docker container and construct the vector store using the custom factory for creating collections.
         await redisFixture.ManualInitializeAsync();
         ConnectionMultiplexer redis = ConnectionMultiplexer.Connect("localhost:6379");
-        var vectorStore = new CustomRedisVectorStore(redis.GetDatabase());
+
+        var database = redis.GetDatabase();
+        var vectorStore = new CustomRedisVectorStore(new RedisVectorStore(database), database);
 
         // Get and create collection if it doesn't exist, using the record definition containing the storage model.
         var collection = vectorStore.GetCollection<string, GenericDataModel>("skglossary", s_glossaryDefinition);
@@ -129,24 +133,32 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
         }
     }
 
-    private sealed class CustomRedisVectorStore(IDatabase database, RedisVectorStoreOptions? options = default)
-        : RedisVectorStore(database, options)
+    private sealed class CustomRedisVectorStore(
+        IVectorStore innerStore,
+        IDatabase database)
+        : IVectorStore
     {
         private readonly IDatabase _database = database;
 
-        public override IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+        public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey : notnull
+            where TRecord : notnull
         {
             // If the record definition is the glossary definition and the record type is the generic data model, inject the custom mapper into the collection options.
             if (vectorStoreRecordDefinition == s_glossaryDefinition && typeof(TRecord) == typeof(GenericDataModel))
             {
-                var customCollection = new RedisJsonVectorStoreRecordCollection<GenericDataModel>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition, JsonNodeCustomMapper = new Mapper() }) as IVectorStoreRecordCollection<TKey, TRecord>;
+                var customCollection = new RedisJsonVectorStoreRecordCollection<string, GenericDataModel>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition, JsonNodeCustomMapper = new Mapper() }) as IVectorStoreRecordCollection<TKey, TRecord>;
                 return customCollection!;
             }
 
             // Otherwise, just create a standard collection with the default mapper.
-            var collection = new RedisJsonVectorStoreRecordCollection<TRecord>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
+            var collection = new RedisJsonVectorStoreRecordCollection<TKey, TRecord>(_database, name, new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
             return collection!;
         }
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
+
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
     }
 
     /// <summary>

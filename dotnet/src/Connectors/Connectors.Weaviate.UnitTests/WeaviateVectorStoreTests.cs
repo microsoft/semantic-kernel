@@ -34,7 +34,7 @@ public sealed class WeaviateVectorStoreTests : IDisposable
         var sut = new WeaviateVectorStore(this._mockHttpClient);
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => sut.GetCollection<string, WeaviateHotel>("collection"));
+        Assert.Throws<NotSupportedException>(() => sut.GetCollection<string, WeaviateHotel>("Collection"));
     }
 
     [Fact]

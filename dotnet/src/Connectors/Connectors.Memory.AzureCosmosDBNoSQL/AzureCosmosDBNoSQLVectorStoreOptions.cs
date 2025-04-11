@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 public sealed class AzureCosmosDBNoSQLVectorStoreOptions
 {
     /// <summary>
-    /// An optional factory to use for constructing <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/> instances, if a custom record collection is required.
+    /// An optional factory to use for constructing <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
     [Obsolete("To control how collections are instantiated, extend your provider's IVectorStore implementation and override GetCollection()")]
     public IAzureCosmosDBNoSQLVectorStoreRecordCollectionFactory? VectorStoreCollectionFactory { get; init; }

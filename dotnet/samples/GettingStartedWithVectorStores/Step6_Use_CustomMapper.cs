@@ -10,6 +10,8 @@ using Microsoft.SemanticKernel.Embeddings;
 
 namespace GettingStartedWithVectorStores;
 
+#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
+
 /// <summary>
 /// Example that shows how you can use custom mappers if you wish the data model and storage schema to differ.
 /// </summary>
@@ -35,13 +37,13 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
                 new VectorStoreRecordDataProperty("Category", typeof(string)),
                 new VectorStoreRecordDataProperty("Term", typeof(string)),
                 new VectorStoreRecordDataProperty("Definition", typeof(string)),
-                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536 },
+                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
             }
         };
 
         // Construct an Azure AI Search vector store collection and
         // pass in the custom mapper and record definition.
-        var collection = new AzureAISearchVectorStoreRecordCollection<ComplexGlossary>(
+        var collection = new AzureAISearchVectorStoreRecordCollection<string, ComplexGlossary>(
             new SearchIndexClient(
                 new Uri(TestConfiguration.AzureAISearch.Endpoint),
                 new AzureKeyCredential(TestConfiguration.AzureAISearch.ApiKey)),
@@ -78,10 +80,7 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
         // Search the vector store.
         var searchResult = await collection.VectorizedSearchAsync(
             searchVector,
-            new()
-            {
-                Top = 1
-            });
+            top: 1);
         var searchResultItem = await searchResult.Results.FirstAsync();
 
         // Write the search result with its score to the console.

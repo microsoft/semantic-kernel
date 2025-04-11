@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -21,13 +22,10 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
+    where TRecord : notnull
 {
-    /// <summary>A set of types that vectors on the provided model may have.</summary>
-    private static readonly HashSet<Type> s_supportedVectorTypes =
-    [
-        typeof(ReadOnlyMemory<float>),
-        typeof(ReadOnlyMemory<float>?),
-    ];
+    /// <summary>Metadata about vector store record collection.</summary>
+    private readonly VectorStoreRecordCollectionMetadata _collectionMetadata;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -44,17 +42,27 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</summary>
     private readonly string _collectionName;
 
-    /// <summary>A helper to access property information for the current data model and record definition.</summary>
-    private readonly VectorStoreRecordPropertyReader _propertyReader;
-
-    /// <summary>A dictionary of vector properties on the provided model, keyed by the property name.</summary>
-    private readonly Dictionary<string, VectorStoreRecordVectorProperty> _vectorProperties;
+    /// <summary>The model for this collection.</summary>
+    private readonly VectorStoreRecordModel _model;
 
     /// <summary>An function to look up vectors from the records.</summary>
     private readonly InMemoryVectorStoreVectorResolver<TRecord> _vectorResolver;
 
     /// <summary>An function to look up keys from the records.</summary>
     private readonly InMemoryVectorStoreKeyResolver<TKey, TRecord> _keyResolver;
+
+    private static readonly VectorStoreRecordModelBuildingOptions s_validationOptions = new()
+    {
+        RequiresAtLeastOneVector = false,
+        SupportsMultipleKeys = false,
+        SupportsMultipleVectors = true,
+
+        // Disable property type validation
+        SupportedKeyPropertyTypes = null,
+        SupportedDataPropertyTypes = null,
+        SupportedEnumerableDataPropertyElementTypes = null,
+        SupportedVectorPropertyTypes = [typeof(ReadOnlyMemory<float>)]
+    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> class.
@@ -65,22 +73,46 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         // Verify.
         Verify.NotNullOrWhiteSpace(collectionName);
-        VectorStoreRecordPropertyVerification.VerifyGenericDataModelDefinitionSupplied(typeof(TRecord), options?.VectorStoreRecordDefinition is not null);
 
         // Assign.
         this._collectionName = collectionName;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
         this._options = options ?? new InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>();
-        this._propertyReader = new VectorStoreRecordPropertyReader(typeof(TRecord), this._options.VectorStoreRecordDefinition, new() { RequiresAtLeastOneVector = false, SupportsMultipleKeys = false, SupportsMultipleVectors = true });
 
-        // Validate property types.
-        this._propertyReader.VerifyVectorProperties(s_supportedVectorTypes);
-        this._vectorProperties = this._propertyReader.VectorProperties.ToDictionary(x => x.DataModelPropertyName);
+        this._model = new VectorStoreRecordModelBuilder(s_validationOptions)
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
         // Assign resolvers.
-        this._vectorResolver = CreateVectorResolver(this._options.VectorResolver, this._vectorProperties);
-        this._keyResolver = CreateKeyResolver(this._options.KeyResolver, this._propertyReader.KeyProperty);
+        // TODO: Make generic to avoid boxing
+#pragma warning disable MEVD9000 // KeyResolver and VectorResolver are experimental
+        this._keyResolver = this._options.KeyResolver is null
+            ? record => (TKey)this._model.KeyProperty.GetValueAsObject(record)!
+            : this._options.KeyResolver;
+
+        this._vectorResolver = this._options.VectorResolver is not null
+            ? this._options.VectorResolver
+            : (vectorPropertyName, record) =>
+            {
+                if (!this._model.PropertyMap.TryGetValue(vectorPropertyName, out var property))
+                {
+                    throw new InvalidOperationException($"The collection does not have a vector field named '{vectorPropertyName}', so vector search is not possible.");
+                }
+
+                if (property is not VectorStoreRecordVectorPropertyModel vectorProperty)
+                {
+                    throw new InvalidOperationException($"The property '{vectorPropertyName}' isn't a vector property.");
+                }
+
+                return property.GetValueAsObject(record);
+            };
+#pragma warning restore MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        this._collectionMetadata = new()
+        {
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
+            CollectionName = collectionName
+        };
     }
 
     /// <summary>
@@ -122,7 +154,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return Task.FromException(new VectorStoreOperationException("Collection already exists.")
         {
-            VectorStoreType = "InMemory",
+            VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
             CollectionName = this.CollectionName,
             OperationName = "CreateCollection"
         });
@@ -141,6 +173,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
         this._internalCollections.TryRemove(this._collectionName, out _);
+        this._internalCollectionTypes.TryRemove(this._collectionName, out _);
         return Task.CompletedTask;
     }
 
@@ -158,8 +191,10 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         foreach (var key in keys)
         {
             var record = await this.GetAsync(key, options, cancellationToken).ConfigureAwait(false);
@@ -181,8 +216,10 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(keys);
+
         var collectionDictionary = this.GetCollectionDictionary();
 
         foreach (var key in keys)
@@ -195,6 +232,17 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        => Task.FromResult(this.Upsert(record));
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(records);
+
+        return Task.FromResult<IReadOnlyList<TKey>>(records.Select(this.Upsert).ToList());
+    }
+
+    private TKey Upsert(TRecord record)
     {
         Verify.NotNull(record);
 
@@ -203,24 +251,14 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         var key = (TKey)this._keyResolver(record)!;
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
 
-        return Task.FromResult(key!);
+        return key!;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        foreach (var record in records)
-        {
-            yield return await this.UpsertAsync(record, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
+        Verify.NotLessThan(top, 1);
 
         if (vector is not ReadOnlyMemory<float> floatVector)
         {
@@ -229,7 +267,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Resolve options and get requested vector property or first as default.
         var internalOptions = options ?? s_defaultVectorSearchOptions;
-        var vectorProperty = this._propertyReader.GetVectorPropertyOrSingle(internalOptions);
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(internalOptions);
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
@@ -246,7 +284,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Compare each vector in the filtered results with the provided vector.
         var results = filteredRecords.Select<TRecord, (TRecord record, float score)?>(record =>
         {
-            var vectorObject = this._vectorResolver(vectorProperty.DataModelPropertyName!, record);
+            var vectorObject = this._vectorResolver(vectorProperty.ModelName!, record);
             if (vectorObject is not ReadOnlyMemory<float> dbVector)
             {
                 return null;
@@ -271,11 +309,61 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         var sortedScoredResults = InMemoryVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :
             nonNullResults.OrderBy(x => x.score);
-        var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(internalOptions.Top);
+        var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(top);
 
         // Build the response.
         var vectorSearchResultList = resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
-        return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
+        return Task.FromResult(new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count });
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        Verify.NotNull(serviceType);
+
+        return
+            serviceKey is not null ? null :
+            serviceType == typeof(VectorStoreRecordCollectionMetadata) ? this._collectionMetadata :
+            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
+            serviceType.IsInstanceOfType(this) ? this :
+            null;
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(filter);
+        Verify.NotLessThan(top, 1);
+
+        options ??= new();
+
+        var records = this.GetCollectionDictionary().Values.Cast<TRecord>()
+            .AsQueryable()
+            .Where(filter);
+
+        if (options.OrderBy.Values.Count > 0)
+        {
+            var first = options.OrderBy.Values[0];
+            var sorted = first.Ascending
+                    ? records.OrderBy(first.PropertySelector)
+                    : records.OrderByDescending(first.PropertySelector);
+
+            for (int i = 1; i < options.OrderBy.Values.Count; i++)
+            {
+                var next = options.OrderBy.Values[i];
+                sorted = next.Ascending
+                    ? sorted.ThenBy(next.PropertySelector)
+                    : sorted.ThenByDescending(next.PropertySelector);
+            }
+
+            records = sorted;
+        }
+
+        return records
+            .Skip(options.Skip)
+            .Take(top)
+            .ToAsyncEnumerable();
     }
 
     /// <summary>
@@ -290,87 +378,5 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         return collectionDictionary;
-    }
-
-    /// <summary>
-    /// Pick / create a vector resolver that will read a vector from a record in the store based on the vector name.
-    /// 1. If an override resolver is provided, use that.
-    /// 2. If the record type is <see cref="VectorStoreGenericDataModel{TKey}"/> create a resolver that looks up the vector in its <see cref="VectorStoreGenericDataModel{TKey}.Vectors"/> dictionary.
-    /// 3. Otherwise, create a resolver that assumes the vector is a property directly on the record and use the record definition to determine the name.
-    /// </summary>
-    /// <param name="overrideVectorResolver">The override vector resolver if one was provided.</param>
-    /// <param name="vectorProperties">A dictionary of vector properties from the record definition.</param>
-    /// <returns>The <see cref="InMemoryVectorStoreVectorResolver{TRecord}"/>.</returns>
-    private static InMemoryVectorStoreVectorResolver<TRecord> CreateVectorResolver(InMemoryVectorStoreVectorResolver<TRecord>? overrideVectorResolver, Dictionary<string, VectorStoreRecordVectorProperty> vectorProperties)
-    {
-        // Custom resolver.
-        if (overrideVectorResolver is not null)
-        {
-            return overrideVectorResolver;
-        }
-
-        // Generic data model resolver.
-        if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
-        {
-            return (vectorName, record) =>
-            {
-                var genericDataModelRecord = record as VectorStoreGenericDataModel<TKey>;
-                var vectorsDictionary = genericDataModelRecord!.Vectors;
-                if (vectorsDictionary != null && vectorsDictionary.TryGetValue(vectorName, out var vector))
-                {
-                    return vector;
-                }
-
-                throw new InvalidOperationException($"The collection does not have a vector field named '{vectorName}', so vector search is not possible.");
-            };
-        }
-
-        // Default resolver.
-        var vectorPropertiesInfo = vectorProperties.Values
-            .Select(x => x.DataModelPropertyName)
-            .Select(x => typeof(TRecord).GetProperty(x) ?? throw new ArgumentException($"Vector property '{x}' was not found on {typeof(TRecord).Name}"))
-            .ToDictionary(x => x.Name);
-
-        return (vectorName, record) =>
-        {
-            if (vectorPropertiesInfo.TryGetValue(vectorName, out var vectorPropertyInfo))
-            {
-                return vectorPropertyInfo.GetValue(record);
-            }
-
-            throw new InvalidOperationException($"The collection does not have a vector field named '{vectorName}', so vector search is not possible.");
-        };
-    }
-
-    /// <summary>
-    /// Pick / create a key resolver that will read a key from a record in the store.
-    /// 1. If an override resolver is provided, use that.
-    /// 2. If the record type is <see cref="VectorStoreGenericDataModel{TKey}"/> create a resolver that reads the Key property from it.
-    /// 3. Otherwise, create a resolver that assumes the key is a property directly on the record and use the record definition to determine the name.
-    /// </summary>
-    /// <param name="overrideKeyResolver">The override key resolver if one was provided.</param>
-    /// <param name="keyProperty">They key property from the record definition.</param>
-    /// <returns>The <see cref="InMemoryVectorStoreKeyResolver{TKey, TRecord}"/>.</returns>
-    private static InMemoryVectorStoreKeyResolver<TKey, TRecord> CreateKeyResolver(InMemoryVectorStoreKeyResolver<TKey, TRecord>? overrideKeyResolver, VectorStoreRecordKeyProperty keyProperty)
-    {
-        // Custom resolver.
-        if (overrideKeyResolver is not null)
-        {
-            return overrideKeyResolver;
-        }
-
-        // Generic data model resolver.
-        if (typeof(TRecord).IsGenericType && typeof(TRecord).GetGenericTypeDefinition() == typeof(VectorStoreGenericDataModel<>))
-        {
-            return (record) =>
-            {
-                var genericDataModelRecord = record as VectorStoreGenericDataModel<TKey>;
-                return genericDataModelRecord!.Key;
-            };
-        }
-
-        // Default resolver.
-        var keyPropertyInfo = typeof(TRecord).GetProperty(keyProperty.DataModelPropertyName) ?? throw new ArgumentException($"Key property {keyProperty.DataModelPropertyName} not found on {typeof(TRecord).Name}");
-        return (record) => (TKey)keyPropertyInfo.GetValue(record)!;
     }
 }

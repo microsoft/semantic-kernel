@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Azure.Cosmos;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.VectorData;
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
 /// <summary>
-/// Options when creating a <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>
 {
@@ -18,6 +19,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord
     /// <remarks>
     /// If not set, the default mapper that is provided by the Azure CosmosDB NoSQL client SDK will be used.
     /// </remarks>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 
     /// <summary>

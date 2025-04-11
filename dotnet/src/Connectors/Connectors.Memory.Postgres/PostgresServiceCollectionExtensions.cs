@@ -91,6 +91,7 @@ public static class PostgresServiceCollectionExtensions
         PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorStoreRecordCollection<TKey, TRecord>>(
             serviceId,
@@ -126,6 +127,7 @@ public static class PostgresServiceCollectionExtensions
         PostgresVectorStoreRecordCollectionOptions<TRecord>? options = default,
         string? serviceId = default)
         where TKey : notnull
+        where TRecord : notnull
     {
         string? npgsqlServiceId = serviceId == null ? default : $"{serviceId}_NpgsqlDataSource";
         // Register NpgsqlDataSource to ensure proper disposal.
@@ -161,6 +163,7 @@ public static class PostgresServiceCollectionExtensions
     /// <param name="serviceId">The service id that the registrations should use.</param>
     private static void AddVectorizedSearch<TKey, TRecord>(IServiceCollection services, string? serviceId)
         where TKey : notnull
+        where TRecord : notnull
     {
         services.AddKeyedTransient<IVectorizedSearch<TRecord>>(
             serviceId,

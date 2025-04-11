@@ -14,7 +14,9 @@ public class CosmosMongoBasicFilterTests(CosmosMongoBasicFilterTests.Fixture fix
     // Specialized MongoDB syntax for NOT over Contains ($nin)
     [ConditionalFact]
     public virtual Task Not_over_Contains()
-        => this.TestFilterAsync(r => !new[] { 8, 10 }.Contains(r.Int));
+        => this.TestFilterAsync(
+            r => !new[] { 8, 10 }.Contains(r.Int),
+            r => !new[] { 8, 10 }.Contains((int)r["Int"]!));
 
     #region Null checking
 

@@ -48,6 +48,7 @@ public static class VectorStoreExtensions
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromString<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
@@ -83,6 +84,7 @@ public static class VectorStoreExtensions
         ITextEmbeddingGenerationService embeddingGenerationService,
         CreateRecordFromTextSearchResult<TKey, TRecord> createRecord)
         where TKey : notnull
+        where TRecord : notnull
     {
         // Get and create collection if it doesn't exist.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);

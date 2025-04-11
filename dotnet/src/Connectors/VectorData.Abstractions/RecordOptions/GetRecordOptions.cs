@@ -1,9 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Threading;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.GetAsync"/>.
+/// Defines options for calling <see cref="IVectorStoreRecordCollection{TKey, TDataModel}.GetAsync(TKey, GetRecordOptions?, CancellationToken)"/>
+/// or <see cref="IVectorStoreRecordCollection{TKey, TRecord}.GetAsync(IEnumerable{TKey}, GetRecordOptions?, CancellationToken)"/>.
 /// </summary>
 public class GetRecordOptions
 {

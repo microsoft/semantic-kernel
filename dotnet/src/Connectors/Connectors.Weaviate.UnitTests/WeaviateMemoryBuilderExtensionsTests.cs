@@ -16,6 +16,7 @@ using Xunit;
 
 namespace SemanticKernel.Connectors.UnitTests.Weaviate;
 
+[Obsolete("The IMemoryStore abstraction is being obsoleted")]
 public sealed class WeaviateMemoryBuilderExtensionsTests : IDisposable
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()

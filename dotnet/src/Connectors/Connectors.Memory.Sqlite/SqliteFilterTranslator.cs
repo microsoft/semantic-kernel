@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -11,25 +12,25 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
     private readonly Dictionary<string, object> _parameters = new();
 
-    internal SqliteFilterTranslator(IReadOnlyDictionary<string, string> storagePropertyNames,
-        LambdaExpression lambdaExpression) : base(storagePropertyNames, lambdaExpression, sql: null)
+    internal SqliteFilterTranslator(VectorStoreRecordModel model, LambdaExpression lambdaExpression)
+        : base(model, lambdaExpression, sql: null)
     {
     }
 
     internal Dictionary<string, object> Parameters => this._parameters;
 
     // TODO: support Contains over array fields (#10343)
-    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item, MethodCallExpression parent)
+    protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
         => throw new NotSupportedException("Unsupported Contains expression");
 
-    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, MethodCallExpression parent, object? value)
+    protected override void TranslateContainsOverCapturedArray(Expression source, Expression item, object? value)
     {
         if (value is not IEnumerable elements)
         {
             throw new NotSupportedException("Unsupported Contains expression");
         }
 
-        this.Translate(item, parent);
+        this.Translate(item);
         this._sql.Append(" IN (");
 
         var isFirst = true;

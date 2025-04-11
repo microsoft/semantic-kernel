@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace Memory.VectorStoreEmbeddingGeneration;
 
 /// <summary>
-/// Decorator for a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> that generates embeddings for records on upsert and when using <see cref="VectorizableTextSearchAsync(string, VectorSearchOptions{TRecord}?, CancellationToken)"/>.
+/// Decorator for a <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/> that generates embeddings for records on upsert and when using <see cref="VectorizableTextSearchAsync(string, int, VectorSearchOptions{TRecord}?, CancellationToken)"/>.
 /// </summary>
 /// <remarks>
 /// This class is part of the <see cref="VectorStore_EmbeddingGeneration"/> sample.
@@ -19,6 +19,7 @@ namespace Memory.VectorStoreEmbeddingGeneration;
 public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>, IVectorizableTextSearch<TRecord>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     where TKey : notnull
+    where TRecord : notnull
 {
     /// <summary>The decorated <see cref="IVectorStoreRecordCollection{TKey, TRecord}"/>.</summary>
     private readonly IVectorStoreRecordCollection<TKey, TRecord> _decoratedVectorStoreRecordCollection;
@@ -83,9 +84,9 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public Task DeleteBatchAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
-        return this._decoratedVectorStoreRecordCollection.DeleteBatchAsync(keys, cancellationToken);
+        return this._decoratedVectorStoreRecordCollection.DeleteAsync(keys, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -95,9 +96,9 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return this._decoratedVectorStoreRecordCollection.GetBatchAsync(keys, options, cancellationToken);
+        return this._decoratedVectorStoreRecordCollection.GetAsync(keys, options, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -108,28 +109,38 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertBatchAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         var recordWithEmbeddingsTasks = records.Select(r => this.AddEmbeddingsAsync(r, cancellationToken));
         var recordWithEmbeddings = await Task.WhenAll(recordWithEmbeddingsTasks).ConfigureAwait(false);
-        var upsertResults = this._decoratedVectorStoreRecordCollection.UpsertBatchAsync(recordWithEmbeddings, cancellationToken);
-        await foreach (var upsertResult in upsertResults.ConfigureAwait(false))
-        {
-            yield return upsertResult;
-        }
+        return await this._decoratedVectorStoreRecordCollection.UpsertAsync(recordWithEmbeddings, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
-        return this._decoratedVectorStoreRecordCollection.VectorizedSearchAsync(vector, options, cancellationToken);
+        return this._decoratedVectorStoreRecordCollection.VectorizedSearchAsync(vector, top, options, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        => this._decoratedVectorStoreRecordCollection.GetAsync(filter, top, options, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var embeddingValue = await this._textEmbeddingGenerationService.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return await this.VectorizedSearchAsync(embeddingValue, options, cancellationToken).ConfigureAwait(false);
+        return await this.VectorizedSearchAsync(embeddingValue, top, options, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public object? GetService(Type serviceType, object? serviceKey = null)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+
+        return
+            serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
+            this._decoratedVectorStoreRecordCollection.GetService(serviceType, serviceKey);
     }
 
     /// <summary>

@@ -22,6 +22,7 @@ public class PostgresVectorStoreRecordCollectionTests
     public PostgresVectorStoreRecordCollectionTests()
     {
         this._postgresClientMock = new Mock<IPostgresVectorStoreDbClient>(MockBehavior.Strict);
+        this._postgresClientMock.Setup(l => l.DatabaseName).Returns("TestDatabase");
     }
 
     [Fact]
@@ -32,20 +33,20 @@ public class PostgresVectorStoreRecordCollectionTests
         {
             Properties = [
                 new VectorStoreRecordKeyProperty("HotelId", typeof(int)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
-                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
-                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
+                new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsIndexed = true, StoragePropertyName = "parking_is_included" },
+                new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 100, DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 100) { DistanceFunction = DistanceFunction.ManhattanDistance }
             ]
         };
-        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<int>>()
+        var options = new PostgresVectorStoreRecordCollectionOptions<Dictionary<string, object?>>()
         {
             VectorStoreRecordDefinition = recordDefinition
         };
-        var sut = new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<int>>(this._postgresClientMock.Object, TestCollectionName, options);
+        var sut = new PostgresVectorStoreRecordCollection<object, Dictionary<string, object?>>(this._postgresClientMock.Object, TestCollectionName, options);
         this._postgresClientMock.Setup(x => x.DoesTableExistsAsync(TestCollectionName, this._testCancellationToken)).ReturnsAsync(false);
 
         // Act
@@ -63,16 +64,16 @@ public class PostgresVectorStoreRecordCollectionTests
         {
             Properties = [
                 new VectorStoreRecordKeyProperty("HotelId", typeof(ulong)),
-                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsFilterable = true, IsFullTextSearchable = true },
+                new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
             ]
         };
-        var options = new PostgresVectorStoreRecordCollectionOptions<VectorStoreGenericDataModel<ulong>>()
+        var options = new PostgresVectorStoreRecordCollectionOptions<Dictionary<string, object?>>()
         {
             VectorStoreRecordDefinition = recordDefinition
         };
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new PostgresVectorStoreRecordCollection<ulong, VectorStoreGenericDataModel<ulong>>(this._postgresClientMock.Object, TestCollectionName, options));
+        Assert.Throws<NotSupportedException>(() => new PostgresVectorStoreRecordCollection<object, Dictionary<string, object?>>(this._postgresClientMock.Object, TestCollectionName, options));
     }
 
     [Fact]
@@ -189,7 +190,7 @@ public class PostgresVectorStoreRecordCollectionTests
         [VectorStoreRecordData]
         public string? Data { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Vector { get; set; }
     }
 

@@ -18,6 +18,7 @@ public sealed class PineconeClientTests
     [InlineData("//bypass.com")]
     [InlineData("javascript:alert(1)")]
     [InlineData("data:text/html,<script>alert(1)</script>")]
+    [Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
     public void ItThrowsOnEnvironmentUrlInjectionAttempt(string maliciousEnvironment)
     {
         // Arrange & Act & Assert
@@ -37,6 +38,7 @@ public sealed class PineconeClientTests
     [InlineData("asia-southeast-1-pncn")]
     [InlineData("eu-west-1-pncn")]
     [InlineData("northamerica-northeast1-pncn")]
+    [Obsolete("The IMemoryStore abstraction is being obsoleted, use Microsoft.Extensions.VectorData and PineconeVectorStore")]
     public void ItAcceptsValidEnvironmentNames(string validEnvironment)
     {
         // Arrange & Act & Assert

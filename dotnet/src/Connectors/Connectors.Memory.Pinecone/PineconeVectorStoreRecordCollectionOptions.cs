@@ -1,18 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
-/// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TRecord}"/>.
+/// Options when creating a <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/>.
 /// </summary>
 public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
 {
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
     /// </summary>
+    [Obsolete("Custom mappers are being obsoleted.")]
     public IVectorStoreRecordMapper<TRecord, Vector>? VectorCustomMapper { get; init; } = null;
 
     /// <summary>
