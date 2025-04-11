@@ -61,12 +61,6 @@ async def main() -> None:
                 )
                 print(f"# {response.name}: {response}")
                 thread = response.thread
-
-                # print()
-                # print(f"Messages for thread {thread.id}:")
-                # async for msg in thread.get_messages(sort_order="asc"):
-                #     print(f"Thread message: {msg}")
-                # print()
         finally:
             # 6. Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
