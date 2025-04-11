@@ -43,40 +43,45 @@ public sealed class TavilyTextSearch : ITextSearch
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> SearchAsync(string query, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
         TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = null;
-
-        return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        await foreach (var result in this.GetResultsAsStringAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
         TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = null;
-
-        return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        await foreach (var result in this.GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc/>
-    public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<object> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         searchOptions ??= new TextSearchOptions();
         TavilySearchResponse? searchResponse = await this.ExecuteSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        long? totalCount = null;
-
-        return new KernelSearchResults<object>(this.GetSearchResultsAsync(searchResponse, cancellationToken), totalCount, GetResultsMetadata(searchResponse));
+        await foreach (var result in this.GetSearchResultsAsync(searchResponse, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
+
+    #region obsolete
+    #endregion
 
     #region private
-
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;

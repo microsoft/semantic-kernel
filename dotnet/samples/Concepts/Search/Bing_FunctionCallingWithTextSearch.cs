@@ -138,7 +138,7 @@ public class Bing_FunctionCallingWithTextSearch(ITestOutputHelper output) : Base
                 new KernelParameterMetadata("skip") { Description = "Number of results to skip", IsRequired = false, DefaultValue = 0 },
                 new KernelParameterMetadata("site") { Description = "Only return results from this domain", IsRequired = false },
             ],
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new() { ParameterType = typeof(List<string>) },
         };
 
         return textSearch.CreateSearch(options);

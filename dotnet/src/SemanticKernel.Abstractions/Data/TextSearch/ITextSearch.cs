@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -16,7 +16,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task<KernelSearchResults<string>> SearchAsync(
+    IAsyncEnumerable<string> SearchAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
@@ -27,7 +27,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
+    IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
@@ -38,7 +38,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task<KernelSearchResults<object>> GetSearchResultsAsync(
+    IAsyncEnumerable<object> GetSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);

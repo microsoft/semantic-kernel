@@ -169,9 +169,8 @@ public static class TextSearchExtensions
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
-            return resultList;
+            var results = textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken);
+            return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         options ??= DefaultSearchMethodOptions();
@@ -207,9 +206,8 @@ public static class TextSearchExtensions
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var result = await textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            var resultList = await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
-            return resultList;
+            var results = textSearch.SearchAsync(query?.ToString()!, searchOptions, cancellationToken);
+            return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         options ??= DefaultSearchMethodOptions(jsonSerializerOptions);
@@ -247,8 +245,8 @@ public static class TextSearchExtensions
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var result = await textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var results = textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         options ??= DefaultGetTextSearchResultsMethodOptions();
@@ -284,8 +282,8 @@ public static class TextSearchExtensions
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var result = await textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var results = textSearch.GetTextSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         options ??= DefaultGetTextSearchResultsMethodOptions(jsonSerializerOptions);
@@ -323,8 +321,8 @@ public static class TextSearchExtensions
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var result = await textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var results = textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         options ??= DefaultGetSearchResultsMethodOptions();
@@ -360,8 +358,8 @@ public static class TextSearchExtensions
                 Filter = CreateBasicFilter(options, arguments)
             };
 
-            var result = await textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken).ConfigureAwait(false);
-            return await result.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
+            var results = textSearch.GetSearchResultsAsync(query?.ToString()!, searchOptions, cancellationToken);
+            return await results.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         options ??= DefaultGetSearchResultsMethodOptions(jsonSerializerOptions);
@@ -385,7 +383,7 @@ public static class TextSearchExtensions
             FunctionName = "Search",
             Description = "Perform a search for content related to the specified query and return string results",
             Parameters = GetDefaultKernelParameterMetadata(),
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new() { ParameterType = typeof(List<string>) },
         };
 
     /// <summary>
@@ -398,7 +396,7 @@ public static class TextSearchExtensions
             FunctionName = "Search",
             Description = "Perform a search for content related to the specified query and return string results",
             Parameters = CreateDefaultKernelParameterMetadata(jsonSerializerOptions),
-            ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<string>) },
+            ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(List<string>) },
         };
 
     /// <summary>
@@ -412,7 +410,7 @@ public static class TextSearchExtensions
             FunctionName = "GetTextSearchResults",
             Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
             Parameters = GetDefaultKernelParameterMetadata(),
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+            ReturnParameter = new() { ParameterType = typeof(List<TextSearchResult>) },
         };
 
     /// <summary>
@@ -425,7 +423,7 @@ public static class TextSearchExtensions
             FunctionName = "GetTextSearchResults",
             Description = "Perform a search for content related to the specified query. The search will return the name, value and link for the related content.",
             Parameters = CreateDefaultKernelParameterMetadata(jsonSerializerOptions),
-            ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+            ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(List<TextSearchResult>) },
         };
 
     /// <summary>
@@ -439,7 +437,7 @@ public static class TextSearchExtensions
             FunctionName = "GetSearchResults",
             Description = "Perform a search for content related to the specified query.",
             Parameters = GetDefaultKernelParameterMetadata(),
-            ReturnParameter = new() { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+            ReturnParameter = new() { ParameterType = typeof(List<TextSearchResult>) },
         };
 
     /// <summary>
@@ -452,7 +450,7 @@ public static class TextSearchExtensions
             FunctionName = "GetSearchResults",
             Description = "Perform a search for content related to the specified query.",
             Parameters = CreateDefaultKernelParameterMetadata(jsonSerializerOptions),
-            ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<TextSearchResult>) },
+            ReturnParameter = new(jsonSerializerOptions) { ParameterType = typeof(List<TextSearchResult>) },
         };
 
     /// <summary>

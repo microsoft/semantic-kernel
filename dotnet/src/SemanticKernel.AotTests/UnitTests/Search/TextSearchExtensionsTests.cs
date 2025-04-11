@@ -20,7 +20,7 @@ internal sealed class TextSearchExtensionsTests
     {
         // Arrange
         var testData = new List<string> { "test-value" };
-        KernelSearchResults<string> results = new(testData.ToAsyncEnumerable());
+        IAsyncEnumerable<string> results = testData.ToAsyncEnumerable();
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
@@ -34,7 +34,7 @@ internal sealed class TextSearchExtensionsTests
     {
         // Arrange
         var testData = new List<TextSearchResult> { new("test-value") };
-        KernelSearchResults<TextSearchResult> results = new(testData.ToAsyncEnumerable());
+        IAsyncEnumerable<TextSearchResult> results = testData.ToAsyncEnumerable();
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
@@ -48,7 +48,7 @@ internal sealed class TextSearchExtensionsTests
     {
         // Arrange
         var testData = new List<CustomResult> { new("test-value") };
-        KernelSearchResults<object> results = new(testData.ToAsyncEnumerable());
+        IAsyncEnumerable<object> results = testData.ToAsyncEnumerable();
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act

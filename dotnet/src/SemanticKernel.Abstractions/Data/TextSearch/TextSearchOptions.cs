@@ -12,15 +12,6 @@ public sealed class TextSearchOptions
     public static readonly int DefaultTop = 5;
 
     /// <summary>
-    /// Flag indicating the total count should be included in the results.
-    /// </summary>
-    /// <remarks>
-    /// Default value is false.
-    /// Not all text search implementations will support this option.
-    /// </remarks>
-    public bool IncludeTotalCount { get; init; } = false;
-
-    /// <summary>
     /// The filter expression to apply to the search query.
     /// </summary>
     public TextSearchFilter? Filter { get; init; }

@@ -6,37 +6,37 @@ namespace SemanticKernel.AotTests.UnitTests.Search;
 
 internal sealed class MockTextSearch : ITextSearch
 {
-    private readonly KernelSearchResults<object>? _objectResults;
-    private readonly KernelSearchResults<TextSearchResult>? _textSearchResults;
-    private readonly KernelSearchResults<string>? _stringResults;
+    private readonly IAsyncEnumerable<object>? _objectResults;
+    private readonly IAsyncEnumerable<TextSearchResult>? _textSearchResults;
+    private readonly IAsyncEnumerable<string>? _stringResults;
 
-    public MockTextSearch(KernelSearchResults<object>? objectResults)
+    public MockTextSearch(IAsyncEnumerable<object>? objectResults)
     {
         this._objectResults = objectResults;
     }
 
-    public MockTextSearch(KernelSearchResults<TextSearchResult>? textSearchResults)
+    public MockTextSearch(IAsyncEnumerable<TextSearchResult>? textSearchResults)
     {
         this._textSearchResults = textSearchResults;
     }
 
-    public MockTextSearch(KernelSearchResults<string>? stringResults)
+    public MockTextSearch(IAsyncEnumerable<string>? stringResults)
     {
         this._stringResults = stringResults;
     }
 
-    public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<object> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._objectResults!);
+        return this._objectResults!;
     }
 
-    public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._textSearchResults!);
+        return this._textSearchResults!;
     }
 
-    public Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<string> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._stringResults!);
+        return this._stringResults!;
     }
 }

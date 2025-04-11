@@ -30,11 +30,11 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        KernelSearchResults<string> stringResults = await textSearch.SearchAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<string> stringResults = textSearch.SearchAsync(query, new() { Top = 4 });
 
         // Assert
         Assert.NotNull(stringResults);
-        var results = await stringResults.Results.ToArrayAsync<string>();
+        var results = await stringResults.ToArrayAsync<string>();
         Assert.Equal(4, results.Length);
         foreach (var result in results)
         {
@@ -54,11 +54,11 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        KernelSearchResults<TextSearchResult> textResults = await textSearch.GetTextSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<TextSearchResult> textResults = textSearch.GetTextSearchResultsAsync(query, new() { Top = 4 });
 
         // Assert
         Assert.NotNull(textResults);
-        var results = await textResults.Results.ToArrayAsync<TextSearchResult>();
+        var results = await textResults.ToArrayAsync<TextSearchResult>();
         Assert.Equal(4, results.Length);
         foreach (var result in results)
         {
@@ -84,11 +84,11 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var query = this.GetQuery();
 
         // Act
-        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, new() { Top = 4 });
 
         // Assert
         Assert.NotNull(fullResults);
-        var results = await fullResults.Results.ToArrayAsync<object>();
+        var results = await fullResults.ToArrayAsync<object>();
         Assert.True(this.VerifySearchResults(results, query));
     }
 
@@ -105,11 +105,11 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var filter = this.GetTextSearchFilter();
 
         // Act
-        KernelSearchResults<object> fullResults = await textSearch.GetSearchResultsAsync(query, new() { Top = 4, Filter = filter });
+        IAsyncEnumerable<object> fullResults = textSearch.GetSearchResultsAsync(query, new() { Top = 4, Filter = filter });
 
         // Assert
         Assert.NotNull(fullResults);
-        var results = await fullResults.Results.ToArrayAsync<object>();
+        var results = await fullResults.ToArrayAsync<object>();
         Assert.True(this.VerifySearchResults(results, query, filter));
     }
 
