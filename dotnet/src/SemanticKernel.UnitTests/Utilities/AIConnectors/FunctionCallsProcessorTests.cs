@@ -184,7 +184,7 @@ public class FunctionCallsProcessorTests
         var chatHistory = new ChatHistory();
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "callid_test"));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
 
         // Act
         await this._sut.ProcessFunctionCallsAsync(
@@ -213,7 +213,7 @@ public class FunctionCallsProcessorTests
         var chatHistory = new ChatHistory();
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "callid_test"));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
 
         // Act
         await this._sut.ProcessFunctionCallsAsync(
@@ -242,7 +242,7 @@ public class FunctionCallsProcessorTests
         var chatHistory = new ChatHistory();
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "callid_test")); // The call for function that is not registered on the kernel
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin")); // The call for function that is not registered on the kernel
 
         // Act
         await this._sut.ProcessFunctionCallsAsync(
@@ -743,7 +743,7 @@ public class FunctionCallsProcessorTests
         var chatHistory = new ChatHistory();
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "callid_test"));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
 
         // Act
         await this._sut.ProcessFunctionCallsAsync(
@@ -779,7 +779,7 @@ public class FunctionCallsProcessorTests
         var chatHistory = new ChatHistory();
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "callid_test"));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin"));
 
         // Act
         await this._sut.ProcessFunctionCallsAsync(
@@ -870,7 +870,7 @@ public class FunctionCallsProcessorTests
         });
 
         var chatMessageContent = new ChatMessageContent();
-        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", id: "callid_test", arguments: new KernelArguments() { ["parameter"] = "function1-result" }));
+        chatMessageContent.Items.Add(new FunctionCallContent("Function1", "MyPlugin", arguments: new KernelArguments() { ["parameter"] = "function1-result" }));
 
         // Act
         await this._sut.ProcessFunctionCallsAsync(

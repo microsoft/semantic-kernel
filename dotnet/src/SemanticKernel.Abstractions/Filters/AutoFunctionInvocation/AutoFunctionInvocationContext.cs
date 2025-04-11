@@ -126,9 +126,7 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         get => this.CallContent.CallId;
         init
         {
-            Verify.NotNull(value);
-            // ToolCallId
-            this.CallContent = new Microsoft.Extensions.AI.FunctionCallContent(value, this.CallContent.Name, this.CallContent.Arguments);
+            this.CallContent = new Microsoft.Extensions.AI.FunctionCallContent(value ?? string.Empty, this.CallContent.Name, this.CallContent.Arguments);
         }
     }
 
@@ -309,6 +307,7 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
             => ((IEnumerable<ChatMessageContent>)this).GetEnumerator();
     }
 
+    /// <summary>Destructor to clear the overrides and update the message.</summary>
     ~AutoFunctionInvocationContext()
     {
         // The moment this class is destroyed, we need to clear the overrides and
