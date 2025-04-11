@@ -18,6 +18,14 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>The messages.</summary>
     private readonly List<ChatMessageContent> _messages;
 
+    private Action<ChatMessageContent>? _overrideAdd;
+    private Func<ChatMessageContent, bool>? _overrideRemove;
+    private Action? _overrideClear;
+    private Action<int, ChatMessageContent>? _overrideInsert;
+    private Action<int>? _overrideRemoveAt;
+    private Action<int, int>? _overrideRemoveRange;
+    private Action<IEnumerable<ChatMessageContent>>? _overrideAddRange;
+
     /// <summary>Initializes an empty history.</summary>
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> class
@@ -25,6 +33,36 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public ChatHistory()
     {
         this._messages = [];
+    }
+
+    // Due to changes using the AutoFunctionInvocation as a dependency of KernelInvocation, that needs to reflect
+    internal void SetOverrides(
+        Action<ChatMessageContent> overrideAdd,
+        Func<ChatMessageContent, bool> overrideRemove,
+        Action onClear,
+        Action<int, ChatMessageContent> overrideInsert,
+        Action<int> overrideRemoveAt,
+        Action<int, int> overrideRemoveRange,
+        Action<IEnumerable<ChatMessageContent>> overrideAddRange)
+    {
+        this._overrideAdd = overrideAdd;
+        this._overrideRemove = overrideRemove;
+        this._overrideClear = onClear;
+        this._overrideInsert = overrideInsert;
+        this._overrideRemoveAt = overrideRemoveAt;
+        this._overrideRemoveRange = overrideRemoveRange;
+        this._overrideAddRange = overrideAddRange;
+    }
+
+    internal void ClearOverrides()
+    {
+        this._overrideAdd = null;
+        this._overrideRemove = null;
+        this._overrideClear = null;
+        this._overrideInsert = null;
+        this._overrideRemoveAt = null;
+        this._overrideRemoveRange = null;
+        this._overrideAddRange = null;
     }
 
     /// <summary>
@@ -121,6 +159,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNull(item);
         this._messages.Add(item);
+        this._overrideAdd?.Invoke(item);
     }
 
     /// <summary>Adds the messages to the history.</summary>
@@ -130,6 +169,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNull(items);
         this._messages.AddRange(items);
+        this._overrideAddRange?.Invoke(items);
     }
 
     /// <summary>Inserts a message into the history at the specified index.</summary>
@@ -140,6 +180,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         Verify.NotNull(item);
         this._messages.Insert(index, item);
+        this._overrideInsert?.Invoke(index, item);
     }
 
     /// <summary>
@@ -150,10 +191,15 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of messages in the history is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public virtual void CopyTo(ChatMessageContent[] array, int arrayIndex) => this._messages.CopyTo(array, arrayIndex);
+    public virtual void CopyTo(ChatMessageContent[] array, int arrayIndex)
+        => this._messages.CopyTo(array, arrayIndex);
 
     /// <summary>Removes all messages from the history.</summary>
-    public virtual void Clear() => this._messages.Clear();
+    public virtual void Clear()
+    {
+        this._messages.Clear();
+        this._overrideClear?.Invoke();
+    }
 
     /// <summary>Gets or sets the message at the specified index in the history.</summary>
     /// <param name="index">The index of the message to get or set.</param>
@@ -193,7 +239,11 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     /// <summary>Removes the message at the specified index from the history.</summary>
     /// <param name="index">The index of the message to remove.</param>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this history.</exception>
-    public virtual void RemoveAt(int index) => this._messages.RemoveAt(index);
+    public virtual void RemoveAt(int index)
+    {
+        this._messages.RemoveAt(index);
+        this._overrideRemoveAt?.Invoke(index);
+    }
 
     /// <summary>Removes the first occurrence of the specified message from the history.</summary>
     /// <param name="item">The message to remove from the history.</param>
@@ -202,7 +252,9 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public virtual bool Remove(ChatMessageContent item)
     {
         Verify.NotNull(item);
-        return this._messages.Remove(item);
+        var result = this._messages.Remove(item);
+        this._overrideRemove?.Invoke(item);
+        return result;
     }
 
     /// <summary>
@@ -216,6 +268,7 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     public virtual void RemoveRange(int index, int count)
     {
         this._messages.RemoveRange(index, count);
+        this._overrideRemoveRange?.Invoke(index, count);
     }
 
     /// <inheritdoc/>

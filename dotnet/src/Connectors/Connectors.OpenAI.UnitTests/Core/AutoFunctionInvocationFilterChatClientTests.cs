@@ -425,7 +425,7 @@ public sealed class AutoFunctionInvocationFilterChatClientTests : IDisposable
         var kernel = this.GetKernelWithFilter(plugin, async (context, next) =>
         {
             // Filter delegate is invoked only for second function, the first one should be skipped.
-            if (context.Function.Name == "Function2")
+            if (context.Function.Name == "MyPlugin_Function2")
             {
                 await next(context);
             }

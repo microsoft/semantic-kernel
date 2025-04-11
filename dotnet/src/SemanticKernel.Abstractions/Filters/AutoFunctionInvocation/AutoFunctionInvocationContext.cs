@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -15,6 +17,7 @@ namespace Microsoft.SemanticKernel;
 public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
+    private KernelFunction? _kernelFunction;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="KernelFunctionInvocationContext"/>.
@@ -69,7 +72,10 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
             }
         };
 
+        this._kernelFunction = function;
+        this._chatHistory = chatHistory;
         this.Messages = chatHistory.ToChatMessageList();
+        chatHistory.SetChatMessageHandlers(this.Messages);
         this.AIFunction = function.AsAIFunction();
         this.Result = result;
     }
@@ -154,7 +160,21 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this filter is associated.
     /// </summary>
-    public KernelFunction Function => this.AIFunction.AsKernelFunction();
+    public KernelFunction Function
+    {
+        get
+        {
+            if (this._kernelFunction is null
+                // If the schemas are different,
+                // AIFunction reference potentially was modified and the kernel function should be regenerated.
+                || !IsSameSchema(this._kernelFunction, this.AIFunction))
+            {
+                this._kernelFunction = this.AIFunction.AsKernelFunction();
+            }
+
+            return this._kernelFunction;
+        }
+    }
 
     /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.Kernel"/> containing services, plugins, and other state for use throughout the operation.
@@ -175,6 +195,18 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
     /// Gets or sets the result of the function's invocation.
     /// </summary>
     public FunctionResult Result { get; set; }
+
+    private static bool IsSameSchema(KernelFunction kernelFunction, AIFunction aiFunction)
+    {
+        // Compares the schemas, should be similar.
+        return string.Equals(
+            kernelFunction.AsAIFunction().JsonSchema.ToString(),
+            aiFunction.JsonSchema.ToString(),
+            StringComparison.OrdinalIgnoreCase);
+
+        // TODO: Later can be improved by comparing the underlying methods.
+        // return kernelFunction.UnderlyingMethod == aiFunction.UnderlyingMethod;
+    }
 
     /// <summary>
     /// Mutable IEnumerable of chat message as chat history.
@@ -237,6 +269,30 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
             }
         }
 
+        public override void RemoveRange(int index, int count)
+        {
+            this._messages.RemoveRange(index, count);
+            base.RemoveRange(index, count);
+        }
+
+        public override void CopyTo(ChatMessageContent[] array, int arrayIndex)
+        {
+            for (int i = 0; i < this._messages.Count; i++)
+            {
+                array[arrayIndex + i] = this._messages[i].ToChatMessageContent();
+            }
+        }
+
+        public override bool Contains(ChatMessageContent item) => base.Contains(item);
+
+        public override int IndexOf(ChatMessageContent item) => base.IndexOf(item);
+
+        public override void AddRange(IEnumerable<ChatMessageContent> items)
+        {
+            base.AddRange(items);
+            this._messages.AddRange(items.Select(i => i.ToChatMessage()));
+        }
+
         public override int Count => this._messages.Count;
 
         // Explicit implementation of IEnumerable<ChatMessageContent>.GetEnumerator()
@@ -251,5 +307,12 @@ public class AutoFunctionInvocationContext : KernelFunctionInvocationContext
         // Explicit implementation of non-generic IEnumerable.GetEnumerator()
         IEnumerator IEnumerable.GetEnumerator()
             => ((IEnumerable<ChatMessageContent>)this).GetEnumerator();
+    }
+
+    ~AutoFunctionInvocationContext()
+    {
+        // The moment this class is destroyed, we need to clear the overrides and
+        // overrides to update to message
+        this._chatHistory?.ClearOverrides();
     }
 }
