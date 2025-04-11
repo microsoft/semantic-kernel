@@ -18,7 +18,7 @@ from semantic_kernel.functions import kernel_function
 logger = logging.getLogger(__name__)
 
 """
-This sample demonstrates how to expose your Semantic Kernel instance as a MCP server.
+This sample demonstrates how to expose an Agent as a MCP server.
 
 To run this sample, set up your MCP host (like Claude Desktop or VSCode Github Copilot Agents)
 with the following configuration:
@@ -28,13 +28,13 @@ with the following configuration:
         "sk": {
             "command": "uv",
             "args": [
-                "--directory=<path to sk project>/semantic-kernel/python/samples/demos/sk_mcp_server",
+                "--directory=<path to sk project>/semantic-kernel/python/samples/demos/mcp_server",
                 "run",
-                "sk_mcp_server.py"
+                "agent_mcp_server.py"
             ],
             "env": {
-                "OPENAI_API_KEY": "<your_openai_api_key>",
-                "OPENAI_CHAT_MODEL_ID": "gpt-4o-mini"
+                "AZURE_AI_AGENT_PROJECT_CONNECTION_STRING": "<your azure connection string>",
+                "AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME": "<your azure model deployment name>",
             }
         }
     }
@@ -43,8 +43,8 @@ with the following configuration:
 Alternatively, you can run this as a SSE server, by setting the same environment variables as above, 
 and running the following command:
 ```bash
-uv --directory=<path to sk project>/semantic-kernel/python/samples/demos/sk_mcp_server \
-run sk_mcp_server.py --transport sse --port 8000
+uv --directory=<path to sk project>/semantic-kernel/python/samples/demos/mcp_server \
+run agent_mcp_server.py --transport sse --port 8000
 ```
 This will start a server that listens for incoming requests on port 8000.
 
@@ -70,9 +70,9 @@ def parse_arguments():
     return parser.parse_args()
 
 
-# Define a sample plugin for the sample
+# Define a simple plugin for the sample
 class MenuPlugin:
-    """A sample Menu Plugin used for the concept sample."""
+    """A sample Menu Plugin used for the sample."""
 
     @kernel_function(description="Provides a list of specials from the menu.")
     def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
