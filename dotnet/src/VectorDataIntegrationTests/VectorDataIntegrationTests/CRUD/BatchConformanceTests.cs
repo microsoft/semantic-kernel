@@ -46,14 +46,14 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
     [ConditionalFact]
     public virtual async Task UpsertBatchAsyncThrowsArgumentNullExceptionForNullBatch()
     {
-        ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.UpsertAsync(records: null!).ToArrayAsync().AsTask());
+        ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => fixture.Collection.UpsertAsync(records: null!));
         Assert.Equal("records", ex.ParamName);
     }
 
     [ConditionalFact]
     public virtual async Task UpsertBatchAsyncDoesNotThrowForEmptyBatch()
     {
-        Assert.Empty(await fixture.Collection.UpsertAsync([]).ToArrayAsync());
+        Assert.Empty(await fixture.Collection.UpsertAsync([]));
     }
 
     [ConditionalFact]
@@ -70,7 +70,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
         var keys = inserted.Select(record => record.Id).ToArray();
 
         Assert.Empty(await collection.GetAsync(keys).ToArrayAsync());
-        var receivedKeys = await collection.UpsertAsync(inserted).ToArrayAsync();
+        var receivedKeys = await collection.UpsertAsync(inserted);
         Assert.Equal(keys.ToHashSet(), receivedKeys.ToHashSet()); // .ToHashSet() to ignore order
 
         var received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
@@ -90,7 +90,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
             Text = i.ToString(),
             Floats = Enumerable.Range(0, SimpleRecord<TKey>.DimensionCount).Select(j => (float)(i + j)).ToArray()
         }).ToArray();
-        await fixture.Collection.UpsertAsync(inserted).ToArrayAsync();
+        await fixture.Collection.UpsertAsync(inserted);
 
         SimpleRecord<TKey>[] updated = inserted.Select(i => new SimpleRecord<TKey>()
         {
@@ -100,7 +100,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
             Floats = i.Floats
         }).ToArray();
 
-        var keys = await fixture.Collection.UpsertAsync(updated).ToArrayAsync();
+        var keys = await fixture.Collection.UpsertAsync(updated);
         Assert.Equal(
             updated.Select(r => r.Id).OrderBy(id => id).ToArray(),
             keys.OrderBy(id => id).ToArray());
@@ -125,7 +125,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
         // We take first half of the records and insert them.
         SimpleRecord<TKey>[] firstHalf = records.Take(records.Length / 2).ToArray();
-        TKey[] insertedKeys = await fixture.Collection.UpsertAsync(firstHalf).ToArrayAsync();
+        var insertedKeys = await fixture.Collection.UpsertAsync(firstHalf);
         Assert.Equal(
             firstHalf.Select(r => r.Id).OrderBy(id => id).ToArray(),
             insertedKeys.OrderBy(id => id).ToArray());
@@ -138,7 +138,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
         }
 
         // And now we upsert all the records (the first half is an update, the second is an insert).
-        TKey[] mixedKeys = await fixture.Collection.UpsertAsync(records).ToArrayAsync();
+        var mixedKeys = await fixture.Collection.UpsertAsync(records);
         Assert.Equal(
             records.Select(r => r.Id).OrderBy(id => id).ToArray(),
             mixedKeys.OrderBy(id => id).ToArray());

@@ -357,8 +357,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -429,10 +428,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         var keyProperty = this._model.KeyProperty;
 
-        foreach (var record in records)
-        {
-            yield return (TKey)keyProperty.GetValueAsObject(record!)!;
-        }
+        return records.Select(r => (TKey)keyProperty.GetValueAsObject(r)!).ToList();
     }
 
     /// <inheritdoc/>

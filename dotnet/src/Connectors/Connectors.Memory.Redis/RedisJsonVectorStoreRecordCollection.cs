@@ -375,7 +375,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -407,11 +407,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
                 .JSON()
                 .MSetAsync(keyPathValues)).ConfigureAwait(false);
 
-        // Return keys of upserted records.
-        foreach (var record in redisRecords)
-        {
-            yield return (TKey)(object)record.originalKey;
-        }
+        return redisRecords.Select(x => (TKey)(object)x.originalKey).ToList();
     }
 
     /// <inheritdoc />

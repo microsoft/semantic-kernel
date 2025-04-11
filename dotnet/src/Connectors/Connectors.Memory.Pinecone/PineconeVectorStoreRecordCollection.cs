@@ -303,7 +303,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -316,7 +316,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (vectors.Count == 0)
         {
-            yield break;
+            return [];
         }
 
         Sdk.UpsertRequest request = new()
@@ -329,10 +329,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             "UpsertBatch",
             indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        foreach (var vector in vectors)
-        {
-            yield return (TKey)(object)vector.Id;
-        }
+        return vectors.Select(x => (TKey)(object)x.Id).ToList();
     }
 
     /// <inheritdoc />

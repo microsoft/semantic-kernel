@@ -286,22 +286,14 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
         // TODO: Do proper bulk upsert rather than parallel single inserts, #11350
         var tasks = records.Select(record => this.UpsertAsync(record, cancellationToken));
-
         var keys = await Task.WhenAll(tasks).ConfigureAwait(false);
-
-        foreach (var key in keys)
-        {
-            if (key is not null)
-            {
-                yield return key;
-            }
-        }
+        return keys.Where(k => k is not null).ToList();
     }
 
     /// <inheritdoc />

@@ -156,7 +156,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -171,7 +171,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (storageModels.Count == 0)
         {
-            yield break;
+            return [];
         }
 
         var keys = storageModels.Select(model => model[this._model.KeyProperty.StorageName]!).ToList();
@@ -180,7 +180,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             this._client.UpsertBatchAsync(this.CollectionName, storageModels, this._model.KeyProperty.StorageName, cancellationToken)
         ).ConfigureAwait(false);
 
-        foreach (var key in keys) { yield return (TKey)key!; }
+        return keys.Select(key => (TKey)key!).ToList();
     }
 
     /// <inheritdoc/>

@@ -257,7 +257,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.UpsertAsync(
             [record1, record2],
-            cancellationToken: this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.NotNull(actual);

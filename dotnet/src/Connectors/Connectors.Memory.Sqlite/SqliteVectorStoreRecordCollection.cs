@@ -361,15 +361,14 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         var condition = new SqliteWhereEqualsCondition(this._keyStorageName, key);
 
-        var upsertedRecordKey = await this.InternalUpsertBatchAsync(connection, [storageModel], condition, cancellationToken)
-            .FirstOrDefaultAsync(cancellationToken)
+        var upsertedRecordKeys = await this.InternalUpsertBatchAsync(connection, [storageModel], condition, cancellationToken)
             .ConfigureAwait(false);
 
-        return upsertedRecordKey ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
+        return upsertedRecordKeys.Single() ?? throw new VectorStoreOperationException("Error occurred during upsert operation.");
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         const string OperationName = "UpsertBatch";
 
@@ -386,10 +385,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         var condition = new SqliteWhereInCondition(this._keyStorageName, keys);
 
-        await foreach (var record in this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false))
-        {
-            yield return record;
-        }
+        return await this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -596,11 +592,11 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         }
     }
 
-    private async IAsyncEnumerable<TKey> InternalUpsertBatchAsync(
+    private async Task<IReadOnlyList<TKey>> InternalUpsertBatchAsync(
         SqliteConnection connection,
         List<Dictionary<string, object?>> storageModels,
         SqliteWhereCondition condition,
-        [EnumeratorCancellation] CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         Verify.NotNull(storageModels);
         Verify.True(storageModels.Count > 0, "Number of provided records should be greater than zero.");
@@ -635,6 +631,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             replaceIfExists: true);
 
         using var reader = await dataCommand.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        var keys = new List<TKey>();
 
         while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -642,11 +639,13 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
             if (key is not null)
             {
-                yield return key;
+                keys.Add(key);
             }
 
             await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        return keys;
     }
 
     private Task InternalDeleteBatchAsync(SqliteConnection connection, SqliteWhereCondition condition, CancellationToken cancellationToken)

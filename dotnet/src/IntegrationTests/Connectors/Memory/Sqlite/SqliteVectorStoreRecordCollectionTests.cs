@@ -180,7 +180,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record2 = CreateTestHotel(HotelId2);
         var record3 = CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
@@ -214,7 +214,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
         var record2 = CreateTestHotel(HotelId2);
         var record3 = CreateTestHotel(HotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
@@ -352,7 +352,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
@@ -389,7 +389,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
@@ -422,7 +422,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests(SqliteVectorStoreFixt
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var searchResults = sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()

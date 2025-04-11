@@ -179,7 +179,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
 
         // Assert.
         Assert.NotNull(results);
-        var resultsList = await results.ToListAsync();
+        var resultsList = await results;
 
         Assert.Equal(3, resultsList.Count);
         Assert.Contains("HUpsertMany-1", resultsList);

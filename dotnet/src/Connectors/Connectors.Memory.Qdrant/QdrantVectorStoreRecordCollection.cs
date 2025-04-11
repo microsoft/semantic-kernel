@@ -454,7 +454,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -471,28 +471,14 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             UpsertName,
             () => this._qdrantClient.UpsertAsync(this._collectionName, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        if (pointStructs.Count > 0)
-        {
-            switch (pointStructs[0].Id)
+        return pointStructs.Count == 0
+            ? []
+            : pointStructs[0].Id switch
             {
-                case { HasNum: true }:
-                    foreach (var pointStruct in pointStructs)
-                    {
-                        yield return (TKey)(object)pointStruct.Id.Num;
-                    }
-                    break;
-
-                case { HasUuid: true }:
-                    foreach (var pointStruct in pointStructs)
-                    {
-                        yield return (TKey)(object)Guid.Parse(pointStruct.Id.Uuid);
-                    }
-                    break;
-
-                default:
-                    throw new UnreachableException("The Qdrant point ID is neither a number nor a UUID.");
-            }
-        }
+                { HasNum: true } => pointStructs.Select(pointStruct => (TKey)(object)pointStruct.Id.Num).ToList(),
+                { HasUuid: true } => pointStructs.Select(pointStruct => (TKey)(object)Guid.Parse(pointStruct.Id.Uuid)).ToList(),
+                _ => throw new UnreachableException("The Qdrant point ID is neither a number nor a UUID.")
+            };
     }
 
     /// <inheritdoc />

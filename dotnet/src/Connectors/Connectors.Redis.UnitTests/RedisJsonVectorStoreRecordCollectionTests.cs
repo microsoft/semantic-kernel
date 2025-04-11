@@ -390,7 +390,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var model2 = CreateModel(TestRecordKey2, true);
 
         // Act
-        var actual = await sut.UpsertAsync([model1, model2]).ToListAsync();
+        var actual = await sut.UpsertAsync([model1, model2]);
 
         // Assert
         Assert.NotNull(actual);
