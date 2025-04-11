@@ -72,7 +72,8 @@ public sealed class WeaviateVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 Endpoint = this._options.Endpoint,
-                ApiKey = this._options.ApiKey
+                ApiKey = this._options.ApiKey,
+                HasNamedVectors = this._options.HasNamedVectors
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection;
@@ -87,6 +88,9 @@ public sealed class WeaviateVectorStore : IVectorStore
         try
         {
             var httpResponse = await this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+
+            httpResponse.EnsureSuccessStatusCode();
+
             var httpResponseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             collectionsResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(httpResponseContent)!;

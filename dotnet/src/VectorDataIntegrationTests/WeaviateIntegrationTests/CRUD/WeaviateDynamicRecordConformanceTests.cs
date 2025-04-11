@@ -6,7 +6,12 @@ using Xunit;
 
 namespace WeaviateIntegrationTests.CRUD;
 
-public class WeaviateDynamicRecordConformanceTests(WeaviateDynamicDataModelFixture fixture)
-    : DynamicDataModelConformanceTests<Guid>(fixture), IClassFixture<WeaviateDynamicDataModelFixture>
+public class WeaviateDynamicRecordConformanceTests_NamedVectors(WeaviateDynamicDataModelNamedVectorsFixture fixture)
+    : DynamicDataModelConformanceTests<Guid>(fixture), IClassFixture<WeaviateDynamicDataModelNamedVectorsFixture>
+{
+}
+
+public class WeaviateDynamicRecordConformanceTests_UnnamedVector(WeaviateDynamicDataModelUnnamedVectorFixture fixture)
+    : DynamicDataModelConformanceTests<Guid>(fixture), IClassFixture<WeaviateDynamicDataModelUnnamedVectorFixture>
 {
 }

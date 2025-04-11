@@ -6,7 +6,12 @@ using Xunit;
 
 namespace WeaviateIntegrationTests.Collections;
 
-public class WeaviateCollectionConformanceTests(WeaviateFixture fixture)
-    : CollectionConformanceTests<Guid>(fixture), IClassFixture<WeaviateFixture>
+public class WeaviateCollectionConformanceTests_NamedVectors(WeaviateSimpleModelNamedVectorsFixture fixture)
+    : CollectionConformanceTests<Guid>(fixture), IClassFixture<WeaviateSimpleModelNamedVectorsFixture>
+{
+}
+
+public class WeaviateCollectionConformanceTests_UnnamedVector(WeaviateSimpleModelUnnamedVectorFixture fixture)
+    : CollectionConformanceTests<Guid>(fixture), IClassFixture<WeaviateSimpleModelUnnamedVectorFixture>
 {
 }

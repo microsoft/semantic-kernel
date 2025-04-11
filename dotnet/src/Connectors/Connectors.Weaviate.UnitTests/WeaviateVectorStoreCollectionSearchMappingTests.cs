@@ -13,8 +13,10 @@ namespace SemanticKernel.Connectors.Weaviate.UnitTests;
 /// </summary>
 public sealed class WeaviateVectorStoreCollectionSearchMappingTests
 {
-    [Fact]
-    public void MapSearchResultByDefaultReturnsValidResult()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MapSearchResultByDefaultReturnsValidResult(bool hasNamedVectors)
     {
         // Arrange
         var jsonObject = new JsonObject
@@ -22,11 +24,7 @@ public sealed class WeaviateVectorStoreCollectionSearchMappingTests
             ["_additional"] = new JsonObject
             {
                 ["distance"] = 0.5,
-                ["id"] = "55555555-5555-5555-5555-555555555555",
-                ["vectors"] = new JsonObject
-                {
-                    ["descriptionEmbedding"] = new JsonArray(new List<float> { 30, 31, 32, 33 }.Select(l => (JsonNode)l).ToArray())
-                }
+                ["id"] = "55555555-5555-5555-5555-555555555555"
             },
             ["description"] = "This is a great hotel.",
             ["hotelCode"] = 42,
@@ -37,14 +35,27 @@ public sealed class WeaviateVectorStoreCollectionSearchMappingTests
             ["timestamp"] = "2024-08-28T10:11:12-07:00"
         };
 
+        var vector = new JsonArray(new List<float> { 30, 31, 32, 33 }.Select(l => (JsonNode)l).ToArray());
+
+        if (hasNamedVectors)
+        {
+            jsonObject["_additional"]!["vectors"] = new JsonObject
+            {
+                ["descriptionEmbedding"] = vector
+            };
+        }
+        else
+        {
+            jsonObject["_additional"]!["vector"] = vector;
+        }
+
         // Act
-        var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(jsonObject, "distance");
+        var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(jsonObject, "distance", hasNamedVectors);
 
         // Assert
         Assert.Equal(0.5, score);
 
         Assert.Equal("55555555-5555-5555-5555-555555555555", storageModel["id"]!.GetValue<string>());
-        Assert.Equal([30f, 31f, 32f, 33f], storageModel["vectors"]!["descriptionEmbedding"]!.AsArray().Select(l => l!.GetValue<float>()));
         Assert.Equal("This is a great hotel.", storageModel["properties"]!["description"]!.GetValue<string>());
         Assert.Equal(42, storageModel["properties"]!["hotelCode"]!.GetValue<int>());
         Assert.Equal(4.5, storageModel["properties"]!["hotelRating"]!.GetValue<double>());
@@ -52,5 +63,9 @@ public sealed class WeaviateVectorStoreCollectionSearchMappingTests
         Assert.True(storageModel["properties"]!["parking_is_included"]!.GetValue<bool>());
         Assert.Equal(["t1", "t2"], storageModel["properties"]!["tags"]!.AsArray().Select(l => l!.GetValue<string>()));
         Assert.Equal("2024-08-28T10:11:12-07:00", storageModel["properties"]!["timestamp"]!.GetValue<string>());
+
+        var vectorProperty = hasNamedVectors ? storageModel["vectors"]!["descriptionEmbedding"] : storageModel["vector"];
+
+        Assert.Equal([30f, 31f, 32f, 33f], vectorProperty!.AsArray().Select(l => l!.GetValue<float>()));
     }
 }
