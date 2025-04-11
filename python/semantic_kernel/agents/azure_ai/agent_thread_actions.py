@@ -725,7 +725,7 @@ class AgentThreadActions:
     def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:
         """Generate a dictionary of options that can be passed directly to create_run."""
         merged = cls._merge_options(**kwargs)
-        trunc_count = merged.get("truncation_message_count", None)
+        truncation_strategy = merged.get("truncation_strategy", None)
         max_completion_tokens = merged.get("max_completion_tokens", None)
         max_prompt_tokens = merged.get("max_prompt_tokens", None)
         parallel_tool_calls = merged.get("parallel_tool_calls_enabled", None)
@@ -735,7 +735,7 @@ class AgentThreadActions:
             "top_p": merged.get("top_p"),
             "response_format": merged.get("response_format"),
             "temperature": merged.get("temperature"),
-            "truncation_strategy": trunc_count,
+            "truncation_strategy": truncation_strategy,
             "metadata": merged.get("metadata"),
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
