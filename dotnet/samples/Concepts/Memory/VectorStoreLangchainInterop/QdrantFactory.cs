@@ -27,7 +27,7 @@ public static class QdrantFactory
         Properties = new List<VectorStoreRecordProperty>
         {
             new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
-            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "embedding", Dimensions = 1536 }
+            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
         }
     };
 

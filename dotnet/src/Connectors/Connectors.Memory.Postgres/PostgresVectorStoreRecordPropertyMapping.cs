@@ -138,11 +138,6 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     /// <returns>The PostgreSQL vector type name.</returns>
     public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreRecordVectorPropertyModel vectorProperty)
     {
-        if (vectorProperty.Dimensions <= 0)
-        {
-            throw new ArgumentException("Vector property must have a positive number of dimensions.");
-        }
-
         return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.Type) != null);
     }
 

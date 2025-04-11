@@ -65,11 +65,6 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Throws when the definition is missing required information, or unsupported options are configured.</exception>
     public static (VectorSearchField vectorSearchField, VectorSearchAlgorithmConfiguration algorithmConfiguration, VectorSearchProfile vectorSearchProfile) MapVectorField(VectorStoreRecordVectorPropertyModel vectorProperty)
     {
-        if (vectorProperty.Dimensions is not > 0)
-        {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection.");
-        }
-
         // Build a name for the profile and algorithm configuration based on the property name
         // since we'll just create a separate one for each vector property.
         var vectorSearchProfileName = $"{vectorProperty.StorageName}Profile";
@@ -87,7 +82,7 @@ internal static class AzureAISearchVectorStoreCollectionCreateMapping
         };
         var vectorSearchProfile = new VectorSearchProfile(vectorSearchProfileName, algorithmConfigName);
 
-        return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions.Value, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
+        return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
     }
 
     /// <summary>

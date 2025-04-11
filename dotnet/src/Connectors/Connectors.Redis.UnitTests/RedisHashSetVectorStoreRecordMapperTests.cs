@@ -141,10 +141,10 @@ public sealed class RedisHashSetVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public bool? NullableBoolData { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<double>? DoubleVector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

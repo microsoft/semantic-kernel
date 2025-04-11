@@ -32,6 +32,6 @@ public record SqliteHotel<TKey>()
     public string? Description { get; set; }
 
     /// <summary>A vector field.</summary>
-    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.EuclideanDistance)]
+    [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.EuclideanDistance)]
     public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
 }

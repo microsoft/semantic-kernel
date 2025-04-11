@@ -12,6 +12,8 @@ namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 [Experimental("MEVD9001")]
 public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) : VectorStoreRecordPropertyModel(modelName, type)
 {
+    private int _dimensions;
+
     /// <summary>
     /// The number of dimensions that the vector has.
     /// </summary>
@@ -19,7 +21,20 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
     /// This property is required when creating collections, but can be omitted if not using that functionality.
     /// If not provided when trying to create a collection, create will fail.
     /// </remarks>
-    public int? Dimensions { get; set; }
+    public int Dimensions
+    {
+        get => this._dimensions;
+
+        set
+        {
+            if (value <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), "Dimensions must be greater than zero.");
+            }
+
+            this._dimensions = value;
+        }
+    }
 
     /// <summary>
     /// The kind of index to use.

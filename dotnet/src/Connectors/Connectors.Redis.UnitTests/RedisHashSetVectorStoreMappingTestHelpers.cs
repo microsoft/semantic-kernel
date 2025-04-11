@@ -35,8 +35,8 @@ internal static class RedisHashSetVectorStoreMappingTestHelpers
             new VectorStoreRecordDataProperty("NullableDoubleData", typeof(double?)),
             new VectorStoreRecordDataProperty("NullableFloatData", typeof(float?)),
             new VectorStoreRecordDataProperty("NullableBoolData", typeof(bool?)),
-            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-            new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>)),
+            new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
         }
     };
 

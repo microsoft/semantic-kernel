@@ -37,12 +37,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("description", typeof(string)),
                 new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
                     Dimensions = 10,
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?))
+                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
                 {
                     Dimensions = 10,
                     IndexKind = "hnsw",
@@ -268,14 +268,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("description", typeof(string)),
                 new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
-                    Dimensions = 10,
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?))
+                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
                 {
-                    Dimensions = 10,
                     IndexKind = "hnsw",
                 }
             ]
@@ -313,14 +311,12 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
                 new VectorStoreRecordDataProperty("description", typeof(string)),
                 new VectorStoreRecordDataProperty("parking_is_included", typeof(bool)) { StoragePropertyName = "free_parking" },
                 new VectorStoreRecordDataProperty("tags", typeof(List<string>)),
-                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("embedding1", typeof(ReadOnlyMemory<float>), 10)
                 {
-                    Dimensions = 10,
                     IndexKind = "hnsw",
                 },
-                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?))
+                new VectorStoreRecordVectorProperty("embedding2", typeof(ReadOnlyMemory<float>?), 10)
                 {
-                    Dimensions = 10,
                     IndexKind = "hnsw",
                 }
             ]

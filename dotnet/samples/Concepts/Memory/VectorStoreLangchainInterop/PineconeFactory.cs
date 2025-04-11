@@ -24,7 +24,7 @@ public static class PineconeFactory
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Content", typeof(string)) { StoragePropertyName = "text" },
             new VectorStoreRecordDataProperty("Source", typeof(string)) { StoragePropertyName = "source" },
-            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "embedding", Dimensions = 1536 }
+            new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 1536) { StoragePropertyName = "embedding" }
         }
     };
 

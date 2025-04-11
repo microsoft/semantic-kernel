@@ -37,7 +37,7 @@ public class Step6_Use_CustomMapper(ITestOutputHelper output, VectorStoresFixtur
                 new VectorStoreRecordDataProperty("Category", typeof(string)),
                 new VectorStoreRecordDataProperty("Term", typeof(string)),
                 new VectorStoreRecordDataProperty("Definition", typeof(string)),
-                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536 },
+                new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536)
             }
         };
 

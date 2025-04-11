@@ -31,7 +31,7 @@ public class RedisJsonDynamicDataModelMapperTests
                         new VectorStoreRecordDataProperty("IntData", typeof(int)),
                         new VectorStoreRecordDataProperty("NullableIntData", typeof(int?)),
                         new VectorStoreRecordDataProperty("ComplexObjectData", typeof(ComplexObject)),
-                        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                        new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
                     ]
                 });
 

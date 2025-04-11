@@ -97,21 +97,6 @@ public class RedisVectorStoreCollectionCreateMappingTests
         Assert.Equal("L2", ((VectorField)schema.Fields[7]).Attributes!["DISTANCE_METRIC"]);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData(0)]
-    public void MapToSchemaThrowsOnInvalidVectorDimensions(int? dimensions)
-    {
-        // Arrange.
-        VectorStoreRecordPropertyModel[] properties =
-        [
-            new VectorStoreRecordVectorPropertyModel("VectorProperty", typeof(ReadOnlyMemory<float>)) { Dimensions = dimensions }
-        ];
-
-        // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => RedisVectorStoreCollectionCreateMapping.MapToSchema(properties, useDollarPrefix: true));
-    }
-
     [Fact]
     public void GetSDKIndexKindThrowsOnUnsupportedIndexKind()
     {

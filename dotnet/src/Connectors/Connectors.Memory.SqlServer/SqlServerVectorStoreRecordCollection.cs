@@ -111,14 +111,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        foreach (var vectorProperty in this._model.VectorProperties)
-        {
-            if (vectorProperty.Dimensions is not > 0)
-            {
-                throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection.");
-            }
-        }
-
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(
             connection,

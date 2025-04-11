@@ -376,7 +376,7 @@ public class QdrantVectorStoreRecordMapperTests
         {
             new VectorStoreRecordKeyProperty("Key", keyType) { StoragePropertyName = "key" },
             new VectorStoreRecordDataProperty("Data", typeof(string)) { StoragePropertyName = "data" },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector" },
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector" },
         },
     };
 
@@ -388,7 +388,7 @@ public class QdrantVectorStoreRecordMapperTests
         [VectorStoreRecordData(StoragePropertyName = "data")]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector(StoragePropertyName = "vector")]
+        [VectorStoreRecordVector(10, StoragePropertyName = "vector")]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;
@@ -408,8 +408,8 @@ public class QdrantVectorStoreRecordMapperTests
             new VectorStoreRecordDataProperty("DataDateTime", typeof(DateTime)) { StoragePropertyName = "dataDateTime" },
             new VectorStoreRecordDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StoragePropertyName = "dataDateTimeOffset" },
             new VectorStoreRecordDataProperty("DataArrayInt", typeof(List<int>)) { StoragePropertyName = "dataArrayInt" },
-            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector1" },
-            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector2" },
+            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector1" },
+            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector2" },
         },
     };
 
@@ -446,10 +446,10 @@ public class QdrantVectorStoreRecordMapperTests
         [VectorStoreRecordData(StoragePropertyName = "dataArrayInt")]
         public List<int>? DataArrayInt { get; set; }
 
-        [VectorStoreRecordVector(StoragePropertyName = "vector1")]
+        [VectorStoreRecordVector(10, StoragePropertyName = "vector1")]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector(StoragePropertyName = "vector2")]
+        [VectorStoreRecordVector(10, StoragePropertyName = "vector2")]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

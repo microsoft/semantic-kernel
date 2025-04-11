@@ -323,7 +323,7 @@ public sealed class FrugalGPTWithFilters(ITestOutputHelper output) : BaseTest(ou
         [VectorStoreRecordData]
         public string Example { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(1536)]
         public ReadOnlyMemory<float> ExampleEmbedding { get; set; }
     }
 }

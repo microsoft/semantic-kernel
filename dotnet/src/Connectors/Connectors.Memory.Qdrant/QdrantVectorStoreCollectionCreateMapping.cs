@@ -58,11 +58,6 @@ internal static class QdrantVectorStoreCollectionCreateMapping
     /// <exception cref="InvalidOperationException">Thrown if the property is missing information or has unsupported options specified.</exception>
     public static VectorParams MapSingleVector(VectorStoreRecordVectorPropertyModel vectorProperty)
     {
-        if (vectorProperty!.Dimensions is not > 0)
-        {
-            throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection.");
-        }
-
         if (vectorProperty!.IndexKind is not null && vectorProperty!.IndexKind != IndexKind.Hnsw)
         {
             throw new InvalidOperationException($"Index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.");

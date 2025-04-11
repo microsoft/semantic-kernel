@@ -165,9 +165,8 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
             Properties =
             [
                 new VectorStoreRecordKeyProperty(nameof(SearchRecord.Key), typeof(TKey)),
-                new VectorStoreRecordVectorProperty(nameof(SearchRecord.Vector), typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty(nameof(SearchRecord.Vector), typeof(ReadOnlyMemory<float>), 4)
                 {
-                    Dimensions = 4,
                     DistanceFunction = distanceFunction,
                     IndexKind = this.IndexKind
                 },

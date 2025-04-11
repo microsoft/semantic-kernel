@@ -61,7 +61,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("OpeningDate", typeof(DateTimeOffset)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
         this.HotelWithGuidIdVectorStoreRecordDefinition = new VectorStoreRecordDefinition
@@ -71,7 +71,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordKeyProperty("HotelId", typeof(Guid)),
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), VectorDimensions) { DistanceFunction = DistanceFunction.ManhattanDistance }
             }
         };
         AzureOpenAIConfiguration? embeddingsConfig = s_configuration.GetSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
@@ -351,7 +351,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(VectorDimensions, DistanceFunction.ManhattanDistance, IndexKind.Hnsw)]
+        [VectorStoreRecordVector(VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance, IndexKind = IndexKind.Hnsw)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 
@@ -374,7 +374,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         public string Description { get; set; }
 
         /// <summary>A vector field.</summary>
-        [VectorStoreRecordVector(VectorDimensions, DistanceFunction.ManhattanDistance, IndexKind.Hnsw)]
+        [VectorStoreRecordVector(VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance, IndexKind = IndexKind.Hnsw)]
         public ReadOnlyMemory<float>? DescriptionEmbedding { get; set; }
     }
 }
