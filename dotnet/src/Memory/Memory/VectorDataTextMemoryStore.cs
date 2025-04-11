@@ -19,7 +19,6 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
 public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
     where TKey : notnull
-
 {
     private readonly IVectorStore _vectorStore;
     private readonly ITextEmbeddingGenerationService _textEmbeddingGenerationService;
@@ -29,19 +28,6 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
     private bool _collectionInitialized = false;
     private bool _disposedValue;
-
-    private readonly VectorStoreRecordDefinition _memoryDocumentDefinition = new()
-    {
-        Properties = new List<VectorStoreRecordProperty>()
-        {
-            new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-            new VectorStoreRecordDataProperty("Namespace", typeof(string)) { IsFilterable = true },
-            new VectorStoreRecordDataProperty("Name", typeof(string)),
-            new VectorStoreRecordDataProperty("Category", typeof(string)),
-            new VectorStoreRecordDataProperty("MemoryText", typeof(string)),
-            new VectorStoreRecordVectorProperty("MemoryTextEmbedding", typeof(ReadOnlyMemory<float>)),
-        }
-    };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorDataTextMemoryStore{TKey}"/> class.
@@ -65,12 +51,12 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
             throw new NotSupportedException($"Unsupported key of type '{typeof(TKey).Name}'");
         }
 
-        VectorStoreRecordDefinition _memoryDocumentDefinition = new()
+        VectorStoreRecordDefinition memoryDocumentDefinition = new()
         {
             Properties = new List<VectorStoreRecordProperty>()
             {
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordDataProperty("Namespace", typeof(string)),
+                new VectorStoreRecordDataProperty("Namespace", typeof(string)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("Name", typeof(string)),
                 new VectorStoreRecordDataProperty("Category", typeof(string)),
                 new VectorStoreRecordDataProperty("MemoryText", typeof(string)),
@@ -83,7 +69,7 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
         this._storageNamespace = storageNamespace;
         this._vectorDimensions = vectorDimensions;
         this._vectorStoreRecordCollection = new Lazy<IVectorStoreRecordCollection<TKey, MemoryDocument<TKey>>>(() =>
-            this._vectorStore.GetCollection<TKey, MemoryDocument<TKey>>(collectionName, this._memoryDocumentDefinition));
+            this._vectorStore.GetCollection<TKey, MemoryDocument<TKey>>(collectionName, memoryDocumentDefinition));
     }
 
     /// <inheritdoc/>

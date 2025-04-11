@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// A component that listenes to messages added to the conversation thread, and automatically captures
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
 /// </summary>
-public class MemZeroMemoryComponent : ConversationStateExtension
+public class Mem0MemoryComponent : ConversationStateExtension
 {
     private static readonly Uri s_searchUri = new("/search", UriKind.Relative);
     private static readonly Uri s_createMemoryUri = new("/memories", UriKind.Relative);
@@ -33,14 +33,14 @@ public class MemZeroMemoryComponent : ConversationStateExtension
     private string _userInformation = string.Empty;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MemZeroMemoryComponent"/> class.
+    /// Initializes a new instance of the <see cref="Mem0MemoryComponent"/> class.
     /// </summary>
     /// <param name="httpClient">The HTTP client used for making requests.</param>
     /// <param name="agentId">The ID of the agent.</param>
     /// <param name="threadId">The ID of the thread.</param>
     /// <param name="userId">The ID of the user.</param>
     /// <param name="scopeToThread">Indicates whether the scope is limited to the thread.</param>
-    public MemZeroMemoryComponent(HttpClient httpClient, string? agentId = default, string? threadId = default, string? userId = default, bool scopeToThread = false)
+    public Mem0MemoryComponent(HttpClient httpClient, string? agentId = default, string? threadId = default, string? userId = default, bool scopeToThread = false)
     {
         Verify.NotNull(httpClient);
 
