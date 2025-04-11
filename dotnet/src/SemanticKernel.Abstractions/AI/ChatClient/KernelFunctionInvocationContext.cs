@@ -16,10 +16,10 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 
 /// <summary>Provides context for an in-flight function invocation.</summary>
 [ExcludeFromCodeCoverage]
-public class KernelFunctionInvocationContext
+internal class KernelFunctionInvocationContext
 {
     /// <summary>
-    /// A nop function used to allow <see cref="AIFunction"/> to be non-nullable. Default instances of
+    /// A nop function used to allow <see cref="Function"/> to be non-nullable. Default instances of
     /// <see cref="KernelFunctionInvocationContext"/> start with this as the target function.
     /// </summary>
     private static readonly AIFunction s_nopFunction = AIFunctionFactory.Create(() => { }, nameof(KernelFunctionInvocationContext));
@@ -64,7 +64,7 @@ public class KernelFunctionInvocationContext
     public ChatOptions? Options { get; set; }
 
     /// <summary>Gets or sets the AI function to be invoked.</summary>
-    public AIFunction AIFunction
+    public AIFunction Function
     {
         get => _function;
         set
