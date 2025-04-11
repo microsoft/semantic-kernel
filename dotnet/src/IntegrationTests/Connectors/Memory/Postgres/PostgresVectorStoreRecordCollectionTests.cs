@@ -192,7 +192,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         var record2 = new PostgresHotel<int> { HotelId = HotelId2, HotelName = "Hotel 2", HotelCode = 1, ParkingIncluded = false, HotelRating = 3.5f, Tags = ["tag1", "tag3"] };
         var record3 = new PostgresHotel<int> { HotelId = HotelId3, HotelName = "Hotel 3", HotelCode = 1, ParkingIncluded = true, HotelRating = 2.5f, Tags = ["tag1", "tag4"] };
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([HotelId1, HotelId2, HotelId3]).ToListAsync();
 
         Assert.Equal([HotelId1, HotelId2, HotelId3], upsertResults);
@@ -358,7 +358,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([0.9f, 0.1f, 0.5f, 0.8f]), top: 3, new()
@@ -396,7 +396,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
@@ -428,7 +428,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
 
         await sut.CreateCollectionAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 29f, 28f, 27f]), top: 5, new()
@@ -515,7 +515,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
             new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
             new VectorStoreRecordDataProperty("ListInts", typeof(List<int>)),
             new VectorStoreRecordDataProperty("Description", typeof(string)),
-            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
+            new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) { IndexKind = IndexKind.Hnsw, DistanceFunction = distanceFunction }
         ]
     };
 
@@ -553,7 +553,7 @@ public sealed class PostgresVectorStoreRecordCollectionTests(PostgresVectorStore
         [VectorStoreRecordKey]
         public int Id { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? Embedding { get; set; }
 
         [VectorStoreRecordData]

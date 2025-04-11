@@ -111,14 +111,6 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        foreach (var vectorProperty in this._model.VectorProperties)
-        {
-            if (vectorProperty.Dimensions is not > 0)
-            {
-                throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection.");
-            }
-        }
-
         using SqlConnection connection = new(this._connectionString);
         using SqlCommand command = SqlServerCommandBuilder.CreateTable(
             connection,
@@ -357,8 +349,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -429,10 +420,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         var keyProperty = this._model.KeyProperty;
 
-        foreach (var record in records)
-        {
-            yield return (TKey)keyProperty.GetValueAsObject(record!)!;
-        }
+        return records.Select(r => (TKey)keyProperty.GetValueAsObject(r)!).ToList();
     }
 
     /// <inheritdoc/>

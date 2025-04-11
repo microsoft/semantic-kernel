@@ -186,7 +186,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
                     new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
                     new VectorStoreRecordDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
                     new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
+                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 
@@ -240,7 +240,7 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
                     new VectorStoreRecordDataProperty("Text1", typeof(string)) { IsFullTextIndexed = true },
                     new VectorStoreRecordDataProperty("Text2", typeof(string)) { IsFullTextIndexed = true },
                     new VectorStoreRecordDataProperty("Code", typeof(int)) { IsIndexed = true },
-                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = 4, IndexKind = this.IndexKind },
+                    new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { IndexKind = this.IndexKind },
                 }
             };
 

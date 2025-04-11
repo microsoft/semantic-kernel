@@ -20,10 +20,7 @@ public abstract class DynamicDataModelFixture<TKey> : VectorStoreCollectionFixtu
                 new VectorStoreRecordKeyProperty(KeyPropertyName, typeof(TKey)),
                 new VectorStoreRecordDataProperty(StringPropertyName, typeof(string)),
                 new VectorStoreRecordDataProperty(IntegerPropertyName, typeof(int)),
-                new VectorStoreRecordVectorProperty(EmbeddingPropertyName, typeof(ReadOnlyMemory<float>))
-                {
-                    Dimensions = DimensionCount
-                }
+                new VectorStoreRecordVectorProperty(EmbeddingPropertyName, typeof(ReadOnlyMemory<float>), DimensionCount)
             ]
         };
 

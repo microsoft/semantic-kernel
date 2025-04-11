@@ -160,7 +160,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
         var record2 = this.CreateTestHotel(hotelId2);
         var record3 = this.CreateTestHotel(hotelId3);
 
-        var upsertResults = await sut.UpsertAsync([record1, record2, record3]).ToListAsync();
+        var upsertResults = await sut.UpsertAsync([record1, record2, record3]);
         var getResults = await sut.GetAsync([hotelId1, hotelId2, hotelId3]).ToListAsync();
 
         Assert.Equal([hotelId1, hotelId2, hotelId3], upsertResults);
@@ -223,7 +223,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3, new()
@@ -261,7 +261,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
@@ -294,7 +294,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
@@ -338,7 +338,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
 
         await sut.CreateCollectionIfNotExistsAsync();
 
-        await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]).ToListAsync();
+        await sut.UpsertAsync([hotel4, hotel2, hotel5, hotel3, hotel1]);
 
         // Act
         var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([40f, 40f, 40f, 40f]), top: 4, new()
@@ -473,7 +473,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4) {IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
             ]
         };
     }

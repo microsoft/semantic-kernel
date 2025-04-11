@@ -113,7 +113,7 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// </summary>
     /// <param name="record">The record to upsert.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The unique identifier for the record.</returns>
+    /// <returns>The key for the records, to be used when keys are generated in the database.</returns>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
     Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
@@ -125,13 +125,22 @@ public interface IVectorStoreRecordCollection<TKey, TRecord> : IVectorizedSearch
     /// </summary>
     /// <param name="records">The records to upsert.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>The unique identifiers for the records.</returns>
+    /// <returns>The keys for the records, to be used when keys are generated in the database.</returns>
     /// <remarks>
-    /// Upserts are made in a single request or in a single parallel batch depending on the available store functionality.
+    /// <para>
+    /// The exact method of upserting the batch is implementation-specific and can vary based on database support; some databases support batch upserts via a single, efficient
+    /// request, while in other cases the implementation might send multiple upserts in parallel.
+    /// </para>
+    /// <para>
+    /// Similarly, the error behavior can vary across databases: where possible, the batch will be upserted atomically, so that any errors cause the entire batch to be rolled
+    /// back. Where not supported, some records may be upserted while others are not. If key properties are set by the user, then the entire upsert operation is idempotent,
+    /// and can simply be retried again if an error occurs. However, if store-generated keys are in use, the upsert operation is no longer idempotent; in that case, if the
+    /// database doesn't guarantee atomicity, retrying could cause duplicate records to be created.
+    /// </para>
     /// </remarks>
     /// <exception cref="VectorStoreOperationException">The command fails to execute for any reason.</exception>
     /// <exception cref="VectorStoreRecordMappingException">The mapping between the storage model and record data model fails.</exception>
-    IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets matching records from the vector store. Does not guarantee that the collection exists.

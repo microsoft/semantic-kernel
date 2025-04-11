@@ -232,6 +232,17 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     /// <inheritdoc />
     public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
+        => Task.FromResult(this.Upsert(record));
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
+    {
+        Verify.NotNull(records);
+
+        return Task.FromResult<IReadOnlyList<TKey>>(records.Select(this.Upsert).ToList());
+    }
+
+    private TKey Upsert(TRecord record)
     {
         Verify.NotNull(record);
 
@@ -240,24 +251,11 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         var key = (TKey)this._keyResolver(record)!;
         collectionDictionary.AddOrUpdate(key!, record, (key, currentValue) => record);
 
-        return Task.FromResult(key!);
+        return key!;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        Verify.NotNull(records);
-
-        foreach (var record in records)
-        {
-            yield return await this.UpsertAsync(record, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <inheritdoc />
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously - Need to satisfy the interface which returns IAsyncEnumerable
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
-#pragma warning restore CS1998
+    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -315,7 +313,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Build the response.
         var vectorSearchResultList = resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
-        return new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count };
+        return Task.FromResult(new VectorSearchResults<TRecord>(vectorSearchResultList) { TotalCount = count });
     }
 
     /// <inheritdoc />

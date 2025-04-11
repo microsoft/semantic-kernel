@@ -257,7 +257,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         // Act
         var actual = await sut.UpsertAsync(
             [record1, record2],
-            cancellationToken: this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken);
 
         // Assert
         Assert.NotNull(actual);
@@ -373,12 +373,11 @@ public class InMemoryVectorStoreRecordCollectionTests
 
         VectorStoreRecordDefinition singlePropsDefinition = new()
         {
-            Properties =
-            [
-                new VectorStoreRecordKeyProperty("Key", typeof(string)),
-                new VectorStoreRecordDataProperty("Data", typeof(string)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { DistanceFunction = distanceFunction }
-            ]
+            Properties = this._singlePropsDefinition.Properties.Select(x => x switch
+            {
+                VectorStoreRecordVectorProperty vectorProperty => new VectorStoreRecordVectorProperty(vectorProperty) { DistanceFunction = distanceFunction },
+                _ => x
+            }).ToList()
         };
 
         var sut = new InMemoryVectorStoreRecordCollection<string, SinglePropsModel<string>>(
@@ -550,7 +549,7 @@ public class InMemoryVectorStoreRecordCollectionTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsIndexed = true },
             new VectorStoreRecordDataProperty("Data", typeof(string)) { IsIndexed = true },
-            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>))
+            new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10)
         ]
     };
 
@@ -565,7 +564,7 @@ public class InMemoryVectorStoreRecordCollectionTests
         [VectorStoreRecordData(IsIndexed = true)]
         public string Data { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? Vector { get; set; }
 
         public string? NotAnnotated { get; set; }

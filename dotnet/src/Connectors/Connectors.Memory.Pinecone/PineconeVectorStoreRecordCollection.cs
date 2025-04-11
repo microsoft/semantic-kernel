@@ -102,7 +102,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         CreateIndexRequest request = new()
         {
             Name = this.CollectionName,
-            Dimension = vectorProperty.Dimensions ?? throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection."),
+            Dimension = vectorProperty.Dimensions,
             Metric = MapDistanceFunction(vectorProperty),
             Spec = new ServerlessIndexSpec
             {
@@ -303,7 +303,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TKey> UpsertAsync(IEnumerable<TRecord> records, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
@@ -316,7 +316,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         if (vectors.Count == 0)
         {
-            yield break;
+            return [];
         }
 
         Sdk.UpsertRequest request = new()
@@ -329,10 +329,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             "UpsertBatch",
             indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        foreach (var vector in vectors)
-        {
-            yield return (TKey)(object)vector.Id;
-        }
+        return vectors.Select(x => (TKey)(object)x.Id).ToList();
     }
 
     /// <inheritdoc />
@@ -422,7 +419,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             // "Either 'vector' or 'ID' must be provided"
             // Since we are doing a query, we don't have a vector to provide, so we fake one.
             // When https://github.com/pinecone-io/pinecone-dotnet-client/issues/43 gets implemented, we need to switch.
-            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions!.Value]),
+            Vector = new ReadOnlyMemory<float>(new float[this._model.VectorProperty.Dimensions]),
             Filter = new PineconeFilterTranslator().Translate(filter, this._model),
         };
 

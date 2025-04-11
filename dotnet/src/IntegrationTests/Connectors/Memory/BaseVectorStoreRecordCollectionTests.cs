@@ -93,7 +93,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Vector = orthogonalVector,
         };
 
-        await sut.UpsertAsync([baseRecord, oppositeRecord, orthogonalRecord]).ToListAsync();
+        await sut.UpsertAsync([baseRecord, oppositeRecord, orthogonalRecord]);
         await Task.Delay(this.DelayAfterUploadInMilliseconds);
 
         // Act
@@ -123,7 +123,7 @@ public abstract class BaseVectorStoreRecordCollectionTests<TKey>
             Properties =
             [
                 new VectorStoreRecordKeyProperty("Key", typeof(TKey)),
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { Dimensions = vectorDimensions, DistanceFunction = distanceFunction },
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), vectorDimensions) { DistanceFunction = distanceFunction },
             ],
         };
 

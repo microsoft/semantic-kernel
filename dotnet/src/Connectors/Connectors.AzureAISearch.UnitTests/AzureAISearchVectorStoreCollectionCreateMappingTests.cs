@@ -198,16 +198,6 @@ public class AzureAISearchVectorStoreCollectionCreateMappingTests
         Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty));
     }
 
-    [Fact]
-    public void MapVectorFieldThrowsForMissingDimensionsCount()
-    {
-        // Arrange
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>));
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => AzureAISearchVectorStoreCollectionCreateMapping.MapVectorField(vectorProperty));
-    }
-
     [Theory]
     [MemberData(nameof(DataTypeMappingOptions))]
     public void GetSDKFieldDataTypeMapsTypesCorrectly(Type propertyType, SearchFieldDataType searchFieldDataType)

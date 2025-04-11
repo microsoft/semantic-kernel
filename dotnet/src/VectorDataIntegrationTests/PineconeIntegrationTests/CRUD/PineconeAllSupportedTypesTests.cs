@@ -61,7 +61,7 @@ public class PineconeAllSupportedTypesTests(PineconeFixture fixture) : IClassFix
             }
         ];
 
-        await collection.UpsertAsync(records).ToArrayAsync();
+        await collection.UpsertAsync(records);
 
         var allTypes = await collection.GetAsync(records.Select(r => r.Id), new GetRecordOptions { IncludeVectors = true }).ToListAsync();
 

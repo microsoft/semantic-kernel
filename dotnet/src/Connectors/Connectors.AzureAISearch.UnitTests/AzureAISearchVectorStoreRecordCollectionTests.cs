@@ -458,7 +458,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         // Act.
         var actual = await sut.UpsertAsync(
             [model1, model2],
-            cancellationToken: this._testCancellationToken).ToListAsync();
+            cancellationToken: this._testCancellationToken);
 
         // Assert.
         Assert.NotNull(actual);
@@ -541,7 +541,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             {
                 new VectorStoreRecordKeyProperty("Key", typeof(string)),
                 new VectorStoreRecordDataProperty("Data1", typeof(string)),
-                new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
+                new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
             }
         };
 
@@ -674,8 +674,8 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Data1", typeof(string)),
             new VectorStoreRecordDataProperty("Data2", typeof(string)),
-            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 },
-            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>)) { Dimensions = 4 }
+            new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 4),
+            new VectorStoreRecordVectorProperty("Vector2", typeof(ReadOnlyMemory<float>), 4)
         ]
     };
 

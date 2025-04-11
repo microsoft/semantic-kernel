@@ -65,10 +65,10 @@ public sealed class WeaviateDynamicDataModelMapperTests
                     new VectorStoreRecordDataProperty("NullableGuidDataProp", typeof(Guid?)),
                     new VectorStoreRecordDataProperty("TagListDataProp", typeof(List<string>)),
 
-                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
-                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?)),
-                    new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>)),
-                    new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?))
+                    new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
+                    new VectorStoreRecordVectorProperty("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10),
+                    new VectorStoreRecordVectorProperty("DoubleVector", typeof(ReadOnlyMemory<double>), 10),
+                    new VectorStoreRecordVectorProperty("NullableDoubleVector", typeof(ReadOnlyMemory<double>?), 10)
                 ]
             },
             s_jsonSerializerOptions);
@@ -171,7 +171,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
 
         var vectorProperties = new List<VectorStoreRecordVectorProperty>
         {
-            new("NullableFloatVector", typeof(ReadOnlyMemory<float>?))
+            new("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
         };
 
         var dataModel = new Dictionary<string, object?>
@@ -291,7 +291,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
 
         var vectorProperties = new List<VectorStoreRecordVectorProperty>
         {
-            new("NullableFloatVector", typeof(ReadOnlyMemory<float>?))
+            new("NullableFloatVector", typeof(ReadOnlyMemory<float>?), 10)
         };
 
         var storageModel = new JsonObject
@@ -344,7 +344,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
                 new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10)
             ]
         };
 
@@ -375,7 +375,7 @@ public sealed class WeaviateDynamicDataModelMapperTests
                 new VectorStoreRecordKeyProperty("Key", typeof(Guid)),
                 new VectorStoreRecordDataProperty("StringDataProp", typeof(string)),
                 new VectorStoreRecordDataProperty("NullableIntDataProp", typeof(int?)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>))
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10)
             ]
         };
 
