@@ -92,27 +92,30 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
     [Fact]
     public virtual async Task RagComponentWithoutMatchesAsync()
     {
-        // Arrange
+        // Arrange - Create Embedding Service
         var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-
         var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
 
+        // Arrange - Create Vector Store and Rag Store/Component
         var vectorStore = new InMemoryVectorStore();
         using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "Memories", 1536, "group/g1");
         var ragComponent = new TextRagComponent(ragStore, new TextRagComponentOptions());
 
+        // Arrange - Upsert documents into the Rag Store
         await ragStore.UpsertDocumentsAsync(GetSampleDocuments());
 
         var agent = this.Fixture.Agent;
 
-        // Act
+        // Act - Create a new agent thread and register the Rag component
         var agentThread = new ChatHistoryAgentThread();
         agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
 
+        // Act - Invoke the agent with a question
         var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
         var results1 = await asyncResults1.ToListAsync();
 
-        // Assert
+        // Assert - Check if the response does not contain the expected value from the database because
+        // we filtered by group/g1 which doesn't include the required document.
         Assert.DoesNotContain("174", results1.First().Message.Content);
 
         // Cleanup
@@ -122,27 +125,29 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
     [Fact]
     public virtual async Task RagComponentWithMatchesAsync()
     {
-        // Arrange
+        // Arrange - Create Embedding Service
         var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-
         var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
 
+        // Arrange - Create Vector Store and Rag Store/Component
         var vectorStore = new InMemoryVectorStore();
         using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "Memories", 1536, "group/g2");
         var ragComponent = new TextRagComponent(ragStore, new TextRagComponentOptions());
 
+        // Arrange - Upsert documents into the Rag Store
         await ragStore.UpsertDocumentsAsync(GetSampleDocuments());
 
         var agent = this.Fixture.Agent;
 
-        // Act
+        // Act - Create a new agent thread and register the Rag component
         var agentThread = new ChatHistoryAgentThread();
         agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
 
+        // Act - Invoke the agent with a question
         var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
         var results1 = await asyncResults1.ToListAsync();
 
-        // Assert
+        // Assert - Check if the response contains the expected value from the database.
         Assert.Contains("174", results1.First().Message.Content);
 
         // Cleanup
