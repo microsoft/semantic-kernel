@@ -59,31 +59,31 @@ internal sealed class WeaviateDynamicDataModelMapper : IVectorStoreRecordMapper<
         Verify.NotNull(dataModel);
 
         // Transform generic data model to Weaviate object model.
-        var keyObject = JsonSerializer.SerializeToNode(dataModel[this._model.KeyProperty.ModelName]);
+        var keyNode = JsonSerializer.SerializeToNode(dataModel[this._model.KeyProperty.ModelName]);
 
         // Populate data properties.
-        var dataObject = new JsonObject();
+        var dataNode = new JsonObject();
         foreach (var property in this._model.DataProperties)
         {
             if (dataModel.TryGetValue(property.ModelName, out var dataValue))
             {
-                dataObject[property.StorageName] = dataValue is null
+                dataNode[property.StorageName] = dataValue is null
                     ? null
                     : JsonSerializer.SerializeToNode(dataValue, property.Type, this._jsonSerializerOptions);
             }
         }
 
         // Populate vector properties.
-        JsonNode? vectorObject = null;
+        JsonNode? vectorNode = null;
 
         if (this._hasNamedVectors)
         {
-            vectorObject = new JsonObject();
+            vectorNode = new JsonObject();
             foreach (var property in this._model.VectorProperties)
             {
                 if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
                 {
-                    vectorObject[property.StorageName] = vectorValue is null
+                    vectorNode[property.StorageName] = vectorValue is null
                         ? null
                         : JsonSerializer.SerializeToNode(vectorValue, property.Type, this._jsonSerializerOptions);
                 }
@@ -93,7 +93,7 @@ internal sealed class WeaviateDynamicDataModelMapper : IVectorStoreRecordMapper<
         {
             if (dataModel.TryGetValue(this._model.VectorProperty.ModelName, out var vectorValue))
             {
-                vectorObject = vectorValue is null
+                vectorNode = vectorValue is null
                     ? null
                     : JsonSerializer.SerializeToNode(vectorValue, this._model.VectorProperty.Type, this._jsonSerializerOptions);
             }
@@ -102,9 +102,9 @@ internal sealed class WeaviateDynamicDataModelMapper : IVectorStoreRecordMapper<
         return new JsonObject
         {
             { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
-            { WeaviateConstants.ReservedKeyPropertyName, keyObject },
-            { WeaviateConstants.ReservedDataPropertyName, dataObject },
-            { this._vectorPropertyName, vectorObject },
+            { WeaviateConstants.ReservedKeyPropertyName, keyNode },
+            { WeaviateConstants.ReservedDataPropertyName, dataNode },
+            { this._vectorPropertyName, vectorNode },
         };
     }
 
@@ -152,11 +152,11 @@ internal sealed class WeaviateDynamicDataModelMapper : IVectorStoreRecordMapper<
             }
             else
             {
-                var jsonObject = storageModel[WeaviateConstants.ReservedSingleVectorPropertyName];
+                var jsonNode = storageModel[WeaviateConstants.ReservedSingleVectorPropertyName];
 
-                if (jsonObject is not null)
+                if (jsonNode is not null)
                 {
-                    result.Add(this._model.VectorProperty.ModelName, jsonObject.Deserialize(this._model.VectorProperty.Type, this._jsonSerializerOptions));
+                    result.Add(this._model.VectorProperty.ModelName, jsonNode.Deserialize(this._model.VectorProperty.Type, this._jsonSerializerOptions));
                 }
             }
         }
