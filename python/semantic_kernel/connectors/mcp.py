@@ -616,58 +616,6 @@ def create_mcp_server_from_kernel(
 
     server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
 
-    if prompts:
-
-        @server.list_prompts()
-        async def _list_prompts() -> list[types.Prompt]:
-            """List all prompts in the kernel."""
-            mcp_prompts = []
-            for prompt in prompts:
-                mcp_prompts.append(
-                    types.Prompt(
-                        name=prompt.prompt_template_config.name,
-                        description=prompt.prompt_template_config.description,
-                        arguments=[
-                            types.PromptArgument(
-                                name=var.name,
-                                description=var.description,
-                                required=var.is_required,
-                            )
-                            for var in prompt.prompt_template_config.input_variables
-                        ],
-                    )
-                )
-            await _log(level="debug", data=f"List of prompts: {mcp_prompts}")
-            return mcp_prompts
-
-        @server.get_prompt()
-        async def _get_prompt(name: str, arguments: dict[str, Any] | None) -> types.GetPromptResult:
-            """Get a prompt by name."""
-            prompt = next((p for p in prompts if p.prompt_template_config.name == name), None)
-            if prompt is None:
-                return types.GetPromptResult(description="Prompt not found", messages=[])
-
-            # Call the prompt
-            rendered_prompt = await prompt.render(
-                kernel,
-                KernelArguments(**arguments) if arguments is not None else KernelArguments(),
-            )
-            # since the return type of a get_prompts is a list of messages,
-            # we need to convert the rendered prompt to a list of messages
-            # by using the ChatHistory class
-            chat_history = ChatHistory.from_rendered_prompt(rendered_prompt)
-            messages = []
-            for message in chat_history.messages:
-                messages.append(
-                    types.PromptMessage(
-                        role=message.role.value
-                        if message.role in (AuthorRole.ASSISTANT, AuthorRole.USER)
-                        else "assistant",
-                        content=_kernel_content_to_mcp_content_types(message)[0],
-                    )
-                )
-            return types.GetPromptResult(messages=messages)
-
     @server.list_tools()
     async def _list_tools() -> list[types.Tool]:
         """List all tools in the kernel."""
@@ -725,6 +673,58 @@ def create_mcp_server_from_kernel(
                 message=f"Function {function_name} returned no result",
             ),
         )
+
+    if prompts:
+
+        @server.list_prompts()
+        async def _list_prompts() -> list[types.Prompt]:
+            """List all prompts in the kernel."""
+            mcp_prompts = []
+            for prompt in prompts:
+                mcp_prompts.append(
+                    types.Prompt(
+                        name=prompt.prompt_template_config.name,
+                        description=prompt.prompt_template_config.description,
+                        arguments=[
+                            types.PromptArgument(
+                                name=var.name,
+                                description=var.description,
+                                required=var.is_required,
+                            )
+                            for var in prompt.prompt_template_config.input_variables
+                        ],
+                    )
+                )
+            await _log(level="debug", data=f"List of prompts: {mcp_prompts}")
+            return mcp_prompts
+
+        @server.get_prompt()
+        async def _get_prompt(name: str, arguments: dict[str, Any] | None) -> types.GetPromptResult:
+            """Get a prompt by name."""
+            prompt = next((p for p in prompts if p.prompt_template_config.name == name), None)
+            if prompt is None:
+                return types.GetPromptResult(description="Prompt not found", messages=[])
+
+            # Call the prompt
+            rendered_prompt = await prompt.render(
+                kernel,
+                KernelArguments(**arguments) if arguments is not None else KernelArguments(),
+            )
+            # since the return type of a get_prompts is a list of messages,
+            # we need to convert the rendered prompt to a list of messages
+            # by using the ChatHistory class
+            chat_history = ChatHistory.from_rendered_prompt(rendered_prompt)
+            messages = []
+            for message in chat_history.messages:
+                messages.append(
+                    types.PromptMessage(
+                        role=message.role.value
+                        if message.role in (AuthorRole.ASSISTANT, AuthorRole.USER)
+                        else "assistant",
+                        content=_kernel_content_to_mcp_content_types(message)[0],
+                    )
+                )
+            return types.GetPromptResult(messages=messages)
 
     async def _log(level: types.LoggingLevel, data: Any) -> None:
         """Log a message to the server and logger."""
