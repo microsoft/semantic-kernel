@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import asyncio
+import os
 
 from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
@@ -27,8 +28,9 @@ async def main():
     async with MCPStdioPlugin(
         name="Github",
         description="Github Plugin",
-        command="npx",
-        args=["-y", "@modelcontextprotocol/server-github"],
+        command="docker",
+        args=["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+        env={"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")},
     ) as github_plugin:
         agent = ChatCompletionAgent(
             service=AzureChatCompletion(),

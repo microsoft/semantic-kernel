@@ -11,9 +11,7 @@ import anyio
 from mcp.server.stdio import stdio_server
 
 from semantic_kernel import Kernel
-from semantic_kernel.prompt_template.input_variable import InputVariable
-from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
-from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
+from semantic_kernel.prompt_template import InputVariable, KernelPromptTemplate, PromptTemplateConfig
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +36,7 @@ with the following configuration:
 ```
 """
 
-
-def run() -> None:
-    """Run the MCP server with the release notes prompt template."""
-    kernel = Kernel()
-    prompt = KernelPromptTemplate(
-        prompt_template_config=PromptTemplateConfig(
-            name="release_notes",
-            description="This creates release notes from a list of PRs messages.",
-            template="""{{$messages}}
+template = """{{$messages}}
 ---
 Group the following PRs into one of these buckets for release notes, keeping the same order: 
 
@@ -56,7 +46,17 @@ Group the following PRs into one of these buckets for release notes, keeping the
 -Python Package Updates 
 
 Include the output in raw markdown.
-""",
+"""
+
+
+def run() -> None:
+    """Run the MCP server with the release notes prompt template."""
+    kernel = Kernel()
+    prompt = KernelPromptTemplate(
+        prompt_template_config=PromptTemplateConfig(
+            name="release_notes_prompt",
+            description="This creates the prompts for a full set of release notes based on the PR messages given.",
+            template=template,
             input_variables=[
                 InputVariable(
                     name="messages",

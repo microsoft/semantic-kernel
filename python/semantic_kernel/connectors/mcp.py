@@ -228,12 +228,14 @@ class MCPPluginBase:
             logger.debug("Resource templates: %s", await self.session.list_resource_templates())
         await self.load_tools()
         await self.load_prompts()
-        try:
-            await self.session.set_logging_level(
-                next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
-            )
-        except Exception:
-            logger.warning("Failed to set log level to %s", logger.level)
+
+        if logger.level != logging.NOTSET:
+            try:
+                await self.session.set_logging_level(
+                    next(level for level, value in LOG_LEVEL_MAPPING.items() if value == logger.level)
+                )
+            except Exception:
+                logger.warning("Failed to set log level to %s", logger.level)
 
     async def sampling_callback(
         self, context: RequestContext[ClientSession, Any], params: types.CreateMessageRequestParams
