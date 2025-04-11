@@ -469,7 +469,10 @@ public sealed class WeaviateVectorStoreRecordCollectionTests(WeaviateVectorStore
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)),
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordDataProperty("Timestamp", typeof(DateTimeOffset)),
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance }
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?))
+                {
+                    Dimensions = 4, IndexKind = IndexKind.Hnsw, DistanceFunction = DistanceFunction.CosineDistance
+                }
             ]
         };
     }
