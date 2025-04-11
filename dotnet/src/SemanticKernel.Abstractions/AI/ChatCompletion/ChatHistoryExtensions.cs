@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -78,4 +79,7 @@ public static class ChatHistoryExtensions
 
         return chatHistory;
     }
+
+    internal static List<ChatMessage> ToChatMessageList(this ChatHistory chatHistory)
+        => chatHistory.Select(m => m.ToChatMessage()).ToList();
 }

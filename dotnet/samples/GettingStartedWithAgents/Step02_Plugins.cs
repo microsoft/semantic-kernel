@@ -13,14 +13,17 @@ namespace GettingStarted;
 /// </summary>
 public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    [Fact]
-    public async Task UseChatCompletionWithPluginAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseChatCompletionWithPlugin(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent = CreateAgentWithPlugin(
                 plugin: KernelPluginFactory.CreateFromType<MenuPlugin>(),
                 instructions: "Answer questions about the menu.",
-                name: "Host");
+                name: "Host",
+                useChatClient: useChatClient);
 
         /// Create the chat history thread to capture the agent interaction.
         AgentThread thread = new ChatHistoryAgentThread();
@@ -32,12 +35,15 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         await InvokeAgentAsync(agent, thread, "Thank you");
     }
 
-    [Fact]
-    public async Task UseChatCompletionWithPluginEnumParameterAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseChatCompletionWithPluginEnumParameter(bool useChatClient)
     {
         // Define the agent
         ChatCompletionAgent agent = CreateAgentWithPlugin(
-                KernelPluginFactory.CreateFromType<WidgetFactory>());
+                KernelPluginFactory.CreateFromType<WidgetFactory>(),
+                useChatClient: useChatClient);
 
         /// Create the chat history thread to capture the agent interaction.
         AgentThread thread = new ChatHistoryAgentThread();
@@ -46,8 +52,10 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         await InvokeAgentAsync(agent, thread, "Create a beautiful red colored widget for me.");
     }
 
-    [Fact]
-    public async Task UseChatCompletionWithTemplateExecutionSettingsAsync()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UseChatCompletionWithTemplateExecutionSettings(bool useChatClient)
     {
         // Read the template resource
         string autoInvokeYaml = EmbeddedResource.Read("AutoInvokeTools.yaml");
@@ -59,7 +67,7 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
         ChatCompletionAgent agent =
             new(templateConfig, templateFactory)
             {
-                Kernel = this.CreateKernelWithChatCompletion()
+                Kernel = this.CreateKernelWithChatCompletion(useChatClient, out var chatClient),
             };
 
         agent.Kernel.Plugins.AddFromType<WidgetFactory>();
@@ -69,19 +77,22 @@ public class Step02_Plugins(ITestOutputHelper output) : BaseAgentsTest(output)
 
         // Respond to user input, invoking functions where appropriate.
         await InvokeAgentAsync(agent, thread, "Create a beautiful red colored widget for me.");
+
+        chatClient?.Dispose();
     }
 
     private ChatCompletionAgent CreateAgentWithPlugin(
         KernelPlugin plugin,
         string? instructions = null,
-        string? name = null)
+        string? name = null,
+        bool useChatClient = false)
     {
         ChatCompletionAgent agent =
                 new()
                 {
                     Instructions = instructions,
                     Name = name,
-                    Kernel = this.CreateKernelWithChatCompletion(),
+                    Kernel = this.CreateKernelWithChatCompletion(useChatClient, out _),
                     Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
                 };
 
