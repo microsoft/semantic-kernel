@@ -43,7 +43,7 @@ public class ServiceConversionExtensionsTests
         Assert.NotNull(generator);
         var metadata = Assert.IsType<EmbeddingGeneratorMetadata>(generator.GetService(typeof(EmbeddingGeneratorMetadata)));
         Assert.Equal(nameof(TestEmbeddingGenerationService), metadata.ProviderName);
-        Assert.Equal("examplemodel", metadata.ModelId);
+        Assert.Equal("examplemodel", metadata.DefaultModelId);
         Assert.Equal("https://example.com/", metadata.ProviderUri?.ToString());
     }
 
@@ -77,7 +77,7 @@ public class ServiceConversionExtensionsTests
         Assert.NotNull(client);
         var metadata = Assert.IsType<ChatClientMetadata>(client.GetService(typeof(ChatClientMetadata)));
         Assert.Equal(nameof(TestChatCompletionService), metadata.ProviderName);
-        Assert.Equal("examplemodel", metadata.ModelId);
+        Assert.Equal("examplemodel", metadata.DefaultModelId);
         Assert.Equal("https://example.com/", metadata.ProviderUri?.ToString());
     }
 
@@ -349,9 +349,9 @@ public class ServiceConversionExtensionsTests
     private sealed class NopAIFunction(string name) : AIFunction
     {
         public override string Name => name;
-        protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<object?>(null);
+            return ValueTask.FromResult<object?>(null);
         }
     }
 

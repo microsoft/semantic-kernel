@@ -14,7 +14,8 @@ public class AIFunctionKernelFunctionTests
     public void ShouldAssignIsRequiredParameterMetadataPropertyCorrectly()
     {
         // Arrange and Act
-        AIFunction aiFunction = AIFunctionFactory.Create((string p1, int? p2 = null) => p1);
+        AIFunction aiFunction = AIFunctionFactory.Create((string p1, int? p2 = null) => p1,
+            new AIFunctionFactoryOptions { JsonSchemaCreateOptions = new AIJsonSchemaCreateOptions { RequireAllProperties = false } });
 
         AIFunctionKernelFunction sut = new(aiFunction);
 

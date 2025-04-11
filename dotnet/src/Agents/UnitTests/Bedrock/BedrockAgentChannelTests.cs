@@ -273,6 +273,7 @@ public class BedrockAgentChannelTests
             "fakeSecretKey",
             mockRuntimeClientConfig.Object);
 #pragma warning restore Moq1410 // Moq: Set MockBehavior to Strict
+#pragma warning disable CA2000 // Dispose objects before losing scope
         mockRuntimeClient.Setup(x => x.InvokeAgentAsync(
             It.IsAny<InvokeAgentRequest>(),
             It.IsAny<CancellationToken>())
@@ -283,6 +284,7 @@ public class BedrockAgentChannelTests
             // Tests should expect an exception to be thrown.
             HttpStatusCode = System.Net.HttpStatusCode.NotFound,
         });
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return (mockClient, mockRuntimeClient);
     }

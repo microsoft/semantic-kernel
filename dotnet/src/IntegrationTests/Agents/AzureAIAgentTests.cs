@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
@@ -35,7 +37,7 @@ public class AzureAIAgentTests
     /// Integration test for <see cref="AzureAIAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
-    public async Task OpenAIAgentWithThreadCustomOptionsAsync()
+    public async Task AzureAIAgentWithThreadCustomOptionsAsync()
     {
         var aiAgent =
             await this._agentsClient.CreateAgentAsync(
@@ -69,7 +71,7 @@ public class AzureAIAgentTests
     /// Integration test for <see cref="AzureAIAgent"/> adding override instructions to a thread on invocation via custom options.
     /// </summary>
     [RetryFact(typeof(HttpOperationException))]
-    public async Task OpenAIAgentWithThreadCustomOptionsStreamingAsync()
+    public async Task AzureAIAgentWithThreadCustomOptionsStreamingAsync()
     {
         var aiAgent =
             await this._agentsClient.CreateAgentAsync(
@@ -91,6 +93,44 @@ public class AzureAIAgentTests
             var responseText = string.Join(string.Empty, responseMessages.Select(x => x.Message.Content));
 
             Assert.Contains("Computer says no", responseText);
+        }
+        finally
+        {
+            await agentThread.DeleteAsync();
+            await this._agentsClient.DeleteAgentAsync(agent.Id);
+        }
+    }
+
+    /// <summary>
+    /// Integration test for <see cref="AzureAIAgent"/> created declaratively.
+    /// </summary>
+    [RetryFact(typeof(HttpOperationException))]
+    public async Task AzureAIAgentDeclarativeAsync()
+    {
+        var builder = Kernel.CreateBuilder();
+        builder.Services.AddSingleton<AIProjectClient>(this._client);
+        var kernel = builder.Build();
+
+        var text =
+            $"""
+            type: foundry_agent
+            name: MyAgent
+            description: My helpful agent.
+            instructions: You are helpful agent.
+            model:
+              id: {this._configuration.ChatModelId}
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel });
+        Assert.NotNull(agent);
+
+        AzureAIAgentThread agentThread = new(this._agentsClient);
+        try
+        {
+            var response = await agent.InvokeAsync("What is the capital of France?", agentThread).FirstAsync();
+
+            Assert.Contains("Paris", response.Message.Content);
         }
         finally
         {
