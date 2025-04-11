@@ -66,12 +66,6 @@ public sealed class BraveConnector : IWebSearchEngineConnector
 
         if (offset is < 0 or > 10)
         {
-            /* Unmerged change from project 'Plugins.Web(netstandard2.0)'
-            Before:
-                        throw new ArgumentOutOfRangeException(nameof(offset),offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
-            After:
-                        throw new ArgumentOutOfRangeException(nameof(offset), offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
-            */
             throw new ArgumentOutOfRangeException(nameof(offset), offset, $"{nameof(count)} value must be equal or greater than 0 and less than 10.");
         }
 
