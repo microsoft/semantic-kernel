@@ -297,7 +297,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
@@ -328,13 +328,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
-        var mappedResults = this.MapSearchResultsAsync(
+        return this.MapSearchResultsAsync(
             searchResults,
             ScorePropertyName,
             OperationName,
             searchOptions.IncludeVectors,
             cancellationToken);
-        return Task.FromResult(new VectorSearchResults<TRecord>(mappedResults));
     }
 
     /// <inheritdoc />
@@ -371,7 +370,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
@@ -399,13 +398,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
-        var mappedResults = this.MapSearchResultsAsync(
+        return this.MapSearchResultsAsync(
             searchResults,
             ScorePropertyName,
             OperationName,
             searchOptions.IncludeVectors,
             cancellationToken);
-        return Task.FromResult(new VectorSearchResults<TRecord>(mappedResults));
     }
 
     /// <inheritdoc />

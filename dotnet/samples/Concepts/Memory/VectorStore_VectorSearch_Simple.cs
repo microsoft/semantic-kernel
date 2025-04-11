@@ -50,8 +50,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search.
         var searchString = "What is an Application Programming Interface";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var searchResult = await collection.VectorizedSearchAsync(searchVector, top: 1);
-        var resultRecords = await searchResult.Results.ToListAsync();
+        var resultRecords = await collection.VectorizedSearchAsync(searchVector, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -60,8 +59,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(searchVector, top: 1);
-        resultRecords = await searchResult.Results.ToListAsync();
+        resultRecords = await collection.VectorizedSearchAsync(searchVector, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + resultRecords.First().Record.Definition);
@@ -70,8 +68,7 @@ public class VectorStore_VectorSearch_Simple(ITestOutputHelper output) : BaseTes
         // Search the collection using a vector search with pre-filtering.
         searchString = "What is Retrieval Augmented Generation";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        searchResult = await collection.VectorizedSearchAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" });
-        resultRecords = await searchResult.Results.ToListAsync();
+        resultRecords = await collection.VectorizedSearchAsync(searchVector, top: 3, new() { Filter = g => g.Category == "External Definitions" }).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Number of results: " + resultRecords.Count);

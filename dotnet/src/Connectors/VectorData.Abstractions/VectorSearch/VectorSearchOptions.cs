@@ -77,5 +77,6 @@ public class VectorSearchOptions<TRecord>
     /// Not all vector search implementations support this option, in which case the total
     /// count will be null even if requested via this option.
     /// </remarks>
+    [Obsolete("Total count is no longer included in the results.", error: true)]
     public bool IncludeTotalCount { get; init; } = false;
 }

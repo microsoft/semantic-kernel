@@ -56,7 +56,7 @@ internal static class PostgresVectorStoreUtils
             var more = await enumerator.MoveNextAsync();
             return (enumerator.Current, more);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not (NotSupportedException or ArgumentException))
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {

@@ -326,12 +326,11 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         // Execute the query against the vector store, once using the strongly typed filter
         // and once using the dynamic filter
-        var results = await fixture.Collection.VectorizedSearchAsync(
-            new ReadOnlyMemory<float>([1, 2, 3]),
-            top: fixture.TestData.Count,
-            new() { Filter = filter });
-
-        var actual = await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
+        var actual = await fixture.Collection.VectorizedSearchAsync(
+                new ReadOnlyMemory<float>([1, 2, 3]),
+                top: fixture.TestData.Count,
+                new() { Filter = filter })
+            .Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
 
         if (actual.Count != expected.Count)
         {
@@ -345,12 +344,11 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         if (fixture.TestDynamic)
         {
-            var dynamicResults = await fixture.DynamicCollection.VectorizedSearchAsync(
-                new ReadOnlyMemory<float>([1, 2, 3]),
-                top: fixture.TestData.Count,
-                new() { Filter = dynamicFilter });
-
-            var dynamicActual = await dynamicResults.Results.Select(r => r.Record).OrderBy(r => r[nameof(FilterRecord.Key)]).ToListAsync();
+            var dynamicActual = await fixture.DynamicCollection.VectorizedSearchAsync(
+                    new ReadOnlyMemory<float>([1, 2, 3]),
+                    top: fixture.TestData.Count,
+                    new() { Filter = dynamicFilter })
+                .Select(r => r.Record).OrderBy(r => r[nameof(FilterRecord.Key)]).ToListAsync();
 
             if (dynamicActual.Count != expected.Count)
             {
@@ -383,15 +381,14 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
             Assert.Fail("The test returns all results, and so is unreliable");
         }
 
-        var results = await fixture.Collection.VectorizedSearchAsync(
-            new ReadOnlyMemory<float>([1, 2, 3]),
-            top: fixture.TestData.Count,
-            new()
-            {
-                OldFilter = legacyFilter
-            });
-
-        var actual = await results.Results.Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
+        var actual = await fixture.Collection.VectorizedSearchAsync(
+                new ReadOnlyMemory<float>([1, 2, 3]),
+                top: fixture.TestData.Count,
+                new()
+                {
+                    OldFilter = legacyFilter
+                })
+            .Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
 
         foreach (var (e, a) in expected.Zip(actual, (e, a) => (e, a)))
         {

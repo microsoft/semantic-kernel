@@ -184,23 +184,25 @@ internal class PostgresVectorStoreDbClient(NpgsqlDataSource dataSource, string s
     }
 
     /// <inheritdoc />
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     public async IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(
         string tableName, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, Vector vectorValue, int limit,
-        VectorSearchFilter? legacyFilter = default, Expression<Func<TRecord, bool>>? newFilter = default, int? skip = default, bool includeVectors = false, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        VectorSearchOptions<TRecord> options, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         NpgsqlConnection connection = await this.DataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         await using (connection)
         {
-            var commandInfo = PostgresSqlBuilder.BuildGetNearestMatchCommand(this._schema, tableName, model, vectorProperty, vectorValue, legacyFilter, newFilter, skip, includeVectors, limit);
+            var commandInfo = PostgresSqlBuilder.BuildGetNearestMatchCommand(this._schema, tableName, model, vectorProperty, vectorValue,
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+                options.OldFilter,
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+                options.Filter, options.Skip, options.IncludeVectors, limit);
             using NpgsqlCommand cmd = commandInfo.ToNpgsqlCommand(connection);
             using NpgsqlDataReader dataReader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             while (await dataReader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 var distance = dataReader.GetDouble(dataReader.GetOrdinal(PostgresConstants.DistanceColumnName));
-                yield return (Row: this.GetRecord(dataReader, model, includeVectors), Distance: distance);
+                yield return (Row: this.GetRecord(dataReader, model, options.IncludeVectors), Distance: distance);
             }
         }
     }

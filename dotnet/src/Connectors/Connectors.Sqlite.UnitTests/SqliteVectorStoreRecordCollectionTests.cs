@@ -120,8 +120,7 @@ public sealed class SqliteVectorStoreRecordCollectionTests
         var sut = new SqliteVectorStoreRecordCollection<TestRecord<ulong>>(fakeConnection, "VectorizedSearch");
 
         // Act
-        var results = await sut.VectorizedSearchAsync(expectedRecord.Vector, new() { IncludeVectors = includeVectors });
-        var result = await results.Results.FirstOrDefaultAsync();
+        var result = await sut.VectorizedSearchAsync(expectedRecord.Vector, new() { IncludeVectors = includeVectors }).FirstOrDefaultAsync();
 
         // Assert
         Assert.NotNull(result);

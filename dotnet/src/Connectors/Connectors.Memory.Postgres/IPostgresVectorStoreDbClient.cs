@@ -130,16 +130,11 @@ internal interface IPostgresVectorStoreDbClient
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="vectorValue">The <see cref="Vector"/> to compare the table's vector with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
-    /// <param name="legacyFilter">Optional conditions to filter the results.</param>
-    /// <param name="newFilter">Optional conditions to filter the results.</param>
-    /// <param name="skip">The number of entries to skip.</param>
-    /// <param name="includeVectors">If true, the vectors will be returned in the entries.</param>
+    /// <param name="options">The options that control the behavior of the search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous stream of result objects that the nearest matches to the <see cref="Vector"/>.</returns>
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
     IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, VectorStoreRecordModel model, VectorStoreRecordVectorPropertyModel vectorProperty, Vector vectorValue, int limit,
-        VectorSearchFilter? legacyFilter = default, Expression<Func<TRecord, bool>>? newFilter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
+        VectorSearchOptions<TRecord> options, CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<Dictionary<string, object?>> GetMatchingRecordsAsync<TRecord>(string tableName, VectorStoreRecordModel model,
         Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord> options, CancellationToken cancellationToken = default);

@@ -85,7 +85,7 @@ public abstract class TestStore
 
         for (var i = 0; i < 20; i++)
         {
-            var results = await collection.VectorizedSearchAsync(
+            var results = collection.VectorizedSearchAsync(
                 new ReadOnlyMemory<float>(vector),
                 top: recordCount,
                 new()
@@ -94,7 +94,7 @@ public abstract class TestStore
                     // so filtered searches show empty results. Add a filter to the seed data check below.
                     Filter = filter
                 });
-            var count = await results.Results.CountAsync();
+            var count = await results.CountAsync();
             if (count == recordCount)
             {
                 return;

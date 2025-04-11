@@ -50,8 +50,7 @@ public class VectorStore_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         // Search the collection using a vectorizable text search.
         var search = collection as IVectorizableTextSearch<Glossary>;
         var searchString = "What is an Application Programming Interface";
-        var searchResult = await search!.VectorizableTextSearchAsync(searchString, top: 1);
-        var resultRecords = await searchResult.Results.ToListAsync();
+        var resultRecords = await search!.VectorizableTextSearchAsync(searchString, top: 1).ToListAsync();
 
         Console.WriteLine("Search string: " + searchString);
         Console.WriteLine("Result: " + resultRecords.First().Record.Definition);

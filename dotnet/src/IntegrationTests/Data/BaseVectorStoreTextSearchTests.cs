@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -103,11 +104,14 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     protected sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
     {
         /// <inheritdoc/>
-        public async Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var vectorizedQuery = await textEmbeddingGeneration!.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            return await vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken);
+            await foreach (var result in vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken))
+            {
+                yield return result;
+            }
         }
 
         /// <inheritdoc />

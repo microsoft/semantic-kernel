@@ -64,14 +64,14 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         var upsertResult = await sut.UpsertAsync(hotel);
         var getResult = await sut.GetAsync("Upsert-1");
         var embedding = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var actual = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.VectorizedSearchAsync(
             embedding,
             top: 3,
             new()
             {
                 IncludeVectors = true,
                 OldFilter = new VectorSearchFilter().EqualTo("HotelName", "MyHotel Upsert-1")
-            });
+            }).ToListAsync();
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -91,7 +91,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         Assert.Equal(hotel.LastRenovationDate, getResult.LastRenovationDate);
         Assert.Equal(hotel.Rating, getResult.Rating);
 
-        var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
         var searchResultRecord = searchResults.First().Record;
         Assert.Equal(hotel.HotelName, searchResultRecord.HotelName);
@@ -346,7 +345,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = option == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "Hotel 3") : new VectorSearchFilter().AnyTagEqualTo("Tags", "bar");
-        var actual = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.VectorizedSearchAsync(
             await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel"),
             top: 3,
             new()
@@ -354,10 +353,9 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
                 IncludeVectors = includeVectors,
                 VectorProperty = r => r.DescriptionEmbedding,
                 OldFilter = filter,
-            });
+            }).ToListAsync();
 
         // Assert.
-        var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
         var searchResult = searchResults.First();
         Assert.Equal("BaseSet-3", searchResult.Record.HotelId);
@@ -387,17 +385,16 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
 
         // Act.
         var filter = new VectorSearchFilter().EqualTo("HotelName", "Hotel 3");
-        var actual = await sut.VectorizableTextSearchAsync(
+        var searchResults = await sut.VectorizableTextSearchAsync(
             "A hotel with great views.",
             top: 3,
             new()
             {
                 VectorProperty = r => r.DescriptionEmbedding,
                 OldFilter = filter,
-            });
+            }).ToListAsync();
 
         // Assert.
-        var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
     }
 

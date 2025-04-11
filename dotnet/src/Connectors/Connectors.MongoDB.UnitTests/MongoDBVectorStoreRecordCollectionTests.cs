@@ -581,13 +581,11 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         // Act & Assert
         if (exceptionExpected)
         {
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector, top: 3));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await sut.VectorizedSearchAsync(vector, top: 3).ToListAsync());
         }
         else
         {
-            var actual = await sut.VectorizedSearchAsync(vector, top: 3);
-
-            Assert.NotNull(actual);
+            Assert.NotNull(await sut.VectorizedSearchAsync(vector, top: 3).FirstOrDefaultAsync());
         }
     }
 
@@ -645,10 +643,10 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         var actual = await sut.VectorizedSearchAsync(vector, top: actualTop, new()
         {
             VectorProperty = vectorSelector,
-        });
+        }).FirstOrDefaultAsync();
 
         // Assert
-        Assert.NotNull(await actual.Results.FirstOrDefaultAsync());
+        Assert.NotNull(actual);
 
         this._mockMongoCollection.Verify(l => l.AggregateAsync(
             It.Is<PipelineDefinition<BsonDocument, BsonDocument>>(pipeline =>
@@ -670,7 +668,7 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
         var options = new MEVD.VectorSearchOptions<MongoDBHotelModel> { VectorProperty = r => "non-existent-property" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options)).Results.FirstOrDefaultAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, options).FirstOrDefaultAsync());
     }
 
     [Fact]
@@ -684,10 +682,9 @@ public sealed class MongoDBVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
+        var result = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).FirstOrDefaultAsync();
 
         // Assert
-        var result = await actual.Results.FirstOrDefaultAsync();
         Assert.NotNull(result);
         Assert.Equal("key", result.Record.HotelId);
         Assert.Equal("Test Name", result.Record.HotelName);
