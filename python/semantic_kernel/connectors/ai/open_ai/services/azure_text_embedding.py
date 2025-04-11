@@ -61,7 +61,7 @@ class AzureTextEmbedding(AzureOpenAIConfigBase, OpenAITextEmbeddingBase):
             environment variables. (Optional)
         """
         try:
-            azure_openai_settings = AzureOpenAISettings.create(
+            azure_openai_settings = AzureOpenAISettings(
                 env_file_path=env_file_path,
                 api_key=api_key,
                 embedding_deployment_name=deployment_name,

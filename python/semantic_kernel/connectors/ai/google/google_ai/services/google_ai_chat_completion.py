@@ -92,7 +92,7 @@ class GoogleAIChatCompletion(GoogleAIBase, ChatCompletionClientBase):
             ServiceInitializationError: If an error occurs during initialization.
         """
         try:
-            google_ai_settings = GoogleAISettings.create(
+            google_ai_settings = GoogleAISettings(
                 gemini_model_id=gemini_model_id,
                 api_key=api_key,
                 env_file_path=env_file_path,
