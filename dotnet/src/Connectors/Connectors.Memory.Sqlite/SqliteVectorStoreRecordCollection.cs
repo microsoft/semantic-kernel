@@ -199,7 +199,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string LimitPropertyName = "k";
 
@@ -257,14 +257,12 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
-        var vectorSearchResults = new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(
+        return this.EnumerateAndMapSearchResultsAsync(
             conditions,
             extraWhereFilter,
             extraParameters,
             searchOptions,
-            cancellationToken));
-
-        return Task.FromResult(vectorSearchResults);
+            cancellationToken);
     }
 
     /// <inheritdoc />

@@ -263,11 +263,11 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -305,7 +305,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         BsonDocument[] pipeline = [searchQuery, projectionQuery];
 
-        return await this.RunOperationWithRetryAsync(
+        var results = await this.RunOperationWithRetryAsync(
             "VectorizedSearch",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
@@ -315,9 +315,14 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+                return this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -379,7 +384,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -418,7 +423,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             numCandidates,
             filter);
 
-        return await this.RunOperationWithRetryAsync(
+        var results = await this.RunOperationWithRetryAsync(
             "KeywordVectorizedHybridSearch",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
@@ -428,9 +433,14 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+                return this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />

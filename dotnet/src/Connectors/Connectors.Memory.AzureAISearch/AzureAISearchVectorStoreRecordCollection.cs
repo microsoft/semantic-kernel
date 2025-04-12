@@ -301,7 +301,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -333,7 +333,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             VectorSearch = new(),
             Size = top,
             Skip = internalOptions.Skip,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
         };
 
         if (filter is not null)
@@ -358,8 +357,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -400,15 +399,12 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             searchOptions.OrderBy.Add(name);
         }
 
-        VectorSearchResults<TRecord> vectorSearchResults = await this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken).ConfigureAwait(false);
-        await foreach (var result in vectorSearchResults.Results.ConfigureAwait(false))
-        {
-            yield return result.Record;
-        }
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken)
+            .SelectAsync(result => result.Record, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(searchText);
         Verify.NotLessThan(top, 1);
@@ -445,7 +441,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             VectorSearch = new(),
             Size = top,
             Skip = internalOptions.Skip,
-            IncludeTotalCount = internalOptions.IncludeTotalCount,
         };
 
         if (filter is not null)
@@ -470,7 +465,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keywords);
         var floatVector = VerifyVectorParam(vector);
@@ -592,11 +587,11 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     /// <param name="includeVectors">A value indicating whether to include vectors in the result or not.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The mapped search results.</returns>
-    private async Task<VectorSearchResults<TRecord>> SearchAndMapToDataModelAsync(
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAndMapToDataModelAsync(
         string? searchText,
         SearchOptions searchOptions,
         bool includeVectors,
-        CancellationToken cancellationToken)
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         const string OperationName = "Search";
 
@@ -607,14 +602,18 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
                 OperationName,
                 () => this._searchClient.SearchAsync<JsonObject>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
 
-            var mappedJsonObjectResults = this.MapSearchResultsAsync(jsonObjectResults.Value.GetResultsAsync(), OperationName, includeVectors);
-            return new VectorSearchResults<TRecord>(mappedJsonObjectResults) { TotalCount = jsonObjectResults.Value.TotalCount };
+            await foreach (var result in this.MapSearchResultsAsync(jsonObjectResults.Value.GetResultsAsync(), OperationName, includeVectors).ConfigureAwait(false))
+            {
+                yield return result;
+            }
         }
 
         // Execute search and map using the built in Azure AI Search mapper.
         Response<SearchResults<TRecord>> results = await this.RunOperationAsync(OperationName, () => this._searchClient.SearchAsync<TRecord>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
-        var mappedResults = this.MapSearchResultsAsync(results.Value.GetResultsAsync());
-        return new VectorSearchResults<TRecord>(mappedResults) { TotalCount = results.Value.TotalCount };
+        await foreach (var result in this.MapSearchResultsAsync(results.Value.GetResultsAsync()).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <summary>
@@ -653,7 +652,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <summary>
-    /// Map the search results from <see cref="SearchResult{JsonObject}"/> to <see cref="VectorSearchResults{TRecord}"/> objects using the configured mapper type.
+    /// Map the search results from <see cref="SearchResult{JsonObject}"/> to <see cref="VectorSearchResult{TRecord}"/> objects using the configured mapper type.
     /// </summary>
     /// <param name="results">The search results to map.</param>
     /// <param name="operationName">The name of the current operation for telemetry purposes.</param>
@@ -674,7 +673,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     }
 
     /// <summary>
-    /// Map the search results from <see cref="SearchResult{TRecord}"/> to <see cref="VectorSearchResults{TRecord}"/> objects.
+    /// Map the search results from <see cref="SearchResult{TRecord}"/> to <see cref="VectorSearchResult{TRecord}"/> objects.
     /// </summary>
     /// <param name="results">The search results to map.</param>
     /// <returns>The mapped results.</returns>

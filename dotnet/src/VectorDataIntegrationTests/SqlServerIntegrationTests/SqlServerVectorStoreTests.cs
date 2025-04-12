@@ -82,18 +82,18 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
             AssertEquality(updated, received);
 
-            VectorSearchResult<TestModel> vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, top: 3, new()
+            VectorSearchResult<TestModel> vectorSearchResult = await (collection.VectorizedSearchAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = true
-            })).Results.SingleAsync();
+            })).SingleAsync();
             AssertEquality(updated, vectorSearchResult.Record);
 
-            vectorSearchResult = await (await collection.VectorizedSearchAsync(inserted.Floats, top: 3, new()
+            vectorSearchResult = await (collection.VectorizedSearchAsync(inserted.Floats, top: 3, new()
             {
                 VectorProperty = r => r.Floats,
                 IncludeVectors = false
-            })).Results.SingleAsync();
+            })).SingleAsync();
             // Make sure the vectors are not included in the result.
             Assert.Equal(0, vectorSearchResult.Record.Floats.Length);
 
