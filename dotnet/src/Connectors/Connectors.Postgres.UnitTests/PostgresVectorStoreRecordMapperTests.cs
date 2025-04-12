@@ -163,7 +163,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
                 new VectorStoreRecordDataProperty("StringProperty", typeof(string)),
                 new VectorStoreRecordDataProperty("IntProperty", typeof(int)),
                 new VectorStoreRecordDataProperty("StringArray", typeof(IEnumerable<string>)),
-                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>)),
+                new VectorStoreRecordVectorProperty("FloatVector", typeof(ReadOnlyMemory<float>), 10),
             }
         };
     }
@@ -198,7 +198,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public IEnumerable<string>? StringArray { get; set; }
 
-        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction: DistanceFunction.CosineDistance)]
+        [VectorStoreRecordVector(Dimensions: 4, DistanceFunction = DistanceFunction.CosineDistance)]
         public ReadOnlyMemory<float>? FloatVector { get; set; }
     }
 #pragma warning restore CA1812

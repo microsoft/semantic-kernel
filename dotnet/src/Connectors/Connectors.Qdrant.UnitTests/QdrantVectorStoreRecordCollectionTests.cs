@@ -537,7 +537,7 @@ public class QdrantVectorStoreRecordCollectionTests
             {
                 new VectorStoreRecordKeyProperty(nameof(SinglePropsModel<ulong>.Key), typeof(ulong)),
                 new VectorStoreRecordDataProperty(nameof(SinglePropsModel<ulong>.OriginalNameData), typeof(string)),
-                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordVectorProperty(nameof(SinglePropsModel<ulong>.Vector), typeof(ReadOnlyMemory<float>?), 4),
             }
         };
 
@@ -800,7 +800,7 @@ public class QdrantVectorStoreRecordCollectionTests
                 new VectorStoreRecordKeyProperty("Key", keyType),
                 new VectorStoreRecordDataProperty("OriginalNameData", typeof(string)) { IsIndexed = true, IsFullTextIndexed = true },
                 new VectorStoreRecordDataProperty("Data", typeof(string)) { IsIndexed = true, StoragePropertyName = "data_storage_name" },
-                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>)) { StoragePropertyName = "vector_storage_name" }
+                new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 4) { StoragePropertyName = "vector_storage_name" }
             ]
         };
     }

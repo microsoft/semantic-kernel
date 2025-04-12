@@ -51,18 +51,6 @@ public class QdrantVectorStoreCollectionCreateMappingTests
         Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData(0)]
-    public void MapSingleVectorThrowsIfDimensionsIsInvalid(int? dimensions)
-    {
-        // Arrange.
-        var vectorProperty = new VectorStoreRecordVectorPropertyModel("testvector", typeof(ReadOnlyMemory<float>)) { Dimensions = dimensions };
-
-        // Act and assert.
-        Assert.Throws<InvalidOperationException>(() => QdrantVectorStoreCollectionCreateMapping.MapSingleVector(vectorProperty));
-    }
-
     [Fact]
     public void MapNamedVectorsCreatesVectorParamsMap()
     {

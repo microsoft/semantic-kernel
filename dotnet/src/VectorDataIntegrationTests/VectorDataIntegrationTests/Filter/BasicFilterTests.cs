@@ -442,9 +442,8 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
                 Properties =
                 [
                     new VectorStoreRecordKeyProperty(nameof(FilterRecord.Key), typeof(TKey)),
-                    new VectorStoreRecordVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?))
+                    new VectorStoreRecordVectorProperty(nameof(FilterRecord.Vector), typeof(ReadOnlyMemory<float>?), 3)
                     {
-                        Dimensions = 3,
                         DistanceFunction = this.DistanceFunction,
                         IndexKind = this.IndexKind
                     },

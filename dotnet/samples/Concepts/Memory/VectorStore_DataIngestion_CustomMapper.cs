@@ -50,7 +50,7 @@ public class VectorStore_DataIngestion_CustomMapper(ITestOutputHelper output, Ve
             new VectorStoreRecordKeyProperty("Key", typeof(string)),
             new VectorStoreRecordDataProperty("Term", typeof(string)),
             new VectorStoreRecordDataProperty("Definition", typeof(string)),
-            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 1536, DistanceFunction = DistanceFunction.DotProductSimilarity }
+            new VectorStoreRecordVectorProperty("DefinitionEmbedding", typeof(ReadOnlyMemory<float>), 1536) { DistanceFunction = DistanceFunction.DotProductSimilarity }
         }
     };
 

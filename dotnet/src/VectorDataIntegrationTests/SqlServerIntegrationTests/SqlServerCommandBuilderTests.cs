@@ -113,7 +113,7 @@ public class SqlServerCommandBuilderTests
                 new VectorStoreRecordKeyProperty("id", typeof(long)),
                 new VectorStoreRecordDataProperty("simpleName", typeof(string)),
                 new VectorStoreRecordDataProperty("with space", typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 }
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
             ]);
 
         using SqlConnection connection = CreateConnection();
@@ -149,7 +149,7 @@ public class SqlServerCommandBuilderTests
                 new VectorStoreRecordKeyProperty("id", typeof(long)),
                 new VectorStoreRecordDataProperty("simpleString", typeof(string)),
                 new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
-                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 }
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
             ]);
 
         using SqlConnection connection = CreateConnection();
@@ -194,7 +194,7 @@ public class SqlServerCommandBuilderTests
                 new VectorStoreRecordKeyProperty("id", typeof(long)),
                 new VectorStoreRecordDataProperty("simpleString", typeof(string)),
                 new VectorStoreRecordDataProperty("simpleInt", typeof(int)),
-                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 }
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
             ]);
 
         Dictionary<string, object?>[] records =
@@ -292,7 +292,7 @@ public class SqlServerCommandBuilderTests
                 new VectorStoreRecordKeyProperty("id", typeof(long)),
                 new VectorStoreRecordDataProperty("name", typeof(string)),
                 new VectorStoreRecordDataProperty("age", typeof(int)),
-                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 }
+                new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
             ]);
 
         using SqlConnection connection = CreateConnection();
@@ -317,7 +317,7 @@ public class SqlServerCommandBuilderTests
             new VectorStoreRecordKeyProperty("id", typeof(long)),
             new VectorStoreRecordDataProperty("name", typeof(string)),
             new VectorStoreRecordDataProperty("age", typeof(int)),
-            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 }
+            new VectorStoreRecordVectorProperty("embedding", typeof(ReadOnlyMemory<float>), 10)
         ]);
 
         long[] keys = [123L, 456L, 789L];

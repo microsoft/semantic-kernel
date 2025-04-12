@@ -134,10 +134,10 @@ public sealed class RedisJsonVectorStoreRecordMapperTests
         [VectorStoreRecordData]
         public string Data2 { get; set; } = string.Empty;
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? Vector1 { get; set; }
 
-        [VectorStoreRecordVector]
+        [VectorStoreRecordVector(10)]
         public ReadOnlyMemory<float>? Vector2 { get; set; }
 
         public string NotAnnotated { get; set; } = string.Empty;

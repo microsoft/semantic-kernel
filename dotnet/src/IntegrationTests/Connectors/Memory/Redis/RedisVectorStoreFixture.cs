@@ -43,7 +43,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
                 new VectorStoreRecordDataProperty("Tags", typeof(string[])) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("FTSTags", typeof(string[])) { IsFullTextIndexed = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
@@ -60,7 +60,7 @@ public class RedisVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("HotelName", typeof(string)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsIndexed = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)) { IsFullTextIndexed = true },
-                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = 4 },
+                new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?), 4),
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("Rating", typeof(double)),
             }

@@ -110,14 +110,9 @@ internal static class RedisVectorStoreCollectionCreateMapping
                     continue;
 
                 case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (vectorProperty.Dimensions is not > 0)
-                    {
-                        throw new InvalidOperationException($"Property {nameof(vectorProperty.Dimensions)} on {nameof(VectorStoreRecordVectorProperty)} '{vectorProperty.ModelName}' must be set to a positive integer to create a collection.");
-                    }
-
                     var indexKind = GetSDKIndexKind(vectorProperty);
                     var vectorType = GetSDKVectorType(vectorProperty);
-                    var dimensions = vectorProperty.Dimensions.Value.ToString(CultureInfo.InvariantCulture);
+                    var dimensions = vectorProperty.Dimensions.ToString(CultureInfo.InvariantCulture);
                     var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
                     schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
                     {
