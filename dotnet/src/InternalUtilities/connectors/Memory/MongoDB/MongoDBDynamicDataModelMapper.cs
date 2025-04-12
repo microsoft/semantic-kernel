@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using MongoDB.Bson;
@@ -21,38 +22,45 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
 #pragma warning restore CS0618
 {
     /// <inheritdoc />
-    public BsonDocument MapFromDataToStorageModel(Dictionary<string, object?> dataModel)
+    public BsonDocument MapFromDataToStorageModel(Dictionary<string, object?> dataModel, Embedding?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
         var document = new BsonDocument();
 
-        // Loop through all known properties and map each from the data model to the storage model.
-        foreach (var property in model.Properties)
+        document[MongoDBConstants.MongoReservedKeyPropertyName] = (string)(dataModel[model.KeyProperty.ModelName]
+            ?? throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."));
+
+        foreach (var property in model.DataProperties)
         {
-            switch (property)
+            if (dataModel.TryGetValue(property.ModelName, out var dataValue))
             {
-                case VectorStoreRecordKeyPropertyModel keyProperty:
-                    document[MongoDBConstants.MongoReservedKeyPropertyName] = (string)(dataModel[keyProperty.ModelName]
-                        ?? throw new InvalidOperationException($"Key property '{keyProperty.ModelName}' is null."));
-                    continue;
+                document[property.StorageName] = BsonValue.Create(dataValue);
+            }
+        }
 
-                case VectorStoreRecordDataPropertyModel dataProperty:
-                    if (dataModel.TryGetValue(dataProperty.ModelName, out var dataValue))
-                    {
-                        document[dataProperty.StorageName] = BsonValue.Create(dataValue);
-                    }
-                    continue;
+        for (var i = 0; i < model.VectorProperties.Count; i++)
+        {
+            var property = model.VectorProperties[i];
 
-                case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (dataModel.TryGetValue(vectorProperty.ModelName, out var vectorValue))
-                    {
-                        document[vectorProperty.StorageName] = BsonArray.Create(GetVectorArray(vectorValue));
-                    }
-                    continue;
-
-                default:
-                    throw new UnreachableException();
+            if (generatedEmbeddings?[i] is null)
+            {
+                // No generated embedding, read the vector directly from the data model
+                if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
+                {
+                    document[property.StorageName] = BsonArray.Create(GetVectorArray(vectorValue));
+                }
+            }
+            else
+            {
+                Debug.Assert(property.EmbeddingGenerator is not null);
+                var embedding = generatedEmbeddings[i];
+                document[property.StorageName] = embedding switch
+                {
+                    Embedding<float> e => BsonArray.Create(e.Vector.ToArray()),
+                    Embedding<double> e => BsonArray.Create(e.Vector.ToArray()),
+                    _ => throw new UnreachableException()
+                };
             }
         }
 
@@ -85,7 +93,7 @@ internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model
                     continue;
 
                 case VectorStoreRecordVectorPropertyModel vectorProperty:
-                    if (storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
+                    if (options.IncludeVectors && storageModel.TryGetValue(vectorProperty.StorageName, out var vectorValue))
                     {
                         result.Add(vectorProperty.ModelName, GetVectorPropertyValue(property.ModelName, property.Type, vectorValue));
                     }

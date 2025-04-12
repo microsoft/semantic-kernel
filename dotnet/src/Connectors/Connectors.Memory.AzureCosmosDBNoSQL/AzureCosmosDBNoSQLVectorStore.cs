@@ -70,7 +70,8 @@ public sealed class AzureCosmosDBNoSQLVectorStore : IVectorStore
             new()
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
-                JsonSerializerOptions = this._options.JsonSerializerOptions
+                JsonSerializerOptions = this._options.JsonSerializerOptions,
+                EmbeddingGenerator = this._options.EmbeddingGenerator
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection!;

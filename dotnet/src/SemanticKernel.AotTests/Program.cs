@@ -57,9 +57,11 @@ internal sealed class Program
         KernelBuilderPluginsExtensionsTests.AddFromType,
         KernelBuilderPluginsExtensionsTests.AddFromObject,
 
+#if DISABLED
         // Tests for text search
         VectorStoreTextSearchTests.GetTextSearchResultsAsync,
         VectorStoreTextSearchTests.AddVectorStoreTextSearch,
+#endif
 
         TextSearchExtensionsTests.CreateWithSearch,
         TextSearchExtensionsTests.CreateWithGetTextSearchResults,

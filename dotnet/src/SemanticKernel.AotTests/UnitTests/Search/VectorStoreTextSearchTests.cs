@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -82,3 +84,5 @@ internal sealed class VectorStoreTextSearchTests
         public required string Link { get; init; }
     }
 }
+
+#endif

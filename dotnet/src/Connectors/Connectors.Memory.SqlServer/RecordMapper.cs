@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -9,7 +10,7 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
 {
-    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
+    public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
     {
         Dictionary<string, object?> map = new(StringComparer.Ordinal);
 
@@ -23,7 +24,7 @@ internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
         foreach (var property in model.VectorProperties)
         {
             // We restrict the vector properties to ReadOnlyMemory<float> so the cast here is safe.
-            map[property.StorageName] = (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!;
+            map[property.StorageName] = (ReadOnlyMemory<float>)(generatedEmbedding?.Vector ?? property.GetValueAsObject(dataModel!)!);
         }
 
         return map;

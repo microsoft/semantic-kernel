@@ -348,5 +348,6 @@ public class SqlServerCommandBuilderTests
         => new VectorStoreRecordModelBuilder(SqlServerConstants.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
-                new() { Properties = properties });
+                new() { Properties = properties },
+                defaultEmbeddingGenerator: null);
 }

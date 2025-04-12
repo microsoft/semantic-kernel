@@ -376,10 +376,10 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task VectorizedSearchReturnsValidRecordAsync(bool includeVectors)
+    public async Task SearchEmbeddingReturnsValidRecordAsync(bool includeVectors)
     {
         // Arrange
-        const string CollectionName = "VectorizedSearchCollection";
+        const string CollectionName = "SearchEmbeddingCollection";
         var id = new Guid("55555555-5555-5555-5555-555555555555");
         var vector = new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]);
 
@@ -423,7 +423,7 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, CollectionName);
 
         // Act
-        var results = await sut.VectorizedSearchAsync(vector, top: 3, new()
+        var results = await sut.SearchEmbeddingAsync(vector, top: 3, new()
         {
             IncludeVectors = includeVectors
         }).ToListAsync();
@@ -457,25 +457,25 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
     }
 
     [Fact]
-    public async Task VectorizedSearchWithUnsupportedVectorTypeThrowsExceptionAsync()
+    public async Task SearchEmbeddingWithUnsupportedVectorTypeThrowsExceptionAsync()
     {
         // Arrange
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
+            await sut.SearchEmbeddingAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
     }
 
     [Fact]
-    public async Task VectorizedSearchWithNonExistentVectorPropertyNameThrowsExceptionAsync()
+    public async Task SearchEmbeddingWithNonExistentVectorPropertyNameThrowsExceptionAsync()
     {
         // Arrange
         var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(this._mockHttpClient, "Collection");
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await sut.VectorizedSearchAsync(
+            await sut.SearchEmbeddingAsync(
                 new ReadOnlyMemory<float>([1f, 2f, 3f]),
                 top: 3,
                 new() { VectorProperty = r => "non-existent-property" })

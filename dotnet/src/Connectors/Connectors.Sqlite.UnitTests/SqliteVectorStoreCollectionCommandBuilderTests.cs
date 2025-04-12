@@ -334,5 +334,6 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         => new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(
                 typeof(Dictionary<string, object?>),
-                new() { Properties = properties });
+                new() { Properties = properties },
+                defaultEmbeddingGenerator: null);
 }

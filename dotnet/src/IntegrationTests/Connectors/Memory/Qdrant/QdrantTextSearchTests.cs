@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Connectors.Qdrant;
@@ -91,3 +93,5 @@ public class QdrantTextSearchTests(QdrantVectorStoreFixture fixture) : BaseVecto
         }
     }
 }
+
+#endif

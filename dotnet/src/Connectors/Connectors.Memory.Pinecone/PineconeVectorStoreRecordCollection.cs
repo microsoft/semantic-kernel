@@ -8,8 +8,10 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData.Properties;
 using Pinecone;
 using Sdk = Pinecone;
 
@@ -62,7 +64,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         this.Name = name;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new VectorStoreRecordModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
-            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.EmbeddingGenerator);
         this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
@@ -156,6 +158,11 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
+        if (options?.IncludeVectors is true && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+
         Sdk.FetchRequest request = new()
         {
             Namespace = this._options.IndexNamespace,
@@ -188,6 +195,11 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
+
+        if (options?.IncludeVectors is true && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
 #pragma warning disable CA1851 // Bogus: Possible multiple enumerations of 'IEnumerable' collection
         var keysList = keys switch
@@ -278,12 +290,29 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(record);
 
+        // If an embedding generator is defined, invoke it once for all records.
+        Embedding<float>? generatedEmbedding = null;
+
+        Debug.Assert(this._model.VectorProperties.Count <= 1);
+        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        {
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var task))
+            {
+                generatedEmbedding = await task.ConfigureAwait(false);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
         var vector = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
             this.Name,
             "Upsert",
-            () => this._mapper.MapFromDataToStorageModel(record));
+            () => this._mapper.MapFromDataToStorageModel(record, generatedEmbedding));
 
         Sdk.UpsertRequest request = new()
         {
@@ -303,12 +332,39 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(records);
 
+        // If an embedding generator is defined, invoke it once for all records.
+        GeneratedEmbeddings<Embedding<float>>? generatedEmbeddings = null;
+
+        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        {
+            var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+            if (recordsList.Count == 0)
+            {
+                return [];
+            }
+
+            records = recordsList;
+
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            {
+                generatedEmbeddings = await task.ConfigureAwait(false);
+
+                Debug.Assert(generatedEmbeddings.Count == recordsList.Count);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
+            }
+        }
+
         var vectors = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
             this.Name,
             "UpsertBatch",
-            () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
+            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, generatedEmbeddings?[i])).ToList());
 
         if (vectors.Count == 0)
         {
@@ -328,8 +384,64 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         return vectors.Select(x => (TKey)(object)x.Id).ToList();
     }
 
+    #region Search
+
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+        TInput value,
+        int top,
+        VectorSearchOptions<TRecord>? options = default,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+
+        switch (vectorProperty.EmbeddingGenerator)
+        {
+            case IEmbeddingGenerator<TInput, Embedding<float>> generator:
+                var embedding = await generator.GenerateEmbeddingAsync(value, new() { Dimensions = vectorProperty.Dimensions }, cancellationToken).ConfigureAwait(false);
+
+                await foreach (var record in this.SearchCoreAsync(embedding.Vector, top, vectorProperty, operationName: "Search", options, cancellationToken).ConfigureAwait(false))
+                {
+                    yield return record;
+                }
+
+                yield break;
+
+            case null:
+                throw new InvalidOperationException(VectorDataStrings.NoEmbeddingGeneratorWasConfiguredForSearch);
+
+            default:
+                throw new InvalidOperationException(
+                    PineconeVectorStoreRecordFieldMapping.s_supportedVectorTypes.Contains(typeof(TInput))
+                        ? string.Format(VectorDataStrings.EmbeddingTypePassedToSearchAsync)
+                        : string.Format(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType, typeof(TInput).Name, vectorProperty.EmbeddingGenerator.GetType().Name));
+        }
+    }
+
+    /// <inheritdoc />
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> SearchEmbeddingAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorSearchOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
+        where TVector : notnull
+    {
+        var searchOptions = options ?? s_defaultVectorSearchOptions;
+        var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
+
+        return this.SearchCoreAsync(vector, top, vectorProperty, operationName: "SearchEmbedding", options, cancellationToken);
+    }
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchCoreAsync<TVector>(
+        TVector vector,
+        int top,
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        string operationName,
+        VectorSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TVector : notnull
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -341,6 +453,11 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         options ??= s_defaultVectorSearchOptions;
+
+        if (options.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         var filter = options switch
@@ -395,6 +512,14 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
+    /// <inheritdoc />
+    [Obsolete("Use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call.")]
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+        where TVector : notnull
+        => this.SearchEmbeddingAsync(vector, top, options, cancellationToken);
+
+    #endregion Search
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -407,6 +532,11 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         options ??= new();
+
+        if (options.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
 
         Sdk.QueryRequest request = new()
         {

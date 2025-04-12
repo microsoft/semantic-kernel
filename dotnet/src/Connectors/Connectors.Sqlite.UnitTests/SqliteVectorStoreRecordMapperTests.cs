@@ -25,7 +25,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
         var mapper = new SqliteVectorStoreRecordMapper<TestRecord<string>>(model);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel);
+        var result = mapper.MapFromDataToStorageModel(dataModel, generatedEmbedding: null);
 
         // Assert
         Assert.Equal("key", result["Key"]);
@@ -49,7 +49,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
         var mapper = new SqliteVectorStoreRecordMapper<TestRecord<ulong>>(model);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel);
+        var result = mapper.MapFromDataToStorageModel(dataModel, generatedEmbedding: null);
 
         // Assert
         Assert.Equal((ulong)1, result["Key"]);
@@ -172,7 +172,7 @@ public sealed class SqliteVectorStoreRecordMapperTests
     }
 
     private static VectorStoreRecordModel BuildModel(Type type, VectorStoreRecordDefinition definition)
-        => new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions).Build(type, definition);
+        => new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions).Build(type, definition, defaultEmbeddingGenerator: null);
 
 #pragma warning disable CA1812
     private sealed class TestRecord<TKey>

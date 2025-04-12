@@ -2,6 +2,7 @@
 
 using System;
 using System.Text.Json;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 
@@ -20,4 +21,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreOptions
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.
     /// </summary>
     public JsonSerializerOptions? JsonSerializerOptions { get; init; }
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

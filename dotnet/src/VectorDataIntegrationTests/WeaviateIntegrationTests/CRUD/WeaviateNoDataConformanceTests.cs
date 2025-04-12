@@ -17,7 +17,7 @@ public class WeaviateNoDataConformanceTests_NamedVectors(WeaviateNoDataConforman
         /// <summary>
         /// Weaviate collections must start with an uppercase letter.
         /// </summary>
-        protected override string CollectionName => "NoDataNamedCollection";
+        public override string CollectionName => "NoDataNamedCollection";
     }
 }
 
@@ -31,6 +31,6 @@ public class WeaviateNoDataConformanceTests_UnnamedVector(WeaviateNoDataConforma
         /// <summary>
         /// Weaviate collections must start with an uppercase letter.
         /// </summary>
-        protected override string CollectionName => "NoDataUnnamedCollection";
+        public override string CollectionName => "NoDataUnnamedCollection";
     }
 }

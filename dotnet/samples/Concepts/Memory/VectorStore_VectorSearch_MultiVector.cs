@@ -54,7 +54,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         // Search the store using the description embedding.
         var searchString = "I am looking for a reasonably priced coffee maker";
         var searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        var resultRecords = await collection.VectorizedSearchAsync(
+        var resultRecords = await collection.SearchEmbeddingAsync(
             searchVector, top: 1, new()
             {
                 VectorProperty = r => r.DescriptionEmbedding
@@ -68,7 +68,7 @@ public class VectorStore_VectorSearch_MultiVector(ITestOutputHelper output) : Ba
         // Search the store using the feature list embedding.
         searchString = "I am looking for a handheld vacuum cleaner that will remove pet hair";
         searchVector = await textEmbeddingGenerationService.GenerateEmbeddingAsync(searchString);
-        resultRecords = await collection.VectorizedSearchAsync(
+        resultRecords = await collection.SearchEmbeddingAsync(
             searchVector,
             top: 1,
             new()

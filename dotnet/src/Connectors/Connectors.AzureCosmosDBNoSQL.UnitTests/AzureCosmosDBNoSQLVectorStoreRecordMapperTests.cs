@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Extensions.VectorData.ConnectorSupport;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
 using Xunit;
 
@@ -18,11 +18,20 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordMapperTests
 {
     private readonly AzureCosmosDBNoSQLVectorStoreRecordMapper<AzureCosmosDBNoSQLHotel> _sut
         = new(
-            new VectorStoreRecordKeyPropertyModel("HotelId", typeof(string))
-            {
-                StorageName = "id",
-                TemporaryStorageName = "HotelId"
-            },
+            new AzureCosmosDBNoSQLVectorStoreModelBuilder().Build(
+                typeof(Dictionary<string, object?>),
+                new()
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("HotelId", typeof(string)),
+                        new VectorStoreRecordVectorProperty("TestProperty1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "test_property_1" },
+                        new VectorStoreRecordDataProperty("TestProperty2", typeof(string)) { StoragePropertyName = "test_property_2" },
+                        new VectorStoreRecordDataProperty("TestProperty3", typeof(string)) { StoragePropertyName = "test_property_3" }
+                    ]
+                },
+                defaultEmbeddingGenerator: null,
+                JsonSerializerOptions.Default),
             JsonSerializerOptions.Default);
 
     [Fact]
@@ -37,7 +46,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordMapperTests
         };
 
         // Act
-        var document = this._sut.MapFromDataToStorageModel(hotel);
+        var document = this._sut.MapFromDataToStorageModel(hotel, generatedEmbeddings: null);
 
         // Assert
         Assert.NotNull(document);

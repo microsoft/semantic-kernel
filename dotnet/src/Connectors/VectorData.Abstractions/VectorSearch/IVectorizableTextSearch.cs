@@ -11,6 +11,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Contains a method for doing a vector search using text that will be vectorized downstream.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
+[Obsolete("Use IVectorStoreRecordCollection.SearchAsync instead")]
 public interface IVectorizableTextSearch<TRecord>
 {
     /// <summary>

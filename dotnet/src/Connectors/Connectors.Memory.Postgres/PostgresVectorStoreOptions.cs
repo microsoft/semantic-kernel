@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
@@ -13,6 +14,11 @@ public sealed class PostgresVectorStoreOptions
     /// Gets or sets the database schema.
     /// </summary>
     public string Schema { get; init; } = "public";
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 
     /// <summary>
     /// An optional factory to use for constructing <see cref="PostgresVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.

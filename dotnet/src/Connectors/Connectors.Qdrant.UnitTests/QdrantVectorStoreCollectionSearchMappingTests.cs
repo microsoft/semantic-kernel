@@ -29,7 +29,8 @@ public class QdrantVectorStoreCollectionSearchMappingTests
                     new VectorStoreRecordDataProperty("FieldName", typeof(string)) { StoragePropertyName = "storage_FieldName" },
                     new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "storage_vector" },
                 ]
-            });
+            },
+            defaultEmbeddingGenerator: null);
 
     [Theory]
     [InlineData("string")]
@@ -128,7 +129,8 @@ public class QdrantVectorStoreCollectionSearchMappingTests
                         new VectorStoreRecordDataProperty("DataField", typeof(string)) { StoragePropertyName = "storage_DataField" },
                         new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 10),
                     ]
-                });
+                },
+                defaultEmbeddingGenerator: null);
 
         var mapper = new QdrantVectorStoreRecordMapper<DataModel>(model, hasNamedVectors: false);
 

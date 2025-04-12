@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -9,6 +10,11 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 /// </summary>
 public sealed class PineconeVectorStoreOptions
 {
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this collection.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+
     /// <summary>
     /// An optional factory to use for constructing <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
     /// </summary>

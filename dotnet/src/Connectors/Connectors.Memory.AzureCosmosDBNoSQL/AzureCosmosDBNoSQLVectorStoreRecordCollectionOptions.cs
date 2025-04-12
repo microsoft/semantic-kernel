@@ -4,6 +4,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureCosmosDBNoSQL;
@@ -58,4 +59,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord
     /// Default is <see langword="true" />.
     /// </remarks>
     public bool Automatic { get; init; } = true;
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

@@ -1,16 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
 internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper<TRecord>
-#pragma warning restore CS0618
 {
     private readonly string _collectionName;
     private readonly bool _hasNamedVectors;
@@ -35,7 +36,7 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper
             WeaviateConstants.ReservedSingleVectorPropertyName;
     }
 
-    public JsonObject MapFromDataToStorageModel(TRecord dataModel)
+    public JsonObject MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         Verify.NotNull(dataModel);
 
@@ -67,24 +68,51 @@ internal sealed class WeaviateVectorStoreRecordMapper<TRecord> : IWeaviateMapper
         // Populate vector properties.
         if (this._hasNamedVectors)
         {
-            foreach (var property in this._model.VectorProperties)
+            for (var i = 0; i < this._model.VectorProperties.Count; i++)
             {
-                var node = jsonNodeDataModel[property.StorageName];
+                var property = this._model.VectorProperties[i];
 
-                if (node is not null)
+                if (generatedEmbeddings?[i] is IReadOnlyList<Embedding> e)
                 {
-                    weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = node.DeepClone();
+                    weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = e[recordIndex] switch
+                    {
+                        Embedding<float> fe => JsonValue.Create(fe.Vector.ToArray()),
+                        Embedding<double> de => JsonValue.Create(de.Vector.ToArray()),
+                        _ => throw new UnreachableException()
+                    };
+                }
+                else
+                {
+                    var node = jsonNodeDataModel[property.StorageName];
+
+                    if (node is not null)
+                    {
+                        weaviateObjectModel[this._vectorPropertyName]![property.StorageName] = node.DeepClone();
+                    }
                 }
             }
         }
         else
         {
-            var vectorProperty = this._model.VectorProperty;
-            var node = jsonNodeDataModel[vectorProperty.StorageName];
+            var property = this._model.VectorProperty;
 
-            if (node is not null)
+            if (generatedEmbeddings?.Single() is IReadOnlyList<Embedding> e)
             {
-                weaviateObjectModel[this._vectorPropertyName] = node.DeepClone();
+                weaviateObjectModel[this._vectorPropertyName] = e[recordIndex] switch
+                {
+                    Embedding<float> fe => JsonValue.Create(fe.Vector.ToArray()),
+                    Embedding<double> de => JsonValue.Create(de.Vector.ToArray()),
+                    _ => throw new UnreachableException()
+                };
+            }
+            else
+            {
+                var node = jsonNodeDataModel[property.StorageName];
+
+                if (node is not null)
+                {
+                    weaviateObjectModel[this._vectorPropertyName] = node.DeepClone();
+                }
             }
         }
 

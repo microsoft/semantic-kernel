@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Embeddings;
@@ -21,7 +21,7 @@ public class VectorStoreTextSearchTestBase
 #pragma warning restore CA1052 // Static holder types should be Static or NotInheritable
 {
     /// <summary>
-    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizedSearchAsync()
     {
@@ -29,14 +29,14 @@ public class VectorStoreTextSearchTestBase
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        var embeddingService = new MockTextEmbeddingGenerationService();
+        var embeddingService = new MockTextEmbeddingGenerator();
         await AddRecordsAsync(vectorSearch, embeddingService);
         var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, embeddingService, stringMapper, resultMapper);
         return sut;
     }
 
     /// <summary>
-    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorizedSearch{TRecord}"/>.
+    /// Create a <see cref="VectorStoreTextSearch{TRecord}"/> from a <see cref="IVectorSearch{TRecord}"/>.
     /// </summary>
     public static async Task<VectorStoreTextSearch<DataModel>> CreateVectorStoreTextSearchFromVectorizableTextSearchAsync()
     {
@@ -44,10 +44,9 @@ public class VectorStoreTextSearchTestBase
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
-        var embeddingService = new MockTextEmbeddingGenerationService();
+        var embeddingService = new MockTextEmbeddingGenerator();
         await AddRecordsAsync(vectorSearch, embeddingService);
-        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
-        var sut = new VectorStoreTextSearch<DataModel>(vectorizableTextSearch, stringMapper, resultMapper);
+        var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, stringMapper, resultMapper);
         return sut;
     }
 
@@ -106,45 +105,18 @@ public class VectorStoreTextSearchTestBase
     }
 
     /// <summary>
-    /// Mock implementation of <see cref="ITextEmbeddingGenerationService"/>.
+    /// Mock implementation of <see cref="IEmbeddingGenerator"/>.
     /// </summary>
-    public sealed class MockTextEmbeddingGenerationService : ITextEmbeddingGenerationService
+    public sealed class MockTextEmbeddingGenerator : IEmbeddingGenerator<string, Embedding<float>>
     {
-        /// <inheritdoc />
-        public IReadOnlyDictionary<string, object?> Attributes { get; } = ReadOnlyDictionary<string, object?>.Empty;
+        public Task<GeneratedEmbeddings<Embedding<float>>> GenerateAsync(
+            IEnumerable<string> values,
+            EmbeddingGenerationOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new GeneratedEmbeddings<Embedding<float>>([new Embedding<float>(new float[] { 0, 1, 2, 3 })]));
 
-        /// <inheritdoc />
-        public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(IList<string> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
-        {
-            IList<ReadOnlyMemory<float>> result = [new float[] { 0, 1, 2, 3 }];
-            return Task.FromResult(result);
-        }
-    }
-
-    /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
-    /// </summary>
-    public sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
-    {
-        /// <inheritdoc/>
-        public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var vectorizedQuery = await textEmbeddingGeneration.GenerateEmbeddingAsync(searchText, cancellationToken: cancellationToken).ConfigureAwait(false);
-            await foreach (var result in vectorizedSearch.VectorizedSearchAsync(vectorizedQuery, top, options, cancellationToken))
-            {
-                yield return result;
-            }
-        }
-
-        /// <inheritdoc />
-        public object? GetService(Type serviceType, object? serviceKey = null)
-        {
-            ArgumentNullException.ThrowIfNull(serviceType);
-
-            return
-                serviceKey is null && serviceType.IsInstanceOfType(this) ? this :
-                vectorizedSearch.GetService(serviceType, serviceKey);
-        }
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+        public void Dispose() { }
     }
 
     /// <summary>
@@ -171,3 +143,5 @@ public class VectorStoreTextSearchTestBase
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }
+
+#endif

@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -21,22 +24,43 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
     private readonly string _keyPropertyStorageName = model.KeyProperty.StorageName;
 
     /// <inheritdoc />
-    public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel)
+    public (string Key, JsonNode Node) MapFromDataToStorageModel(TConsumerDataModel dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         // Convert the provided record into a JsonNode object and try to get the key field for it.
         // Since we already checked that the key field is a string in the constructor, and that it exists on the model,
         // the only edge case we have to be concerned about is if the key field is null.
-        var jsonNode = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions);
-        if (jsonNode!.AsObject().TryGetPropertyValue(this._keyPropertyStorageName, out var keyField) && keyField is JsonValue jsonValue)
-        {
-            // Remove the key field from the JSON object since we don't want to store it in the redis payload.
-            var keyValue = jsonValue.ToString();
-            jsonNode.AsObject().Remove(this._keyPropertyStorageName);
+        var jsonNode = JsonSerializer.SerializeToNode(dataModel, jsonSerializerOptions)!.AsObject();
 
-            return (keyValue, jsonNode);
+        if (!(jsonNode.TryGetPropertyValue(this._keyPropertyStorageName, out var keyField) && keyField is JsonValue jsonValue))
+        {
+            throw new VectorStoreRecordMappingException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
         }
 
-        throw new VectorStoreRecordMappingException($"Missing key field '{this._keyPropertyStorageName}' on provided record of type {typeof(TConsumerDataModel).FullName}.");
+        // Remove the key field from the JSON object since we don't want to store it in the redis payload.
+        var keyValue = jsonValue.ToString();
+        jsonNode.Remove(this._keyPropertyStorageName);
+
+        // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
+        // the value in the JSON object with that.
+        if (generatedEmbeddings is not null)
+        {
+            for (var i = 0; i < model.VectorProperties.Count; i++)
+            {
+                if (generatedEmbeddings[i] is IReadOnlyList<Embedding> propertyEmbeddings)
+                {
+                    var property = model.VectorProperties[i];
+                    Debug.Assert(property.EmbeddingGenerator is not null);
+                    jsonNode[property.StorageName] = propertyEmbeddings[recordIndex] switch
+                    {
+                        Embedding<float> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        Embedding<double> e => JsonSerializer.SerializeToNode(e.Vector, jsonSerializerOptions),
+                        _ => throw new UnreachableException()
+                    };
+                }
+            }
+        }
+
+        return (keyValue, jsonNode);
     }
 
     /// <inheritdoc />
@@ -65,6 +89,20 @@ internal sealed class RedisJsonVectorStoreRecordMapper<TConsumerDataModel>(
 
         // Since the key is not stored in the redis value, add it back in before deserializing into the data model.
         jsonObject.Add(this._keyPropertyStorageName, storageModel.Key);
+
+        // For vector properties which have embedding generation configured, we need to remove the embeddings before deserializing
+        // (we can't go back from an embedding to e.g. string).
+        // For other cases (no embedding generation), we leave the properties even if IncludeVectors is false.
+        if (!options.IncludeVectors)
+        {
+            foreach (var vectorProperty in model.VectorProperties)
+            {
+                if (vectorProperty.EmbeddingGenerator is not null)
+                {
+                    jsonObject.Remove(vectorProperty.StorageName);
+                }
+            }
+        }
 
         return JsonSerializer.Deserialize<TConsumerDataModel>(jsonObject, jsonSerializerOptions)!;
     }

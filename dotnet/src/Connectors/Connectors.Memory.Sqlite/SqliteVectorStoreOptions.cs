@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 
@@ -29,4 +30,9 @@ public sealed class SqliteVectorStoreOptions
     /// If not provided, collection name with prefix "vec_" will be used as virtual table name.
     /// </remarks>
     public string? VectorVirtualTableName { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

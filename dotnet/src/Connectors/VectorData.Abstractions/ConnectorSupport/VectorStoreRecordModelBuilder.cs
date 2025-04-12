@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.Properties;
 
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -49,6 +51,11 @@ public class VectorStoreRecordModelBuilder
     protected Dictionary<string, VectorStoreRecordPropertyModel> PropertyMap { get; } = new();
 
     /// <summary>
+    /// The default embedding generator to use for vector properties, when none is specified at the property or collection level.
+    /// </summary>
+    protected IEmbeddingGenerator? DefaultEmbeddingGenerator { get; private set; }
+
+    /// <summary>
     /// Constructs a new <see cref="VectorStoreRecordModelBuilder"/>.
     /// </summary>
     public VectorStoreRecordModelBuilder(VectorStoreRecordModelBuildingOptions options)
@@ -66,8 +73,10 @@ public class VectorStoreRecordModelBuilder
     /// </summary>
     [RequiresDynamicCode("Currently not compatible with NativeAOT code")]
     [RequiresUnreferencedCode("Currently not compatible with trimming")] // TODO
-    public virtual VectorStoreRecordModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition)
+    public virtual VectorStoreRecordModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition, IEmbeddingGenerator? defaultEmbeddingGenerator)
     {
+        this.DefaultEmbeddingGenerator = defaultEmbeddingGenerator;
+
         var dynamicMapping = type == typeof(Dictionary<string, object?>);
 
         if (!dynamicMapping)
@@ -144,12 +153,34 @@ public class VectorStoreRecordModelBuilder
                     throw new InvalidOperationException($"Only one of {nameof(VectorStoreRecordKeyAttribute)}, {nameof(VectorStoreRecordDataAttribute)} and {nameof(VectorStoreRecordVectorAttribute)} can be applied to a property.");
                 }
 
-                var vectorProperty = new VectorStoreRecordVectorPropertyModel(clrProperty.Name, clrProperty.PropertyType)
+                // If a record definition exists for the property, we must instantiate it via that definition, as the user may be using
+                // a generic VectorStoreRecordVectorProperty<TInput> for a custom input type.
+                var vectorProperty = vectorStoreRecordDefinition?.Properties.FirstOrDefault(p => p.DataModelPropertyName == clrProperty.Name) is VectorStoreRecordVectorProperty definitionVectorProperty
+                    ? definitionVectorProperty.CreatePropertyModel()
+                    : new VectorStoreRecordVectorPropertyModel(clrProperty.Name, clrProperty.PropertyType);
+
+                vectorProperty.Dimensions = vectorAttribute.Dimensions;
+                vectorProperty.IndexKind = vectorAttribute.IndexKind;
+                vectorProperty.DistanceFunction = vectorAttribute.DistanceFunction;
+
+                // If a default embedding generator is defined and the property type isn't an Embedding, we set up that embedding generator on the property.
+                // At this point we don't know the embedding type (it might get specified in the record definition, that's processed later). So we infer
+                //
+                // This also means that the property type is the input type (e.g. string, DataContent) rather than the embedding type.
+                // Since we need the property type to be the embedding type, we infer that from the generator. This allows users
+                // to just stick an IEmbeddingGenerator in DI, define a string property as their vector property, and as long as the embedding generator
+                // is compatible (supports string and ROM<float>, assuming that's what the connector requires), everything just works.
+                // Note that inferring the embedding type from the IEmbeddingGenerator isn't trivial, involving both connector logic (around which embedding
+                // types are supported/preferred), as well as the vector property type (which knows about supported input types).
+
+                if (this.DefaultEmbeddingGenerator is null || this.Options.SupportedVectorPropertyTypes.Contains(clrProperty.PropertyType))
                 {
-                    Dimensions = vectorAttribute.Dimensions,
-                    IndexKind = vectorAttribute.IndexKind,
-                    DistanceFunction = vectorAttribute.DistanceFunction
-                };
+                    vectorProperty.EmbeddingType = clrProperty.PropertyType;
+                }
+                else
+                {
+                    this.SetupEmbeddingGeneration(vectorProperty, this.DefaultEmbeddingGenerator, embeddingType: null);
+                }
 
                 this.VectorProperties.Add(vectorProperty);
                 storageName = vectorAttribute.StoragePropertyName;
@@ -198,7 +229,7 @@ public class VectorStoreRecordModelBuilder
                         property = dataProperty;
                         break;
                     case VectorStoreRecordVectorProperty definitionVectorProperty:
-                        var vectorProperty = new VectorStoreRecordVectorPropertyModel(definitionVectorProperty.DataModelPropertyName, definitionVectorProperty.PropertyType);
+                        var vectorProperty = definitionVectorProperty.CreatePropertyModel();
                         this.VectorProperties.Add(vectorProperty);
                         this.PropertyMap.Add(definitionVectorProperty.DataModelPropertyName, vectorProperty);
                         property = vectorProperty;
@@ -215,11 +246,12 @@ public class VectorStoreRecordModelBuilder
 
                     if (property.PropertyInfo.PropertyType != property.Type)
                     {
-                        throw new InvalidOperationException($"Property '{property.ModelName}' has a different CLR type in the record definition and on the CLR type.");
+                        throw new InvalidOperationException($"Property '{property.ModelName}' has a different CLR type in the record definition ('{property.Type.Name}') and on the CLR type ('{property.PropertyInfo.PropertyType}').");
                     }
                 }
             }
 
+            property.Type = definitionProperty.PropertyType;
             this.SetPropertyStorageName(property, definitionProperty.StoragePropertyName);
 
             switch (definitionProperty)
@@ -264,6 +296,46 @@ public class VectorStoreRecordModelBuilder
                         vectorProperty.DistanceFunction = definitionVectorProperty.DistanceFunction;
                     }
 
+                    if (definitionVectorProperty.EmbeddingType is not null)
+                    {
+                        vectorProperty.EmbeddingType = definitionVectorProperty.EmbeddingType;
+                    }
+
+                    // Check if embedding generation is configured, either on the property directly or via a default
+                    IEmbeddingGenerator? embeddingGenerator = null;
+
+                    // Check if an embedding generator is defined specifically on the property.
+                    if (definitionVectorProperty.EmbeddingGenerator is not null)
+                    {
+                        // If we have a property CLR type (POCO, not dynamic mapping) and it's an embedding type, throw as that's incompatible.
+                        if (this.Options.SupportedVectorPropertyTypes.Contains(property.Type))
+                        {
+                            throw new InvalidOperationException(
+                                string.Format(
+                                    VectorDataStrings.EmbeddingPropertyTypeIncompatibleWithEmbeddingGenerator,
+                                    property.ModelName,
+                                    property.Type.Name));
+                        }
+
+                        embeddingGenerator = definitionVectorProperty.EmbeddingGenerator;
+                    }
+                    // If a default embedding generator is defined (at the collection or store level), configure that on the property, but only if the property type is not an embedding type.
+                    // If the property type is an embedding type, just ignore the default embedding generator.
+                    else if ((vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator) is IEmbeddingGenerator defaultEmbeddingGenerator
+                        && !this.Options.SupportedVectorPropertyTypes.Contains(property.Type))
+                    {
+                        embeddingGenerator = vectorStoreRecordDefinition.EmbeddingGenerator ?? this.DefaultEmbeddingGenerator;
+                    }
+
+                    if (embeddingGenerator is null)
+                    {
+                        // No embedding generation - the embedding type and the property (model) type are the same.
+                        vectorProperty.EmbeddingType = property.Type;
+                    }
+                    else
+                    {
+                        this.SetupEmbeddingGeneration(vectorProperty, embeddingGenerator, vectorProperty.EmbeddingType);
+                    }
                     break;
 
                 default:
@@ -298,6 +370,26 @@ public class VectorStoreRecordModelBuilder
         property.StorageName = this.Options.EscapeIdentifier is not null
             ? this.Options.EscapeIdentifier(storageName)
             : storageName;
+    }
+
+    /// <summary>
+    /// Attempts to setup embedding generation on the given vector property, with the given embedding generator and user-configured embedding type.
+    /// Can be overridden by connectors to provide support for other embedding types.
+    /// </summary>
+    protected virtual void SetupEmbeddingGeneration(
+        VectorStoreRecordVectorPropertyModel vectorProperty,
+        IEmbeddingGenerator embeddingGenerator,
+        Type? embeddingType)
+    {
+        if (!vectorProperty.TrySetupEmbeddingGeneration<Embedding<float>, ReadOnlyMemory<float>>(embeddingGenerator, embeddingType))
+        {
+            throw new InvalidOperationException(
+                string.Format(
+                    VectorDataStrings.IncompatibleEmbeddingGenerator,
+                    embeddingGenerator.GetType().Name,
+                    string.Join(", ", vectorProperty.GetSupportedInputTypes().Select(t => t.Name)),
+                    "ReadOnlyMemory<float>"));
+        }
     }
 
     /// <summary>
@@ -359,6 +451,8 @@ public class VectorStoreRecordModelBuilder
     {
         var type = propertyModel.Type;
 
+        Debug.Assert(propertyModel.Type is not null);
+
         if (type.IsGenericType && Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
             type = underlyingType;
@@ -381,9 +475,11 @@ public class VectorStoreRecordModelBuilder
                 break;
 
             case VectorStoreRecordVectorPropertyModel vectorProperty:
-                if (this.Options.SupportedVectorPropertyTypes is not null)
+                Debug.Assert(vectorProperty.EmbeddingGenerator is null ^ vectorProperty.Type != vectorProperty.EmbeddingType);
+
+                if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType))
                 {
-                    ValidatePropertyType(propertyModel.ModelName, type, "Vector", this.Options.SupportedVectorPropertyTypes);
+                    throw new InvalidOperationException(string.Format(VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name));
                 }
 
                 if (vectorProperty.Dimensions <= 0)

@@ -12,6 +12,6 @@ public class CosmosNoSQLNoVectorConformanceTests(CosmosNoSQLNoVectorConformanceT
 {
     public new class Fixture : NoVectorConformanceTests<string>.Fixture
     {
-        public override TestStore TestStore => CosmosNoSqlTestStore.Instance;
+        public override TestStore TestStore => CosmosNoSQLTestStore.Instance;
     }
 }

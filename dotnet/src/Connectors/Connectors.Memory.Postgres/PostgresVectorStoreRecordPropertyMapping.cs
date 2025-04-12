@@ -138,7 +138,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
     /// <returns>The PostgreSQL vector type name.</returns>
     public static (string PgType, bool IsNullable) GetPgVectorTypeName(VectorStoreRecordVectorPropertyModel vectorProperty)
     {
-        return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.Type) != null);
+        return ($"VECTOR({vectorProperty.Dimensions})", Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) != null);
     }
 
     public static NpgsqlParameter GetNpgsqlParameter(object? value)

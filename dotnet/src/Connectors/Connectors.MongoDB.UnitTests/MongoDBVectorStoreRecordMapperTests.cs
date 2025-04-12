@@ -32,7 +32,7 @@ public sealed class MongoDBVectorStoreRecordMapperTests
             ]
         };
 
-        this._sut = new(new MongoDBModelBuilder().Build(typeof(MongoDBHotelModel), definition));
+        this._sut = new(new MongoDBModelBuilder().Build(typeof(MongoDBHotelModel), definition, defaultEmbeddingGenerator: null));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public sealed class MongoDBVectorStoreRecordMapperTests
         };
 
         // Act
-        var document = this._sut.MapFromDataToStorageModel(hotel);
+        var document = this._sut.MapFromDataToStorageModel(hotel, generatedEmbeddings: null);
 
         // Assert
         Assert.NotNull(document);

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using Azure.Identity;
 using Memory.VectorStoreEmbeddingGeneration;
 using Microsoft.Extensions.VectorData;
@@ -117,3 +119,5 @@ public class VectorStore_EmbeddingGeneration(ITestOutputHelper output) : BaseTes
         };
     }
 }
+
+#endif

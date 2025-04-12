@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -14,6 +15,11 @@ public sealed class QdrantVectorStoreOptions
     /// Defaults to single vector per point.
     /// </summary>
     public bool HasNamedVectors { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 
     /// <summary>
     /// An optional factory to use for constructing <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.

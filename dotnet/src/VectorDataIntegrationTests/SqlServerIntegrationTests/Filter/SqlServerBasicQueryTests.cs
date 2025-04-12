@@ -48,10 +48,10 @@ public class SqlServerBasicQueryTests(SqlServerBasicQueryTests.Fixture fixture)
 
         public override TestStore TestStore => SqlServerTestStore.Instance;
 
-        protected override string CollectionName => s_uniqueName;
+        public override string CollectionName => s_uniqueName;
 
         // Override to remove the string collection properties, which aren't (currently) supported on SqlServer
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = base.GetRecordDefinition().Properties.Where(p => p.PropertyType != typeof(string[]) && p.PropertyType != typeof(List<string>)).ToList()

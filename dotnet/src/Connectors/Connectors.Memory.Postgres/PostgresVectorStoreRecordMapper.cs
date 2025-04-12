@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -14,29 +15,28 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 /// </summary>
 /// <typeparam name="TRecord">The type of the data model record.</typeparam>
 internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
+    where TRecord : notnull
 {
-    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
+    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
     {
         var keyProperty = model.KeyProperty;
 
         var properties = new Dictionary<string, object?>
         {
-            { keyProperty.StorageName, keyProperty.GetValueAsObject(dataModel!) }
+            { keyProperty.StorageName, keyProperty.GetValueAsObject(dataModel) }
         };
 
         foreach (var property in model.DataProperties)
         {
-            properties.Add(property.StorageName, property.GetValueAsObject(dataModel!));
+            properties.Add(property.StorageName, property.GetValueAsObject(dataModel));
         }
 
         foreach (var property in model.VectorProperties)
         {
-            var propertyValue = property.GetValueAsObject(dataModel!);
-
             properties.Add(
                 property.StorageName,
                  PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(
-                    property.GetValueAsObject(dataModel!)));
+                    generatedEmbedding?.Vector ?? property.GetValueAsObject(dataModel)));
         }
 
         return properties;

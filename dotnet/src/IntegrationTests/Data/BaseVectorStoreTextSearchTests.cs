@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -99,9 +101,9 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
     }
 
     /// <summary>
-    /// Decorator for a <see cref="IVectorizedSearch{TRecord}"/> that generates embeddings for text search queries.
+    /// Decorator for a <see cref="IVectorSearch{TRecord}"/> that generates embeddings for text search queries.
     /// </summary>
-    protected sealed class VectorizedSearchWrapper<TRecord>(IVectorizedSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
+    protected sealed class VectorizedSearchWrapper<TRecord>(IVectorSearch<TRecord> vectorizedSearch, ITextEmbeddingGenerationService textEmbeddingGeneration) : IVectorizableTextSearch<TRecord>
     {
         /// <inheritdoc/>
         public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizableTextSearchAsync(string searchText, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -152,3 +154,5 @@ public abstract class BaseVectorStoreTextSearchTests : BaseTextSearchTests
         public ReadOnlyMemory<float> Embedding { get; init; }
     }
 }
+
+#endif

@@ -50,7 +50,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             ]
         };
 
-        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition);
+        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
 
         var cmdInfo = PostgresSqlBuilder.BuildCreateTableCommand("public", "testcollection", model, ifNotExists: ifNotExists);
 
@@ -279,7 +279,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
             ]
         };
 
-        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition);
+        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
 
         var key = 123;
 
@@ -324,7 +324,7 @@ public class PostgresVectorStoreCollectionSqlBuilderTests
 
         var keys = new List<long> { 123, 124 };
 
-        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition);
+        var model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions).Build(typeof(Dictionary<string, object?>), recordDefinition, defaultEmbeddingGenerator: null);
 
         // Act
         var cmdInfo = PostgresSqlBuilder.BuildGetBatchCommand("public", "testcollection", model, keys, includeVectors: true);

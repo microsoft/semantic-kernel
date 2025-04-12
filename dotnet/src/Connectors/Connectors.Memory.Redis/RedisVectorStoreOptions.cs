@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -19,4 +20,9 @@ public sealed class RedisVectorStoreOptions
     /// Indicates the way in which data should be stored in redis. Default is <see cref="RedisStorageType.Json"/>.
     /// </summary>
     public RedisStorageType? StorageType { get; init; } = RedisStorageType.Json;
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

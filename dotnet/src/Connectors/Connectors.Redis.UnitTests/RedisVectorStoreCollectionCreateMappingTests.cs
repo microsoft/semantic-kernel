@@ -35,13 +35,14 @@ public class RedisVectorStoreCollectionCreateMappingTests
 
             new VectorStoreRecordDataPropertyModel("NonFilterableString", typeof(string)),
 
-            new VectorStoreRecordVectorPropertyModel("VectorDefaultIndexingOptions", typeof(ReadOnlyMemory<float>)) { Dimensions = 10 },
+            new VectorStoreRecordVectorPropertyModel("VectorDefaultIndexingOptions", typeof(ReadOnlyMemory<float>)) { Dimensions = 10, EmbeddingType = typeof(ReadOnlyMemory<float>) },
             new VectorStoreRecordVectorPropertyModel("VectorSpecificIndexingOptions", typeof(ReadOnlyMemory<float>))
             {
                 Dimensions = 20,
                 IndexKind = IndexKind.Flat,
                 DistanceFunction = DistanceFunction.EuclideanSquaredDistance,
-                StorageName = "vector_specific_indexing_options"
+                StorageName = "vector_specific_indexing_options",
+                EmbeddingType = typeof(ReadOnlyMemory<float>)
             }
         ];
 

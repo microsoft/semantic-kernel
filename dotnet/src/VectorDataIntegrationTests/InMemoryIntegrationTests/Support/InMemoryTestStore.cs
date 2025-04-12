@@ -14,13 +14,16 @@ internal sealed class InMemoryTestStore : TestStore
 
     public override IVectorStore DefaultVectorStore => this._vectorStore;
 
+    public InMemoryVectorStore GetVectorStore(InMemoryVectorStoreOptions options)
+        => new(new() { EmbeddingGenerator = options.EmbeddingGenerator, StoreName = options.StoreName ?? "TestStore" });
+
     private InMemoryTestStore()
     {
     }
 
     protected override Task StartAsync()
     {
-        this._vectorStore = new InMemoryVectorStore();
+        this._vectorStore = new InMemoryVectorStore(new() { StoreName = "TestStore" });
 
         return Task.CompletedTask;
     }

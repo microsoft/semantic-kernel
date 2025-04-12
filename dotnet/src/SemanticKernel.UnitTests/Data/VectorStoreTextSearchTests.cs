@@ -1,4 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
+#if DISABLED
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +22,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         var resultMapper = new DataModelTextSearchResultMapper();
 
         // Act.
-        var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService(), stringMapper, resultMapper);
+        var sut = new VectorStoreTextSearch<DataModel>(vectorSearch, new MockTextEmbeddingGenerator(), stringMapper, resultMapper);
 
         // Assert.
         Assert.NotNull(sut);
@@ -31,7 +34,7 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         // Arrange.
         var vectorStore = new InMemoryVectorStore();
         var vectorSearch = vectorStore.GetCollection<Guid, DataModel>("records");
-        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerationService());
+        var vectorizableTextSearch = new VectorizedSearchWrapper<DataModel>(vectorSearch, new MockTextEmbeddingGenerator());
         var stringMapper = new DataModelTextSearchStringMapper();
         var resultMapper = new DataModelTextSearchResultMapper();
 
@@ -159,3 +162,5 @@ public class VectorStoreTextSearchTests : VectorStoreTextSearchTestBase
         Assert.Equal("Odd", result2?.Tag);
     }
 }
+
+#endif

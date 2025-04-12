@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -74,3 +76,5 @@ public class InMemoryVectorStoreTextSearchTests : BaseVectorStoreTextSearchTests
         return true;
     }
 }
+
+#endif

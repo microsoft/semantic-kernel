@@ -92,15 +92,15 @@ internal static class InMemoryVectorStoreCollectionSearchMapping
     /// <summary>
     /// Filter the provided records using the provided filter definition.
     /// </summary>
-    /// <param name="filter">The filter definition to filter the <paramref name="records"/> with.</param>
-    /// <param name="records">The records to filter.</param>
+    /// <param name="filter">The filter definition to filter the <paramref name="recordWrappers"/> with.</param>
+    /// <param name="recordWrappers">The records to filter.</param>
     /// <returns>The filtered records.</returns>
     /// <exception cref="InvalidOperationException">Thrown when an unsupported filter clause is encountered.</exception>
-    public static IEnumerable<TRecord> FilterRecords<TRecord>(VectorSearchFilter filter, IEnumerable<TRecord> records)
+    public static IEnumerable<InMemoryVectorRecordWrapper<TRecord>> FilterRecords<TRecord>(VectorSearchFilter filter, IEnumerable<InMemoryVectorRecordWrapper<TRecord>> recordWrappers)
     {
-        return records.Where(record =>
+        return recordWrappers.Where(wrapper =>
         {
-            if (record is null)
+            if (wrapper.Record is null)
             {
                 return false;
             }
@@ -114,7 +114,7 @@ internal static class InMemoryVectorStoreCollectionSearchMapping
             {
                 if (clause is EqualToFilterClause equalToFilter)
                 {
-                    result = result && CheckEqualTo(record, equalToFilter);
+                    result = result && CheckEqualTo(wrapper.Record, equalToFilter);
 
                     if (result == false)
                     {
@@ -123,7 +123,7 @@ internal static class InMemoryVectorStoreCollectionSearchMapping
                 }
                 else if (clause is AnyTagEqualToFilterClause anyTagEqualToFilter)
                 {
-                    result = result && CheckAnyTagEqualTo(record, anyTagEqualToFilter);
+                    result = result && CheckAnyTagEqualTo(wrapper.Record, anyTagEqualToFilter);
 
                     if (result == false)
                     {

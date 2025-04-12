@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Pinecone;
@@ -14,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
 {
     /// <inheritdoc />
-    public Vector MapFromDataToStorageModel(TRecord dataModel)
+    public Vector MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
     {
         var keyObject = model.KeyProperty.GetValueAsObject(dataModel!);
         if (keyObject is null)
@@ -31,11 +32,12 @@ internal sealed class PineconeVectorStoreRecordMapper<TRecord>(VectorStoreRecord
             }
         }
 
-        var valuesObject = model.VectorProperty!.GetValueAsObject(dataModel!);
-        if (valuesObject is not ReadOnlyMemory<float> values)
+        var values = (generatedEmbedding?.Vector ?? model.VectorProperty!.GetValueAsObject(dataModel!)) switch
         {
-            throw new VectorStoreRecordMappingException($"Vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null.");
-        }
+            ReadOnlyMemory<float> floats => floats,
+            null => throw new VectorStoreRecordMappingException($"Vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null."),
+            _ => throw new VectorStoreRecordMappingException($"Unsupported vector type '{model.VectorProperty.Type.Name}' for vector property '{model.VectorProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}'.")
+        };
 
         // TODO: what about sparse values?
         var result = new Vector

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 
@@ -47,4 +48,9 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     /// This option is only used when creating a new Pinecone index. Default value is 'us-east-1'.
     /// </remarks>
     public string ServerlessIndexRegion { get; init; } = "us-east-1";
+
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this collection.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

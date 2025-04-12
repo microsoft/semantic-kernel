@@ -298,7 +298,7 @@ public sealed class PluginSelectionWithFilters(ITestOutputHelper output) : BaseT
             await collection.CreateCollectionIfNotExistsAsync(cancellationToken);
 
             // Find best functions to call for original request.
-            var recordKeys = (await collection.VectorizedSearchAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
+            var recordKeys = (await collection.SearchEmbeddingAsync(requestEmbedding, top: numberOfBestFunctions, cancellationToken: cancellationToken)
                 .ToListAsync(cancellationToken)).Select(l => l.Record.Id);
 
             return plugins

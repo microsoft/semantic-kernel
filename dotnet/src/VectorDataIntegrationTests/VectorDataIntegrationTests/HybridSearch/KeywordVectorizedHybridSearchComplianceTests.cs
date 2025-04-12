@@ -168,9 +168,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
 
     public abstract class VectorAndStringFixture : VectorStoreCollectionFixture<TKey, VectorAndStringRecord<TKey>>
     {
-        protected override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
+        public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = new List<VectorStoreRecordProperty>()
@@ -221,9 +221,9 @@ public abstract class KeywordVectorizedHybridSearchComplianceTests<TKey>(
 
     public abstract class MultiTextFixture : VectorStoreCollectionFixture<TKey, MultiTextStringRecord<TKey>>
     {
-        protected override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
+        public override string CollectionName => "KeywordHybridSearch" + this.GetUniqueCollectionName();
 
-        protected override VectorStoreRecordDefinition GetRecordDefinition()
+        public override VectorStoreRecordDefinition GetRecordDefinition()
             => new()
             {
                 Properties = new List<VectorStoreRecordProperty>()

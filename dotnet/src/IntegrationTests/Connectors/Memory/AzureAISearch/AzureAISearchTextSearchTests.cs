@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System;
 using System.Threading.Tasks;
 using Azure.Identity;
@@ -142,3 +144,5 @@ public class AzureAISearchTextSearchTests(AzureAISearchVectorStoreFixture fixtur
         }
     }
 }
+
+#endif

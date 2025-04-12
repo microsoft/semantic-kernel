@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ConnectorSupport;
 
@@ -32,14 +33,18 @@ public class VectorStoreRecordJsonModelBuilder : VectorStoreRecordModelBuilder
     /// <summary>
     /// Builds and returns an <see cref="VectorStoreRecordModel"/> from the given <paramref name="type"/> and <paramref name="vectorStoreRecordDefinition"/>.
     /// </summary>
-    public virtual VectorStoreRecordModel Build(Type type, VectorStoreRecordDefinition? vectorStoreRecordDefinition, JsonSerializerOptions? jsonSerializerOptions)
+    public virtual VectorStoreRecordModel Build(
+        Type type,
+        VectorStoreRecordDefinition? vectorStoreRecordDefinition,
+        IEmbeddingGenerator? defaultEmbeddingGenerator,
+        JsonSerializerOptions? jsonSerializerOptions)
     {
         if (jsonSerializerOptions is not null)
         {
             this._jsonSerializerOptions = jsonSerializerOptions;
         }
 
-        return this.Build(type, vectorStoreRecordDefinition);
+        return this.Build(type, vectorStoreRecordDefinition, defaultEmbeddingGenerator);
     }
 
     /// <inheritdoc/>

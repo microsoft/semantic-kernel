@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -9,6 +10,11 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 public sealed class MongoDBVectorStoreOptions
 {
+    /// <summary>
+    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// </summary>
+    public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
+
     /// <summary>
     /// An optional factory to use for constructing <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/> instances, if a custom record collection is required.
     /// </summary>
