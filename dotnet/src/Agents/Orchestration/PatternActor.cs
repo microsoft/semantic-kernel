@@ -30,7 +30,7 @@ public abstract class PatternActor : BaseAgent
     protected async ValueTask SendMessageAsync(
         object message,
         AgentType agentType,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         AgentId? agentId = await this.GetAgentAsync(agentType, cancellationToken).ConfigureAwait(false);
         if (agentId.HasValue)

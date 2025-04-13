@@ -113,8 +113,8 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
     {
         return new(runtime, targets)
         {
-            InputTransform = (BroadcastMessages.Task input) => input,
-            ResultTransform = (BroadcastMessages.Result[] results) => string.Join("\n", results.Select(result => $"{result.Message}")).ToBroadcastResult(),
+            InputTransform = (BroadcastMessages.Task input) => ValueTask.FromResult(input),
+            ResultTransform = (BroadcastMessages.Result[] results) => ValueTask.FromResult(string.Join("\n", results.Select(result => $"{result.Message}")).ToBroadcastResult()),
         };
     }
 }

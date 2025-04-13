@@ -29,8 +29,8 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
         BroadcastOrchestration<HandoffMessage, HandoffMessage> innerOrchestration =
             new(runtime, agent3, agent4)
             {
-                InputTransform = (HandoffMessage input) => new BroadcastMessages.Task { Message = input.Content },
-                ResultTransform = (BroadcastMessages.Result[] output) => HandoffMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content))))
+                InputTransform = (HandoffMessage input) => ValueTask.FromResult(new BroadcastMessages.Task { Message = input.Content }),
+                ResultTransform = (BroadcastMessages.Result[] output) => ValueTask.FromResult(HandoffMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content)))))
             };
         HandoffOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
 
@@ -59,8 +59,8 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
         HandoffOrchestration<BroadcastMessages.Task, BroadcastMessages.Result> innerOrchestration =
             new(runtime, agent3, agent4)
             {
-                InputTransform = (BroadcastMessages.Task input) => new HandoffMessage { Content = input.Message },
-                ResultTransform = (HandoffMessage result) => new BroadcastMessages.Result { Message = result.Content }
+                InputTransform = (BroadcastMessages.Task input) => ValueTask.FromResult(new HandoffMessage { Content = input.Message }),
+                ResultTransform = (HandoffMessage result) => ValueTask.FromResult(new BroadcastMessages.Result { Message = result.Content })
             };
         BroadcastOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
 

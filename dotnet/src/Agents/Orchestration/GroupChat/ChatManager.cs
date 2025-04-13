@@ -1,124 +1,126 @@
-﻿//// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-//using System.Diagnostics;
-//using System.Threading.Tasks;
-//using Microsoft.AgentRuntime;
-//using Microsoft.SemanticKernel.ChatCompletion;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AgentRuntime;
+using Microsoft.AgentRuntime.Core;
+using Microsoft.SemanticKernel.ChatCompletion;
 
-//namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
-///// <summary>
-///// A <see cref="RuntimeAgent"/> that orchestrates a team of agents.
-///// </summary>
-//public abstract class ChatManager : RuntimeAgent
-//{
-//    /// <summary>
-//    /// A common description for the orchestrator.
-//    /// </summary>
-//    public const string Description = "Orchestrates a team of agents to accomplish a defined task.";
-//    private readonly TaskCompletionSource<ChatMessageContent> _completionSource;
+/// <summary>
+/// An <see cref="PatternActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
+/// </summary>
+public abstract class ChatManager :
+    PatternActor,
+    IHandle<ChatMessages.InputTask>,
+    IHandle<ChatMessages.Group>,
+    IHandle<ChatMessages.Result>
+{
+    /// <summary>
+    /// A common description for the manager.
+    /// </summary>
+    public const string DefaultDescription = "Orchestrates a team of agents to accomplish a defined task.";
 
-//    /// <summary>
-//    /// Initializes a new instance of the <see cref="ChatManager"/> class.
-//    /// </summary>
-//    /// <param name="id">The unique identifier of the agent.</param>
-//    /// <param name="runtime">The runtime associated with the agent.</param>
-//    /// <param name="team">The team of agents being orchestrated</param>
-//    /// <param name="completionSource">Signals completion.</param>
-//    protected ChatManager(AgentId id, IAgentRuntime runtime, ChatTeam team, TaskCompletionSource<ChatMessageContent> completionSource)
-//        : base(id, runtime, Description)
-//    {
-//        this.Chat = [];
-//        this.Team = team;
-//        this._completionSource = completionSource;
-//        Debug.WriteLine($">>> NAMES: {this.Team.FormatNames()}");
-//        Debug.WriteLine($">>> TEAM:\n{this.Team.FormatList()}");
+    private readonly AgentType _orchestrationType;
 
-//        this.RegisterHandler<ChatMessages.InputTask>(this.OnTaskMessageAsync);
-//        this.RegisterHandler<ChatMessages.Group>(this.OnGroupMessageAsync);
-//        this.RegisterHandler<ChatMessages.Result>(this.OnResultMessageAsync);
-//    }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChatManager"/> class.
+    /// </summary>
+    /// <param name="id">The unique identifier of the agent.</param>
+    /// <param name="runtime">The runtime associated with the agent.</param>
+    /// <param name="team">The team of agents being orchestrated</param>
+    /// <param name="orchestrationType">Identifies the orchestration agent.</param>
+    protected ChatManager(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType)
+        : base(id, runtime, DefaultDescription)
+    {
+        this.Chat = [];
+        this.Team = team;
+        this._orchestrationType = orchestrationType;
+        Trace.WriteLine($">>> MANAGER NAMES: {this.Team.FormatNames()}");
+        Trace.WriteLine($">>> MANAGER TEAM:\n{this.Team.FormatList()}");
+    }
 
-//    /// <summary>
-//    /// The conversation history with the team.
-//    /// </summary>
-//    protected ChatHistory Chat { get; }
+    /// <summary>
+    /// The conversation history with the team.
+    /// </summary>
+    protected ChatHistory Chat { get; }
 
-//    /// <summary>
-//    /// The input task.
-//    /// </summary>
-//    protected ChatMessages.InputTask Task { get; private set; } = ChatMessages.InputTask.None; // %%% TYPE CONFLICT IN NAME
+    /// <summary>
+    /// The input task.
+    /// </summary>
+    protected ChatMessages.InputTask InputTask { get; private set; } = ChatMessages.InputTask.None;
 
-//    /// <summary>
-//    /// Metadata that describes team of agents being orchestrated.
-//    /// </summary>
-//    protected ChatTeam Team { get; }
+    /// <summary>
+    /// Metadata that describes team of agents being orchestrated.
+    /// </summary>
+    protected ChatGroup Team { get; }
 
-//    /// <summary>
-//    /// Message a specific agent, by topic.
-//    /// </summary>
-//    protected Task RequestAgentResponseAsync(TopicId agentTopic)
-//    {
-//        return this.PublishMessageAsync(new ChatMessages.Speak(), agentTopic);
-//    }
+    /// <summary>
+    /// Message a specific agent, by topic.
+    /// </summary>
+    protected ValueTask RequestAgentResponseAsync(AgentType agentType, CancellationToken cancellationToken)
+    {
+        Trace.WriteLine($">>> MANAGER NEXT: {agentType}");
+        return this.SendMessageAsync(new ChatMessages.Speak(), agentType, cancellationToken);
+    }
 
-//    /// <summary>
-//    /// Defines one-time logic required to prepare to execute the given task.
-//    /// </summary>
-//    /// <returns>
-//    /// The agent specific topic for first step in executing the task.
-//    /// </returns>
-//    /// <remarks>
-//    /// Returning a null TopicId indicates that the task will not be executed.
-//    /// </remarks>
-//    protected abstract Task<TopicId?> PrepareTaskAsync();
+    /// <summary>
+    /// Defines one-time logic required to prepare to execute the given task.
+    /// </summary>
+    /// <returns>
+    /// The agent specific topic for first step in executing the task.
+    /// </returns>
+    /// <remarks>
+    /// Returning a null TopicId indicates that the task will not be executed.
+    /// </remarks>
+    protected abstract Task<AgentType?> PrepareTaskAsync();
 
-//    ///// <summary>
-//    ///// %%% TODO
-//    ///// </summary>
-//    // %%% TODO protected abstract Task<TopicId?> RequestResultAsync();
+    /// <summary>
+    /// Determines which agent's must respond.
+    /// </summary>
+    /// <returns>
+    /// The agent specific topic for first step in executing the task.
+    /// </returns>
+    /// <remarks>
+    /// Returning a null TopicId indicates that the task will not be executed.
+    /// </remarks>
+    protected abstract Task<AgentType?> SelectAgentAsync();
 
-//    /// <summary>
-//    /// Determines which agent's must respond.
-//    /// </summary>
-//    /// <returns>
-//    /// The agent specific topic for first step in executing the task.
-//    /// </returns>
-//    /// <remarks>
-//    /// Returning a null TopicId indicates that the task will not be executed.
-//    /// </remarks>
-//    protected abstract Task<TopicId?> SelectAgentAsync();
+    /// <inheritdoc/>
+    public async ValueTask HandleAsync(ChatMessages.InputTask item, MessageContext messageContext)
+    {
+        Trace.WriteLine($">>> MANAGER TASK: {item.Message}");
+        this.InputTask = item;
+        AgentType? agentType = await this.PrepareTaskAsync().ConfigureAwait(false);
+        if (agentType != null)
+        {
+            await this.RequestAgentResponseAsync(agentType.Value, messageContext.CancellationToken).ConfigureAwait(false);
+        }
+    }
 
-//    private async ValueTask OnTaskMessageAsync(ChatMessages.InputTask message, MessageContext context)
-//    {
-//        Debug.WriteLine($">>> TASK: {message.Message}");
-//        this.Task = message;
-//        TopicId? agentTopic = await this.PrepareTaskAsync().ConfigureAwait(false);
-//        if (agentTopic != null)
-//        {
-//            await this.RequestAgentResponseAsync(agentTopic.Value).ConfigureAwait(false);
-//        }
-//    }
+    /// <inheritdoc/>
+    public async ValueTask HandleAsync(ChatMessages.Group item, MessageContext messageContext)
+    {
+        Trace.WriteLine($">>> MANAGER CHAT: {item.Message}");
+        this.Chat.Add(item.Message);
+        AgentType? agentType = await this.SelectAgentAsync().ConfigureAwait(false);
+        if (agentType != null)
+        {
+            await this.RequestAgentResponseAsync(agentType.Value, messageContext.CancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            Trace.WriteLine(">>> MANAGER NO AGENT");
+            await this.SendMessageAsync(item.Message.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false); // %%% PLACEHOLDER - FINAL MESSAGE
+        }
+    }
 
-//    private async ValueTask OnGroupMessageAsync(ChatMessages.Group message, MessageContext context)
-//    {
-//        Debug.WriteLine($">>> CHAT: {message.Message}");
-//        this.Chat.Add(message.Message);
-//        TopicId? agentTopic = await this.SelectAgentAsync().ConfigureAwait(false);
-//        if (agentTopic != null)
-//        {
-//            await this.RequestAgentResponseAsync(agentTopic.Value).ConfigureAwait(false);
-//        }
-//        else
-//        {
-//            //await this.RequestResultAsync().ConfigureAwait(false); // %%% TODO - GROUP CHAT
-//        }
-//    }
-
-//    private ValueTask OnResultMessageAsync(ChatMessages.Result result, MessageContext context)
-//    {
-//        Debug.WriteLine($">>> RESULT: {result.Message}");
-//        this._completionSource.SetResult(result.Message);
-//        return ValueTask.CompletedTask;
-//    }
-//}
+    /// <inheritdoc/>
+    public ValueTask HandleAsync(ChatMessages.Result item, MessageContext messageContext)
+    {
+        Trace.WriteLine($">>> MANAGER RESULT: {item.Message}");
+        return ValueTask.CompletedTask;
+    }
+}

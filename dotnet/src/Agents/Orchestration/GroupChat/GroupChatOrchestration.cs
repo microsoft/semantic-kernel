@@ -37,11 +37,12 @@ public class GroupChatOrchestration<TInput, TOutput> :
         AgentType managerType = this.FormatAgentType(topic, "Manager");
 
         int agentCount = 0;
-        ChatTeam team = [];
+        ChatGroup team = [];
         foreach (OrchestrationTarget member in this.Members)
         {
-            AgentType memberType = default;
+            ++agentCount;
 
+            AgentType memberType = default;
             if (member.IsAgent(out Agent? agent))
             {
                 memberType = await RegisterAgentAsync(agent).ConfigureAwait(false);
@@ -50,6 +51,8 @@ public class GroupChatOrchestration<TInput, TOutput> :
             {
                 memberType = await orchestration.RegisterAsync(topic, managerType).ConfigureAwait(false);
             }
+
+            team[memberType] = (memberType, "an agent"); // %%% DESCRIPTION & NAME ID
 
             Trace.WriteLine($"> GROUPCHAT MEMBER #{agentCount}: {memberType}");
 
@@ -60,11 +63,11 @@ public class GroupChatOrchestration<TInput, TOutput> :
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new GroupChatManager(agentId, runtime, team))).ConfigureAwait(false);
+                    new GroupChatManager(agentId, runtime, team, orchestrationType))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 
-        return null;
+        return managerType;
 
         async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
@@ -75,7 +78,6 @@ public class GroupChatOrchestration<TInput, TOutput> :
                     ValueTask.FromResult<IHostableAgent>(new GroupChatActor(agentId, runtime, agent, topic))).ConfigureAwait(false);
 
             await this.SubscribeAsync(agentType, topic).ConfigureAwait(false);
-            //await this.RegisterTopicsAsync(agentType, agentTopic).ConfigureAwait(false); // %%% CRITICAL
 
             return agentType;
         }

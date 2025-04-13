@@ -16,7 +16,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     private sealed class ResultActor : PatternActor, IHandle<TResult>
     {
         private readonly TaskCompletionSource<TOutput>? _completionSource;
-        private readonly Func<TResult, TOutput> _transform;
+        private readonly Func<TResult, ValueTask<TOutput>> _transform;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}.ResultActor"/> class.
@@ -28,7 +28,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         public ResultActor(
             AgentId id,
             IAgentRuntime runtime,
-            Func<TResult, TOutput> transform,
+            Func<TResult, ValueTask<TOutput>> transform,
             TaskCompletionSource<TOutput>? completionSource = null)
             : base(id, runtime, $"{id.Type}_Actor")
         {
@@ -55,7 +55,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
             try
             {
-                TOutput output = this._transform.Invoke(item);
+                TOutput output = await this._transform.Invoke(item).ConfigureAwait(false);
 
                 if (this.CompletionTarget.HasValue)
                 {

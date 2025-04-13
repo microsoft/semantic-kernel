@@ -33,7 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
-    <ProjectReference Include="..\Core\Agents.Core.csproj" /> <!--// %%% REMOVE-->
   </ItemGroup>
 
   <ItemGroup>

@@ -112,8 +112,8 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
     {
         return new(runtime, targets)
         {
-            InputTransform = (HandoffMessage input) => input,
-            ResultTransform = (HandoffMessage results) => results,
+            InputTransform = (HandoffMessage input) => ValueTask.FromResult(input),
+            ResultTransform = (HandoffMessage results) => ValueTask.FromResult(results),
         };
     }
 }

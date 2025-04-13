@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Buffers;
 using System.Diagnostics;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 
@@ -50,7 +47,7 @@ public class BroadcastOrchestration<TInput, TOutput>
         {
             ++agentCount;
 
-            AgentType memberType;
+            AgentType memberType = default;
 
             if (member.IsAgent(out Agent? agent))
             {

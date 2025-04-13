@@ -74,7 +74,6 @@ public abstract class AgentActor : PatternActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected ValueTask<ChatMessageContent> InvokeAsync(ChatMessageContent input, CancellationToken cancellationToken)
     {
-        input.Role = AuthorRole.User; // %%% HACK
         return this.InvokeAsync(new[] { input }, cancellationToken);
     }
 
@@ -97,7 +96,8 @@ public abstract class AgentActor : PatternActor
         AgentResponseItem<ChatMessageContent> response = responses[0];
         this.Thread ??= response.Thread;
 
-        return new ChatMessageContent(response.Message.Role, string.Join("\n\n", responses.Select(response => response.Message))) // %%% HACK
+        // The vast majority of responses will be a single message.  Responses with multiple messages will have their content merged.
+        return new ChatMessageContent(response.Message.Role, string.Join("\n\n", responses.Select(response => response.Message)))
         {
             AuthorName = response.Message.AuthorName,
         };

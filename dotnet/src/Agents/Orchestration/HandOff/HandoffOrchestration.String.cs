@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -18,7 +19,7 @@ public sealed partial class HandoffOrchestration : HandoffOrchestration<string, 
     public HandoffOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
         : base(runtime, members)
     {
-        this.InputTransform = (string input) => HandoffMessage.FromChat(new ChatMessageContent(AuthorRole.User, input));
-        this.ResultTransform = (HandoffMessage result) => result.Content.ToString();
+        this.InputTransform = (string input) => ValueTask.FromResult(HandoffMessage.FromChat(new ChatMessageContent(AuthorRole.User, input)));
+        this.ResultTransform = (HandoffMessage result) => ValueTask.FromResult(result.Content.ToString());
     }
 }

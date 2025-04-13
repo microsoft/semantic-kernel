@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
@@ -18,7 +19,7 @@ public sealed class BroadcastOrchestration : BroadcastOrchestration<string, stri
     public BroadcastOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
         : base(runtime, members)
     {
-        this.InputTransform = (string input) => input.ToBroadcastTask();
-        this.ResultTransform = (BroadcastMessages.Result[] result) => [.. result.Select(r => r.Message.Content ?? string.Empty)];
+        this.InputTransform = (string input) => ValueTask.FromResult(input.ToBroadcastTask());
+        this.ResultTransform = (BroadcastMessages.Result[] result) => ValueTask.FromResult<string[]>([.. result.Select(r => r.Message.Content ?? string.Empty)]);
     }
 }

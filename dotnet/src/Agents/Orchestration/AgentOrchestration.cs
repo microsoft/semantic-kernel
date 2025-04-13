@@ -45,12 +45,12 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <summary>
     /// Transforms the orchestration input into a source input suitable for processing.
     /// </summary>
-    public Func<TInput, TSource>? InputTransform { get; init; } // %%% TODO: ASYNC
+    public Func<TInput, ValueTask<TSource>>? InputTransform { get; init; }
 
     /// <summary>
     /// Transforms the processed result into the final output form.
     /// </summary>
-    public Func<TResult, TOutput>? ResultTransform { get; init; } // %%% TODO: ASYNC
+    public Func<TResult, ValueTask<TOutput>>? ResultTransform { get; init; }
 
     /// <summary>
     /// Gets the list of member targets involved in the orchestration.
@@ -81,7 +81,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
         Trace.WriteLine($"\n!!! ORCHESTRATION INVOKE: {orchestrationType}\n");
 
-        Task task = this.Runtime.SendMessageAsync(input, orchestrationType).AsTask(); // %%% TODO: REFINE
+        Task task = this.Runtime.SendMessageAsync(input, orchestrationType).AsTask();
 
         Trace.WriteLine($"\n!!! ORCHESTRATION YIELD: {orchestrationType}");
 
@@ -147,13 +147,23 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <returns>The AgentType representing the orchestration entry point.</returns>
     private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? targetActor = null)
     {
+        // %%% REQUIRED
+        if (this.InputTransform == null)
+        {
+            throw new InvalidOperationException("InputTransform must be set before invoking the orchestration.");
+        }
+        if (this.ResultTransform == null)
+        {
+            throw new InvalidOperationException("ResultTransform must be set before invoking the orchestration.");
+        }
+
         // Register actor for final result
         AgentType orchestrationFinal = this.FormatAgentType(topic, "Root");
         await this.Runtime.RegisterAgentFactoryAsync(
             orchestrationFinal,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new ResultActor(agentId, runtime, this.ResultTransform!, completion) // %%% NULL OVERRIDE
+                    new ResultActor(agentId, runtime, this.ResultTransform, completion)
                     {
                         CompletionTarget = targetActor,
                     })).ConfigureAwait(false);
@@ -167,7 +177,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             orchestrationEntry,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new RequestActor(agentId, runtime, this.InputTransform!, async (TSource source) => await this.StartAsync(topic, source, entryAgent).ConfigureAwait(false))) // %%% NULL OVERRIDE
+                    new RequestActor(agentId, runtime, this.InputTransform, async (TSource source) => await this.StartAsync(topic, source, entryAgent).ConfigureAwait(false)))
         ).ConfigureAwait(false);
 
         return orchestrationEntry;

@@ -15,7 +15,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// </summary>
     private sealed class RequestActor : PatternActor, IHandle<TInput>
     {
-        private readonly Func<TInput, TSource> _transform;
+        private readonly Func<TInput, ValueTask<TSource>> _transform;
         private readonly Func<TSource, Task> _action;
 
         /// <summary>
@@ -28,7 +28,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         public RequestActor(
             AgentId id,
             IAgentRuntime runtime,
-            Func<TInput, TSource> transform,
+            Func<TInput, ValueTask<TSource>> transform,
             Func<TSource, Task> action)
             : base(id, runtime, $"{id.Type}_Actor")
         {
@@ -47,7 +47,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             Trace.WriteLine($"> ORCHESTRATION ENTER: {this.Id.Type}");
             try
             {
-                TSource source = this._transform.Invoke(item);
+                TSource source = await this._transform.Invoke(item).ConfigureAwait(false);
                 await this._action.Invoke(source).ConfigureAwait(false);
             }
             catch (Exception exception)
