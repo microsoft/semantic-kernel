@@ -1,69 +1,83 @@
-﻿//// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
-//using System.Threading.Tasks;
-//using Microsoft.AgentRuntime;
-//using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.AgentRuntime;
+using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
-//namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
-///// <summary>
-///// An orchestration that coordinates a multi-agent conversation.
-///// </summary>
-//public sealed class GroupChatOrchestration : AgentOrchestration
-//{
-//    private readonly TaskCompletionSource<ChatMessageContent> _completionSource;
-//    private readonly Agent[] _agents;
+/// <summary>
+/// An orchestration that coordinates a group-chat.
+/// </summary>
+public class GroupChatOrchestration<TInput, TOutput> :
+    AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GroupChatOrchestration{TInput, TOutput}"/> class.
+    /// </summary>
+    /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="agents">The agents participating in the orchestration.</param>
+    public GroupChatOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+        : base(runtime, agents)
+    {
+    }
 
-//    /// <summary>
-//    /// Initializes a new instance of the <see cref="GroupChatOrchestration"/> class.
-//    /// </summary>
-//    /// <param name="runtime">The runtime associated with the orchestration.</param>
-//    /// <param name="agents">The agents participating in the orchestration.</param>
-//    public GroupChatOrchestration(IAgentRuntime runtime, params Agent[] agents)
-//        : base(runtime)
-//    {
-//        Verify.NotNullOrEmpty(agents, nameof(agents));
+    /// <inheritdoc />
+    protected override ValueTask StartAsync(TopicId topic, ChatMessages.InputTask input, AgentType? entryAgent)
+    {
+        Trace.WriteLine($"> GROUPCHAT START: {topic} [{entryAgent}]");
 
-//        this._completionSource = new TaskCompletionSource<ChatMessageContent>();
-//        this._agents = agents;
-//    }
+        return this.Runtime.SendMessageAsync(input, entryAgent!.Value);
+    }
 
-//    /// <summary>
-//    /// %%% COMMENT
-//    /// </summary>
-//    public Task<ChatMessageContent> Future => this._completionSource.Task;
+    /// <inheritdoc />
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType)
+    {
+        AgentType managerType = this.FormatAgentType(topic, "Manager");
 
-//    /// <inheritdoc />
-//    protected override async ValueTask MessageTaskAsync(ChatMessageContent message)
-//    {
-//        AgentType managerType = new($"{nameof(GroupChatManager)}_{this.Id}"); // %%% COMMON
-//        await this.Runtime.SendMessageAsync(message.ToTask(), managerType).ConfigureAwait(false);
-//    }
+        int agentCount = 0;
+        ChatTeam team = [];
+        foreach (OrchestrationTarget member in this.Members)
+        {
+            AgentType memberType = default;
 
-//    /// <inheritdoc />
-//    protected override async ValueTask PrepareAsync()
-//    {
-//        AgentType managerType = new($"{nameof(GroupChatManager)}_{this.Id}"); // %%% COMMON
-//        TopicId chatTopic = new($"GroupChatTopic_{this.Id}"); // %%% OTHER TOPICS: RESET ???
+            if (member.IsAgent(out Agent? agent))
+            {
+                memberType = await RegisterAgentAsync(agent).ConfigureAwait(false);
+            }
+            else if (member.IsOrchestration(out Orchestratable? orchestration))
+            {
+                memberType = await orchestration.RegisterAsync(topic, managerType).ConfigureAwait(false);
+            }
 
-//        ChatTeam team = [];
-//        foreach (Agent agent in this._agents)
-//        {
-//            AgentType agentType = agent.GetAgentType(this);
-//            await this.Runtime.RegisterAgentFactoryAsync(
-//                agentType,
-//                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new GroupChatActor(agentId, runtime, agent, chatTopic))).ConfigureAwait(false);
-//            TopicId agentTopic = new($"AgentTopic_{agent.Id}_{this.Id}".Replace("-", "_")); // %%% EXTENSION ???
-//            team[agent.Name ?? agent.Id] = (agentTopic, agent.Description);
+            Trace.WriteLine($"> GROUPCHAT MEMBER #{agentCount}: {memberType}");
 
-//            await this.RegisterTopicsAsync(agentType, chatTopic).ConfigureAwait(false);
-//            await this.RegisterTopicsAsync(agentType, agentTopic).ConfigureAwait(false);
-//        }
+            await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
+        }
 
-//        await this.Runtime.RegisterAgentFactoryAsync(
-//            managerType,
-//            (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new GroupChatManager(agentId, runtime, team, this._completionSource))).ConfigureAwait(false);
+        await this.Runtime.RegisterAgentFactoryAsync(
+            managerType,
+            (agentId, runtime) =>
+                ValueTask.FromResult<IHostableAgent>(
+                    new GroupChatManager(agentId, runtime, team))).ConfigureAwait(false);
 
-//        await this.RegisterTopicsAsync(managerType, chatTopic).ConfigureAwait(false);
-//    }
-//}
+        await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
+
+        return null;
+
+        async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
+        {
+            AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
+            await this.Runtime.RegisterAgentFactoryAsync(
+                agentType,
+                (agentId, runtime) =>
+                    ValueTask.FromResult<IHostableAgent>(new GroupChatActor(agentId, runtime, agent, topic))).ConfigureAwait(false);
+
+            await this.SubscribeAsync(agentType, topic).ConfigureAwait(false);
+            //await this.RegisterTopicsAsync(agentType, agentTopic).ConfigureAwait(false); // %%% CRITICAL
+
+            return agentType;
+        }
+    }
+}
