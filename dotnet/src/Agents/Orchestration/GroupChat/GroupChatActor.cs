@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
@@ -50,7 +51,12 @@ internal sealed class GroupChatActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ChatMessages.Speak item, MessageContext messageContext)
     {
+        Trace.WriteLine($"> BROADCAST ACTOR: {this.Id.Type} SPEAK");
+
         ChatMessageContent response = await this.InvokeAsync(this._cache, messageContext.CancellationToken).ConfigureAwait(false);
+
+        Trace.WriteLine($"> BROADCAST ACTOR: {this.Id.Type} OUTPUT - {response}");
+
         this._cache.Clear();
         await this.PublishMessageAsync(response.ToGroup(), this._groupTopic).ConfigureAwait(false);
     }

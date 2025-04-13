@@ -24,6 +24,7 @@ public abstract class ChatManager :
     public const string DefaultDescription = "Orchestrates a team of agents to accomplish a defined task.";
 
     private readonly AgentType _orchestrationType;
+    private readonly TopicId _groupTopic;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatManager"/> class.
@@ -32,7 +33,7 @@ public abstract class ChatManager :
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
-    protected ChatManager(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType)
+    protected ChatManager(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
         : base(id, runtime, DefaultDescription)
     {
         this.Chat = [];
@@ -40,6 +41,7 @@ public abstract class ChatManager :
         this._orchestrationType = orchestrationType;
         Trace.WriteLine($">>> MANAGER NAMES: {this.Team.FormatNames()}");
         Trace.WriteLine($">>> MANAGER TEAM:\n{this.Team.FormatList()}");
+        this._groupTopic = groupTopic;
     }
 
     /// <summary>
@@ -97,6 +99,12 @@ public abstract class ChatManager :
         if (agentType != null)
         {
             await this.RequestAgentResponseAsync(agentType.Value, messageContext.CancellationToken).ConfigureAwait(false);
+            await this.PublishMessageAsync(item.Message.ToGroup(), this._groupTopic).ConfigureAwait(false);
+        }
+        else
+        {
+            Trace.WriteLine(">>> MANAGER NO AGENT");
+            await this.SendMessageAsync(item.Message.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false); // %%% PLACEHOLDER - FINAL MESSAGE
         }
     }
 

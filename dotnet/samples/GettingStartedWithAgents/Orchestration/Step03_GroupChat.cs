@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AgentRuntime.InProcess;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
@@ -13,7 +15,7 @@ namespace GettingStarted.Orchestration;
 public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task UseGroupChatPatternAsync()
+    public async Task SimpleGroupChatAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
@@ -37,4 +39,53 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
     }
 
     // %%% MORE SAMPLES - GROUPCHAT
+
+    [Fact]
+    public async Task SingleActorAsync()
+    {
+        // Define the agents
+        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
+
+        // Define the pattern
+        InProcessRuntime runtime = new();
+        GroupChatOrchestration orchestration = new(runtime, agent);
+
+        // Start the runtime
+        await runtime.StartAsync();
+        string input = "1";
+        Console.WriteLine($"\n# INPUT: {input}\n");
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(input);
+
+        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+        Console.WriteLine($"\n# RESULT: {output}");
+
+        await runtime.RunUntilIdleAsync();
+    }
+
+    [Fact]
+    public async Task SingleNestedActorAsync()
+    {
+        // Define the agents
+        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
+
+        // Define the pattern
+        InProcessRuntime runtime = new();
+        GroupChatOrchestration<ChatMessages.InputTask, ChatMessages.Result> orchestrationInner = new(runtime, agent)
+        {
+            InputTransform = (ChatMessages.InputTask input) => ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input.Message.ToString()).ToInputTask()),
+            ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result.Message.ToResult())
+        };
+        GroupChatOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+
+        // Start the runtime
+        await runtime.StartAsync();
+        string input = "1";
+        Console.WriteLine($"\n# INPUT: {input}\n");
+        OrchestrationResult<string> result = await orchestrationOuter.InvokeAsync(input);
+
+        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+        Console.WriteLine($"\n# RESULT: {output}");
+
+        await runtime.RunUntilIdleAsync();
+    }
 }

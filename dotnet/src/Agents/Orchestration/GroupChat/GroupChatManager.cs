@@ -19,8 +19,8 @@ internal sealed class GroupChatManager : ChatManager
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
-    public GroupChatManager(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType)
-        : base(id, runtime, team, orchestrationType)
+    public GroupChatManager(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
+        : base(id, runtime, team, orchestrationType, groupTopic)
     {
     }
 
