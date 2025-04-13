@@ -185,7 +185,7 @@ class BraveSearch(KernelBaseModel, TextSearch):
         if options.skip < 0:
             raise ServiceInvalidRequestError("offset must be greater than or equal to 0.")
         if options.skip > 9:
-            raise ServiceInvalidRequestError("offset must be less 10.")
+            raise ServiceInvalidRequestError("offset must be less than 10.")
 
     def _get_url(self) -> str:
         return DEFAULT_URL
