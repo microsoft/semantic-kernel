@@ -2,7 +2,6 @@
 
 import logging
 from collections.abc import AsyncIterable
-from html import escape
 from typing import TYPE_CHECKING, Any
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
@@ -192,21 +191,20 @@ class BraveSearch(KernelBaseModel, TextSearch):
         return DEFAULT_URL
 
     def _build_request_parameters(self, query: str, options: TextSearchOptions) -> dict[str, str | int | bool]:
-        params: dict[str, str | int] = {"count": options.top, "offset": options.skip}
+        params: dict[str, str | int] = {"q": query or "", "count": options.top, "offset": options.skip}
         if not options.filter:
-            params["q"] = query or ""
             return params
-        extra_query_params = []
         for filter in options.filter.filters:
-            if isinstance(filter, SearchFilter):
-                logger.warning("Groups are not supported by Brave search, ignored.")
-                continue
             if isinstance(filter, EqualTo):
                 if filter.field_name in QUERY_PARAMETERS:
-                    params[filter.field_name] = escape(filter.value)
+                    params[filter.field_name] = filter.value
                 else:
-                    extra_query_params.append(f"{filter.field_name}:{filter.value}")
+                    raise ServiceInvalidRequestError(
+                        f"Observed an unwanted parameter named {filter.field_name} with value {filter.value} ."
+                    )
+            elif isinstance(filter, SearchFilter):
+                logger.warning("Groups are not supported by Brave search, ignored.")
+                continue
             elif isinstance(filter, AnyTagsEqualTo):
                 logger.debug("Any tag equals to filter is not supported by Brave Search API.")
-        params["q"] = f"{query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
         return params
