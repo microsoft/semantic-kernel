@@ -59,9 +59,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
-#pragma warning restore CS0618
+    private readonly IWeaviateMapper<TRecord> _mapper;
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -108,7 +106,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._model = new WeaviateModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
 
         // Assign mapper.
-        this._mapper = this.InitializeMapper();
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new WeaviateDynamicDataModelMapper(this.CollectionName, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
+            : new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._model, s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -515,28 +515,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             };
         }
     }
-
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
-    {
-        if (this._options.JsonObjectCustomMapper is not null)
-        {
-            return this._options.JsonObjectCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            var mapper = new WeaviateDynamicDataModelMapper(this.CollectionName, this._model, s_jsonSerializerOptions);
-
-            return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
-        }
-
-        return new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._model, s_jsonSerializerOptions);
-    }
-#pragma warning restore CS0618
 
     private static void VerifyVectorParam<TVector>(TVector vector)
     {

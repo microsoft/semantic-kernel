@@ -55,9 +55,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     private readonly AzureAISearchVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, JsonObject>? _mapper;
-#pragma warning restore CS0618
+    private readonly AzureAISearchDynamicDataModelMapper? _dynamicMapper;
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -90,18 +88,12 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         this._model = new VectorStoreRecordJsonModelBuilder(AzureAISearchConstants.s_modelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.JsonSerializerOptions);
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         // Resolve mapper.
-        // First, if someone has provided a custom mapper, use that.
         // If they didn't provide a custom mapper, and the record type is the generic data model, use the built in mapper for that.
         // Otherwise, don't set the mapper, and we'll default to just using Azure AI Search's built in json serialization and deserialization.
-        if (this._options.JsonObjectCustomMapper is not null)
+        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
-            this._mapper = this._options.JsonObjectCustomMapper;
-        }
-        else if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            this._mapper = new AzureAISearchDynamicDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, JsonObject>;
+            this._dynamicMapper = new AzureAISearchDynamicDataModelMapper(this._model);
         }
 
         this._collectionMetadata = new()
@@ -554,8 +546,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         var stringKey = this.GetStringKey(key);
 
         // Use the user provided mapper.
-        if (this._mapper is not null)
+        if (this._dynamicMapper is not null)
         {
+            Debug.Assert(typeof(TRecord) == typeof(Dictionary<string, object?>));
+
             var jsonObject = await this.RunOperationAsync(
                 OperationName,
                 () => GetDocumentWithNotFoundHandlingAsync<JsonObject>(this._searchClient, stringKey, innerOptions, cancellationToken)).ConfigureAwait(false);
@@ -570,7 +564,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => this._mapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
+                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
         }
 
         // Use the built in Azure AI Search mapper.
@@ -596,8 +590,10 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         const string OperationName = "Search";
 
         // Execute search and map using the user provided mapper.
-        if (this._mapper is not null)
+        if (this._dynamicMapper is not null)
         {
+            Debug.Assert(typeof(TRecord) == typeof(Dictionary<string, object?>));
+
             var jsonObjectResults = await this.RunOperationAsync(
                 OperationName,
                 () => this._searchClient.SearchAsync<JsonObject>(searchText, searchOptions, cancellationToken)).ConfigureAwait(false);
@@ -631,14 +627,16 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         const string OperationName = "UploadDocuments";
 
         // Use the user provided mapper.
-        if (this._mapper is not null)
+        if (this._dynamicMapper is not null)
         {
+            Debug.Assert(typeof(TRecord) == typeof(Dictionary<string, object?>));
+
             var jsonObjects = VectorStoreErrorHandler.RunModelConversion(
                 AzureAISearchConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => records.Select(this._mapper!.MapFromDataToStorageModel));
+                () => records.Select(r => this._dynamicMapper!.MapFromDataToStorageModel((Dictionary<string, object?>)(object)r)));
 
             return this.RunOperationAsync(
                 OperationName,
@@ -667,7 +665,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 operationName,
-                () => this._mapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
+                () => (TRecord)(object)this._dynamicMapper!.MapFromStorageToDataModel(result.Document, new() { IncludeVectors = includeVectors }));
             yield return new VectorSearchResult<TRecord>(document, result.Score);
         }
     }

@@ -366,17 +366,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Null(await sut.GetAsync(15, new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
-    public async Task ItThrowsMappingExceptionForFailedMapperAsync()
-    {
-        // Arrange
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { PointStructCustomMapper = new FailingMapper() };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));
-    }
-
     [Theory]
     [InlineData(true, "singleVectorHotels", false, "equality")]
     [InlineData(false, "singleVectorHotels", false, "equality")]
@@ -487,18 +476,5 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             Description = "This is a great hotel.",
             DescriptionEmbedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
         };
-    }
-
-    private sealed class FailingMapper : IVectorStoreRecordMapper<HotelInfo, PointStruct>
-    {
-        public PointStruct MapFromDataToStorageModel(HotelInfo dataModel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HotelInfo MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

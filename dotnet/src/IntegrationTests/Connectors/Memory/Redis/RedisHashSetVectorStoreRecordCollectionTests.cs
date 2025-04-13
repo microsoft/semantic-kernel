@@ -8,7 +8,6 @@ using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
 using NRedisStack.RedisStackCommands;
 using NRedisStack.Search;
-using StackExchange.Redis;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -426,21 +425,6 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItThrowsMappingExceptionForFailedMapperAsync()
-    {
-        // Arrange
-        var options = new RedisHashSetVectorStoreRecordCollectionOptions<RedisBasicFloat32Hotel>
-        {
-            PrefixCollectionNameToKeyNames = true,
-            HashEntriesCustomMapper = new FailingMapper()
-        };
-        var sut = new RedisHashSetVectorStoreRecordCollection<string, RedisBasicFloat32Hotel>(fixture.Database, TestCollectionName, options);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("HBaseSet-1", new GetRecordOptions { IncludeVectors = true }));
-    }
-
-    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
@@ -503,18 +487,5 @@ public sealed class RedisHashSetVectorStoreRecordCollectionTests(ITestOutputHelp
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f }
         };
         return record;
-    }
-
-    private sealed class FailingMapper : IVectorStoreRecordMapper<RedisBasicFloat32Hotel, (string Key, HashEntry[] HashEntries)>
-    {
-        public (string Key, HashEntry[] HashEntries) MapFromDataToStorageModel(RedisBasicFloat32Hotel dataModel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public RedisBasicFloat32Hotel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, StorageToDataModelMapperOptions options)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

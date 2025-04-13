@@ -19,7 +19,7 @@ public sealed class AzureAISearchVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, the default mapper that is provided by the Azure AI Search client SDK will be used.
     /// </remarks>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 
     /// <summary>

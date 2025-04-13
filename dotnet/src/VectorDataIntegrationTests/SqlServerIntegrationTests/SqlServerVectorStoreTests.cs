@@ -2,7 +2,6 @@
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.SqlServer;
 using SqlServerIntegrationTests.Support;
 using VectorDataSpecificationTests.Xunit;
 using Xunit;
@@ -149,60 +148,6 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
             await collection.DeleteCollectionAsync();
         }
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    [ConditionalFact]
-    public async Task CustomMapper()
-    {
-        string collectionName = GetUniqueCollectionName();
-        TestModelMapper mapper = new();
-        SqlServerVectorStoreRecordCollectionOptions<TestModel> options = new()
-        {
-            Mapper = mapper
-        };
-        SqlServerVectorStoreRecordCollection<string, TestModel> collection = new(SqlServerTestEnvironment.ConnectionString!, collectionName, options);
-
-        try
-        {
-            await collection.CreateCollectionIfNotExistsAsync();
-
-            TestModel inserted = new()
-            {
-                Id = "MyId",
-                Number = 100,
-                Floats = Enumerable.Range(0, 10).Select(i => (float)i).ToArray()
-            };
-            string key = await collection.UpsertAsync(inserted);
-            Assert.Equal(inserted.Id, key);
-            Assert.True(mapper.MapFromDataToStorageModel_WasCalled);
-            Assert.False(mapper.MapFromStorageToDataModel_WasCalled);
-
-            TestModel? received = await collection.GetAsync(inserted.Id, new() { IncludeVectors = true });
-            AssertEquality(inserted, received);
-            Assert.True(mapper.MapFromStorageToDataModel_WasCalled);
-
-            TestModel updated = new()
-            {
-                Id = inserted.Id,
-                Number = inserted.Number + 200, // change one property
-                Floats = inserted.Floats
-            };
-            key = await collection.UpsertAsync(updated);
-            Assert.Equal(inserted.Id, key);
-
-            received = await collection.GetAsync(updated.Id, new() { IncludeVectors = true });
-            AssertEquality(updated, received);
-
-            await collection.DeleteAsync(inserted.Id);
-
-            Assert.Null(await collection.GetAsync(inserted.Id));
-        }
-        finally
-        {
-            await collection.DeleteCollectionAsync();
-        }
-    }
-#pragma warning restore CS0618
 
     [ConditionalFact]
     public async Task BatchCRUD()
@@ -468,39 +413,4 @@ public class SqlServerVectorStoreTests(SqlServerFixture fixture) : IClassFixture
         [VectorStoreRecordVector(Dimensions: 10, StoragePropertyName = "embedding")]
         public ReadOnlyMemory<float> Floats { get; set; }
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private sealed class TestModelMapper : IVectorStoreRecordMapper<TestModel, IDictionary<string, object?>>
-    {
-        internal bool MapFromDataToStorageModel_WasCalled { get; set; }
-        internal bool MapFromStorageToDataModel_WasCalled { get; set; }
-
-        public IDictionary<string, object?> MapFromDataToStorageModel(TestModel dataModel)
-        {
-            this.MapFromDataToStorageModel_WasCalled = true;
-
-            return new Dictionary<string, object?>()
-            {
-                { "key", dataModel.Id },
-                { "text", dataModel.Text },
-                { "column", dataModel.Number },
-                // Please note that we are not dealing with JSON directly here.
-                { "embedding", dataModel.Floats }
-            };
-        }
-
-        public TestModel MapFromStorageToDataModel(IDictionary<string, object?> storageModel, StorageToDataModelMapperOptions options)
-        {
-            this.MapFromStorageToDataModel_WasCalled = true;
-
-            return new()
-            {
-                Id = (string)storageModel["key"]!,
-                Text = (string?)storageModel["text"],
-                Number = (int)storageModel["column"]!,
-                Floats = (ReadOnlyMemory<float>)storageModel["embedding"]!
-            };
-        }
-    }
-#pragma warning restore CS0618
 }

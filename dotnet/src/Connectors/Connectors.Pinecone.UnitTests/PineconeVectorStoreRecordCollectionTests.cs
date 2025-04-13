@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Moq;
 using Xunit;
 using Sdk = Pinecone;
 
@@ -17,7 +16,6 @@ public class PineconeVectorStoreRecordCollectionTests
 {
     private const string TestCollectionName = "testcollection";
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -42,9 +40,8 @@ public class PineconeVectorStoreRecordCollectionTests
         var sut = new PineconeVectorStoreRecordCollection<string, SinglePropsModel>(
             pineconeClient,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, VectorCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel, Sdk.Vector>>() });
+            new() { VectorStoreRecordDefinition = definition });
     }
-#pragma warning restore CS0618
 
     public sealed class SinglePropsModel
     {

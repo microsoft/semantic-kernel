@@ -56,9 +56,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
-#pragma warning restore CS0618
+    private readonly QdrantVectorStoreRecordMapper<TRecord> _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -100,9 +98,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.PointStructCustomMapper ?? new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
-#pragma warning restore CS0618
+        this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
 
         this._collectionMetadata = new()
         {
