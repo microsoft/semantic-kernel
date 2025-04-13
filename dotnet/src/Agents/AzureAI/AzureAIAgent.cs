@@ -93,7 +93,7 @@ public sealed partial class AzureAIAgent : KernelAgent
     }
 
     /// <summary>
-    /// %%%
+    /// The associated client.
     /// </summary>
     public AgentsClient Client { get; }
 

@@ -1,89 +1,84 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Concurrent;
-using System.Threading;
+using System;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
 
 /// <summary>
-/// %%%
+/// An orchestration that broadcasts the input message to each agent.
 /// </summary>
-/// <param name="results"></param>
-public delegate ValueTask BroadcastCompletedHandlerAsync(ChatMessageContent[] results);
-
-/// <summary>
-/// %%%
-/// </summary>
-public sealed class BroadcastOrchestration : AgentOrchestration
+public class BroadcastOrchestration<TInput, TOutput>
+    : AgentOrchestration<TInput, BroadcastMessages.Task, BroadcastMessages.Result[], TOutput>
 {
-    private readonly BroadcastCompletedHandlerAsync _completionHandler;
-    private readonly Agent[] _agents;
-    private readonly TopicId _topic;
-    private readonly ConcurrentQueue<ChatMessageContent> _results;
-    private int _resultCount;
-
     /// <summary>
-    /// %%%
+    /// Initializes a new instance of the <see cref="BroadcastOrchestration{TInput, TOutput}"/> class.
     /// </summary>
-    /// <param name="runtime"></param>
-    /// <param name="completionHandler"></param>
-    /// <param name="agents"></param>
-    public BroadcastOrchestration(IAgentRuntime runtime, BroadcastCompletedHandlerAsync completionHandler, params Agent[] agents)
-        : base(runtime)
+    /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="agents">The agents participating in the orchestration.</param>
+    public BroadcastOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+        : base(runtime, agents)
     {
-        Verify.NotNull(completionHandler, nameof(completionHandler));
-        //Verify.NotEmpty(agents, nameof(agents)); // %%% TODO: Utility
-
-        this._agents = agents;
-        this._completionHandler = completionHandler;
-        this._topic = new($"BroadcastTopic_{nameof(Task)}_{this.Id}", this.Id);
-        this._results = [];
     }
 
     /// <inheritdoc />
-    public override bool IsComplete => this._resultCount == this._agents.Length;
-
-    /// <inheritdoc />
-    protected override async ValueTask MessageTaskAsync(ChatMessageContent message)
+    protected override ValueTask StartAsync(TopicId topic, BroadcastMessages.Task input, AgentType? entryAgent)
     {
-        await this.Runtime.PublishMessageAsync(message.ToTask(), this._topic).ConfigureAwait(false);
+        Trace.WriteLine($"> BROADCAST START: {topic}");
+        return this.Runtime.PublishMessageAsync(input, topic);
     }
 
     /// <inheritdoc />
-    protected override async ValueTask RegisterAsync()
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType)
     {
-        AgentType receiverType = new($"{nameof(BroadcastReciever)}_{this.Id}");
+        // Register result actor
+        AgentType resultType = this.FormatAgentType(topic, "Results");
+        await this.Runtime.RegisterAgentFactoryAsync(
+            resultType,
+            (agentId, runtime) =>
+                ValueTask.FromResult<IHostableAgent>(
+                    new BroadcastResultActor(agentId, runtime, orchestrationType, this.Members.Count))).ConfigureAwait(false);
+        Trace.WriteLine($"> BROADCAST RESULTS: {resultType}");
 
-        // All agents respond to the same message.
-        foreach (Agent agent in this._agents)
+        // Register member actors - All agents respond to the same message.
+        int agentCount = 0;
+        foreach (OrchestrationTarget member in this.Members)
         {
-            await this.RegisterAgentAsync(agent, receiverType).ConfigureAwait(false);
+            ++agentCount;
+
+            AgentType memberType;
+
+            switch (member.TargetType)
+            {
+                case OrchestrationTargetType.Agent:
+                    memberType = await RegisterAgentAsync(member.Agent!).ConfigureAwait(false);
+                    break;
+                case OrchestrationTargetType.Orchestratable:
+                    memberType = await member.Orchestration!.RegisterAsync(topic, resultType).ConfigureAwait(false); // %%% NULL OVERIDE
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unsupported target type: {member.TargetType}"); // %%% EXCEPTION TYPE
+            }
+
+            Trace.WriteLine($"> BROADCAST MEMBER #{agentCount}: {memberType}");
+
+            await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
 
-        await this.Runtime.RegisterAgentFactoryAsync(
-            receiverType,
-            (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new BroadcastReciever(agentId, runtime, this.HandleResultAsync))).ConfigureAwait(false);
-    }
+        return null;
 
-    private async ValueTask RegisterAgentAsync(Agent agent, AgentType receiverType)
-    {
-        string agentType = this.GetAgentId(agent);
-        await this.Runtime.RegisterAgentFactoryAsync(
-            agentType,
-            (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new BroadcastProxy(agentId, runtime, agent, receiverType))).ConfigureAwait(false);
-
-        await this.RegisterTopicsAsync(agentType, this._topic).ConfigureAwait(false);
-    }
-
-    private async ValueTask HandleResultAsync(BroadcastMessages.Result result)
-    {
-        this._results.Enqueue(result.Message);
-        Interlocked.Increment(ref this._resultCount);
-        if (this.IsComplete)
+        async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
-            await this._completionHandler.Invoke(this._results.ToArray()).ConfigureAwait(false);
+            AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
+            await this.Runtime.RegisterAgentFactoryAsync(
+                agentType,
+                (agentId, runtime) =>
+                    ValueTask.FromResult<IHostableAgent>(new BroadcastActor(agentId, runtime, agent, resultType))).ConfigureAwait(false);
+
+            return agentType;
         }
     }
 }

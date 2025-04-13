@@ -34,8 +34,9 @@
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Markdig" Version="0.40.0" />
-    <PackageVersion Include="Microsoft.AgentRuntime.Abstractions" Version="0.1.4" />
-    <PackageVersion Include="Microsoft.AgentRuntime.InProcess" Version="0.1.4" />
+    <PackageVersion Include="Microsoft.AgentRuntime.Abstractions" Version="0.1.6" />
+    <PackageVersion Include="Microsoft.AgentRuntime.Core" Version="0.1.6" />
+    <PackageVersion Include="Microsoft.AgentRuntime.InProcess" Version="0.1.6" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />

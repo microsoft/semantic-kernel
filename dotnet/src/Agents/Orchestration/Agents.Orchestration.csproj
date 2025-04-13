@@ -5,7 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Agents.Orchestration</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.Orchestration</RootNamespace>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <!--<TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks> // %%% TODO -->
+    <!--<TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks> // %%% TODO: BUILD -->
     <NoWarn>$(NoWarn);SKEXP0110;SKEXP0001</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
     <VersionSuffix>preview</VersionSuffix>
@@ -28,10 +28,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AgentRuntime.Abstractions" />
+    <PackageReference Include="Microsoft.AgentRuntime.Core" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\Core\Agents.Core.csproj" /> <!--// %%% REMOVE-->
   </ItemGroup>
 
   <ItemGroup>
@@ -40,8 +42,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Composed\" />
-    <Folder Include="Extensions\" />
+    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.LegacyThreadSwitchingMembers.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.MainThreadAssertingMethods.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.MainThreadSwitchingMethods.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.MembersRequiringMainThread.txt" />
   </ItemGroup>
 
 </Project>

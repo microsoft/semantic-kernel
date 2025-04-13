@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.ChatCompletion;
+
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
 
 /// <summary>
-/// Common messages used by the <see cref="BroadcastOrchestration"/>.
+/// Common messages used by the <see cref="BroadcastOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal static class BroadcastMessages
+public static class BroadcastMessages
 {
     /// <summary>
-    /// %%% COMMENT
+    /// The input task for a <see cref="BroadcastOrchestration{TInput, TOutput}"/>.
     /// </summary>
     public sealed class Task
     {
@@ -19,7 +21,7 @@ internal static class BroadcastMessages
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// A result from a <see cref="BroadcastOrchestration{TInput, TOutput}"/>.
     /// </summary>
     public sealed class Result
     {
@@ -30,16 +32,22 @@ internal static class BroadcastMessages
     }
 
     /// <summary>
-    /// %%%
+    /// Extension method to convert a <see cref="string"/> to a <see cref="Result"/>.
     /// </summary>
-    /// <param name="message"></param>
-    /// <returns></returns>
-    public static Result ToResult(this ChatMessageContent message) => new() { Message = message };
+    public static Result ToBroadcastResult(this string text, AuthorRole? role = null) => new() { Message = new ChatMessageContent(role ?? AuthorRole.Assistant, text) };
 
     /// <summary>
-    /// %%%
+    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
     /// </summary>
-    /// <param name="message"></param>
-    /// <returns></returns>
-    public static Task ToTask(this ChatMessageContent message) => new() { Message = message };
+    public static Result ToBroadcastResult(this ChatMessageContent message) => new() { Message = message };
+
+    /// <summary>
+    /// Extension method to convert a <see cref="string"/> to a <see cref="Task"/>.
+    /// </summary>
+    public static Task ToBroadcastTask(this string text, AuthorRole? role = null) => new() { Message = new ChatMessageContent(role ?? AuthorRole.User, text) };
+
+    /// <summary>
+    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Task"/>.
+    /// </summary>
+    public static Task ToBroadcastTask(this ChatMessageContent message) => new() { Message = message };
 }

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -88,6 +89,10 @@ public abstract class BaseTest : TextWriter
             .AddEnvironmentVariables()
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
+
+        TextWriterTraceListener traceListener = new(this);
+        Trace.Listeners.Clear();
+        Trace.Listeners.Add(traceListener);
 
         TestConfiguration.Initialize(configRoot);
 

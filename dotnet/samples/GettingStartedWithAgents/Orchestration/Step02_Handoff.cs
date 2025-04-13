@@ -1,62 +1,119 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AgentRuntime.InProcess;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// %%%
+/// Demonstrates how to use the <see cref="HandoffOrchestration{TInput, TOutput}"/>.
 /// </summary>
-public class Step02_Handoff(ITestOutputHelper output) : BaseAgentsTest(output)
+public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task UseHandoffPatternAsync()
+    public async Task SimpleHandoffAsync()
     {
         // Define the agents
-        // %%% STRUCTURED OUTPUT ???
-        ChatCompletionAgent agent1 =
-                new()
-                {
-                    Instructions = "Count the number of words in the most recent user input without repeating the input.  ALWAYS report the count as a number using the format:\nWords: <count>",
-                    //Name = name,
-                    Description = "Agent 1",
-                    Kernel = this.CreateKernelWithChatCompletion(),
-                };
-        ChatCompletionAgent agent2 =
-                new()
-                {
-                    Instructions = "Count the number of vowels in the most recent user input without repeating the input.  ALWAYS report the count as a number using the format:\nVowels: <count>",
-                    //Name = name,
-                    Description = "Agent 2",
-                    Kernel = this.CreateKernelWithChatCompletion(),
-                };
-        ChatCompletionAgent agent3 =
-                new()
-                {
-                    Instructions = "Count the number of consonants in the most recent user input without repeating the input.  ALWAYS report the count as a number using the format:\nConsonants: <count>",
-                    //Name = name,
-                    Description = "Agent 3",
-                    Kernel = this.CreateKernelWithChatCompletion(),
-                };
+        ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
+        ChatCompletionAgent agent2 = this.CreateAgent("Analyze the previous message to determine count of vowels.  ALWAYS report the count using numeric digits formatted as:\nVowels: <digits>");
+        ChatCompletionAgent agent3 = this.CreateAgent("Analyze the previous message to determine count of onsonants.  ALWAYS report the count using numeric digits formatted as:\nConsonants: <digits>");
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        HandoffOrchestration orchestration = new(runtime, HandoffCompletedHandlerAsync, agent1, agent2, agent3);
+        HandoffOrchestration orchestration = new(runtime, agent1, agent2, agent3);
 
         // Start the runtime
         await runtime.StartAsync();
-        await orchestration.StartAsync(new ChatMessageContent(AuthorRole.User, "The quick brown fox jumps over the lazy dog"));
-        await runtime.RunUntilIdleAsync();
-        Console.WriteLine($"ISCOMPLETE = {orchestration.IsComplete}");
+        string input = "The quick brown fox jumps over the lazy dog";
+        Console.WriteLine($"\n# INPUT: {input}\n");
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(input);
+        string text = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+        Console.WriteLine($"\n# RESULT: {text}");
 
-        ValueTask HandoffCompletedHandlerAsync(ChatMessageContent result)
+        await runtime.RunUntilIdleAsync();
+    }
+
+    [Fact]
+    public async Task NestedHandoffAsync()
+    {
+        // Define the agents
+        ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
+        ChatCompletionAgent agent2 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 2");
+        ChatCompletionAgent agent3 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 3");
+        ChatCompletionAgent agent4 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 4");
+
+        // Define the pattern
+        InProcessRuntime runtime = new();
+
+        HandoffOrchestration<HandoffMessage, HandoffMessage> orchestrationLeft = CreateNested(runtime, agent1, agent2);
+        HandoffOrchestration<HandoffMessage, HandoffMessage> orchestrationRight = CreateNested(runtime, agent3, agent4);
+        HandoffOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
+
+        // Start the runtime
+        await runtime.StartAsync();
+        string input = "1";
+        Console.WriteLine($"\n# INPUT: {input}\n");
+        OrchestrationResult<string> result = await orchestrationMain.InvokeAsync(input);
+
+        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+        Console.WriteLine($"\n# RESULT: {output}");
+
+        await runtime.RunUntilIdleAsync();
+    }
+
+    [Fact]
+    public async Task SingleActorAsync()
+    {
+        // Define the agents
+        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
+
+        // Define the pattern
+        InProcessRuntime runtime = new();
+        HandoffOrchestration orchestration = new(runtime, agent);
+
+        // Start the runtime
+        await runtime.StartAsync();
+        string input = "1";
+        Console.WriteLine($"\n# INPUT: {input}\n");
+        OrchestrationResult<string> result = await orchestration.InvokeAsync(input);
+
+        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+        Console.WriteLine($"\n# RESULT: {output}");
+
+        await runtime.RunUntilIdleAsync();
+    }
+
+    [Fact]
+    public async Task SingleNestedActorAsync()
+    {
+        // Define the agents
+        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
+
+        // Define the pattern
+        InProcessRuntime runtime = new();
+        HandoffOrchestration<HandoffMessage, HandoffMessage> orchestrationInner = CreateNested(runtime, agent);
+        HandoffOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+
+        // Start the runtime
+        await runtime.StartAsync();
+        string input = "1";
+        Console.WriteLine($"\n# INPUT: {input}\n");
+        OrchestrationResult<string> result = await orchestrationOuter.InvokeAsync(input);
+
+        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
+        Console.WriteLine($"\n# RESULT: {output}");
+
+        await runtime.RunUntilIdleAsync();
+    }
+
+    private static HandoffOrchestration<HandoffMessage, HandoffMessage> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
+    {
+        return new(runtime, targets)
         {
-            Console.WriteLine($"RESULT: {result}");
-            return ValueTask.CompletedTask;
-        }
+            InputTransform = (HandoffMessage input) => input,
+            ResultTransform = (HandoffMessage results) => results,
+        };
     }
 }
