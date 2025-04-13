@@ -7,11 +7,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// Base class for multi-agent orchestration patterns.
+/// Base class for multi-agent agent orchestration patterns.
 /// </summary>
 public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutput> : Orchestratable
 {
@@ -21,7 +22,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
-    /// <param name="members">// %%% COMMENT</param>
+    /// <param name="members">Specifies the member agents or orchestrations participating in this orchestration.</param>
     protected AgentOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
     {
         Verify.NotNull(runtime, nameof(runtime));
@@ -32,27 +33,27 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the name of the orchestration.
     /// </summary>
     public string Name { get; init; } = string.Empty;
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the description of the orchestration.
     /// </summary>
     public string Description { get; init; } = string.Empty;
 
     /// <summary>
-    /// %%% COMMENT
+    /// Transforms the orchestration input into a source input suitable for processing.
     /// </summary>
     public Func<TInput, TSource>? InputTransform { get; init; } // %%% TODO: ASYNC
 
     /// <summary>
-    /// %%% COMMENT
+    /// Transforms the processed result into the final output form.
     /// </summary>
     public Func<TResult, TOutput>? ResultTransform { get; init; } // %%% TODO: ASYNC
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the list of member targets involved in the orchestration.
     /// </summary>
     protected IReadOnlyList<OrchestrationTarget> Members { get; }
 
@@ -62,10 +63,10 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     protected IAgentRuntime Runtime { get; }
 
     /// <summary>
-    /// Initiate processing of the orchestration.
+    /// Initiates processing of the orchestration.
     /// </summary>
-    /// <param name="input">The input message</param>
-    /// <param name="timeout">// %%% COMMENT</param>
+    /// <param name="input">The input message.</param>
+    /// <param name="timeout">Optional timeout for the orchestration process.</param>
     public async ValueTask<OrchestrationResult<TOutput>> InvokeAsync(TInput input, TimeSpan? timeout = null)
     {
         Verify.NotNull(input, nameof(input));
@@ -80,8 +81,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
         Trace.WriteLine($"\n!!! ORCHESTRATION INVOKE: {orchestrationType}\n");
 
-        //await this.Runtime.SendMessageAsync(input, new AgentId(orchestrationType, AgentId.DefaultKey)).ConfigureAwait(false);
-        Task task = this.Runtime.SendMessageAsync(input, new AgentId(orchestrationType, AgentId.DefaultKey)).AsTask(); // %%% TODO: REFINE
+        Task task = this.Runtime.SendMessageAsync(input, orchestrationType).AsTask(); // %%% TODO: REFINE
 
         Trace.WriteLine($"\n!!! ORCHESTRATION YIELD: {orchestrationType}");
 
@@ -89,35 +89,35 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Formats and returns a unique AgentType based on the provided topic and suffix.
     /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="suffix"></param>
-    /// <returns></returns>
+    /// <param name="topic">The topic identifier used in formatting the agent type.</param>
+    /// <param name="suffix">A suffix to differentiate the agent type.</param>
+    /// <returns>A formatted AgentType object.</returns>
     protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{this._orchestrationType}_{suffix}");
 
     /// <summary>
-    /// Initiate processing according to the orchestration pattern.
+    /// Initiates processing according to the orchestration pattern.
     /// </summary>
-    /// <param name="topic">// %%% COMMENT</param>
-    /// <param name="input">The input message</param>
-    /// <param name="entryAgent">// %%% COMMENT</param>
+    /// <param name="topic">The unique identifier for the orchestration session.</param>
+    /// <param name="input">The input message to be transformed and processed.</param>
+    /// <param name="entryAgent">The initial agent type used for starting the orchestration.</param>
     protected abstract ValueTask StartAsync(TopicId topic, TSource input, AgentType? entryAgent);
 
     /// <summary>
-    /// %%% COMMENT
+    /// Registers additional orchestration members and returns the entry agent if available.
     /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="orchestrationType"></param>
-    /// <returns></returns>
+    /// <param name="topic">The topic identifier for the orchestration session.</param>
+    /// <param name="orchestrationType">The orchestration type used in registration.</param>
+    /// <returns>The entry AgentType for the orchestration, if any.</returns>
     protected abstract ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType);
 
     /// <summary>
-    /// %%% COMMENT
+    /// Registers the orchestration with the runtime using an external topic and an optional target actor.
     /// </summary>
-    /// <param name="externalTopic"></param>
-    /// <param name="targetActor"></param>
-    /// <returns></returns>
+    /// <param name="externalTopic">The external topic identifier to register with.</param>
+    /// <param name="targetActor">An optional target actor that may influence registration behavior.</param>
+    /// <returns>A ValueTask containing the AgentType that indicates the registered agent.</returns>
     protected internal override ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor)
     {
         TopicId orchestrationTopic = new($"{externalTopic.Type}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
@@ -126,8 +126,10 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Subscribes the specified agent type to the provided topics.
     /// </summary>
+    /// <param name="agentType">The agent type to subscribe.</param>
+    /// <param name="topics">A variable list of topics for subscription.</param>
     protected async Task SubscribeAsync(string agentType, params TopicId[] topics)
     {
         for (int index = 0; index < topics.Length; ++index)
@@ -137,12 +139,12 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Registers the orchestration's root and boot agents, setting up completion and target routing.
     /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="completion"></param>
-    /// <param name="targetActor"></param>
-    /// <returns></returns>
+    /// <param name="topic">The unique topic for the orchestration session.</param>
+    /// <param name="completion">A TaskCompletionSource for the final result output, if applicable.</param>
+    /// <param name="targetActor">An optional target actor for routing results.</param>
+    /// <returns>The AgentType representing the orchestration entry point.</returns>
     private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? targetActor = null)
     {
         // Register actor for final result

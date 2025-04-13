@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 /// <summary>
 /// A message that describes the input task and captures results for a <see cref="HandoffOrchestration{TInput,TOutut}"/>.
 /// </summary>
-public sealed class HandoffMessage // %%% SIMPLIFY
+public sealed class HandoffMessage
 {
     /// <summary>
     /// The input task.

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
+using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 
@@ -28,7 +28,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
     {
         Trace.WriteLine($"> HANDOFF START: {topic} [{entryAgent}]");
 
-        await this.Runtime.SendMessageAsync(input, new AgentId(entryAgent!, AgentId.DefaultKey)).ConfigureAwait(false); // %%% AGENTID & NULL OVERRIDE
+        await this.Runtime.SendMessageAsync(input, entryAgent!.Value).ConfigureAwait(false); // NULL OVERRIDE
     }
 
     /// <inheritdoc />
@@ -40,28 +40,26 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         {
             Trace.WriteLine($"> HANDOFF NEXT #{index}: {nextAgent}");
             OrchestrationTarget member = this.Members[index];
-            switch (member.TargetType)
+
+            if (member.IsAgent(out Agent? agent))
             {
-                case OrchestrationTargetType.Agent:
-                    nextAgent = await RegisterAgentAsync(topic, nextAgent, index, member).ConfigureAwait(false);
-                    break;
-                case OrchestrationTargetType.Orchestratable:
-                    nextAgent = await member.Orchestration!.RegisterAsync(topic, nextAgent).ConfigureAwait(false); // %%% NULL OVERIDE
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported target type: {member.TargetType}"); // %%% EXCEPTION TYPE
+                nextAgent = await RegisterAgentAsync(topic, nextAgent, index, agent).ConfigureAwait(false);
+            }
+            else if (member.IsOrchestration(out Orchestratable? orchestration))
+            {
+                nextAgent = await orchestration.RegisterAsync(topic, nextAgent).ConfigureAwait(false);
             }
             Trace.WriteLine($"> HANDOFF MEMBER #{index}: {nextAgent}");
         }
 
         return nextAgent;
 
-        async Task<AgentType> RegisterAgentAsync(TopicId topic, AgentType nextAgent, int index, OrchestrationTarget member)
+        async Task<AgentType> RegisterAgentAsync(TopicId topic, AgentType nextAgent, int index, Agent agent)
         {
             AgentType agentType = this.GetAgentType(topic, index);
             return await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
-                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new HandoffActor(agentId, runtime, member.Agent!, nextAgent))).ConfigureAwait(false); // %%% NULL OVERRIDE
+                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new HandoffActor(agentId, runtime, agent, nextAgent))).ConfigureAwait(false);
         }
     }
 

@@ -22,7 +22,7 @@ internal sealed class BroadcastActor : AgentActor, IHandle<BroadcastMessages.Tas
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     public BroadcastActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType orchestrationType) :
-        base(id, runtime, agent)
+        base(id, runtime, agent, noThread: true)
     {
         this._orchestrationType = orchestrationType;
     }
@@ -36,7 +36,6 @@ internal sealed class BroadcastActor : AgentActor, IHandle<BroadcastMessages.Tas
 
         Trace.WriteLine($"> BROADCAST ACTOR: {this.Id.Type} OUTPUT - {response}");
 
-        await this.SendMessageAsync(response.ToBroadcastResult(), new AgentId(this._orchestrationType, AgentId.DefaultKey)).ConfigureAwait(false); // %%% AGENTID
-        //await this.Thread?.DeleteAsync().ConfigureAwait(false); // %%% OPTIONAL ???
+        await this.SendMessageAsync(response.ToBroadcastResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

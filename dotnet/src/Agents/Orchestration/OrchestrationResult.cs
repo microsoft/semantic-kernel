@@ -8,9 +8,10 @@ using Microsoft.AgentRuntime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// %%% COMMENT
+/// Represents the result of an orchestration operation that yields a value of type <typeparamref name="TValue"/>.
+/// This class encapsulates the asynchronous completion of an orchestration process.
 /// </summary>
-/// <typeparam name="TValue"></typeparam>
+/// <typeparam name="TValue">The type of the value produced by the orchestration.</typeparam>
 public sealed class OrchestrationResult<TValue>
 {
     private readonly TaskCompletionSource<TValue> _completion;
@@ -22,24 +23,28 @@ public sealed class OrchestrationResult<TValue>
     }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Gets the topic identifier associated with this orchestration result.
     /// </summary>
     public TopicId Topic { get; }
 
     /// <summary>
-    /// %%% COMMENT
+    /// Asynchronously retrieves the orchestration result value.
+    /// If a timeout is specified, the method will throw a <see cref="TimeoutException"/>
+    /// if the orchestration does not complete within the allotted time.
     /// </summary>
-    /// <returns></returns>
-    public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null) // %%% TODO: TryGetValueAsync ???
+    /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the maximum wait duration.</param>
+    /// <returns>A <see cref="ValueTask{TValue}"/> representing the result of the orchestration.</returns>
+    /// <exception cref="TimeoutException">Thrown if the orchestration does not complete within the specified timeout period.</exception>
+    public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null)
     {
         Trace.WriteLine($"\n!!! ORCHESTRATION AWAIT: {this.Topic}\n");
 
         if (timeout.HasValue)
         {
-            Task[] tasks = [this._completion.Task];
+            Task[] tasks = { this._completion.Task };
             if (!Task.WaitAll(tasks, timeout.Value))
             {
-                throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout})."); // %%% EXCEPTION TYPE
+                throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout}).");
             }
         }
 

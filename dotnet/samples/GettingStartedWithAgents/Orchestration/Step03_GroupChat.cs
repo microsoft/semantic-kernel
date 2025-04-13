@@ -18,7 +18,6 @@
 //    public async Task UseGroupChatPatternAsync()
 //    {
 //        // Define the agents
-//        // %%% STRUCTURED OUTPUT ???
 //        ChatCompletionAgent agent1 =
 //                new()
 //                {

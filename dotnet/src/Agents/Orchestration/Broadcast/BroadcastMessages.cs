@@ -15,7 +15,7 @@ public static class BroadcastMessages
     public sealed class Task
     {
         /// <summary>
-        /// %%% COMMENT
+        /// The input message.
         /// </summary>
         public ChatMessageContent Message { get; init; } = new();
     }
@@ -26,7 +26,7 @@ public static class BroadcastMessages
     public sealed class Result
     {
         /// <summary>
-        /// %%% COMMENT
+        /// The result message.
         /// </summary>
         public ChatMessageContent Message { get; init; } = new();
     }

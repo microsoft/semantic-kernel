@@ -10,9 +10,9 @@ using Microsoft.AgentRuntime.Core;
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
 
 /// <summary>
-/// %%% COMMENT
+/// Actor for capturing each <see cref="BroadcastMessages.Result"/> message.
 /// </summary>
-internal sealed class BroadcastResultActor : BaseAgent,
+internal sealed class BroadcastResultActor : PatternActor,
     IHandle<BroadcastMessages.Result>
 {
     private readonly ConcurrentQueue<BroadcastMessages.Result> _results;
@@ -42,13 +42,13 @@ internal sealed class BroadcastResultActor : BaseAgent,
     /// <inheritdoc/>
     public async ValueTask HandleAsync(BroadcastMessages.Result item, MessageContext messageContext)
     {
-        Trace.WriteLine($"> BROADCAST RESULT: {this.Id.Type} (#{this._resultCount + 1})");
+        Trace.WriteLine($"> BROADCAST RESULT: {this.Id.Type} (#{this._resultCount + 1}/{this._expectedCount})");
 
         this._results.Enqueue(item);
 
         if (Interlocked.Increment(ref this._resultCount) == this._expectedCount)
         {
-            await this.SendMessageAsync(this._results.ToArray(), new AgentId(this._orchestrationType, AgentId.DefaultKey)).ConfigureAwait(false); // %%% AGENTID
+            await this.SendMessageAsync(this._results.ToArray(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
         }
     }
 }

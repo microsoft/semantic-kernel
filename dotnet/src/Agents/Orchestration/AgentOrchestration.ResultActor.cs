@@ -8,23 +8,23 @@ using Microsoft.AgentRuntime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
-/// <summary>
-/// An actor that represents the orchestration.
-/// </summary>
 public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutput>
 {
-    private sealed class ResultActor : BaseAgent, IHandle<TResult>
+    /// <summary>
+    /// Actor responsible for receiving the resultant message, transforming it, and handling further orchestration.
+    /// </summary>
+    private sealed class ResultActor : PatternActor, IHandle<TResult>
     {
         private readonly TaskCompletionSource<TOutput>? _completionSource;
         private readonly Func<TResult, TOutput> _transform;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AgentActor"/> class.
+        /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}.ResultActor"/> class.
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
-        /// <param name="transform">// %%% COMMENT</param>
-        /// <param name="completionSource">Signals completion.</param>
+        /// <param name="transform">A delegate that transforms a TResult instance into a TOutput instance.</param>
+        /// <param name="completionSource">Optional TaskCompletionSource to signal orchestration completion.</param>
         public ResultActor(
             AgentId id,
             IAgentRuntime runtime,
@@ -37,16 +37,18 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         }
 
         /// <summary>
-        /// %%% COMMENT
+        /// Gets or sets the optional target agent type to which the output message is forwarded.
         /// </summary>
         public AgentType? CompletionTarget { get; init; }
 
         /// <summary>
-        /// %%% COMMENT
+        /// Processes the received TResult message by transforming it into a TOutput message.
+        /// If a CompletionTarget is defined, it sends the transformed message to the corresponding agent.
+        /// Additionally, it signals completion via the provided TaskCompletionSource if available.
         /// </summary>
-        /// <param name="item"></param>
-        /// <param name="messageContext"></param>
-        /// <returns></returns>
+        /// <param name="item">The result item to process.</param>
+        /// <param name="messageContext">The context associated with the message.</param>
+        /// <returns>A ValueTask representing asynchronous operation.</returns>
         public async ValueTask HandleAsync(TResult item, MessageContext messageContext)
         {
             Trace.WriteLine($"> ORCHESTRATION EXIT: {this.Id.Type}");
@@ -55,9 +57,9 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             {
                 TOutput output = this._transform.Invoke(item);
 
-                if (this.CompletionTarget != null)
+                if (this.CompletionTarget.HasValue)
                 {
-                    await this.SendMessageAsync(output!, new AgentId(this.CompletionTarget, AgentId.DefaultKey)).ConfigureAwait(false); // %%% AGENTID && NULL OVERRIDE
+                    await this.SendMessageAsync(output!, this.CompletionTarget.Value, messageContext.CancellationToken).ConfigureAwait(false);
                 }
 
                 this._completionSource?.SetResult(output);
@@ -65,7 +67,8 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             catch (Exception exception)
             {
                 Trace.WriteLine($"ERROR: {exception.Message}");
-                throw; // %%% EXCEPTION
+                // Log exception details and fail orchestration as per design.
+                throw;
             }
         }
     }

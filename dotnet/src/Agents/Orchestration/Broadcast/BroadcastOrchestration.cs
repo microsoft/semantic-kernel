@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -51,16 +52,13 @@ public class BroadcastOrchestration<TInput, TOutput>
 
             AgentType memberType;
 
-            switch (member.TargetType)
+            if (member.IsAgent(out Agent? agent))
             {
-                case OrchestrationTargetType.Agent:
-                    memberType = await RegisterAgentAsync(member.Agent!).ConfigureAwait(false);
-                    break;
-                case OrchestrationTargetType.Orchestratable:
-                    memberType = await member.Orchestration!.RegisterAsync(topic, resultType).ConfigureAwait(false); // %%% NULL OVERIDE
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported target type: {member.TargetType}"); // %%% EXCEPTION TYPE
+                memberType = await RegisterAgentAsync(agent).ConfigureAwait(false);
+            }
+            else if (member.IsOrchestration(out Orchestratable? orchestration))
+            {
+                memberType = await orchestration.RegisterAsync(topic, resultType).ConfigureAwait(false);
             }
 
             Trace.WriteLine($"> BROADCAST MEMBER #{agentCount}: {memberType}");

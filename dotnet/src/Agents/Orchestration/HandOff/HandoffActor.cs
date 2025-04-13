@@ -22,7 +22,7 @@ internal sealed class HandoffActor : AgentActor, IHandle<HandoffMessage>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="nextAgent">The indentifier of the next agent for which to handoff the result</param>
     public HandoffActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType nextAgent)
-        : base(id, runtime, agent)
+        : base(id, runtime, agent, noThread: true)
     {
         this._nextAgent = nextAgent;
     }
@@ -36,7 +36,6 @@ internal sealed class HandoffActor : AgentActor, IHandle<HandoffMessage>
 
         Trace.WriteLine($"> HANDOFF ACTOR: {this.Id.Type} OUTPUT - {response}");
 
-        await this.SendMessageAsync(HandoffMessage.FromChat(response), new AgentId(this._nextAgent, AgentId.DefaultKey)).ConfigureAwait(false); // %%% AGENTID
-        //await response.Thread.DeleteAsync().ConfigureAwait(false);
+        await this.SendMessageAsync(HandoffMessage.FromChat(response), this._nextAgent, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

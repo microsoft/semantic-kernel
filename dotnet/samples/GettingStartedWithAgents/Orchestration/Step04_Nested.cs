@@ -30,7 +30,7 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
             new(runtime, agent3, agent4)
             {
                 InputTransform = (HandoffMessage input) => new BroadcastMessages.Task { Message = input.Content },
-                ResultTransform = (BroadcastMessages.Result[] output) => new HandoffMessage { Content = new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content))) } // %%% FORMAT / CODE SMELL
+                ResultTransform = (BroadcastMessages.Result[] output) => HandoffMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content))))
             };
         HandoffOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
 
