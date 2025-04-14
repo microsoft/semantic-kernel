@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Sqlite;
@@ -19,6 +20,8 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 internal static class SqliteVectorStoreCollectionCommandBuilder
 {
     internal const string DistancePropertyName = "distance";
+
+    internal static string EscapeIdentifier(this string value) => value.Replace("'", "''").Replace("\"", "\"\"");
 
     public static DbCommand BuildTableCountCommand(SqliteConnection connection, string tableName)
     {
@@ -42,16 +45,16 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"""CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}"{tableName.Replace("\"", "\"\"")}" (""");
+        builder.AppendLine($"CREATE TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}\" (");
 
-        builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
+        builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: true))));
         builder.AppendLine(");");
 
         foreach (var column in columns)
         {
             if (column.HasIndex)
             {
-                builder.AppendLine($"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}{tableName}_{column.Name}_index ON {tableName}({column.Name});");
+                builder.AppendLine($"CREATE INDEX {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}_{column.Name}_index\" ON \"{tableName}\"(\"{column.Name}\");");
             }
         }
 
@@ -71,9 +74,10 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     {
         var builder = new StringBuilder();
 
-        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}'{tableName.Replace("'", "''")}' USING {extensionName}(");
+        builder.AppendLine($"CREATE VIRTUAL TABLE {(ifNotExists ? "IF NOT EXISTS " : string.Empty)}\"{tableName}\" USING {extensionName}(");
 
-        builder.AppendLine(string.Join(",\n", columns.Select(GetColumnDefinition)));
+        // The vector extension is currently uncapable of handling quoted identifiers.
+        builder.AppendLine(string.Join(",\n", columns.Select(column => GetColumnDefinition(column, quote: false))));
         builder.Append(");");
 
         var command = connection.CreateCommand();
@@ -85,7 +89,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     public static DbCommand BuildDropTableCommand(SqliteConnection connection, string tableName)
     {
-        string query = $"DROP TABLE IF EXISTS [{tableName}];";
+        string query = $"DROP TABLE IF EXISTS \"{tableName}\";";
 
         var command = connection.CreateCommand();
 
@@ -98,7 +102,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         SqliteConnection connection,
         string tableName,
         string rowIdentifier,
-        VectorStoreRecordModel model,
+        IReadOnlyList<VectorStoreRecordPropertyModel> properties,
         IReadOnlyList<Dictionary<string, object?>> records,
         bool data,
         bool replaceIfExists = false)
@@ -113,12 +117,12 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
             var rowIdentifierParameterName = GetParameterName(rowIdentifier, recordIndex);
 
             var (columns, parameters, values) = GetQueryParts(
-                model.Properties,
+                properties,
                 records[recordIndex],
                 recordIndex,
                 data);
 
-            builder.AppendLine($"INSERT{replacePlaceholder} INTO {tableName} ({string.Join(", ", columns)})");
+            builder.AppendLine($"INSERT{replacePlaceholder} INTO \"{tableName}\" ({string.Join(", ", columns)})");
             builder.AppendLine($"VALUES ({string.Join(", ", parameters)})");
             builder.AppendLine($"RETURNING {rowIdentifier};");
 
@@ -133,12 +137,12 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public static DbCommand BuildSelectDataCommand(
+    public static DbCommand BuildSelectDataCommand<TRecord>(
         SqliteConnection connection,
         string tableName,
         VectorStoreRecordModel model,
         List<SqliteWhereCondition> conditions,
-        IReadOnlyList<(string storageName, bool iaAsc)> orderByPropertyNames,
+        GetFilteredRecordOptions<TRecord>? filterOptions = null,
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
         int top = 0,
@@ -150,9 +154,14 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         builder.Append("SELECT ");
         builder.AppendColumnNames(includeVectors: false, model.Properties);
-        builder.AppendLine($"FROM {tableName}");
+        builder.AppendLine($"FROM \"{tableName}\"");
         builder.AppendWhereClause(whereClause);
-        builder.AppendOrderBy(orderByPropertyNames);
+
+        if (filterOptions is not null)
+        {
+            builder.AppendOrderBy(model, filterOptions);
+        }
+
         builder.AppendLimits(top, skip);
 
         command.CommandText = builder.ToString();
@@ -160,7 +169,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return command;
     }
 
-    public static DbCommand BuildSelectLeftJoinCommand(
+    public static DbCommand BuildSelectLeftJoinCommand<TRecord>(
         SqliteConnection connection,
         string vectorTableName,
         string dataTableName,
@@ -168,7 +177,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         VectorStoreRecordModel model,
         IReadOnlyList<SqliteWhereCondition> conditions,
         bool includeDistance,
-        IReadOnlyList<(string storageName, bool iaAsc)> orderByPropertyNames,
+        GetFilteredRecordOptions<TRecord>? filterOptions = null,
         string? extraWhereFilter = null,
         Dictionary<string, object>? extraParameters = null,
         int top = 0,
@@ -182,12 +191,21 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         builder.AppendColumnNames(includeVectors: true, model.Properties, vectorTableName, dataTableName);
         if (includeDistance)
         {
-            builder.AppendLine($", {vectorTableName}.{DistancePropertyName}");
+            builder.AppendLine($", \"{vectorTableName}\".\"{DistancePropertyName}\"");
         }
-        builder.AppendLine($"FROM {vectorTableName} ");
-        builder.AppendLine($"LEFT JOIN {dataTableName} ON {vectorTableName}.{joinColumnName} = {dataTableName}.{joinColumnName}");
+        builder.AppendLine($"FROM \"{vectorTableName}\"");
+        builder.AppendLine($"LEFT JOIN \"{dataTableName}\" ON \"{vectorTableName}\".\"{joinColumnName}\" = \"{dataTableName}\".\"{joinColumnName}\"");
         builder.AppendWhereClause(whereClause);
-        builder.AppendOrderBy(orderByPropertyNames);
+
+        if (filterOptions is not null)
+        {
+            builder.AppendOrderBy(model, filterOptions, dataTableName);
+        }
+        else if (includeDistance)
+        {
+            builder.AppendLine($"ORDER BY \"{vectorTableName}\".\"{DistancePropertyName}\"");
+        }
+
         builder.AppendLimits(top, skip);
 
         command.CommandText = builder.ToString();
@@ -204,7 +222,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         var (command, whereClause) = GetCommandWithWhereClause(connection, conditions);
 
-        builder.AppendLine($"DELETE FROM [{tableName}]");
+        builder.AppendLine($"DELETE FROM \"{tableName}\"");
         builder.AppendWhereClause(whereClause);
 
         command.CommandText = builder.ToString();
@@ -215,18 +233,18 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
     #region private
 
     private static StringBuilder AppendColumnNames(this StringBuilder builder, bool includeVectors, IReadOnlyList<VectorStoreRecordPropertyModel> properties,
-        string? vectorTableName = null, string? dataTableName = null)
+        string? escapedVectorTableName = null, string? escapedDataTableName = null)
     {
         foreach (var property in properties)
         {
-            string? tableName = dataTableName;
+            string? tableName = escapedDataTableName;
             if (property is VectorStoreRecordVectorPropertyModel)
             {
                 if (!includeVectors)
                 {
                     continue;
                 }
-                tableName = vectorTableName;
+                tableName = escapedVectorTableName;
             }
 
             if (tableName is not null)
@@ -244,18 +262,23 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return builder;
     }
 
-    private static StringBuilder AppendOrderBy(this StringBuilder builder, IReadOnlyList<(string storageName, bool iaAsc)> orderByPropertyNames)
+    private static StringBuilder AppendOrderBy<TRecord>(this StringBuilder builder, VectorStoreRecordModel model,
+        GetFilteredRecordOptions<TRecord> options, string? tableName = null)
     {
-        if (orderByPropertyNames.Count > 0)
+        if (options.OrderBy.Values.Count > 0)
         {
             builder.Append("ORDER BY ");
 
-            foreach (var sortInfo in orderByPropertyNames)
-
+            foreach (var sortInfo in options.OrderBy.Values)
             {
-                builder.AppendFormat("[{0}] {1},",
-                    sortInfo.storageName,
-                    sortInfo.iaAsc ? "ASC" : "DESC");
+                var storageName = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
+
+                if (tableName is not null)
+                {
+                    builder.AppendFormat("\"{0}\".", tableName);
+                }
+
+                builder.AppendFormat("\"{0}\" {1},", storageName, sortInfo.Ascending ? "ASC" : "DESC");
             }
 
             builder.Length--; // remove the last comma
@@ -290,11 +313,11 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
         return builder;
     }
 
-    private static string GetColumnDefinition(SqliteColumn column)
+    private static string GetColumnDefinition(SqliteColumn column, bool quote)
     {
         const string PrimaryKeyIdentifier = "PRIMARY KEY";
 
-        List<string> columnDefinitionParts = [column.Name, column.Type];
+        List<string> columnDefinitionParts = [quote ? $"\"{column.Name}\"" : column.Name, column.Type];
 
         if (column.IsPrimary)
         {
@@ -376,7 +399,7 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
             string propertyName = property.StorageName;
             if (include && record.TryGetValue(propertyName, out var value))
             {
-                columns.Add(propertyName);
+                columns.Add($"\"{propertyName}\"");
                 parameterNames.Add(GetParameterName(propertyName, index));
                 parameterValues.Add(value ?? DBNull.Value);
             }

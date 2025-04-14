@@ -89,8 +89,9 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._options = options ?? new();
         this._vectorSearchExtensionName = this._options.VectorSearchExtensionName ?? SqliteConstants.VectorSearchExtensionName;
 
-        this._dataTableName = this.CollectionName;
-        this._vectorTableName = GetVectorTableName(this._dataTableName, this._options);
+        // Escape both table names before exposing them to anything that may build SQL commands.
+        this._dataTableName = collectionName.EscapeIdentifier();
+        this._vectorTableName = GetVectorTableName(this._dataTableName, this._options).EscapeIdentifier();
 
         this._model = new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
@@ -242,20 +243,15 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         if (options.IncludeVectors)
         {
-            var orderByPropertyNames = options.OrderBy.Values
-                .Select(info =>
-                    ($"\"{this._dataTableName}\".\"{this._model.GetDataOrKeyProperty(info.PropertySelector).StorageName}\"", info.Ascending))
-                .ToArray();
-
             command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
                 connection,
                 this._vectorTableName,
                 this._dataTableName,
                 this._keyStorageName,
                 this._model,
-                [],
+                conditions: [],
                 includeDistance: false,
-                orderByPropertyNames,
+                filterOptions: options,
                 translator.Clause.ToString(),
                 translator.Parameters,
                 top: top,
@@ -263,17 +259,12 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         }
         else
         {
-            var orderByPropertyNames = options.OrderBy.Values
-                .Select(info =>
-                    ($"\"{this._model.GetDataOrKeyProperty(info.PropertySelector).StorageName}\"", info.Ascending))
-                .ToArray();
-
             command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectDataCommand(
                 connection,
                 this._dataTableName,
                 this._model,
-                [],
-                orderByPropertyNames,
+                conditions: [],
+                filterOptions: options,
                 translator.Clause.ToString(),
                 translator.Parameters,
                 top: top,
@@ -443,7 +434,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         const string OperationName = "VectorizedSearch";
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
+        using var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand<TRecord>(
             connection,
             this._vectorTableName,
             this._dataTableName,
@@ -451,9 +442,8 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             this._model,
             conditions,
             includeDistance: true,
-            [new(SqliteVectorStoreCollectionCommandBuilder.DistancePropertyName, true)],
-            extraWhereFilter,
-            extraParameters);
+            extraWhereFilter: extraWhereFilter,
+            extraParameters: extraParameters);
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
@@ -536,24 +526,22 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         if (includeVectors)
         {
-            command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
+            command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand<TRecord>(
                 connection,
                 this._dataTableName,
                 this._vectorTableName,
                 this._keyStorageName,
                 this._model,
                 [condition],
-                false,
-                []);
+                includeDistance: false);
         }
         else
         {
-            command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectDataCommand(
+            command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectDataCommand<TRecord>(
                 connection,
                 this._dataTableName,
                 this._model,
-                [condition],
-                []);
+                [condition]);
         }
 
         using (command)
@@ -597,7 +585,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 connection,
                 this._vectorTableName,
                 this._keyStorageName,
-                this._model,
+                this._model.Properties,
                 storageModels,
                 data: false);
 
@@ -608,7 +596,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             connection,
             this._dataTableName,
             this._keyStorageName,
-            this._model,
+            this._model.Properties,
             storageModels,
             data: true,
             replaceIfExists: true);

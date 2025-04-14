@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Microsoft.SemanticKernel.Connectors.Sqlite;
 using Xunit;
 
@@ -60,8 +62,8 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
 
         Assert.Equal(ifNotExists, command.CommandText.Contains("IF NOT EXISTS"));
 
-        Assert.Contains("Column1 Type1 PRIMARY KEY", command.CommandText);
-        Assert.Contains("Column2 Type2 distance_metric=l2", command.CommandText);
+        Assert.Contains("\"Column1\" Type1 PRIMARY KEY", command.CommandText);
+        Assert.Contains("\"Column2\" Type2 distance_metric=l2", command.CommandText);
     }
 
     [Theory]
@@ -103,7 +105,7 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         var command = SqliteVectorStoreCollectionCommandBuilder.BuildDropTableCommand(this._connection, TableName);
 
         // Assert
-        Assert.Equal("DROP TABLE IF EXISTS [TestTable];", command.CommandText);
+        Assert.Equal("DROP TABLE IF EXISTS \"TestTable\";", command.CommandText);
     }
 
     [Theory]
@@ -115,7 +117,13 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         const string TableName = "TestTable";
         const string RowIdentifier = "Id";
 
-        var columnNames = new List<string> { "Id", "Name", "Age", "Address" };
+        VectorStoreRecordPropertyModel[] properties =
+        [
+            new VectorStoreRecordKeyPropertyModel("Id", typeof(string)),
+            new VectorStoreRecordDataPropertyModel("Name", typeof(string)),
+            new VectorStoreRecordDataPropertyModel("Age", typeof(int)),
+            new VectorStoreRecordDataPropertyModel("Address", typeof(string)),
+        ];
         var records = new List<Dictionary<string, object?>>
         {
             new() { ["Id"] = "IdValue1", ["Name"] = "NameValue1", ["Age"] = "AgeValue1", ["Address"] = "AddressValue1" },
@@ -127,14 +135,15 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
             this._connection,
             TableName,
             RowIdentifier,
-            columnNames,
+            properties,
             records,
+            data: true,
             replaceIfExists);
 
         // Assert
         Assert.Equal(replaceIfExists, command.CommandText.Contains("OR REPLACE"));
 
-        Assert.Contains($"INTO {TableName} (Id, Name, Age, Address)", command.CommandText);
+        Assert.Contains($"INTO \"{TableName}\" (\"Id\", \"Name\", \"Age\", \"Address\")", command.CommandText);
         Assert.Contains("VALUES (@Id0, @Name0, @Age0, @Address0)", command.CommandText);
         Assert.Contains("VALUES (@Id1, @Name1, @Age1, @Address1)", command.CommandText);
         Assert.Contains("RETURNING Id", command.CommandText);
@@ -173,24 +182,35 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         // Arrange
         const string TableName = "TestTable";
 
-        var columnNames = new List<string> { "Id", "Name", "Age", "Address" };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Id", typeof(string)),
+            new VectorStoreRecordDataProperty("Name", typeof(string)),
+            new VectorStoreRecordDataProperty("Age", typeof(string)),
+            new VectorStoreRecordDataProperty("Address", typeof(string)),
+        ]);
         var conditions = new List<SqliteWhereCondition>
         {
             new SqliteWhereEqualsCondition("Name", "NameValue"),
             new SqliteWhereInCondition("Age", [10, 20, 30]),
         };
+        GetFilteredRecordOptions<Dictionary<string, object?>> filterOptions = new();
+        if (!string.IsNullOrWhiteSpace(orderByPropertyName))
+        {
+            filterOptions.OrderBy.Ascending(record => record[orderByPropertyName]);
+        }
 
         // Act
-        var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectCommand(this._connection, TableName, columnNames, conditions, orderByPropertyName);
+        var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectDataCommand<Dictionary<string, object?>>(this._connection, TableName, model, conditions, filterOptions);
 
         // Assert
-        Assert.Contains("SELECT Id, Name, Age, Address", command.CommandText);
-        Assert.Contains($"FROM {TableName}", command.CommandText);
+        Assert.Contains("SELECT \"Id\",\"Name\",\"Age\",\"Address\"", command.CommandText);
+        Assert.Contains($"FROM \"{TableName}\"", command.CommandText);
 
-        Assert.Contains("Name = @Name0", command.CommandText);
-        Assert.Contains("Age IN (@Age0, @Age1, @Age2)", command.CommandText);
+        Assert.Contains("\"Name\" = @Name0", command.CommandText);
+        Assert.Contains("\"Age\" IN (@Age0, @Age1, @Age2)", command.CommandText);
 
-        Assert.Equal(!string.IsNullOrWhiteSpace(orderByPropertyName), command.CommandText.Contains($"ORDER BY {orderByPropertyName}"));
+        Assert.Equal(!string.IsNullOrWhiteSpace(orderByPropertyName), command.CommandText.Contains($"ORDER BY \"{orderByPropertyName}\""));
 
         Assert.Equal("@Name0", command.Parameters[0].ParameterName);
         Assert.Equal("NameValue", command.Parameters[0].Value);
@@ -212,42 +232,50 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
     public void ItBuildsSelectLeftJoinCommand(string? orderByPropertyName)
     {
         // Arrange
-        const string LeftTable = "LeftTable";
-        const string RightTable = "RightTable";
+        const string DataTable = "DataTable";
+        const string VectorTable = "VectorTable";
         const string JoinColumnName = "Id";
 
-        var leftTablePropertyNames = new List<string> { "Id", "Name" };
-        var rightTablePropertyNames = new List<string> { "Age", "Address" };
+        var model = BuildModel(
+        [
+            new VectorStoreRecordKeyProperty("Id", typeof(string)),
+            new VectorStoreRecordDataProperty("Name", typeof(string)),
+            new VectorStoreRecordVectorProperty("Age", typeof(ReadOnlyMemory<float>), 10),
+            new VectorStoreRecordVectorProperty("Address", typeof(ReadOnlyMemory<float>), 10),
+        ]);
 
         var conditions = new List<SqliteWhereCondition>
         {
             new SqliteWhereEqualsCondition("Name", "NameValue"),
             new SqliteWhereInCondition("Age", [10, 20, 30]),
         };
+        GetFilteredRecordOptions<Dictionary<string, object?>> filterOptions = new();
+        if (!string.IsNullOrWhiteSpace(orderByPropertyName))
+        {
+            filterOptions.OrderBy.Ascending(record => record[orderByPropertyName]);
+        }
 
         // Act
         var command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand(
             this._connection,
-            LeftTable,
-            RightTable,
+            VectorTable,
+            DataTable,
             JoinColumnName,
-            leftTablePropertyNames,
-            rightTablePropertyNames,
+            model,
             conditions,
-            extraWhereFilter: null,
-            extraParameters: null,
-            orderByPropertyName);
+            true,
+            filterOptions);
 
         // Assert
-        Assert.Contains("SELECT LeftTable.Id, LeftTable.Name, RightTable.Age, RightTable.Address", command.CommandText);
-        Assert.Contains("FROM LeftTable", command.CommandText);
+        Assert.Contains("SELECT \"DataTable\".\"Id\",\"DataTable\".\"Name\",\"VectorTable\".\"Age\",\"VectorTable\".\"Address\"", command.CommandText);
+        Assert.Contains("FROM \"VectorTable\"", command.CommandText);
 
-        Assert.Contains("LEFT JOIN RightTable ON LeftTable.Id = RightTable.Id", command.CommandText);
+        Assert.Contains("LEFT JOIN \"DataTable\" ON \"VectorTable\".\"Id\" = \"DataTable\".\"Id\"", command.CommandText);
 
-        Assert.Contains("Name = @Name0", command.CommandText);
-        Assert.Contains("Age IN (@Age0, @Age1, @Age2)", command.CommandText);
+        Assert.Contains("\"Name\" = @Name0", command.CommandText);
+        Assert.Contains("\"Age\" IN (@Age0, @Age1, @Age2)", command.CommandText);
 
-        Assert.Equal(!string.IsNullOrWhiteSpace(orderByPropertyName), command.CommandText.Contains($"ORDER BY {orderByPropertyName}"));
+        Assert.Equal(!string.IsNullOrWhiteSpace(orderByPropertyName), command.CommandText.Contains($"ORDER BY \"DataTable\".\"{orderByPropertyName}\""));
 
         Assert.Equal("@Name0", command.Parameters[0].ParameterName);
         Assert.Equal("NameValue", command.Parameters[0].Value);
@@ -278,10 +306,10 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         var command = SqliteVectorStoreCollectionCommandBuilder.BuildDeleteCommand(this._connection, TableName, conditions);
 
         // Assert
-        Assert.Contains("DELETE FROM [TestTable]", command.CommandText);
+        Assert.Contains("DELETE FROM \"TestTable\"", command.CommandText);
 
-        Assert.Contains("Name = @Name0", command.CommandText);
-        Assert.Contains("Age IN (@Age0, @Age1, @Age2)", command.CommandText);
+        Assert.Contains("\"Name\" = @Name0", command.CommandText);
+        Assert.Contains("\"Age\" IN (@Age0, @Age1, @Age2)", command.CommandText);
 
         Assert.Equal("@Name0", command.Parameters[0].ParameterName);
         Assert.Equal("NameValue", command.Parameters[0].Value);
@@ -301,4 +329,10 @@ public sealed class SqliteVectorStoreCollectionCommandBuilderTests : IDisposable
         this._command.Dispose();
         this._connection.Dispose();
     }
+
+    private static VectorStoreRecordModel BuildModel(List<VectorStoreRecordProperty> properties)
+        => new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
+            .Build(
+                typeof(Dictionary<string, object?>),
+                new() { Properties = properties });
 }
