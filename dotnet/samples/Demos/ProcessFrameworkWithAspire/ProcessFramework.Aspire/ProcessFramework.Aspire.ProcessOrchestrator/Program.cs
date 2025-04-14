@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 using ProcessFramework.Aspire.ProcessOrchestrator;
 using ProcessFramework.Aspire.ProcessOrchestrator.Models;
 using ProcessFramework.Aspire.ProcessOrchestrator.Steps;

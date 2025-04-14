@@ -45,9 +45,7 @@ public static class Extensions
 
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
-            builder.Logging.AddTraceSource("Microsoft.SemanticKernel");
-
+        builder.Logging.AddTraceSource("Microsoft.SemanticKernel");
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
@@ -59,10 +57,8 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
-
-                if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
-                    metrics.AddMeter("Microsoft.SemanticKernel*");
+                    .AddRuntimeInstrumentation()
+                    .AddMeter("Microsoft.SemanticKernel*");
             })
             .WithTracing(tracing =>
             {
@@ -75,10 +71,8 @@ public static class Extensions
                     )
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
-                    .AddHttpClientInstrumentation();
-
-                if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
-                    tracing.AddSource("Microsoft.SemanticKernel*");
+                    .AddHttpClientInstrumentation()
+                    .AddSource("Microsoft.SemanticKernel*");
             });
 
         builder.AddOpenTelemetryExporters();
