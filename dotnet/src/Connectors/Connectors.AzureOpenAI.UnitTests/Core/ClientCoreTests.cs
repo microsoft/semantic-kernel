@@ -9,7 +9,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using SemanticKernel.Connectors.AzureOpenAI.Core;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Core;
 
