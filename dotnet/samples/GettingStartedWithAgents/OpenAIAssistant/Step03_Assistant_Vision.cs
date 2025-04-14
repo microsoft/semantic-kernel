@@ -19,7 +19,7 @@ public class Step03_Assistant_Vision(ITestOutputHelper output) : BaseAssistantTe
     protected override bool ForceOpenAI => true;
 
     [Fact]
-    public async Task UseImageContentWithAssistantAsync()
+    public async Task UseImageContentWithAssistant()
     {
         // Define the assistant
         Assistant assistant =

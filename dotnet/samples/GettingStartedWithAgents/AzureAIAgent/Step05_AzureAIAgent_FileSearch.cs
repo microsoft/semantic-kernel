@@ -13,7 +13,7 @@ namespace GettingStarted.AzureAgents;
 public class Step05_AzureAIAgent_FileSearch(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseFileSearchToolWithAgentAsync()
+    public async Task UseFileSearchToolWithAgent()
     {
         // Define the agent
         await using Stream stream = EmbeddedResource.ReadStream("employees.pdf")!;

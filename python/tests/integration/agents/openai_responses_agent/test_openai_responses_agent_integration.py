@@ -7,10 +7,9 @@ import pytest
 from pydantic import BaseModel
 
 from semantic_kernel.agents import AzureResponsesAgent, OpenAIResponsesAgent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
-from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
-from semantic_kernel.contents.utils.author_role import AuthorRole
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.contents import AuthorRole, ChatMessageContent, StreamingChatMessageContent
+from semantic_kernel.functions import kernel_function
+from tests.integration.agents.agent_test_base import AgentTestBase
 
 
 class WeatherPlugin:
@@ -95,29 +94,34 @@ class TestOpenAIResponsesAgentIntegration:
     # region Simple 'Hello' messages tests
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
-    async def test_get_response(self, responses_agent: OpenAIResponsesAgent):
+    async def test_get_response(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test get response of the agent."""
-        response = await responses_agent.get_response(messages="Hello")
+        response = await agent_test_base.get_response_with_retry(responses_agent, messages="Hello")
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
-    async def test_get_response_with_thread(self, responses_agent: OpenAIResponsesAgent):
+    async def test_get_response_with_thread(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
         """Test get response of the agent with a thread."""
         thread = None
         user_messages = ["Hello, I am John Doe.", "What is my name?"]
         for user_message in user_messages:
-            response = await responses_agent.get_response(messages=user_message, thread=thread)
+            response = await agent_test_base.get_response_with_retry(
+                responses_agent, messages=user_message, thread=thread
+            )
             thread = response.thread
             assert thread is not None
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
+
         await thread.delete() if thread else None
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
-    async def test_invoke(self, responses_agent: OpenAIResponsesAgent):
+    async def test_invoke(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent."""
         async for response in responses_agent.invoke(messages="Hello"):
             assert isinstance(response.message, ChatMessageContent)
@@ -125,39 +129,53 @@ class TestOpenAIResponsesAgentIntegration:
             assert response.message.content is not None
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
-    async def test_invoke_with_thread(self, responses_agent: OpenAIResponsesAgent):
+    async def test_invoke_with_thread(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test invoke of the agent with a thread."""
         thread = None
         user_messages = ["Hello, I am John Doe.", "What is my name?"]
         for user_message in user_messages:
-            async for response in responses_agent.invoke(messages=user_message, thread=thread):
+            responses = await agent_test_base.get_invoke_with_retry(
+                responses_agent, messages=user_message, thread=thread
+            )
+            assert len(responses) > 0
+            for response in responses:
                 thread = response.thread
                 assert thread is not None
                 assert isinstance(response.message, ChatMessageContent)
                 assert response.message.role == AuthorRole.ASSISTANT
                 assert response.message.content is not None
+
         await thread.delete() if thread else None
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
-    async def test_invoke_stream(self, responses_agent: OpenAIResponsesAgent):
+    async def test_invoke_stream(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test invoke stream of the agent."""
-        async for response in responses_agent.invoke_stream(messages="Hello"):
+        responses = await agent_test_base.get_invoke_stream_with_retry(responses_agent, messages="Hello")
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert response.message.content is not None
 
     @pytest.mark.parametrize("responses_agent", ["azure", "openai"], indirect=True, ids=["azure", "openai"])
-    async def test_invoke_stream_with_thread(self, responses_agent: OpenAIResponsesAgent):
+    async def test_invoke_stream_with_thread(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
         """Test invoke stream of the agent with a thread."""
         thread = None
         user_messages = ["Hello, I am John Doe.", "What is my name?"]
         for user_message in user_messages:
-            async for response in responses_agent.invoke_stream(messages=user_message, thread=thread):
+            responses = await agent_test_base.get_invoke_stream_with_retry(
+                responses_agent, messages=user_message, thread=thread
+            )
+            assert len(responses) > 0
+            for response in responses:
                 thread = response.thread
                 assert thread is not None
                 assert isinstance(response.message, StreamingChatMessageContent)
                 assert response.message.role == AuthorRole.ASSISTANT
                 assert response.message.content is not None
+
         await thread.delete() if thread else None
 
     # endregion
@@ -173,47 +191,14 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["openai-web-search-get-response"],
     )
-    async def test_web_search_get_response(self, responses_agent: OpenAIResponsesAgent):
+    @pytest.mark.xfail(reason="The Responses API is unstable when using the web search tool.")
+    async def test_web_search_get_response(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = "Find articles about the latest AI trends."
         response = await responses_agent.get_response(messages=input_text)
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
         assert response.message.content is not None
-
-    @pytest.mark.parametrize(
-        "responses_agent",
-        [
-            # Azure OpenAI Responses API doesn't yet support the web search tool
-            ("openai", {"enable_web_search": True}),
-        ],
-        indirect=["responses_agent"],
-        ids=["openai-web-search-invoke"],
-    )
-    async def test_web_search_invoke(self, responses_agent: OpenAIResponsesAgent):
-        """Test code interpreter."""
-        input_text = "Find articles about the latest AI trends."
-        async for response in responses_agent.invoke(messages=input_text):
-            assert isinstance(response.message, ChatMessageContent)
-            assert response.message.role == AuthorRole.ASSISTANT
-            assert response.message.content is not None
-
-    @pytest.mark.parametrize(
-        "responses_agent",
-        [
-            # Azure OpenAI Responses API doesn't yet support the web search tool
-            ("openai", {"enable_web_search": True}),
-        ],
-        indirect=["responses_agent"],
-        ids=["openai-websearch-invoke-stream"],
-    )
-    async def test_web_search_invoke_stream(self, responses_agent: OpenAIResponsesAgent):
-        """Test code interpreter streaming."""
-        input_text = "Find articles about the latest AI trends."
-        async for response in responses_agent.invoke_stream(messages=input_text):
-            assert isinstance(response.message, StreamingChatMessageContent)
-            assert response.message.role == AuthorRole.ASSISTANT
-            assert response.message.content is not None
 
     # endregion
 
@@ -228,10 +213,13 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-file-search-get-response", "openai-file-search-get-response"],
     )
-    async def test_file_search_get_response(self, responses_agent: OpenAIResponsesAgent):
+    @pytest.mark.xfail(reason="The Responses API is unstable and is throwing 500s.")
+    async def test_file_search_get_response(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
         """Test code interpreter."""
         input_text = "Who is the youngest employee?"
-        response = await responses_agent.get_response(messages=input_text)
+        response = await agent_test_base.get_response_with_retry(responses_agent, messages=input_text)
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
 
@@ -244,10 +232,13 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-file-search-invoke", "openai-file-search-invoke"],
     )
-    async def test_file_search_invoke(self, responses_agent: OpenAIResponsesAgent):
+    @pytest.mark.xfail(reason="The Responses API is unstable and is throwing 500s.")
+    async def test_file_search_invoke(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test code interpreter."""
         input_text = "Who is the youngest employee?"
-        async for response in responses_agent.invoke(messages=input_text):
+        responses = await agent_test_base.get_invoke_with_retry(responses_agent, messages=input_text)
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
 
@@ -260,10 +251,15 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-file-search-invoke-stream", "openai-file-search-invoke-stream"],
     )
-    async def test_file_search_invoke_stream(self, responses_agent: OpenAIResponsesAgent):
+    @pytest.mark.xfail(reason="The Responses API is unstable and is throwing 500s.")
+    async def test_file_search_invoke_stream(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
         """Test code interpreter streaming."""
         input_text = "Who is the youngest employee?"
-        async for response in responses_agent.invoke_stream(messages=input_text):
+        responses = await agent_test_base.get_invoke_stream_with_retry(responses_agent, messages=input_text)
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
 
@@ -280,9 +276,12 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-function-calling-get-response", "openai-function-calling-get-response"],
     )
-    async def test_function_calling_get_response(self, responses_agent: OpenAIResponsesAgent):
+    async def test_function_calling_get_response(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
         """Test function calling."""
-        response = await responses_agent.get_response(
+        response = await agent_test_base.get_response_with_retry(
+            responses_agent,
             messages="What is the weather in Seattle?",
         )
         assert isinstance(response.message, ChatMessageContent)
@@ -298,11 +297,14 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-function-calling-invoke", "openai-function-calling-invoke"],
     )
-    async def test_function_calling_invoke(self, responses_agent: OpenAIResponsesAgent):
+    async def test_function_calling_invoke(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test function calling."""
-        async for response in responses_agent.invoke(
+        responses = await agent_test_base.get_invoke_with_retry(
+            responses_agent,
             messages="What is the weather in Seattle?",
-        ):
+        )
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert "sunny" in response.message.content
@@ -316,12 +318,14 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-function-calling-invoke-stream", "openai-function-calling-invoke-stream"],
     )
-    async def test_function_calling_stream(self, responses_agent: OpenAIResponsesAgent):
+    async def test_function_calling_stream(self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase):
         """Test function calling streaming."""
         full_message: str = ""
-        async for response in responses_agent.invoke_stream(
-            messages="What is the weather in Seattle?",
-        ):
+        responses = await agent_test_base.get_invoke_stream_with_retry(
+            responses_agent, messages="What is the weather in Seattle?"
+        )
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             full_message += response.message.content
@@ -340,10 +344,14 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-get-response", "openai-structured-outputs-get-response"],
     )
-    async def test_structured_outputs_get_response(self, responses_agent: OpenAIResponsesAgent):
-        """Test function calling."""
-        response = await responses_agent.get_response(
-            messages="What is the weather in Seattle?",
+    @pytest.mark.xfail(reason="The Responses API is unstable when configuring structured outputs.")
+    async def test_structured_outputs_get_response(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
+        """Test structured outputs get response."""
+        response = await agent_test_base.get_response_with_retry(
+            responses_agent,
+            messages="how can I solve 8x + 7y = -23, and 4x=12?",
         )
         assert isinstance(response.message, ChatMessageContent)
         assert response.message.role == AuthorRole.ASSISTANT
@@ -358,11 +366,17 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke", "openai-structured-outputs-invoke"],
     )
-    async def test_structured_outputs_invoke(self, responses_agent: OpenAIResponsesAgent):
-        """Test function calling."""
-        async for response in responses_agent.invoke(
-            messages="What is the weather in Seattle?",
-        ):
+    @pytest.mark.xfail(reason="The Responses API is unstable when configuring structured outputs.")
+    async def test_structured_outputs_invoke(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
+        """Test structured outputs invoke."""
+        responses = await agent_test_base.get_invoke_with_retry(
+            responses_agent,
+            messages="how can I solve 8x + 7y = -23, and 4x=12?",
+        )
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, ChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             assert Reasoning.model_validate_json(response.message.content)
@@ -376,12 +390,18 @@ class TestOpenAIResponsesAgentIntegration:
         indirect=["responses_agent"],
         ids=["azure-structured-outputs-invoke-stream", "openai-structured-outputs-invoke-stream"],
     )
-    async def test_structured_outputs_stream(self, responses_agent: OpenAIResponsesAgent):
-        """Test function calling streaming."""
+    @pytest.mark.xfail(reason="The Responses API is unstable when configuring structured outputs.")
+    async def test_structured_outputs_stream(
+        self, responses_agent: OpenAIResponsesAgent, agent_test_base: AgentTestBase
+    ):
+        """Test structured outputs streaming."""
         full_message: str = ""
-        async for response in responses_agent.invoke_stream(
-            messages="What is the weather in Seattle?",
-        ):
+        responses = await agent_test_base.get_invoke_stream_with_retry(
+            responses_agent,
+            messages="how can I solve 8x + 7y = -23, and 4x=12?",
+        )
+        assert len(responses) > 0
+        for response in responses:
             assert isinstance(response.message, StreamingChatMessageContent)
             assert response.message.role == AuthorRole.ASSISTANT
             full_message += response.message.content

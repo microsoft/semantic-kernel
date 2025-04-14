@@ -29,11 +29,11 @@ from semantic_kernel.agents.open_ai.assistant_content_generation import (
     generate_streaming_message_content,
     get_function_call_contents,
     get_message_contents,
+    merge_streaming_function_results,
 )
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
-    merge_streaming_function_results,
 )
 from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -56,6 +56,9 @@ if TYPE_CHECKING:
     from semantic_kernel.contents.chat_message_content import ChatMessageContent
     from semantic_kernel.contents.function_call_content import FunctionCallContent
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+        AutoFunctionInvocationContext,
+    )
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AssistantThreadActions")
@@ -543,13 +546,19 @@ class AssistantThreadActions:
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-            _ = await cls._invoke_function_calls(
+            results = await cls._invoke_function_calls(
                 kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
             )
-            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
+
+            function_result_streaming_content = merge_streaming_function_results(
+                messages=chat_history.messages[-len(results) :],
+                name=agent_name,
+            )
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
             return FunctionActionResult(
-                function_call_streaming_content, function_result_streaming_content, tool_outputs
+                function_call_streaming_content,
+                function_result_streaming_content,
+                tool_outputs,
             )
         return None
 
@@ -633,13 +642,18 @@ class AssistantThreadActions:
         fccs: list["FunctionCallContent"],
         chat_history: "ChatHistory",
         arguments: KernelArguments,
-    ) -> list[Any]:
+    ) -> list["AutoFunctionInvocationContext | None"]:
         """Invoke the function calls."""
-        tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history, arguments=arguments)
-            for function_call in fccs
-        ]
-        return await asyncio.gather(*tasks)
+        return await asyncio.gather(
+            *[
+                kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    arguments=arguments,
+                )
+                for function_call in fccs
+            ],
+        )
 
     @classmethod
     def _format_tool_outputs(

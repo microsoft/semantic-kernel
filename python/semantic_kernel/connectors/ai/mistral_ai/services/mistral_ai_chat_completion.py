@@ -84,7 +84,7 @@ class MistralAIChatCompletion(MistralAIBase, ChatCompletionClientBase):
             env_file_encoding : The encoding of the environment settings file.
         """
         try:
-            mistralai_settings = MistralAISettings.create(
+            mistralai_settings = MistralAISettings(
                 api_key=api_key,
                 chat_model_id=ai_model_id,
                 env_file_path=env_file_path,
