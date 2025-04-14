@@ -23,7 +23,7 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
         // Arrange & Act & Assert
         Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(null!));
         Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(null!, "threadId"));
-        Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(this.Client, id: null!));
+        Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(this.Client, responseId: null!));
 
         var agentThread = new OpenAIResponseAgentThread(this.Client);
         Assert.NotNull(agentThread);
@@ -72,7 +72,7 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
              new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(MessagesResponse) }
          );
         var responseId = "resp_67e8ff743ea08191b085bea42b4d83e809a3a922c4f4221b";
-        var thread = new OpenAIResponseAgentThread(this.Client, id: responseId);
+        var thread = new OpenAIResponseAgentThread(this.Client, responseId: responseId);
 
         // Act
         var messages = thread.GetMessagesAsync();
