@@ -29,7 +29,7 @@ public abstract class AgentActor : PatternActor
         : base(
             id,
             runtime,
-            VerifyDescripion(agent),
+            VerifyDescription(agent),
             GetLogger(agent))
     {
         this.Agent = agent;
@@ -128,7 +128,7 @@ public abstract class AgentActor : PatternActor
         }
     }
 
-    private static string VerifyDescripion(Agent agent)
+    private static string VerifyDescription(Agent agent)
     {
         return agent.Description ?? throw new ArgumentException($"Missing agent description: {agent.Name ?? agent.Id}", nameof(agent));
     }

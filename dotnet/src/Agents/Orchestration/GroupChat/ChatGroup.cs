@@ -7,7 +7,7 @@ using Microsoft.AgentRuntime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
 /// <summary>
-/// Descibes a team of agents participating in a group chat.
+/// Describes a team of agents participating in a group chat.
 /// </summary>
 public class ChatGroup : Dictionary<string, (AgentType Agent, string Description)>; // %%% TODO: ANONYMOUS TYPE => EXPLICIT
 

@@ -3,7 +3,7 @@
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 
 /// <summary>
-/// A message that describes the input task and captures results for a <see cref="HandoffOrchestration{TInput,TOutut}"/>.
+/// A message that describes the input task and captures results for a <see cref="HandoffOrchestration{TInput,TOutput}"/>.
 /// </summary>
 public sealed class HandoffMessage
 {

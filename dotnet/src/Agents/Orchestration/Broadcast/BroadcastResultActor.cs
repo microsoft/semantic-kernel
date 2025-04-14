@@ -26,7 +26,7 @@ internal sealed class BroadcastResultActor : PatternActor,
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
-    /// <param name="expectedCount">The expected number of messages to be recieved.</param>
+    /// <param name="expectedCount">The expected number of messages to be received.</param>
     public BroadcastResultActor(
         AgentId id,
         IAgentRuntime runtime,
