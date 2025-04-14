@@ -9,14 +9,28 @@
   "capabilities": {
     "conversation_starters": [
       {
+        "text": "Get content for the navigation property items from"
+      },
+      {
         "text": "Invoke action query"
+      },
+      {
+        "text": "Get content for the navigation property driveItem "
       }
     ]
   },
   "functions": [
     {
+      "name": "drives_GetItemsContent",
+      "description": "The content stream, if the item represents a file."
+    },
+    {
       "name": "search_query",
       "description": "Runs the query specified in the request body. Search results are provided in the response."
+    },
+    {
+      "name": "sites_lists_items_GetDriveItemContent",
+      "description": "The content stream, if the item represents a file."
     }
   ],
   "runtimes": [
@@ -29,7 +43,9 @@
         "url": "files-openapi.yml"
       },
       "run_for_functions": [
-        "search_query"
+        "drives_GetItemsContent",
+        "search_query",
+        "sites_lists_items_GetDriveItemContent"
       ]
     }
   ]
