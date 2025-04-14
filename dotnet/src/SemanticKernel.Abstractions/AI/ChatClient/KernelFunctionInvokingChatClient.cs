@@ -367,7 +367,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
                 break;
             }
 
-            // Reconsistitue a response from the response updates.
+            // Reconstitute a response from the response updates.
             var response = updates.ToChatResponse();
             (responseMessages ??= []).AddRange(response.Messages);
 
