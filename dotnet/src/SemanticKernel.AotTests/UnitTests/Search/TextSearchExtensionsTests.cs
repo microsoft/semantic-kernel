@@ -20,11 +20,11 @@ internal sealed class TextSearchExtensionsTests
     {
         // Arrange
         var testData = new List<string> { "test-value" };
-        KernelSearchResults<string> results = new(testData.ToAsyncEnumerable());
+        IAsyncEnumerable<string> results = testData.ToAsyncEnumerable();
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
-        var plugin = textSearch.CreateWithSearch("SearchPlugin", s_jsonSerializerOptions);
+        var plugin = textSearch.CreateWithSearch(2, "SearchPlugin", s_jsonSerializerOptions);
 
         // Assert
         await AssertSearchFunctionSchemaAndInvocationResult<string>(plugin["Search"], testData[0]);
@@ -34,11 +34,11 @@ internal sealed class TextSearchExtensionsTests
     {
         // Arrange
         var testData = new List<TextSearchResult> { new("test-value") };
-        KernelSearchResults<TextSearchResult> results = new(testData.ToAsyncEnumerable());
+        IAsyncEnumerable<TextSearchResult> results = testData.ToAsyncEnumerable();
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
-        var plugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin", s_jsonSerializerOptions);
+        var plugin = textSearch.CreateWithGetTextSearchResults(2, "SearchPlugin", s_jsonSerializerOptions);
 
         // Assert
         await AssertSearchFunctionSchemaAndInvocationResult<TextSearchResult>(plugin["GetTextSearchResults"], testData[0]);
@@ -48,11 +48,11 @@ internal sealed class TextSearchExtensionsTests
     {
         // Arrange
         var testData = new List<CustomResult> { new("test-value") };
-        KernelSearchResults<object> results = new(testData.ToAsyncEnumerable());
+        IAsyncEnumerable<object> results = testData.ToAsyncEnumerable();
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
-        var plugin = textSearch.CreateWithGetSearchResults("SearchPlugin", s_jsonSerializerOptions);
+        var plugin = textSearch.CreateWithGetSearchResults(2, "SearchPlugin", s_jsonSerializerOptions);
 
         // Assert
         await AssertSearchFunctionSchemaAndInvocationResult<object>(plugin["GetSearchResults"], testData[0]);
@@ -84,9 +84,9 @@ internal sealed class TextSearchExtensionsTests
         var type = typeof(T).Name;
         var expectedSchema = type switch
         {
-            "String" => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"string"}}},"required":["Results"]}""",
-            "TextSearchResult" => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}},"required":["Results"]}""",
-            _ => """{"type":"object","properties":{"TotalCount":{"type":["integer","null"],"default":null},"Metadata":{"type":["object","null"],"default":null},"Results":{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}},"required":["Results"]}"""
+            "String" => """{"type":"array","items":{"type":"string"}}""",
+            "TextSearchResult" => """{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}""",
+            _ => """{"type":"array","items":{"type":"object","properties":{"Name":{"type":["string","null"]},"Link":{"type":["string","null"]},"Value":{"type":"string"}},"required":["Value"]}}"""
         };
         Assert.AreEqual(expectedSchema, metadata.ReturnParameter.Schema!.ToString());
     }

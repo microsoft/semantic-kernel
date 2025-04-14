@@ -230,7 +230,7 @@ public static class Program
 
                 // Add a search plugin to the kernel which we will use in the agent template
                 // to do a vector search for related information to the user query.
-                kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults("SearchPlugin"));
+                kernel.Plugins.Add(vectorStoreTextSearch.CreateWithGetTextSearchResults(top: 5, "SearchPlugin"));
 
                 return new ChatCompletionAgent(templateConfig, new HandlebarsPromptTemplateFactory())
                 {
