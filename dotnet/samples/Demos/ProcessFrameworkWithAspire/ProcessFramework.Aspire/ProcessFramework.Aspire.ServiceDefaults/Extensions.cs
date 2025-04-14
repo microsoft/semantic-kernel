@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -11,31 +9,14 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 
-/// <summary>
-/// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-/// This project should be referenced by each service project in your solution.
-/// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
-/// </summary>
-public static class ServiceExtensions
+// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
+// This project should be referenced by each service project in your solution.
+// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
+public static class Extensions
 {
-    /// <summary>
-    /// Gets a configuration setting from the WebApplicationBuilder.
-    /// </summary>
-    /// <param name="builder">The WebApplicationBuilder instance.</param>
-    /// <param name="settingName">The name of the configuration setting.</param>
-    /// <returns>The value of the configuration setting.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the configuration setting is missing.</exception>
-    public static string GetConfiguration(this WebApplicationBuilder builder, string settingName)
-    {
-        return builder.Configuration[settingName] ?? throw new InvalidOperationException($"Missing configuration setting: {settingName}");
-    }
+    private const string HealthEndpointPath = "/health";
+    private const string AlivenessEndpointPath = "/alive";
 
-    /// <summary>
-    /// Adds default services to the application builder.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
-    /// <param name="builder">The application builder instance.</param>
-    /// <returns>The application builder instance with default services added.</returns>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
@@ -62,14 +43,11 @@ public static class ServiceExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Configures OpenTelemetry for the application builder.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
-    /// <param name="builder">The application builder instance.</param>
-    /// <returns>The application builder instance with OpenTelemetry configured.</returns>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+            builder.Logging.AddTraceSource("Microsoft.SemanticKernel");
+
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
@@ -82,14 +60,25 @@ public static class ServiceExtensions
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
+
+                if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+                    metrics.AddMeter("Microsoft.SemanticKernel*");
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation(tracing =>
+                        // Exclude health check requests from tracing
+                        tracing.Filter = context =>
+                            !context.Request.Path.StartsWithSegments(HealthEndpointPath)
+                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
+                    )
                     // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
                     //.AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation();
+
+                if (builder.Configuration["ConnectionStrings:openAiConnectionName"] is not null)
+                    tracing.AddSource("Microsoft.SemanticKernel*");
             });
 
         builder.AddOpenTelemetryExporters();
@@ -97,12 +86,6 @@ public static class ServiceExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Adds OpenTelemetry exporters to the application builder.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
-    /// <param name="builder">The application builder instance.</param>
-    /// <returns>The application builder instance with OpenTelemetry exporters added.</returns>
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
@@ -122,12 +105,6 @@ public static class ServiceExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Adds default health checks to the application builder.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the application builder.</typeparam>
-    /// <param name="builder">The application builder instance.</param>
-    /// <returns>The application builder instance with default health checks added.</returns>
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()
@@ -137,11 +114,6 @@ public static class ServiceExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Maps default endpoints for the application.
-    /// </summary>
-    /// <param name="app">The WebApplication instance.</param>
-    /// <returns>The WebApplication instance with default endpoints mapped.</returns>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         // Adding health checks endpoints to applications in non-development environments has security implications.
@@ -149,10 +121,10 @@ public static class ServiceExtensions
         if (app.Environment.IsDevelopment())
         {
             // All health checks must pass for app to be considered ready to accept traffic after starting
-            app.MapHealthChecks("/health");
+            app.MapHealthChecks(HealthEndpointPath);
 
             // Only health checks tagged with the "live" tag must pass for app to be considered alive
-            app.MapHealthChecks("/alive", new HealthCheckOptions
+            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
             {
                 Predicate = r => r.Tags.Contains("live")
             });
