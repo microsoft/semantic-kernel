@@ -480,91 +480,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
         Assert.Equal("key3", results[2]);
     }
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    [Fact]
-    public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
-    {
-        // Arrange
-        var hotel = new AzureCosmosDBNoSQLHotel("key") { HotelName = "Test Name" };
-
-        var mockMapper = new Mock<IVectorStoreRecordMapper<AzureCosmosDBNoSQLHotel, JsonObject>>();
-
-        mockMapper
-            .Setup(l => l.MapFromDataToStorageModel(It.IsAny<AzureCosmosDBNoSQLHotel>()))
-            .Returns(new JsonObject { ["id"] = "key", ["my_name"] = "Test Name" });
-
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
-            this._mockDatabase.Object,
-            "collection",
-            new() { JsonObjectCustomMapper = mockMapper.Object });
-
-        // Act
-        var result = await sut.UpsertAsync(hotel);
-
-        // Assert
-        Assert.Equal("key", result);
-
-        this._mockContainer.Verify(l => l.UpsertItemAsync<JsonNode>(
-            It.Is<JsonNode>(node =>
-                node["id"]!.ToString() == "key" &&
-                node["my_name"]!.ToString() == "Test Name"),
-            new PartitionKey("key"),
-            It.IsAny<ItemRequestOptions>(),
-            It.IsAny<CancellationToken>()),
-            Times.Once());
-    }
-
-    [Fact]
-    public async Task GetWithCustomMapperWorksCorrectlyAsync()
-    {
-        // Arrange
-        const string RecordKey = "key";
-
-        var jsonObject = new JsonObject { ["id"] = RecordKey, ["HotelName"] = "Test Name" };
-
-        var mockFeedResponse = new Mock<FeedResponse<JsonObject>>();
-        mockFeedResponse
-            .Setup(l => l.Resource)
-            .Returns([jsonObject]);
-
-        var mockFeedIterator = new Mock<FeedIterator<JsonObject>>();
-        mockFeedIterator
-            .SetupSequence(l => l.HasMoreResults)
-            .Returns(true)
-            .Returns(false);
-
-        mockFeedIterator
-            .Setup(l => l.ReadNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(mockFeedResponse.Object);
-
-        this._mockContainer
-            .Setup(l => l.GetItemQueryIterator<JsonObject>(
-                It.IsAny<QueryDefinition>(),
-                It.IsAny<string>(),
-                It.IsAny<QueryRequestOptions>()))
-            .Returns(mockFeedIterator.Object);
-
-        var mockMapper = new Mock<IVectorStoreRecordMapper<AzureCosmosDBNoSQLHotel, JsonObject>>();
-
-        mockMapper
-            .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(new AzureCosmosDBNoSQLHotel(RecordKey) { HotelName = "Name from mapper" });
-
-        var sut = new AzureCosmosDBNoSQLVectorStoreRecordCollection<string, AzureCosmosDBNoSQLHotel>(
-            this._mockDatabase.Object,
-            "collection",
-            new() { JsonObjectCustomMapper = mockMapper.Object });
-
-        // Act
-        var result = await sut.GetAsync(RecordKey);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(RecordKey, result.HotelId);
-        Assert.Equal("Name from mapper", result.HotelName);
-    }
-#pragma warning restore CS0618
-
     [Fact]
     public async Task VectorizedSearchReturnsValidRecordAsync()
     {
@@ -606,9 +521,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
             "collection");
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3);
-
-        var results = await actual.Results.ToListAsync();
+        var results = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3).ToListAsync();
         var result = results[0];
 
         // Assert
@@ -628,7 +541,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<NotSupportedException>(async () =>
-            await (await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3)).Results.ToListAsync());
+            await sut.VectorizedSearchAsync(new List<double>([1, 2, 3]), top: 3).ToListAsync());
     }
 
     [Fact]
@@ -643,7 +556,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await (await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, searchOptions)).Results.ToListAsync());
+            await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([1f, 2f, 3f]), top: 3, searchOptions).ToListAsync());
     }
 
     public static TheoryData<List<string>, string, bool> CollectionExistsData => new()

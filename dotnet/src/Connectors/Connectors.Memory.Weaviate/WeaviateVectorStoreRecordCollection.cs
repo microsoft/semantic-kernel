@@ -59,9 +59,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Weaviate record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
-#pragma warning restore CS0618
+    private readonly IWeaviateMapper<TRecord> _mapper;
 
     /// <summary>Weaviate endpoint.</summary>
     private readonly Uri _endpoint;
@@ -109,7 +107,9 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
 
         // Assign mapper.
-        this._mapper = this.InitializeMapper();
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new WeaviateDynamicDataModelMapper(this.CollectionName, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
+            : new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -334,7 +334,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
@@ -358,12 +358,12 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             this._model,
             this._options.HasNamedVectors);
 
-        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+        return this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken);
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        GetFilteredRecordOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
+        GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -378,15 +378,12 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             this._model,
             this._options.HasNamedVectors);
 
-        var results = await this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken).ConfigureAwait(false);
-        await foreach (var record in results.Results.ConfigureAwait(false))
-        {
-            yield return record.Record;
-        }
+        return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken)
+            .SelectAsync(result => result.Record, cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "HybridSearch";
 
@@ -409,7 +406,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             searchOptions,
             this._options.HasNamedVectors);
 
-        return await this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false);
+        return this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -427,7 +424,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     #region private
 
-    private async Task<VectorSearchResults<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, CancellationToken cancellationToken)
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         using var request = new WeaviateVectorSearchRequest(query).Build();
 
@@ -446,21 +443,22 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             };
         }
 
-        var mappedResults = collectionResults.Where(x => x is not null).Select(result =>
+        foreach (var result in collectionResults)
         {
-            var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result!, scorePropertyName, this._options.HasNamedVectors);
+            if (result is not null)
+            {
+                var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result, scorePropertyName, this._options.HasNamedVectors);
 
-            var record = VectorStoreErrorHandler.RunModelConversion(
-                WeaviateConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.CollectionName,
-                operationName,
-                () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
+                var record = VectorStoreErrorHandler.RunModelConversion(
+                    WeaviateConstants.VectorStoreSystemName,
+                    this._collectionMetadata.VectorStoreName,
+                    this.CollectionName,
+                    operationName,
+                    () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
 
-            return new VectorSearchResult<TRecord>(record, score);
-        });
-
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+                yield return new VectorSearchResult<TRecord>(record, score);
+            }
+        }
     }
 
     private async Task<HttpResponseMessage> ExecuteRequestAsync(
@@ -539,36 +537,6 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             };
         }
     }
-
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper()
-    {
-        if (this._options.JsonObjectCustomMapper is not null)
-        {
-            return this._options.JsonObjectCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            var mapper = new WeaviateDynamicDataModelMapper(
-                this.CollectionName,
-                this._options.HasNamedVectors,
-                this._model,
-                s_jsonSerializerOptions);
-
-            return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
-        }
-
-        return new WeaviateVectorStoreRecordMapper<TRecord>(
-            this.CollectionName,
-            this._options.HasNamedVectors,
-            this._model,
-            s_jsonSerializerOptions);
-    }
-#pragma warning restore CS0618
 
     private static void VerifyVectorParam<TVector>(TVector vector)
     {

@@ -23,7 +23,7 @@ public sealed class QdrantVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, a default mapper that uses json as an intermediary to allow automatic mapping to a wide variety of types will be used.
     /// </remarks>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, PointStruct>? PointStructCustomMapper { get; init; } = null;
 
     /// <summary>

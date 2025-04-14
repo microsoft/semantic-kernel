@@ -87,9 +87,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     private readonly string[] _dataStoragePropertyNamesWithScore;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)> _mapper;
-#pragma warning restore CS0618
+    private readonly RedisHashSetVectorStoreRecordMapper<TRecord> _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -120,9 +118,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         this._dataStoragePropertyNamesWithScore = [.. this._model.DataProperties.Select(p => p.StorageName), "vector_score"];
 
         // Assign Mapper.
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.HashEntriesCustomMapper ?? new RedisHashSetVectorStoreRecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
@@ -331,7 +327,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -382,7 +378,10 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
             return new VectorSearchResult<TRecord>(dataModel, score);
         });
 
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+        foreach (var result in mappedResults)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />

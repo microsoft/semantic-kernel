@@ -52,9 +52,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
     private readonly AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
-#pragma warning restore CS0618
+    private readonly IMongoDBMapper<TRecord> _mapper;
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -88,7 +86,9 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         this.CollectionName = collectionName;
         this._options = options ?? new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-        this._mapper = this.InitializeMapper();
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new MongoDBDynamicDataModelMapper(this._model) as IMongoDBMapper<TRecord>)!
+            : new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
@@ -257,11 +257,11 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -324,7 +324,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken));
+        await foreach (var result in this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions, cancellationToken).ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -566,26 +569,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
         return storagePropertyNames;
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
-    {
-        if (this._options.BsonDocumentCustomMapper is not null)
-        {
-            return this._options.BsonDocumentCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            return (new MongoDBDynamicDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
-        }
-
-        return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
-    }
-#pragma warning restore CS0618
 
     private string GetStringKey(TKey key)
     {

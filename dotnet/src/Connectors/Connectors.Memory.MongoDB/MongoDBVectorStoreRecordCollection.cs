@@ -52,9 +52,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     private readonly MongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
-#pragma warning restore CS0618
+    private readonly IMongoDBMapper<TRecord> _mapper;
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
@@ -88,7 +86,9 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         this.CollectionName = collectionName;
         this._options = options ?? new MongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-        this._mapper = this.InitializeMapper();
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new MongoDBDynamicDataModelMapper(this._model) as IMongoDBMapper<TRecord>)!
+            : new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
@@ -263,11 +263,11 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
-        CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -305,7 +305,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         BsonDocument[] pipeline = [searchQuery, projectionQuery];
 
-        return await this.RunOperationWithRetryAsync(
+        var results = await this.RunOperationWithRetryAsync(
             "VectorizedSearch",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
@@ -315,9 +315,14 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+                return this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -379,7 +384,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Array vectorArray = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
@@ -418,7 +423,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             numCandidates,
             filter);
 
-        return await this.RunOperationWithRetryAsync(
+        var results = await this.RunOperationWithRetryAsync(
             "KeywordVectorizedHybridSearch",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
@@ -428,9 +433,14 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     .AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
 
-                return new VectorSearchResults<TRecord>(this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken));
+                return this.EnumerateAndMapSearchResultsAsync(cursor, searchOptions.Skip, searchOptions.IncludeVectors, cancellationToken);
             },
             cancellationToken).ConfigureAwait(false);
+
+        await foreach (var result in results.ConfigureAwait(false))
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />
@@ -695,26 +705,6 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         throw new VectorStoreOperationException("Retry logic failed.");
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
-    {
-        if (this._options.BsonDocumentCustomMapper is not null)
-        {
-            return this._options.BsonDocumentCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            return (new MongoDBDynamicDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
-        }
-
-        return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
-    }
-#pragma warning restore CS0618
 
     private static Array VerifyVectorParam<TVector>(TVector vector)
     {

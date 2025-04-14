@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -270,49 +269,6 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         Assert.Equal(TestRecordKey2, actual[1].Key);
     }
 
-    [Fact]
-    public async Task CanGetRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        var storageObject = JsonSerializer.SerializeToNode(CreateModel(TestRecordKey1, true))!.AsObject();
-
-        // Arrange GetDocumentAsync mock returning JsonObject.
-        this._searchClientMock.Setup(
-            x => x.GetDocumentAsync<JsonObject>(
-                TestRecordKey1,
-                It.Is<GetDocumentOptions>(x => !x.SelectedFields.Any()),
-                this._testCancellationToken))
-            .ReturnsAsync(Response.FromValue(storageObject, Mock.Of<Response>()));
-
-        // Arrange mapper mock from JsonObject to data model.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>(MockBehavior.Strict);
-        mapperMock.Setup(
-            x => x.MapFromStorageToDataModel(
-                storageObject,
-                It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)))
-            .Returns(CreateModel(TestRecordKey1, true));
-
-        // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
-            this._searchIndexClientMock.Object,
-            TestCollectionName,
-            new()
-            {
-                JsonObjectCustomMapper = mapperMock.Object
-            });
-
-        // Act.
-        var actual = await sut.GetAsync(TestRecordKey1, new() { IncludeVectors = true }, this._testCancellationToken);
-
-        // Assert.
-        Assert.NotNull(actual);
-        Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.Data1);
-        Assert.Equal("data 2", actual.Data2);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector2!.Value.ToArray());
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -474,58 +430,6 @@ public class AzureAISearchVectorStoreRecordCollectionTests
             Times.Once);
     }
 
-    [Fact]
-    public async Task CanUpsertRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-#pragma warning disable Moq1002 // Moq: No matching constructor
-        var indexingResult = new Mock<IndexingResult>(MockBehavior.Strict, TestRecordKey1, true, 200);
-        var indexingResults = new List<IndexingResult>();
-        indexingResults.Add(indexingResult.Object);
-        var indexDocumentsResultMock = new Mock<IndexDocumentsResult>(MockBehavior.Strict, indexingResults);
-#pragma warning restore Moq1002 // Moq: No matching constructor
-
-        var model = CreateModel(TestRecordKey1, true);
-        var storageObject = JsonSerializer.SerializeToNode(model)!.AsObject();
-
-        // Arrange UploadDocumentsAsync mock returning upsert result.
-        this._searchClientMock.Setup(
-            x => x.UploadDocumentsAsync(
-                It.IsAny<IEnumerable<JsonObject>>(),
-                It.IsAny<IndexDocumentsOptions>(),
-                this._testCancellationToken))
-            .ReturnsAsync((IEnumerable<JsonObject> documents, IndexDocumentsOptions options, CancellationToken cancellationToken) =>
-            {
-                // Need to force a materialization of the documents enumerable here, otherwise the mapper (and therefore its mock) doesn't get invoked.
-                var materializedDocuments = documents.ToList();
-                return Response.FromValue(indexDocumentsResultMock.Object, Mock.Of<Response>());
-            });
-
-        // Arrange mapper mock from data model to JsonObject.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>(MockBehavior.Strict);
-        mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<MultiPropsModel>()))
-            .Returns(storageObject);
-
-        // Arrange target with custom mapper.
-        var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
-            this._searchIndexClientMock.Object,
-            TestCollectionName,
-            new()
-            {
-                JsonObjectCustomMapper = mapperMock.Object
-            });
-
-        // Act.
-        await sut.UpsertAsync(model, this._testCancellationToken);
-
-        // Assert.
-        mapperMock
-            .Verify(
-                x => x.MapFromDataToStorageModel(It.Is<MultiPropsModel>(x => x.Key == TestRecordKey1)),
-                Times.Once);
-    }
-
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -549,7 +453,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
         var sut = new AzureAISearchVectorStoreRecordCollection<string, MultiPropsModel>(
             this._searchIndexClientMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, JsonObjectCustomMapper = Mock.Of<IVectorStoreRecordMapper<MultiPropsModel, JsonObject>>() });
+            new() { VectorStoreRecordDefinition = definition });
     }
 
     [Fact]
@@ -578,7 +482,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1
             },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert.
         this._searchClientMock.Verify(
@@ -620,7 +524,7 @@ public class AzureAISearchVectorStoreRecordCollectionTests
                 OldFilter = filter,
                 VectorProperty = record => record.Vector1
             },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert.
         this._searchClientMock.Verify(

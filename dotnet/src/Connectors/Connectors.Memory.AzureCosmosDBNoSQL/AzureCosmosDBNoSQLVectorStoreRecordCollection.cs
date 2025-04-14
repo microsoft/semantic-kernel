@@ -54,9 +54,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private readonly VectorStoreRecordPropertyModel _partitionKeyProperty;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Azure CosmosDB NoSQL record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, JsonObject> _mapper;
-#pragma warning restore CS0618
+    private readonly ICosmosNoSQLMapper<TRecord> _mapper;
 
     /// <inheritdoc />
     public string CollectionName { get; }
@@ -97,7 +95,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, jsonSerializerOptions);
 
         // Assign mapper.
-        this._mapper = this.InitializeMapper(jsonSerializerOptions);
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new AzureCosmosDBNoSQLDynamicDataModelMapper(this._model, jsonSerializerOptions) as ICosmosNoSQLMapper<TRecord>)!
+            : new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._options.JsonSerializerOptions);
 
         // Setup partition key property
         if (this._options.PartitionKeyPropertyName is not null)
@@ -297,7 +297,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(
         TVector vector,
         int top,
         VectorSearchOptions<TRecord>? options = null,
@@ -328,13 +328,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
-        var mappedResults = this.MapSearchResultsAsync(
+        return this.MapSearchResultsAsync(
             searchResults,
             ScorePropertyName,
             OperationName,
             searchOptions.IncludeVectors,
             cancellationToken);
-        return Task.FromResult(new VectorSearchResults<TRecord>(mappedResults));
     }
 
     /// <inheritdoc />
@@ -371,7 +370,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task<VectorSearchResults<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TVector>(TVector vector, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         const string OperationName = "VectorizedSearch";
         const string ScorePropertyName = "SimilarityScore";
@@ -399,13 +398,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 #pragma warning restore CS0618 // Type or member is obsolete
 
         var searchResults = this.GetItemsAsync<JsonObject>(queryDefinition, cancellationToken);
-        var mappedResults = this.MapSearchResultsAsync(
+        return this.MapSearchResultsAsync(
             searchResults,
             ScorePropertyName,
             OperationName,
             searchOptions.IncludeVectors,
             cancellationToken);
-        return Task.FromResult(new VectorSearchResults<TRecord>(mappedResults));
     }
 
     /// <inheritdoc />
@@ -626,24 +624,6 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             yield return new VectorSearchResult<TRecord>(record, score);
         }
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private IVectorStoreRecordMapper<TRecord, JsonObject> InitializeMapper(JsonSerializerOptions jsonSerializerOptions)
-    {
-        if (this._options.JsonObjectCustomMapper is not null)
-        {
-            return this._options.JsonObjectCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            var mapper = new AzureCosmosDBNoSQLDynamicDataModelMapper(this._model, jsonSerializerOptions);
-            return (mapper as IVectorStoreRecordMapper<TRecord, JsonObject>)!;
-        }
-
-        return new AzureCosmosDBNoSQLVectorStoreRecordMapper<TRecord>(this._model.KeyProperty, this._options.JsonSerializerOptions);
-    }
-#pragma warning restore CS0618
 
     private static IEnumerable<AzureCosmosDBNoSQLCompositeKey> GetCompositeKeys(IEnumerable<TKey> keys)
         => keys switch

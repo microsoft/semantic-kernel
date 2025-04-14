@@ -75,9 +75,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     private readonly string[] _dataStoragePropertyNames;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)> _mapper;
-#pragma warning restore CS0618
+    private readonly IRedisJsonMapper<TRecord> _mapper;
 
     /// <summary>The JSON serializer options to use when converting between the data model and the Redis record.</summary>
     private readonly JsonSerializerOptions _jsonSerializerOptions;
@@ -111,23 +109,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         // Lookup storage property names.
         this._dataStoragePropertyNames = this._model.DataProperties.Select(p => p.StorageName).ToArray();
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         // Assign Mapper.
-        if (this._options.JsonNodeCustomMapper is not null)
-        {
-            // Custom Mapper.
-            this._mapper = this._options.JsonNodeCustomMapper;
-        }
-        else if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            this._mapper = (IVectorStoreRecordMapper<TRecord, (string Key, JsonNode Node)>)new RedisJsonDynamicDataModelMapper(this._model, this._jsonSerializerOptions);
-        }
-        else
-        {
-            // Default Mapper.
-            this._mapper = new RedisJsonVectorStoreRecordMapper<TRecord>(this._model, this._jsonSerializerOptions);
-        }
-#pragma warning restore CS0618
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (IRedisJsonMapper<TRecord>)new RedisJsonDynamicDataModelMapper(this._model, this._jsonSerializerOptions)
+            : new RedisJsonVectorStoreRecordMapper<TRecord>(this._model, this._jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -411,7 +396,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     }
 
     /// <inheritdoc />
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -459,7 +444,10 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
             return new VectorSearchResult<TRecord>(mappedRecord, score);
         });
 
-        return new VectorSearchResults<TRecord>(mappedResults.ToAsyncEnumerable());
+        foreach (var result in mappedResults)
+        {
+            yield return result;
+        }
     }
 
     /// <inheritdoc />

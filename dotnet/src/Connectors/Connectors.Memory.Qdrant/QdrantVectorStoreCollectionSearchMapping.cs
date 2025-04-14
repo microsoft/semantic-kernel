@@ -99,16 +99,14 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <returns>The mapped <see cref="VectorSearchResult{TRecord}"/>.</returns>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     public static VectorSearchResult<TRecord> MapScoredPointToVectorSearchResult<TRecord>(
         ScoredPoint point,
-        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+        QdrantVectorStoreRecordMapper<TRecord> mapper,
         bool includeVectors,
         string vectorStoreSystemName,
         string? vectorStoreName,
         string collectionName,
         string operationName)
-#pragma warning restore CS0618
     {
         // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
         var pointStruct = new PointStruct
@@ -136,7 +134,7 @@ internal static class QdrantVectorStoreCollectionSearchMapping
 
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point,
-        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+        QdrantVectorStoreRecordMapper<TRecord> mapper,
         bool includeVectors,
         string vectorStoreSystemName,
         string? vectorStoreName,

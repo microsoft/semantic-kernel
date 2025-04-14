@@ -32,9 +32,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     private readonly string _connectionString;
     private readonly SqlServerVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordModel _model;
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>> _mapper;
-#pragma warning restore CS0618
+    private readonly RecordMapper<TRecord> _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -57,17 +55,14 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         this.CollectionName = name;
         // We need to create a copy, so any changes made to the option bag after
         // the ctor call do not affect this instance.
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
         this._options = options is null
             ? s_defaultOptions
             : new()
             {
                 Schema = options.Schema,
-                Mapper = options.Mapper,
                 RecordDefinition = options.RecordDefinition,
             };
-        this._mapper = this._options.Mapper ?? new RecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new RecordMapper<TRecord>(this._model);
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
@@ -424,7 +419,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc/>
-    public async Task<VectorSearchResults<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(vector);
         Verify.NotLessThan(top, 1);
@@ -446,11 +441,10 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         var vectorProperty = this._model.GetVectorPropertyOrSingle(searchOptions);
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        // This connection will be disposed by the ReadVectorSearchResultsAsync
+        // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
         SqlConnection connection = new(this._connectionString);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-        using SqlCommand command = SqlServerCommandBuilder.SelectVector(
+        SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
             this._options.Schema,
             this.CollectionName,
@@ -459,17 +453,9 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             top,
             searchOptions,
             allowed);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-        return await ExceptionWrapper.WrapAsync(connection, command,
-            (cmd, ct) =>
-            {
-                var results = this.ReadVectorSearchResultsAsync(connection, cmd, searchOptions.IncludeVectors, ct);
-                return Task.FromResult(new VectorSearchResults<TRecord>(results));
-            },
-            "VectorizedSearch",
-            this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
-            cancellationToken).ConfigureAwait(false);
+        return this.ReadVectorSearchResultsAsync(connection, command, searchOptions.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -494,10 +480,21 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         {
             StorageToDataModelMapperOptions options = new() { IncludeVectors = includeVectors };
             var vectorProperties = includeVectors ? this._model.VectorProperties : [];
-            using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+
+            using SqlDataReader reader = await ExceptionWrapper.WrapAsync(connection, command,
+                static (cmd, ct) => cmd.ExecuteReaderAsync(ct),
+                "VectorizedSearch",
+                this._collectionMetadata.VectorStoreName,
+                this.CollectionName,
+                cancellationToken).ConfigureAwait(false);
 
             int scoreIndex = -1;
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            while (await ExceptionWrapper.WrapReadAsync(
+                reader,
+                "VectorizedSearch",
+                this._collectionMetadata.VectorStoreName,
+                this.CollectionName,
+                cancellationToken).ConfigureAwait(false))
             {
                 if (scoreIndex < 0)
                 {
@@ -511,6 +508,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
         }
         finally
         {
+            command.Dispose();
             connection.Dispose();
         }
     }

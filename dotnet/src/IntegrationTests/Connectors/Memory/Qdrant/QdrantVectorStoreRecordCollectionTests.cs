@@ -67,10 +67,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var upsertResult = await sut.UpsertAsync(record);
         var getResult = await sut.GetAsync(30, new GetRecordOptions { IncludeVectors = true });
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
-        var actual = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.VectorizedSearchAsync(
             vector,
             top: 3,
-            new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") });
+            new() { OldFilter = new VectorSearchFilter().EqualTo("HotelCode", 30).AnyTagEqualTo("Tags", "t2") }).ToListAsync();
 
         // Assert
         var collectionExistResult = await sut.CollectionExistsAsync();
@@ -88,7 +88,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
         Assert.Equal(record.Description, getResult?.Description);
 
-        var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
         var searchResultRecord = searchResults.First().Record;
         Assert.Equal(record.HotelId, searchResultRecord?.HotelId);
@@ -367,17 +366,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Null(await sut.GetAsync(15, new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact]
-    public async Task ItThrowsMappingExceptionForFailedMapperAsync()
-    {
-        // Arrange
-        var options = new QdrantVectorStoreRecordCollectionOptions<HotelInfo> { PointStructCustomMapper = new FailingMapper() };
-        var sut = new QdrantVectorStoreRecordCollection<ulong, HotelInfo>(fixture.QdrantClient, "singleVectorHotels", options);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true }));
-    }
-
     [Theory]
     [InlineData(true, "singleVectorHotels", false, "equality")]
     [InlineData(false, "singleVectorHotels", false, "equality")]
@@ -400,16 +388,15 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         // Act.
         var vector = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("A great hotel");
         var filter = filterType == "equality" ? new VectorSearchFilter().EqualTo("HotelName", "My Hotel 13").EqualTo("LastRenovationDate", new DateTimeOffset(2020, 02, 01, 0, 0, 0, TimeSpan.Zero)) : new VectorSearchFilter().AnyTagEqualTo("Tags", "t13.2");
-        var actual = await sut.VectorizedSearchAsync(
+        var searchResults = await sut.VectorizedSearchAsync(
             vector,
             top: 3,
             new()
             {
                 OldFilter = filter
-            });
+            }).ToListAsync();
 
         // Assert.
-        var searchResults = await actual.Results.ToListAsync();
         Assert.Single(searchResults);
 
         var searchResultRecord = searchResults.First().Record;
@@ -489,18 +476,5 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             Description = "This is a great hotel.",
             DescriptionEmbedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
         };
-    }
-
-    private sealed class FailingMapper : IVectorStoreRecordMapper<HotelInfo, PointStruct>
-    {
-        public PointStruct MapFromDataToStorageModel(HotelInfo dataModel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public HotelInfo MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Azure AI Search.
 /// </summary>
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel model) : IVectorStoreRecordMapper<Dictionary<string, object?>, JsonObject>
+internal sealed class AzureAISearchDynamicDataModelMapper(VectorStoreRecordModel model)
 #pragma warning restore CS0618
 {
     /// <inheritdoc />

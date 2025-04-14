@@ -277,10 +277,9 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3);
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 3).ToListAsync();
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key1", ids[0]);
@@ -308,13 +307,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 2, new()
         {
             Skip = 2
-        });
+        }).ToListAsync();
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
         var ids = searchResults.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal("key3", ids[0]);
@@ -341,13 +339,12 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollectionTests(AzureCosm
         await sut.UpsertAsync([hotel4, hotel2, hotel3, hotel1]);
 
         // Act
-        var actual = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
+        var searchResults = await sut.VectorizedSearchAsync(new ReadOnlyMemory<float>([30f, 31f, 32f, 33f]), top: 4, new()
         {
             OldFilter = filter,
-        });
+        }).ToListAsync();
 
         // Assert
-        var searchResults = await actual.Results.ToListAsync();
         var actualIds = searchResults.Select(l => l.Record.HotelId).ToList();
 
         Assert.Equal(expectedIds, actualIds);

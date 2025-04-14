@@ -103,26 +103,26 @@ public abstract class VectorSearchDistanceFunctionComplianceTests<TKey>(VectorSt
         {
             await collection.UpsertAsync(insertedRecords);
 
-            var searchResult = await collection.VectorizedSearchAsync(baseVector, top: 3);
-            var results = await searchResult.Results.ToListAsync();
+            var searchResult = collection.VectorizedSearchAsync(baseVector, top: 3);
+            var results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: false);
 
-            searchResult = await collection.VectorizedSearchAsync(baseVector, top: 3, new() { IncludeVectors = true });
-            results = await searchResult.Results.ToListAsync();
+            searchResult = collection.VectorizedSearchAsync(baseVector, top: 3, new() { IncludeVectors = true });
+            results = await searchResult.ToListAsync();
             VerifySearchResults(expectedRecords, expectedScores, results, includeVectors: true);
 
             for (int skip = 0; skip <= insertedRecords.Count; skip++)
             {
                 for (int top = Math.Max(1, skip); top <= insertedRecords.Count; top++)
                 {
-                    searchResult = await collection.VectorizedSearchAsync(baseVector,
+                    searchResult = collection.VectorizedSearchAsync(baseVector,
                         top: top,
                         new()
                         {
                             Skip = skip,
                             IncludeVectors = true
                         });
-                    results = await searchResult.Results.ToListAsync();
+                    results = await searchResult.ToListAsync();
 
                     VerifySearchResults(
                         expectedRecords.Skip(skip).Take(top).ToArray(),

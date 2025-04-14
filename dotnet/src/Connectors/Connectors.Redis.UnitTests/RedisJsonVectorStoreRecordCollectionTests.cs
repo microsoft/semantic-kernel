@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -255,51 +254,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
         Assert.Equal(new float[] { 5, 6, 7, 8 }, actual[1].Vector1!.Value.ToArray());
     }
 
-    [Fact]
-    public async Task CanGetRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        var redisResultString = """{ "data1_json_name": "data 1", "Data2": "data 2", "vector1_json_name": [1, 2, 3, 4], "Vector2": [1, 2, 3, 4] }""";
-        SetupExecuteMock(this._redisDatabaseMock, redisResultString);
-
-        // Arrange mapper mock from JsonNode to data model.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>(MockBehavior.Strict);
-        mapperMock.Setup(
-            x => x.MapFromStorageToDataModel(
-                It.IsAny<(string key, JsonNode node)>(),
-                It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(CreateModel(TestRecordKey1, true));
-
-        // Arrange target with custom mapper.
-        var sut = new RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>(
-            this._redisDatabaseMock.Object,
-            TestCollectionName,
-            new()
-            {
-                JsonNodeCustomMapper = mapperMock.Object
-            });
-
-        // Act
-        var actual = await sut.GetAsync(
-            TestRecordKey1,
-            new() { IncludeVectors = true });
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(TestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.Data1);
-        Assert.Equal("data 2", actual.Data2);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector1!.Value.ToArray());
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector2!.Value.ToArray());
-
-        mapperMock
-            .Verify(
-                x => x.MapFromStorageToDataModel(
-                    It.Is<(string key, JsonNode node)>(x => x.key == TestRecordKey1),
-                    It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
-                Times.Once);
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -408,40 +362,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
-    [Fact]
-    public async Task CanUpsertRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        SetupExecuteMock(this._redisDatabaseMock, "OK");
-
-        // Arrange mapper mock from data model to JsonNode.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<MultiPropsModel, (string key, JsonNode node)>>(MockBehavior.Strict);
-        var jsonNode = """{"data1_json_name":"data 1","Data2": "data 2","vector1_json_name":[1,2,3,4],"Vector2":[1,2,3,4],"NotAnnotated":null}""";
-        mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<MultiPropsModel>()))
-            .Returns((TestRecordKey1, JsonNode.Parse(jsonNode)!));
-
-        // Arrange target with custom mapper.
-        var sut = new RedisJsonVectorStoreRecordCollection<string, MultiPropsModel>(
-            this._redisDatabaseMock.Object,
-            TestCollectionName,
-            new()
-            {
-                JsonNodeCustomMapper = mapperMock.Object
-            });
-
-        var model = CreateModel(TestRecordKey1, true);
-
-        // Act
-        await sut.UpsertAsync(model);
-
-        // Assert
-        mapperMock
-            .Verify(
-                x => x.MapFromDataToStorageModel(It.Is<MultiPropsModel>(x => x == model)),
-                Times.Once);
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -467,7 +387,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(MultiPropsModel.Data1), "data 1");
 
         // Act.
-        var actual = await sut.VectorizedSearchAsync(
+        var results = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
             new()
@@ -476,7 +396,7 @@ public class RedisJsonVectorStoreRecordCollectionTests
                 OldFilter = filter,
                 VectorProperty = r => r.Vector1,
                 Skip = 2
-            });
+            }).ToListAsync();
 
         // Assert.
         var expectedArgs = new object[]
@@ -503,7 +423,6 @@ public class RedisJsonVectorStoreRecordCollectionTests
                     It.Is<object[]>(x => x.Where(y => !(y is byte[])).SequenceEqual(expectedArgs.Where(y => !(y is byte[]))))),
                 Times.Once);
 
-        var results = await actual.Results.ToListAsync();
         Assert.Single(results);
         Assert.Equal(TestRecordKey1, results.First().Record.Key);
         Assert.Equal(0.25d, results.First().Score);

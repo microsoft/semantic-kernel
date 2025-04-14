@@ -253,54 +253,6 @@ public class QdrantVectorStoreRecordCollectionTests
         Assert.Equal(testRecordKeys[1], actual[1].Key);
     }
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    [Fact]
-    public async Task CanGetRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        var retrievedPoint = CreateRetrievedPoint(true, UlongTestRecordKey1);
-        this.SetupRetrieveMock([retrievedPoint]);
-
-        // Arrange mapper mock from PointStruct to data model.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>(MockBehavior.Strict);
-        mapperMock.Setup(
-            x => x.MapFromStorageToDataModel(
-                It.IsAny<PointStruct>(),
-                It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(CreateModel(UlongTestRecordKey1, true));
-
-        // Arrange target with custom mapper.
-        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
-            this._qdrantClientMock.Object,
-            TestCollectionName,
-            new()
-            {
-                HasNamedVectors = true,
-                PointStructCustomMapper = mapperMock.Object
-            });
-
-        // Act
-        var actual = await sut.GetAsync(
-            UlongTestRecordKey1,
-            new() { IncludeVectors = true },
-            this._testCancellationToken);
-
-        // Assert
-        Assert.NotNull(actual);
-        Assert.Equal(UlongTestRecordKey1, actual.Key);
-        Assert.Equal("data 1", actual.OriginalNameData);
-        Assert.Equal("data 1", actual.Data);
-        Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vector!.Value.ToArray());
-
-        mapperMock
-            .Verify(
-                x => x.MapFromStorageToDataModel(
-                    It.Is<PointStruct>(x => x.Id.Num == UlongTestRecordKey1),
-                    It.Is<StorageToDataModelMapperOptions>(x => x.IncludeVectors)),
-                Times.Once);
-    }
-#pragma warning restore CS0618
-
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
@@ -481,47 +433,6 @@ public class QdrantVectorStoreRecordCollectionTests
                 Times.Once);
     }
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    [Fact]
-    public async Task CanUpsertRecordWithCustomMapperAsync()
-    {
-        // Arrange.
-        this.SetupUpsertMock();
-        var pointStruct = new PointStruct
-        {
-            Id = new() { Num = UlongTestRecordKey1 },
-            Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
-            Vectors = new[] { 1f, 2f, 3f, 4f }
-        };
-
-        // Arrange mapper mock from data model to PointStruct.
-        var mapperMock = new Mock<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>(MockBehavior.Strict);
-        mapperMock
-            .Setup(x => x.MapFromDataToStorageModel(It.IsAny<SinglePropsModel<ulong>>()))
-            .Returns(pointStruct);
-
-        // Arrange target with custom mapper.
-        var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
-            this._qdrantClientMock.Object,
-            TestCollectionName,
-            new()
-            {
-                HasNamedVectors = false,
-                PointStructCustomMapper = mapperMock.Object
-            });
-
-        var model = CreateModel(UlongTestRecordKey1, true);
-
-        // Act
-        await sut.UpsertAsync(model, this._testCancellationToken);
-
-        // Assert
-        mapperMock
-            .Verify(
-                x => x.MapFromDataToStorageModel(It.Is<SinglePropsModel<ulong>>(x => x == model)),
-                Times.Once);
-    }
-
     /// <summary>
     /// Tests that the collection can be created even if the definition and the type do not match.
     /// In this case, the expectation is that a custom mapper will be provided to map between the
@@ -545,9 +456,8 @@ public class QdrantVectorStoreRecordCollectionTests
         var sut = new QdrantVectorStoreRecordCollection<ulong, SinglePropsModel<ulong>>(
             this._qdrantClientMock.Object,
             TestCollectionName,
-            new() { VectorStoreRecordDefinition = definition, PointStructCustomMapper = Mock.Of<IVectorStoreRecordMapper<SinglePropsModel<ulong>, PointStruct>>() });
+            new() { VectorStoreRecordDefinition = definition });
     }
-#pragma warning restore CS0618
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     [Theory]
@@ -563,11 +473,11 @@ public class QdrantVectorStoreRecordCollectionTests
         var filter = new VectorSearchFilter().EqualTo(nameof(SinglePropsModel<TKey>.Data), "data 1");
 
         // Act.
-        var actual = await sut.VectorizedSearchAsync(
+        var results = await sut.VectorizedSearchAsync(
             new ReadOnlyMemory<float>(new[] { 1f, 2f, 3f, 4f }),
             top: 5,
             new() { IncludeVectors = true, OldFilter = filter, Skip = 2 },
-            this._testCancellationToken);
+            this._testCancellationToken).ToListAsync();
 
         // Assert.
         this._qdrantClientMock
@@ -591,7 +501,6 @@ public class QdrantVectorStoreRecordCollectionTests
                     this._testCancellationToken),
                 Times.Once);
 
-        var results = await actual.Results.ToListAsync();
         Assert.Single(results);
         Assert.Equal(testRecordKey, results.First().Record.Key);
         Assert.Equal("data 1", results.First().Record.OriginalNameData);
