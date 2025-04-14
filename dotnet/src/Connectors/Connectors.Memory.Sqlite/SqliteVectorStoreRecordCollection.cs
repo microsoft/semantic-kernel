@@ -306,13 +306,14 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <inheritdoc />
     public async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-
         Verify.NotNull(keys);
-
         var keysList = keys.Cast<object>().ToList();
+        if (keysList.Count == 0)
+        {
+            yield break;
+        }
 
-        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
 
         var condition = new SqliteWhereInCondition(this._keyStorageName, keysList)
         {
@@ -328,6 +329,8 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <inheritdoc />
     public async Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
+        Verify.NotNull(record);
+
         const string OperationName = "Upsert";
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -354,9 +357,9 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// <inheritdoc />
     public async Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
-        const string OperationName = "UpsertBatch";
+        Verify.NotNull(records);
 
-        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
+        const string OperationName = "UpsertBatch";
 
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
@@ -365,8 +368,14 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
 
+        if (storageModels.Count == 0)
+        {
+            return [];
+        }
+
         var keys = storageModels.Select(model => model[this._keyStorageName]!).ToList();
 
+        using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
         var condition = new SqliteWhereInCondition(this._keyStorageName, keys);
 
         return await this.InternalUpsertBatchAsync(connection, storageModels, condition, cancellationToken).ConfigureAwait(false);
@@ -388,12 +397,13 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     public async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
+        var keysList = keys.Cast<object>().ToList();
+        if (keysList.Count == 0)
+        {
+            return;
+        }
 
         using var connection = await this.GetConnectionAsync(cancellationToken).ConfigureAwait(false);
-
-        var keysList = keys.Cast<object>().ToList();
-
-        Verify.True(keysList.Count > 0, "Number of provided keys should be greater than zero.");
 
         var condition = new SqliteWhereInCondition(
             this._keyStorageName,
@@ -528,8 +538,8 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         {
             command = SqliteVectorStoreCollectionCommandBuilder.BuildSelectLeftJoinCommand<TRecord>(
                 connection,
-                this._dataTableName,
                 this._vectorTableName,
+                this._dataTableName,
                 this._keyStorageName,
                 this._model,
                 [condition],
