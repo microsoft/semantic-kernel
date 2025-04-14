@@ -327,8 +327,6 @@ public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITex
     {
         var results = searchDelegate.GetTextSearchResultsAsync(query, top, searchOptions, cancellationToken);
 
-        var resultList = new List<TextSearchResult>();
-
         using HttpClient client = new();
         await foreach (var item in results.WithCancellation(cancellationToken).ConfigureAwait(false))
         {
@@ -345,12 +343,7 @@ public partial class TextSearchWithFullValues(ITextSearch searchDelegate) : ITex
             {
             }
 
-            resultList.Add(new(value) { Name = item.Name, Link = item.Link });
-        }
-
-        foreach (var result in resultList)
-        {
-            yield return result;
+            yield return new TextSearchResult(value) { Name = item.Name, Link = item.Link };
         }
     }
 
