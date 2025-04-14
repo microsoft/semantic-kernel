@@ -26,7 +26,9 @@ extend-exclude = [
     "SK-dotnet.sln.DotSettings",
     "**/azure_ai_search_hotel_samples/README.md",
     "**/Demos/ProcessFrameworkWithAspire/ProcessFramework.Aspire/ProcessFramework.Aspire.ProcessOrchestrator/Program.cs",
-    "**/Demos/ProcessFrameworkWithAspire/**/*.http"
+    "**/Demos/ProcessFrameworkWithAspire/**/*.http",
+    "**/Concepts/Resources/Plugins/CopilotAgentPlugins/**/*.yml",
+    "**/Concepts/Resources/Plugins/CopilotAgentPlugins/**/*.json"
 ]
 
 [default.extend-words]
