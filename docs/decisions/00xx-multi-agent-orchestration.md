@@ -153,22 +153,22 @@ The actors are registered with the runtime whose lifetime is managed by the runt
 
 - Keep the user in the loop and allow them to intervene in the orchestration process
 - How would this work for a RestAPI/distributed system?
-- How would this work for a pattern or an agent that is nested inside another pattern?
-  - Does the signal need to bubble up to the root pattern?
+- How would this work for an orchestration or an agent that is nested inside another orchestration?
+  - Does the signal need to bubble up to the root orchestration?
   - Other possibilities?
 
 ### Distribution
 
-- Can nested patterns be distributed?
+- Can nested orchestrations be distributed?
 - Can agents factories be distributed?
 - If registration occurs per invocation, how to register remote orchestrations/agents?
 
-### Save states of the agents in a pattern and rehydration
+### Save states of the agents in an orchestration and rehydration
 
 - Being able to save the state of the orchestration process while waiting for user input and restore it later when user provides input for scalability
-- Recursively save the state of all agents and child patterns, including threads, chat history, and context from the root pattern
+- Recursively save the state of all agents and child orchestrations, including threads, chat history, and context from the root orchestration
 
-### Support declarative patterns*
+### Support declarative orchestrations*
 
 ### Guardrails*
 
