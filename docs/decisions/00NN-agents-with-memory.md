@@ -73,6 +73,9 @@ that conversation state needs to be loaded and persisted for each invocation of 
 
 It also means that any memory components that may have some in-memory state will need to be loaded and persisted too.
 
+For cases like this, the `OnSuspend` and `OnResume` methods allow notification of the components that they need to save or reload their state.
+It is up to each of these components to decide how and where to save state to or load state from.
+
 ## Proposed interface for Memory Components
 
 The types of events that Memory Components require are not unique to memory, and can be used to package up other capabilities too.
@@ -94,6 +97,9 @@ public abstract class ConversationStateExtension
     public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default);
 
     public virtual void RegisterPlugins(Kernel kernel);
+
+    public virtual Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default);
+    public virtual Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default);
 }
 ```
 
@@ -168,3 +174,24 @@ agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
 var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
 // Expected response contains the 174M income from the document.
 ```
+
+## Decisions to make
+
+### Extension base class name
+
+1. ConversationStateExtension
+    1. Long
+1. MemoryComponent
+    1. Too specific
+
+### Location for abstractions
+
+1. Microsoft.SemanticKernel.<baseclass>
+1. Microsoft.SemanticKernel.Memory.<baseclass>
+1. Microsoft.SemanticKernel.Memory.<baseclass> (in separate nuget)
+
+### Location for memory components
+
+1. A nuget for each component
+1. Microsoft.SemanticKernel.Core nuget
+1. Microsoft.SemanticKernel.Memory nuget
