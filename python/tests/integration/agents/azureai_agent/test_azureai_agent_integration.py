@@ -25,7 +25,7 @@ class WeatherPlugin:
 class TestAzureAIAgentIntegration:
     @pytest.fixture
     async def azureai_agent(self, request):
-        ai_agent_settings = AzureAIAgentSettings.create()
+        ai_agent_settings = AzureAIAgentSettings()
         async with (
             DefaultAzureCredential() as creds,
             AzureAIAgent.create_client(credential=creds) as client,

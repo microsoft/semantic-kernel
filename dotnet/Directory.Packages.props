@@ -7,10 +7,10 @@
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.1.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
-    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.10" />
-    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.10" />
-    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.11" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.11" />
+    <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
+    <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.13" />
+    <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.13" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.13" />
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.1.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
@@ -33,8 +33,9 @@
     <PackageVersion Include="Grpc.AspNetCore" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
+    <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.70.0" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.6" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />

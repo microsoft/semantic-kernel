@@ -13,7 +13,7 @@ namespace GettingStarted.OpenAIAssistants;
 public class Step04_AssistantTool_CodeInterpreter(ITestOutputHelper output) : BaseAssistantTest(output)
 {
     [Fact]
-    public async Task UseCodeInterpreterToolWithAssistantAgentAsync()
+    public async Task UseCodeInterpreterToolWithAssistantAgent()
     {
         // Define the assistant
         Assistant assistant =

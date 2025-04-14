@@ -27,7 +27,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
         """;
 
     [Fact]
-    public async Task UseDependencyInjectionToCreateAgentAsync()
+    public async Task UseDependencyInjectionToCreateAgent()
     {
         ServiceCollection serviceContainer = new();
 
