@@ -79,4 +79,34 @@ public abstract class ConversationStateExtension
     public virtual void RegisterPlugins(Kernel kernel)
     {
     }
+
+    /// <summary>
+    /// Called when the current conversion is temporarily suspended and any state should be saved.
+    /// </summary>
+    /// <param name="threadId">The ID of the current thread, if the thread has an ID.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async task.</returns>
+    /// <remarks>
+    /// In a service that hosts an agent, that is invoked via calls to the service, this might be at the end of each service call.
+    /// In a client application, this might be when the user closes the chat window or the application.
+    /// </remarks>
+    public virtual Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Called when the current conversion is resumed and any state should be restored.
+    /// </summary>
+    /// <param name="threadId">The ID of the current thread, if the thread has an ID.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>An async task.</returns>
+    /// <remarks>
+    /// In a service that hosts an agent, that is invoked via calls to the service, this might be at the start of each service call where a previous conversation is being continued.
+    /// In a client application, this might be when the user re-opens the chat window to resume a conversation after having previously closed it.
+    /// </remarks>
+    public virtual Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
 }

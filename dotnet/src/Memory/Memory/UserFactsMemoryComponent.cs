@@ -133,6 +133,18 @@ public class UserFactsMemoryComponent : ConversationStateExtension
         kernel.Plugins.AddFromObject(this, "UserFactsMemory");
     }
 
+    /// <inheritdoc/>
+    public override Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default)
+    {
+        return this.OnThreadCreatedAsync(threadId, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public override Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default)
+    {
+        return this.OnThreadDeleteAsync(threadId, cancellationToken);
+    }
+
     /// <summary>
     /// Plugin method to clear user facts stored in memory.
     /// </summary>
