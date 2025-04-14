@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,18 +84,6 @@ public abstract class AgentThread
         await this.DeleteInternalAsync(cancellationToken).ConfigureAwait(false);
 
         this.IsDeleted = true;
-    }
-
-    /// <summary>
-    /// Called just before the AI is invoked
-    /// </summary>
-    /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A task that represents the asynchronous operation, containing the combined context from all conversation state extensions.</returns>
-    [Experimental("SKEXP0130")]
-    public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
-    {
-        return await this.ThreadExtensionsManager.OnAIInvocationAsync(newMessages, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

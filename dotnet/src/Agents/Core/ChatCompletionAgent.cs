@@ -76,7 +76,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         // Get the conversation state extensions context contributions
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -164,7 +164,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         // Get the conversation state extensions context contributions
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.

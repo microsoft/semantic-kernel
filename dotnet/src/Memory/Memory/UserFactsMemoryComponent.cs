@@ -82,7 +82,7 @@ public class UserFactsMemoryComponent : ConversationStateExtension
         Return output for the following inputs like shown in the examples above:
 
         Input text: {{$inputText}}
-        Input facts: {{existingFacts}}
+        Input facts: {{$existingFacts}}
         """;
 
     /// <inheritdoc/>

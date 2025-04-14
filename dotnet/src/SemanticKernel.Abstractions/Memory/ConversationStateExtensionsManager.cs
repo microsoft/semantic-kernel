@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -38,12 +40,24 @@ public class ConversationStateExtensionsManager
     }
 
     /// <summary>
-    /// Registers a new conversation state extensions.
+    /// Registers a new conversation state extension.
     /// </summary>
-    /// <param name="conversationtStateExtension">The conversation state extensions to register.</param>
+    /// <param name="conversationtStateExtension">The conversation state extension to register.</param>
     public virtual void RegisterThreadExtension(ConversationStateExtension conversationtStateExtension)
     {
         this._conversationStateExtensions.Add(conversationtStateExtension);
+    }
+
+    /// <summary>
+    /// Registers all conversation state extensions registered on the provided dependency injection service provider.
+    /// </summary>
+    /// <param name="serviceProvider">The dependency injection service provider to read conversation state extensions from.</param>
+    public virtual void RegisterThreadExtensionsFromContainer(IServiceProvider serviceProvider)
+    {
+        foreach (var extension in serviceProvider.GetServices<ConversationStateExtension>())
+        {
+            this.RegisterThreadExtension(extension);
+        }
     }
 
     /// <summary>

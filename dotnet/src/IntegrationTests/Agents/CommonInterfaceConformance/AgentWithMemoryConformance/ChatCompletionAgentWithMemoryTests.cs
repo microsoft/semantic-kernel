@@ -8,12 +8,16 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Memory;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Memory.TextRag;
 using SemanticKernel.IntegrationTests.TestSettings;
@@ -92,6 +96,66 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
     }
 
     [Fact]
+    public virtual async Task RegisterComponentsFromDIAsync()
+    {
+        var chatConfig = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
+        var embeddingConfig = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+
+        // Arrange - Setup DI container.
+        var builder = Host.CreateEmptyApplicationBuilder(settings: null);
+        builder.Services.AddKernel();
+        builder.Services.AddInMemoryVectorStore();
+        builder.Services.AddAzureOpenAIChatCompletion(
+            deploymentName: chatConfig.ChatDeploymentName!,
+            endpoint: chatConfig.Endpoint,
+            credentials: new AzureCliCredential());
+        builder.Services.AddAzureOpenAITextEmbeddingGeneration(
+            embeddingConfig!.EmbeddingModelId,
+            embeddingConfig.Endpoint,
+            new AzureCliCredential());
+        builder.Services.AddKeyedTransient<TextMemoryStore, VectorDataTextMemoryStore<string>>("UserFactsStore", (sp, _) => new VectorDataTextMemoryStore<string>(
+            sp.GetRequiredService<IVectorStore>(),
+            sp.GetRequiredService<ITextEmbeddingGenerationService>(),
+            "Memories", "user/12345", 1536));
+        builder.Services.AddTransient<ConversationStateExtension, UserFactsMemoryComponent>();
+        builder.Services.AddTransient<AgentThread>((sp) =>
+        {
+            var thread = new ChatHistoryAgentThread();
+            thread.ThreadExtensionsManager.RegisterThreadExtensionsFromContainer(sp);
+            return thread;
+        });
+        var host = builder.Build();
+
+        // Arrange - Create agent.
+        var agent = new ChatCompletionAgent()
+        {
+            Kernel = host.Services.GetRequiredService<Kernel>(),
+            Instructions = "You are a helpful assistant.",
+        };
+
+        // Act - First invocation
+        var agentThread1 = host.Services.GetRequiredService<AgentThread>();
+
+        var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
+        var results1 = await asyncResults1.ToListAsync();
+
+        await agentThread1.ThreadExtensionsManager.OnSuspendAsync(null, default);
+
+        // Act - Second invocation
+        var agentThread2 = host.Services.GetRequiredService<AgentThread>();
+
+        var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
+        var results2 = await asyncResults2.ToListAsync();
+
+        // Assert
+        Assert.Contains("Caoimhe", results2.First().Message.Content);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(agentThread1);
+        await this.Fixture.DeleteThread(agentThread2);
+    }
+
+    [Fact]
     public virtual async Task MemoryComponentCapturesMemoriesInVectorStoreFromUserInputAsync()
     {
         // Arrange
@@ -134,7 +198,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Arrange - Create Vector Store and Rag Store/Component
         var vectorStore = new InMemoryVectorStore();
-        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "Memories", 1536, "group/g1");
+        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "FinancialData", 1536, "group/g1");
         var ragComponent = new TextRagComponent(ragStore, new TextRagComponentOptions());
 
         // Arrange - Upsert documents into the Rag Store
@@ -167,7 +231,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Arrange - Create Vector Store and Rag Store/Component
         var vectorStore = new InMemoryVectorStore();
-        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "Memories", 1536, "group/g2");
+        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "FinancialData", 1536, "group/g2");
         var ragComponent = new TextRagComponent(ragStore, new TextRagComponentOptions());
 
         // Arrange - Upsert documents into the Rag Store

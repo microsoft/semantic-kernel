@@ -413,7 +413,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         // Get the conversation state extensions context contributions
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await openAIAssistantAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
@@ -555,7 +555,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         // Get the conversation state extensions context contributions
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await openAIAssistantAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Create options that use the RunCreationOptions from the options param if provided or
