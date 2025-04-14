@@ -14,7 +14,7 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Pinecone vector.
     /// </summary>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, Vector>? VectorCustomMapper { get; init; } = null;
 
     /// <summary>

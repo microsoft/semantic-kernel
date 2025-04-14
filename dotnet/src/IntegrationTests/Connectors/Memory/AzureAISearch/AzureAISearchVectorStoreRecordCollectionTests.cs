@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Search.Documents.Indexes;
@@ -324,17 +323,6 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         await Assert.ThrowsAsync<VectorStoreOperationException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
     }
 
-    [Fact(Skip = SkipReason)]
-    public async Task ItThrowsMappingExceptionForFailedMapperAsync()
-    {
-        // Arrange
-        var options = new AzureAISearchVectorStoreRecordCollectionOptions<AzureAISearchHotel> { JsonObjectCustomMapper = new FailingMapper() };
-        var sut = new AzureAISearchVectorStoreRecordCollection<string, AzureAISearchHotel>(fixture.SearchIndexClient, fixture.TestIndexName, options);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
-    }
-
     [Theory(Skip = SkipReason)]
     [InlineData("equality", true)]
     [InlineData("tagContains", false)]
@@ -461,17 +449,4 @@ public sealed class AzureAISearchVectorStoreRecordCollectionTests(ITestOutputHel
         LastRenovationDate = new DateTimeOffset(1970, 1, 18, 0, 0, 0, TimeSpan.Zero),
         Rating = 3.6
     };
-
-    private sealed class FailingMapper : IVectorStoreRecordMapper<AzureAISearchHotel, JsonObject>
-    {
-        public JsonObject MapFromDataToStorageModel(AzureAISearchHotel dataModel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public AzureAISearchHotel MapFromStorageToDataModel(JsonObject storageModel, StorageToDataModelMapperOptions options)
-        {
-            throw new NotImplementedException();
-        }
-    }
 }

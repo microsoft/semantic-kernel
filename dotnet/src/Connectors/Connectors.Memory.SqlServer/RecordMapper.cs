@@ -7,9 +7,7 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model) : IVectorStoreRecordMapper<TRecord, IDictionary<string, object?>>
-#pragma warning restore CS0618
+internal sealed class RecordMapper<TRecord>(VectorStoreRecordModel model)
 {
     public IDictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel)
     {

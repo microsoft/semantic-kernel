@@ -12,9 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 /// <summary>
 /// A mapper that maps between the generic Semantic Kernel data model and the model that the data is stored under, within Weaviate.
 /// </summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class WeaviateDynamicDataModelMapper : IVectorStoreRecordMapper<Dictionary<string, object?>, JsonObject>
-#pragma warning restore CS0618
+internal sealed class WeaviateDynamicDataModelMapper : IWeaviateMapper<Dictionary<string, object?>>
 {
     /// <summary>The name of the Weaviate collection.</summary>
     private readonly string _collectionName;

@@ -22,7 +22,7 @@ public sealed class PostgresVectorStoreRecordCollectionOptions<TRecord>
     /// <remarks>
     /// If not set, the default mapper will be used.
     /// </remarks>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>>? DictionaryCustomMapper { get; init; } = null;
 
     /// <summary>

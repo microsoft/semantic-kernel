@@ -34,9 +34,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordModel _model;
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
-#pragma warning restore CS0618
+    private readonly PineconeVectorStoreRecordMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
     /// <inheritdoc />
@@ -65,9 +63,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new VectorStoreRecordModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.VectorCustomMapper ?? new PineconeVectorStoreRecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {

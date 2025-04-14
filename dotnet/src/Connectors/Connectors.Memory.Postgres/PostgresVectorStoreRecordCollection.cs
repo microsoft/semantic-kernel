@@ -39,9 +39,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between the data model and the Azure AI Search record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
-#pragma warning restore CS0618
+    private readonly PostgresVectorStoreRecordMapper<TRecord> _mapper;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -80,9 +78,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._model = new VectorStoreRecordModelBuilder(PostgresConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), options?.VectorStoreRecordDefinition);
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.DictionaryCustomMapper ?? new PostgresVectorStoreRecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new PostgresVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
