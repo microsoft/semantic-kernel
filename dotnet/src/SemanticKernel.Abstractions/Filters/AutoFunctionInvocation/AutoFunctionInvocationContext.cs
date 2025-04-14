@@ -20,7 +20,7 @@ public class AutoFunctionInvocationContext
     private readonly Microsoft.Extensions.AI.FunctionInvocationContext _invocationContext = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="KernelFunctionInvocationContext"/>.
+    /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
     internal AutoFunctionInvocationContext(Microsoft.Extensions.AI.FunctionInvocationContext invocationContext)
     {
