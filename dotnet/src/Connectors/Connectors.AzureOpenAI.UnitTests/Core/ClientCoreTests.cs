@@ -46,9 +46,6 @@ public sealed class ClientCoreTests : IDisposable
             NetworkTimeout = TimeSpan.FromSeconds(10),
         };
 
-        // Bug fix workaround
-        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
-
         var azureClient = new AzureOpenAIClient(
             endpoint: new Uri("http://any"),
             credential: new TestJWTBearerTokenCredential(),

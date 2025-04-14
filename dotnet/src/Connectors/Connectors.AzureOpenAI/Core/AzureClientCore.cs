@@ -153,7 +153,6 @@ internal partial class AzureClientCore : ClientCore
 
         options.UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent;
         options.AddPolicy(CreateRequestHeaderPolicy(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(AzureClientCore))), PipelinePosition.PerCall);
-        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
         if (httpClient is not null)
         {
