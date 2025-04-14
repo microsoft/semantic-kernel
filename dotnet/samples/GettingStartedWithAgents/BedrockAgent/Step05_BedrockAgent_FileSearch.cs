@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Amazon.BedrockAgentRuntime.Model;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -37,7 +39,7 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
     /// Demonstrates how to use a <see cref="BedrockAgent"/> with file search.
     /// </summary>
     [Fact(Skip = "This test is skipped because it requires a valid KnowledgeBaseId.")]
-    public async Task UseAgentWithFileSearchAsync()
+    public async Task UseAgentWithFileSearch()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step05_BedrockAgent_FileSearch");
@@ -48,17 +50,9 @@ public class Step05_BedrockAgent_FileSearch(ITestOutputHelper output) : BaseBedr
         var userQuery = "What is Semantic Kernel?";
         try
         {
-            // Customize the request for advanced scenarios
-            InvokeAgentRequest invokeAgentRequest = new()
-            {
-                AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = bedrockAgent.Id,
-                SessionId = BedrockAgent.CreateSessionId(),
-                InputText = userQuery,
-            };
-
-            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null, CancellationToken.None);
-            await foreach (var response in responses)
+            AgentThread bedrockThread = new BedrockAgentThread(this.RuntimeClient);
+            var responses = bedrockAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, userQuery), bedrockThread, null, CancellationToken.None);
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {

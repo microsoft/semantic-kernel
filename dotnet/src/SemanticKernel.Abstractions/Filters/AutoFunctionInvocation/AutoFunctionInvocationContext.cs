@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -83,7 +82,6 @@ public class AutoFunctionInvocationContext
     /// <summary>
     /// The execution settings associated with the operation.
     /// </summary>
-    [Experimental("SKEXP0001")]
     public PromptExecutionSettings? ExecutionSettings { get; init; }
 
     /// <summary>

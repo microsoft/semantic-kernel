@@ -3,7 +3,9 @@
 using System.ComponentModel;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Bedrock;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.BedrockAgents;
 
@@ -18,7 +20,7 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
     /// Demonstrates how to inspect the thought process of a <see cref="BedrockAgent"/> by enabling trace.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithTraceAsync()
+    public async Task UseAgentWithTrace()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step04_BedrockAgent_Trace");
@@ -27,19 +29,14 @@ public class Step04_BedrockAgent_Trace(ITestOutputHelper output) : BaseBedrockAg
         var userQuery = "What is the current weather in Seattle and what is the weather forecast in Seattle?";
         try
         {
-            // Customize the request for advanced scenarios
-            InvokeAgentRequest invokeAgentRequest = new()
+            AgentThread agentThread = new BedrockAgentThread(this.RuntimeClient);
+            BedrockAgentInvokeOptions options = new()
             {
-                AgentAliasId = BedrockAgent.WorkingDraftAgentAlias,
-                AgentId = bedrockAgent.Id,
-                SessionId = BedrockAgent.CreateSessionId(),
-                InputText = userQuery,
-                // Enable trace to inspect the agent's thought process
                 EnableTrace = true,
             };
 
-            var responses = bedrockAgent.InvokeAsync(invokeAgentRequest, null);
-            await foreach (var response in responses)
+            var responses = bedrockAgent.InvokeAsync([new ChatMessageContent(AuthorRole.User, userQuery)], agentThread, options);
+            await foreach (ChatMessageContent response in responses)
             {
                 if (response.Content != null)
                 {

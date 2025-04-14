@@ -5,11 +5,6 @@ import sys
 from collections.abc import Sequence
 from typing import Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from pydantic import ValidationError
 from redis.asyncio.client import Redis
 
@@ -20,6 +15,11 @@ from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreInitializationException
 from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class RedisStore(VectorStore):
         try:
             from semantic_kernel.connectors.memory.redis.redis_settings import RedisSettings
 
-            redis_settings = RedisSettings.create(
+            redis_settings = RedisSettings(
                 connection_string=connection_string,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

@@ -8,7 +8,9 @@ from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from semantic_kernel.agents.channels.agent_channel import AgentChannel
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import AgentInvokeException
 
@@ -108,6 +110,40 @@ async def test_azure_ai_agent_invoke_stream(ai_project_client, ai_agent_definiti
             results.append(item)
 
     assert len(results) == 1
+
+
+async def test_azure_ai_agent_invoke_stream_with_on_new_message_callback(ai_project_client, ai_agent_definition):
+    agent = AzureAIAgent(client=ai_project_client, definition=ai_agent_definition)
+    thread = AsyncMock(spec=AzureAIAgentThread)
+    thread.id = "test_thread_id"
+    results = []
+
+    final_chat_history = ChatHistory()
+
+    async def handle_stream_completion(message: ChatMessageContent) -> None:
+        final_chat_history.add_message(message)
+
+    # Fake collected messages
+    fake_message = StreamingChatMessageContent(role=AuthorRole.ASSISTANT, content="fake content", choice_index=0)
+
+    async def fake_invoke(*args, output_messages=None, **kwargs):
+        if output_messages is not None:
+            output_messages.append(fake_message)
+        yield fake_message
+
+    with patch(
+        "semantic_kernel.agents.azure_ai.agent_thread_actions.AgentThreadActions.invoke_stream",
+        side_effect=fake_invoke,
+    ):
+        async for item in agent.invoke_stream(
+            messages="message", thread=thread, on_intermediate_message=handle_stream_completion
+        ):
+            results.append(item)
+
+    assert len(results) == 1
+    assert results[0].message.content == "fake content"
+    assert len(final_chat_history.messages) == 1
+    assert final_chat_history.messages[0].content == "fake content"
 
 
 def test_azure_ai_agent_get_channel_keys(ai_project_client, ai_agent_definition):

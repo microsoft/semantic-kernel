@@ -1,0 +1,27 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "install",
+			"group": "clean",
+			"problemMatcher": [],
+			"label": "yarn: install",
+			"detail": "install dependencies from package.json"
+		},
+		{
+			"type": "npm",
+			"script": "dev",
+			"problemMatcher": [],
+			"label": "yarn: run dev",
+			"detail": "run dev script from package.json (allows live updates)"
+		},
+		{
+			"type": "npm",
+			"script": "protoc --ts_out .\\src\\services\\grpc\\gen --ts_opt generate_dependencies --proto_path .\\src\\services\\grpc\\proto .\\src\\services\\grpc\\proto\\documentGeneration.proto",
+			"problemMatcher": [],
+			"label": "protobuf: generate document generation proto files",
+			"detail": "Generate necessary proto files for document generation"
+		}
+	]
+}

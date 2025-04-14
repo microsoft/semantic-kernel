@@ -4,12 +4,7 @@ import logging
 import sys
 from collections.abc import Sequence
 from inspect import isawaitable
-from typing import Any, ClassVar, Generic, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, ClassVar, Generic
 
 from pinecone import IndexModel, Metric, PineconeAsyncio, ServerlessSpec, Vector
 from pinecone.data.index_asyncio import _IndexAsyncio as IndexAsyncio
@@ -18,30 +13,32 @@ from pydantic import ValidationError
 
 from semantic_kernel.connectors.memory.pinecone.pinecone_settings import PineconeSettings
 from semantic_kernel.data.const import DistanceFunction
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
+    VectorStoreRecordDefinition,
     VectorStoreRecordVectorField,
 )
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchResult,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_types import OneOrMany
 
-logger = logging.getLogger(__name__)
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
-TKey = TypeVar("TKey", bound="str")
-TModel = TypeVar("TModel")
+logger = logging.getLogger(__name__)
 
 
 DISTANCE_METRIC_MAP = {
@@ -52,9 +49,9 @@ DISTANCE_METRIC_MAP = {
 
 
 class PineconeCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
-    VectorizableTextSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
+    VectorizableTextSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """Interact with a Pinecone Index."""
@@ -105,7 +102,7 @@ class PineconeCollection(
         managed_client = not client
 
         try:
-            settings = PineconeSettings.create(
+            settings = PineconeSettings(
                 api_key=api_key,
                 embed_model=embed_model,
                 namespace=namespace,
@@ -554,7 +551,7 @@ class PineconeStore(VectorStore):
         managed_client = not client
         if not client:
             try:
-                settings = PineconeSettings.create(
+                settings = PineconeSettings(
                     api_key=api_key,
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,

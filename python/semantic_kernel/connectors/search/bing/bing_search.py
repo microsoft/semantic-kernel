@@ -16,20 +16,22 @@ from semantic_kernel.connectors.search.bing.const import (
     DEFAULT_URL,
     QUERY_PARAMETERS,
 )
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.text_search import TextSearch
-from semantic_kernel.data.text_search.text_search_filter import TextSearchFilter
-from semantic_kernel.data.text_search.text_search_options import TextSearchOptions
-from semantic_kernel.data.text_search.text_search_result import TextSearchResult
+from semantic_kernel.data.text_search import (
+    AnyTagsEqualTo,
+    EqualTo,
+    KernelSearchResults,
+    SearchFilter,
+    TextSearch,
+    TextSearchOptions,
+    TextSearchResult,
+)
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
 if TYPE_CHECKING:
-    from semantic_kernel.data.search_options import SearchOptions
+    from semantic_kernel.data.text_search import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -59,7 +61,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             env_file_encoding: The optional encoding of the .env file.
         """
         try:
-            settings = BingSettings.create(
+            settings = BingSettings(
                 api_key=api_key,
                 custom_config=custom_config,
                 env_file_path=env_file_path,
@@ -68,7 +70,7 @@ class BingSearch(KernelBaseModel, TextSearch):
         except ValidationError as ex:
             raise ServiceInitializationError("Failed to create Bing settings.") from ex
 
-        super().__init__(settings=settings)
+        super().__init__(settings=settings)  # type: ignore[call-arg]
 
     async def search(
         self, query: str, options: "SearchOptions | None" = None, **kwargs: Any
@@ -198,7 +200,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             return params
         extra_query_params = []
         for filter in options.filter.filters:
-            if isinstance(filter, TextSearchFilter):
+            if isinstance(filter, SearchFilter):
                 logger.warning("Groups are not supported by Bing search, ignored.")
                 continue
             if isinstance(filter, EqualTo):

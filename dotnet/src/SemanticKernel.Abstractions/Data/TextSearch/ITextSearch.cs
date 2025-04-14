@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,7 +8,6 @@ namespace Microsoft.SemanticKernel.Data;
 /// <summary>
 /// Interface for text based search queries for use with Semantic Kernel prompts and automatic function calling.
 /// </summary>
-[Experimental("SKEXP0001")]
 public interface ITextSearch
 {
     /// <summary>

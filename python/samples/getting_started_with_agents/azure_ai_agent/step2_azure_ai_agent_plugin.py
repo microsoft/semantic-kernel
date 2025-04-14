@@ -5,7 +5,7 @@ from typing import Annotated
 
 from azure.identity.aio import DefaultAzureCredential
 
-from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings, AzureAIAgentThread
+from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
 from semantic_kernel.functions import kernel_function
 
 """
@@ -43,7 +43,7 @@ USER_INPUTS = [
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,
@@ -60,29 +60,26 @@ async def main() -> None:
         agent = AzureAIAgent(
             client=client,
             definition=agent_definition,
+            plugins=[MenuPlugin()],  # Add the plugin to the agent
         )
 
-        # 3. Add a plugin to the agent via the kernel
-        agent.kernel.add_plugin(MenuPlugin(), plugin_name="menu")
-
-        # 4. Create a thread for the agent
+        # 3. Create a thread for the agent
         # If no thread is provided, a new thread will be
         # created and returned with the initial response
-        thread: AzureAIAgentThread = None
+        thread = None
 
         try:
             for user_input in USER_INPUTS:
                 print(f"# User: {user_input}")
-                # 5. Invoke the agent for the specified thread for response
+                # 4. Invoke the agent for the specified thread for response
                 async for response in agent.invoke(
                     messages=user_input,
-                    thread_id=thread,
-                    temperature=0.2,  # override the agent-level temperature setting with a run-time value
+                    thread=thread,
                 ):
                     print(f"# {response.name}: {response}")
                     thread = response.thread
         finally:
-            # 6. Cleanup: Delete the thread and agent
+            # 5. Cleanup: Delete the thread and agent
             await thread.delete() if thread else None
             await client.agents.delete_agent(agent.id)
 
