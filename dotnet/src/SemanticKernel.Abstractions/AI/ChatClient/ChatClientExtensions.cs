@@ -92,16 +92,16 @@ public static class ChatClientExtensions
     /// Creates a new <see cref="KernelFunctionInvokingChatClient"/> that supports <see cref="Kernel"/> for function invocation with a <see cref="IChatClient"/>.
     /// </summary>
     /// <param name="client">Target chat client service.</param>
-    /// <param name="logger">Optional logger to use for logging.</param>
+    /// <param name="loggerFactory">Optional logger to use for logging.</param>
     /// <returns>Function invoking chat client.</returns>
     [Experimental("SKEXP0001")]
-    public static IChatClient AsKernelFunctionInvokingChatClient(this IChatClient client, ILogger? logger = null)
+    public static IChatClient AsKernelFunctionInvokingChatClient(this IChatClient client, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(client);
 
         return client is KernelFunctionInvokingChatClient kernelFunctionInvocationClient
             ? kernelFunctionInvocationClient
-            : new KernelFunctionInvokingChatClient(client, logger);
+            : new KernelFunctionInvokingChatClient(client, loggerFactory);
     }
 
     private static ChatOptions GetChatOptionsFromSettings(PromptExecutionSettings? executionSettings, Kernel? kernel)

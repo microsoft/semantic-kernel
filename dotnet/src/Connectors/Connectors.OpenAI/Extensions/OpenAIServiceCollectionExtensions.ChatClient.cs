@@ -47,12 +47,12 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
-            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<IChatClient>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             return new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), options: GetClientOptions(orgId: orgId, httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
                 .GetChatClient(modelId)
                 .AsIChatClient()
-                .AsKernelFunctionInvokingChatClient(logger);
+                .AsKernelFunctionInvokingChatClient(loggerFactory);
         }
 
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
@@ -77,12 +77,12 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
-            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<IChatClient>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             return (openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>())
                 .GetChatClient(modelId)
                 .AsIChatClient()
-                .AsKernelFunctionInvokingChatClient(logger);
+                .AsKernelFunctionInvokingChatClient(loggerFactory);
         }
 
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
@@ -114,12 +114,12 @@ public static class OpenAIChatClientServiceCollectionExtensions
 
         IChatClient Factory(IServiceProvider serviceProvider, object? _)
         {
-            ILogger? logger = serviceProvider.GetService<ILoggerFactory>()?.CreateLogger<IChatClient>();
+            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             return new OpenAIClient(new ApiKeyCredential(apiKey ?? SingleSpace), GetClientOptions(endpoint, orgId, HttpClientProvider.GetHttpClient(httpClient, serviceProvider)))
                 .GetChatClient(modelId)
                 .AsIChatClient()
-                .AsKernelFunctionInvokingChatClient(logger);
+                .AsKernelFunctionInvokingChatClient(loggerFactory);
         }
 
         services.AddKeyedSingleton<IChatClient>(serviceId, (Func<IServiceProvider, object?, IChatClient>)Factory);
