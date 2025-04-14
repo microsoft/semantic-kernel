@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 /// </summary>
 public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutput> : Orchestratable
 {
-    private readonly string _orchestrationType;
+    private readonly string _orchestrationRoot;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
@@ -29,7 +29,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
         this.Runtime = runtime;
         this.Members = members;
-        this._orchestrationType = this.GetType().Name.Split('`').First();
+        this._orchestrationRoot = this.GetType().Name.Split('`').First();
     }
 
     /// <summary>
@@ -94,7 +94,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="topic">The topic identifier used in formatting the agent type.</param>
     /// <param name="suffix">A suffix to differentiate the agent type.</param>
     /// <returns>A formatted AgentType object.</returns>
-    protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{this._orchestrationType}_{suffix}");
+    protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{this._orchestrationRoot}_{suffix}");
 
     /// <summary>
     /// Initiates processing according to the orchestration pattern.
