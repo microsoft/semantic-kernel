@@ -52,7 +52,7 @@ Our framework should support customers to create more advanced orchestrations fo
 | **Agent actor**       | - Semantic Kernel agent <br> - Agent thread <br> - Support for streaming?                                                                                                                                                       |
 | **Orchestration actor** | - Broadcast messages to an external topic (e.g., the result of the orchestration) <br> - Send directly to an actor external to the orchestration (e.g., the result of the orchestration) <br> - Receive messages from an external topic (e.g., the start of the orchestration) <br> - Receive messages from an actor external to the orchestration (e.g., the start of the orchestration) |
 | **Orchestration**     | - Consists of one orchestration actor and multiple agent actors and other orchestrations. <br> - Support for streaming?                                                                                                         |
-| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to custom types and for nesting orchestrations.                                                                                                     |
+| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types** and for nesting orchestrations.                                                                                                     |
 
 An orchestration can have multiple agent actors and child orchestrations, but only one orchestration actor.
 
@@ -96,12 +96,15 @@ graph TD
 - The runtime is provided when the orchestration is invoked, not when the orchestration is created.
 - The runtime lifecycle is managed by the application (external to the orchestration).
 - Multiple orchestrations can share the same runtime instance (orchestration boundaries).
+  - How do we make sure there is no name (agents and subscriptions) collisions.
 
 ### Graph-like structure with lazy evaluation
 
 - An orchestration is simply a definition of a directed graph of actors and orchestrations.
 - Actors and child orchestrations are registered in the runtime before execution starts.
 - The runtime is responsible for executing the graph and managing the lifecycle of the actors and orchestrations.
+
+### Support nested orchestrations
 
 Example:
 
@@ -135,7 +138,7 @@ graph TD
 
 > The two orchestration actors in the diagram are the same actor. The two external actors are the same actor. Separating them is just for a cleaner diagram.
 
-The above is a simple example that shows what a multi-agent orchestration looks like. This orchestration contains two sequential orchestrations that run in parallel.
+The above is a simple example that shows what a nested multi-agent orchestration looks like. This orchestration contains two sequential orchestrations that run in parallel.
 The actors are registered with the runtime whose lifetime is managed by the runtime, not the application.
 
 ### Orchestration invocation paradigms
@@ -146,176 +149,28 @@ The actors are registered with the runtime whose lifetime is managed by the runt
   - Orchestrations are stateless.
   - Use memory in Semantic Kernel agents to store extracted user context for future invocations.
 
-## Brainstorming
+### Human in the loop
 
-- Support ability to allow devs to create custom multi-agent orchestrations
-  - Well-defined building blocks for custom orchestrations
-    - Abstractions
-      - Actor
-        - Agent actor (there can be multiple in an orchestration)
-          - agent
-          - agent thread
-          - chat history
-        - Orchestration actor (there can be only one in an orchestration)
-          - Broadcast messages to an external topic (e.g. the result of the orchestration)
-          - Send directly to an actor external to the orchestration (e.g. the result of the orchestration)
-          - Receive messages from an external topic (e.g. the start of the orchestration)
-          - Receive messages from an actor external to the orchestration (e.g. the start of the orchestration)
-      - Orchestration
-        - streaming
-        - internal topic: for isolating actors from the other orchestration invocations
-      - Data transitions logic
-        - Provide hooks to transform the input and output of the orchestration.
-        - Each orchestration has its own input and output. When the orchestration are nested, the input of the
-          orchestration could be different from the output of another actor in the orchestration. Same for the
-          output of the orchestration, the output of the orchestration could be different from the input of
-          another actor in the orchestration.
+- Keep the user in the loop and allow them to intervene in the orchestration process
+- How would this work for a RestAPI/distributed system?
+- How would this work for a pattern or an agent that is nested inside another pattern?
+  - Does the signal need to bubble up to the root pattern?
+  - Other possibilities?
 
-- Use those building blocks to build out-of-the-box orchestrations
-  - Built-in patterns
-    - Concurrent
-      - Consist of multiple actors that run in parallel.
-      - Tasks are broadcasted to all actors.
-      - The results are collected and returned to the caller when all actors finish.
-      - The order of the results is not guaranteed.
-    - Sequential
-      - Consist of multiple actors that run in sequence.
-      - The output of the previous actor is the input of the next actor.
-      - The result is collected and returned to the caller when the last actor finishes.
-    - Handoff
-      - Consist of multiple actors.
-      - An actor decides the next actor to send the task to.
-      - The full context (conversation) of the previous actor is passed to the next actor.
-      - Human-in-the-loop may be supported.
-      - The result is collected and returned to the caller when the orchestration finishes.
-    - GroupChat
-      - Magentic
+### Distribution
 
-- Support multiple invocation paradigms
-  - One pattern can be invoked multiple times*?
-    - Stateless patterns: each invocation is independent
-    - Stateful patterns: future invocations have context from previous invocations
-    - Both?
-  - Patterns are graph-like structures with "lazy eval"
+- Can nested patterns be distributed?
+- Can agents factories be distributed?
+- If registration occurs per invocation, how to register remote orchestrations/agents?
 
-- Completion of patterns
-  - Result collection: how to extract the result of a pattern?
-  - Non-blocking: return immediately and broadcast result when the pattern finishes
-  - Blocking: wait for the pattern to finish and return the result
+### Save states of the agents in a pattern and rehydration
 
-- Input to patterns
-  - a list of tasks (string?) with a context object that contains additional attributes
+- Being able to save the state of the orchestration process while waiting for user input and restore it later when user provides input for scalability
+- Recursively save the state of all agents and child patterns, including threads, chat history, and context from the root pattern
 
-- Support arbitrary user-defined output types
-  - User can define what object a pattern will output at the end
-  - Nested pattern: output of a pattern is the input of another
+### Support declarative patterns*
 
-- Support nested patterns
-  - Pattern abstraction: same invocation signature
-  - Patterns to take SK agents and patterns as child nodes
+### Guardrails*
 
-- Patterns should only depend upon the runtime abstraction
-  - The runtime must be provided when the pattern is invoked.
-  - The runtime lifecycle is managed by the application (external to the pattern).
-  - Should a runtime instance be shared between patterns that are supposed to be independent?
-
-- Distribution*
-  - Can nested patterns be distributed?
-  - Can agents factories be distributed?
-  - If registration occurs per invocation, how to register remote orchestrations/agents?
-    - Instance-scoped
-    - Invocation-scoped
-
-- Runtime registration
-  - Agents
-    - Register the agents and patterns in the runtime before the execution starts, as oppose to when the pattern is created.
-  - Topics
-    - Add subscriptions to the runtime before the execution starts.
-  - Make sure no collisions
-  - Remove registrations and subscriptions from the runtime after the execution finishes to avoid name collisions.
-
-- Human in the loop
-  - Keep the user in the loop and allow them to intervene in the orchestration process
-  - How would this work for a RestAPI/distributed system?
-  - How would this work for a pattern that is nested inside another pattern?
-    - Does the signal need to bubble up to the root pattern?
-    - Other possibilities?
-
-- Save states of the agents in a pattern and rehydration
-  - Being able to save the state of the orchestration process while waiting for user input and restore it later when user provides input for scalability
-  - Recursively save the state of all agents and child patterns, including threads, chat history, and context from the root pattern
-
-- Support declarative patterns*
-  - The orchestration graph
-
-- Guardrails*
-  - In the orchestration level?
-  - In the agent level?
-
-## Building blocks
-
-### Diagram
-
-```mermaid
-graph TD
-  %% External
-  EXT_Topic[External Topic]
-
-  %% Outer Block
-  subgraph Orchestration
-    subgraph Orchestration Actor
-      RelayResult[Relay Result → External Topic]
-      RelayTask[Relay Task ← External Topic]
-    end
-
-    subgraph PG[Orchestration Graph]
-      AG0[agent 0]
-      AG1[agent 1]
-      AG2[agent 2]
-      SUBPATTERN0[sub pattern 0]
-      SUBPATTERN1[sub pattern 1]
-    end
-
-    IT[Internal Topic]
-
-  end
-
-  %% Connections
-  EXT_Topic --> |1\. Task start message type| RelayTask
-  RelayTask --> |2\. Task start message type| IT
-  IT --> |3\. Task start message type| PG
-
-  PG --> |4\. Other message types| IT
-  IT --> |4\. Other message types| PG
-
-  PG --> |5\. Result message type| IT
-  IT --> |6\. Result message type| RelayResult
-  RelayResult --> |7\. Result message type| EXT_Topic
-```
-
-```mermaid
-graph TD
-  subgraph Sample
-    Concurrent
-    subgraph Sequential_0
-        AgentA_0
-        AgentB_0
-        AgentC_0
-        AgentA_0 --> AgentB_0
-        AgentB_0 --> AgentC_0
-    end
-
-    subgraph Sequential_1
-        AgentA_1
-        AgentB_1
-        AgentC_1
-        AgentA_1 --> AgentB_1
-        AgentB_1 --> AgentC_1
-    end
-
-    Concurrent --> Sequential_0
-    Concurrent --> Sequential_1
-    Sequential_0 --> RC[Result Collection]
-    Sequential_1 --> RC[Result Collection]
-  end
-```
+- In the orchestration level?
+- In the agent level?
