@@ -80,7 +80,7 @@ class MongoDBAtlasStore(VectorStore):
         )
 
         try:
-            mongodb_atlas_settings = MongoDBAtlasSettings.create(
+            mongodb_atlas_settings = MongoDBAtlasSettings(
                 env_file_path=env_file_path,
                 connection_string=connection_string,
                 database_name=database_name,

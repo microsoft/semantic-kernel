@@ -59,7 +59,7 @@ class WeaviateStore(VectorStore):
         managed_client: bool = False
         if not async_client:
             managed_client = True
-            weaviate_settings = WeaviateSettings.create(
+            weaviate_settings = WeaviateSettings(
                 url=url,
                 api_key=api_key,
                 local_host=local_host,
@@ -128,7 +128,7 @@ class WeaviateStore(VectorStore):
     @override
     async def __aenter__(self) -> "VectorStore":
         """Enter the context manager."""
-        if not await self.async_client.is_live():
+        if not self.async_client.is_connected():
             try:
                 await self.async_client.connect()
             except WeaviateConnectionError as exc:

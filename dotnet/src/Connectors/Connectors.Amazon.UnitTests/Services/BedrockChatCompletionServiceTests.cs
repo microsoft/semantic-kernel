@@ -139,11 +139,13 @@ public sealed class BedrockChatCompletionServiceTests
             {
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
+#pragma warning disable CA2000 // Dispose objects before losing scope
         mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseStreamResponse
             {
                 Stream = new ConverseStreamOutput(new MemoryStream(content))
             });
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
