@@ -104,7 +104,7 @@ internal sealed class MailboxUtils
     /// <summary>
     /// Represents an email.
     /// </summary>
-    private class Email
+    private sealed class Email
     {
         /// <summary>
         /// Gets or sets the email sender.
