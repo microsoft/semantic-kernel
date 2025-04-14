@@ -516,10 +516,9 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
 #pragma warning restore SKEXP0040
-        if (("me_sendMail".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase) ||
-            ("search_query".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) ||
-            ("me_calendar_CreateEvents".Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase)) &&
-            "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase)))
+        string[] _functionNames = ["drives_GetItemsContent", "me_calendar_CreateEvents", "me_sendMail", "search_query", "sites_lists_items_GetDriveItemContent"];
+        bool hasFunctionName = _functionNames.Any(s => s.Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase));
+        if (hasFunctionName && "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
         {
             context.Parameter.Schema = TrimPropertiesFromRequestBody(context.Parameter.Schema);
             return context.Parameter;
