@@ -34,14 +34,14 @@ public sealed class OpenAIResponseAgentThread : AgentThread
     /// Initializes a new instance of the <see cref="OpenAIResponseAgentThread"/> class that resumes an existing response.
     /// </summary>
     /// <param name="client">The agents client to use for interacting with responses.</param>
-    /// <param name="id">The ID of an existing response to resume.</param>
-    public OpenAIResponseAgentThread(OpenAIResponseClient client, string id)
+    /// <param name="responseId">The ID of an existing response to resume.</param>
+    public OpenAIResponseAgentThread(OpenAIResponseClient client, string responseId)
     {
         Verify.NotNull(client);
-        Verify.NotNull(id);
+        Verify.NotNull(responseId);
 
         this._client = client;
-        this.ResponseId = id;
+        this.ResponseId = responseId;
     }
 
     /// <summary>
