@@ -8,8 +8,8 @@ namespace SemanticKernel.AotTests.JsonSerializerContexts;
 
 [JsonSerializable(typeof(CustomResult))]
 [JsonSerializable(typeof(int))]
-[JsonSerializable(typeof(string))]
-[JsonSerializable(typeof(TextSearchResult))]
+[JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(List<TextSearchResult>))]
 [JsonSerializable(typeof(IAsyncEnumerable<string>))]
 [JsonSerializable(typeof(IAsyncEnumerable<TextSearchResult>))]
 [JsonSerializable(typeof(IAsyncEnumerable<object>))]
