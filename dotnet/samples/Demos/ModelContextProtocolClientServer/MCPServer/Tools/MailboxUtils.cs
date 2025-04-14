@@ -100,30 +100,30 @@ internal sealed class MailboxUtils
 
         return messages;
     }
-}
-
-/// <summary>
-/// Represents an email.
-/// </summary>
-public class Email
-{
-    /// <summary>
-    /// Gets or sets the email sender.
-    /// </summary>
-    public required string Sender { get; set; }
 
     /// <summary>
-    /// Gets or sets the email subject.
+    /// Represents an email.
     /// </summary>
-    public required string Subject { get; set; }
+    private class Email
+    {
+        /// <summary>
+        /// Gets or sets the email sender.
+        /// </summary>
+        public required string Sender { get; set; }
 
-    /// <summary>
-    /// Gets or sets the email body.
-    /// </summary>
-    public required string Body { get; set; }
+        /// <summary>
+        /// Gets or sets the email subject.
+        /// </summary>
+        public required string Subject { get; set; }
 
-    /// <summary>
-    /// Gets or sets the email attachments.
-    /// </summary>
-    public List<byte[]>? Attachments { get; set; }
+        /// <summary>
+        /// Gets or sets the email body.
+        /// </summary>
+        public required string Body { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email attachments.
+        /// </summary>
+        public List<byte[]>? Attachments { get; set; }
+    }
 }

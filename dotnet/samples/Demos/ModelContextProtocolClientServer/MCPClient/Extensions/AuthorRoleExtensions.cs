@@ -16,7 +16,7 @@ internal static class AuthorRoleExtensions
     /// </summary>
     /// <param name="role">The author role to convert.</param>
     /// <returns>The corresponding <see cref="Role"/>.</returns>
-    public static Role ToRole(this AuthorRole role)
+    public static Role ToMCPRole(this AuthorRole role)
     {
         if (role == AuthorRole.User)
         {
