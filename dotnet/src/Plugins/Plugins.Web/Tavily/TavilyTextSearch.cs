@@ -174,7 +174,7 @@ public sealed class TavilyTextSearch : ITextSearch
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        var requestContent = this.BuildRequestContent(query, searchOptions);
+        var requestContent = this.BuildRequestContent(query, top, searchOptions);
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, this._uri)
         {
@@ -338,13 +338,14 @@ public sealed class TavilyTextSearch : ITextSearch
     /// Build a query string from the <see cref="TextSearchOptions"/>
     /// </summary>
     /// <param name="query">The query.</param>
+    /// <param name="top">The maximum number of results to return.</param>
     /// <param name="searchOptions">The search options.</param>
-    private TavilySearchRequest BuildRequestContent(string query, TextSearchOptions searchOptions)
+    private TavilySearchRequest BuildRequestContent(string query, int top, TextSearchOptions searchOptions)
     {
         string? topic = null;
         string? timeRange = null;
         int? days = null;
-        int? maxResults = searchOptions.Top - searchOptions.Skip;
+        int? maxResults = top - searchOptions.Skip;
         IList<string>? includeDomains = null;
         IList<string>? excludeDomains = null;
 

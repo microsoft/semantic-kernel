@@ -169,7 +169,7 @@ public sealed class BingTextSearch : ITextSearch
             throw new ArgumentOutOfRangeException(nameof(searchOptions), searchOptions, $"{nameof(searchOptions)} count value must be greater than 0 and have a maximum value of 50.");
         }
 
-        Uri uri = new($"{this._uri}?q={BuildQuery(query, searchOptions)}");
+        Uri uri = new($"{this._uri}?q={BuildQuery(query, top, searchOptions)}");
 
         using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
 
@@ -289,8 +289,9 @@ public sealed class BingTextSearch : ITextSearch
     /// Build a query string from the <see cref="TextSearchOptions"/>
     /// </summary>
     /// <param name="query">The query.</param>
+    /// <param name="top">The maximum number of results to return.</param>
     /// <param name="searchOptions">The search options.</param>
-    private static string BuildQuery(string query, TextSearchOptions searchOptions)
+    private static string BuildQuery(string query, int top, TextSearchOptions searchOptions)
     {
         StringBuilder fullQuery = new();
         fullQuery.Append(Uri.EscapeDataString(query.Trim()));
@@ -320,7 +321,7 @@ public sealed class BingTextSearch : ITextSearch
             }
         }
 
-        fullQuery.Append($"&count={searchOptions.Top}&offset={searchOptions.Skip}{queryParams}");
+        fullQuery.Append($"&count={top}&offset={searchOptions.Skip}{queryParams}");
 
         return fullQuery.ToString();
     }
