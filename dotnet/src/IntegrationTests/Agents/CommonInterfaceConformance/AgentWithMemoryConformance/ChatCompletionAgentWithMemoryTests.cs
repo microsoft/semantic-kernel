@@ -96,7 +96,41 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
     }
 
     [Fact]
-    public virtual async Task RegisterComponentsFromDIAsync()
+    public virtual async Task MemoryComponentCapturesMemoriesInVectorStoreFromUserInputAsync()
+    {
+        // Arrange
+        var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+
+        var vectorStore = new InMemoryVectorStore();
+        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
+        using var textMemoryStore = new VectorDataTextMemoryStore<string>(vectorStore, textEmbeddingService, "Memories", "user/12345", 1536);
+
+        var agent = this.Fixture.Agent;
+
+        // Act - First invocation with first thread.
+        var agentThread1 = new ChatHistoryAgentThread();
+        agentThread1.ThreadExtensionsManager.RegisterThreadExtension(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
+
+        var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
+        var results1 = await asyncResults1.ToListAsync();
+
+        // Act - Second invocation with second thread.
+        var agentThread2 = new ChatHistoryAgentThread();
+        agentThread2.ThreadExtensionsManager.RegisterThreadExtension(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
+
+        var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
+        var results2 = await asyncResults2.ToListAsync();
+
+        // Assert
+        Assert.Contains("Caoimhe", results2.First().Message.Content);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(agentThread1);
+        await this.Fixture.DeleteThread(agentThread2);
+    }
+
+    [Fact]
+    public virtual async Task CapturesMemoriesWhileUsingDIAsync()
     {
         var chatConfig = this._configuration.GetSection("AzureOpenAI").Get<AzureOpenAIConfiguration>()!;
         var embeddingConfig = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
@@ -139,44 +173,11 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
         var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
         var results1 = await asyncResults1.ToListAsync();
 
-        await agentThread1.ThreadExtensionsManager.OnSuspendAsync(null, default);
+        // Act - Call suspend on the thread, so that all memory components attached to it, save their state.
+        await agentThread1.OnSuspendAsync(default);
 
         // Act - Second invocation
         var agentThread2 = host.Services.GetRequiredService<AgentThread>();
-
-        var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
-        var results2 = await asyncResults2.ToListAsync();
-
-        // Assert
-        Assert.Contains("Caoimhe", results2.First().Message.Content);
-
-        // Cleanup
-        await this.Fixture.DeleteThread(agentThread1);
-        await this.Fixture.DeleteThread(agentThread2);
-    }
-
-    [Fact]
-    public virtual async Task MemoryComponentCapturesMemoriesInVectorStoreFromUserInputAsync()
-    {
-        // Arrange
-        var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
-
-        var vectorStore = new InMemoryVectorStore();
-        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
-        using var textMemoryStore = new VectorDataTextMemoryStore<string>(vectorStore, textEmbeddingService, "Memories", "user/12345", 1536);
-
-        var agent = this.Fixture.Agent;
-
-        // Act - First invocation with first thread.
-        var agentThread1 = new ChatHistoryAgentThread();
-        agentThread1.ThreadExtensionsManager.RegisterThreadExtension(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
-
-        var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
-        var results1 = await asyncResults1.ToListAsync();
-
-        // Act - Second invocation with second thread.
-        var agentThread2 = new ChatHistoryAgentThread();
-        agentThread2.ThreadExtensionsManager.RegisterThreadExtension(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
 
         var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
         var results2 = await asyncResults2.ToListAsync();
