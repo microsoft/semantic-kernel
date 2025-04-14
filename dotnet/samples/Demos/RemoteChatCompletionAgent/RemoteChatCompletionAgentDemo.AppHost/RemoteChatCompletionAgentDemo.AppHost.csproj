@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.2.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>4e4d92b3-c7a6-4269-9119-5831f36a8063</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Azure.CognitiveServices" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="..\RemoteChatCompletionAgentDemo.TranslatorAgent\RemoteChatCompletionAgentDemo.TranslatorAgent.csproj" />
+    <ProjectReference
+      Include="..\RemoteChatCompletionAgentDemo.SummaryAgent\RemoteChatCompletionAgentDemo.SummaryAgent.csproj" />
+    <ProjectReference
+      Include="..\RemoteChatCompletionAgentDemo.GroupChat\RemoteChatCompletionAgentDemo.GroupChat.csproj" />
+  </ItemGroup>
+
+</Project>

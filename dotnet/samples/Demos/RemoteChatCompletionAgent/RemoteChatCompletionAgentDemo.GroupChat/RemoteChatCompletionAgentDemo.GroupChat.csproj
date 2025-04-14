@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>SKEXP0001,SKEXP0050,SKEXP0110</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Azure.AI.OpenAI" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Agents\Core\Agents.Core.csproj" />
+    <ProjectReference
+      Include="..\RemoteChatCompletionAgentDemo.ServiceDefaults\RemoteChatCompletionAgentDemo.ServiceDefaults.csproj" />
+    <ProjectReference
+      Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+  </ItemGroup>
+
+</Project>
