@@ -31,6 +31,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateWithSearch which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelPlugin CreateWithSearch(this ITextSearch textSearch, string pluginName, string? description = null) =>
         textSearch.CreateWithSearch(TextSearchOptions.DefaultTop, pluginName, description);
 
@@ -69,6 +70,7 @@ public static class TextSearchExtensions
     /// <param name="description">A description of the plugin.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance with a Search operation that calls the provided <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateWithSearch which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelPlugin CreateWithSearch(this ITextSearch textSearch, string pluginName, JsonSerializerOptions jsonSerializerOptions, string? description = null) =>
         textSearch.CreateWithSearch(TextSearchOptions.DefaultTop, pluginName, jsonSerializerOptions, description);
 
@@ -107,6 +109,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateWithGetTextSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelPlugin CreateWithGetTextSearchResults(this ITextSearch textSearch, string pluginName, string? description = null) =>
         textSearch.CreateWithGetTextSearchResults(TextSearchOptions.DefaultTop, pluginName, description);
 
@@ -145,6 +148,7 @@ public static class TextSearchExtensions
     /// <param name="description">A description of the plugin.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance with a GetTextSearchResults operation that calls the provided <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateWithGetTextSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelPlugin CreateWithGetTextSearchResults(this ITextSearch textSearch, string pluginName, JsonSerializerOptions jsonSerializerOptions, string? description = null) =>
         textSearch.CreateWithGetTextSearchResults(TextSearchOptions.DefaultTop, pluginName, jsonSerializerOptions, description);
 
@@ -183,6 +187,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateWithGetSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelPlugin CreateWithGetSearchResults(this ITextSearch textSearch, string pluginName, string? description = null) =>
         textSearch.CreateWithGetSearchResults(TextSearchOptions.DefaultTop, pluginName, description);
 
@@ -221,6 +226,7 @@ public static class TextSearchExtensions
     /// <param name="description">A description of the plugin.</param>
     /// <returns>A <see cref="KernelPlugin"/> instance with a GetSearchResults operation that calls the provided <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateWithGetSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelPlugin CreateWithGetSearchResults(this ITextSearch textSearch, string pluginName, JsonSerializerOptions jsonSerializerOptions, string? description = null) =>
         textSearch.CreateWithGetSearchResults(TextSearchOptions.DefaultTop, pluginName, jsonSerializerOptions, description);
 
@@ -257,6 +263,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateSearch with top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelFunction CreateSearch(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null) =>
         textSearch.CreateSearch(searchOptions?.Top ?? TextSearchOptions.DefaultTop, options, searchOptions);
 
@@ -309,6 +316,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateSearch with top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelFunction CreateSearch(this ITextSearch textSearch, JsonSerializerOptions jsonSerializerOptions, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null) =>
         textSearch.CreateSearch(searchOptions?.Top ?? TextSearchOptions.DefaultTop, jsonSerializerOptions, options, searchOptions);
 
@@ -360,6 +368,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateGetTextSearchResults with top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelFunction CreateGetTextSearchResults(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null) =>
         textSearch.CreateGetTextSearchResults(searchOptions?.Top ?? TextSearchOptions.DefaultTop, options, searchOptions);
 
@@ -410,6 +419,7 @@ public static class TextSearchExtensions
     /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
     /// <returns>A <see cref="KernelFunction"/> instance with a Search operation that calls the provided <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateGetTextSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelFunction CreateGetTextSearchResults(this ITextSearch textSearch, JsonSerializerOptions jsonSerializerOptions, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null) =>
             textSearch.CreateGetTextSearchResults(searchOptions?.Top ?? TextSearchOptions.DefaultTop, jsonSerializerOptions, options, searchOptions);
 
@@ -461,6 +471,7 @@ public static class TextSearchExtensions
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateGetSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelFunction CreateGetSearchResults(this ITextSearch textSearch, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null) =>
             textSearch.CreateGetSearchResults(searchOptions?.Top ?? TextSearchOptions.DefaultTop, options, searchOptions);
 
@@ -511,6 +522,7 @@ public static class TextSearchExtensions
     /// <param name="searchOptions">Optional TextSearchOptions which override the options provided when the function is invoked.</param>
     /// <returns>A <see cref="KernelFunction"/> instance with a Search operation that calls the provided <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.</returns>
     [Obsolete("This property is deprecated and will be removed in future versions. Use CreateGetSearchResults which takes the top parameter instead.", false)]
+    [ExcludeFromCodeCoverage]
     public static KernelFunction CreateGetSearchResults(this ITextSearch textSearch, JsonSerializerOptions jsonSerializerOptions, KernelFunctionFromMethodOptions? options = null, TextSearchOptions? searchOptions = null) =>
         textSearch.CreateGetSearchResults(searchOptions?.Top ?? TextSearchOptions.DefaultTop, jsonSerializerOptions, options, searchOptions);
 

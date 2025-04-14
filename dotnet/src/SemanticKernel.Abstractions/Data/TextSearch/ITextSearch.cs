@@ -70,7 +70,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
+    [Obsolete("This method is deprecated and will be removed in future versions. Use GetTextSearchResultsAsync that returns IAsyncEnumerable<T> instead.", false)]
     Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,
@@ -82,7 +82,7 @@ public interface ITextSearch
     /// <param name="query">What to search for.</param>
     /// <param name="searchOptions">Options used when executing a text search.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
+    [Obsolete("This method is deprecated and will be removed in future versions. Use GetSearchResultsAsync that returns IAsyncEnumerable<T> instead.", false)]
     Task<KernelSearchResults<object>> GetSearchResultsAsync(
         string query,
         TextSearchOptions? searchOptions = null,

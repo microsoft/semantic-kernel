@@ -20,7 +20,7 @@ public sealed class TextSearchOptions
     /// Default value is false.
     /// Not all text search implementations will support this option.
     /// </remarks>
-    [Obsolete("This property is deprecated and will be removed in future versions. Total count will be returned if available.", false)]
+    [Obsolete("This property is deprecated and will be removed in future versions. Total count will be returned if available via the last TextSearchResult.", false)]
     public bool IncludeTotalCount { get; init; } = false;
 
     /// <summary>
@@ -31,7 +31,7 @@ public sealed class TextSearchOptions
     /// <summary>
     /// Number of search results to return.
     /// </summary>
-    [Obsolete("This property is deprecated and will be removed in future versions. Use Top parameter instead.", false)]
+    [Obsolete("This property is deprecated and will be removed in future versions. Use the required top parameter instead.", false)]
     public int Top { get; init; } = DefaultTop;
 
     /// <summary>
