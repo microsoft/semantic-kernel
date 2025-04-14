@@ -117,13 +117,13 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
     /// </para>
     /// <para>
     /// Setting the value to <see langword="true"/> can help the underlying <see cref="IChatClient"/> bypass problems on
-    /// its own, for example by retrying the function call with different arguments. However it might
+    /// its own, for example by retrying the function call with different arguments. However, it might
     /// result in disclosing the raw exception information to external users, which can be a security
     /// concern depending on the application scenario.
     /// </para>
     /// <para>
     /// Changing the value of this property while the client is in use might result in inconsistencies
-    /// as to whether detailed errors are provided during an in-flight request.
+    /// whether detailed errors are provided during an in-flight request.
     /// </para>
     /// </remarks>
     public bool IncludeDetailedErrors { get; set; }
@@ -265,7 +265,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
                 return response;
             }
 
-            // Track aggregatable details from the response, including all of the response messages and usage details.
+            // Track aggregate details from the response, including all the response messages and usage details.
             (responseMessages ??= []).AddRange(response.Messages);
             if (response.Usage is not null)
             {
@@ -377,7 +377,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
             // Prepare the options for the next auto function invocation iteration.
             UpdateOptionsForAutoFunctionInvocation(ref options, response.Messages.Last().ToChatMessageContent(), isStreaming: true);
 
-            // Process all of the functions, adding their results into the history.
+            // Process all the functions, adding their results into the history.
             var modeAndMessages = await ProcessFunctionCallsAsync(augmentedHistory, options, functionCallContents, iteration, consecutiveErrorCount, isStreaming: true, cancellationToken).ConfigureAwait(false);
             responseMessages.AddRange(modeAndMessages.MessagesAdded);
             consecutiveErrorCount = modeAndMessages.NewConsecutiveErrorCount;
@@ -393,7 +393,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
             string toolResponseId = Guid.NewGuid().ToString("N");
 
             // Stream any generated function results. This mirrors what's done for GetResponseAsync, where the returned messages
-            // includes all activitys, including generated function results.
+            // include all activity, including generated function results.
             foreach (var message in modeAndMessages.MessagesAdded)
             {
                 var toolResultUpdate = new ChatResponseUpdate
@@ -457,8 +457,8 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
         else if (lastIterationHadThreadId)
         {
             // In the very rare case where the inner client returned a response with a thread ID but then
-            // returned a subsequent response without one, we want to reconstitue the full history. To do that,
-            // we can populate the history with the original chat messages and then all of the response
+            // returned a subsequent response without one, we want to reconstitute the full history. To do that,
+            // we can populate the history with the original chat messages and then all the response
             // messages up until this point, which includes the most recent ones.
             augmentedHistory ??= [];
             augmentedHistory.Clear();
@@ -584,7 +584,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
         // We must add a response for every tool call, regardless of whether we successfully executed it or not.
         // If we successfully execute it, we'll add the result. If we don't, we'll add an error.
 
-        Debug.Assert(functionCallContents.Count > 0, "Expecteded at least one function call.");
+        Debug.Assert(functionCallContents.Count > 0, "Expected at least one function call.");
         var shouldTerminate = false;
 
         var captureCurrentIterationExceptions = consecutiveErrorCount < _maximumConsecutiveErrorsPerRequest;
@@ -609,7 +609,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
             var terminationRequested = false;
             if (AllowConcurrentInvocation)
             {
-                // Rather than await'ing each function before invoking the next, invoke all of them
+                // Rather than awaiting each function before invoking the next, invoke all of them
                 // and then await all of them. We avoid forcibly introducing parallelism via Task.Run,
                 // but if a function invocation completes asynchronously, its processing can overlap
                 // with the processing of other the other invocation invocations.
@@ -776,8 +776,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
     /// <summary>Creates one or more response messages for function invocation results.</summary>
     /// <param name="results">Information about the function call invocations and results.</param>
     /// <returns>A list of all chat messages created from <paramref name="results"/>.</returns>
-    protected virtual IList<ChatMessage> CreateResponseMessages(
-        IReadOnlyList<FunctionInvocationResult> results)
+    private IList<ChatMessage> CreateResponseMessages(List<FunctionInvocationResult> results)
     {
         var contents = new List<AIContent>(results.Count);
         for (int i = 0; i < results.Count; i++)
@@ -866,7 +865,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The result of the function invocation, or <see langword="null"/> if the function invocation returned <see langword="null"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="context"/> is <see langword="null"/>.</exception>
-    protected virtual async Task<object?> InvokeFunctionAsync(AutoFunctionInvocationContext context, CancellationToken cancellationToken)
+    private async Task<object?> InvokeFunctionAsync(AutoFunctionInvocationContext context, CancellationToken cancellationToken)
     {
         Verify.NotNull(context);
 
