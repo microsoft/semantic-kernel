@@ -58,7 +58,7 @@ public static class ChatMessageContentExtensions
 
         return new CreateMessageResult
         {
-            Role = chatMessageContent.Role.Label,
+            Role = chatMessageContent.Role.ToRole(),
             Model = chatMessageContent.ModelId ?? "unknown",
             Content = content
         };
