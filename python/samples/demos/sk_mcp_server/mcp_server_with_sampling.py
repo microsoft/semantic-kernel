@@ -5,18 +5,21 @@
 # ///
 # Copyright (c) Microsoft. All rights reserved.
 import logging
-from typing import Any
+from typing import Annotated, Any
 
 import anyio
+from mcp import types
+from mcp.server.lowlevel import Server
 from mcp.server.stdio import stdio_server
 
 from semantic_kernel import Kernel
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.prompt_template import InputVariable, KernelPromptTemplate, PromptTemplateConfig
 
 logger = logging.getLogger(__name__)
 
 """
-This sample demonstrates how to expose your a Semantic Kernel prompt through a MCP server.
+This sample demonstrates how to expose your Semantic Kernel instance as a MCP server.
 
 To run this sample, set up your MCP host (like Claude Desktop or VSCode Github Copilot Agents)
 with the following configuration:
@@ -49,9 +52,36 @@ Include the output in raw markdown.
 """
 
 
+@kernel_function(
+    name="run_prompt",
+    description="This run the prompts for a full set of release notes based on the PR messages given.",
+)
+async def sampling_function(
+    messages: Annotated[str, "The list of PR messages, as a string with newlines"],
+    temperature: float = 0.0,
+    max_tokens: int = 1000,
+    server: Annotated[Server | None, "The server session", {"include_in_function_choices": False}] = None,
+) -> str:
+    if not server:
+        raise ValueError("Request context is required for sampling function.")
+    sampling_response = await server.request_context.session.create_message(
+        messages=[
+            types.SamplingMessage(role="user", content=types.TextContent(type="text", text=messages)),
+        ],
+        max_tokens=max_tokens,
+        temperature=temperature,
+        model_preferences=types.ModelPreferences(
+            hints=[types.ModelHint(name="gpt-4o-mini")],
+        ),
+    )
+    logger.info(f"Sampling response: {sampling_response}")
+    return sampling_response.content.text
+
+
 def run() -> None:
     """Run the MCP server with the release notes prompt template."""
     kernel = Kernel()
+    kernel.add_function("release_notes", sampling_function)
     prompt = KernelPromptTemplate(
         prompt_template_config=PromptTemplateConfig(
             name="release_notes_prompt",

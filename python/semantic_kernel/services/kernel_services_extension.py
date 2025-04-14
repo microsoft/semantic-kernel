@@ -68,7 +68,7 @@ class KernelServicesExtension(KernelBaseModel, ABC):
         self,
         service_id: str | None = None,
         type: type[AI_SERVICE_CLIENT_TYPE] | tuple[type[AI_SERVICE_CLIENT_TYPE], ...] | None = None,
-    ) -> AIServiceClientBase:
+    ) -> AI_SERVICE_CLIENT_TYPE:
         """Get a service by service_id and type.
 
         Type is optional and when not supplied, no checks are done.

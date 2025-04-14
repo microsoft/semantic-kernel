@@ -504,9 +504,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
         configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-         By default, all functions are exposed as Tools, you can specify which functions,
-        to do this you can use the `excluded_functions` argument.
-        These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
+        By default, all functions are exposed as Tools, you can control this by
+        using use the `excluded_functions` argument.
+        These need to be set to the function name, without the plugin_name.
 
         Args:
             kernel: The kernel instance to use.
@@ -515,7 +515,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             version: The version of the server.
             instructions: The instructions to use for the server.
             lifespan: The lifespan of the server.
-            excluded_functions: The list of fully qualified function names to exclude from the server.
+            excluded_functions: The list of function names to exclude from the server.
                 if None, no functions will be excluded.
             kwargs: Any extra arguments to pass to the server creation.
 
