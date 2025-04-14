@@ -17,12 +17,12 @@ public class AutoFunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
     private KernelFunction? _kernelFunction;
-    private readonly KernelFunctionInvocationContext _invocationContext = new();
+    private readonly Microsoft.Extensions.AI.FunctionInvocationContext _invocationContext = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="KernelFunctionInvocationContext"/>.
     /// </summary>
-    internal AutoFunctionInvocationContext(KernelFunctionInvocationContext invocationContext)
+    internal AutoFunctionInvocationContext(Microsoft.Extensions.AI.FunctionInvocationContext invocationContext)
     {
         Verify.NotNull(invocationContext);
         Verify.NotNull(invocationContext.Options);

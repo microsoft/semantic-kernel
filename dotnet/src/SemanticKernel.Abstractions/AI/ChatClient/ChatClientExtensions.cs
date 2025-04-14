@@ -92,7 +92,7 @@ public static class ChatClientExtensions
     /// Creates a new <see cref="KernelFunctionInvokingChatClient"/> that supports <see cref="Kernel"/> for function invocation with a <see cref="IChatClient"/>.
     /// </summary>
     /// <param name="client">Target chat client service.</param>
-    /// <param name="loggerFactory">Optional logger to use for logging.</param>
+    /// <param name="loggerFactory">Optional logger factory to use for logging.</param>
     /// <returns>Function invoking chat client.</returns>
     [Experimental("SKEXP0001")]
     public static IChatClient AsKernelFunctionInvokingChatClient(this IChatClient client, ILoggerFactory? loggerFactory = null)
