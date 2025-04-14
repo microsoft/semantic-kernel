@@ -36,7 +36,6 @@ app.MapGet("/agent/details", (ChatCompletionAgent agent) =>
     return JsonSerializer.Serialize(details);
 });
 
-
 app.MapPost("/agent/invoke", async (ChatCompletionAgent agent, HttpResponse response, ChatHistory history) =>
 {
     response.Headers.Append("Content-Type", "application/json");
