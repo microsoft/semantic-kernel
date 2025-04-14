@@ -24,7 +24,7 @@ internal sealed class TextSearchExtensionsTests
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
-        var plugin = textSearch.CreateWithSearch("SearchPlugin", s_jsonSerializerOptions);
+        var plugin = textSearch.CreateWithSearch(5, "SearchPlugin", s_jsonSerializerOptions);
 
         // Assert
         await AssertSearchFunctionSchemaAndInvocationResult<string>(plugin["Search"], testData[0]);
@@ -38,7 +38,7 @@ internal sealed class TextSearchExtensionsTests
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
-        var plugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin", s_jsonSerializerOptions);
+        var plugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin", s_jsonSerializerOptions);
 
         // Assert
         await AssertSearchFunctionSchemaAndInvocationResult<TextSearchResult>(plugin["GetTextSearchResults"], testData[0]);
@@ -52,7 +52,7 @@ internal sealed class TextSearchExtensionsTests
         ITextSearch textSearch = new MockTextSearch(results);
 
         // Act
-        var plugin = textSearch.CreateWithGetSearchResults("SearchPlugin", s_jsonSerializerOptions);
+        var plugin = textSearch.CreateWithGetSearchResults(5, "SearchPlugin", s_jsonSerializerOptions);
 
         // Assert
         await AssertSearchFunctionSchemaAndInvocationResult<object>(plugin["GetSearchResults"], testData[0]);

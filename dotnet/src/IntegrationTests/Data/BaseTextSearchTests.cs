@@ -126,7 +126,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
-        var searchPlugin = textSearch.CreateWithSearch("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithSearch(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
@@ -155,7 +155,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
-        var searchPlugin = textSearch.CreateWithGetSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act
@@ -184,7 +184,7 @@ public abstract class BaseTextSearchTests : BaseIntegrationTest
         var kernel = this.CreateKernelWithOpenAI();
         kernel.AutoFunctionInvocationFilters.Add(filter);
 
-        var searchPlugin = textSearch.CreateWithGetTextSearchResults("SearchPlugin");
+        var searchPlugin = textSearch.CreateWithGetTextSearchResults(5, "SearchPlugin");
         kernel.Plugins.Add(searchPlugin);
 
         // Act

@@ -118,7 +118,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <inheritdoc/>
     public async IAsyncEnumerable<string> SearchAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         await foreach (var result in this.GetResultsAsStringAsync(searchResponse.Results, cancellationToken).ConfigureAwait(false))
         {
@@ -129,7 +129,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <inheritdoc/>
     public async IAsyncEnumerable<TextSearchResult> GetTextSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         await foreach (var result in this.GetResultsAsTextSearchResultAsync(searchResponse.Results, cancellationToken).ConfigureAwait(false))
         {
@@ -140,7 +140,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// <inheritdoc/>
     public async IAsyncEnumerable<object> GetSearchResultsAsync(string query, int top, TextSearchOptions? searchOptions = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, top, searchOptions, cancellationToken).ConfigureAwait(false);
 
         await foreach (var result in this.GetResultsAsRecordAsync(searchResponse.Results, cancellationToken).ConfigureAwait(false))
         {
@@ -153,7 +153,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions?.Top ?? TextSearchOptions.DefaultTop, searchOptions, cancellationToken).ConfigureAwait(false);
 
         return new KernelSearchResults<string>(this.GetResultsAsStringAsync(searchResponse.Results, cancellationToken), searchResponse.TotalCount, searchResponse.Metadata);
     }
@@ -162,7 +162,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions?.Top ?? TextSearchOptions.DefaultTop, searchOptions, cancellationToken).ConfigureAwait(false);
 
         return new KernelSearchResults<TextSearchResult>(this.GetResultsAsTextSearchResultAsync(searchResponse.Results, cancellationToken), searchResponse.TotalCount, searchResponse.Metadata);
     }
@@ -171,7 +171,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     [Obsolete("This method is deprecated and will be removed in future versions. Use SearchAsync that returns IAsyncEnumerable<T> instead.", false)]
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
-        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
+        VectorSearchResults<TRecord> searchResponse = await this.ExecuteVectorSearchAsync(query, searchOptions?.Top ?? TextSearchOptions.DefaultTop, searchOptions, cancellationToken).ConfigureAwait(false);
 
         return new KernelSearchResults<object>(this.GetResultsAsRecordAsync(searchResponse.Results, cancellationToken), searchResponse.TotalCount, searchResponse.Metadata);
     }
@@ -230,17 +230,18 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     /// Execute a vector search and return the results.
     /// </summary>
     /// <param name="query">What to search for.</param>
+    /// <param name="top">Maximum number of search results to return.</param>
     /// <param name="searchOptions">Search options.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    private async Task<VectorSearchResults<TRecord>> ExecuteVectorSearchAsync(string query, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
+    private async Task<VectorSearchResults<TRecord>> ExecuteVectorSearchAsync(string query, int top, TextSearchOptions? searchOptions, CancellationToken cancellationToken)
     {
         searchOptions ??= new TextSearchOptions();
         var vectorSearchOptions = new VectorSearchOptions<TRecord>
         {
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
             OldFilter = searchOptions.Filter?.FilterClauses is not null ? new VectorSearchFilter(searchOptions.Filter.FilterClauses) : null,
-            Top = searchOptions.Top,
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
+            Top = top,
             Skip = searchOptions.Skip,
         };
 
