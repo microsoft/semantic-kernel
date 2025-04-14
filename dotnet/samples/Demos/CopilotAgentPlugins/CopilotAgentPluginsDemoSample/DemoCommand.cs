@@ -55,6 +55,13 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
             _ => throw new InvalidOperationException($"Invalid kernel selection. {selectedKernelName} is not a valid kernel.")
         };
         kernel.AutoFunctionInvocationFilters.Add(new ExpectedSchemaFunctionFilter());
+        kernel.Plugins.AddFromFunctions("time_plugin", [
+            KernelFunctionFactory.CreateFromMethod(
+                method: () => DateTime.Today,
+                functionName: "get_the_date_and_time_today",
+                description: "Get the date today and the time now."
+            )
+        ]);
 
         while (true)
         {
