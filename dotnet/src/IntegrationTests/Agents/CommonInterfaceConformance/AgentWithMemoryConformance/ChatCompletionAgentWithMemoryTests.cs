@@ -255,6 +255,45 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
         await this.Fixture.DeleteThread(agentThread);
     }
 
+    [Fact]
+    public virtual async Task RagComponentWithMatchesOnDemandAsync()
+    {
+        // Arrange - Create Embedding Service
+        var config = this._configuration.GetRequiredSection("AzureOpenAIEmbeddings").Get<AzureOpenAIConfiguration>();
+        var textEmbeddingService = new AzureOpenAITextEmbeddingGenerationService(config!.EmbeddingModelId, config.Endpoint, new AzureCliCredential());
+
+        // Arrange - Create Vector Store and Rag Store/Component
+        var vectorStore = new InMemoryVectorStore();
+        using var ragStore = new TextRagStore<string>(vectorStore, textEmbeddingService, "FinancialData", 1536, "group/g2");
+        var ragComponent = new TextRagComponent(
+            ragStore,
+            new()
+            {
+                SearchTime = TextRagComponentOptions.TextRagSearchTime.ViaPlugin,
+                PluginSearchFunctionName = "SearchCorporateData",
+                PluginSearchFunctionDescription = "RAG Search over dataset containing financial data and company information about various companies."
+            });
+
+        // Arrange - Upsert documents into the Rag Store
+        await ragStore.UpsertDocumentsAsync(GetSampleDocuments());
+
+        var agent = this.Fixture.Agent;
+
+        // Act - Create a new agent thread and register the Rag component
+        var agentThread = new ChatHistoryAgentThread();
+        agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
+
+        // Act - Invoke the agent with a question
+        var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread, new() { KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })});
+        var results1 = await asyncResults1.ToListAsync();
+
+        // Assert - Check if the response contains the expected value from the database.
+        Assert.Contains("174", results1.First().Message.Content);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(agentThread);
+    }
+
     private static IEnumerable<TextRagDocument> GetSampleDocuments()
     {
         yield return new TextRagDocument("The financial results of Contoso Corp for 2024 is as follows:\nIncome EUR 154 000 000\nExpenses EUR 142 000 000")

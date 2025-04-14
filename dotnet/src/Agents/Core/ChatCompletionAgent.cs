@@ -74,9 +74,12 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the conversation state extensions context contributions
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        chatHistoryAgentThread.ThreadExtensionsManager.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -97,7 +100,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 }
             },
             options?.KernelArguments,
-            options?.Kernel,
+            kernel,
             options?.AdditionalInstructions == null ? extensionsContext : options.AdditionalInstructions + Environment.NewLine + Environment.NewLine + extensionsContext,
             cancellationToken);
 
@@ -162,9 +165,12 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             () => new ChatHistoryAgentThread(),
             cancellationToken).ConfigureAwait(false);
 
-        // Get the conversation state extensions context contributions
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        chatHistoryAgentThread.ThreadExtensionsManager.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -186,7 +192,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
                 }
             },
             options?.KernelArguments,
-            options?.Kernel,
+            kernel,
             options?.AdditionalInstructions == null ? extensionsContext : options.AdditionalInstructions + Environment.NewLine + Environment.NewLine + extensionsContext,
             cancellationToken);
 

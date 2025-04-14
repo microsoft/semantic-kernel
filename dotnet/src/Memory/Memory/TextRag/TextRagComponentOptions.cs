@@ -29,4 +29,38 @@ public class TextRagComponentOptions
             this._top = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets the time at which the text search is performed.
+    /// </summary>
+    public TextRagSearchTime SearchTime { get; init; } = TextRagSearchTime.BeforeAIInvoke;
+
+    /// <summary>
+    /// Gets or sets the name of the plugin method that will be made available for searching
+    /// if the <see cref="SearchTime"/> option is set to <see cref="TextRagSearchTime.ViaPlugin"/>.
+    /// </summary>
+    public string? PluginSearchFunctionName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the description of the plugin method that will be made available for searching
+    /// if the <see cref="SearchTime"/> option is set to <see cref="TextRagSearchTime.ViaPlugin"/>.
+    /// </summary>
+    public string? PluginSearchFunctionDescription { get; init; }
+
+    /// <summary>
+    /// The time at which the text search is performed.
+    /// </summary>
+    public enum TextRagSearchTime
+    {
+        /// <summary>
+        /// A seach is performed each time that the AI is invoked just before the AI is invoked
+        /// and the results are provided to the AI via the invocation context.
+        /// </summary>
+        BeforeAIInvoke,
+
+        /// <summary>
+        /// A search may be performed by the AI on demand via a plugin.
+        /// </summary>
+        ViaPlugin
+    }
 }
