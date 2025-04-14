@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +29,39 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
             .AddEnvironmentVariables()
             .AddUserSecrets<ChatCompletionAgentFixture>()
             .Build();
+
+    [Fact(Skip = "For manual verification")]
+    public virtual async Task Mem0ComponentCapturesMemoriesFromUserInputAsync()
+    {
+        // Arrange
+        var agent = this.Fixture.Agent;
+
+        using var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("https://api.mem0.ai");
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", "<APIKey>");
+
+        var mem0Component = new Mem0MemoryComponent(httpClient, new() { UserId = "U1" });
+
+        var agentThread1 = new ChatHistoryAgentThread();
+        agentThread1.ThreadExtensionsManager.RegisterThreadExtension(mem0Component);
+
+        var agentThread2 = new ChatHistoryAgentThread();
+        agentThread2.ThreadExtensionsManager.RegisterThreadExtension(mem0Component);
+
+        // Act
+        var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hello, my name is Caoimhe."), agentThread1);
+        var results1 = await asyncResults1.ToListAsync();
+
+        var asyncResults2 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "What is my name?."), agentThread2);
+        var results2 = await asyncResults2.ToListAsync();
+
+        // Assert
+        Assert.Contains("Caoimhe", results2.First().Message.Content);
+
+        // Cleanup
+        await this.Fixture.DeleteThread(agentThread1);
+        await this.Fixture.DeleteThread(agentThread2);
+    }
 
     [Fact]
     public virtual async Task MemoryComponentCapturesMemoriesFromUserInputAsync()
