@@ -1,0 +1,289 @@
+{
+    "query": {
+        "original": "What is the Semantic Kernel?",
+        "show_strict_warning": false,
+        "is_navigational": false,
+        "is_news_breaking": false,
+        "spellcheck_off": true,
+        "country": "us",
+        "bad_results": false,
+        "should_fallback": false,
+        "postal_code": "",
+        "city": "",
+        "header_country": "",
+        "more_results_available": true,
+        "state": ""
+    },
+    "mixed": {
+        "type": "mixed",
+        "main": [
+            {
+                "type": "web",
+                "index": 0,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 1,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 2,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 3,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 4,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 5,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 6,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 7,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 8,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 9,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 10,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 11,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 12,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 13,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 14,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 15,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 16,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 17,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 18,
+                "all": false
+            },
+            {
+                "type": "web",
+                "index": 19,
+                "all": false
+            }
+        ],
+        "top": [],
+        "side": []
+    },
+    "type": "search",
+    "web": {
+        "type": "search",
+        "results": [
+            {
+                "title": "Introduction to Semantic Kernel | Microsoft Learn",
+                "url": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+                "is_source_local": false,
+                "is_source_both": false,
+                "description": "Upgrade to Microsoft Edge to take ... and Microsoft Edge ... Semantic Kernel is <strong>a lightweight, open-source development kit that lets you easily build AI agents and integrate the latest AI models into your C#, Python, or Java codebase</strong>....",
+                "profile": {
+                    "name": "Microsoft",
+                    "url": "https://learn.microsoft.com/en-us/semantic-kernel/overview/",
+                    "long_name": "learn.microsoft.com",
+                    "img": "https://imgs.search.brave.com/dKusAYBYTLeCBl16XSMYRZO-wCc_EyGpoH65Oj11tOU/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMmMzNjVjYjk4/NmJkODdmNTU4ZDU1/MGUwNjk0MWFmZWU0/NmYzZjVlYmZjZDIy/MWM4MGMwODc4MDhi/MDM5MmZkYy9sZWFy/bi5taWNyb3NvZnQu/Y29tLw"
+                },
+                "language": "en",
+                "family_friendly": true,
+                "type": "search_result",
+                "subtype": "generic",
+                "is_live": false,
+                "meta_url": {
+                    "scheme": "https",
+                    "netloc": "learn.microsoft.com",
+                    "hostname": "learn.microsoft.com",
+                    "favicon": "https://imgs.search.brave.com/dKusAYBYTLeCBl16XSMYRZO-wCc_EyGpoH65Oj11tOU/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMmMzNjVjYjk4/NmJkODdmNTU4ZDU1/MGUwNjk0MWFmZWU0/NmYzZjVlYmZjZDIy/MWM4MGMwODc4MDhi/MDM5MmZkYy9sZWFy/bi5taWNyb3NvZnQu/Y29tLw",
+                    "path": "› en-us  › semantic-kernel  › overview"
+                },
+                "thumbnail": {
+                    "src": "https://imgs.search.brave.com/KxEtqQiadL_R-Mr9_FffhMDYK3gVHrYWjuByaTLSjYg/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9sZWFy/bi5taWNyb3NvZnQu/Y29tL2VuLXVzL21l/ZGlhL29wZW4tZ3Jh/cGgtaW1hZ2UucG5n",
+                    "original": "https://learn.microsoft.com/en-us/media/open-graph-image.png",
+                    "logo": false
+                }
+            },
+            {
+                "title": "Understanding the kernel in Semantic Kernel | Microsoft Learn",
+                "url": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel",
+                "is_source_local": false,
+                "is_source_both": false,
+                "description": "This means that if you run any prompt or code in <strong>Semantic</strong> <strong>Kernel</strong>, <strong>the</strong> <strong>kernel</strong> will always be available to retrieve the necessary services and plugins. This is extremely powerful, because it means you as a developer have a single place where you can configure, and most importantly monitor, your ...",
+                "page_age": "2024-07-25T00:00:00",
+                "profile": {
+                    "name": "Microsoft",
+                    "url": "https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel",
+                    "long_name": "learn.microsoft.com",
+                    "img": "https://imgs.search.brave.com/dKusAYBYTLeCBl16XSMYRZO-wCc_EyGpoH65Oj11tOU/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMmMzNjVjYjk4/NmJkODdmNTU4ZDU1/MGUwNjk0MWFmZWU0/NmYzZjVlYmZjZDIy/MWM4MGMwODc4MDhi/MDM5MmZkYy9sZWFy/bi5taWNyb3NvZnQu/Y29tLw"
+                },
+                "language": "en",
+                "family_friendly": true,
+                "type": "search_result",
+                "subtype": "generic",
+                "is_live": false,
+                "meta_url": {
+                    "scheme": "https",
+                    "netloc": "learn.microsoft.com",
+                    "hostname": "learn.microsoft.com",
+                    "favicon": "https://imgs.search.brave.com/dKusAYBYTLeCBl16XSMYRZO-wCc_EyGpoH65Oj11tOU/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvMmMzNjVjYjk4/NmJkODdmNTU4ZDU1/MGUwNjk0MWFmZWU0/NmYzZjVlYmZjZDIy/MWM4MGMwODc4MDhi/MDM5MmZkYy9sZWFy/bi5taWNyb3NvZnQu/Y29tLw",
+                    "path": "› en-us  › semantic-kernel  › concepts  › kernel"
+                },
+                "thumbnail": {
+                    "src": "https://imgs.search.brave.com/KxEtqQiadL_R-Mr9_FffhMDYK3gVHrYWjuByaTLSjYg/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9sZWFy/bi5taWNyb3NvZnQu/Y29tL2VuLXVzL21l/ZGlhL29wZW4tZ3Jh/cGgtaW1hZ2UucG5n",
+                    "original": "https://learn.microsoft.com/en-us/media/open-graph-image.png",
+                    "logo": false
+                },
+                "age": "July 25, 2024"
+            },
+            {
+                "title": "Semantic Kernel: The New Way to Create Artificial Intelligence Applications | by Adolfo | Globant | Medium",
+                "url": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+                "is_source_local": false,
+                "is_source_both": false,
+                "description": "When developing a solution using <strong>Semantic</strong> <strong>Kernel</strong>, there are a series of components that we can employ to provide a better experience in our application. Not all of them are mandatory to use, although it is advisable to be familiar with them.",
+                "page_age": "2024-01-08T02:03:21",
+                "profile": {
+                    "name": "Medium",
+                    "url": "https://medium.com/globant/semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca",
+                    "long_name": "medium.com",
+                    "img": "https://imgs.search.brave.com/4R4hFITz_F_be0roUiWbTZKhsywr3fnLTMTkFL5HFow/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOTZhYmQ1N2Q4/NDg4ZDcyODIyMDZi/MzFmOWNhNjE3Y2E4/Y2YzMThjNjljNDIx/ZjllZmNhYTcwODhl/YTcwNDEzYy9tZWRp/dW0uY29tLw"
+                },
+                "language": "en",
+                "family_friendly": true,
+                "type": "search_result",
+                "subtype": "article",
+                "is_live": false,
+                "meta_url": {
+                    "scheme": "https",
+                    "netloc": "medium.com",
+                    "hostname": "medium.com",
+                    "favicon": "https://imgs.search.brave.com/4R4hFITz_F_be0roUiWbTZKhsywr3fnLTMTkFL5HFow/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOTZhYmQ1N2Q4/NDg4ZDcyODIyMDZi/MzFmOWNhNjE3Y2E4/Y2YzMThjNjljNDIx/ZjllZmNhYTcwODhl/YTcwNDEzYy9tZWRp/dW0uY29tLw",
+                    "path": "› globant  › semantic-kernel-the-new-way-to-create-artificial-intelligence-applications-7959d5fc90ca"
+                },
+                "thumbnail": {
+                    "src": "https://imgs.search.brave.com/XcAfvJj3DldkElaNEYTVO16wc31dCRp7bSg0uLe2F7E/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9taXJv/Lm1lZGl1bS5jb20v/djIvcmVzaXplOmZp/dDoxMjAwLzEqbUlM/NExYcjFQTC0tUWlt/bTllTktHZy5qcGVn",
+                    "original": "https://miro.medium.com/v2/resize:fit:1200/1*mIL4LXr1PL--Qimm9eNKGg.jpeg",
+                    "logo": false
+                },
+                "age": "January 8, 2024"
+            },
+            {
+                "title": "Guide to Semantic Kernel",
+                "url": "https://www.analyticsvidhya.com/blog/2025/04/semantic-kernel/",
+                "is_source_local": false,
+                "is_source_both": false,
+                "description": "This transformation is driven by the rise of agentic frameworks like Autogen, LangGraph, and CrewAI. These frameworks enable large language models (LLMs) to act more like autonomous agents—capable of making decisions, calling functions, and collaborating across tasks. Among these, one particularly powerful yet developer-friendly option comes from Microsoft:<strong>Semantic</strong> <strong>Kernel</strong>...",
+                "page_age": "2025-04-05T06:44:24",
+                "profile": {
+                    "name": "Analytics Vidhya",
+                    "url": "https://www.analyticsvidhya.com/blog/2025/04/semantic-kernel/",
+                    "long_name": "analyticsvidhya.com",
+                    "img": "https://imgs.search.brave.com/hQWAHDfKiXo1CUqglQzzUNKabGxCuxr2m0u2YS9m8yQ/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYzYzYTc2NzY4/MWNhOWUzNzE0MGVl/OGYwMTI3MDI4YjYx/MjZiODkzNGRlNGJk/YjVlZjA2ZGE4Yjgz/ZTA1MTAzMy93d3cu/YW5hbHl0aWNzdmlk/aHlhLmNvbS8"
+                },
+                "language": "en",
+                "family_friendly": true,
+                "type": "search_result",
+                "subtype": "faq",
+                "is_live": false,
+                "meta_url": {
+                    "scheme": "https",
+                    "netloc": "analyticsvidhya.com",
+                    "hostname": "www.analyticsvidhya.com",
+                    "favicon": "https://imgs.search.brave.com/hQWAHDfKiXo1CUqglQzzUNKabGxCuxr2m0u2YS9m8yQ/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvYzYzYTc2NzY4/MWNhOWUzNzE0MGVl/OGYwMTI3MDI4YjYx/MjZiODkzNGRlNGJk/YjVlZjA2ZGE4Yjgz/ZTA1MTAzMy93d3cu/YW5hbHl0aWNzdmlk/aHlhLmNvbS8",
+                    "path": "  › home  › guide to semantic kernel"
+                },
+                "thumbnail": {
+                    "src": "https://imgs.search.brave.com/oGawcJrJiMGrsEjLviMBpPhI0CK2-W68PRvPXMaShOQ/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9jZG4u/YW5hbHl0aWNzdmlk/aHlhLmNvbS93cC1j/b250ZW50L3VwbG9h/ZHMvMjAyNS8wNC9F/eHBsb3JpbmctU2Vt/YW50aWMtS2VybmVs/LVVubGVhc2hpbmct/dGhlLVBvd2VyLW9m/LXRoZS1BZ2VudGlj/LUZyYW1ld29yay0u/d2VicA",
+                    "original": "https://cdn.analyticsvidhya.com/wp-content/uploads/2025/04/Exploring-Semantic-Kernel-Unleashing-the-Power-of-the-Agentic-Framework-.webp",
+                    "logo": false
+                },
+                "age": "1 day ago"
+            },
+            {
+                "title": "Semantic Kernel 101",
+                "url": "https://www.codemag.com/Article/2401091/Semantic-Kernel-101",
+                "is_source_local": false,
+                "is_source_both": false,
+                "description": "Currently, the Copilot approach rules the artificial intelligence (AI) world, and in that world, Microsoft created Semantic Kernel as a framework for building its own Copilots. Now, you can use Semantic Kernel too. Semantic Kernel (SK) is <strong>an open-source AI framework</strong>, created by Microsoft for ...",
+                "page_age": "2025-02-07T00:00:00",
+                "profile": {
+                    "name": "CODE",
+                    "url": "https://www.codemag.com/Article/2401091/Semantic-Kernel-101",
+                    "long_name": "codemag.com",
+                    "img": "https://imgs.search.brave.com/IHpYeNjjOa1q5GWEH6_DrSCQ_Srcj1PYu-zc5dTpQOE/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOWNiNzI5ODUy/MWU1NDkwZWE3N2Mw/NjllZGU3YWE3YjU2/Mzg0MWE2ZjU5MWNl/NTEwOTkyNTRkMjZj/YTM2NGQ3My93d3cu/Y29kZW1hZy5jb20v"
+                },
+                "language": "en",
+                "family_friendly": true,
+                "type": "search_result",
+                "subtype": "generic",
+                "is_live": false,
+                "meta_url": {
+                    "scheme": "https",
+                    "netloc": "codemag.com",
+                    "hostname": "www.codemag.com",
+                    "favicon": "https://imgs.search.brave.com/IHpYeNjjOa1q5GWEH6_DrSCQ_Srcj1PYu-zc5dTpQOE/rs:fit:32:32:1:0/g:ce/aHR0cDovL2Zhdmlj/b25zLnNlYXJjaC5i/cmF2ZS5jb20vaWNv/bnMvOWNiNzI5ODUy/MWU1NDkwZWE3N2Mw/NjllZGU3YWE3YjU2/Mzg0MWE2ZjU5MWNl/NTEwOTkyNTRkMjZj/YTM2NGQ3My93d3cu/Y29kZW1hZy5jb20v",
+                    "path": "› Article  › 2401091  › Semantic-Kernel-101"
+                },
+                "thumbnail": {
+                    "src": "https://imgs.search.brave.com/oTv3hzudYH3G78UrviYe3l11IcQavn9IDUwGO7SBT00/rs:fit:200:200:1:0/g:ce/aHR0cHM6Ly9lcHNl/bnRlcnByaXNlLmJs/b2IuY29yZS53aW5k/b3dzLm5ldC9wZXJt/YW5lbnQtZmlsZXMv/RmlsZUF0dGFjaG1l/bnRzL2Q3N2NjY2Zj/X2ZhOWZfNGVkY19h/YWZhXzI3ZmVkMjM1/NDg4NS8yMjEyMDUx/X0hlYWRlcl9SZWN0/YW5nbGUucG5n",
+                    "original": "https://epsenterprise.blob.core.windows.net/permanent-files/FileAttachments/d77cccfc_fa9f_4edc_aafa_27fed2354885/2212051_Header_Rectangle.png",
+                    "logo": false
+                },
+                "age": "February 7, 2025"
+            }
+        ],
+        "family_friendly": true
+    }
+}

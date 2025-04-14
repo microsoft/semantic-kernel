@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -45,6 +46,32 @@ public abstract class Agent
     public ILoggerFactory? LoggerFactory { get; init; }
 
     /// <summary>
+    /// Gets the arguments for the agent instruction parameters (optional).
+    /// </summary>
+    /// <remarks>
+    /// Also includes <see cref="PromptExecutionSettings"/>.
+    /// </remarks>
+    public KernelArguments? Arguments { get; init; }
+
+    /// <summary>
+    /// Gets the instructions for the agent (optional).
+    /// </summary>
+    public string? Instructions { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime.
+    /// </summary>
+    /// <value>
+    /// The <see cref="Kernel"/> containing services, plugins, and filters for use throughout the agent lifetime. The default value is an empty Kernel, but that can be overridden.
+    /// </value>
+    public Kernel Kernel { get; init; } = new();
+
+    /// <summary>
+    /// Gets or sets a prompt template based on the agent instructions.
+    /// </summary>
+    public IPromptTemplate? Template { get; set; }
+
+    /// <summary>
     /// Invoke the agent with no message assuming that all required instructions are already provided to the agent or on the thread.
     /// </summary>
     /// <param name="thread">The conversation thread to continue with this invocation. If not provided, creates a new thread.</param>
@@ -59,7 +86,7 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync([], thread, options, cancellationToken);
+        return this.InvokeAsync((ICollection<ChatMessageContent>)[], thread, options, cancellationToken);
     }
 
     /// <summary>
@@ -143,7 +170,7 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync([], thread, options, cancellationToken);
+        return this.InvokeStreamingAsync((ICollection<ChatMessageContent>)[], thread, options, cancellationToken);
     }
 
     /// <summary>
@@ -221,6 +248,27 @@ public abstract class Agent
     /// Get the active logger factory, if defined; otherwise, provide the default.
     /// </summary>
     protected virtual ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? NullLoggerFactory.Instance;
+
+    /// <summary>
+    /// Formats the system instructions for the agent.
+    /// </summary>
+    /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use by the agent.</param>
+    /// <param name="arguments">Optional arguments to pass to the agents's invocation, including any <see cref="PromptExecutionSettings"/>.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>The formatted system instructions for the agent.</returns>
+    protected async Task<string?> RenderInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
+    {
+        if (this.Template is null)
+        {
+            // Use the instructions as-is
+            return this.Instructions;
+        }
+
+        var mergedArguments = this.Arguments.Merge(arguments);
+
+        // Use the provided template as the instructions
+        return await this.Template.RenderAsync(kernel, mergedArguments, cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:

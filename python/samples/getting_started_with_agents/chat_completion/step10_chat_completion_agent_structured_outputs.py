@@ -56,9 +56,9 @@ async def main():
 
     print(f"# User: {USER_INPUT}")
     # 4. Invoke the agent for a response
-    response = await agent.get_response(message=USER_INPUT, thread=thread)
+    response = await agent.get_response(messages=USER_INPUT, thread=thread)
     # 5. Validate the response and print the structured output
-    reasoned_result = Reasoning.model_validate(json.loads(response.content))
+    reasoned_result = Reasoning.model_validate(json.loads(response.message.content))
     print(f"# {response.name}:\n\n{reasoned_result.model_dump_json(indent=4)}")
 
     # 6. Cleanup: Clear the thread

@@ -45,7 +45,7 @@ TASK = "a slogan for a new line of electric cars."
 
 
 async def main():
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,
@@ -85,7 +85,7 @@ async def main():
 
         try:
             # 6. Add the task as a message to the group chat
-            await chat.add_chat_message(messages=TASK)
+            await chat.add_chat_message(message=TASK)
             print(f"# {AuthorRole.USER}: '{TASK}'")
             # 7. Invoke the chat
             async for content in chat.invoke():

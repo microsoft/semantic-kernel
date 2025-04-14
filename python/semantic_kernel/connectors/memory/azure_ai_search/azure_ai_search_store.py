@@ -4,11 +4,6 @@ import logging
 import sys
 from typing import TYPE_CHECKING, Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
 from pydantic import ValidationError
@@ -26,8 +21,12 @@ if TYPE_CHECKING:
     from azure.core.credentials import AzureKeyCredential, TokenCredential
     from azure.core.credentials_async import AsyncTokenCredential
 
-    from semantic_kernel.data import VectorStoreRecordCollection
+    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -71,7 +70,7 @@ class AzureAISearchStore(VectorStore):
         managed_client: bool = False
         if not search_index_client:
             try:
-                azure_ai_search_settings = AzureAISearchSettings.create(
+                azure_ai_search_settings = AzureAISearchSettings(
                     env_file_path=env_file_path,
                     endpoint=search_endpoint,
                     api_key=api_key,

@@ -54,7 +54,7 @@ class MongoDBAtlasMemoryStore(MemoryStoreBase):
         from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
 
         try:
-            mongodb_settings = MongoDBAtlasSettings.create(
+            mongodb_settings = MongoDBAtlasSettings(
                 database_name=database_name,
                 index_name=index_name,
                 connection_string=connection_string,

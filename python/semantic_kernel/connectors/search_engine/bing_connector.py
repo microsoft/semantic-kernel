@@ -37,7 +37,7 @@ class BingConnector(ConnectorBase):
             env_file_encoding (str | None): The optional encoding of the .env file.
         """
         try:
-            self._settings = BingSettings.create(
+            self._settings = BingSettings(
                 api_key=api_key,
                 custom_config=custom_config,
                 env_file_path=env_file_path,

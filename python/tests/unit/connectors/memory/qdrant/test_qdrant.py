@@ -8,9 +8,8 @@ from qdrant_client.models import Datatype, Distance, FieldCondition, Filter, Mat
 
 from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCollection
 from semantic_kernel.connectors.memory.qdrant.qdrant_store import QdrantStore
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.record_definition import VectorStoreRecordVectorField
+from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
