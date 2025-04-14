@@ -232,11 +232,13 @@ internal sealed class Program
     /// 3. Prompts the AI model to create a schedule based on the latest unread emails in the mailbox.
     /// 4. The AI model calls the `MailboxUtils-SummarizeUnreadEmails` function to summarize the unread emails.
     /// 5. The `MailboxUtils-SummarizeUnreadEmails` function creates a few sample emails with attachments and
-    ///    sends a sampling request to the client to summarize them.
-    ///    * The client receive sampling request and invokes the sampling request handler.
-    ///    * The sampling request handler sends the sampling request to the AI model to summarize the emails.
-    ///    * The AI model processes the request and returns the summary to the handler which sends it back to the server.
-    /// 6. The `MailboxUtils-SummarizeUnreadEmails` function receives the result and returns it to the AI model.
+    ///    sends a sampling request to the client to summarize them:
+    ///    5.1. The client receive sampling request from server and invokes the sampling request handler.
+    ///    5.2. SK intercepts the sampling request invocation via `HumanInTheLoopFilter` filter to enable human-in-the-loop processing.
+    ///    5.3. The `HumanInTheLoopFilter` allows invocation of the sampling request handler.
+    ///    5.5. The sampling request handler sends the sampling request to the AI model to summarize the emails.
+    ///    5.6. The AI model processes the request and returns the summary to the handler which sends it back to the server.
+    ///    5.7. The `MailboxUtils-SummarizeUnreadEmails` function receives the result and returns it to the AI model.
     /// 7. Having received the summary, the AI model creates a schedule based on the unread emails.
     /// </summary>
     private static async Task UseMCPSamplingAsync()
