@@ -13,7 +13,7 @@ public static class ChatMessages
     internal static readonly ChatMessageContent Empty = new();
 
     /// <summary>
-    /// Broadcast a message to all <see cref="GroupChatActor"/>.
+    /// Broadcast a message to all <see cref="ChatAgentActor"/>.
     /// </summary>
     public sealed class Group
     {
@@ -24,7 +24,7 @@ public static class ChatMessages
     }
 
     /// <summary>
-    /// Reset/clear the conversation history for all <see cref="GroupChatActor"/>.
+    /// Reset/clear the conversation history for all <see cref="ChatAgentActor"/>.
     /// </summary>
     public sealed class Reset { }
 
@@ -40,7 +40,7 @@ public static class ChatMessages
     }
 
     /// <summary>
-    /// Signal a <see cref="GroupChatActor"/> to respond.
+    /// Signal a <see cref="ChatAgentActor"/> to respond.
     /// </summary>
     public sealed class Speak { }
 

@@ -3,17 +3,17 @@
 using Microsoft.AgentRuntime.InProcess;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
+using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="BroadcastOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="ConcurrentOrchestration{TInput, TOutput}"/>.
 /// </summary>
-public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task SimpleBroadcastAsync()
+    public async Task SimpleConcurrentAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
@@ -22,7 +22,7 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        BroadcastOrchestration orchestration = new(runtime, agent1, agent2, agent3);
+        ConcurrentOrchestration orchestration = new(runtime, agent1, agent2, agent3);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -37,7 +37,7 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
     }
 
     [Fact]
-    public async Task NestedBroadcastAsync()
+    public async Task NestedConcurrentAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
@@ -48,9 +48,9 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
         // Define the pattern
         InProcessRuntime runtime = new();
 
-        BroadcastOrchestration<BroadcastMessages.Task, BroadcastMessages.Result> orchestrationLeft = CreateNested(runtime, agent1, agent2);
-        BroadcastOrchestration<BroadcastMessages.Task, BroadcastMessages.Result> orchestrationRight = CreateNested(runtime, agent3, agent4);
-        BroadcastOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
+        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationLeft = CreateNested(runtime, agent1, agent2);
+        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationRight = CreateNested(runtime, agent3, agent4);
+        ConcurrentOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -72,7 +72,7 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        BroadcastOrchestration orchestration = new(runtime, agent);
+        ConcurrentOrchestration orchestration = new(runtime, agent);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -94,8 +94,8 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        BroadcastOrchestration<BroadcastMessages.Task, BroadcastMessages.Result> orchestrationInner = CreateNested(runtime, agent);
-        BroadcastOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationInner = CreateNested(runtime, agent);
+        ConcurrentOrchestration orchestrationOuter = new(runtime, orchestrationInner);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -109,12 +109,12 @@ public class Step01_Broadcast(ITestOutputHelper output) : BaseOrchestrationTest(
         await runtime.RunUntilIdleAsync();
     }
 
-    private static BroadcastOrchestration<BroadcastMessages.Task, BroadcastMessages.Result> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
+    private static ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
     {
         return new(runtime, targets)
         {
-            InputTransform = (BroadcastMessages.Task input) => ValueTask.FromResult(input),
-            ResultTransform = (BroadcastMessages.Result[] results) => ValueTask.FromResult(string.Join("\n", results.Select(result => $"{result.Message}")).ToBroadcastResult()),
+            InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(input),
+            ResultTransform = (ConcurrentMessages.Result[] results) => ValueTask.FromResult(string.Join("\n", results.Select(result => $"{result.Message}")).ToResult()),
         };
     }
 }

@@ -4,28 +4,28 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
 /// <summary>
 /// An orchestration that broadcasts the input message to each agent.
 /// </summary>
-public class BroadcastOrchestration<TInput, TOutput>
-    : AgentOrchestration<TInput, BroadcastMessages.Task, BroadcastMessages.Result[], TOutput>
+public class ConcurrentOrchestration<TInput, TOutput>
+    : AgentOrchestration<TInput, ConcurrentMessages.Request, ConcurrentMessages.Result[], TOutput>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="BroadcastOrchestration{TInput, TOutput}"/> class.
+    /// Initializes a new instance of the <see cref="ConcurrentOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public BroadcastOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+    public ConcurrentOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
         : base(runtime, agents)
     {
     }
 
     /// <inheritdoc />
-    protected override ValueTask StartAsync(TopicId topic, BroadcastMessages.Task input, AgentType? entryAgent)
+    protected override ValueTask StartAsync(TopicId topic, ConcurrentMessages.Request input, AgentType? entryAgent)
     {
-        Trace.WriteLine($"> BROADCAST START: {topic}");
+        Trace.WriteLine($"> CONCURRENT START: {topic}");
         return this.Runtime.PublishMessageAsync(input, topic);
     }
 
@@ -38,8 +38,8 @@ public class BroadcastOrchestration<TInput, TOutput>
             resultType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new BroadcastResultActor(agentId, runtime, orchestrationType, this.Members.Count))).ConfigureAwait(false);
-        Trace.WriteLine($"> BROADCAST RESULTS: {resultType}");
+                    new ConcurrentResultActor(agentId, runtime, orchestrationType, this.Members.Count))).ConfigureAwait(false);
+        Trace.WriteLine($"> CONCURRENT RESULTS: {resultType}");
 
         // Register member actors - All agents respond to the same message.
         int agentCount = 0;
@@ -58,7 +58,7 @@ public class BroadcastOrchestration<TInput, TOutput>
                 memberType = await orchestration.RegisterAsync(topic, resultType).ConfigureAwait(false);
             }
 
-            Trace.WriteLine($"> BROADCAST MEMBER #{agentCount}: {memberType}");
+            Trace.WriteLine($"> CONCURRENT MEMBER #{agentCount}: {memberType}");
 
             await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
@@ -71,7 +71,7 @@ public class BroadcastOrchestration<TInput, TOutput>
             await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new BroadcastActor(agentId, runtime, agent, resultType))).ConfigureAwait(false);
+                    ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType))).ConfigureAwait(false);
 
             return agentType;
         }

@@ -63,7 +63,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new GroupChatManager(agentId, runtime, team, orchestrationType, topic))).ConfigureAwait(false);
+                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 
@@ -75,9 +75,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
             await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new GroupChatActor(agentId, runtime, agent, topic))).ConfigureAwait(false);
-
-            await this.SubscribeAsync(agentType, topic).ConfigureAwait(false);
+                    ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic))).ConfigureAwait(false);
 
             return agentType;
         }

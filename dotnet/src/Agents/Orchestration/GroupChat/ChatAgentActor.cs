@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// An <see cref="AgentActor"/> used with the <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal sealed class GroupChatActor :
+internal sealed class ChatAgentActor :
     AgentActor,
     IHandle<ChatMessages.Group>,
     IHandle<ChatMessages.Reset>,
@@ -21,13 +21,13 @@ internal sealed class GroupChatActor :
     private readonly TopicId _groupTopic;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GroupChatActor"/> class.
+    /// Initializes a new instance of the <see cref="ChatAgentActor"/> class.
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
-    public GroupChatActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic)
+    public ChatAgentActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic)
         : base(id, runtime, agent)
     {
         this._cache = [];
@@ -51,11 +51,11 @@ internal sealed class GroupChatActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ChatMessages.Speak item, MessageContext messageContext)
     {
-        Trace.WriteLine($"> BROADCAST ACTOR: {this.Id.Type} SPEAK");
+        Trace.WriteLine($"> GROUPCHAT ACTOR: {this.Id.Type} SPEAK");
 
         ChatMessageContent response = await this.InvokeAsync(this._cache, messageContext.CancellationToken).ConfigureAwait(false);
 
-        Trace.WriteLine($"> BROADCAST ACTOR: {this.Id.Type} OUTPUT - {response}");
+        Trace.WriteLine($"> GROUPCHAT ACTOR: {this.Id.Type} OUTPUT - {response}");
 
         this._cache.Clear();
         await this.PublishMessageAsync(response.ToGroup(), this._groupTopic).ConfigureAwait(false);

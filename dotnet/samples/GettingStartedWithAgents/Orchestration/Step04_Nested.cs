@@ -4,19 +4,19 @@ using Microsoft.AgentRuntime.InProcess;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.Broadcast;
-using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
+using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
+using Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="HandoffOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="SequentialOrchestration{TInput, TOutput}"/>.
 /// </summary>
 public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task NestHandoffBroadcastAsync()
+    public async Task NestSequentialGroupsAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
@@ -26,13 +26,13 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        BroadcastOrchestration<HandoffMessage, HandoffMessage> innerOrchestration =
+        ConcurrentOrchestration<SequentialMessage, SequentialMessage> innerOrchestration =
             new(runtime, agent3, agent4)
             {
-                InputTransform = (HandoffMessage input) => ValueTask.FromResult(new BroadcastMessages.Task { Message = input.Content }),
-                ResultTransform = (BroadcastMessages.Result[] output) => ValueTask.FromResult(HandoffMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content)))))
+                InputTransform = (SequentialMessage input) => ValueTask.FromResult(new ConcurrentMessages.Request { Message = input.Content }),
+                ResultTransform = (ConcurrentMessages.Result[] output) => ValueTask.FromResult(SequentialMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content)))))
             };
-        HandoffOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
+        SequentialOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -46,7 +46,7 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
     }
 
     [Fact]
-    public async Task NestBroadcastHandoffAsync()
+    public async Task NestConcurrentGroupsAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
@@ -56,13 +56,13 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        HandoffOrchestration<BroadcastMessages.Task, BroadcastMessages.Result> innerOrchestration =
+        SequentialOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> innerOrchestration =
             new(runtime, agent3, agent4)
             {
-                InputTransform = (BroadcastMessages.Task input) => ValueTask.FromResult(new HandoffMessage { Content = input.Message }),
-                ResultTransform = (HandoffMessage result) => ValueTask.FromResult(new BroadcastMessages.Result { Message = result.Content })
+                InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(new SequentialMessage { Content = input.Message }),
+                ResultTransform = (SequentialMessage result) => ValueTask.FromResult(new ConcurrentMessages.Result { Message = result.Content })
             };
-        BroadcastOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
+        ConcurrentOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
 
         // Start the runtime
         await runtime.StartAsync();

@@ -3,17 +3,17 @@
 using Microsoft.AgentRuntime.InProcess;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
+using Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 
 namespace GettingStarted.Orchestration;
 
 /// <summary>
-/// Demonstrates how to use the <see cref="HandoffOrchestration{TInput, TOutput}"/>.
+/// Demonstrates how to use the <see cref="SequentialOrchestration{TInput, TOutput}"/>.
 /// </summary>
-public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task SimpleHandoffAsync()
+    public async Task SimpleSequentailAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
@@ -22,7 +22,7 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        HandoffOrchestration orchestration = new(runtime, agent1, agent2, agent3);
+        SequentialOrchestration orchestration = new(runtime, agent1, agent2, agent3);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -36,7 +36,7 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
     }
 
     [Fact]
-    public async Task NestedHandoffAsync()
+    public async Task NestedSequentailAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
@@ -47,9 +47,9 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         // Define the pattern
         InProcessRuntime runtime = new();
 
-        HandoffOrchestration<HandoffMessage, HandoffMessage> orchestrationLeft = CreateNested(runtime, agent1, agent2);
-        HandoffOrchestration<HandoffMessage, HandoffMessage> orchestrationRight = CreateNested(runtime, agent3, agent4);
-        HandoffOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
+        SequentialOrchestration<SequentialMessage, SequentialMessage> orchestrationLeft = CreateNested(runtime, agent1, agent2);
+        SequentialOrchestration<SequentialMessage, SequentialMessage> orchestrationRight = CreateNested(runtime, agent3, agent4);
+        SequentialOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -71,7 +71,7 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        HandoffOrchestration orchestration = new(runtime, agent);
+        SequentialOrchestration orchestration = new(runtime, agent);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -93,8 +93,8 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        HandoffOrchestration<HandoffMessage, HandoffMessage> orchestrationInner = CreateNested(runtime, agent);
-        HandoffOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+        SequentialOrchestration<SequentialMessage, SequentialMessage> orchestrationInner = CreateNested(runtime, agent);
+        SequentialOrchestration orchestrationOuter = new(runtime, orchestrationInner);
 
         // Start the runtime
         await runtime.StartAsync();
@@ -108,12 +108,12 @@ public class Step02_Handoff(ITestOutputHelper output) : BaseOrchestrationTest(ou
         await runtime.RunUntilIdleAsync();
     }
 
-    private static HandoffOrchestration<HandoffMessage, HandoffMessage> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
+    private static SequentialOrchestration<SequentialMessage, SequentialMessage> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
     {
         return new(runtime, targets)
         {
-            InputTransform = (HandoffMessage input) => ValueTask.FromResult(input),
-            ResultTransform = (HandoffMessage results) => ValueTask.FromResult(results),
+            InputTransform = (SequentialMessage input) => ValueTask.FromResult(input),
+            ResultTransform = (SequentialMessage results) => ValueTask.FromResult(results),
         };
     }
 }

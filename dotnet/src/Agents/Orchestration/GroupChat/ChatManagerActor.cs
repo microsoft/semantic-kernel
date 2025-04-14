@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// An <see cref="PatternActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-public abstract class ChatManager :
+public abstract class ChatManagerActor :
     PatternActor,
     IHandle<ChatMessages.InputTask>,
     IHandle<ChatMessages.Group>,
@@ -27,14 +27,14 @@ public abstract class ChatManager :
     private readonly TopicId _groupTopic;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ChatManager"/> class.
+    /// Initializes a new instance of the <see cref="ChatManagerActor"/> class.
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
-    protected ChatManager(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
+    protected ChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
         : base(id, runtime, DefaultDescription)
     {
         this.Chat = [];

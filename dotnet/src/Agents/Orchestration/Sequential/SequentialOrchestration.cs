@@ -5,28 +5,28 @@ using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 
 /// <summary>
 /// An orchestration that provides the input message to the first agent
 /// and sequentially passes each agent result to the next agent.
 /// </summary>
-public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, HandoffMessage, HandoffMessage, TOutput>
+public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInput, SequentialMessage, SequentialMessage, TOutput>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="HandoffOrchestration{TInput, TOutput}"/> class.
+    /// Initializes a new instance of the <see cref="SequentialOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public HandoffOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+    public SequentialOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
         : base(runtime, agents)
     {
     }
 
     /// <inheritdoc />
-    protected override async ValueTask StartAsync(TopicId topic, HandoffMessage input, AgentType? entryAgent)
+    protected override async ValueTask StartAsync(TopicId topic, SequentialMessage input, AgentType? entryAgent)
     {
-        Trace.WriteLine($"> HANDOFF START: {topic} [{entryAgent}]");
+        Trace.WriteLine($"> SEQUENTIAL START: {topic} [{entryAgent}]");
 
         await this.Runtime.SendMessageAsync(input, entryAgent!.Value).ConfigureAwait(false); // NULL OVERRIDE
     }
@@ -38,7 +38,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         AgentType nextAgent = orchestrationType;
         for (int index = this.Members.Count - 1; index >= 0; --index)
         {
-            Trace.WriteLine($"> HANDOFF NEXT #{index}: {nextAgent}");
+            Trace.WriteLine($"> SEQUENTIAL NEXT #{index}: {nextAgent}");
             OrchestrationTarget member = this.Members[index];
 
             if (member.IsAgent(out Agent? agent))
@@ -49,7 +49,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             {
                 nextAgent = await orchestration.RegisterAsync(topic, nextAgent).ConfigureAwait(false);
             }
-            Trace.WriteLine($"> HANDOFF MEMBER #{index}: {nextAgent}");
+            Trace.WriteLine($"> SEQUENTIAL MEMBER #{index}: {nextAgent}");
         }
 
         return nextAgent;
@@ -59,7 +59,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             AgentType agentType = this.GetAgentType(topic, index);
             return await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
-                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new HandoffActor(agentId, runtime, agent, nextAgent))).ConfigureAwait(false);
+                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent))).ConfigureAwait(false);
         }
     }
 
