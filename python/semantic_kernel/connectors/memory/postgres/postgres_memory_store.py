@@ -58,7 +58,7 @@ class PostgresMemoryStore(MemoryStoreBase):
             env_file_encoding: The encoding of the environment settings file.
         """
         try:
-            postgres_settings = PostgresSettings.create(
+            postgres_settings = PostgresSettings(
                 connection_string=connection_string,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

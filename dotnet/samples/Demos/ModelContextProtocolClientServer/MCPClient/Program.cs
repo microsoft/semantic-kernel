@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
@@ -22,11 +23,13 @@ internal sealed class Program
     {
         await UseMCPToolsAsync();
 
-        await UseMCPToolsAndPromptAsync();
+        await UseMCPPromptAsync();
 
         await UseMCPResourcesAsync();
 
         await UseMCPResourceTemplatesAsync();
+
+        await UseMCPSamplingAsync();
     }
 
     /// <summary>
@@ -175,36 +178,84 @@ internal sealed class Program
     }
 
     /// <summary>
-    /// Demonstrates how to use the MCP tools and MCP prompt with the Semantic Kernel.
+    /// Demonstrates how to use the MCP prompt with the Semantic Kernel.
     /// The code in this method:
     /// 1. Creates an MCP client.
-    /// 2. Retrieves the list of tools provided by the MCP server.
-    /// 3. Retrieves the list of prompts provided by the MCP server.
-    /// 4. Creates a kernel and registers the MCP tools as Kernel functions.
-    /// 5. Requests the `GetCurrentWeatherForCity` prompt from the MCP server.
-    /// 6. The MCP server renders the prompt using the `Boston` as value for the `city` parameter and the result of the `DateTimeUtils-GetCurrentDateTimeInUtc` server-side invocation added to the prompt as part of prompt rendering.
-    /// 7. Converts the MCP server prompt: list of messages where each message is represented by content and role to a chat history.
-    /// 8. Sends the chat history to the AI model together with the MCP tools represented as Kernel functions.
-    /// 9. The AI model calls WeatherUtils-GetWeatherForCity function with the current date time and the `Boston` arguments extracted from the prompt to get the weather information.
-    /// 10. Having received the weather information from the function call, the AI model returns the answer to the prompt.
+    /// 2. Retrieves the list of prompts provided by the MCP server.
+    /// 3. Gets the current weather for Boston and Sydney using the `GetCurrentWeatherForCity` prompt.
+    /// 4. Adds the MCP server prompts to the chat history and prompts the AI model to compare the weather in the two cities and suggest the best place to go for a walk.
+    /// 5. After receiving and processing the weather data for both cities and the prompt, the AI model returns an answer.
     /// </summary>
-    private static async Task UseMCPToolsAndPromptAsync()
+    private static async Task UseMCPPromptAsync()
     {
-        Console.WriteLine($"Running the {nameof(UseMCPToolsAndPromptAsync)} sample.");
+        Console.WriteLine($"Running the {nameof(UseMCPPromptAsync)} sample.");
 
         // Create an MCP client
         await using IMcpClient mcpClient = await CreateMcpClientAsync();
-
-        // Retrieve and display the list provided by the MCP server
-        IList<McpClientTool> tools = await mcpClient.ListToolsAsync();
-        DisplayTools(tools);
 
         // Retrieve and display the list of prompts provided by the MCP server
         IList<McpClientPrompt> prompts = await mcpClient.ListPromptsAsync();
         DisplayPrompts(prompts);
 
-        // Create a kernel and register the MCP tools
+        // Create a kernel
         Kernel kernel = CreateKernelWithChatCompletionService();
+
+        // Get weather for Boston using the `GetCurrentWeatherForCity` prompt from the MCP server
+        GetPromptResult bostonWeatherPrompt = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Boston", ["time"] = DateTime.UtcNow.ToString() });
+
+        // Get weather for Sydney using the `GetCurrentWeatherForCity` prompt from the MCP server
+        GetPromptResult sydneyWeatherPrompt = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Sydney", ["time"] = DateTime.UtcNow.ToString() });
+
+        // Add the prompts to the chat history
+        ChatHistory chatHistory = [];
+        chatHistory.AddRange(bostonWeatherPrompt.ToChatMessageContents());
+        chatHistory.AddRange(sydneyWeatherPrompt.ToChatMessageContents());
+        chatHistory.AddUserMessage("Compare the weather in the two cities and suggest the best place to go for a walk.");
+
+        // Execute a prompt using the MCP tools and prompt
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, kernel: kernel);
+
+        Console.WriteLine(result);
+        Console.WriteLine();
+
+        // The expected output is: Given these conditions, Sydney would be the better choice for a pleasant walk, as the sunny and warm weather is ideal for outdoor activities.
+        // The rain in Boston could make walking less enjoyable and potentially inconvenient.
+    }
+
+    /// <summary>
+    /// Demonstrates how to use the MCP sampling with the Semantic Kernel.
+    /// The code in this method:
+    /// 1. Creates an MCP client and register the sampling request handler.
+    /// 2. Retrieves the list of tools provided by the MCP server and registers them as Kernel functions.
+    /// 3. Prompts the AI model to create a schedule based on the latest unread emails in the mailbox.
+    /// 4. The AI model calls the `MailboxUtils-SummarizeUnreadEmails` function to summarize the unread emails.
+    /// 5. The `MailboxUtils-SummarizeUnreadEmails` function creates a few sample emails with attachments and
+    ///    sends a sampling request to the client to summarize them:
+    ///    5.1. The client receive sampling request from server and invokes the sampling request handler.
+    ///    5.2. SK intercepts the sampling request invocation via `HumanInTheLoopFilter` filter to enable human-in-the-loop processing.
+    ///    5.3. The `HumanInTheLoopFilter` allows invocation of the sampling request handler.
+    ///    5.5. The sampling request handler sends the sampling request to the AI model to summarize the emails.
+    ///    5.6. The AI model processes the request and returns the summary to the handler which sends it back to the server.
+    ///    5.7. The `MailboxUtils-SummarizeUnreadEmails` function receives the result and returns it to the AI model.
+    /// 7. Having received the summary, the AI model creates a schedule based on the unread emails.
+    /// </summary>
+    private static async Task UseMCPSamplingAsync()
+    {
+        Console.WriteLine($"Running the {nameof(UseMCPSamplingAsync)} sample.");
+
+        // Create a kernel
+        Kernel kernel = CreateKernelWithChatCompletionService();
+
+        // Register the human-in-the-loop filter that intercepts function calls allowing users to review and approve or reject them
+        kernel.FunctionInvocationFilters.Add(new HumanInTheLoopFilter());
+
+        // Create an MCP client with a custom sampling request handler
+        await using IMcpClient mcpClient = await CreateMcpClientAsync(kernel, SamplingRequestHandlerAsync);
+
+        // Import MCP tools as Kernel functions so AI model can call them
+        IList<McpClientTool> tools = await mcpClient.ListToolsAsync();
         kernel.Plugins.AddFromFunctions("Tools", tools.Select(aiFunction => aiFunction.AsKernelFunction()));
 
         // Enable automatic function calling
@@ -214,20 +265,36 @@ internal sealed class Program
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
         };
 
-        // Retrieve the `GetCurrentWeatherForCity` prompt from the MCP server and convert it to a chat history
-        GetPromptResult promptResult = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Boston" });
-
-        ChatHistory chatHistory = promptResult.ToChatHistory();
-
-        // Execute a prompt using the MCP tools and prompt
+        // Execute a prompt
+        string prompt = "Create a schedule for me based on the latest unread emails in my inbox.";
         IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
-
-        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(prompt, executionSettings, kernel);
 
         Console.WriteLine(result);
         Console.WriteLine();
 
-        // The expected output is: The weather in Boston as of 2025-04-02 16:39:40 is 61°F and rainy.
+        // The expected output is:
+        // ### Today
+        // - **Review Sales Report:**
+        //   - **Task:** Provide feedback on the Carretera Sales Report for January to June 2014.
+        //   - **Deadline:** End of the day.
+        //   - **Details:** Check the attached spreadsheet for sales data.
+        //
+        // ### Tomorrow
+        // - **Update Employee Information:**
+        //   - **Task:** Update the list of employee birthdays and positions.
+        //   - **Deadline:** By the end of the day.
+        //   - **Details:** Refer to the attached table for employee details.
+        //
+        // ### Saturday
+        // - **Attend BBQ:**
+        //   - **Event:** BBQ Invitation
+        //   - **Details:** Join the BBQ as mentioned in the sales report email.
+        //
+        // ### Sunday
+        // - **Join Hike:**
+        //   - **Event:** Hiking Invitation
+        //   - **Details:** Participate in the hike as mentioned in the HR email.
     }
 
     /// <summary>
@@ -261,26 +328,98 @@ internal sealed class Program
     /// <summary>
     /// Creates an MCP client and connects it to the MCPServer server.
     /// </summary>
+    /// <param name="kernel">Optional kernel instance to use for the MCP client.</param>
+    /// <param name="samplingRequestHandler">Optional handler for MCP sampling requests.</param>
     /// <returns>An instance of <see cref="IMcpClient"/>.</returns>
-    private static Task<IMcpClient> CreateMcpClientAsync()
+    private static Task<IMcpClient> CreateMcpClientAsync(
+        Kernel? kernel = null,
+        Func<Kernel, CreateMessageRequestParams?, IProgress<ProgressNotificationValue>, CancellationToken, Task<CreateMessageResult>>? samplingRequestHandler = null)
     {
+        KernelFunction? skSamplingHandler = null;
+
+        // Create and return the MCP client
         return McpClientFactory.CreateAsync(
-            new McpServerConfig()
+            clientTransport: new StdioClientTransport(new StdioClientTransportOptions
             {
-                Id = "MCPServer",
                 Name = "MCPServer",
-                TransportType = TransportTypes.StdIo,
-                TransportOptions = new()
-                {
-                    // Point the client to the MCPServer server executable
-                    ["command"] = GetMCPServerPath()
-                }
-            },
-            new McpClientOptions()
+                Command = GetMCPServerPath(), // Path to the MCPServer executable
+            }),
+            clientOptions: samplingRequestHandler != null ? new McpClientOptions()
             {
-                ClientInfo = new() { Name = "MCPClient", Version = "1.0.0" }
+                Capabilities = new ClientCapabilities
+                {
+                    Sampling = new SamplingCapability
+                    {
+                        SamplingHandler = InvokeHandlerAsync
+                    },
+                },
+            } : null
+         );
+
+        async Task<CreateMessageResult> InvokeHandlerAsync(CreateMessageRequestParams? request, IProgress<ProgressNotificationValue> progress, CancellationToken cancellationToken)
+        {
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request));
             }
-        );
+
+            skSamplingHandler ??= KernelFunctionFactory.CreateFromMethod(
+                (CreateMessageRequestParams? request, IProgress<ProgressNotificationValue> progress, CancellationToken ct) =>
+                {
+                    return samplingRequestHandler(kernel!, request, progress, ct);
+                },
+                "MCPSamplingHandler"
+            );
+
+            // The argument names must match the parameter names of the delegate the SK Function is created from
+            KernelArguments kernelArguments = new()
+            {
+                ["request"] = request,
+                ["progress"] = progress
+            };
+
+            FunctionResult functionResult = await skSamplingHandler.InvokeAsync(kernel!, kernelArguments, cancellationToken);
+
+            return functionResult.GetValue<CreateMessageResult>()!;
+        }
+    }
+
+    /// <summary>
+    /// Handles sampling requests from the MCP client.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="request">The sampling request.</param>
+    /// <param name="progress">The progress notification.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the sampling request.</returns>
+    private static async Task<CreateMessageResult> SamplingRequestHandlerAsync(Kernel kernel, CreateMessageRequestParams? request, IProgress<ProgressNotificationValue> progress, CancellationToken cancellationToken)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        // Map the MCP sampling request to the Semantic Kernel prompt execution settings
+        OpenAIPromptExecutionSettings promptExecutionSettings = new()
+        {
+            Temperature = request.Temperature,
+            MaxTokens = request.MaxTokens,
+            StopSequences = request.StopSequences?.ToList(),
+        };
+
+        // Create a chat history from the MCP sampling request
+        ChatHistory chatHistory = [];
+        if (!string.IsNullOrEmpty(request.SystemPrompt))
+        {
+            chatHistory.AddSystemMessage(request.SystemPrompt);
+        }
+        chatHistory.AddRange(request.Messages.ToChatMessageContents());
+
+        // Prompt the AI model to generate a response
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, promptExecutionSettings, cancellationToken: cancellationToken);
+
+        return result.ToCreateMessageResult();
     }
 
     /// <summary>

@@ -110,7 +110,7 @@ class MongoDBAtlasCollection(
         from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
 
         try:
-            mongodb_atlas_settings = MongoDBAtlasSettings.create(
+            mongodb_atlas_settings = MongoDBAtlasSettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 connection_string=connection_string,

@@ -2,7 +2,7 @@
 
 using System.Reflection;
 
-namespace MCPServer;
+namespace MCPServer.ProjectResources;
 
 /// <summary>
 /// Reads embedded resources.

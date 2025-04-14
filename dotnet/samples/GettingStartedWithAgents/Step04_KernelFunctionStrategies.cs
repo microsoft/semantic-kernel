@@ -35,7 +35,7 @@ public class Step04_KernelFunctionStrategies(ITestOutputHelper output) : BaseAge
         """;
 
     [Fact]
-    public async Task UseKernelFunctionStrategiesWithAgentGroupChatAsync()
+    public async Task UseKernelFunctionStrategiesWithAgentGroupChat()
     {
         // Define the agents
         ChatCompletionAgent agentReviewer =
