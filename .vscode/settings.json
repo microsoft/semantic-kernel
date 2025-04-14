@@ -73,7 +73,8 @@
     "superstep",
     "Supersteps",
     "typeref",
-    "uninstantiated"
+    "uninstantiated",
+    "ue"
   ],
   "[java]": {
     "editor.formatOnSave": false,
