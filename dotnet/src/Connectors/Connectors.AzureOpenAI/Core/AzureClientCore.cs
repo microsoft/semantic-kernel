@@ -15,7 +15,6 @@ using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Http;
 using OpenAI;
-using SemanticKernel.Connectors.AzureOpenAI.Core;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
