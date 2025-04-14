@@ -357,10 +357,7 @@ public class VectorStoreRecordModelBuilder
     {
         var type = propertyModel.Type;
 
-        if (type.IsGenericType && Nullable.GetUnderlyingType(type) is Type underlyingType)
-        {
-            type = underlyingType;
-        }
+        type = GetNullableUnderlyingTypeOrDefault(type);
 
         switch (propertyModel)
         {
@@ -396,10 +393,20 @@ public class VectorStoreRecordModelBuilder
         }
     }
 
+    private static Type GetNullableUnderlyingTypeOrDefault(Type type)
+    {
+        return type.IsGenericType && Nullable.GetUnderlyingType(type) is Type underlyingType ? underlyingType : type;
+    }
+
+    private static Type GetNullableTypeOrDefault(Type type)
+    {
+        return type.IsValueType && !type.IsGenericTypeDefinition ? typeof(Nullable<>).MakeGenericType(type) : type;
+    }
+
     private static void ValidatePropertyType(string propertyName, Type propertyType, string propertyCategoryDescription, HashSet<Type> supportedTypes, HashSet<Type>? supportedEnumerableElementTypes = null)
     {
         // Add shortcut before testing all the more expensive scenarios.
-        if (supportedTypes.Contains(propertyType))
+        if (supportedTypes.Contains(propertyType) || supportedTypes.Contains(GetNullableTypeOrDefault(propertyType)))
         {
             return;
         }
@@ -409,7 +416,9 @@ public class VectorStoreRecordModelBuilder
         {
             var typeToCheck = GetCollectionElementType(propertyType);
 
-            if (!supportedEnumerableElementTypes.Contains(typeToCheck))
+            typeToCheck = GetNullableUnderlyingTypeOrDefault(typeToCheck);
+
+            if (!supportedEnumerableElementTypes.Contains(typeToCheck) && !supportedEnumerableElementTypes.Contains(GetNullableTypeOrDefault(typeToCheck)))
             {
                 var supportedEnumerableElementTypesString = string.Join(", ", supportedEnumerableElementTypes!.Select(t => t.FullName));
                 throw new NotSupportedException($"Enumerable {propertyCategoryDescription} properties must have one of the supported element types: {supportedEnumerableElementTypesString}. Element type of the property '{propertyName}' is {typeToCheck.FullName}.");
