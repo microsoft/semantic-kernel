@@ -2,7 +2,7 @@
 
 import asyncio
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any, Generic, TypeVar
 
 from azure.cosmos.aio import CosmosClient
@@ -215,9 +215,11 @@ class AzureCosmosDBNoSQLCollection(
 
         return ", ".join(f"c.{field}" for field in included_fields)
 
-    def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | None) -> str:
+    def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | Callable | None) -> str:
         if filters is None:
             return ""
+        if not isinstance(filters, VectorSearchFilter):
+            raise VectorStoreOperationException("Lambda filters are not supported yet.")
         clauses = []
         for filter in filters.filters:
             field_def = self.data_model_definition.fields[filter.field_name]

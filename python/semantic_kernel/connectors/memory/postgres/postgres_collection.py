@@ -4,7 +4,7 @@ import logging
 import random
 import string
 import sys
-from collections.abc import AsyncGenerator, Sequence
+from collections.abc import AsyncGenerator, Callable, Sequence
 from typing import Any, ClassVar, Generic
 
 from psycopg import sql
@@ -589,7 +589,7 @@ class PostgresCollection(
             ],
         )
 
-    def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | None) -> sql.Composed | None:
+    def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | Callable | None) -> sql.Composed | None:
         """Build the WHERE clause for the search query from the filter in the search options.
 
         Args:
@@ -598,6 +598,8 @@ class PostgresCollection(
         Returns:
             The WHERE clause.
         """
+        if not isinstance(filters, VectorSearchFilter):
+            raise VectorStoreOperationException("Lambda filters are not supported yet.")
         if not filters or not filters.filters:
             return None
 

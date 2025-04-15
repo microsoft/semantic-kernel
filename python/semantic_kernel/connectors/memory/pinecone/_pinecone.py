@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from inspect import isawaitable
 from typing import Any, ClassVar, Generic
 
@@ -487,8 +487,10 @@ class PineconeCollection(
             total_count=len(results.matches),
         )
 
-    def _build_filter(self, filters: VectorSearchFilter) -> dict[str, Any]:
+    def _build_filter(self, filters: VectorSearchFilter | Callable) -> dict[str, Any]:
         """Build the filter for the Pinecone collection."""
+        if not isinstance(filters, VectorSearchFilter):
+            raise VectorStoreOperationException("Lambda filters are not supported yet.")
         ret_filter: dict[str, Any] = {}
         ret_filter = {"$and": []}
         for filter in filters.filters:

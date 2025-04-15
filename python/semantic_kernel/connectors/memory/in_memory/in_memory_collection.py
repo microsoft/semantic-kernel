@@ -15,12 +15,14 @@ from semantic_kernel.data.record_definition import (
 from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, FilterClauseBase, KernelSearchResults
 from semantic_kernel.data.vector_search import (
     VectorizedSearchMixin,
+    VectorSearchFilter,
     VectorSearchOptions,
     VectorSearchResult,
     VectorTextSearchMixin,
 )
 from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.list_handler import empty_generator
 
@@ -196,6 +198,8 @@ class InMemoryVectorCollection(
 
     def _get_filtered_records(self, options: VectorSearchOptions | None) -> dict[TKey, dict]:
         if options and options.filter:
+            if not isinstance(options.filter, VectorSearchFilter):
+                raise VectorStoreOperationException("Lambda filters are not supported yet.")
             for filter in options.filter.filters:
                 return {key: record for key, record in self.inner_storage.items() if self._apply_filter(record, filter)}
         return self.inner_storage

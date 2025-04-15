@@ -6,7 +6,7 @@ import logging
 import re
 import struct
 import sys
-from collections.abc import AsyncIterable, Sequence
+from collections.abc import AsyncIterable, Callable, Sequence
 from contextlib import contextmanager
 from io import StringIO
 from itertools import chain
@@ -971,8 +971,10 @@ def _build_delete_query(
     return command
 
 
-def _build_filter(command: SqlCommand, filters: VectorSearchFilter):
+def _build_filter(command: SqlCommand, filters: VectorSearchFilter | Callable):
     """Build the filter query based on the data model."""
+    if not isinstance(filters, VectorSearchFilter):
+        raise VectorStoreOperationException("Lambda filters are not supported yet.")
     if not filters.filters:
         return
     command.query.append("WHERE ")

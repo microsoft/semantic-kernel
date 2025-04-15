@@ -341,21 +341,45 @@ class AzureAISearchCollection(
             raise VectorStoreOperationException("No lambda expression found in the filter.")
 
     def _lambda_parser(self, node: ast.AST) -> str:
-        """Walk the AST and convert it to a filter string."""
+        """Walk the AST and convert it to a filter string.
+
+        This follows from the ast specs: https://docs.python.org/3/library/ast.html
+
+        """
         match node:
             case ast.Compare():
+                if len(node.ops) > 1:
+                    values = []
+                    for idx in range(len(node.ops)):
+                        if idx == 0:
+                            values.append(
+                                ast.Compare(
+                                    left=node.left,
+                                    ops=[node.ops[idx]],
+                                    comparators=[node.comparators[idx]],
+                                )
+                            )
+                        else:
+                            values.append(
+                                ast.Compare(
+                                    left=node.comparators[idx - 1],
+                                    ops=[node.ops[idx]],
+                                    comparators=[node.comparators[idx]],
+                                )
+                            )
+                    return self._lambda_parser(ast.BoolOp(op=ast.And(), values=values))
                 left = self._lambda_parser(node.left)
                 right = self._lambda_parser(node.comparators[0])
                 op = node.ops[0]
                 match op:
                     case ast.In():
-                        return f"search.ismatch('{left}', '{right}')"
+                        return f"search.ismatch({left}, {right})"
                     case ast.NotIn():
-                        return f"not search.ismatch('{left}', '{right}')"
+                        return f"not search.ismatch({left}, {right})"
                     case ast.Eq():
-                        return f"{left} eq '{right}'"
+                        return f"{left} eq {right}"
                     case ast.NotEq():
-                        return f"{left} ne '{right}'"
+                        return f"{left} ne {right}"
                     case ast.Gt():
                         return f"{left} gt {right}"
                     case ast.GtE():
@@ -367,23 +391,26 @@ class AzureAISearchCollection(
                 raise NotImplementedError(f"Unsupported operator: {type(op)}")
             case ast.BoolOp():
                 op_str = "and" if isinstance(node.op, ast.And) else "or"
-                return f" {op_str} ".join([self._lambda_parser(v) for v in node.values])
+                return "(" + f" {op_str} ".join([self._lambda_parser(v) for v in node.values]) + ")"
+            case ast.UnaryOp():
+                match node.op:
+                    case ast.UAdd():
+                        return f"+{self._lambda_parser(node.operand)}"
+                    case ast.USub():
+                        return f"-{self._lambda_parser(node.operand)}"
+                    case ast.Invert():
+                        return f"~{self._lambda_parser(node.operand)}"
+                    case ast.Not():
+                        return f"not {self._lambda_parser(node.operand)}"
             case ast.Attribute():
                 # Check if attribute is in data model
                 if node.attr not in self.data_model_definition.fields:
                     raise VectorStoreOperationException(f"Field '{node.attr}' not in data model.")
                 return node.attr
             case ast.Name():
-                return node.id
+                return f"'{node.id}'"
             case ast.Constant():
-                return node.value
-            case ast.Call():
-                # Support for any() for tags: e.g. any(tag == 'foo')
-                if isinstance(node.func, ast.Attribute) and node.func.attr == "any":
-                    field = self._lambda_parser(node.func.value)
-                    arg = self._lambda_parser(node.args[0])
-                    return f"{field}/any(t: {arg})"
-                raise NotImplementedError("Only .any() calls are supported.")
+                return str(node.value) if isinstance(node.value, float | int) else f"'{node.value}'"
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
