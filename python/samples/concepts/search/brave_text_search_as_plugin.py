@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion, OpenAIChatPromptExecutionSettings
-from semantic_kernel.connectors.search.brave import BraveSearch
+from semantic_kernel.connectors.search.brave_search import BraveSearch
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.filters import FilterTypes, FunctionInvocationContext
 from semantic_kernel.functions import KernelArguments, KernelParameterMetadata, KernelPlugin
@@ -40,14 +40,6 @@ kernel.add_plugin(
                 is_required=False,
                 default_value=0,
                 type_object=int,
-            ),
-            KernelParameterMetadata(
-                name="site",
-                description="The site to search.",
-                default_value="https://github.com/microsoft/semantic-kernel/tree/main/python",
-                type="str",
-                is_required=False,
-                type_object=str,
             ),
         ],
     )
