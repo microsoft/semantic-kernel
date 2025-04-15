@@ -64,15 +64,15 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="searchIndexClient">Azure AI Search client that can be used to manage the list of indices in an Azure AI Search Service.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="AzureAISearchVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="searchIndexClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when options are misconfigured.</exception>
-    public AzureAISearchVectorStoreRecordCollection(SearchIndexClient searchIndexClient, string collectionName, AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default)
+    public AzureAISearchVectorStoreRecordCollection(SearchIndexClient searchIndexClient, string name, AzureAISearchVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(searchIndexClient);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
@@ -81,9 +81,9 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
         // Assign.
         this._searchIndexClient = searchIndexClient;
-        this._collectionName = collectionName;
+        this._collectionName = name;
         this._options = options ?? new AzureAISearchVectorStoreRecordCollectionOptions<TRecord>();
-        this._searchClient = this._searchIndexClient.GetSearchClient(collectionName);
+        this._searchClient = this._searchIndexClient.GetSearchClient(name);
 
         this._model = new VectorStoreRecordJsonModelBuilder(AzureAISearchConstants.s_modelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, this._options.JsonSerializerOptions);
@@ -100,12 +100,12 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         {
             VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
             VectorStoreName = searchIndexClient.ServiceName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._collectionName;
+    public string Name => this._collectionName;
 
     /// <inheritdoc />
     public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
