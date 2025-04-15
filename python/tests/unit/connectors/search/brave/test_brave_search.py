@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from semantic_kernel.connectors.search.brave_search import BraveSearch, BraveSearchResponse, BraveWebPage, BraveWebPages
+from semantic_kernel.connectors.search.brave import BraveSearch, BraveSearchResponse, BraveWebPage, BraveWebPages
 from semantic_kernel.data.text_search import KernelSearchResults, SearchFilter, TextSearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
@@ -20,7 +20,7 @@ def brave_search(brave_unit_test_env):
 def async_client_mock():
     """Set up the fixture to mock AsyncClient."""
     async_client_mock = AsyncMock()
-    with patch("semantic_kernel.connectors.search.brave_search.AsyncClient.__aenter__", return_value=async_client_mock):
+    with patch("semantic_kernel.connectors.search.brave.AsyncClient.__aenter__", return_value=async_client_mock):
         yield async_client_mock
 
 
