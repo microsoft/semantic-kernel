@@ -61,6 +61,7 @@ async def main() -> None:
         if response:
             print(f"Mosscap:> {response}")
             if "usage" in response.metadata and response.metadata["usage"]:
+                # Not all services return token usage information.
                 print(f"[Tokens used: {response.metadata['usage']}]")
                 running_total += response.metadata["usage"]
             # Add the chat message to the chat history to keep track of the conversation.

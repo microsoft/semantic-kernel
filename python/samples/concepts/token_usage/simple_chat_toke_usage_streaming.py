@@ -68,6 +68,8 @@ async def main() -> None:
                 print(chunk, end="")
                 chunks.append(chunk)
                 if "usage" in chunk.metadata and chunk.metadata["usage"]:
+                    # Not all services return token usage information.
+                    # The usage information is usually available in the last chunk.
                     print(f"\n[Tokens used: {chunk.metadata['usage']}]")
                     running_total += chunk.metadata["usage"]
 
