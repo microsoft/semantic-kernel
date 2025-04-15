@@ -52,18 +52,9 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            // Map datetime equality.
-            if (filterValue is DateTime or DateTimeOffset)
+            // Map DateTimeOffset equality.
+            if (filterValue is DateTimeOffset dateTimeOffset)
             {
-                if (filterValue is DateTime datetimeValue && datetimeValue.Kind == DateTimeKind.Unspecified)
-                {
-                    throw new VectorStoreRecordMappingException($"{nameof(DateTime)} value '{datetimeValue:O}' has a {nameof(DateTimeKind)} of {nameof(DateTimeKind.Unspecified)}. Please specify the {nameof(DateTimeKind)} so that the {nameof(DateTime)} can be compared accurately in Qdrant.");
-                }
-
-                var dateTimeOffset = filterValue is DateTime dateTime
-                    ? new DateTimeOffset(dateTime.ToUniversalTime(), TimeSpan.Zero)
-                    : (DateTimeOffset)filterValue;
-
                 var range = new global::Qdrant.Client.Grpc.DatetimeRange
                 {
                     Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),

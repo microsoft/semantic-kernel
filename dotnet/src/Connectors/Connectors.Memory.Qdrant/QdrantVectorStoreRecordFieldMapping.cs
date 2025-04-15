@@ -24,14 +24,12 @@ internal static class QdrantVectorStoreRecordFieldMapping
         typeof(double),
         typeof(float),
         typeof(bool),
-        typeof(DateTime),
         typeof(DateTimeOffset),
         typeof(int?),
         typeof(long?),
         typeof(double?),
         typeof(float?),
         typeof(bool?),
-        typeof(DateTime?),
         typeof(DateTimeOffset?),
     ];
 
@@ -80,21 +78,8 @@ internal static class QdrantVectorStoreRecordFieldMapping
         {
             return targetType switch
             {
-                Type t when t == typeof(DateTime) || t == typeof(DateTime?) => ConvertDateTimeStringValue(stringValue),
                 Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => DateTimeOffset.Parse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                 _ => stringValue,
-            };
-        }
-
-        // DateTime values stored in Qdrant without a timezone are assumed to be UTC.
-        // Therefore if we parsed the DateTime and no timezone was preset, we need to set it to UTC.
-        DateTime ConvertDateTimeStringValue(string stringValue)
-        {
-            var dateTime = DateTime.Parse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-            return dateTime.Kind switch
-            {
-                DateTimeKind.Unspecified => DateTime.SpecifyKind(dateTime, DateTimeKind.Utc),
-                _ => dateTime,
             };
         }
     }
@@ -135,19 +120,6 @@ internal static class QdrantVectorStoreRecordFieldMapping
         else if (sourceValue is bool boolValue)
         {
             value.BoolValue = boolValue;
-        }
-        else if (sourceValue is DateTime datetimeValue)
-        {
-            // Qdrant allows storing DateTime values either with a timezone or without.
-            // Where a stored DateTime has no timezone, it is assumed to be UTC.
-            // Unspecified DateTime values are serialized without a timezone, but since we do not know
-            // if these are actually UTC, we cannot support these.
-            if (datetimeValue.Kind == DateTimeKind.Unspecified)
-            {
-                throw new VectorStoreRecordMappingException($"{nameof(DateTime)} value '{datetimeValue:O}' has a {nameof(DateTimeKind)} of {nameof(DateTimeKind.Unspecified)}. Please specify the {nameof(DateTimeKind)} so that the {nameof(DateTime)} can be stored accurately in Qdrant.");
-            }
-
-            value.StringValue = datetimeValue.ToString("O");
         }
         else if (sourceValue is DateTimeOffset dateTimeOffsetValue)
         {
