@@ -73,7 +73,7 @@ class RedisMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): Encoding of the environment settings file, defaults to "utf-8"
         """
         try:
-            redis_settings = RedisSettings.create(
+            redis_settings = RedisSettings(
                 connection_string=connection_string,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

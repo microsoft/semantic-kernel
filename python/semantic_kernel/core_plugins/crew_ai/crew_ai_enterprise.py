@@ -59,7 +59,7 @@ class CrewAIEnterprise(KernelBaseModel):
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         try:
-            settings = CrewAISettings.create(
+            settings = CrewAISettings(
                 endpoint=endpoint,
                 auth_token=auth_token,
                 polling_interval=polling_interval,
