@@ -14,39 +14,49 @@ informed: { }
 
 ## Context
 
-The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating AI agents to perform more complex tasks, the desire for a multi-agent framework is growing.
+The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating single AI agents to perform more complex tasks, the desire for a multi-agent framework is growing.
 
-With the recent GA of the Semantic Kernel Agent Framework, we are now able to build on top of it to create a multi-agent orchestration framework. This will allow our customers to unlock even more complex scenarios and use cases.
+With the recent GA of the Semantic Kernel Agent Framework, which offers a stable framework for single agents, we are now able to build on top of it to create a multi-agent orchestration framework. This will allow our customers to unlock even more complex scenarios and use cases.
 
-In addition, with the collaboration with the AutoGen team and the shared runtime abstractions, we can leverage the work done in AutoGen to build a multi-agent orchestration framework more rapidly.
+In addition, with the collaboration with the AutoGen team and the shared runtime abstractions, we can leverage the work done by AutoGen to build a multi-agent orchestration framework more rapidly.
 
 ## Problem Statement
 
-The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to build a multi-agent orchestration framework to allow our customers to build more complex systems using Semantic Kernel agents.
+The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to build a multi-agent orchestration framework to allow our customers to unlock more possibilities using Semantic Kernel agents.
 
 ### Terminology
+
+Before we dive into the details, let's clarify some terminology that will be used throughout this document.
 
 | **Term**   | **Definition**                                                                                     |
 |------------|-----------------------------------------------------------------------------------------------------|
 | **Agent**  | A Semantic Kernel agent.                                                                            |
 | **Actor**  | An AutoGen agent that can send and receive messages from the runtime.                               |
-| **Runtime**| Facilitates the communication between actors and manages the lifecycle of the actors.               |
+| **Runtime**| Facilitates the communication between actors and manages the states and lifecycle of the actors.    |
+| **Orchestration** | Contains SK agents and rules on how they will interact with each others.                     |
 
-### AutoGen shared runtime abstractions
+> We are using the term "actor" for AutoGen to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. The name "actor" is also used interchangeably with "agent" in the AutoGen documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
 
-The AutoGen team has built a runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared runtime abstraction that our framework will depend on.
+### The AutoGen shared runtime abstraction
 
-With the shared runtime abstraction, our framework will support local and distributed use cases.
+The AutoGen team has built a runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared runtime abstraction that our Semantic Kernel will depend on.
+
+Depending on the actual runtime implementation, actors can be local or distributed. Our multi-agent orchestration framework is **not** tied to a specific runtime.
+
+### Targeted audience
+
+The multi-agent orchestration framework is targeted at two types of developers:
+
+- **Orchestration developers**: Developers who will create orchestrations using the framework.
+- **Orchestration consumers**: Developers who will use the orchestrations created by orchestration developers.
+
+It is possible that the same developer will be both an orchestration developer and an orchestration consumer.
 
 ## Considerations
 
-### Support the ability to create custom multi-agent orchestrations
+### Pre-built orchestrations and custom orchestrations
 
-Our framework should provide a set of build blocks for customers to create more advanced orchestrations for their specific use cases using the same building blocks we use to build the pre-built orchestrations.
-
-### Pre-built orchestrations
-
-We should provide a list of pre-built orchestrations that cover all common patterns. These orchestrations will be built using the same building blocks we provide to our customers to build their own orchestrations.
+To help people get started quickly, we should provide a list of pre-built orchestrations that cover common patterns.
 
 | **Orchestrations**       | **Description**                                                                                                                                                                                                                     |
 |--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -56,22 +66,21 @@ We should provide a list of pre-built orchestrations that cover all common patte
 | **GroupChat**      | - Consists of multiple actors. <br> - A group manager actor is responsible for managing the state of the group chat. <br> - **Key Features:** <br> &nbsp;&nbsp;&nbsp;&nbsp;- User input: Requests input from the user. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Termination: Ends when a termination condition is met, and results are returned. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Next actor: Decides the next actor to invoke. <br> - Human-in-the-loop must be supported. <br> - The result is collected and returned to the caller when the orchestration finishes. |
 | **Magentic One**   | - Group chat-like orchestration with unique features. <br> - Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/).                  |
 
+> Please see Appendix A for a more detailed description of the pre-built orchestrations.
+
+Our framework should also provide a set of building blocks for customers to create more advanced orchestrations for their specific use cases. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
+
 ### Runtime
 
-- Orchestration should only depend upon the runtime abstraction.
-- The runtime is provided when the orchestration is invoked, not when the orchestration is created.
-- The runtime lifecycle is managed by the application (external to the orchestration).
-- Multiple orchestrations can share the same runtime instance (orchestration boundaries).
+The runtime abstraction is an important concept in the multi-agent orchestration framework. Some basic understanding of how an orchestration works with the runtime is recommended.
 
-### Graph-like structure with lazy evaluation
-
-- An orchestration is a template for how a group of Semantic Kernel agents will be able to interact with each other within predefined boundaries.
-- Actors and child orchestrations are registered in the runtime before execution starts, not when the orchestration is created.
-- The runtime is responsible for executing the graph and managing the lifecycle of the actors and orchestrations. This is provided by the runtime abstraction.
+- The lifecycle of an runtime instance should be managed by the application and should be external to any orchestrations.
+- Orchestrations require a runtime instance only when they are invoked, not when they are created.
+- Multiple orchestrations can share the same runtime instance, thus requiring us to define clear orchestration boundaries to avoid collisions, such as actor names or IDs.
 
 ### Support nested orchestrations
 
-Support for nesting patterns is critical for the framework, as it allows for more complex orchestrations to be built using simpler orchestrations.
+Support for nesting patterns is a critical feature of the multi-agent orchestration framework, as it allows for more complex orchestrations to be built using simpler orchestrations.
 
 Example:
 
@@ -102,11 +111,16 @@ graph TD
   B --> External1[External]
 ```
 
-> The two orchestration actors in the diagram are the same actor. The two external actors are the same actor. Separating them is just for a cleaner diagram.
-
-> Some details are omitted in the two sequential orchestrations for clarity, for example, the orchestration actor are not shown.
+> The two external nodes represent the same object external to the concurrent orchestration. Separating them is just for a cleaner diagram.
 
 The above is a simple example that shows what a nested multi-agent orchestration looks like. This orchestration contains two sequential orchestrations that run in a concurrent orchestration.
+
+### Graph-like structure with lazy evaluation
+
+We should consider an orchestration as a template that describes how the agents will interact with each other similar to a directed graph. The actual execution of the orchestration should be done by the runtime. Therefore, the followings must be true:
+
+- Actors are registered to the runtime before execution starts, not when the orchestration is created.
+- The runtime is responsible for creating the actors and managing their lifecycle.
 
 ### Orchestration invocation paradigms
 
