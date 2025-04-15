@@ -6,6 +6,8 @@ import uuid
 from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable
 from typing import TYPE_CHECKING, Any, ClassVar
 
+from semantic_kernel.contents.streaming_text_content import StreamingTextContent
+
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
 else:
@@ -59,7 +61,7 @@ class ChatHistoryAgentThread(AgentThread):
         super().__init__()
 
         self._chat_history = chat_history or ChatHistory()
-        self._thread_id = thread_id or f"thread_{uuid.uuid4().hex}"
+        self._id = thread_id or f"thread_{uuid.uuid4().hex}"
         self._is_deleted = False
 
     def __len__(self) -> int:
@@ -69,7 +71,7 @@ class ChatHistoryAgentThread(AgentThread):
     @override
     async def _create(self) -> str:
         """Starts the thread and returns its ID."""
-        return self._thread_id
+        return self._id
 
     @override
     async def _delete(self) -> None:
@@ -418,9 +420,13 @@ class ChatCompletionAgent(Agent):
                 role = response.role
                 response.name = self.name
                 response_builder.append(response.content)
+
                 if role == AuthorRole.ASSISTANT:
-                    # Do not yield non-assistant messages
-                    # Those can be yielded by using the on_intermediate_message callback
+                    # If there are any items, we only yield if they are all StreamingTextContent.
+                    # Other content types (FunctionCallContent, FunctionResultContent) are handled
+                    # using the `on_intermediate_message` callback.
+                    if response.items and not all(isinstance(item, StreamingTextContent) for item in response.items):
+                        continue
                     yield AgentResponseItem(message=response, thread=thread)
 
         await self._capture_mutated_messages(

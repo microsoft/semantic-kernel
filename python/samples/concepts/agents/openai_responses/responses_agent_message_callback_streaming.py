@@ -76,6 +76,9 @@ async def main():
                 thread=thread,
                 on_intermediate_message=handle_streaming_intermediate_steps,
             ):
+                if response.items:
+                    item_types = {item.__class__.__name__ for item in response.items}
+                    print(f"[Items types: {', '.join(item_types)}]")
                 thread = response.thread
                 if first_chunk:
                     print(f"# {response.name}: ", end="", flush=True)
