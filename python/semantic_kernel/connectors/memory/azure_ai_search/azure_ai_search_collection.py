@@ -1,9 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import ast
 import asyncio
+import inspect
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any, ClassVar, Generic
 
 from azure.search.documents.aio import SearchClient
@@ -312,22 +314,77 @@ class AzureAISearchCollection(
             total_count=await raw_results.get_count() if options.include_total_count else None,
         )
 
-    def _build_filter_string(self, search_filter: VectorSearchFilter) -> str:
+    def _build_filter_string(self, search_filter: VectorSearchFilter | Callable) -> str:
         """Create the filter string based on the filters.
 
         Since the group_type is always added (and currently always "AND"), the last " and " is removed.
         """
-        filter_string = ""
-        for filter in search_filter.filters:
-            if isinstance(filter, EqualTo):
-                filter_string += f"{filter.field_name} eq '{filter.value}' {search_filter.group_type.lower()} "
-            elif isinstance(filter, AnyTagsEqualTo):
-                filter_string += (
-                    f"{filter.field_name}/any(t: t eq '{filter.value}') {search_filter.group_type.lower()} "
-                )
-        if filter_string.endswith(" and "):
-            filter_string = filter_string[:-5]
-        return filter_string
+        if isinstance(search_filter, VectorSearchFilter):
+            filter_string = ""
+            for filter in search_filter.filters:
+                if isinstance(filter, EqualTo):
+                    filter_string += f"{filter.field_name} eq '{filter.value}' {search_filter.group_type.lower()} "
+                elif isinstance(filter, AnyTagsEqualTo):
+                    filter_string += (
+                        f"{filter.field_name}/any(t: t eq '{filter.value}') {search_filter.group_type.lower()} "
+                    )
+            if filter_string.endswith(" and "):
+                filter_string = filter_string[:-5]
+            return filter_string
+
+        # parse lambda expression with AST
+        tree = ast.parse(inspect.getsource(search_filter).strip())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Lambda):
+                return self._lambda_parser(node.body)
+        else:
+            raise VectorStoreOperationException("No lambda expression found in the filter.")
+
+    def _lambda_parser(self, node: ast.AST) -> str:
+        """Walk the AST and convert it to a filter string."""
+        match node:
+            case ast.Compare():
+                left = self._lambda_parser(node.left)
+                right = self._lambda_parser(node.comparators[0])
+                op = node.ops[0]
+                match op:
+                    case ast.In():
+                        return f"search.ismatch('{left}', '{right}')"
+                    case ast.NotIn():
+                        return f"not search.ismatch('{left}', '{right}')"
+                    case ast.Eq():
+                        return f"{left} eq '{right}'"
+                    case ast.NotEq():
+                        return f"{left} ne '{right}'"
+                    case ast.Gt():
+                        return f"{left} gt {right}"
+                    case ast.GtE():
+                        return f"{left} ge {right}"
+                    case ast.Lt():
+                        return f"{left} lt {right}"
+                    case ast.LtE():
+                        return f"{left} le {right}"
+                raise NotImplementedError(f"Unsupported operator: {type(op)}")
+            case ast.BoolOp():
+                op_str = "and" if isinstance(node.op, ast.And) else "or"
+                return f" {op_str} ".join([self._lambda_parser(v) for v in node.values])
+            case ast.Attribute():
+                # Check if attribute is in data model
+                if node.attr not in self.data_model_definition.fields:
+                    raise VectorStoreOperationException(f"Field '{node.attr}' not in data model.")
+                return node.attr
+            case ast.Name():
+                return node.id
+            case ast.Constant():
+                return node.value
+            case ast.Call():
+                # Support for any() for tags: e.g. any(tag == 'foo')
+                if isinstance(node.func, ast.Attribute) and node.func.attr == "any":
+                    field = self._lambda_parser(node.func.value)
+                    arg = self._lambda_parser(node.args[0])
+                    return f"{field}/any(t: {arg})"
+                raise NotImplementedError("Only .any() calls are supported.")
+        raise NotImplementedError(f"Unsupported AST node: {type(node)}")
 
     @override
     def _get_record_from_result(self, result: dict[str, Any]) -> dict[str, Any]:

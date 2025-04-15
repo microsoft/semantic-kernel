@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.data.text_search import SearchFilter
-from semantic_kernel.data.vector_search import VectorSearchFilter
+from semantic_kernel.data.vector_search import VectorSearchFilter, VectorSearchOptions
 
 
 def test_filter():
@@ -48,3 +48,8 @@ def test_vector_search_filter():
     filter2.any_tag_equal_to("field_name", "value")
     assert len(filter2.filters) == 1
     assert str(filter2) == "(filter_clause_type='any_tags_equal_to' field_name='field_name' value='value')"
+
+
+def test_lambda_filter():
+    options = VectorSearchOptions(filter=lambda x: x.tag == "value")
+    assert options.filter is not None

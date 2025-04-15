@@ -80,7 +80,7 @@ class VectorSearchFilter(SearchFilter):
 class VectorSearchOptions(SearchOptions):
     """Options for vector search, builds on TextSearchOptions."""
 
-    filter: VectorSearchFilter = Field(default_factory=VectorSearchFilter)
+    filter: VectorSearchFilter | Callable = Field(default_factory=VectorSearchFilter)
     vector_field_name: str | None = None
     keyword_field_name: str | None = None
     top: Annotated[int, Field(gt=0)] = 3
