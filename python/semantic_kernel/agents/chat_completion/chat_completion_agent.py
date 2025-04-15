@@ -420,12 +420,11 @@ class ChatCompletionAgent(Agent):
                 response.name = self.name
                 response_builder.append(response.content)
 
-                if role == AuthorRole.ASSISTANT:
-                    # If there are any items, we only yield if they are all StreamingTextContent.
-                    # Other content types (FunctionCallContent, FunctionResultContent) are handled
-                    # using the `on_intermediate_message` callback.
-                    if response.items and not all(isinstance(item, StreamingTextContent) for item in response.items):
-                        continue
+                if (
+                    role == AuthorRole.ASSISTANT
+                    and response.items
+                    and all(isinstance(item, StreamingTextContent) for item in response.items)
+                ):
                     yield AgentResponseItem(message=response, thread=thread)
 
         await self._capture_mutated_messages(
