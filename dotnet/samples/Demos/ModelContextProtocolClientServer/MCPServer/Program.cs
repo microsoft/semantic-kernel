@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using MCPServer;
+using MCPServer.ProjectResources;
 using MCPServer.Prompts;
 using MCPServer.Resources;
 using MCPServer.Tools;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.InMemory;
@@ -11,46 +13,48 @@ using Microsoft.SemanticKernel.Embeddings;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
 
-// Create a kernel with embedding generation service and in-memory vector store
-Kernel kernel = CreateKernel();
-
-// Register plugins
-kernel.Plugins.AddFromType<DateTimeUtils>();
-kernel.Plugins.AddFromType<WeatherUtils>();
-
-// Register prompts
-PromptRegistry.RegisterPrompt(PromptDefinition.Create(EmbeddedResource.ReadAsString("Prompts.getCurrentWeatherForCity.json"), kernel));
-
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
+
+// Register the kernel
+IKernelBuilder kernelBuilder = builder.Services.AddKernel();
+
+// Register SK plugins
+kernelBuilder.Plugins.AddFromType<DateTimeUtils>();
+kernelBuilder.Plugins.AddFromType<WeatherUtils>();
+kernelBuilder.Plugins.AddFromType<MailboxUtils>();
+
+// Register embedding generation service and in-memory vector store
+(string modelId, string apiKey) = GetConfiguration();
+kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(modelId, apiKey);
+kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
+
+// Register MCP server
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
 
     // Add all functions from the kernel plugins to the MCP server as tools
-    .WithTools(kernel.Plugins)
+    .WithTools()
+
+    // Register the `getCurrentWeatherForCity` prompt
+    .WithPrompt(PromptDefinition.Create(EmbeddedResource.ReadAsString("getCurrentWeatherForCity.json")))
 
     // Register vector search as MCP resource template
-    .WithResourceTemplate(CreateVectorStoreSearchResourceTemplate(kernel))
+    .WithResourceTemplate(CreateVectorStoreSearchResourceTemplate())
 
     // Register the cat image as a MCP resource
     .WithResource(ResourceDefinition.CreateBlobResource(
-        kernel: kernel,
         uri: "image://cat.jpg",
         name: "cat-image",
-        content: EmbeddedResource.ReadAsBytes("Resources.cat.jpg"),
-        mimeType: "image/jpeg"))
-
-    // Register prompt handlers
-    .WithListPromptsHandler(PromptRegistry.HandlerListPromptRequestsAsync)
-    .WithGetPromptHandler(PromptRegistry.HandlerGetPromptRequestsAsync);
+        content: EmbeddedResource.ReadAsBytes("cat.jpg"),
+        mimeType: "image/jpeg"));
 
 await builder.Build().RunAsync();
 
 /// <summary>
-/// Creates an instance of <see cref="Kernel"/> with AI services.
+/// Gets configuration.
 /// </summary>
-/// <returns>An instance of <see cref="Kernel"/>.</returns>
-static Kernel CreateKernel()
+static (string EmbeddingModelId, string ApiKey) GetConfiguration()
 {
     // Load and validate configuration
     IConfigurationRoot config = new ConfigurationBuilder()
@@ -67,14 +71,10 @@ static Kernel CreateKernel()
 
     string modelId = config["OpenAI:EmbeddingModelId"] ?? "text-embedding-3-small";
 
-    IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
-    kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(modelId: modelId, apiKey: apiKey);
-    kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
-
-    return kernelBuilder.Build();
+    return (modelId, apiKey);
 }
 
-static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel kernel)
+static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel? kernel = null)
 {
     return new ResourceTemplateDefinition
     {
@@ -89,8 +89,8 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             RequestContext<ReadResourceRequestParams> context,
             string collection,
             string prompt,
-            [FromKernelServicesAttribute] ITextEmbeddingGenerationService embeddingGenerationService,
-            [FromKernelServicesAttribute] IVectorStore vectorStore,
+            [FromKernelServices] ITextEmbeddingGenerationService embeddingGenerationService,
+            [FromKernelServices] IVectorStore vectorStore,
             CancellationToken cancellationToken) =>
         {
             // Get the vector store collection
@@ -109,7 +109,7 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
                     };
                 }
 
-                string content = EmbeddedResource.ReadAsString("Resources.semantic-kernel-info.txt");
+                string content = EmbeddedResource.ReadAsString("semantic-kernel-info.txt");
 
                 // Create a collection from the lines in the file
                 await vectorStore.CreateCollectionFromListAsync<Guid, TextDataModel>(collection, content.Split('\n'), embeddingGenerationService, CreateRecord);

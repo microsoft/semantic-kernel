@@ -90,7 +90,7 @@ class OpenAIRealtimeWebRTC(OpenAIRealtimeWebRTCBase, OpenAIConfigBase):
                 Otherwise they can also be passed to the context manager.
         """
         try:
-            openai_settings = OpenAISettings.create(
+            openai_settings = OpenAISettings(
                 api_key=api_key,
                 org_id=org_id,
                 realtime_model_id=ai_model_id,
@@ -169,7 +169,7 @@ class OpenAIRealtimeWebsocket(OpenAIRealtimeWebsocketBase, OpenAIConfigBase):
                 Otherwise they can also be passed to the context manager.
         """
         try:
-            openai_settings = OpenAISettings.create(
+            openai_settings = OpenAISettings(
                 api_key=api_key,
                 org_id=org_id,
                 realtime_model_id=ai_model_id,

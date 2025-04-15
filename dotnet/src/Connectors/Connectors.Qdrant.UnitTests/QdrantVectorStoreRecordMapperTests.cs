@@ -146,14 +146,13 @@ public class QdrantVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(5ul, actual.Id.Num);
-        Assert.Equal(9, actual.Payload.Count);
+        Assert.Equal(8, actual.Payload.Count);
         Assert.Equal("data 1", actual.Payload["dataString"].StringValue);
         Assert.Equal(5, actual.Payload["dataInt"].IntegerValue);
         Assert.Equal(5, actual.Payload["dataLong"].IntegerValue);
         Assert.Equal(5.5f, actual.Payload["dataFloat"].DoubleValue);
         Assert.Equal(5.5d, actual.Payload["dataDouble"].DoubleValue);
         Assert.True(actual.Payload["dataBool"].BoolValue);
-        Assert.Equal("2025-02-10T05:10:15.0000000Z", actual.Payload["dataDateTime"].StringValue);
         Assert.Equal("2025-02-10T05:10:15.0000000+01:00", actual.Payload["dataDateTimeOffset"].StringValue);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["dataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector1"].Data.ToArray());
@@ -175,14 +174,13 @@ public class QdrantVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), Guid.Parse(actual.Id.Uuid));
-        Assert.Equal(9, actual.Payload.Count);
+        Assert.Equal(8, actual.Payload.Count);
         Assert.Equal("data 1", actual.Payload["dataString"].StringValue);
         Assert.Equal(5, actual.Payload["dataInt"].IntegerValue);
         Assert.Equal(5, actual.Payload["dataLong"].IntegerValue);
         Assert.Equal(5.5f, actual.Payload["dataFloat"].DoubleValue);
         Assert.Equal(5.5d, actual.Payload["dataDouble"].DoubleValue);
         Assert.True(actual.Payload["dataBool"].BoolValue);
-        Assert.Equal("2025-02-10T05:10:15.0000000Z", actual.Payload["dataDateTime"].StringValue);
         Assert.Equal("2025-02-10T05:10:15.0000000+01:00", actual.Payload["dataDateTimeOffset"].StringValue);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["dataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector1"].Data.ToArray());
@@ -212,7 +210,6 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.Equal(5.5f, actual.DataFloat);
         Assert.Equal(5.5d, actual.DataDouble);
         Assert.True(actual.DataBool);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime);
         Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), actual.DataDateTimeOffset);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.DataArrayInt);
 
@@ -251,7 +248,6 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.Equal(5.5f, actual.DataFloat);
         Assert.Equal(5.5d, actual.DataDouble);
         Assert.True(actual.DataBool);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime);
         Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), actual.DataDateTimeOffset);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.DataArrayInt);
 
@@ -289,7 +285,6 @@ public class QdrantVectorStoreRecordMapperTests
             DataFloat = 5.5f,
             DataDouble = 5.5d,
             DataBool = true,
-            DataDateTime = new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc),
             DataDateTimeOffset = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)),
             DataArrayInt = new List<int> { 1, 2, 3, 4 },
             Vector1 = new float[] { 1, 2, 3, 4 },
@@ -354,7 +349,6 @@ public class QdrantVectorStoreRecordMapperTests
         pointStruct.Payload.Add("dataFloat", 5.5f);
         pointStruct.Payload.Add("dataDouble", 5.5d);
         pointStruct.Payload.Add("dataBool", true);
-        pointStruct.Payload.Add("dataDateTime", "2025-02-10T05:10:15.0000000Z");
         pointStruct.Payload.Add("dataDateTimeOffset", "2025-02-10T05:10:15.0000000+01:00");
 
         var dataIntArray = new ListValue();
@@ -405,7 +399,6 @@ public class QdrantVectorStoreRecordMapperTests
             new VectorStoreRecordDataProperty("DataFloat", typeof(float)) { StoragePropertyName = "dataFloat" },
             new VectorStoreRecordDataProperty("DataDouble", typeof(double)) { StoragePropertyName = "dataDouble" },
             new VectorStoreRecordDataProperty("DataBool", typeof(bool)) { StoragePropertyName = "dataBool" },
-            new VectorStoreRecordDataProperty("DataDateTime", typeof(DateTime)) { StoragePropertyName = "dataDateTime" },
             new VectorStoreRecordDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StoragePropertyName = "dataDateTimeOffset" },
             new VectorStoreRecordDataProperty("DataArrayInt", typeof(List<int>)) { StoragePropertyName = "dataArrayInt" },
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector1" },
@@ -436,9 +429,6 @@ public class QdrantVectorStoreRecordMapperTests
 
         [VectorStoreRecordData(StoragePropertyName = "dataBool")]
         public bool DataBool { get; set; } = false;
-
-        [VectorStoreRecordData(StoragePropertyName = "dataDateTime")]
-        public DateTime DataDateTime { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "dataDateTimeOffset")]
         public DateTimeOffset DataDateTimeOffset { get; set; }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
@@ -53,13 +54,9 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            // Map datetime equality.
-            if (filterValue is DateTime or DateTimeOffset)
+            // Map DateTimeOffset equality.
+            if (filterValue is DateTimeOffset dateTimeOffset)
             {
-                var dateTimeOffset = filterValue is DateTime dateTime
-                    ? new DateTimeOffset(dateTime, TimeSpan.Zero)
-                    : (DateTimeOffset)filterValue;
-
                 var range = new global::Qdrant.Client.Grpc.DatetimeRange
                 {
                     Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
@@ -112,9 +109,27 @@ internal static class QdrantVectorStoreCollectionSearchMapping
         var pointStruct = new PointStruct
         {
             Id = point.Id,
-            Vectors = point.Vectors,
             Payload = { }
         };
+
+        if (includeVectors)
+        {
+            pointStruct.Vectors = new();
+            switch (point.Vectors.VectorsOptionsCase)
+            {
+                case VectorsOutput.VectorsOptionsOneofCase.Vector:
+                    pointStruct.Vectors.Vector = point.Vectors.Vector.Data.ToArray();
+                    break;
+                case VectorsOutput.VectorsOptionsOneofCase.Vectors:
+                    pointStruct.Vectors.Vectors_ = new();
+                    foreach (var v in point.Vectors.Vectors.Vectors)
+                    {
+                        // TODO: Refactor mapper to not require pre-mapping to pointstruct to avoid this ToArray conversion.
+                        pointStruct.Vectors.Vectors_.Vectors.Add(v.Key, v.Value.Data.ToArray());
+                    }
+                    break;
+            }
+        }
 
         foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
         {

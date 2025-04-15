@@ -170,6 +170,7 @@ class KernelFunctionFromMethod(KernelFunction):
                     and "," not in param.type_
                     and param.type_object
                     and param.type_object is not inspect._empty
+                    and param.type_object is not Any
                 ):
                     try:
                         value = self._parse_parameter(value, param.type_object)

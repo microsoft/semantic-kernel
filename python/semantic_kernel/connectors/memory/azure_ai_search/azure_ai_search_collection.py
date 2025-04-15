@@ -126,7 +126,7 @@ class AzureAISearchCollection(
         )
 
         try:
-            azure_ai_search_settings = AzureAISearchSettings.create(
+            azure_ai_search_settings = AzureAISearchSettings(
                 env_file_path=kwargs.get("env_file_path"),
                 endpoint=kwargs.get("search_endpoint"),
                 api_key=kwargs.get("api_key"),
