@@ -2,15 +2,11 @@
 
 import logging
 from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Final
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
-from pydantic import ValidationError
+from pydantic import Field, SecretStr, ValidationError
 
-from semantic_kernel.connectors.search.brave.brave_search_response import BraveSearchResponse
-from semantic_kernel.connectors.search.brave.brave_search_settings import BraveSettings
-from semantic_kernel.connectors.search.brave.brave_web_page import BraveWebPage
-from semantic_kernel.connectors.search.brave.const import DEFAULT_URL, QUERY_PARAMETERS
 from semantic_kernel.data.text_search import (
     AnyTagsEqualTo,
     EqualTo,
@@ -21,7 +17,7 @@ from semantic_kernel.data.text_search import (
     TextSearchResult,
 )
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -29,6 +25,83 @@ if TYPE_CHECKING:
     from semantic_kernel.data.text_search import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+# region Constants
+DEFAULT_URL: Final[str] = "https://api.search.brave.com/res/v1/web/search"
+QUERY_PARAMETERS: Final[list[str]] = [
+    "country",
+    "search_lang",
+    "ui_lang",
+    "safesearch",
+    "text_decorations",
+    "spellcheck",
+    "result_filter",
+    "units",
+]
+
+
+# endregion Constants
+
+
+# region BraveSetttings
+class BraveSettings(KernelBaseSettings):
+    """Brave Connector settings.
+
+    The settings are first loaded from environment variables with the prefix 'BRAVE_'. If the
+    environment variables are not found, the settings can be loaded from a .env file with the
+    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
+    however, validation will fail alerting that the settings are missing.
+
+    Optional settings for prefix 'BRAVE_' are:
+    - api_key: SecretStr - The Brave API key (Env var BRAVE_API_KEY)
+
+    """
+
+    env_prefix: ClassVar[str] = "BRAVE_"
+
+    api_key: SecretStr
+
+
+# endregion BraveSetttings
+
+
+# region BraveWeb
+@experimental
+class BraveWebPage(KernelBaseModel):
+    """A Brave web page."""
+
+    type: str | None = None
+    title: str | None = None
+    url: str | None = None
+    thumbnail: dict[str, str | bool] | None = None
+    description: str | None = None
+    age: str | None = None
+    language: str | None = None
+    family_friendly: bool | None = None
+    extra_snippets: list[str] | None = None
+    meta_ur: dict[str, str] | None = None
+    source: str | None = None
+
+
+@experimental
+class BraveWebPages(KernelBaseModel):
+    """THe web pages from a Brave search."""
+
+    type: str | None = Field(default="webpage")
+    family_friendly: bool | None = Field(default=None)
+    results: list[BraveWebPage] = Field(default_factory=list)
+
+
+@experimental
+class BraveSearchResponse(KernelBaseModel):
+    """The response from a Brave search."""
+
+    type: str = Field(default="search", alias="type")
+    query_context: dict[str, Any] = Field(default_factory=dict, validation_alias="query")
+    web_pages: BraveWebPages | None = Field(default=None, validation_alias="web")
+
+
+# endregion BraveWeb
 
 
 @experimental
@@ -54,7 +127,7 @@ class BraveSearch(KernelBaseModel, TextSearch):
                 the settings are read from this file path location.
         """
         try:
-            settings = BraveSettings.create(
+            settings = BraveSettings(
                 api_key=api_key,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -208,3 +281,6 @@ class BraveSearch(KernelBaseModel, TextSearch):
             elif isinstance(filter, AnyTagsEqualTo):
                 logger.debug("Any tag equals to filter is not supported by Brave Search API.")
         return params
+
+
+__all__ = ["BraveSearch", "BraveSearchResponse", "BraveWebPage"]
