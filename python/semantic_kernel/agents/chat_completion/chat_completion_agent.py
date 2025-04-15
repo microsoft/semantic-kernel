@@ -60,7 +60,7 @@ class ChatHistoryAgentThread(AgentThread):
         super().__init__()
 
         self._chat_history = chat_history or ChatHistory()
-        self._id = thread_id or f"thread_{uuid.uuid4().hex}"
+        self._id: str = thread_id or f"thread_{uuid.uuid4().hex}"
         self._is_deleted = False
 
     def __len__(self) -> int:

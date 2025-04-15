@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Sequence
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
@@ -587,7 +587,9 @@ class ResponsesAgentThreadActions:
         )
 
     @classmethod
-    def _yield_function_result_messages(cls: type[_T], function_result_messages: list["ChatMessageContent"]) -> bool:
+    def _yield_function_result_messages(
+        cls: type[_T], function_result_messages: Sequence[ChatMessageContent | StreamingChatMessageContent]
+    ) -> bool:
         """Determine if the function result messages should be yielded.
 
         If there are messages and if the first message has items, then yield the messages.
