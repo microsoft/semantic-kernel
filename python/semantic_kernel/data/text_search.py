@@ -105,7 +105,7 @@ class SearchFilter:
 class SearchOptions(ABC, KernelBaseModel):
     """Options for a search."""
 
-    filter: SearchFilter | Callable = Field(default_factory=SearchFilter)
+    filter: SearchFilter = Field(default_factory=SearchFilter)
     include_total_count: bool = False
 
 

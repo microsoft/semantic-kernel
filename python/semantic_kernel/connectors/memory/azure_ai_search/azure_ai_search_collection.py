@@ -259,7 +259,7 @@ class AzureAISearchCollection(
             "include_total_count": options.include_total_count,
         }
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
-        if options.filter.filters:
+        if options.filter is not None:
             search_args["filter"] = self._build_filter_string(options.filter)
         if search_text is not None:
             search_args["search_text"] = search_text
@@ -349,7 +349,7 @@ class AzureAISearchCollection(
         match node:
             case ast.Compare():
                 if len(node.ops) > 1:
-                    values = []
+                    values: list[ast.expr] = []
                     for idx in range(len(node.ops)):
                         if idx == 0:
                             values.append(
