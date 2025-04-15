@@ -74,3 +74,28 @@ class FishSandwichProcess:
         )
 
         return process_builder
+
+    @staticmethod
+    def create_process_with_stateful_steps_v1(
+        process_name: str = "FishSandwichWithStatefulStepsProcess",
+    ) -> ProcessBuilder:
+        process_builder = ProcessBuilder(process_name, version="FishSandwich.V1")
+        make_fried_fish_step = process_builder.add_step_from_process(
+            FriedFishProcess.create_process_with_stateful_steps_v1()
+        )
+        add_buns_step = process_builder.add_step(AddBunStep)
+        add_special_sauce_step = process_builder.add_step(AddSpecialSauceStep)
+        external_step = process_builder.add_step(ExternalFriedFishStep)
+        process_builder.on_input_event(FishSandwichProcess.ProcessEvents.PrepareFishSandwich).send_event_to(
+            make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
+        )
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
+            ProcessFunctionTargetBuilder(add_buns_step)
+        )
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(
+            ProcessFunctionTargetBuilder(add_special_sauce_step)
+        )
+        add_special_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(
+            ProcessFunctionTargetBuilder(external_step)
+        )
+        return process_builder

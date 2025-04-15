@@ -16,10 +16,15 @@ if TYPE_CHECKING:
     from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 
 
+def extract_process_step_metadata_from_type(step_cls: type) -> KernelProcessStepMetadataAttribute:
+    """Extracts the process step metadata from the type."""
+    return getattr(step_cls, "_kernel_process_step_metadata", KernelProcessStepMetadataAttribute("v1"))
+
+
 def kernel_process_to_process_state_metadata(kernel_process: "KernelProcess") -> KernelProcessStateMetadata:
     """Converts a kernel process to process state metadata."""
-    # We assume `kernel_process.State` has attributes: Name, Id, Version
-    # and `kernel_process.Steps` is iterable of step info objects.
+    KernelProcessStateMetadata.model_rebuild()
+
     metadata = KernelProcessStateMetadata(
         name=kernel_process.state.name,
         id=kernel_process.state.id,
@@ -35,12 +40,13 @@ def kernel_process_to_process_state_metadata(kernel_process: "KernelProcess") ->
 
 def to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProcessStepStateMetadata:
     """Converts a step info object to process state metadata."""
-    from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo  # noqa: F401
+    from semantic_kernel.processes.kernel_process import KernelProcess
 
-    if is_kernel_process(step_info):
+    if isinstance(step_info, KernelProcess):
         return kernel_process_to_process_state_metadata(step_info)
-    if is_kernel_process_map(step_info):
+    if isinstance(step_info, KernelProcessMap):
         return kernel_process_map_to_process_state_metadata(step_info)
+
     return step_info_to_process_state_metadata(step_info)
 
 
@@ -50,40 +56,22 @@ def kernel_process_map_to_process_state_metadata(step_map: KernelProcessMap) -> 
         name=step_map.state.name,
         id=step_map.state.id,
         version_info=step_map.state.version,
-        operationState=to_process_state_metadata(step_map.operation),
+        operation_state=to_process_state_metadata(step_map.operation),
     )
 
 
 def step_info_to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProcessStepStateMetadata:
     """Converts a step info object to process state metadata."""
     metadata = KernelProcessStepStateMetadata(
-        name=step_info.state.name, id=step_info.state.id, version_info=step_info.state.version
+        name=step_info.state.name,
+        id=step_info.state.id,
+        version_info=step_info.state.version,
     )
 
-    if get_generic_state_type(step_info.inner_step_type) is not None:
-        # Hypothetical logic:
-        # The C# code retrieves `innerState` via reflection:
-        # In Python, suppose `step_info.State` has a `State` attribute for user-defined state.
+    generic_state_type = get_generic_state_type(step_info.inner_step_type)
+    if generic_state_type:
         inner_state = getattr(step_info.state, "state", None)
         if inner_state is not None:
             metadata.state = inner_state
 
     return metadata
-
-
-# Helper functions to determine type (replace with your actual logic):
-def is_kernel_process(obj) -> bool:
-    """Checks if the object is an instance of KernelProcess."""
-    # Implement a check to see if obj is instance of KernelProcess
-    return hasattr(obj, "Steps") and hasattr(obj, "State")  # Example placeholder
-
-
-def is_kernel_process_map(obj) -> bool:
-    """Checks if the object is an instance of KernelProcessMap."""
-    # Implement a check to see if obj is instance of KernelProcessMap
-    return hasattr(obj, "Operation") and hasattr(obj, "State")  # Example placeholder
-
-
-def extract_process_step_metadata_from_type(step_cls: type) -> KernelProcessStepMetadataAttribute:
-    """Extracts the process step metadata from the type."""
-    return getattr(step_cls, "_kernel_process_step_metadata", KernelProcessStepMetadataAttribute("v1"))

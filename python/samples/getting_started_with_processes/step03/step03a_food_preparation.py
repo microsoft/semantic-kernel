@@ -90,7 +90,7 @@ def dump_process_state_metadata_locally(process_state: KernelProcessStateMetadat
     """
     file_path = PROCESS_STATE_DIRECTORY / json_filename
     with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(process_state.model_dump(exclude_none=True, by_alias=True), f, indent=4)
+        json.dump(process_state.model_dump(exclude_none=True, by_alias=True, mode="json"), f, indent=4)
     print(f"Process state saved to '{file_path.resolve()}'")
 
 
@@ -230,7 +230,7 @@ async def run_and_store_stateful_fish_sandwich_process_state():
     Runs the FishSandwich stateful process once, then stores its state to JSON.
     """
     kernel = _create_kernel_with_chat_completion()
-    builder = FishSandwichProcess.create_process()
+    builder = FishSandwichProcess.create_process_with_stateful_steps_v1()
     fish_sandwich_process = builder.build()
 
     print("=== Start run_and_store_stateful_fish_sandwich_process_state ===")
@@ -342,15 +342,15 @@ async def run_stateful_fish_sandwich_process_with_low_stock_from_file():
 
 async def main():
     # Show basic usage of "stateless" processes
-    # await use_prepare_fried_fish_process()
-    # await use_prepare_potato_fries_process()
-    # await use_prepare_fish_sandwich_process()
-    # await use_prepare_fish_and_chips_process()
+    await use_prepare_fried_fish_process()
+    await use_prepare_potato_fries_process()
+    await use_prepare_fish_sandwich_process()
+    await use_prepare_fish_and_chips_process()
 
     # # Show "stateful" processes, not storing or loading yet
-    # await use_prepare_stateful_fried_fish_process_no_shared_state()
-    # await use_prepare_stateful_fried_fish_process_shared_state()
-    # await use_prepare_stateful_potato_fries_process_shared_state()
+    await use_prepare_stateful_fried_fish_process_no_shared_state()
+    await use_prepare_stateful_fried_fish_process_shared_state()
+    await use_prepare_stateful_potato_fries_process_shared_state()
 
     # Demonstration of storing then reloading state:
     await run_and_store_stateful_fried_fish_process_state()
@@ -362,9 +362,6 @@ async def main():
 
     await run_stateful_fish_sandwich_process_from_file()
     await run_stateful_fish_sandwich_process_with_low_stock_from_file()
-
-    # If you have a V2 version of the process, you can do "builderV2 = ..."
-    # and build it with loaded V1 metadata to demonstrate version migrations.
 
 
 if __name__ == "__main__":
