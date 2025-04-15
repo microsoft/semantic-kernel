@@ -16,7 +16,7 @@ public record KernelProcessEventListener : KernelProcessStepInfo
     /// <param name="destinationStepId">The unique Id of the destination step</param>
     /// <param name="state">The initial state of the Step</param>
     /// <param name="edges">The edges of the step.</param>
-    public KernelProcessEventListener(List<KernelProcessMessageSource> messageSources, string destinationStepId, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges) : base(typeof(KernelProcessEventListener), state, edges)
+    public KernelProcessEventListener(List<KernelProcessMessageSource> messageSources, string destinationStepId, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges) : base(typeof(KernelProcessEventListenerStep), state, edges)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
         Verify.NotNullOrWhiteSpace(destinationStepId, nameof(destinationStepId));

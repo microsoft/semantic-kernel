@@ -64,6 +64,31 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     /// <summary>
+    /// Tests a simple process with a WhenAll event listener
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task ProcessWithWhenAllListenerAsync()
+    {
+        // Arrange
+        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        this._kernelBuilder.AddOpenAIChatCompletion(
+            modelId: configuration.ModelId!,
+            apiKey: configuration.ApiKey);
+
+        Kernel kernel = this._kernelBuilder.Build();
+        var process = this.GetProcess().Build();
+
+        // Act
+        string testInput = "Test";
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
+
+        // Assert
+        this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 2)));
+    }
+
+    /// <summary>
     /// Tests a process with three steps where the third step is a nested process. Ev/ts from the outer process
     /// are routed to the inner process.
     /// </summary>
@@ -328,6 +353,57 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     }
 
     #region Predefined ProcessBuilders for testing
+
+    private ProcessBuilder GetProcess()
+    {
+        // Create the process builder.
+        ProcessBuilder processBuilder = new("ProcessWithDapr");
+
+        // Add some steps to the process.
+        var kickoffStep = processBuilder.AddStepFromType<KickoffStep>();
+        var myAStep = processBuilder.AddStepFromType<AStep>();
+        var myBStep = processBuilder.AddStepFromType<BStep>();
+
+        // ########## Configuring initial state on steps in a process ###########
+        // For demonstration purposes, we add the CStep and configure its initial state with a CurrentCycle of 1.
+        // Initializing state in a step can be useful for when you need a step to start out with a predetermines
+        // configuration that is not easily accomplished with dependency injection.
+        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(initialState: new() { CurrentCycle = 1 });
+
+        // Setup the input event that can trigger the process to run and specify which step and function it should be routed to.
+        processBuilder
+            .OnInputEvent(CommonEvents.StartProcess)
+            .SendEventTo(new ProcessFunctionTargetBuilder(kickoffStep));
+
+        // When the kickoff step is finished, trigger both AStep and BStep.
+        kickoffStep
+            .OnEvent(CommonEvents.StartARequested)
+            .SendEventTo(new ProcessFunctionTargetBuilder(myAStep))
+            .SendEventTo(new ProcessFunctionTargetBuilder(myBStep));
+
+        // When step A and step B have finished, trigger the CStep.
+        processBuilder
+            .ListenFor()
+                .AllOf(new()
+                {
+                    new(messageType: CommonEvents.AStepDone, source: myAStep),
+                    new(messageType: CommonEvents.BStepDone, source: myBStep)
+                })
+                .SendEventTo(new(myCStep));
+
+        // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
+        myCStep
+            .OnEvent(CommonEvents.CStepDone)
+            .SendEventTo(new ProcessFunctionTargetBuilder(kickoffStep));
+
+        // When the CStep has finished by requesting an exit, stop the process.
+        myCStep
+            .OnEvent(CommonEvents.ExitRequested)
+            .StopProcess();
+
+        return processBuilder;
+    }
+
     /// <summary>
     /// Sample long sequential process, each step has a delay.<br/>
     /// Input Event: <see cref="EmitterStep.InputEvent"/><br/>
@@ -461,6 +537,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         return processBuilder;
     }
     #endregion
+
     #region Assert Utils
     private void AssertStepStateLastMessage(KernelProcess processInfo, string stepName, string? expectedLastMessage, int? expectedInvocationCount = null)
     {

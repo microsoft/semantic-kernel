@@ -42,11 +42,9 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
         this._processBuilder.AddListenerStep(eventListener);
 
         // Link the listener to the destination step
-        string eventId = "events_received";
-        eventListener.LinkTo(eventId, new ProcessStepEdgeBuilder(eventListener, eventId, eventListener.Name)
-        {
-            Target = target
-        });
+        var v = eventListener.OnEvent("events_received");
+        v.Target = target;
+        eventListener.LinkTo(v.EventData.EventId, v);
 
         foreach (var messageSource in this._messageSources)
         {
