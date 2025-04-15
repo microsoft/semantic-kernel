@@ -3,20 +3,19 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using Microsoft.Extensions.AI;
 using OpenAI;
 
 namespace Microsoft.SemanticKernel;
 
-/// <summary>
-/// Sponsor extensions class for <see cref="IKernelBuilder"/>.
-/// </summary>
+/// <summary>Extension methods for <see cref="IKernelBuilder"/>.</summary>
 [Experimental("SKEXP0010")]
 public static class OpenAIChatClientKernelBuilderExtensions
 {
     #region Chat Completion
 
     /// <summary>
-    /// Adds the OpenAI chat completion service to the list.
+    /// Adds an OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>
@@ -46,7 +45,7 @@ public static class OpenAIChatClientKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the OpenAI chat completion service to the list.
+    /// Adds an OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model id</param>
@@ -70,7 +69,7 @@ public static class OpenAIChatClientKernelBuilderExtensions
     }
 
     /// <summary>
-    /// Adds the Custom Endpoint OpenAI chat completion service to the list.
+    /// Adds a custom endpoint OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IKernelBuilder"/> instance to augment.</param>
     /// <param name="modelId">OpenAI model name, see https://platform.openai.com/docs/models</param>

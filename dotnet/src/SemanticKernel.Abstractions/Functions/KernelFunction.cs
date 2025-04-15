@@ -542,7 +542,6 @@ public abstract class KernelFunction
 
             this.JsonSchema = BuildFunctionSchema(kernelFunction);
         }
-        internal string KernelFunctionName => this._kernelFunction.Name;
         public override string Name { get; }
         public override JsonElement JsonSchema { get; }
         public override string Description => this._kernelFunction.Description;

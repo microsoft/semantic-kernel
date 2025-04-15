@@ -137,7 +137,7 @@ internal static class ChatOptionsExtensions
         if (kernel is not null)
         {
             options.AdditionalProperties ??= [];
-            options.AdditionalProperties?.TryAdd(KernelKey, kernel);
+            options.AdditionalProperties.TryAdd(KernelKey, kernel);
         }
 
         return options;

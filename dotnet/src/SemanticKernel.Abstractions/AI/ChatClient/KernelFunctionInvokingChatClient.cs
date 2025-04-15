@@ -226,7 +226,7 @@ public partial class KernelFunctionInvokingChatClient : DelegatingChatClient
 
         // A single request into this GetResponseAsync may result in multiple requests to the inner client.
         // Create an activity to group them together for better observability.
-        using Activity? activity = _activitySource?.StartActivity(nameof(FunctionInvokingChatClient));
+        using Activity? activity = _activitySource?.StartActivity(nameof(KernelFunctionInvokingChatClient));
 
         // Copy the original messages in order to avoid enumerating the original messages multiple times.
         // The IEnumerable can represent an arbitrary amount of work.
