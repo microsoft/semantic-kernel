@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from importlib import metadata
 from typing import Any, ClassVar, Generic
 
@@ -292,8 +292,10 @@ class MongoDBAtlasCollection(
             total_count=None,  # no way to get a count before looping through the result cursor
         )
 
-    def _build_filter_dict(self, search_filter: VectorSearchFilter) -> dict[str, Any]:
+    def _build_filter_dict(self, search_filter: VectorSearchFilter | Callable) -> dict[str, Any]:
         """Create the filter dictionary based on the filters."""
+        if not isinstance(search_filter, VectorSearchFilter):
+            raise VectorStoreOperationException("Lambda filters are not supported yet.")
         filter_dict = {}
         for filter in search_filter.filters:
             if isinstance(filter, EqualTo):

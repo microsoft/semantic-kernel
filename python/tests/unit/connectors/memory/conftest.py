@@ -158,44 +158,86 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
         (
             lambda x: x.id > 0,
             {
-                "ai_search": "id gt '0'",
+                "ai_search": "id gt 0",
             },
             "greater than",
         ),
         (
             lambda x: x.id >= 0,
             {
-                "ai_search": "id ge '0'",
+                "ai_search": "id ge 0",
             },
             "greater than or equal",
         ),
         (
             lambda x: x.id < 0,
             {
-                "ai_search": "id lt '0'",
+                "ai_search": "id lt 0",
             },
             "less than",
         ),
         (
             lambda x: x.id <= 0,
             {
-                "ai_search": "id le '0'",
+                "ai_search": "id le 0",
             },
             "less than or equal",
         ),
         (
+            lambda x: -10 <= x.id <= 0,
+            {
+                "ai_search": "(-10 le id and id le 0)",
+            },
+            "between inclusive",
+        ),
+        (
+            lambda x: -10 < x.id < 0,
+            {
+                "ai_search": "(-10 lt id and id lt 0)",
+            },
+            "between exclusive",
+        ),
+        (
             lambda x: x.content == "value" and x.id == 0,
             {
-                "ai_search": "content eq 'value' and id eq '0'",
+                "ai_search": "(content eq 'value' and id eq 0)",
             },
             "and",
         ),
         (
             lambda x: x.content == "value" or x.id == 0,
             {
-                "ai_search": "content eq 'value' or id eq '0'",
+                "ai_search": "(content eq 'value' or id eq 0)",
             },
             "or",
+        ),
+        (
+            lambda x: not x.content,
+            {
+                "ai_search": "not content",
+            },
+            "not",
+        ),
+        (
+            lambda x: "value" in x.content,
+            {
+                "ai_search": "search.ismatch('value', content)",
+            },
+            "contains",
+        ),
+        (
+            lambda x: "value" not in x.content,
+            {
+                "ai_search": "not search.ismatch('value', content)",
+            },
+            "not contains",
+        ),
+        (
+            lambda x: (x.id > 0 and x.id < 3) or (x.id > 7 and x.id < 10),
+            {
+                "ai_search": "((id gt 0 and id lt 3) or (id gt 7 and id lt 10))",
+            },
+            "complex",
         ),
     ]
     return [param(s[0], s[1][store], id=s[2]) for s in sets if store in s[1]]

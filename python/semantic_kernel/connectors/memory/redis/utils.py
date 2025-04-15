@@ -3,6 +3,7 @@
 import asyncio
 import contextlib
 import json
+from collections.abc import Callable
 from datetime import datetime
 from typing import Any
 
@@ -27,6 +28,7 @@ from semantic_kernel.data.record_definition import (
 from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo
 from semantic_kernel.data.vector_search import VectorSearchFilter
 from semantic_kernel.exceptions import VectorSearchOptionsException
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 from semantic_kernel.memory.memory_record import MemoryRecord
 
 
@@ -196,9 +198,11 @@ def _field_to_redis_field_json(
 
 
 def _filters_to_redis_filters(
-    filters: VectorSearchFilter, data_model_definition: VectorStoreRecordDefinition
+    filters: VectorSearchFilter | Callable, data_model_definition: VectorStoreRecordDefinition
 ) -> FilterExpression | None:
     """Convert filters to Redis filters."""
+    if not isinstance(filters, VectorSearchFilter):
+        raise VectorStoreOperationException("Lambda filters are not supported yet.")
     expression: FilterExpression | None = None
     for filter in filters.filters:
         new: FilterExpression | None = None

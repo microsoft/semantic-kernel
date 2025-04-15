@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import Any, ClassVar, Generic
 
 from chromadb import Client, Collection, QueryResult
@@ -14,6 +14,7 @@ from semantic_kernel.data.record_definition import VectorStoreRecordDataField, V
 from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
 from semantic_kernel.data.vector_search import (
     VectorizedSearchMixin,
+    VectorSearchFilter,
     VectorSearchOptions,
     VectorSearchResult,
 )
@@ -295,7 +296,7 @@ class ChromaCollection(
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        where = self._parse_filter(options)
+        where = self._parse_filter(options.filter)
         args = {
             "n_results": options.top,
             "include": ["documents", "metadatas", "embeddings", "distances"]
@@ -320,11 +321,13 @@ class ChromaCollection(
     def _get_score_from_result(self, result: Any) -> float | None:
         return result["distance"]
 
-    def _parse_filter(self, options: VectorSearchOptions) -> dict[str, Any] | None:
-        if options.filter is None or not options.filter.filters:
+    def _parse_filter(self, search_filter: VectorSearchFilter | Callable) -> dict[str, Any] | None:
+        if not isinstance(search_filter, VectorSearchFilter):
+            raise VectorStoreOperationException("Lambda filters are not supported yet.")
+        if not search_filter.filters:
             return None
         filter_expression = {"$and": []}
-        for filter in options.filter.filters:
+        for filter in search_filter.filters:
             match filter:
                 case EqualTo():
                     filter_expression["$and"].append({filter.field_name: {"$eq": filter.value}})

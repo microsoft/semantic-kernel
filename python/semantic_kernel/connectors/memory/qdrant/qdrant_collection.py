@@ -15,6 +15,7 @@ from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, 
 from semantic_kernel.data.text_search import KernelSearchResults
 from semantic_kernel.data.vector_search import (
     VectorizedSearchMixin,
+    VectorSearchFilter,
     VectorSearchOptions,
     VectorSearchResult,
 )
@@ -212,6 +213,8 @@ class QdrantCollection(
         return result.score
 
     def _create_filter(self, options: VectorSearchOptions) -> Filter:
+        if not isinstance(options.filter, VectorSearchFilter):
+            raise VectorStoreOperationException("Lambda filters are not supported yet.")
         return Filter(
             must=[
                 FieldCondition(key=filter.field_name, match=MatchAny(any=[filter.value]))

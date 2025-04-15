@@ -129,5 +129,5 @@ async def test_chroma_collection_search(chroma_collection, mock_client):
 )
 def test_chroma_collection_parse_filter(chroma_collection, filter_expression, expected):
     options = VectorSearchOptions(top=1, include_vectors=True, filter=filter_expression)
-    filter_expression = chroma_collection._parse_filter(options)
+    filter_expression = chroma_collection._parse_filter(options.filter)
     assert filter_expression == expected
