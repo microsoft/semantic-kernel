@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// Execution settings for OpenAI text-to-audio request.
 /// </summary>
 [Experimental("SKEXP0001")]
+[JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
 public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
 {
     /// <summary>

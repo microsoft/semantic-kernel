@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from enum import Enum
 from unittest.mock import MagicMock
 
 import pytest
@@ -12,6 +13,10 @@ from semantic_kernel.processes.kernel_process.kernel_process_step import KernelP
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.process_step_builder import ProcessStepBuilder
 from semantic_kernel.processes.process_step_edge_builder import ProcessStepEdgeBuilder
+
+
+class TestFunctionEnum(Enum):
+    MY_FUNCTION = "my_function"
 
 
 class MockKernelProcessStep(KernelProcessStep):
@@ -177,3 +182,24 @@ def test_link_to_multiple_edges():
 
     # Assert
     assert step_builder.edges[event_id] == [edge_builder_1, edge_builder_2]
+
+
+@pytest.mark.parametrize(
+    "function_name, expected_function_name",
+    [
+        ("my_function", "my_function"),
+        (TestFunctionEnum.MY_FUNCTION, TestFunctionEnum.MY_FUNCTION.value),
+    ],
+)
+def test_on_function_result(function_name, expected_function_name):
+    # Arrange
+    name = "test_step"
+    step_builder = ProcessStepBuilder(name=name)
+
+    # Act
+    edge_builder = step_builder.on_function_result(function_name=function_name)
+
+    # Assert
+    assert isinstance(edge_builder, ProcessStepEdgeBuilder)
+    assert edge_builder.source == step_builder
+    assert edge_builder.event_id == f"{step_builder.event_namespace}.{expected_function_name}.OnResult"

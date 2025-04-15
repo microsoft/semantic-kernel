@@ -142,7 +142,11 @@ public static class ApiManifestKernelExtensions
 
             var openApiFunctionExecutionParameters = pluginParameters?.FunctionExecutionParameters?.TryGetValue(apiName, out var parameters) == true
                 ? parameters
-                : null;
+                : new OpenApiFunctionExecutionParameters()
+                {
+                    EnableDynamicPayload = false,
+                    EnablePayloadNamespacing = true,
+                };
 
 #pragma warning disable CA2000 // Dispose objects before losing scope. No need to dispose the Http client here. It can either be an internal client using NonDisposableHttpClientHandler or an external client managed by the calling code, which should handle its disposal.
             var operationRunnerHttpClient = HttpClientProvider.GetHttpClient(openApiFunctionExecutionParameters?.HttpClient ?? kernel.Services.GetService<HttpClient>());
@@ -152,7 +156,7 @@ public static class ApiManifestKernelExtensions
                 operationRunnerHttpClient,
                 openApiFunctionExecutionParameters?.AuthCallback,
                 openApiFunctionExecutionParameters?.UserAgent,
-                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? true,
+                openApiFunctionExecutionParameters?.EnableDynamicPayload ?? false,
                 openApiFunctionExecutionParameters?.EnablePayloadNamespacing ?? false);
 
             var server = filteredOpenApiDocument.Servers.FirstOrDefault();

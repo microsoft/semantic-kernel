@@ -19,17 +19,16 @@ from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.completion_usage import CompletionUsage
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_calling_utils import update_settings_from_function_call_configuration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior, FunctionChoiceType
 from semantic_kernel.connectors.ai.open_ai.prompt_execution_settings.open_ai_prompt_execution_settings import (
     OpenAIChatPromptExecutionSettings,
 )
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_handler import OpenAIHandler
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.file_reference_content import FileReferenceContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
@@ -46,6 +45,7 @@ from semantic_kernel.utils.telemetry.model_diagnostics.decorators import (
 )
 
 if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_arguments import KernelArguments
     from semantic_kernel.kernel import Kernel
@@ -150,7 +150,7 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
     @override
     def _update_function_choice_settings_callback(
         self,
-    ) -> Callable[[FunctionCallChoiceConfiguration, "PromptExecutionSettings", FunctionChoiceType], None]:
+    ) -> Callable[["FunctionCallChoiceConfiguration", "PromptExecutionSettings", FunctionChoiceType], None]:
         return update_settings_from_function_call_configuration
 
     @override
@@ -267,6 +267,41 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         # When you enable asynchronous content filtering in Azure OpenAI, you may receive empty deltas
         return []
 
+    def _prepare_chat_history_for_request(
+        self,
+        chat_history: "ChatHistory",
+        role_key: str = "role",
+        content_key: str = "content",
+    ) -> Any:
+        """Prepare the chat history for a request.
+
+        Allowing customization of the key names for role/author, and optionally overriding the role.
+
+        ChatRole.TOOL messages need to be formatted different than system/user/assistant messages:
+            They require a "tool_call_id" and (function) "name" key, and the "metadata" key should
+            be removed. The "encoding" key should also be removed.
+
+        Override this method to customize the formatting of the chat history for a request.
+
+        Args:
+            chat_history (ChatHistory): The chat history to prepare.
+            role_key (str): The key name for the role/author.
+            content_key (str): The key name for the content/message.
+
+        Returns:
+            prepared_chat_history (Any): The prepared chat history for a request.
+        """
+        return [
+            {
+                **message.to_dict(role_key=role_key, content_key=content_key),
+                role_key: "developer"
+                if self.instruction_role == "developer" and message.to_dict(role_key=role_key)[role_key] == "system"
+                else message.to_dict(role_key=role_key)[role_key],
+            }
+            for message in chat_history.messages
+            if not isinstance(message, (AnnotationContent, FileReferenceContent))
+        ]
+
     # endregion
 
     # region function calling
@@ -279,15 +314,9 @@ class OpenAIChatCompletionBase(OpenAIHandler, ChatCompletionClientBase):
         arguments: "KernelArguments | None",
         function_call_count: int,
         request_index: int,
-        function_call_behavior: FunctionChoiceBehavior | FunctionCallBehavior,
+        function_call_behavior: FunctionChoiceBehavior,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the tool calls in the result and update the chat history."""
-        # deprecated and might not even be used anymore, hard to trigger directly
-        if isinstance(function_call_behavior, FunctionCallBehavior):  # pragma: no cover
-            # We need to still support a `FunctionCallBehavior` input so it doesn't break current
-            # customers. Map from `FunctionCallBehavior` -> `FunctionChoiceBehavior`
-            function_call_behavior = FunctionChoiceBehavior.from_function_call_behavior(function_call_behavior)
-
         return await kernel.invoke_function_call(
             function_call=function_call,
             chat_history=chat_history,

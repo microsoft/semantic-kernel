@@ -136,7 +136,7 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     /// Note that to enable JSON mode, some AI models may also require you to instruct the model to produce JSON
     /// via a system or user message.
     /// Please note <see cref="ChatCompletionsResponseFormat"/> is the base class. According to the scenario, a derived class of the base class might need to be assigned here, or this property needs to be casted to one of the possible derived classes.
-    /// The available derived classes include <see cref="ChatCompletionsResponseFormatJSON"/> and <see cref="ChatCompletionsResponseFormatText"/>.
+    /// The available derived classes include <see cref="ChatCompletionsResponseFormatJsonObject"/> and <see cref="ChatCompletionsResponseFormatText"/>.
     /// </summary>
     [JsonPropertyName("response_format")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -153,7 +153,7 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     /// <summary> A collection of textual sequences that will end completions generation. </summary>
     [JsonPropertyName("stop")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<string> StopSequences
+    public IList<string>? StopSequences
     {
         get => this._stopSequences;
         set
@@ -170,7 +170,7 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     /// </summary>
     [JsonPropertyName("tools")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public IList<ChatCompletionsToolDefinition> Tools
+    public IList<ChatCompletionsToolDefinition>? Tools
     {
         get => this._tools;
         set
@@ -229,8 +229,8 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
             NucleusSamplingFactor = this.NucleusSamplingFactor,
             MaxTokens = this.MaxTokens,
             ResponseFormat = this.ResponseFormat,
-            StopSequences = new List<string>(this.StopSequences),
-            Tools = new List<ChatCompletionsToolDefinition>(this.Tools),
+            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
+            Tools = this.Tools is not null ? new List<ChatCompletionsToolDefinition>(this.Tools) : null,
             Seed = this.Seed,
             ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
         };
@@ -273,8 +273,8 @@ public sealed class AzureAIInferencePromptExecutionSettings : PromptExecutionSet
     private float? _nucleusSamplingFactor;
     private int? _maxTokens;
     private object? _responseFormat;
-    private IList<string> _stopSequences = [];
-    private IList<ChatCompletionsToolDefinition> _tools = [];
+    private IList<string>? _stopSequences;
+    private IList<ChatCompletionsToolDefinition>? _tools;
     private long? _seed;
 
     #endregion

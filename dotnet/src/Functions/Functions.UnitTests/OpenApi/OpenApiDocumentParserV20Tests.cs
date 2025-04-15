@@ -236,7 +236,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
         var restApi = await this._sut.ParseAsync(this._openApiDocument);
 
         // Assert
-        Assert.Equal(6, restApi.Operations.Count);
+        Assert.Equal(7, restApi.Operations.Count);
     }
 
     [Fact]
@@ -419,7 +419,7 @@ public sealed class OpenApiDocumentParserV20Tests : IDisposable
     public async Task ItCanFilterOutSpecifiedOperationsAsync()
     {
         // Arrange
-        var operationsToExclude = new[] { "Excuses", "TestDefaultValues", "OpenApiExtensions", "TestParameterDataTypes" };
+        string[] operationsToExclude = ["Excuses", "TestDefaultValues", "OpenApiExtensions", "TestParameterDataTypes", "TestParameterNamesSanitization"];
 
         var options = new OpenApiDocumentParserOptions
         {

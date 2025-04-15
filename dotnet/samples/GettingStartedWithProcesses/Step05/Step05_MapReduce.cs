@@ -44,7 +44,7 @@ public class Step05_MapReduce : BaseTest
 
         // Execute the process
         Kernel kernel = new();
-        using LocalKernelProcessContext localProcess =
+        await using LocalKernelProcessContext localProcess =
             await process.StartAsync(
                 kernel,
                 new KernelProcessEvent
@@ -116,7 +116,7 @@ public class Step05_MapReduce : BaseTest
         {
             Dictionary<string, int> counts = [];
 
-            string[] words = chunk.Split([' ', '\n', '\r', '.', ',', '’'], StringSplitOptions.RemoveEmptyEntries);
+            string[] words = chunk.Split([" ", "\n", "\r", ".", ",", "’"], StringSplitOptions.RemoveEmptyEntries);
             foreach (string word in words)
             {
                 if (s_notInteresting.Contains(word))

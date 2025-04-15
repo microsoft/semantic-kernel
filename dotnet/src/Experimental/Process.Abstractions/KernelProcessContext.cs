@@ -27,4 +27,16 @@ public abstract class KernelProcessContext
     /// </summary>
     /// <returns>A <see cref="Task{T}"/> where T is <see cref="KernelProcess"/></returns>
     public abstract Task<KernelProcess> GetStateAsync();
+
+    /// <summary>
+    /// Gets the instance of <see cref="IExternalKernelProcessMessageChannel"/> used for external messages
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync();
+
+    /// <summary>
+    /// Gets the id of the running process instance
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task<string> GetProcessIdAsync();
 }

@@ -2,4 +2,4 @@
 
 from typing import Final
 
-DEFAULT_AZURE_API_VERSION: Final[str] = "2024-06-01"
+DEFAULT_AZURE_API_VERSION: Final[str] = "2024-10-21"

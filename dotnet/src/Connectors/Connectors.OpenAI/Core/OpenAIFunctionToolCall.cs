@@ -109,15 +109,15 @@ public sealed class OpenAIFunctionToolCall
         {
             // If we have an ID, ensure the index is being tracked. Even if it's not a function update,
             // we want to keep track of it so we can send back an error.
-            if (update.ToolCallId is string id)
+            if (!string.IsNullOrWhiteSpace(update.ToolCallId))
             {
-                (toolCallIdsByIndex ??= [])[update.Index] = id;
+                (toolCallIdsByIndex ??= [])[update.Index] = update.ToolCallId;
             }
 
             // Ensure we're tracking the function's name.
-            if (update.FunctionName is string name)
+            if (!string.IsNullOrWhiteSpace(update.FunctionName))
             {
-                (functionNamesByIndex ??= [])[update.Index] = name;
+                (functionNamesByIndex ??= [])[update.Index] = update.FunctionName;
             }
 
             // Ensure we're tracking the function's arguments.

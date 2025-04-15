@@ -50,13 +50,15 @@ internal sealed class AI21JambaService : IBedrockTextGenerationService, IBedrock
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<AI21JambaResponse.AI21TextResponse>(reader.ReadToEnd());
-        List<TextContent> textContents = [];
+
         if (responseBody?.Choices is not { Count: > 0 })
         {
-            return textContents;
+            return [];
         }
-        textContents.AddRange(responseBody.Choices.Select(choice => new TextContent(choice.Message?.Content)));
-        return textContents;
+
+        return responseBody.Choices
+            .Select(choice => new TextContent(choice.Message?.Content, innerContent: responseBody))
+            .ToList();
     }
 
     /// <inheritdoc/>
@@ -108,12 +110,12 @@ internal sealed class AI21JambaService : IBedrockTextGenerationService, IBedrock
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var choiceDeltaContent = chunk["choices"]?[0]?["delta"]?["content"];
         if (choiceDeltaContent is not null)
         {
-            yield return choiceDeltaContent.ToString();
+            yield return new StreamingTextContent(choiceDeltaContent.ToString(), innerContent: chunk);
         }
     }
 

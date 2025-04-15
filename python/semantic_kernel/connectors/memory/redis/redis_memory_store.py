@@ -25,12 +25,12 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.exceptions.memory_connector_exceptions import MemoryConnectorInitializationError
 from semantic_kernel.memory.memory_record import MemoryRecord
 from semantic_kernel.memory.memory_store_base import MemoryStoreBase
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class RedisMemoryStore(MemoryStoreBase):
     """A memory store implementation using Redis."""
 
@@ -73,7 +73,7 @@ class RedisMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): Encoding of the environment settings file, defaults to "utf-8"
         """
         try:
-            redis_settings = RedisSettings.create(
+            redis_settings = RedisSettings(
                 connection_string=connection_string,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

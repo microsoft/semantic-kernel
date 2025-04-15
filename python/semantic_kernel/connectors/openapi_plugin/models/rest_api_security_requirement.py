@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_scheme import RestApiSecurityScheme
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class RestApiSecurityRequirement(dict[RestApiSecurityScheme, list[str]]):
     """Represents the security requirements used by the REST API."""
 

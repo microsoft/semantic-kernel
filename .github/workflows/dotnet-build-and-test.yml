@@ -30,6 +30,8 @@ jobs:
       dotnetChanges: ${{ steps.filter.outputs.dotnet }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -68,6 +70,8 @@ jobs:
     environment: ${{ matrix.environment }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup dotnet ${{ matrix.dotnet }}
         uses: actions/setup-dotnet@v3
         with:
@@ -104,9 +108,9 @@ jobs:
         shell: bash
         if: github.event_name != 'pull_request' && matrix.integration-tests
         run: |
-          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | tr '\n' ' ')
+          export INTEGRATION_TEST_PROJECTS=$(find ./dotnet -type f -name "*IntegrationTests.csproj" | grep -v "Experimental.Orchestration.Flow.IntegrationTests.csproj" | grep -v "VectorDataIntegrationTests.csproj" | tr '\n' ' ')
           for project in $INTEGRATION_TEST_PROJECTS; do
-            dotnet test -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
+            dotnet test -f net8.0 -c ${{ matrix.configuration }} $project --no-build -v Normal --logger trx
           done
         env:
           # Azure OpenAI Deployments
@@ -145,14 +149,24 @@ jobs:
           AzureAIInference__ApiKey: ${{ secrets.AZUREAIINFERENCE__APIKEY }}
           AzureAIInference__Endpoint: ${{ secrets.AZUREAIINFERENCE__ENDPOINT }}
           AzureAIInference__ChatModelId: ${{ vars.AZUREAIINFERENCE__CHATMODELID }}
+          # Azure AI Foundry
+          AzureAI__Endpoint: ${{ secrets.AZUREAI__ENDPOINT }}
+          AzureAI__ConnectionString: ${{ secrets.AZUREAI__CONNECTIONSTRING }}
+          AzureAI__ChatModelId: ${{ vars.AZUREAI__CHATMODELID }}
 
       # Generate test reports and check coverage
       - name: Generate test reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.1
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
         with:
           reports: "./TestResults/Coverage/**/coverage.cobertura.xml"
           targetdir: "./TestResults/Reports"
-          reporttypes: "JsonSummary"
+          reporttypes: "HtmlInline;JsonSummary"
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoverageReport-${{ matrix.os }}-${{ matrix.dotnet }}-${{ matrix.configuration }} # Artifact name
+          path: ./TestResults/Reports # Directory containing files to upload
 
       - name: Check coverage
         shell: pwsh

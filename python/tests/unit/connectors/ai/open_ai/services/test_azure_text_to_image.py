@@ -86,7 +86,7 @@ async def test_azure_text_to_image_calls_with_parameters(mock_generate, azure_op
     width = 512
 
     azure_text_to_image = AzureTextToImage()
-    await azure_text_to_image.generate_image(prompt, width, width)
+    await azure_text_to_image.generate_image(prompt, width=width, height=width)
 
     mock_generate.assert_awaited_once_with(
         prompt=prompt,

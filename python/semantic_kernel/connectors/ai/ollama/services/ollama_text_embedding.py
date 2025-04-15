@@ -22,13 +22,13 @@ else:
 
 from numpy import array, ndarray
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
     """Ollama embeddings client.
 
@@ -56,7 +56,7 @@ class OllamaTextEmbedding(OllamaBase, EmbeddingGeneratorBase):
             env_file_encoding (str | None): The encoding of the environment settings file, defaults to 'utf-8'.
         """
         try:
-            ollama_settings = OllamaSettings.create(
+            ollama_settings = OllamaSettings(
                 embedding_model_id=ai_model_id,
                 host=host,
                 env_file_path=env_file_path,

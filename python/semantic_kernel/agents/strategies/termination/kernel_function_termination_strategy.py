@@ -9,10 +9,11 @@ from pydantic import Field
 
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.history_reducer.chat_history_reducer import ChatHistoryReducer
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if TYPE_CHECKING:
     from semantic_kernel.agents import Agent
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@experimental_class
+@experimental
 class KernelFunctionTerminationStrategy(TerminationStrategy):
     """A termination strategy that uses a kernel function to determine termination."""
 
@@ -33,6 +34,7 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
     function: KernelFunction
     kernel: Kernel
     result_parser: Callable[..., bool] = Field(default_factory=lambda: (lambda: True))
+    history_reducer: ChatHistoryReducer | None = None
 
     async def should_agent_terminate(
         self,
@@ -48,6 +50,12 @@ class KernelFunctionTerminationStrategy(TerminationStrategy):
         Returns:
             True if the agent should terminate, False otherwise
         """
+        if self.history_reducer is not None:
+            self.history_reducer.messages = history
+            reduced_history = await self.history_reducer.reduce()
+            if reduced_history is not None:
+                history = reduced_history.messages
+
         original_arguments = self.arguments or KernelArguments()
         execution_settings = original_arguments.execution_settings or {}
 

@@ -34,7 +34,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Holds the Npgsql data source to use for tests.
     /// </summary>
-    private NpgsqlDataSource? _dataSource;
+    public NpgsqlDataSource? DataSource { get; private set; }
 
     private string _connectionString = null!;
     private string _databaseName = null!;
@@ -42,14 +42,14 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <summary>
     /// Gets a vector store to use for tests.
     /// </summary>
-    public IVectorStore VectorStore => new PostgresVectorStore(this._dataSource!);
+    public IVectorStore VectorStore => new PostgresVectorStore(this.DataSource!);
 
     /// <summary>
     /// Get a database connection
     /// </summary>
     public NpgsqlConnection GetConnection()
     {
-        return this._dataSource!.OpenConnection();
+        return this.DataSource!.OpenConnection();
     }
 
     public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(
@@ -81,7 +81,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
         NpgsqlDataSourceBuilder dataSourceBuilder = new(connectionStringBuilder.ToString());
         dataSourceBuilder.UseVector();
 
-        this._dataSource = dataSourceBuilder.Build();
+        this.DataSource = dataSourceBuilder.Build();
 
         // Wait for the postgres container to be ready and create the test database using the initial data source.
         var initialDataSource = NpgsqlDataSource.Create(this._connectionString);
@@ -124,7 +124,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
 
     private async Task CreateTableAsync()
     {
-        NpgsqlConnection connection = await this._dataSource!.OpenConnectionAsync().ConfigureAwait(false);
+        NpgsqlConnection connection = await this.DataSource!.OpenConnectionAsync().ConfigureAwait(false);
 
         await using (connection)
         {
@@ -150,9 +150,9 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
     /// <returns>An async task.</returns>
     public async Task DisposeAsync()
     {
-        if (this._dataSource != null)
+        if (this.DataSource != null)
         {
-            this._dataSource.Dispose();
+            this.DataSource.Dispose();
         }
 
         await this.DropDatabaseAsync();
@@ -218,7 +218,7 @@ public class PostgresVectorStoreFixture : IAsyncLifetime
             await command.ExecuteNonQueryAsync();
         }
 
-        await using (NpgsqlConnection conn = await this._dataSource!.OpenConnectionAsync())
+        await using (NpgsqlConnection conn = await this.DataSource!.OpenConnectionAsync())
         {
             await using (NpgsqlCommand command = new("CREATE EXTENSION vector", conn))
             {

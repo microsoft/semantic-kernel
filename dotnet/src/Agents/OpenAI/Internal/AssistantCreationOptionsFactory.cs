@@ -5,6 +5,8 @@ using OpenAI.Assistants;
 
 namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 /// <summary>
 /// Produce the <see cref="AssistantCreationOptions"/> for an assistant according to the requested configuration.
 /// </summary>

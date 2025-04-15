@@ -34,6 +34,12 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(128, executionSettings.MaxTokens);
         Assert.Null(executionSettings.Store);
         Assert.Null(executionSettings.Metadata);
+        Assert.Null(executionSettings.Seed);
+        Assert.Null(executionSettings.ReasoningEffort);
+        Assert.Null(executionSettings.ChatSystemPrompt);
+        Assert.Null(executionSettings.ChatDeveloperPrompt);
+        Assert.Null(executionSettings.Audio);
+        Assert.Null(executionSettings.Modalities);
     }
 
     [Fact]
@@ -48,13 +54,17 @@ public class OpenAIPromptExecutionSettingsTests
             PresencePenalty = 0.7,
             StopSequences = ["foo", "bar"],
             ChatSystemPrompt = "chat system prompt",
+            ChatDeveloperPrompt = "chat developer prompt",
             MaxTokens = 128,
             Logprobs = true,
             TopLogprobs = 5,
             TokenSelectionBiases = new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } },
             Seed = 123456,
             Store = true,
-            Metadata = new Dictionary<string, string>() { { "foo", "bar" } }
+            Metadata = new Dictionary<string, string>() { { "foo", "bar" } },
+            ReasoningEffort = "high",
+            Audio = JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}"),
+            Modalities = new List<string> { "audio", "text" }
         };
 
         // Act
@@ -70,6 +80,11 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(actualSettings.Seed, executionSettings.Seed);
         Assert.Equal(actualSettings.Store, executionSettings.Store);
         Assert.Equal(actualSettings.Metadata, executionSettings.Metadata);
+        Assert.Equal(actualSettings.ReasoningEffort, executionSettings.ReasoningEffort);
+        Assert.Equal(actualSettings.ChatSystemPrompt, executionSettings.ChatSystemPrompt);
+        Assert.Equal(actualSettings.ChatDeveloperPrompt, executionSettings.ChatDeveloperPrompt);
+        Assert.Equal(actualSettings.Audio, executionSettings.Audio);
+        Assert.Equal(actualSettings.Modalities, executionSettings.Modalities);
     }
 
     [Fact]
@@ -112,12 +127,16 @@ public class OpenAIPromptExecutionSettingsTests
                 { "results_per_prompt", 2 },
                 { "stop_sequences", new [] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
+                { "chat_developer_prompt", "chat developer prompt" },
+                { "reasoning_effort", "high" },
                 { "max_tokens", 128 },
                 { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
                 { "seed", 123456 },
                 { "logprobs", true },
                 { "top_logprobs", 5 },
                 { "store", true },
+                { "audio", JsonSerializer.Deserialize<JsonElement>("{\"format\":\"mp3\", \"voice\": \"alloy\"}") },
+                { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }
         };
@@ -144,12 +163,16 @@ public class OpenAIPromptExecutionSettingsTests
                 { "results_per_prompt", "2" },
                 { "stop_sequences", new [] { "foo", "bar" } },
                 { "chat_system_prompt", "chat system prompt" },
+                { "chat_developer_prompt", "chat developer prompt" },
+                { "reasoning_effort", "high" },
                 { "max_tokens", "128" },
                 { "token_selection_biases", new Dictionary<string, string>() { { "1", "2" }, { "3", "4" } } },
                 { "seed", 123456 },
                 { "logprobs", true },
                 { "top_logprobs", 5 },
                 { "store", true },
+                { "audio", new Dictionary<string, string>() { ["format"] = "mp3", ["voice"] = "alloy" } },
+                { "modalities", new [] { "audio", "text" } },
                 { "metadata", new Dictionary<string, string>() { { "foo", "bar" } } }
             }
         };
@@ -174,11 +197,15 @@ public class OpenAIPromptExecutionSettingsTests
               "results_per_prompt": 2,
               "stop_sequences": [ "foo", "bar" ],
               "chat_system_prompt": "chat system prompt",
+              "chat_developer_prompt": "chat developer prompt",
+              "reasoning_effort": "high",
               "token_selection_biases": { "1": 2, "3": 4 },
               "max_tokens": 128,
               "seed": 123456,
               "logprobs": true,
               "top_logprobs": 5,
+              "audio": { "format": "mp3", "voice": "alloy" },
+              "modalities": ["audio", "text"],
               "store": true,
               "metadata": { "foo": "bar" }
             }
@@ -245,6 +272,8 @@ public class OpenAIPromptExecutionSettingsTests
             "logprobs": true,
             "top_logprobs": 5,
             "store": true,
+            "audio": { "format": "mp3", "voice": "alloy" },
+            "modalities": ["audio", "text"],
             "metadata": { "foo": "bar" }
         }
         """;
@@ -265,6 +294,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.TopLogprobs = 10);
         Assert.Throws<InvalidOperationException>(() => executionSettings.Store = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.Metadata?.Add("bar", "baz"));
+        Assert.Throws<InvalidOperationException>(() => executionSettings.Audio = new object());
+        Assert.Throws<InvalidOperationException>(() => executionSettings.Modalities = new object());
 
         executionSettings!.Freeze(); // idempotent
         Assert.True(executionSettings.IsFrozen);
@@ -311,6 +342,8 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(0.7, executionSettings.PresencePenalty);
         Assert.Equal(new string[] { "foo", "bar" }, executionSettings.StopSequences);
         Assert.Equal("chat system prompt", executionSettings.ChatSystemPrompt);
+        Assert.Equal("chat developer prompt", executionSettings.ChatDeveloperPrompt);
+        Assert.Equal("high", executionSettings.ReasoningEffort!.ToString());
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, executionSettings.TokenSelectionBiases);
         Assert.Equal(128, executionSettings.MaxTokens);
         Assert.Equal(123456, executionSettings.Seed);
@@ -318,5 +351,7 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(5, executionSettings.TopLogprobs);
         Assert.Equal(true, executionSettings.Store);
         Assert.Equal(new Dictionary<string, string>() { { "foo", "bar" } }, executionSettings.Metadata);
+        Assert.Equal("""{"format":"mp3","voice":"alloy"}""", JsonSerializer.Serialize(executionSettings.Audio));
+        Assert.Equal("""["audio","text"]""", JsonSerializer.Serialize(executionSettings.Modalities));
     }
 }

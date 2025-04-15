@@ -2,11 +2,10 @@
 
 import json
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from google.generativeai.protos import Blob, Candidate, FunctionCall, FunctionResponse, Part
 
-from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceType
 from semantic_kernel.connectors.ai.google.google_ai.google_ai_prompt_execution_settings import (
     GoogleAIChatPromptExecutionSettings,
@@ -15,7 +14,6 @@ from semantic_kernel.connectors.ai.google.shared_utils import (
     FUNCTION_CHOICE_TYPE_TO_GOOGLE_FUNCTION_CALLING_MODE,
     GEMINI_FUNCTION_NAME_SEPARATOR,
 )
-from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
@@ -24,6 +22,10 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.finish_reason import FinishReason as SemanticKernelFinishReason
 from semantic_kernel.exceptions.service_exceptions import ServiceInvalidRequestError
 from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
+
+if TYPE_CHECKING:
+    from semantic_kernel.connectors.ai.function_call_choice_configuration import FunctionCallChoiceConfiguration
+    from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -143,13 +145,15 @@ def kernel_function_metadata_to_google_ai_function_call_format(metadata: KernelF
             "type": "object",
             "properties": {param.name: param.schema_data for param in metadata.parameters},
             "required": [p.name for p in metadata.parameters if p.is_required],
-        },
+        }
+        if metadata.parameters
+        else None,
     }
 
 
 def update_settings_from_function_choice_configuration(
-    function_choice_configuration: FunctionCallChoiceConfiguration,
-    settings: PromptExecutionSettings,
+    function_choice_configuration: "FunctionCallChoiceConfiguration",
+    settings: "PromptExecutionSettings",
     type: FunctionChoiceType,
 ) -> None:
     """Update the settings from a FunctionChoiceConfiguration."""

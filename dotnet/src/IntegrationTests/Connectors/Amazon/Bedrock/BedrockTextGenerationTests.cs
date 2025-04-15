@@ -39,6 +39,7 @@ public class BedrockTextGenerationTests
         foreach (var text in response)
         {
             output += text;
+            Assert.NotNull(text.InnerContent);
         }
 
         // Assert
@@ -67,6 +68,7 @@ public class BedrockTextGenerationTests
         foreach (var text in response)
         {
             output += text;
+            Assert.NotNull(text.InnerContent);
         }
 
         // Assert
@@ -103,6 +105,7 @@ public class BedrockTextGenerationTests
         await foreach (var textContent in response)
         {
             output += textContent.Text;
+            Assert.NotNull(textContent.InnerContent);
         }
 
         // Assert
@@ -130,6 +133,7 @@ public class BedrockTextGenerationTests
         await foreach (var textContent in response)
         {
             output += textContent.Text;
+            Assert.NotNull(textContent.InnerContent);
         }
 
         // Assert

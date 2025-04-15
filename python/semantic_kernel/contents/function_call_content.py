@@ -2,6 +2,7 @@
 
 import json
 import logging
+import re
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, ClassVar, Final, Literal, TypeVar
 from xml.etree.ElementTree import Element  # nosec
@@ -36,6 +37,7 @@ class FunctionCallContent(KernelContent):
     content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = Field(FUNCTION_CALL_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = FUNCTION_CALL_CONTENT_TAG
     id: str | None
+    call_id: str | None = None
     index: int | None = None
     name: str | None = None
     function_name: str
@@ -44,7 +46,6 @@ class FunctionCallContent(KernelContent):
 
     def __init__(
         self,
-        content_type: Literal[ContentTypes.FUNCTION_CALL_CONTENT] = FUNCTION_CALL_CONTENT_TAG,  # type: ignore
         inner_content: Any | None = None,
         ai_model_id: str | None = None,
         id: str | None = None,
@@ -54,12 +55,12 @@ class FunctionCallContent(KernelContent):
         plugin_name: str | None = None,
         arguments: str | Mapping[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
+        call_id: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Create function call content.
 
         Args:
-            content_type: The content type.
             inner_content (Any | None): The inner content.
             ai_model_id (str | None): The id of the AI model.
             id (str | None): The id of the function call.
@@ -72,6 +73,7 @@ class FunctionCallContent(KernelContent):
                 Not used when 'name' is supplied.
             arguments (str | dict[str, Any] | None): The arguments of the function call.
             metadata (dict[str, Any] | None): The metadata of the function call.
+            call_id (str | None): The id of the call.
             kwargs (Any): Additional arguments.
         """
         if function_name and plugin_name and not name:
@@ -82,10 +84,10 @@ class FunctionCallContent(KernelContent):
             else:
                 function_name = name
         args = {
-            "content_type": content_type,
             "inner_content": inner_content,
             "ai_model_id": ai_model_id,
             "id": id,
+            "call_id": call_id,
             "index": index,
             "name": name,
             "function_name": function_name or "",
@@ -118,11 +120,15 @@ class FunctionCallContent(KernelContent):
             raise ContentAdditionException("Function calls have different ids.")
         if self.index != other.index:
             raise ContentAdditionException("Function calls have different indexes.")
+        if self.call_id and other.call_id and self.call_id != other.call_id:
+            raise ContentAdditionException("Function calls have different call ids.")
         return FunctionCallContent(
             id=self.id or other.id,
+            call_id=self.call_id or other.call_id,
             index=self.index or other.index,
             name=self.name or other.name,
             arguments=self.combine_arguments(self.arguments, other.arguments),
+            metadata=self.metadata | other.metadata,
         )
 
     def combine_arguments(
@@ -149,9 +155,18 @@ class FunctionCallContent(KernelContent):
         if isinstance(self.arguments, Mapping):
             return self.arguments
         try:
-            return json.loads(self.arguments.replace("'", '"'))
+            return json.loads(self.arguments)
         except json.JSONDecodeError as exc:
-            raise FunctionCallInvalidArgumentsException("Function Call arguments are not valid JSON.") from exc
+            logger.debug("Function Call arguments are not valid JSON. Trying to preprocess.")
+            try:
+                # Python strings can be single quoted, but JSON strings should be double quoted.
+                # JSON keys and values should be enclosed in double quotes.
+                # Replace single quotes with double quotes, but not if it's an escaped single quote.
+                return json.loads(re.sub(r"(?<!\\)'", '"', self.arguments).replace("\\'", "'"))
+            except json.JSONDecodeError:
+                raise FunctionCallInvalidArgumentsException(
+                    "Function Call arguments are not valid JSON even after preprocessing."
+                ) from exc
 
     def to_kernel_arguments(self) -> "KernelArguments":
         """Return the arguments as a KernelArguments instance."""
@@ -211,4 +226,14 @@ class FunctionCallContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the function call content."""
-        return hash((self.tag, self.id, self.index, self.name, self.function_name, self.plugin_name, self.arguments))
+        args_hashable = frozenset(self.arguments.items()) if isinstance(self.arguments, Mapping) else None
+        return hash((
+            self.tag,
+            self.id,
+            self.call_id,
+            self.index,
+            self.name,
+            self.function_name,
+            self.plugin_name,
+            args_hashable,
+        ))

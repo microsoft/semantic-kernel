@@ -64,7 +64,7 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
         List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Text))
         {
-            textContents.Add(new TextContent(responseBody!.Text));
+            textContents.Add(new TextContent(responseBody!.Text, innerContent: responseBody));
         }
 
         return textContents;
@@ -140,12 +140,12 @@ internal sealed class CohereCommandRService : IBedrockTextGenerationService, IBe
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk["text"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
-            yield return text!;
+            yield return new StreamingTextContent(text, innerContent: chunk)!;
         }
     }
 

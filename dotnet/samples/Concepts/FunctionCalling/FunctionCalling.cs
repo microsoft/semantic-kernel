@@ -72,7 +72,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() };
 
-        Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is the likely color of the sky in Boston today?", new(settings)));
 
         // Expected output: "Boston is currently experiencing a rainy day, hence, the likely color of the sky in Boston is grey."
     }
@@ -104,7 +104,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.None() };
 
-        Console.WriteLine(await kernel.InvokePromptAsync("Tell me which provided functions I would need to call to get the color of the sky in Boston on a specified date.", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("Tell me which provided functions I would need to call to get the color of the sky in Boston for today.", new(settings)));
 
         // Expected output: "You would first call the `HelperFunctions-GetCurrentUtcDateTime` function to get the current date time in UTC. Then, you would use the `HelperFunctions-GetWeatherForCity` function,
         //                   passing in the city name as 'Boston' and the retrieved UTC date time. Note, however, that these functions won't directly tell you the color of the sky.
@@ -122,7 +122,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // The `function_choice_behavior.functions` property is omitted which is equivalent to providing all kernel functions to the AI model.
         string promptTemplateConfig = """
             template_format: semantic-kernel
-            template: Given the current time of day and weather, what is the likely color of the sky in Boston?
+            template: What is the likely color of the sky in Boston today?
             execution_settings:
               default:
                 function_choice_behavior:
@@ -177,7 +177,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
         ChatMessageContent result = await chatCompletionService.GetChatMessageContentAsync(
-            "Given the current time of day and weather, what is the likely color of the sky in Boston?",
+            "What is the likely color of the sky in Boston today?",
             settings,
             kernel);
 
@@ -204,7 +204,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         // Act
         await foreach (var update in chatCompletionService.GetStreamingChatMessageContentsAsync(
-            "Given the current time of day and weather, what is the likely color of the sky in Boston?",
+            "What is the likely color of the sky in Boston today?",
             settings,
             kernel))
         {
@@ -231,7 +231,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = Microsoft.SemanticKernel.FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         ChatHistory chatHistory = [];
-        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+        chatHistory.AddUserMessage("What is the likely color of the sky in Boston today?");
 
         while (true)
         {
@@ -293,7 +293,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
 
         // Create chat history with the initial user message
         ChatHistory chatHistory = [];
-        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+        chatHistory.AddUserMessage("What is the likely color of the sky in Boston today?");
 
         while (true)
         {
@@ -360,7 +360,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = Microsoft.SemanticKernel.FunctionChoiceBehavior.Auto(autoInvoke: false) };
 
         ChatHistory chatHistory = [];
-        chatHistory.AddUserMessage("Given the current time of day and weather, what is the likely color of the sky in Boston?");
+        chatHistory.AddUserMessage("What is the likely color of the sky in Boston today?");
 
         while (true)
         {
@@ -411,7 +411,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Alternatively, either omit assigning anything to the `FunctionChoiceBehavior` property or assign null to it to also disable function calling.  
         OpenAIPromptExecutionSettings settings = new() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(functions: []) };
 
-        Console.WriteLine(await kernel.InvokePromptAsync("Given the current time of day and weather, what is the likely color of the sky in Boston?", new(settings)));
+        Console.WriteLine(await kernel.InvokePromptAsync("What is the likely color of the sky in Boston today?", new(settings)));
 
         // Expected output: "Sorry, I cannot answer this question as it requires real-time information which I, as a text-based model, cannot access."
     }
@@ -525,12 +525,24 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         // Expected output: Good morning! The current UTC time is 07:47 on October 22, 2024. Here are the latest news headlines: 1. Squirrel Steals Show - Discover the unexpected star of a recent event. 2. Dog Wins Lottery - Unbelievably, a lucky canine has hit the jackpot.
     }
 
-    private static Kernel CreateKernel()
+    /// <summary>
+    /// Creates a kernel with the OpenAI chat completion model and some helper functions.
+    /// </summary>
+    /// <param name="output">Optionally set this to log the function calling requests and responses</param>
+    private static Kernel CreateKernel(ITestOutputHelper? output = null)
     {
         // Create kernel
         IKernelBuilder builder = Kernel.CreateBuilder();
 
-        builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        // Create a logging handler to output HTTP requests and responses
+        if (output is not null)
+        {
+            builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        }
+        else
+        {
+            builder.AddOpenAIChatCompletion(TestConfiguration.OpenAI.ChatModelId, TestConfiguration.OpenAI.ApiKey);
+        }
 
         Kernel kernel = builder.Build();
 
@@ -538,8 +550,8 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
         kernel.ImportPluginFromFunctions("HelperFunctions",
         [
             kernel.CreateFunctionFromMethod(() => new List<string> { "Squirrel Steals Show", "Dog Wins Lottery" }, "GetLatestNewsTitles", "Retrieves latest news titles."),
-            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentUtcDateTime", "Retrieves the current date time in UTC."),
-            kernel.CreateFunctionFromMethod((string cityName, string currentDateTime) =>
+            kernel.CreateFunctionFromMethod(() => DateTime.UtcNow.ToString("R"), "GetCurrentDateTimeInUtc", "Retrieves the current date time in UTC."),
+            kernel.CreateFunctionFromMethod((string cityName, string currentDateTimeInUtc) =>
                 cityName switch
                 {
                     "Boston" => "61 and rainy",
@@ -550,7 +562,7 @@ public class FunctionCalling(ITestOutputHelper output) : BaseTest(output)
                     "Sydney" => "75 and sunny",
                     "Tel Aviv" => "80 and sunny",
                     _ => "31 and snowing",
-                }, "GetWeatherForCity", "Gets the current weather for the specified city"),
+                }, "GetWeatherForCity", "Gets the current weather for the specified city and specified date time."),
         ]);
 
         return kernel;

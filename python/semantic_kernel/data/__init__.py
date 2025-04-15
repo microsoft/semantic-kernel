@@ -1,29 +1,30 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+
 from semantic_kernel.data.const import (
     DEFAULT_DESCRIPTION,
     DEFAULT_FUNCTION_NAME,
+    DISTANCE_FUNCTION_DIRECTION_HELPER,
     DistanceFunction,
     IndexKind,
 )
-from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
-    VectorStoreRecordUtils,
     VectorStoreRecordVectorField,
     vectorstoremodel,
 )
-from semantic_kernel.data.search_options import SearchOptions
 from semantic_kernel.data.text_search import (
+    AnyTagsEqualTo,
+    EqualTo,
+    KernelSearchResults,
     OptionsUpdateFunctionType,
+    SearchFilter,
+    SearchOptions,
     TextSearch,
-    TextSearchFilter,
     TextSearchOptions,
     TextSearchResult,
-    VectorStoreTextSearch,
     create_options,
     default_options_update_function,
 )
@@ -35,44 +36,41 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchResult,
     VectorTextSearchMixin,
+    add_vector_to_records,
 )
 from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.vector_store_text_search import VectorStoreTextSearch
 
 __all__ = [
     "DEFAULT_DESCRIPTION",
     "DEFAULT_FUNCTION_NAME",
+    "DISTANCE_FUNCTION_DIRECTION_HELPER",
     "AnyTagsEqualTo",
     "DistanceFunction",
     "EqualTo",
     "IndexKind",
     "KernelSearchResults",
     "OptionsUpdateFunctionType",
+    "SearchFilter",
     "SearchOptions",
     "TextSearch",
-    "TextSearchFilter",
-    "TextSearchFilter",
     "TextSearchOptions",
-    "TextSearchOptions",
-    "TextSearchResult",
     "TextSearchResult",
     "VectorSearchBase",
     "VectorSearchFilter",
-    "VectorSearchFilter",
     "VectorSearchOptions",
-    "VectorSearchOptions",
-    "VectorSearchResult",
     "VectorSearchResult",
     "VectorStore",
     "VectorStoreRecordCollection",
     "VectorStoreRecordDataField",
     "VectorStoreRecordDefinition",
     "VectorStoreRecordKeyField",
-    "VectorStoreRecordUtils",
     "VectorStoreRecordVectorField",
     "VectorStoreTextSearch",
     "VectorTextSearchMixin",
     "VectorizableTextSearchMixin",
     "VectorizedSearchMixin",
+    "add_vector_to_records",
     "create_options",
     "default_options_update_function",
     "vectorstoremodel",

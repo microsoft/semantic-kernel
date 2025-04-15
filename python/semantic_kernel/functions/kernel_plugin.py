@@ -2,7 +2,6 @@
 
 import importlib
 import inspect
-import json
 import logging
 import os
 from collections.abc import Generator, ItemsView
@@ -11,18 +10,8 @@ from glob import glob
 from types import MethodType
 from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
-import httpx
 from pydantic import Field, StringConstraints
-from typing_extensions import deprecated
 
-from semantic_kernel.connectors.openai_plugin.openai_authentication_config import OpenAIAuthenticationConfig
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
-from semantic_kernel.connectors.openai_plugin.openai_utils import OpenAIUtils
-from semantic_kernel.connectors.openapi_plugin.openapi_manager import create_functions_from_openapi
-from semantic_kernel.connectors.utils.document_loader import DocumentLoader
-from semantic_kernel.data.text_search.text_search import TextSearch
 from semantic_kernel.exceptions import PluginInitializationError
 from semantic_kernel.exceptions.function_exceptions import FunctionInitializationError
 from semantic_kernel.functions.kernel_function import KernelFunction
@@ -37,6 +26,7 @@ if TYPE_CHECKING:
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
+    from semantic_kernel.data.text_search import TextSearch
     from semantic_kernel.functions.kernel_function_metadata import KernelFunctionMetadata
 
 logger = logging.getLogger(__name__)
@@ -82,13 +72,6 @@ class KernelPlugin(KernelBaseModel):
                 execution_settings: OpenAPIFunctionExecutionParameters | None = None,
                 description: str | None = None):
             Create a plugin from an OpenAPI document.
-        from_openai(
-                plugin_name: str,
-                plugin_url: str | None = None,
-                plugin_str: str | None = None,
-                execution_parameters: OpenAIFunctionExecutionParameters | None = None,
-                description: str | None = None):
-            Create a plugin from the Open AI manifest.
 
     """
 
@@ -255,12 +238,16 @@ class KernelPlugin(KernelBaseModel):
             candidates = plugin_instance.items()
         else:
             candidates = inspect.getmembers(plugin_instance, inspect.ismethod)
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.isfunction))  # type: ignore
+            candidates.extend(inspect.getmembers(plugin_instance, inspect.iscoroutinefunction))  # type: ignore
         # Read every method from the plugin instance
         functions = [
             KernelFunctionFromMethod(method=candidate, plugin_name=plugin_name)
             for _, candidate in candidates
             if hasattr(candidate, "__kernel_function__")
         ]
+        if not description:
+            description = getattr(plugin_instance, "description", None)
         return cls(name=plugin_name, description=description, functions=functions)
 
     @classmethod
@@ -378,6 +365,8 @@ class KernelPlugin(KernelBaseModel):
         Raises:
             PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
         """
+        from semantic_kernel.connectors.openapi_plugin.openapi_manager import create_functions_from_openapi
+
         if not openapi_document_path and not openapi_parsed_spec:
             raise PluginInitializationError("Either the OpenAPI document path or a parsed OpenAPI spec is required.")
 
@@ -389,77 +378,6 @@ class KernelPlugin(KernelBaseModel):
                 openapi_document_path=openapi_document_path,
                 openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
-            ),
-        )
-
-    @deprecated(
-        "The `OpenAI` plugin is deprecated; use the `from_openapi` method to add an `OpenAPI` plugin instead.",
-        category=None,
-    )
-    @classmethod
-    async def from_openai(
-        cls: type[_T],
-        plugin_name: str,
-        plugin_url: str | None = None,
-        plugin_str: str | None = None,
-        execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
-        description: str | None = None,
-    ) -> _T:
-        """Create a plugin from the Open AI manifest.
-
-        Args:
-            plugin_name (str): The name of the plugin
-            plugin_url (str | None): The URL of the plugin
-            plugin_str (str | None): The JSON string of the plugin
-            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
-
-        Returns:
-            KernelPlugin: The created plugin
-
-        Raises:
-            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
-        """
-        if execution_parameters is None:
-            execution_parameters = OpenAIFunctionExecutionParameters()
-
-        if plugin_str is not None:
-            # Load plugin from the provided JSON string/YAML string
-            openai_manifest = plugin_str
-        elif plugin_url is not None:
-            # Load plugin from the URL
-            http_client = (
-                execution_parameters.http_client if execution_parameters.http_client else httpx.AsyncClient(timeout=5)
-            )
-            openai_manifest = await DocumentLoader.from_uri(
-                url=plugin_url, http_client=http_client, auth_callback=None, user_agent=execution_parameters.user_agent
-            )
-        else:
-            raise PluginInitializationError("Either plugin_url or plugin_json must be provided.")
-
-        try:
-            plugin_json = json.loads(openai_manifest)
-        except json.JSONDecodeError as ex:
-            raise PluginInitializationError("Parsing of Open AI manifest for auth config failed.") from ex
-        openai_auth_config = OpenAIAuthenticationConfig(**plugin_json["auth"])
-        openapi_spec_url = OpenAIUtils.parse_openai_manifest_for_openapi_spec_url(plugin_json=plugin_json)
-
-        # Modify the auth callback in execution parameters if it's provided
-        if execution_parameters and execution_parameters.auth_callback:
-            initial_auth_callback = execution_parameters.auth_callback
-
-            async def custom_auth_callback(**kwargs: Any):
-                return await initial_auth_callback(plugin_name, openai_auth_config, **kwargs)  # pragma: no cover
-
-            execution_parameters.auth_callback = custom_auth_callback
-
-        return cls(
-            name=plugin_name,
-            description=description,
-            functions=create_functions_from_openapi(  # type: ignore
-                plugin_name=plugin_name,
-                openapi_document_path=openapi_spec_url,
-                execution_settings=execution_parameters,
             ),
         )
 
@@ -484,14 +402,23 @@ class KernelPlugin(KernelBaseModel):
         for name, cls_instance in inspect.getmembers(module, inspect.isclass):
             if cls_instance.__module__ != module_name:
                 continue
-            instance = getattr(module, name)(**class_init_arguments.get(name, {}) if class_init_arguments else {})
+            # Check whether this class has at least one @kernel_function decorated method
+            has_kernel_function = False
+            for _, method in inspect.getmembers(cls_instance, inspect.isfunction):
+                if getattr(method, "__kernel_function__", False):
+                    has_kernel_function = True
+                    break
+            if not has_kernel_function:
+                continue
+            init_args = class_init_arguments.get(name, {}) if class_init_arguments else {}
+            instance = getattr(module, name)(**init_args)
             return cls.from_object(plugin_name=plugin_name, description=description, plugin_instance=instance)
         raise PluginInitializationError(f"No class found in file: {py_file}")
 
     @classmethod
     def from_text_search_with_search(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
@@ -512,7 +439,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_get_text_search_results(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,
@@ -537,7 +464,7 @@ class KernelPlugin(KernelBaseModel):
     @classmethod
     def from_text_search_with_get_search_results(
         cls: type[_T],
-        text_search: TextSearch,
+        text_search: "TextSearch",
         plugin_name: str,
         plugin_description: str | None = None,
         **kwargs: Any,

@@ -10,6 +10,8 @@ from defusedxml import ElementTree
 from pydantic import Field
 
 from semantic_kernel.contents.annotation_content import AnnotationContent
+from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.const import (
     ANNOTATION_CONTENT_TAG,
     CHAT_MESSAGE_CONTENT_TAG,
@@ -33,6 +35,8 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.contents.utils.hashing import make_hashable
+from semantic_kernel.contents.utils.status import Status
 from semantic_kernel.exceptions.content_exceptions import ContentInitializationError
 
 TAG_CONTENT_MAP = {
@@ -46,8 +50,9 @@ TAG_CONTENT_MAP = {
     STREAMING_ANNOTATION_CONTENT_TAG: StreamingAnnotationContent,
 }
 
-ITEM_TYPES = (
+CMC_ITEM_TYPES = Annotated[
     AnnotationContent
+    | BinaryContent
     | ImageContent
     | TextContent
     | FunctionResultContent
@@ -55,7 +60,10 @@ ITEM_TYPES = (
     | FileReferenceContent
     | StreamingAnnotationContent
     | StreamingFileReferenceContent
-)
+    | AudioContent,
+    Field(discriminator=DISCRIMINATOR_FIELD),
+]
+
 
 logger = logging.getLogger(__name__)
 
@@ -80,23 +88,25 @@ class ChatMessageContent(KernelContent):
         __str__: Returns the content of the response.
     """
 
-    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
+    content_type: Literal[ContentTypes.CHAT_MESSAGE_CONTENT] = Field(default=CHAT_MESSAGE_CONTENT_TAG, init=False)  # type: ignore
     tag: ClassVar[str] = CHAT_MESSAGE_CONTENT_TAG
     role: AuthorRole
     name: str | None = None
-    items: list[Annotated[ITEM_TYPES, Field(discriminator=DISCRIMINATOR_FIELD)]] = Field(default_factory=list)
+    items: list[CMC_ITEM_TYPES] = Field(default_factory=list)
     encoding: str | None = None
     finish_reason: FinishReason | None = None
+    status: Status | None = None
 
     @overload
     def __init__(
         self,
         role: AuthorRole,
-        items: list[ITEM_TYPES],
+        items: list[CMC_ITEM_TYPES],
         name: str | None = None,
         inner_content: Any | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
+        status: Status | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
@@ -111,6 +121,7 @@ class ChatMessageContent(KernelContent):
         inner_content: Any | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
+        status: Status | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
@@ -119,12 +130,13 @@ class ChatMessageContent(KernelContent):
     def __init__(  # type: ignore
         self,
         role: AuthorRole,
-        items: list[ITEM_TYPES] | None = None,
+        items: list[CMC_ITEM_TYPES] | None = None,
         content: str | None = None,
         inner_content: Any | None = None,
         name: str | None = None,
         encoding: str | None = None,
         finish_reason: FinishReason | None = None,
+        status: Status | None = None,
         ai_model_id: str | None = None,
         metadata: dict[str, Any] | None = None,
         **kwargs: Any,
@@ -142,6 +154,7 @@ class ChatMessageContent(KernelContent):
             name: Optional[str] - The name of the response.
             encoding: Optional[str] - The encoding of the text.
             finish_reason: Optional[FinishReason] - The reason the response was finished.
+            status: Optional[Status] - The status of the response for the Responses API.
             ai_model_id: Optional[str] - The id of the AI model that generated this response.
             metadata: Dict[str, Any] - Any metadata that should be attached to the response.
             **kwargs: Any - Any additional fields to set on the instance.
@@ -151,6 +164,8 @@ class ChatMessageContent(KernelContent):
             kwargs["encoding"] = encoding
         if finish_reason:
             kwargs["finish_reason"] = finish_reason
+        if status:
+            kwargs["status"] = status
         if name:
             kwargs["name"] = name
         if content:
@@ -315,4 +330,5 @@ class ChatMessageContent(KernelContent):
 
     def __hash__(self) -> int:
         """Return the hash of the chat message content."""
-        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *self.items))
+        hashable_items = [make_hashable(item) for item in self.items] if self.items else []
+        return hash((self.tag, self.role, self.content, self.encoding, self.finish_reason, *hashable_items))

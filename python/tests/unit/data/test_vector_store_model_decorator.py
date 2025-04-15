@@ -4,7 +4,8 @@
 from dataclasses import dataclass
 from typing import Annotated
 
-from pydantic import BaseModel
+from numpy import ndarray
+from pydantic import BaseModel, ConfigDict
 from pydantic.dataclasses import dataclass as pydantic_dataclass
 from pytest import raises
 
@@ -13,8 +14,8 @@ from semantic_kernel.data import (
     VectorStoreRecordDefinition,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
-    vectorstoremodel,
 )
+from semantic_kernel.data.record_definition import vectorstoremodel
 from semantic_kernel.exceptions import VectorStoreModelException
 
 
@@ -228,3 +229,58 @@ def test_non_vector_list_and_dict():
     assert data_model_definition.fields["dict3"].name == "dict3"
     assert data_model_definition.fields["dict3"].property_type == "dict"
     assert data_model_definition.container_mode is False
+
+
+def test_vector_fields_checks():
+    @vectorstoremodel
+    class DataModelClass(BaseModel):
+        model_config = ConfigDict(arbitrary_types_allowed=True)
+        id: Annotated[str, VectorStoreRecordKeyField()]
+        vector_str: Annotated[str, VectorStoreRecordVectorField()]
+        vector_list: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector_array: Annotated[
+            ndarray,
+            VectorStoreRecordVectorField(
+                serialize_function=lambda _: [0.1],  # fake functions
+                deserialize_function=lambda _: "test",  # fake functions
+            ),
+        ]
+
+    assert hasattr(DataModelClass, "__kernel_vectorstoremodel__")
+    assert hasattr(DataModelClass, "__kernel_vectorstoremodel_definition__")
+    data_model_definition: VectorStoreRecordDefinition = DataModelClass.__kernel_vectorstoremodel_definition__
+    assert len(data_model_definition.fields) == 4
+    assert data_model_definition.fields["id"].name == "id"
+    assert data_model_definition.fields["vector_str"].property_type == "str"
+    assert data_model_definition.fields["vector_list"].property_type == "float"
+    assert data_model_definition.fields["vector_array"].property_type == "ndarray"
+
+
+def test_vector_fields_array_without_serialization():
+    with raises(VectorStoreModelException):
+
+        @vectorstoremodel
+        class DataModelClass(BaseModel):
+            model_config = ConfigDict(arbitrary_types_allowed=True)
+            id: Annotated[str, VectorStoreRecordKeyField()]
+            vector_array: Annotated[
+                ndarray,
+                VectorStoreRecordVectorField(
+                    serialize_function=lambda _: [0.1],  # fake functions
+                    # deserialize_function=lambda _: "test",  # fake functions
+                ),
+            ]
+
+    with raises(VectorStoreModelException):
+
+        @vectorstoremodel
+        class DataModelClass(BaseModel):
+            model_config = ConfigDict(arbitrary_types_allowed=True)
+            id: Annotated[str, VectorStoreRecordKeyField()]
+            vector_array: Annotated[
+                ndarray,
+                VectorStoreRecordVectorField(
+                    # serialize_function=lambda _: [0.1],  # fake functions
+                    deserialize_function=lambda _: "test",  # fake functions
+                ),
+            ]

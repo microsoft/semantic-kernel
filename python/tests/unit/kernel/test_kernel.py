@@ -1,19 +1,17 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Union
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import httpx
 import pytest
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-    OpenAIFunctionExecutionParameters,
-)
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents import ChatMessageContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -286,12 +284,12 @@ async def test_invoke_function_call(kernel: Kernel, get_tool_call_mock):
         patch("semantic_kernel.kernel.Kernel.get_list_of_function_metadata", return_value=[func_meta]),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["function"]}),
         )
 
 
@@ -317,12 +315,12 @@ async def test_invoke_function_call_throws_during_invoke(kernel: Kernel, get_too
         patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -343,12 +341,12 @@ async def test_invoke_function_call_non_allowed_func_throws(kernel: Kernel, get_
 
     with patch("semantic_kernel.kernel.logger", autospec=True):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(filters={"included_functions": ["unknown"]}),
         )
 
 
@@ -372,12 +370,12 @@ async def test_invoke_function_call_no_name_throws(kernel: Kernel, get_tool_call
         patch("semantic_kernel.kernel.logger", autospec=True),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -403,12 +401,12 @@ async def test_invoke_function_call_not_enough_parsed_args(kernel: Kernel, get_t
         patch("semantic_kernel.kernel.Kernel.get_function", return_value=func_mock),
     ):
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
 
@@ -438,12 +436,12 @@ async def test_invoke_function_call_with_continuation_on_malformed_arguments(ker
 
     with patch("semantic_kernel.kernel.logger", autospec=True) as logger_mock:
         await kernel.invoke_function_call(
-            tool_call_mock,
-            chat_history_mock,
-            arguments,
-            1,
-            0,
-            FunctionChoiceBehavior.Auto(),
+            function_call=tool_call_mock,
+            chat_history=chat_history_mock,
+            arguments=arguments,
+            function_call_count=1,
+            request_index=0,
+            function_behavior=FunctionChoiceBehavior.Auto(),
         )
 
     logger_mock.info.assert_any_call(
@@ -482,9 +480,23 @@ def test_plugin_no_plugin(kernel: Kernel):
         kernel.add_plugin(plugin_name="test")
 
 
-def test_plugin_name_error(kernel: Kernel):
-    with pytest.raises(ValueError):
-        kernel.add_plugin(" ", None)
+def test_plugin_name_from_class_name(kernel: Kernel):
+    kernel.add_plugin(" ", None)
+    assert "str" in kernel.plugins
+
+
+def test_plugin_name_from_name_attribute(kernel: Kernel):
+    @dataclass
+    class TestPlugin:
+        name: str = "test_plugin"
+
+    kernel.add_plugin(TestPlugin(), None)
+    assert "test_plugin" in kernel.plugins
+
+
+def test_plugin_name_not_string_error(kernel: Kernel):
+    with pytest.raises(TypeError):
+        kernel.add_plugin(" ", plugin_name=Path(__file__).parent)
 
 
 def test_plugins_add_plugins(kernel: Kernel):
@@ -586,34 +598,6 @@ def test_add_functions_to_existing(kernel: Kernel):
 
     plugin = kernel.add_functions(plugin_name="test", functions=[func1, func2])
     assert len(plugin.functions) == 2
-
-
-@patch("semantic_kernel.connectors.openai_plugin.openai_utils.OpenAIUtils.parse_openai_manifest_for_openapi_spec_url")
-async def test_add_plugin_from_openai(mock_parse_openai_manifest, kernel: Kernel, define_openai_predicate_context):
-    base_folder = os.path.join(os.path.dirname(__file__), "../../assets/test_plugins")
-    with open(os.path.join(base_folder, "TestOpenAIPlugin", "akv-openai.json")) as file:
-        openai_spec = file.read()
-
-    openapi_spec_file_path = os.path.join(
-        os.path.dirname(__file__), base_folder, "TestOpenAPIPlugin", "akv-openapi.yaml"
-    )
-    mock_parse_openai_manifest.return_value = openapi_spec_file_path
-
-    await kernel.add_plugin_from_openai(
-        plugin_name="TestOpenAIPlugin",
-        plugin_str=openai_spec,
-        execution_parameters=OpenAIFunctionExecutionParameters(
-            http_client=AsyncMock(spec=httpx.AsyncClient),
-            auth_callback=AsyncMock(),
-            server_url_override="http://localhost",
-            enable_dynamic_payload=True,
-        ),
-    )
-    plugin = kernel.get_plugin(plugin_name="TestOpenAIPlugin")
-    assert plugin is not None
-    assert plugin.name == "TestOpenAIPlugin"
-    assert plugin.functions.get("GetSecret") is not None
-    assert plugin.functions.get("SetSecret") is not None
 
 
 def test_import_plugin_from_openapi(kernel: Kernel):
@@ -787,7 +771,7 @@ def test_instantiate_prompt_execution_settings_through_kernel(kernel_with_servic
 def test_experimental_class_has_decorator_and_flag(experimental_plugin_class):
     assert hasattr(experimental_plugin_class, "is_experimental")
     assert experimental_plugin_class.is_experimental
-    assert "This class is experimental and may change in the future." in experimental_plugin_class.__doc__
+    assert "This class is marked as 'experimental' and may change in the future" in experimental_plugin_class.__doc__
 
 
 # endregion

@@ -50,4 +50,25 @@ public static class BedrockKernelBuilderExtensions
 
         return builder;
     }
+
+    /// <summary>
+    /// Add Amazon Bedrock Text Generation service to the kernel builder using IAmazonBedrockRuntime object.
+    /// </summary>
+    /// <param name="builder">The kernel builder.</param>
+    /// <param name="modelId">The model for text generation.</param>
+    /// <param name="bedrockRuntime">The optional <see cref="IAmazonBedrockRuntime" /> to use. If not provided will be retrieved from the Service Collection.</param>
+    /// <param name="serviceId">The optional service ID.</param>
+    /// <returns>Returns back <see cref="IKernelBuilder"/> with a configured service.</returns>
+    public static IKernelBuilder AddBedrockTextEmbeddingGenerationService(
+        this IKernelBuilder builder,
+        string modelId,
+        IAmazonBedrockRuntime? bedrockRuntime = null,
+        string? serviceId = null)
+    {
+        Verify.NotNull(builder);
+
+        builder.Services.AddBedrockTextEmbeddingGenerationService(modelId, bedrockRuntime, serviceId);
+
+        return builder;
+    }
 }

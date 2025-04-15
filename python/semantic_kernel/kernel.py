@@ -2,10 +2,11 @@
 
 import logging
 from collections.abc import AsyncGenerator, AsyncIterable, Callable
+from contextlib import AbstractAsyncContextManager
 from copy import copy
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.const import METADATA_EXCEPTION_KEY
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -34,14 +35,17 @@ from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.functions.kernel_function_extension import KernelFunctionExtension
 from semantic_kernel.functions.kernel_function_from_prompt import KernelFunctionFromPrompt
 from semantic_kernel.functions.kernel_plugin import KernelPlugin
-from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany
+from semantic_kernel.kernel_types import AI_SERVICE_CLIENT_TYPE, OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.const import KERNEL_TEMPLATE_FORMAT_NAME
 from semantic_kernel.reliability.kernel_reliability_extension import KernelReliabilityExtension
 from semantic_kernel.services.ai_service_selector import AIServiceSelector
 from semantic_kernel.services.kernel_services_extension import KernelServicesExtension
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.naming import generate_random_ascii_name
 
 if TYPE_CHECKING:
+    from mcp.server.lowlevel.server import LifespanResultT, Server
+
     from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
     from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
     from semantic_kernel.functions.kernel_function import KernelFunction
@@ -315,10 +319,13 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         self,
         function_call: FunctionCallContent,
         chat_history: ChatHistory,
+        *,
         arguments: "KernelArguments | None" = None,
+        execution_settings: "PromptExecutionSettings | None" = None,
         function_call_count: int | None = None,
         request_index: int | None = None,
-        function_behavior: "FunctionChoiceBehavior" = None,  # type: ignore
+        is_streaming: bool = False,
+        function_behavior: "FunctionChoiceBehavior | None" = None,
     ) -> "AutoFunctionInvocationContext | None":
         """Processes the provided FunctionCallContent and updates the chat history."""
         args_cloned = copy(arguments) if arguments else KernelArguments()
@@ -382,7 +389,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             function=function_to_call,
             kernel=self,
             arguments=args_cloned,
+            is_streaming=is_streaming,
             chat_history=chat_history,
+            execution_settings=execution_settings,
             function_result=FunctionResult(function=function_to_call.metadata, value=None),
             function_count=function_call_count or 0,
             request_sequence_index=request_index or 0,
@@ -397,11 +406,10 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         await stack(invocation_context)
 
         frc = FunctionResultContent.from_function_call_content_and_result(
-            function_call_content=function_call, result=invocation_context.function_result
+            function_call_content=function_call,
+            result=invocation_context.function_result,
         )
-
         is_streaming = any(isinstance(message, StreamingChatMessageContent) for message in chat_history.messages)
-
         message = frc.to_streaming_chat_message_content() if is_streaming else frc.to_chat_message_content()
 
         chat_history.add_message(message=message)
@@ -478,3 +486,49 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
             inputs[field_to_store] = vectors[0]  # type: ignore
             return
         setattr(inputs, field_to_store, vectors[0])
+
+    @experimental
+    def as_mcp_server(
+        self,
+        server_name: str = "Semantic Kernel MCP Server",
+        version: str | None = None,
+        instructions: str | None = None,
+        lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+        excluded_functions: OptionalOneOrMany[str] = None,
+        **kwargs: Any,
+    ) -> "Server":
+        """Create a MCP server from this kernel.
+
+        This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
+        configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
+
+         By default, all functions are exposed as Tools, you can specify which functions,
+        to do this you can use the `excluded_functions` argument.
+        These need to be set to the fully qualified function name (i.e. `<plugin_name>-<function_name>`).
+
+        Args:
+            kernel: The kernel instance to use.
+            server_name: The name of the server.
+            version: The version of the server.
+            instructions: The instructions to use for the server.
+            lifespan: The lifespan of the server.
+            excluded_functions: The list of fully qualified function names to exclude from the server.
+                if None, no functions will be excluded.
+            kwargs: Any extra arguments to pass to the server creation.
+
+        Returns:
+            The MCP server instance, it is a instance of
+            mcp.server.lowlevel.Server
+
+        """
+        from semantic_kernel.connectors.mcp import create_mcp_server_from_kernel
+
+        return create_mcp_server_from_kernel(
+            self,
+            server_name=server_name,
+            version=version,
+            instructions=instructions,
+            lifespan=lifespan,
+            excluded_functions=excluded_functions,
+            **kwargs,
+        )

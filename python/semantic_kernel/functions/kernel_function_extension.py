@@ -7,7 +7,6 @@ from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field, field_validator
-from typing_extensions import deprecated
 
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.exceptions import KernelFunctionNotFoundError, KernelPluginNotFoundError
@@ -19,9 +18,6 @@ from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateB
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-        OpenAIFunctionExecutionParameters,
-    )
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -89,7 +85,9 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             self.plugins[plugin.name] = plugin
             return self.plugins[plugin.name]
         if not plugin_name:
-            raise ValueError("plugin_name must be provided if a plugin is not supplied.")
+            plugin_name = getattr(plugin, "name", plugin.__class__.__name__)
+        if not isinstance(plugin_name, str):
+            raise TypeError("plugin_name must be a string.")
         if plugin:
             self.plugins[plugin_name] = KernelPlugin.from_object(
                 plugin_name=plugin_name, plugin_instance=plugin, description=description
@@ -105,7 +103,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             return self.plugins[plugin_name]
         raise ValueError("plugin or parent_directory must be provided.")
 
-    def add_plugins(self, plugins: list[KernelPlugin] | dict[str, KernelPlugin | object]) -> None:
+    def add_plugins(self, plugins: list[KernelPlugin | object] | dict[str, KernelPlugin | object]) -> None:
         """Adds a list of plugins to the kernel's collection of plugins.
 
         Args:
@@ -169,7 +167,7 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
             function = KernelFunction.from_prompt(
                 function_name=function_name,
                 plugin_name=plugin_name,
-                description=description,
+                description=description or (prompt_template_config.description if prompt_template_config else None),
                 prompt=prompt,
                 template_format=template_format,
                 prompt_template=prompt_template,
@@ -234,43 +232,6 @@ class KernelFunctionExtension(KernelBaseModel, ABC):
                 openapi_document_path=openapi_document_path,
                 openapi_parsed_spec=openapi_parsed_spec,
                 execution_settings=execution_settings,
-                description=description,
-            )
-        )
-
-    @deprecated(
-        "The `add_plugin_from_openai` method is deprecated; use the `add_plugin_from_openapi` method instead.",
-        category=None,
-    )
-    async def add_plugin_from_openai(
-        self,
-        plugin_name: str,
-        plugin_url: str | None = None,
-        plugin_str: str | None = None,
-        execution_parameters: "OpenAIFunctionExecutionParameters | None" = None,
-        description: str | None = None,
-    ) -> KernelPlugin:
-        """Add a plugin from an OpenAPI document.
-
-        Args:
-            plugin_name (str): The name of the plugin
-            plugin_url (str | None): The URL of the plugin
-            plugin_str (str | None): The JSON string of the plugin
-            execution_parameters (OpenAIFunctionExecutionParameters | None): The execution parameters
-            description (str | None): The description of the plugin
-
-        Returns:
-            KernelPlugin: The imported plugin
-
-        Raises:
-            PluginInitializationError: if the plugin URL or plugin JSON/YAML is not provided
-        """
-        return self.add_plugin(
-            await KernelPlugin.from_openai(
-                plugin_name=plugin_name,
-                plugin_url=plugin_url,
-                plugin_str=plugin_str,
-                execution_parameters=execution_parameters,
                 description=description,
             )
         )

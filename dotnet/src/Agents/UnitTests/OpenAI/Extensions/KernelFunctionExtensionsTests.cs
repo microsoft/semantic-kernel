@@ -58,7 +58,7 @@ public class KernelFunctionExtensionsTests
         [KernelFunction]
         [Description("test description")]
 #pragma warning disable IDE0060 // Unused parameter for mock kernel function
-        public void TestFunction2(string p1, bool p2, int p3, string[] p4, ConsoleColor p5, OpenAIAssistantDefinition p6) { }
+        public void TestFunction2(string p1, bool p2, int p3, string[] p4, ConsoleColor p5, OpenAIAssistantDefinition p6, DateTime p7) { }
 #pragma warning restore IDE0060 // Unused parameter
     }
 }

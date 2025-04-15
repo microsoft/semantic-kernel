@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
 using Xunit;
@@ -38,6 +38,100 @@ public class ChatCompletionAgentTests
         Assert.Equal("test description", agent.Description);
         Assert.Equal("test name", agent.Name);
         Assert.Null(agent.Arguments);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatCompletionAgentDefinitionWithArguments()
+    {
+        // Arrange
+        KernelArguments arguments = new() { { "prop1", "val1" } };
+
+        ChatCompletionAgent agent =
+            new()
+            {
+                Description = "test description",
+                Instructions = "test instructions",
+                Name = "test name",
+                Arguments = arguments
+            };
+
+        // Assert
+        Assert.NotNull(agent.Id);
+        Assert.Equal("test instructions", agent.Instructions);
+        Assert.Equal("test description", agent.Description);
+        Assert.Equal("test name", agent.Name);
+        Assert.NotNull(agent.Arguments);
+        Assert.Equal(arguments, agent.Arguments);
+    }
+
+    /// <summary>
+    /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
+    /// </summary>
+    [Fact]
+    public void VerifyChatCompletionAgentTemplate()
+    {
+        PromptTemplateConfig promptConfig =
+            new()
+            {
+                Name = "TestName",
+                Description = "TestDescription",
+                Template = "TestInstructions",
+                ExecutionSettings =
+                {
+                    {
+                        PromptExecutionSettings.DefaultServiceId,
+                        new PromptExecutionSettings()
+                        {
+                            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                            ModelId = "gpt-new",
+                        }
+                    },
+                    {
+                        "manual",
+                        new PromptExecutionSettings()
+                        {
+                            ServiceId = "manual",
+                            FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
+                            ModelId = "gpt-old",
+                        }
+                    },
+                }
+            };
+        KernelPromptTemplateFactory templateFactory = new();
+
+        // Arrange
+        ChatCompletionAgent agent = new(promptConfig, templateFactory);
+
+        // Assert
+        Assert.NotNull(agent.Id);
+        Assert.Equal(promptConfig.Template, agent.Instructions);
+        Assert.Equal(promptConfig.Description, agent.Description);
+        Assert.Equal(promptConfig.Name, agent.Name);
+        Assert.Equal(promptConfig.ExecutionSettings, agent.Arguments?.ExecutionSettings);
+    }
+
+    /// <summary>
+    /// Verify throws <see cref="KernelException"/> when invalid <see cref="IPromptTemplateFactory"/> is provided.
+    /// </summary>
+    [Fact]
+    public void VerifyThrowsForInvalidTemplateFactory()
+    {
+        // Arrange
+        PromptTemplateConfig promptConfig =
+            new()
+            {
+                Name = "TestName",
+                Description = "TestDescription",
+                Template = "TestInstructions",
+                TemplateFormat = "handlebars",
+            };
+        KernelPromptTemplateFactory templateFactory = new();
+
+        // Act and Assert
+        Assert.Throws<KernelException>(() => new ChatCompletionAgent(promptConfig, templateFactory));
     }
 
     /// <summary>

@@ -2,16 +2,15 @@
 using System;
 using System.ClientModel;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using OpenAI.Assistants;
 using Xunit;
 
@@ -20,6 +19,7 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 /// <summary>
 /// Unit testing of <see cref="OpenAIAssistantAgent"/>.
 /// </summary>
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
 public sealed class OpenAIAssistantAgentTests : IDisposable
 {
     private readonly HttpMessageHandlerStub _messageHandlerStub;
@@ -78,10 +78,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         OpenAIAssistantCapabilities capabilities = new("testmodel");
 
         // Act and Assert
-        await this.VerifyAgentTemplateAsync(capabilities, templateConfig);
-
-        // Act and Assert
         await this.VerifyAgentTemplateAsync(capabilities, templateConfig, new KernelPromptTemplateFactory());
+        await Assert.ThrowsAsync<KernelException>(async () => await this.VerifyAgentTemplateAsync(capabilities, templateConfig, new HandlebarsPromptTemplateFactory()));
     }
 
     /// <summary>
@@ -311,7 +309,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
-                this.CreateTestConfiguration(),
+                this.CreateTestProvider(),
                 "#id",
                 this._emptyKernel);
 
@@ -332,10 +330,10 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.RetrieveAsync(
-                this.CreateTestConfiguration(),
+                this.CreateTestProvider(),
                 "#id",
                 this._emptyKernel,
-                new KernelArguments(),
+                [],
                 new KernelPromptTemplateFactory());
 
         // Act and Assert
@@ -350,26 +348,13 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     {
         // Arrange
         OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-        // Assert
-        Assert.False(agent.IsDeleted);
-
-        // Arrange
         this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
 
         // Act
-        await agent.DeleteAsync();
-        // Assert
-        Assert.True(agent.IsDeleted);
+        bool isDeleted = await agent.DeleteAsync();
 
-        // Act
-        await agent.DeleteAsync(); // Doesn't throw
         // Assert
-        Assert.True(agent.IsDeleted);
-        await Assert.ThrowsAsync<KernelException>(() => agent.AddChatMessageAsync("threadid", new(AuthorRole.User, "test")));
-        await Assert.ThrowsAsync<KernelException>(() => agent.GetThreadMessagesAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid").ToArrayAsync().AsTask());
-        await Assert.ThrowsAsync<KernelException>(() => agent.InvokeStreamingAsync("threadid", new OpenAIAssistantInvocationOptions()).ToArrayAsync().AsTask());
+        Assert.True(isDeleted);
     }
 
     /// <summary>
@@ -414,25 +399,6 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify the deleting a thread via <see cref="OpenAIAssistantAgent.DeleteThreadAsync"/>.
-    /// </summary>
-    [Fact]
-    public async Task VerifyOpenAIAssistantAgentUploadFileAsync()
-    {
-        // Arrange
-        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
-
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
-
-        // Act
-        using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
-        string fileId = await agent.UploadFileAsync(stream, "text.txt");
-
-        // Assert
-        Assert.NotNull(fileId);
-    }
-
-    /// <summary>
     /// Verify invocation via <see cref="AgentGroupChat"/>.
     /// </summary>
     [Fact]
@@ -470,7 +436,107 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     }
 
     /// <summary>
-    /// Verify direction invocation of <see cref="OpenAIAssistantAgent"/>.
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] messages = await agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hi")).ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+        Assert.Single(messages[0].Message.Items);
+        Assert.IsType<TextContent>(messages[0].Message.Items[0]);
+        Assert.Equal("Hello, how can I help you?", messages[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeMultipleMessagesWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hello"),
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Run.CreateRun,
+            OpenAIAssistantResponseContent.Run.CompletedRun,
+            OpenAIAssistantResponseContent.Run.MessageSteps,
+            OpenAIAssistantResponseContent.GetTextMessage("How can I help you?"));
+
+        // Act
+        AgentResponseItem<ChatMessageContent>[] messages = await agent.InvokeAsync(
+        [
+            new ChatMessageContent(AuthorRole.Assistant, "Hello"),
+            new ChatMessageContent(AuthorRole.User, "Hi")
+        ]).ToArrayAsync();
+
+        // Assert
+        Assert.Single(messages);
+        Assert.Single(messages[0].Message.Items);
+        Assert.IsType<TextContent>(messages[0].Message.Items[0]);
+        Assert.Equal("How can I help you?", messages[0].Message.Content);
+    }
+
+    /// <summary>
+    /// Verify direct streaming invocation of <see cref="OpenAIAssistantAgent"/> using <see cref="AgentThread"/>.
+    /// </summary>
+    [Fact]
+    public async Task VerifyOpenAIAssistantAgentInvokeStreamingWithThreadAsync()
+    {
+        // Arrange
+        OpenAIAssistantAgent agent = await this.CreateAgentAsync();
+
+        this.SetupResponses(
+            HttpStatusCode.OK,
+            OpenAIAssistantResponseContent.CreateThread,
+            // Create message response
+            OpenAIAssistantResponseContent.GetTextMessage("Hi"),
+            OpenAIAssistantResponseContent.Streaming.Response(
+            [
+                OpenAIAssistantResponseContent.Streaming.CreateRun("created"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("queued"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("in_progress"),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("Hello, "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("how can I "),
+                OpenAIAssistantResponseContent.Streaming.DeltaMessage("help you?"),
+                OpenAIAssistantResponseContent.Streaming.CreateRun("completed"),
+                OpenAIAssistantResponseContent.Streaming.Done
+            ]),
+            OpenAIAssistantResponseContent.GetTextMessage("Hello, how can I help you?"));
+
+        // Act
+        AgentResponseItem<StreamingChatMessageContent>[] messages = await agent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, "Hi")).ToArrayAsync();
+
+        // Assert
+        Assert.Equal(3, messages.Length);
+        var combinedMessage = string.Concat(messages.Select(x => x.Message.Content));
+        Assert.Equal("Hello, how can I help you?", combinedMessage);
+    }
+
+    /// <summary>
+    /// Verify direct invocation of <see cref="OpenAIAssistantAgent"/>.
     /// </summary>
     [Fact]
     public async Task VerifyOpenAIAssistantAgentInvokeAsync()
@@ -682,7 +748,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Act
         var messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
-                this.CreateTestConfiguration()).ToArrayAsync();
+                this.CreateTestProvider()).ToArrayAsync();
         // Assert
         Assert.Equal(7, messages.Length);
 
@@ -695,7 +761,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Act
         messages =
             await OpenAIAssistantAgent.ListDefinitionsAsync(
-                this.CreateTestConfiguration()).ToArrayAsync();
+                this.CreateTestProvider()).ToArrayAsync();
         // Assert
         Assert.Equal(4, messages.Length);
     }
@@ -757,7 +823,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateAsync(
-                this.CreateTestConfiguration(),
+                this.CreateTestProvider(),
                 definition,
                 this._emptyKernel);
 
@@ -767,16 +833,16 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
     private async Task VerifyAgentTemplateAsync(
         OpenAIAssistantCapabilities capabilities,
         PromptTemplateConfig templateConfig,
-        IPromptTemplateFactory? templateFactory = null)
+        IPromptTemplateFactory templateFactory)
     {
         this.SetupResponse(HttpStatusCode.OK, capabilities, templateConfig);
 
         OpenAIAssistantAgent agent =
             await OpenAIAssistantAgent.CreateFromTemplateAsync(
-                this.CreateTestConfiguration(),
+                this.CreateTestProvider(),
                 capabilities,
                 this._emptyKernel,
-                new KernelArguments(),
+                [],
                 templateConfig,
                 templateFactory);
 
@@ -803,9 +869,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         // Verify fundamental state
         Assert.NotNull(agent);
         Assert.NotNull(agent.Id);
-        Assert.False(agent.IsDeleted);
         Assert.NotNull(agent.Definition);
-        Assert.Equal(expectedConfig.ModelId, agent.Definition.ModelId);
+        Assert.Equal(expectedConfig.ModelId, agent.Definition.Model);
 
         // Verify core properties
         Assert.Equal(expectedInstructions ?? string.Empty, agent.Instructions);
@@ -814,11 +879,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         // Verify options
         Assert.Equal(expectedConfig.Temperature, agent.Definition.Temperature);
-        Assert.Equal(expectedConfig.TopP, agent.Definition.TopP);
-        Assert.Equal(expectedConfig.ExecutionOptions?.MaxCompletionTokens, agent.Definition.ExecutionOptions?.MaxCompletionTokens);
-        Assert.Equal(expectedConfig.ExecutionOptions?.MaxPromptTokens, agent.Definition.ExecutionOptions?.MaxPromptTokens);
-        Assert.Equal(expectedConfig.ExecutionOptions?.ParallelToolCallsEnabled, agent.Definition.ExecutionOptions?.ParallelToolCallsEnabled);
-        Assert.Equal(expectedConfig.ExecutionOptions?.TruncationMessageCount, agent.Definition.ExecutionOptions?.TruncationMessageCount);
+        Assert.Equal(expectedConfig.TopP, agent.Definition.NucleusSamplingFactor);
 
         // Verify tool definitions
         int expectedToolCount = 0;
@@ -830,7 +891,7 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ++expectedToolCount;
         }
 
-        Assert.Equal(hasCodeInterpreter, agent.Tools.OfType<CodeInterpreterToolDefinition>().Any());
+        Assert.Equal(hasCodeInterpreter, agent.Definition.Tools.OfType<CodeInterpreterToolDefinition>().Any());
 
         bool hasFileSearch = false;
         if (expectedConfig.EnableFileSearch)
@@ -839,9 +900,9 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
             ++expectedToolCount;
         }
 
-        Assert.Equal(hasFileSearch, agent.Tools.OfType<FileSearchToolDefinition>().Any());
+        Assert.Equal(hasFileSearch, agent.Definition.Tools.OfType<FileSearchToolDefinition>().Any());
 
-        Assert.Equal(expectedToolCount, agent.Tools.Count);
+        Assert.Equal(expectedToolCount, agent.Definition.Tools.Count);
 
         // Verify metadata
         Assert.NotNull(agent.Definition.Metadata);
@@ -865,8 +926,8 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         }
 
         // Verify detail definition
-        Assert.Equal(expectedConfig.VectorStoreId, agent.Definition.VectorStoreId);
-        Assert.Equal(expectedConfig.CodeInterpreterFileIds, agent.Definition.CodeInterpreterFileIds);
+        Assert.Equal(expectedConfig.VectorStoreId, agent.Definition.ToolResources.FileSearch?.VectorStoreIds.SingleOrDefault());
+        Assert.Equal(expectedConfig.CodeInterpreterFileIds, agent.Definition.ToolResources.CodeInterpreter?.FileIds);
     }
 
     private Task<OpenAIAssistantAgent> CreateAgentAsync()
@@ -877,12 +938,12 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
 
         return
             OpenAIAssistantAgent.CreateAsync(
-                this.CreateTestConfiguration(),
+                this.CreateTestProvider(),
                 definition,
                 this._emptyKernel);
     }
 
-    private OpenAIClientProvider CreateTestConfiguration(bool targetAzure = false)
+    private OpenAIClientProvider CreateTestProvider(bool targetAzure = false)
         => targetAzure ?
             OpenAIClientProvider.ForAzureOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: new Uri("https://localhost"), this._httpClient) :
             OpenAIClientProvider.ForOpenAI(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
@@ -906,3 +967,5 @@ public sealed class OpenAIAssistantAgentTests : IDisposable
         { }
     }
 }
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
+

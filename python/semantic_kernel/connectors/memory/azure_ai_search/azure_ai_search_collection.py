@@ -4,12 +4,7 @@ import asyncio
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, ClassVar, Generic, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, ClassVar, Generic
 
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
@@ -22,37 +17,39 @@ from semantic_kernel.connectors.memory.azure_ai_search.utils import (
     get_search_client,
     get_search_index_client,
 )
-from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
 from semantic_kernel.data.vector_search import (
     VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
     VectorSearchFilter,
     VectorSearchOptions,
+    VectorSearchResult,
+    VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-TModel = TypeVar("TModel")
 
-
-@experimental_class
+@experimental
 class AzureAISearchCollection(
-    VectorSearchBase[str, TModel],
-    VectorizableTextSearchMixin[TModel],
-    VectorizedSearchMixin[TModel],
-    VectorTextSearchMixin[TModel],
-    Generic[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizableTextSearchMixin[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
+    VectorTextSearchMixin[TKey, TModel],
+    Generic[TKey, TModel],
 ):
     """Azure AI Search collection implementation."""
 
@@ -129,7 +126,7 @@ class AzureAISearchCollection(
         )
 
         try:
-            azure_ai_search_settings = AzureAISearchSettings.create(
+            azure_ai_search_settings = AzureAISearchSettings(
                 env_file_path=kwargs.get("env_file_path"),
                 endpoint=kwargs.get("search_endpoint"),
                 api_key=kwargs.get("api_key"),
@@ -161,14 +158,14 @@ class AzureAISearchCollection(
         self,
         records: Sequence[Any],
         **kwargs: Any,
-    ) -> Sequence[str]:
+    ) -> Sequence[TKey]:
         if not isinstance(records, list):
             records = list(records)
         results = await self.search_client.merge_or_upload_documents(documents=records, **kwargs)
         return [result.key for result in results]  # type: ignore
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
+    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> Sequence[dict[str, Any]]:
         client = self.search_client
         if "selected_fields" in kwargs:
             selected_fields = kwargs["selected_fields"]
@@ -182,13 +179,13 @@ class AzureAISearchCollection(
             selected_fields = ["*"]
 
         result = await asyncio.gather(
-            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],
+            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],  # type: ignore
             return_exceptions=True,
         )
         return [res for res in result if not isinstance(res, BaseException)]
 
     @override
-    async def _inner_delete(self, keys: Sequence[str], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
         await self.search_client.delete_documents(documents=[{self._key_field_name: key} for key in keys])
 
     @override

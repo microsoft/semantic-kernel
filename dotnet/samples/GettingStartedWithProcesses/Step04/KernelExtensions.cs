@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.History;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Step04;
 
@@ -20,7 +21,7 @@ internal static class KernelExtensions
     /// <summary>
     /// Access an agent as a keyed service.
     /// </summary>
-    public static TAgent GetAgent<TAgent>(this Kernel kernel, string key) where TAgent : KernelAgent =>
+    public static TAgent GetAgent<TAgent>(this Kernel kernel, string key) where TAgent : Agent =>
         kernel.Services.GetRequiredKeyedService<TAgent>(key);
 
     /// <summary>

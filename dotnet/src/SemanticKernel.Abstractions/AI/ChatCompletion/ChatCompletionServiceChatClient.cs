@@ -35,30 +35,44 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     public ChatClientMetadata Metadata { get; }
 
     /// <inheritdoc />
-    public async Task<Extensions.AI.ChatCompletion> CompleteAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
+    public async Task<Extensions.AI.ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chatMessages);
+        Verify.NotNull(messages);
+
+        ChatHistory chatHistory = new(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+        int preCount = chatHistory.Count;
 
         var response = await this._chatCompletionService.GetChatMessageContentAsync(
-            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            chatHistory,
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false);
 
-        return new(ChatCompletionServiceExtensions.ToChatMessage(response))
+        ChatResponse chatResponse = new()
         {
             ModelId = response.ModelId,
             RawRepresentation = response.InnerContent,
         };
+
+        // Add all messages that were added to the history.
+        // Then add the result message.
+        for (int i = preCount; i < chatHistory.Count; i++)
+        {
+            chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(chatHistory[i]));
+        }
+
+        chatResponse.Messages.Add(ChatCompletionServiceExtensions.ToChatMessage(response));
+
+        return chatResponse;
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<StreamingChatCompletionUpdate> CompleteStreamingAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        Verify.NotNull(chatMessages);
+        Verify.NotNull(messages);
 
         await foreach (var update in this._chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(chatMessages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
+            new ChatHistory(messages.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m))),
             ToPromptExecutionSettings(options),
             kernel: null,
             cancellationToken).ConfigureAwait(false))
@@ -82,6 +96,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             serviceKey is not null ? null :
             serviceType.IsInstanceOfType(this) ? this :
             serviceType.IsInstanceOfType(this._chatCompletionService) ? this._chatCompletionService :
+            serviceType.IsInstanceOfType(this.Metadata) ? this.Metadata :
             null;
     }
 
@@ -155,8 +170,8 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             }
             else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                settings.ExtensionData["response_format"] = json.Schema is not null ?
-                    JsonSerializer.Deserialize(json.Schema, AbstractionsJsonContext.Default.JsonElement) :
+                settings.ExtensionData["response_format"] = json.Schema is JsonElement schema ?
+                    JsonSerializer.Deserialize(schema, AbstractionsJsonContext.Default.JsonElement) :
                     "json_object";
             }
         }
@@ -180,7 +195,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 
         if (options.Tools is { Count: > 0 })
         {
-            var functions = options.Tools.OfType<AIFunction>().Select(f => new AIFunctionKernelFunction(f));
+            var functions = options.Tools.OfType<AIFunction>().Select(aiFunction => aiFunction.AsKernelFunction());
             settings.FunctionChoiceBehavior =
                 options.ToolMode is null or AutoChatToolMode ? FunctionChoiceBehavior.Auto(functions, autoInvoke: false) :
                 options.ToolMode is RequiredChatToolMode { RequiredFunctionName: null } ? FunctionChoiceBehavior.Required(functions, autoInvoke: false) :
@@ -191,15 +206,14 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         return settings;
     }
 
-    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="StreamingChatCompletionUpdate"/>.</summary>
+    /// <summary>Converts a <see cref="StreamingChatMessageContent"/> to a <see cref="ChatResponseUpdate"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    private static StreamingChatCompletionUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
+    private static ChatResponseUpdate ToStreamingChatCompletionUpdate(StreamingChatMessageContent content)
     {
-        StreamingChatCompletionUpdate update = new()
+        ChatResponseUpdate update = new()
         {
             AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
             AuthorName = content.AuthorName,
-            ChoiceIndex = content.ChoiceIndex,
             ModelId = content.ModelId,
             RawRepresentation = content,
             Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,

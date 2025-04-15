@@ -3,11 +3,11 @@
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines a list of well known distance functions that can be used to compare vectors.
+/// Defines a list of well-known distance functions that can be used to compare vectors.
 /// </summary>
 /// <remarks>
-/// Not all Vector Store connectors support all distance functions and some connectors may
-/// support additional distance functions that are not defined here. See the documentation
+/// Not all Vector Store connectors support all distance functions, and some connectors might
+/// support additional distance functions that aren't defined here. See the documentation
 /// for each connector for more information on what is supported.
 /// </remarks>
 public static class DistanceFunction
@@ -39,9 +39,18 @@ public static class DistanceFunction
     /// Measures both the length and angle between two vectors.
     /// </summary>
     /// <remarks>
-    /// Same as cosine similarity if the vectors are the same length, but more performant.
+    /// The higher the value, the more similar the vectors.
     /// </remarks>
     public const string DotProductSimilarity = nameof(DotProductSimilarity);
+
+    /// <summary>
+    /// Measures both the length and angle between two vectors.
+    /// </summary>
+    /// <remarks>
+    /// The value of NegativeDotProduct = -1 * DotProductSimilarity.
+    /// The higher the value, the greater the distance between the vectors and the less similar the vectors.
+    /// </remarks>
+    public const string NegativeDotProductSimilarity = nameof(NegativeDotProductSimilarity);
 
     /// <summary>
     /// Measures the Euclidean distance between two vectors.
@@ -60,7 +69,7 @@ public static class DistanceFunction
     public const string EuclideanSquaredDistance = nameof(EuclideanSquaredDistance);
 
     /// <summary>
-    /// Number of differences between vectors at each dimensions.
+    /// The number of differences between vectors at each dimensions.
     /// </summary>
     public const string Hamming = nameof(Hamming);
 

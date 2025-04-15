@@ -1,4 +1,6 @@
-## AI Service Settings used across SK:
+# Semantic Kernel Settings
+
+## AI Service Settings used across SK
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
@@ -28,6 +30,7 @@
 |  | [VertexAITextEmbedding](../../../semantic_kernel/connectors/ai/google/google_ai/services/google_ai_text_embedding.py) | project_id, <br> region, <br> embedding_model_id | VERTEX_AI_PROJECT_ID, <br> VERTEX_AI_REGION, <br> VERTEX_AI_EMBEDDING_MODEL_ID | Yes, <br> No, <br> Yes |  |
 | HuggingFace | [HuggingFaceTextCompletion](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_completion.py) | ai_model_id | N/A | Yes | |
 |  | [HuggingFaceTextEmbedding](../../../semantic_kernel/connectors/ai/hugging_face/services/hf_text_embedding.py) | ai_model_id | N/A | Yes | |
+| NVIDIA NIM | [NvidiaTextEmbedding](../../../semantic_kernel/connectors/ai/nvidia/services/nvidia_text_embedding.py) | ai_model_id, <br> api_key, <br> base_url | NVIDIA_API_KEY, <br> NVIDIA_TEXT_EMBEDDING_MODEL_ID, <br> NVIDIA_BASE_URL | Yes | [NvidiaAISettings](../../../semantic_kernel/connectors/ai/nvidia/settings/nvidia_settings.py) |
 | Mistral AI | [MistralAIChatCompletion](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_chat_completion.py) | ai_model_id, <br> api_key | MISTRALAI_CHAT_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes | [MistralAISettings](../../../semantic_kernel/connectors/ai/mistral_ai/settings/mistral_ai_settings.py) |
 |  | [MistralAITextEmbedding](../../../semantic_kernel/connectors/ai/mistral_ai/services/mistral_ai_text_embedding.py) | ai_model_id, <br> api_key | MISTRALAI_EMBEDDING_MODEL_ID, <br> MISTRALAI_API_KEY | Yes, <br> Yes |  |
 | Ollama | [OllamaChatCompletion](../../../semantic_kernel/connectors/ai/ollama/services/ollama_chat_completion.py) | ai_model_id, <br> host | OLLAMA_CHAT_MODEL_ID, <br> OLLAMA_HOST | Yes, <br> No | [OllamaSettings](../../../semantic_kernel/connectors/ai/ollama/ollama_settings.py) |
@@ -36,7 +39,7 @@
 | Onnx | [OnnxGenAIChatCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_chat_completion.py) | template, <br> ai_model_path | N/A, <br> ONNX_GEN_AI_CHAT_MODEL_FOLDER | Yes, <br> Yes | [OnnxGenAISettings](../../../semantic_kernel/connectors/ai/onnx/onnx_gen_ai_settings.py) |
 |  | [OnnxGenAITextCompletion](../../../semantic_kernel/connectors/ai/onnx/services/onnx_gen_ai_text_completion.py) | ai_model_path | ONNX_GEN_AI_TEXT_MODEL_FOLDER | Yes |  |
 
-## Memory Service Settings used across SK:
+## Memory Service Settings used across SK
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |
@@ -49,7 +52,7 @@
 | Redis | [RedisMemoryService](../../../semantic_kernel/connectors/memory/redis/redis_memory_store.py) | connection_string | REDIS_CONNECTION_STRING | Yes | [RedisSettings](../../../semantic_kernel/connectors/memory/redis/redis_settings.py) |
 | Weaviate | [WeaviateMemoryService](../../../semantic_kernel/connectors/memory/weaviate/weaviate_memory_store.py) | url, <br> api_key, <br> use_embed | WEAVIATE_URL, <br> WEAVIATE_API_KEY, <br> WEAVIATE_USE_EMBED | No, <br> No, <br> No | [WeaviateSettings](../../../semantic_kernel/connectors/memory/weaviate/weaviate_settings.py) |
 
-## Other settings used:
+## Other settings used
 
 | Provider | Service | Constructor Settings | Environment Variable | Required? | Settings Class |
 | --- | --- | --- | --- | --- | --- |

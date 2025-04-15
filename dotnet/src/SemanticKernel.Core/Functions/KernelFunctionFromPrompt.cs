@@ -89,7 +89,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         string promptTemplate,
         JsonSerializerOptions jsonSerializerOptions,
@@ -162,7 +161,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="promptTemplateFactory">Optional: Prompt template factory</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         PromptTemplateConfig promptConfig,
         JsonSerializerOptions jsonSerializerOptions,
@@ -209,7 +207,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="loggerFactory">Logger factory</param>
     /// <returns>A function ready to use</returns>
-    [Experimental("SKEXP0120")]
     public static KernelFunction Create(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,
@@ -500,7 +497,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         Verify.NotNull(aiService);
 
-        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, async (context) =>
+        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, executionSettings, async (context) =>
         {
             renderedPrompt = await this._promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
 

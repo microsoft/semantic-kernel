@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.History;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SharedSteps;
@@ -65,7 +65,7 @@ public class Step04_AgentOrchestration(ITestOutputHelper output) : BaseTest(outp
         Kernel kernel = SetupKernel(history);
 
         // Execute process
-        using LocalKernelProcessContext localProcess =
+        await using LocalKernelProcessContext localProcess =
             await process.StartAsync(
                 kernel,
                 new KernelProcessEvent()

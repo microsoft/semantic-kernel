@@ -3,12 +3,7 @@
 import asyncio
 import sys
 from collections.abc import Sequence
-from typing import Any, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, Generic, TypeVar
 
 from azure.cosmos.aio import CosmosClient
 from azure.cosmos.exceptions import CosmosHttpResponseError
@@ -25,35 +20,39 @@ from semantic_kernel.connectors.memory.azure_cosmos_db.utils import (
     get_key,
     get_partition_key,
 )
-from semantic_kernel.data.filter_clauses.any_tags_equal_to_filter_clause import AnyTagsEqualTo
-from semantic_kernel.data.filter_clauses.equal_to_filter_clause import EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_filter import VectorSearchFilter
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.record_definition import VectorStoreRecordDataField, VectorStoreRecordDefinition
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
+    VectorSearchFilter,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorTextSearchMixin,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreModelDeserializationException,
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_types import OneOrMany
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
-TModel = TypeVar("TModel")
-TKey = TypeVar("TKey", str, AzureCosmosDBNoSQLCompositeKey)
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
+
+TGetKey = TypeVar("TGetKey", str, AzureCosmosDBNoSQLCompositeKey)
 
 
-@experimental_class
+@experimental
 class AzureCosmosDBNoSQLCollection(
     AzureCosmosDBNoSQLBase,
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
-    VectorTextSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
+    VectorTextSearchMixin[TKey, TModel],
+    Generic[TKey, TModel],
 ):
     """An Azure Cosmos DB NoSQL collection stores documents in a Azure Cosmos DB NoSQL account."""
 
@@ -124,7 +123,7 @@ class AzureCosmosDBNoSQLCollection(
         return [result[COSMOS_ITEM_ID_PROPERTY_NAME] for result in results]
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(self, keys: Sequence[TGetKey], **kwargs: Any) -> OneOrMany[Any] | None:  # type: ignore
         include_vectors = kwargs.pop("include_vectors", False)
         query = (
             f"SELECT {self._build_select_clause(include_vectors)} FROM c WHERE "  # nosec: B608
@@ -136,7 +135,7 @@ class AzureCosmosDBNoSQLCollection(
         return [item async for item in container_proxy.query_items(query=query, parameters=parameters)]
 
     @override
-    async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
+    async def _inner_delete(self, keys: Sequence[TGetKey], **kwargs: Any) -> None:  # type: ignore
         container_proxy = await self._get_container_proxy(self.collection_name, **kwargs)
         results = await asyncio.gather(
             *[container_proxy.delete_item(item=get_key(key), partition_key=get_partition_key(key)) for key in keys],
@@ -178,23 +177,25 @@ class AzureCosmosDBNoSQLCollection(
         where_clauses = self._build_where_clauses_from_filter(options.filter)
         contains_clauses = " OR ".join(
             f"CONTAINS(c.{field}, @search_text)"
-            for field in self.data_model_definition.fields
-            if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_searchable
+            for field, field_def in self.data_model_definition.fields.items()
+            if isinstance(field_def, VectorStoreRecordDataField) and field_def.is_full_text_searchable
         )
+        if where_clauses:
+            where_clauses = f" {where_clauses} AND"
         return (
             f"SELECT TOP @top {self._build_select_clause(options.include_vectors)} "  # nosec: B608
-            f"FROM c WHERE ({contains_clauses}) AND {where_clauses}"  # nosec: B608
+            f"FROM c WHERE{where_clauses} ({contains_clauses})"  # nosec: B608
         )
 
     def _build_vector_query(self, options: VectorSearchOptions) -> str:
         where_clauses = self._build_where_clauses_from_filter(options.filter)
         if where_clauses:
-            where_clauses = f"WHERE {where_clauses}"
+            where_clauses = f"WHERE {where_clauses} "
         vector_field_name: str = self.data_model_definition.try_get_vector_field(options.vector_field_name).name  # type: ignore
         return (
-            f"SELECT TOP @top {self._build_select_clause(options.include_vectors)},"  # nosec: B608
-            f" VectorDistance(c.{vector_field_name}, @vector) AS distance FROM c ORDER "  # nosec: B608
-            f"BY VectorDistance(c.{vector_field_name}, @vector) {where_clauses}"  # nosec: B608
+            f"SELECT TOP @top {self._build_select_clause(options.include_vectors)}, "  # nosec: B608
+            f"VectorDistance(c.{vector_field_name}, @vector) AS distance FROM c "  # nosec: B608
+            f"{where_clauses}ORDER BY VectorDistance(c.{vector_field_name}, @vector)"  # nosec: B608
         )
 
     def _build_select_clause(self, include_vectors: bool) -> str:
@@ -218,11 +219,24 @@ class AzureCosmosDBNoSQLCollection(
             return ""
         clauses = []
         for filter in filters.filters:
+            field_def = self.data_model_definition.fields[filter.field_name]
             match filter:
                 case EqualTo():
-                    clauses.append(f"c.{filter.field_name} = {filter.value}")
+                    clause = ""
+                    if field_def.property_type in ["int", "float"]:
+                        clause = f"c.{filter.field_name} = {filter.value}"
+                    if field_def.property_type == "str":
+                        clause = f"c.{filter.field_name} = '{filter.value}'"
+                    if field_def.property_type == "list[str]":
+                        filter_value = f"ARRAY_CONTAINS(c.{filter.field_name}, '{filter.value}')"
+                    if field_def.property_type in ["list[int]", "list[float]"]:
+                        filter_value = f"ARRAY_CONTAINS(c.{filter.field_name}, {filter.value})"
+                    clauses.append(clause)
                 case AnyTagsEqualTo():
-                    clauses.append(f"{filter.value} IN c.{filter.field_name}")
+                    filter_value = filter.value
+                    if field_def.property_type == "list[str]":
+                        filter_value = f"'{filter.value}'"
+                    clauses.append(f"{filter_value} IN c.{filter.field_name}")
                 case _:
                     raise ValueError(f"Unsupported filter: {filter}")
         return " AND ".join(clauses)

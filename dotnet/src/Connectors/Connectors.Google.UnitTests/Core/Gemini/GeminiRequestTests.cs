@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -25,7 +26,8 @@ public sealed class GeminiRequestTests
             MaxTokens = 10,
             TopP = 0.9,
             AudioTimestamp = true,
-            ResponseMimeType = "application/json"
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(@"{""schema"":""schema""}")
         };
 
         // Act
@@ -37,7 +39,118 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
         Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
+    }
+
+    [Fact]
+    public void JsonElementResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int))
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
+    }
+
+    [Fact]
+    public void KernelJsonSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = KernelJsonSchemaBuilder.Build(typeof(int))
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.Equal(((KernelJsonSchema)executionSettings.ResponseSchema).RootElement, request.Configuration.ResponseSchema);
+    }
+
+    [Fact]
+    public void JsonNodeResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonNode.Parse(Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int)).GetRawText())
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.NotNull(request.Configuration.ResponseSchema);
+        Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
+    }
+
+    [Fact]
+    public void JsonDocumentResponseSchemaFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonDocument.Parse(Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int)).GetRawText())
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
+        Assert.NotNull(request.Configuration.ResponseSchema);
+        Assert.Equal(JsonSerializer.SerializeToElement(executionSettings.ResponseSchema).GetRawText(), request.Configuration.ResponseSchema.Value.GetRawText());
+    }
+
+    [Theory]
+    [InlineData(typeof(int), "integer")]
+    [InlineData(typeof(bool), "boolean")]
+    [InlineData(typeof(string), "string")]
+    [InlineData(typeof(double), "number")]
+    [InlineData(typeof(GeminiRequest), "object")]
+    [InlineData(typeof(List<int>), "array")]
+    public void TypeResponseSchemaFromPromptReturnsAsExpected(Type type, string expectedSchemaType)
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = type
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        var schemaType = request.Configuration.ResponseSchema?.GetProperty("type").GetString();
+
+        Assert.Equal(expectedSchemaType, schemaType);
+        Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
     }
 
     [Fact]
@@ -226,6 +339,33 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
+    public void FromChatHistoryAudioAsAudioContentItReturnsWithChatHistory()
+    {
+        // Arrange
+        ReadOnlyMemory<byte> audioAsBytes = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage(contentItems:
+            [new AudioContent(new Uri("https://example-audio.com/file.wav")) { MimeType = "audio/wav" }]);
+        chatHistory.AddUserMessage(contentItems:
+            [new AudioContent(audioAsBytes, "audio/mp3")]);
+        var executionSettings = new GeminiPromptExecutionSettings();
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Collection(request.Contents,
+            c => Assert.Equal(chatHistory[0].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[1].Content, c.Parts![0].Text),
+            c => Assert.Equal(chatHistory[2].Items.Cast<AudioContent>().Single().Uri,
+                c.Parts![0].FileData!.FileUri),
+            c => Assert.True(audioAsBytes.ToArray()
+                .SequenceEqual(Convert.FromBase64String(c.Parts![0].InlineData!.InlineData))));
+    }
+
+    [Fact]
     public void FromChatHistoryUnsupportedContentItThrowsNotSupportedException()
     {
         // Arrange
@@ -355,6 +495,44 @@ public sealed class GeminiRequestTests
             c => string.Equals(message.Content, c.Parts![0].Text, StringComparison.Ordinal));
         Assert.Single(request.Contents,
             c => Equals(message.Role, c.Role));
+    }
+
+    [Fact]
+    public void CachedContentFromPromptReturnsAsExpected()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            CachedContent = "xyz/abc"
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration);
+        Assert.Equal(executionSettings.CachedContent, request.CachedContent);
+    }
+
+    [Fact]
+    public void CachedContentFromChatHistoryReturnsAsExpected()
+    {
+        // Arrange
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage("user-message");
+        chatHistory.AddAssistantMessage("assist-message");
+        chatHistory.AddUserMessage("user-message2");
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            CachedContent = "xyz/abc"
+        };
+
+        // Act
+        var request = GeminiRequest.FromChatHistoryAndExecutionSettings(chatHistory, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.CachedContent, request.CachedContent);
     }
 
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :

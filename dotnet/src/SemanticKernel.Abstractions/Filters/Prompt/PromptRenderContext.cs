@@ -55,6 +55,11 @@ public sealed class PromptRenderContext
     public KernelArguments Arguments { get; }
 
     /// <summary>
+    /// The execution settings associated with the operation.
+    /// </summary>
+    public PromptExecutionSettings? ExecutionSettings { get; init; }
+
+    /// <summary>
     /// Gets or sets the rendered prompt.
     /// </summary>
     /// <remarks>

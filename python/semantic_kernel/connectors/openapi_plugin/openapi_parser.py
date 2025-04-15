@@ -24,9 +24,6 @@ from semantic_kernel.connectors.openapi_plugin.models.rest_api_security_scheme i
 from semantic_kernel.exceptions.function_exceptions import PluginInitializationError
 
 if TYPE_CHECKING:
-    from semantic_kernel.connectors.openai_plugin.openai_function_execution_parameters import (
-        OpenAIFunctionExecutionParameters,
-    )
     from semantic_kernel.connectors.openapi_plugin.openapi_function_execution_parameters import (
         OpenAPIFunctionExecutionParameters,
     )
@@ -197,7 +194,7 @@ class OpenApiParser:
     def create_rest_api_operations(
         self,
         parsed_document: Any,
-        execution_settings: "OpenAIFunctionExecutionParameters | OpenAPIFunctionExecutionParameters | None" = None,
+        execution_settings: "OpenAPIFunctionExecutionParameters | None" = None,
     ) -> dict[str, RestApiOperation]:
         """Create REST API operations from the parsed OpenAPI document.
 
@@ -218,12 +215,13 @@ class OpenApiParser:
 
         servers = parsed_document.get("servers", [])
 
+        server_urls: list[dict[str, Any]] = []
+
         if execution_settings and execution_settings.server_url_override:
             # Override the servers with the provided URL
             server_urls = [{"url": execution_settings.server_url_override, "variables": {}}]
         elif servers:
             # Process servers, ensuring we capture their variables
-            server_urls = []
             for server in servers:
                 server_entry = {
                     "url": server.get("url", "/"),

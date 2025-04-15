@@ -12,6 +12,7 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 /// </summary>
 internal static class QdrantVectorStoreCollectionSearchMapping
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     /// <summary>
     /// Build a Qdrant <see cref="Filter"/> from the provided <see cref="VectorSearchFilter"/>.
     /// </summary>
@@ -19,15 +20,9 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// <param name="storagePropertyNames">A mapping of data model property names to the names under which they are stored.</param>
     /// <returns>The Qdrant <see cref="Filter"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the provided filter contains unsupported types, values or unknown properties.</exception>
-    public static Filter BuildFilter(VectorSearchFilter? basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
+    public static Filter BuildFromLegacyFilter(VectorSearchFilter basicVectorSearchFilter, IReadOnlyDictionary<string, string> storagePropertyNames)
     {
         var filter = new Filter();
-
-        // Return an empty filter if no filter clauses are provided.
-        if (basicVectorSearchFilter?.FilterClauses is null)
-        {
-            return filter;
-        }
 
         foreach (var filterClause in basicVectorSearchFilter.FilterClauses)
         {
@@ -51,6 +46,29 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 throw new InvalidOperationException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
             }
 
+            // Get the storage name for the field.
+            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
+            {
+                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
+            }
+
+            // Map datetime equality.
+            if (filterValue is DateTime or DateTimeOffset)
+            {
+                var dateTimeOffset = filterValue is DateTime dateTime
+                    ? new DateTimeOffset(dateTime, TimeSpan.Zero)
+                    : (DateTimeOffset)filterValue;
+
+                var range = new global::Qdrant.Client.Grpc.DatetimeRange
+                {
+                    Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                };
+
+                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } });
+                continue;
+            }
+
             // Map each type of filter value to the appropriate Qdrant match type.
             var match = filterValue switch
             {
@@ -61,17 +79,12 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 _ => throw new InvalidOperationException($"Unsupported filter value type '{filterValue.GetType().Name}'.")
             };
 
-            // Get the storage name for the field.
-            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
-            {
-                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
-            }
-
             filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, Match = match } });
         }
 
         return filter;
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Map the given <see cref="ScoredPoint"/> to a <see cref="VectorSearchResult{TRecord}"/>.

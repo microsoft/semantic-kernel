@@ -1,12 +1,15 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from enum import Enum
-from typing import Any, Union, overload
+from typing import Annotated, Any, overload
 from xml.etree.ElementTree import Element  # nosec
 
 from pydantic import Field
 
+from semantic_kernel.contents.audio_content import AudioContent
+from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.contents.const import DISCRIMINATOR_FIELD
 from semantic_kernel.contents.function_call_content import FunctionCallContent
 from semantic_kernel.contents.function_result_content import FunctionResultContent
 from semantic_kernel.contents.image_content import ImageContent
@@ -16,15 +19,19 @@ from semantic_kernel.contents.streaming_file_reference_content import StreamingF
 from semantic_kernel.contents.streaming_text_content import StreamingTextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.finish_reason import FinishReason
+from semantic_kernel.contents.utils.hashing import make_hashable
 from semantic_kernel.exceptions import ContentAdditionException
 
-ITEM_TYPES = Union[
-    ImageContent,
-    StreamingTextContent,
-    FunctionCallContent,
-    FunctionResultContent,
-    StreamingFileReferenceContent,
-    StreamingAnnotationContent,
+STREAMING_CMC_ITEM_TYPES = Annotated[
+    BinaryContent
+    | AudioContent
+    | ImageContent
+    | FunctionResultContent
+    | FunctionCallContent
+    | StreamingTextContent
+    | StreamingAnnotationContent
+    | StreamingFileReferenceContent,
+    Field(discriminator=DISCRIMINATOR_FIELD),
 ]
 
 
@@ -63,7 +70,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
     def __init__(
         self,
         role: AuthorRole,
-        items: list[ITEM_TYPES],
+        items: list[STREAMING_CMC_ITEM_TYPES],
         choice_index: int,
         name: str | None = None,
         inner_content: Any | None = None,
@@ -93,7 +100,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
         self,
         role: AuthorRole,
         choice_index: int,
-        items: list[ITEM_TYPES] | None = None,
+        items: list[STREAMING_CMC_ITEM_TYPES] | None = None,
         content: str | None = None,
         inner_content: Any | None = None,
         name: str | None = None,
@@ -195,6 +202,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             encoding=self.encoding,
             finish_reason=self.finish_reason or other.finish_reason,
             function_invoke_attempt=self.function_invoke_attempt,
+            name=self.name or other.name,
         )
 
     def to_element(self) -> "Element":
@@ -222,6 +230,7 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
 
     def __hash__(self) -> int:
         """Return the hash of the streaming chat message content."""
+        hashable_items = [make_hashable(item) for item in self.items] if self.items else []
         return hash((
             self.tag,
             self.role,
@@ -230,5 +239,5 @@ class StreamingChatMessageContent(ChatMessageContent, StreamingContentMixin):
             self.finish_reason,
             self.choice_index,
             self.function_invoke_attempt,
-            *self.items,
+            *hashable_items,
         ))

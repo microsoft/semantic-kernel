@@ -40,7 +40,7 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
         List<TextContent> textContents = [];
         if (!string.IsNullOrEmpty(responseBody?.Completion))
         {
-            textContents.Add(new TextContent(responseBody!.Completion));
+            textContents.Add(new TextContent(responseBody!.Completion, innerContent: responseBody));
         }
 
         return textContents;
@@ -120,12 +120,12 @@ internal sealed class AnthropicService : IBedrockTextGenerationService, IBedrock
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var text = chunk["completion"]?.ToString();
         if (!string.IsNullOrEmpty(text))
         {
-            yield return text!;
+            yield return new StreamingTextContent(text, innerContent: chunk)!;
         }
     }
 

@@ -23,7 +23,7 @@ Make sure you have an
 
 There are two methods to manage keys, secrets, and endpoints:
 
-1. Store them in environment variables. SK Python leverages pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
+1. Store them in environment variables. SK Python leverages Pydantic settings to load keys, secrets, and endpoints. This means that there is a first attempt to load them from environment variables. The `.env` file naming applies to how the names should be stored as environment variables.
 
 2. If you'd like to use the `.env` file, you will need to configure the `.env` file with the following keys in the file (see the `.env.example` file):
 
@@ -37,7 +37,9 @@ AZURE_OPENAI_ENDPOINT=""
 AZURE_OPENAI_API_KEY=""
 ```
 
-You will then configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
+Put the .env file in the root directory.
+
+If you place the .env in a different directory, configure the Text/ChatCompletion class with the keyword argument `env_file_path`:
 
 ```python
 chat_completion = OpenAIChatCompletion(service_id="test", env_file_path=<path_to_file>)
@@ -121,7 +123,7 @@ summarize = kernel.add_function(
     function_name="tldr_function",
     plugin_name="tldr_plugin",
     prompt="{{$input}}\n\nOne line TLDR with the fewest words.",
-    prompt_template_settings=req_settings,
+    prompt_execution_settings=req_settings,
 )
 
 # Summarize the laws of thermodynamics
@@ -149,7 +151,7 @@ The force is proportional to the product of the two masses and inversely proport
 
 # Semantic Kernel Notebooks
 
-The repository contains a few Python and C# notebooks that demonstrates how to
+The repository contains a few Python and C# notebooks that demonstrate how to
 get started with the Semantic Kernel.
 
 Python notebooks:
@@ -171,10 +173,10 @@ Python notebooks:
 
 ## How does Python SK compare to the C# version of Semantic Kernel?
 
-The two SDKs are compatible and at the core they follow the same design principles.
-Some features are still available only in the C# version, and being ported
+The two SDKs are compatible and at their core they follow the same design principles.
+Some features are still available only in the C# version and are being ported.
 Refer to the [FEATURE MATRIX](../FEATURE_MATRIX.md) doc to see where
 things stand in matching the features and functionality of the main SK branch.
 Over time there will be some features available only in the Python version, and
-others only in the C# version, for example adapters to external services,
+others only in the C# version, for example, adapters to external services,
 scientific libraries, etc.

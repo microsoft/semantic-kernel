@@ -249,7 +249,7 @@ public sealed class AzureAIInferenceChatCompletionServiceTests : IDisposable
                 format = JsonSerializer.Deserialize<JsonElement>(formatValue);
                 break;
             case "ChatResponseFormat":
-                format = formatValue == "text" ? new ChatCompletionsResponseFormatText() : new ChatCompletionsResponseFormatJSON();
+                format = formatValue == "text" ? new ChatCompletionsResponseFormatText() : new ChatCompletionsResponseFormatJsonObject();
                 break;
         }
 

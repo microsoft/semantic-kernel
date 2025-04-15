@@ -15,18 +15,17 @@ from weaviate.exceptions import WeaviateConnectionError
 
 from semantic_kernel.connectors.memory.weaviate.weaviate_collection import WeaviateCollection
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.vector_storage.vector_store import VectorStore
-from semantic_kernel.data.vector_storage.vector_store_record_collection import VectorStoreRecordCollection
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
+from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorStoreException,
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 
-@experimental_class
+@experimental
 class WeaviateStore(VectorStore):
     """A Weaviate store is a vector store that uses Weaviate as the backend."""
 
@@ -60,7 +59,7 @@ class WeaviateStore(VectorStore):
         managed_client: bool = False
         if not async_client:
             managed_client = True
-            weaviate_settings = WeaviateSettings.create(
+            weaviate_settings = WeaviateSettings(
                 url=url,
                 api_key=api_key,
                 local_host=local_host,
@@ -129,7 +128,7 @@ class WeaviateStore(VectorStore):
     @override
     async def __aenter__(self) -> "VectorStore":
         """Enter the context manager."""
-        if not await self.async_client.is_live():
+        if not self.async_client.is_connected():
             try:
                 await self.async_client.connect()
             except WeaviateConnectionError as exc:

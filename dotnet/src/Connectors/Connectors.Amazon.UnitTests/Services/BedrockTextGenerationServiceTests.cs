@@ -171,6 +171,7 @@ public class BedrockTextGenerationServiceTests
         // Assert
         Assert.Single(result);
         Assert.Equal("This is a mock output.", result[0].Text);
+        Assert.NotNull(result[0].InnerContent);
     }
 
     /// <summary>
@@ -190,12 +191,14 @@ public class BedrockTextGenerationServiceTests
             {
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
+#pragma warning disable CA2000 // Dispose objects before losing scope
         mockBedrockApi.Setup(m => m.InvokeModelWithResponseStreamAsync(It.IsAny<InvokeModelWithResponseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeModelWithResponseStreamResponse()
             {
                 Body = new ResponseStream(new MemoryStream(content)),
                 ContentType = "application/json"
             });
+#pragma warning restore CA2000 // Dispose objects before losing scope
         var kernel = Kernel.CreateBuilder().AddBedrockTextGenerationService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<ITextGenerationService>();
 
@@ -210,6 +213,7 @@ public class BedrockTextGenerationServiceTests
             iterations += 1;
             Assert.NotNull(item);
             Assert.NotNull(item.Text);
+            Assert.NotNull(item.InnerContent);
             result.Add(item);
         }
         Assert.True(iterations > 0);

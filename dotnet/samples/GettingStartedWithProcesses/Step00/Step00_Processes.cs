@@ -27,17 +27,15 @@ public class Step00_Processes(ITestOutputHelper output) : BaseTest(output, redir
         Kernel kernel = Kernel.CreateBuilder()
             .Build();
 
-        ProcessBuilder processBuilder = new(nameof(Step00_Processes));
-
         // Create a process that will interact with the chat completion service
         ProcessBuilder process = new("ChatBot");
-        var startStep = processBuilder.AddStepFromType<StartStep>();
-        var doSomeWorkStep = processBuilder.AddStepFromType<DoSomeWorkStep>();
-        var doMoreWorkStep = processBuilder.AddStepFromType<DoMoreWorkStep>();
-        var lastStep = processBuilder.AddStepFromType<LastStep>();
+        var startStep = process.AddStepFromType<StartStep>();
+        var doSomeWorkStep = process.AddStepFromType<DoSomeWorkStep>();
+        var doMoreWorkStep = process.AddStepFromType<DoMoreWorkStep>();
+        var lastStep = process.AddStepFromType<LastStep>();
 
         // Define the process flow
-        processBuilder
+        process
             .OnInputEvent(ProcessEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(startStep));
 
@@ -61,7 +59,7 @@ public class Step00_Processes(ITestOutputHelper output) : BaseTest(output, redir
         KernelProcess kernelProcess = process.Build();
 
         // Start the process with an initial external event
-        using var runningProcess = await kernelProcess.StartAsync(
+        await using var runningProcess = await kernelProcess.StartAsync(
             kernel,
                 new KernelProcessEvent()
                 {

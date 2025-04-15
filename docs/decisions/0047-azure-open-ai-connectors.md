@@ -37,7 +37,7 @@ A documentation guidance and samples/examples will be created to guide on how to
 
 ## OpenAI SDK limitations
 
-The new OpenAI SDK introduce some limitations that need to be considered and pontentially can introduce breaking changes if not remediated by our internal implementation.
+The new OpenAI SDK introduce some limitations that need to be considered and potentially can introduce breaking changes if not remediated by our internal implementation.
 
 - #### ⚠️ No support for multiple results (Choices) per request.
 

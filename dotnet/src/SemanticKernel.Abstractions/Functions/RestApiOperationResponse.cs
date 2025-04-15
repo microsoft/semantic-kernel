@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
 
@@ -14,7 +16,7 @@ public sealed class RestApiOperationResponse
     /// <summary>
     /// Gets the content of the response.
     /// </summary>
-    public object? Content { get; }
+    public object? Content { get; set; }
 
     /// <summary>
     /// Gets the content type of the response.
@@ -40,6 +42,18 @@ public sealed class RestApiOperationResponse
     /// Gets the payload sent in the request.
     /// </summary>
     public object? RequestPayload { get; init; }
+
+    /// <summary>
+    /// The response headers.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, IEnumerable<string>>? Headers { get; set; }
+
+    /// <summary>
+    /// Gets a dictionary for ambient data associated with the response.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IDictionary<string, object?>? Data { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.

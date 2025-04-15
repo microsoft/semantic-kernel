@@ -15,6 +15,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Moq;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestResponses;
@@ -1136,11 +1137,14 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal("{\"name\":\"fake-name-value\",\"attributes\":{\"enabled\":true}}", ((JsonObject)result.RequestPayload).ToJsonString());
     }
 
-    [Fact]
-    public async Task ItShouldHandleNoContentAsync()
+    [InlineData(System.Net.HttpStatusCode.NoContent)]
+    [InlineData(System.Net.HttpStatusCode.Accepted)]
+    [InlineData(System.Net.HttpStatusCode.Created)]
+    [Theory]
+    public async Task ItShouldHandleNoContentAsync(System.Net.HttpStatusCode statusCode)
     {
         // Arrange
-        this._httpMessageHandlerStub!.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+        this._httpMessageHandlerStub!.ResponseToReturn = new HttpResponseMessage(statusCode);
 
         List<RestApiPayloadProperty> payloadProperties =
         [
@@ -1243,11 +1247,12 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.Equal(options.KernelArguments, kernelFunctionContext.Arguments);
     }
 
-    [Fact]
-    public async Task ItShouldIncludeRequestDataWhenOperationCanceledExceptionIsThrownAsync()
+    [Theory]
+    [MemberData(nameof(RestApiOperationRunnerExceptions))]
+    public async Task ItShouldIncludeRequestDataWhenOperationExecutionFailsAsync(Type expectedExceptionType, string expectedExceptionMessage, Exception expectedException)
     {
         // Arrange
-        this._httpMessageHandlerStub.ExceptionToThrow = new OperationCanceledException();
+        this._httpMessageHandlerStub.ExceptionToThrow = expectedException;
 
         var operation = new RestApiOperation(
             id: "fake-id",
@@ -1269,12 +1274,23 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object);
 
         // Act & Assert
-        var canceledException = await Assert.ThrowsAsync<OperationCanceledException>(() => sut.RunAsync(operation, arguments));
-        Assert.Equal("The operation was canceled.", canceledException.Message);
-        Assert.Equal("POST", canceledException.Data["http.request.method"]);
-        Assert.Equal("https://fake-random-test-host/fake-path", canceledException.Data["url.full"]);
-        Assert.Equal("{\"value\":\"fake-value\"}", canceledException.Data["http.request.body"]);
+        var actualException = await Assert.ThrowsAsync(expectedExceptionType, () => sut.RunAsync(operation, arguments));
+        Assert.Equal(expectedExceptionMessage, actualException.Message);
+        Assert.Equal("POST", actualException.Data["http.request.method"]);
+        Assert.Equal("https://fake-random-test-host/fake-path", actualException.Data["url.full"]);
+        Assert.Equal("{\"value\":\"fake-value\"}", actualException.Data["http.request.body"]);
+        Assert.NotNull(actualException.Data["http.request.options"]);
     }
+
+    /// <summary>
+    /// Exceptions to thrown by <see cref="RestApiOperationRunner"/>.
+    /// </summary>
+    public static TheoryData<Type, string, Exception> RestApiOperationRunnerExceptions => new()
+    {
+        { typeof(HttpOperationException) , "An error occurred during the HTTP operation.", new HttpOperationException("An error occurred during the HTTP operation.") },
+        { typeof(OperationCanceledException) , "The operation was canceled.", new OperationCanceledException("The operation was canceled.") },
+        { typeof(KernelException) , "A critical kernel error occurred.", new KernelException("A critical kernel error occurred.") }
+    };
 
     [Fact]
     public async Task ItShouldUseCustomHttpResponseContentReaderAsync()
@@ -1700,6 +1716,196 @@ public sealed class RestApiOperationRunnerTests : IDisposable
         Assert.NotNull(result);
         var expected = responses.First(r => r.Item1 == expectedStatusCode).Item2.Schema;
         Assert.Equal(JsonSerializer.Serialize(expected), JsonSerializer.Serialize(result.ExpectedSchema));
+    }
+
+    [Theory]
+    [InlineData("application/json;x-api-version=2.0", "application/json")]
+    [InlineData("application/json ; x-api-version=2.0", "application/json")]
+    [InlineData(" application/JSON; x-api-version=2.0", "application/json")]
+    [InlineData(" TEXT/PLAIN ; x-api-version=2.0", "text/plain")]
+    public async Task ItShouldNormalizeContentTypeArgumentAsync(string actualContentType, string normalizedContentType)
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", "fake-input-value" },
+            { "content-type", actualContentType },
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, this._authenticationHandlerMock.Object, enableDynamicPayload: false);
+
+        // Act
+        var result = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.NotNull(this._httpMessageHandlerStub.ContentHeaders);
+        Assert.Contains(this._httpMessageHandlerStub.ContentHeaders, h => h.Key == "Content-Type" && h.Value.Any(h => h.StartsWith(normalizedContentType, StringComparison.InvariantCulture)));
+    }
+
+    [Fact]
+    public async Task ItShouldProvideValidContextToRestApiOperationResponseFactoryAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        RestApiOperationResponseFactoryContext? factoryContext = null;
+        RestApiOperationResponse? factoryInternalResponse = null;
+        CancellationToken? factoryCancellationToken = null;
+
+        async Task<RestApiOperationResponse> RestApiOperationResponseFactory(RestApiOperationResponseFactoryContext context, CancellationToken cancellationToken)
+        {
+            factoryContext = context;
+            factoryInternalResponse = await context.InternalFactory(context, cancellationToken);
+            factoryCancellationToken = cancellationToken;
+
+            return factoryInternalResponse;
+        }
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", "fake-input-value" },
+            { "content-type", "text/plain" },
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory);
+
+        using var cancellationTokenSource = new CancellationTokenSource();
+
+        var cancellationToken = cancellationTokenSource.Token;
+
+        // Act
+        var response = await sut.RunAsync(operation, arguments, cancellationToken: cancellationToken);
+
+        // Assert
+        Assert.NotNull(factoryContext);
+        Assert.Same(operation, factoryContext.Operation);
+        Assert.Same(this._httpMessageHandlerStub.RequestMessage, factoryContext.Request);
+        Assert.Same(this._httpMessageHandlerStub.ResponseToReturn, factoryContext.Response);
+
+        Assert.Same(factoryInternalResponse, response);
+
+        Assert.Equal(cancellationToken, factoryCancellationToken);
+    }
+
+    [Fact]
+    public async Task ItShouldWrapStreamContentIntoHttpResponseStreamAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+        var factoryStream = new MemoryStream();
+
+        async Task<RestApiOperationResponse> RestApiOperationResponseFactory(RestApiOperationResponseFactoryContext context, CancellationToken cancellationToken)
+        {
+            return await Task.FromResult(new RestApiOperationResponse(factoryStream, contentType: MediaTypeNames.Text.Plain));
+        }
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", "fake-input-value" },
+            { "content-type", "text/plain" },
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory);
+
+        // Act
+        var response = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        var httpResponseStream = Assert.IsType<HttpResponseStream>(response.Content);
+
+        // Assert that neither the HttResponseMessage nor stream returned by factory is disposed
+        this._httpMessageHandlerStub.ResponseToReturn!.Version = Version.Parse("1.1.1");
+        Assert.True(factoryStream!.CanRead);
+        Assert.True(factoryStream!.CanSeek);
+
+        // Dispose the response stream
+        httpResponseStream.Dispose();
+
+        // Assert both the stream and the response message are disposed
+        Assert.Throws<ObjectDisposedException>(() => this._httpMessageHandlerStub.ResponseToReturn!.Version = Version.Parse("1.1.1"));
+        Assert.False(httpResponseStream!.CanRead);
+        Assert.False(httpResponseStream!.CanSeek);
+    }
+
+    [Fact]
+    public async Task ItShouldNotWrapStreamContentIntoHttpResponseStreamIfItIsAlreadyOfHttpResponseStreamTypeAsync()
+    {
+        // Arrange
+        this._httpMessageHandlerStub.ResponseToReturn.Content = new StringContent("fake-content", Encoding.UTF8, MediaTypeNames.Text.Plain);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        await using var httpResponseStream = new HttpResponseStream(new MemoryStream(), new HttpResponseMessage());
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        async Task<RestApiOperationResponse> RestApiOperationResponseFactory(RestApiOperationResponseFactoryContext context, CancellationToken cancellationToken)
+        {
+            return await Task.FromResult(new RestApiOperationResponse(httpResponseStream, contentType: MediaTypeNames.Text.Plain));
+        }
+
+        var operation = new RestApiOperation(
+            id: "fake-id",
+            servers: [new RestApiServer("https://fake-random-test-host")],
+            path: "fake-path",
+            method: HttpMethod.Post,
+            description: "fake-description",
+            parameters: [],
+            responses: new Dictionary<string, RestApiExpectedResponse>(),
+            securityRequirements: [],
+            payload: null
+        );
+
+        var arguments = new KernelArguments
+        {
+            { "payload", "fake-input-value" },
+            { "content-type", "text/plain" },
+        };
+
+        var sut = new RestApiOperationRunner(this._httpClient, responseFactory: RestApiOperationResponseFactory);
+
+        // Act
+        var response = await sut.RunAsync(operation, arguments);
+
+        // Assert
+        Assert.Same(httpResponseStream, response.Content);
     }
 
     /// <summary>

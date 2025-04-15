@@ -6,7 +6,11 @@ from typing import ClassVar
 
 from pydantic import Field
 
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import kernel_function
+from semantic_kernel.kernel import Kernel
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process import (
     KernelProcessStep,
@@ -52,14 +56,43 @@ class AStep(KernelProcessStep):
         await context.emit_event(process_event=CommonEvents.AStepDone, data="I did A")
 
 
-# Define a sample `BStep` step that will emit an event after 2 seconds.
-# The event will be sent to the `CStep` step with the data `I did B`.
+# Define a simple factory for the BStep that can create the dependency that the BStep requires
+# As an example, this factory creates a kernel and adds an `AzureChatCompletion` service to it.
+async def bstep_factory():
+    """Creates a BStep instance with ephemeral references like ChatCompletionAgent."""
+    kernel = Kernel()
+    kernel.add_service(AzureChatCompletion())
+
+    agent = ChatCompletionAgent(kernel=kernel, name="echo", instructions="repeat the input back")
+    step_instance = BStep()
+    step_instance.agent = agent
+
+    return step_instance
+
+
 class BStep(KernelProcessStep):
-    @kernel_function()
+    """A sample BStep that optionally holds a ChatCompletionAgent.
+
+    By design, the agent is ephemeral (not stored in state).
+    """
+
+    # Ephemeral references won't be persisted to Dapr
+    # because we do not place them in a step state model.
+    # We'll set this in the factory function:
+    agent: ChatCompletionAgent | None = None
+
+    @kernel_function(name="do_it")
     async def do_it(self, context: KernelProcessStepContext):
-        print("##### BStep ran.")
+        print("##### BStep ran (do_it).")
         await asyncio.sleep(2)
-        await context.emit_event(process_event=CommonEvents.BStepDone, data="I did B")
+
+        if self.agent:
+            history = ChatHistory()
+            history.add_user_message("Hello from BStep!")
+            async for msg in self.agent.invoke(history):
+                print(f"BStep got agent response: {msg.content}")
+
+        await context.emit_event(process_event="BStepDone", data="I did B")
 
 
 # Define a sample `CStepState` that will keep track of the current cycle.
@@ -74,9 +107,8 @@ class CStep(KernelProcessStep[CStepState]):
     # The activate method overrides the base class method to set the state in the step.
     async def activate(self, state: KernelProcessStepState[CStepState]):
         """Activates the step and sets the state."""
-        step_state = CStepState.model_validate(state.state)
-        print(f"##### CStep activated with Cycle = '{step_state.current_cycle}'.")
-        self.state = step_state
+        self.state = state.state
+        print(f"##### CStep activated with Cycle = '{self.state.current_cycle}'.")
 
     @kernel_function()
     async def do_it(self, context: KernelProcessStepContext, astepdata: str, bstepdata: str):

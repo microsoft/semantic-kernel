@@ -34,14 +34,14 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         var attrs = new Dictionary<string, object?>();
         this.Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
-        var metadata = chatClient.Metadata;
-        if (metadata.ProviderUri is not null)
+        var metadata = chatClient.GetService<ChatClientMetadata>();
+        if (metadata?.ProviderUri is not null)
         {
             attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
         }
-        if (metadata.ModelId is not null)
+        if (metadata?.DefaultModelId is not null)
         {
-            attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
+            attrs[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
         }
     }
 
@@ -54,20 +54,24 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        var messageList = ChatCompletionServiceExtensions.ToChatMessageList(chatHistory);
-        var currentSize = messageList.Count;
-
-        var completion = await this._chatClient.CompleteAsync(
-            messageList,
+        var completion = await this._chatClient.GetResponseAsync(
+            ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false);
 
-        chatHistory.AddRange(
-            messageList
-                .Skip(currentSize)
-                .Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m)));
+        if (completion.Messages.Count > 0)
+        {
+            // Add all but the last message into the chat history.
+            for (int i = 0; i < completion.Messages.Count - 1; i++)
+            {
+                chatHistory.Add(ChatCompletionServiceExtensions.ToChatMessageContent(completion.Messages[i], completion));
+            }
 
-        return completion.Choices.Select(m => ChatCompletionServiceExtensions.ToChatMessageContent(m, completion)).ToList();
+            // Return the last message as the result.
+            return [ChatCompletionServiceExtensions.ToChatMessageContent(completion.Messages[completion.Messages.Count - 1], completion)];
+        }
+
+        return [];
     }
 
     /// <inheritdoc/>
@@ -76,13 +80,23 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     {
         Verify.NotNull(chatHistory);
 
-        await foreach (var update in this._chatClient.CompleteStreamingAsync(
+        List<AIContent> fcContents = [];
+        ChatRole? role = null;
+
+        await foreach (var update in this._chatClient.GetStreamingResponseAsync(
             ChatCompletionServiceExtensions.ToChatMessageList(chatHistory),
             ToChatOptions(executionSettings, kernel),
             cancellationToken).ConfigureAwait(false))
         {
+            role ??= update.Role;
+
+            fcContents.AddRange(update.Contents.Where(c => c is Microsoft.Extensions.AI.FunctionCallContent or Microsoft.Extensions.AI.FunctionResultContent));
+
             yield return ToStreamingChatMessageContent(update);
         }
+
+        // Add function call content/results to chat history, as other IChatCompletionService streaming implementations do.
+        chatHistory.Add(ChatCompletionServiceExtensions.ToChatMessageContent(new ChatMessage(role ?? ChatRole.Assistant, fcContents)));
     }
 
     /// <summary>Converts a pair of <see cref="PromptExecutionSettings"/> and <see cref="Kernel"/> to a <see cref="ChatOptions"/>.</summary>
@@ -158,13 +172,19 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
                 else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
                     entry.Value is { } responseFormat)
                 {
-                    options.ResponseFormat = responseFormat switch
+                    if (TryConvert(responseFormat, out string? responseFormatString))
                     {
-                        "text" => ChatResponseFormat.Text,
-                        "json_object" => ChatResponseFormat.Json,
-                        JsonElement e => ChatResponseFormat.ForJsonSchema(e.ToString()),
-                        _ => null,
-                    };
+                        options.ResponseFormat = responseFormatString switch
+                        {
+                            "text" => ChatResponseFormat.Text,
+                            "json_object" => ChatResponseFormat.Json,
+                            _ => null,
+                        };
+                    }
+                    else
+                    {
+                        options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
+                    }
                 }
                 else
                 {
@@ -268,16 +288,15 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         }
     }
 
-    /// <summary>Converts a <see cref="StreamingChatCompletionUpdate"/> to a <see cref="StreamingChatMessageContent"/>.</summary>
+    /// <summary>Converts a <see cref="ChatResponseUpdate"/> to a <see cref="StreamingChatMessageContent"/>.</summary>
     /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
-    private static StreamingChatMessageContent ToStreamingChatMessageContent(StreamingChatCompletionUpdate update)
+    private static StreamingChatMessageContent ToStreamingChatMessageContent(ChatResponseUpdate update)
     {
         StreamingChatMessageContent content = new(
             update.Role is not null ? new AuthorRole(update.Role.Value.Value) : null,
             null)
         {
             InnerContent = update.RawRepresentation,
-            ChoiceIndex = update.ChoiceIndex,
             Metadata = update.AdditionalProperties,
             ModelId = update.ModelId
         };

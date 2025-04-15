@@ -70,7 +70,7 @@ internal sealed class Program
         await session.AddItemAsync(
             ConversationItem.CreateUserMessage(["I'm trying to decide what to wear on my trip."]));
 
-        // Use audio file that contains a recorded question: "What's the weather like in San Francisco, California?" 
+        // Use audio file that contains a recorded question: "What's the weather like in San Francisco, California?"
         string inputAudioPath = FindFile("Assets\\realtime_whats_the_weather_pcm16_24khz_mono.wav");
         using Stream inputAudioStream = File.OpenRead(inputAudioPath);
 
@@ -165,7 +165,7 @@ internal sealed class Program
                     var argumentsString = functionArgumentBuildersById[itemStreamingFinishedUpdate.ItemId].ToString();
                     var arguments = DeserializeArguments(argumentsString);
 
-                    // Create a function call content based on received data. 
+                    // Create a function call content based on received data.
                     var functionCallContent = new FunctionCallContent(
                         functionName: functionName,
                         pluginName: pluginName,
@@ -346,11 +346,10 @@ internal sealed class Program
 
             foreach (var metadata in functionsMetadata)
             {
-                var toolDefinition = metadata.ToOpenAIFunction().ToFunctionDefinition();
+                var toolDefinition = metadata.ToOpenAIFunction().ToFunctionDefinition(false);
 
-                yield return new ConversationFunctionTool()
+                yield return new ConversationFunctionTool(name: toolDefinition.FunctionName)
                 {
-                    Name = toolDefinition.FunctionName,
                     Description = toolDefinition.FunctionDescription,
                     Parameters = toolDefinition.FunctionParameters
                 };

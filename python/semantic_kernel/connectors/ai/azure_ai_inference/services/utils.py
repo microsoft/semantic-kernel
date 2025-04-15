@@ -41,6 +41,18 @@ def _format_system_message(message: ChatMessageContent) -> SystemMessage:
     return SystemMessage(content=message.content)
 
 
+def _format_developer_message(message: ChatMessageContent) -> ChatRequestMessage:
+    """Format a developer message to the expected object for the client.
+
+    Args:
+        message: The developer message.
+
+    Returns:
+        The formatted developer message.
+    """
+    return ChatRequestMessage({"role": "developer", "content": message.content})
+
+
 def _format_user_message(message: ChatMessageContent) -> UserMessage:
     """Format a user message to the expected object for the client.
 
@@ -140,4 +152,5 @@ MESSAGE_CONVERTERS: dict[AuthorRole, Callable[[ChatMessageContent], ChatRequestM
     AuthorRole.USER: _format_user_message,
     AuthorRole.ASSISTANT: _format_assistant_message,
     AuthorRole.TOOL: _format_tool_message,
+    AuthorRole.DEVELOPER: _format_developer_message,
 }

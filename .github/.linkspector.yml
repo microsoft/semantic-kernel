@@ -7,10 +7,20 @@ ignorePatterns:
   - pattern: "./issues"
   - pattern: "./discussions"
   - pattern: "./pulls"
-  - pattern: "^http://localhost"
-  - pattern: "^https://localhost"
-  - pattern: "^https://platform.openai.com"
-  - pattern: "^https://outlook.office.com/bookings"
+  - pattern: "https:\/\/platform.openai.com"
+  - pattern: "https:\/\/outlook.office.com/bookings"
+excludedFiles:
+  # Files that are temporarily excluded because they contain links that are temporarily unavailable.
+  - ./dotnet/src/Experimental/Process.IntegrationTestRunner.Dapr/README.md # Cannot reach https://docs.dapr.io/getting-started/install-dapr-selfhost/. Status: 404" location:{path:"dotnet/src/Experimental/Process.IntegrationTestRunner.Dapr/README.md" 
+  - ./python/DEV_SETUP.md # "Cannot reach https://code.visualstudio.com/docs/editor/workspaces. Status: 404"
+excludedDirs:
+  # Folders which include links to localhost, since it's not ignored with regular expressions
+  - ./python/samples/demos/telemetry
+  - ./python/samples/demos/process_with_dapr
+  - ./dotnet/samples/Demos/ProcessWithDapr
+  - ./dotnet/samples/Demos/CopilotAgentPlugins
+  # Exclude the decisions folder that contains documents with links prone to becoming broken and temporarily unavailable. This should be removed when the link checker is implemented as a background job that does not block PRs.
+  - ./docs/decisions/
 baseUrl: https://github.com/microsoft/semantic-kernel/
 aliveStatusCodes: 
   - 200

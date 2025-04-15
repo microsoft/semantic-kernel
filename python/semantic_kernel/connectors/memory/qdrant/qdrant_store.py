@@ -5,11 +5,6 @@ import sys
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 
@@ -17,11 +12,16 @@ from semantic_kernel.connectors.memory.qdrant.qdrant_collection import QdrantCol
 from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
 from semantic_kernel.data.vector_storage import VectorStore
 from semantic_kernel.exceptions import VectorStoreInitializationException
-from semantic_kernel.utils.experimental_decorator import experimental_class
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
-    from semantic_kernel.data import VectorStoreRecordCollection
+    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ TModel = TypeVar("TModel")
 TKey = TypeVar("TKey", str, int)
 
 
-@experimental_class
+@experimental
 class QdrantStore(VectorStore):
     """A QdrantStore is a memory store that uses Qdrant as the backend."""
 
@@ -81,7 +81,7 @@ class QdrantStore(VectorStore):
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 
         try:
-            settings = QdrantSettings.create(
+            settings = QdrantSettings(
                 url=url,
                 api_key=api_key,
                 host=host,
@@ -120,7 +120,7 @@ class QdrantStore(VectorStore):
             **kwargs: Additional keyword arguments, passed to the collection constructor.
         """
         if collection_name not in self.vector_record_collections:
-            self.vector_record_collections[collection_name] = QdrantCollection[data_model_type](
+            self.vector_record_collections[collection_name] = QdrantCollection(
                 data_model_type=data_model_type,
                 data_model_definition=data_model_definition,
                 collection_name=collection_name,

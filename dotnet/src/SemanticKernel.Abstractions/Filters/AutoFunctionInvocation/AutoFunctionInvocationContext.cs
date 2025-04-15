@@ -80,6 +80,11 @@ public class AutoFunctionInvocationContext
     public ChatMessageContent ChatMessageContent { get; }
 
     /// <summary>
+    /// The execution settings associated with the operation.
+    /// </summary>
+    public PromptExecutionSettings? ExecutionSettings { get; init; }
+
+    /// <summary>
     /// Gets the <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> associated with automatic function invocation.
     /// </summary>
     public ChatHistory ChatHistory { get; }

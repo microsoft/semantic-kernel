@@ -8,12 +8,11 @@ import pytest
 if TYPE_CHECKING:
     from semantic_kernel.kernel import Kernel
 
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
+from semantic_kernel.connectors.ai.function_calling_utils import _combine_filter_dicts
 from semantic_kernel.connectors.ai.function_choice_behavior import (
     DEFAULT_MAX_AUTO_INVOKE_ATTEMPTS,
     FunctionChoiceBehavior,
     FunctionChoiceType,
-    _combine_filter_dicts,
 )
 from semantic_kernel.exceptions import ServiceInitializationError
 
@@ -48,38 +47,6 @@ def test_function_choice_behavior_required():
     assert behavior.type_ == FunctionChoiceType.REQUIRED
     assert behavior.maximum_auto_invoke_attempts == 1
     assert behavior.filters == expected_filters
-
-
-def test_from_function_call_behavior_kernel_functions():
-    behavior = FunctionCallBehavior.AutoInvokeKernelFunctions()
-    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type_ == FunctionChoiceType.AUTO
-    assert new_behavior.auto_invoke_kernel_functions is True
-
-
-def test_from_function_call_behavior_required():
-    behavior = FunctionCallBehavior.RequiredFunction(auto_invoke=True, function_fully_qualified_name="plugin1-func1")
-    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type_ == FunctionChoiceType.REQUIRED
-    assert new_behavior.auto_invoke_kernel_functions is True
-    assert new_behavior.filters == {"included_functions": ["plugin1-func1"]}
-
-
-def test_from_function_call_behavior_enabled_functions():
-    expected_filters = {"included_functions": ["plugin1-func1"]}
-    behavior = FunctionCallBehavior.EnableFunctions(auto_invoke=True, filters=expected_filters)
-    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior.type_ == FunctionChoiceType.AUTO
-    assert new_behavior.auto_invoke_kernel_functions is True
-    assert new_behavior.filters == expected_filters
-
-
-def test_from_function_call_behavior():
-    behavior = FunctionCallBehavior()
-    new_behavior = FunctionChoiceBehavior.from_function_call_behavior(behavior)
-    assert new_behavior is not None
-    assert new_behavior.enable_kernel_functions == behavior.enable_kernel_functions
-    assert new_behavior.maximum_auto_invoke_attempts == behavior.max_auto_invoke_attempts
 
 
 @pytest.mark.parametrize(("type", "max_auto_invoke_attempts"), [("auto", 5), ("none", 0), ("required", 1)])

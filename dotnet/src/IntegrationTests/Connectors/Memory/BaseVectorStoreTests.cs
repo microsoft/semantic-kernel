@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
+using SemanticKernel.IntegrationTests.Connectors.Memory.Xunit;
 using Xunit;
 
 namespace SemanticKernel.IntegrationTests.Connectors.Memory;
@@ -14,11 +15,13 @@ namespace SemanticKernel.IntegrationTests.Connectors.Memory;
 public abstract class BaseVectorStoreTests<TKey, TRecord>(IVectorStore vectorStore)
     where TKey : notnull
 {
-    [Fact]
+    protected virtual IEnumerable<string> CollectionNames => ["listcollectionnames1", "listcollectionnames2", "listcollectionnames3"];
+
+    [VectorStoreFact]
     public virtual async Task ItCanGetAListOfExistingCollectionNamesAsync()
     {
         // Arrange
-        var expectedCollectionNames = new List<string> { "listcollectionnames1", "listcollectionnames2", "listcollectionnames3" };
+        var expectedCollectionNames = this.CollectionNames;
 
         foreach (var collectionName in expectedCollectionNames)
         {

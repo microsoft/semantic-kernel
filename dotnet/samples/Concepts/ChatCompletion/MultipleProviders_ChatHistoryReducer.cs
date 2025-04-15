@@ -62,7 +62,7 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
             apiKey: TestConfiguration.OpenAI.ApiKey);
 
         var truncatedSize = 2; // keep system message and last user message only
-        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new TruncatingChatHistoryReducer(truncatedSize));
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new ChatHistoryTruncationReducer(truncatedSize));
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -105,7 +105,7 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
             apiKey: TestConfiguration.OpenAI.ApiKey);
 
         var truncatedSize = 2; // keep system message and last user message only
-        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new TruncatingChatHistoryReducer(truncatedSize));
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new ChatHistoryTruncationReducer(truncatedSize));
 
         var chatHistory = new ChatHistory("You are a librarian and expert on books about cities");
 
@@ -151,7 +151,7 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
         OpenAIChatCompletionService openAiChatService = new(
             modelId: TestConfiguration.OpenAI.ChatModelId,
             apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new MaxTokensChatHistoryReducer(100));
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new ChatHistoryMaxTokensReducer(100));
 
         var chatHistory = new ChatHistory();
         chatHistory.AddSystemMessageWithTokenCount("You are an expert on the best restaurants in the world. Keep responses short.");
@@ -194,7 +194,7 @@ public class MultipleProviders_ChatHistoryReducer(ITestOutputHelper output) : Ba
         OpenAIChatCompletionService openAiChatService = new(
                 modelId: TestConfiguration.OpenAI.ChatModelId,
                 apiKey: TestConfiguration.OpenAI.ApiKey);
-        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new SummarizingChatHistoryReducer(openAiChatService, 2, 4));
+        IChatCompletionService chatService = openAiChatService.UsingChatHistoryReducer(new ChatHistorySummarizationReducer(openAiChatService, 2, 4));
 
         var chatHistory = new ChatHistory("You are an expert on the best restaurants in every city. Answer for the city the user has asked about.");
 

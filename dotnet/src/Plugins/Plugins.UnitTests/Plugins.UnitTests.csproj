@@ -34,6 +34,7 @@
     <ProjectReference Include="..\Plugins.Core\Plugins.Core.csproj" />
     <ProjectReference Include="..\Plugins.Document\Plugins.Document.csproj" />
     <ProjectReference Include="..\Plugins.MsGraph\Plugins.MsGraph.csproj" />
+    <ProjectReference Include="..\Plugins.StructuredData.EntityFramework\Plugins.StructuredData.EntityFramework.csproj" />
     <ProjectReference Include="..\Plugins.Web\Plugins.Web.csproj" />
     <ProjectReference Include="..\Plugins.Memory\Plugins.Memory.csproj" />
   </ItemGroup>
@@ -42,6 +43,10 @@
     <None Update="TestData\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Web\Tavily\" />
   </ItemGroup>
 
 </Project>

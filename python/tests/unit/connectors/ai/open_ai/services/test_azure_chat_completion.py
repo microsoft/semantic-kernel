@@ -17,7 +17,6 @@ from openai.types.chat.chat_completion_chunk import ChoiceDelta as ChunkChoiceDe
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
-from semantic_kernel.connectors.ai.function_call_behavior import FunctionCallBehavior
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import (
@@ -191,6 +190,30 @@ async def test_cmc(
         stream=False,
         messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
     )
+
+
+@patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
+async def test_cmc_with_developer_instruction_role_propagates(
+    mock_create,
+    kernel: Kernel,
+    azure_openai_unit_test_env,
+    chat_history: ChatHistory,
+    mock_chat_completion_response: ChatCompletion,
+) -> None:
+    mock_create.return_value = mock_chat_completion_response
+    chat_history.add_user_message("hello world")
+    complete_prompt_execution_settings = AzureChatPromptExecutionSettings(service_id="test_service_id")
+
+    azure_chat_completion = AzureChatCompletion(instruction_role="developer")
+    await azure_chat_completion.get_chat_message_contents(
+        chat_history=chat_history, settings=complete_prompt_execution_settings, kernel=kernel
+    )
+    mock_create.assert_awaited_once_with(
+        model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
+        stream=False,
+        messages=azure_chat_completion._prepare_chat_history_for_request(chat_history),
+    )
+    assert azure_chat_completion.instruction_role == "developer"
 
 
 @patch.object(AsyncChatCompletions, "create", new_callable=AsyncMock)
@@ -646,7 +669,6 @@ async def test_cmc_tool_calling_parallel_tool_calls(
             model=azure_openai_unit_test_env["AZURE_OPENAI_CHAT_DEPLOYMENT_NAME"],
             stream=False,
             messages=azure_chat_completion._prepare_chat_history_for_request(orig_chat_history),
-            parallel_tool_calls=True,
             tools=[
                 {
                     "type": "function",
@@ -865,7 +887,7 @@ async def test_no_kernel_provided_throws_error(
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        function_call_behavior=FunctionCallBehavior.AutoInvokeKernelFunctions()
+        function_choice_behavior=FunctionChoiceBehavior.Auto()
     )
 
     test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -891,7 +913,7 @@ async def test_auto_invoke_false_no_kernel_provided_throws_error(
     prompt = "some prompt that would trigger the content filtering"
     chat_history.add_user_message(prompt)
     complete_prompt_execution_settings = AzureChatPromptExecutionSettings(
-        function_call_behavior=FunctionCallBehavior.EnableFunctions(auto_invoke=False, filters={})
+        function_choice_behavior=FunctionChoiceBehavior.Auto(auto_invoke=False)
     )
 
     test_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")

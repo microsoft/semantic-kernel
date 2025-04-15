@@ -3,7 +3,6 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace Agents;
 
@@ -27,15 +26,15 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
 
-        ChatHistory chat = [];
+        ChatHistoryAgentThread agentThread = new();
 
         // Respond to user input
-        await InvokeAgentAsync(agent, chat, "Fortune favors the bold.");
-        await InvokeAgentAsync(agent, chat, "I came, I saw, I conquered.");
-        await InvokeAgentAsync(agent, chat, "Practice makes perfect.");
+        await InvokeAgentAsync(agent, agentThread, "Fortune favors the bold.");
+        await InvokeAgentAsync(agent, agentThread, "I came, I saw, I conquered.");
+        await InvokeAgentAsync(agent, agentThread, "Practice makes perfect.");
 
         // Output the entire chat history
-        DisplayChatHistory(chat);
+        await DisplayChatHistory(agentThread);
     }
 
     [Fact]
@@ -50,34 +49,33 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
                 Name = "Host",
                 Instructions = MenuInstructions,
                 Kernel = this.CreateKernelWithChatCompletion(),
-                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
             };
 
         // Initialize plugin and add to the agent's Kernel (same as direct Kernel usage).
         KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
         agent.Kernel.Plugins.Add(plugin);
 
-        ChatHistory chat = [];
+        ChatHistoryAgentThread agentThread = new();
 
         // Respond to user input
-        await InvokeAgentAsync(agent, chat, "What is the special soup?");
-        await InvokeAgentAsync(agent, chat, "What is the special drink?");
+        await InvokeAgentAsync(agent, agentThread, "What is the special soup?");
+        await InvokeAgentAsync(agent, agentThread, "What is the special drink?");
 
         // Output the entire chat history
-        DisplayChatHistory(chat);
+        await DisplayChatHistory(agentThread);
     }
 
     // Local function to invoke agent and display the conversation messages.
-    private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistory chat, string input)
+    private async Task InvokeAgentAsync(ChatCompletionAgent agent, ChatHistoryAgentThread agentThread, string input)
     {
         ChatMessageContent message = new(AuthorRole.User, input);
-        chat.Add(message);
         this.WriteAgentChatMessage(message);
 
-        int historyCount = chat.Count;
+        int historyCount = agentThread.ChatHistory.Count;
 
         bool isFirst = false;
-        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(chat))
+        await foreach (StreamingChatMessageContent response in agent.InvokeStreamingAsync(message, agentThread))
         {
             if (string.IsNullOrEmpty(response.Content))
             {
@@ -99,23 +97,23 @@ public class ChatCompletion_Streaming(ITestOutputHelper output) : BaseAgentsTest
             Console.WriteLine($"\t > streamed: '{response.Content}'");
         }
 
-        if (historyCount <= chat.Count)
+        if (historyCount <= agentThread.ChatHistory.Count)
         {
-            for (int index = historyCount; index < chat.Count; index++)
+            for (int index = historyCount; index < agentThread.ChatHistory.Count; index++)
             {
-                this.WriteAgentChatMessage(chat[index]);
+                this.WriteAgentChatMessage(agentThread.ChatHistory[index]);
             }
         }
     }
 
-    private void DisplayChatHistory(ChatHistory history)
+    private async Task DisplayChatHistory(ChatHistoryAgentThread agentThread)
     {
         // Display the chat history.
         Console.WriteLine("================================");
         Console.WriteLine("CHAT HISTORY");
         Console.WriteLine("================================");
 
-        foreach (ChatMessageContent message in history)
+        await foreach (ChatMessageContent message in agentThread.GetMessagesAsync())
         {
             this.WriteAgentChatMessage(message);
         }

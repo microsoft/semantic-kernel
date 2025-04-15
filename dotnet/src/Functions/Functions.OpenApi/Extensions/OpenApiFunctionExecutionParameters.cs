@@ -47,7 +47,6 @@ public class OpenApiFunctionExecutionParameters
     /// To support more complex payloads, it should be disabled and the payload should be provided via the 'payload' argument.
     /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
-    [Experimental("SKEXP0040")]
     public bool EnableDynamicPayload { get; set; }
 
     /// <summary>
@@ -58,7 +57,6 @@ public class OpenApiFunctionExecutionParameters
     /// the parameters 'sender.email' and 'sender.receiver' will be correctly resolved from arguments with the same names.
     /// See the 'Providing Payload for OpenAPI Functions' ADR for more details: https://github.com/microsoft/semantic-kernel/blob/main/docs/decisions/0062-open-api-payload.md
     /// </summary>
-    [Experimental("SKEXP0040")]
     public bool EnablePayloadNamespacing { get; set; }
 
     /// <summary>
@@ -76,14 +74,21 @@ public class OpenApiFunctionExecutionParameters
     /// as a stream rather than as a string.
     /// If the custom reader is not provided, or the reader returns null, the internal reader is used.
     /// </summary>
-    [Experimental("SKEXP0040")]
     public HttpResponseContentReader? HttpResponseContentReader { get; set; }
+
+    /// <summary>
+    /// A custom factory for the <see cref="RestApiOperationResponse"/>.
+    /// It allows modifications of various aspects of the original response, such as adding response headers,
+    /// changing response content, adjusting the schema, or providing a completely new response.
+    /// If a custom factory is not supplied, the internal factory will be used by default.
+    /// </summary>
+    public RestApiOperationResponseFactory? RestApiOperationResponseFactory { get; set; }
 
     /// <summary>
     /// A custom REST API parameter filter.
     /// </summary>
     [Experimental("SKEXP0040")]
-    internal RestApiParameterFilter? ParameterFilter { get; set; }
+    public RestApiParameterFilter? ParameterFilter { get; set; }
 
     /// <summary>
     /// The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.

@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+from importlib import util
+
 import pytest
 from azure.ai.inference.aio import EmbeddingsClient
 from azure.identity import DefaultAzureCredential
@@ -10,7 +12,7 @@ from semantic_kernel.connectors.ai.azure_ai_inference import (
     AzureAIInferenceTextEmbedding,
 )
 from semantic_kernel.connectors.ai.bedrock import BedrockEmbeddingPromptExecutionSettings, BedrockTextEmbedding
-from semantic_kernel.connectors.ai.embeddings.embedding_generator_base import EmbeddingGeneratorBase
+from semantic_kernel.connectors.ai.embedding_generator_base import EmbeddingGeneratorBase
 from semantic_kernel.connectors.ai.google.google_ai import (
     GoogleAIEmbeddingPromptExecutionSettings,
     GoogleAITextEmbedding,
@@ -31,6 +33,8 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
 from semantic_kernel.utils.authentication.entra_id_authentication import get_entra_auth_token
 from tests.utils import is_service_setup_for_testing
+
+hugging_face_setup = util.find_spec("torch") is not None
 
 # Make sure all services are setup for before running the tests
 # The following exceptions apply:
@@ -53,7 +57,7 @@ class EmbeddingServiceTestBase:
     @pytest.fixture(scope="class")
     def services(self) -> dict[str, tuple[EmbeddingGeneratorBase | None, type[PromptExecutionSettings]]]:
         azure_openai_setup = True
-        azure_openai_settings = AzureOpenAISettings.create()
+        azure_openai_settings = AzureOpenAISettings()
         endpoint = str(azure_openai_settings.endpoint)
         deployment_name = azure_openai_settings.embedding_deployment_name
         ad_token = get_entra_auth_token(azure_openai_settings.token_endpoint)
@@ -91,7 +95,9 @@ class EmbeddingServiceTestBase:
                 PromptExecutionSettings,
             ),
             "hugging_face": (
-                HuggingFaceTextEmbedding(ai_model_id="sentence-transformers/all-MiniLM-L6-v2"),
+                HuggingFaceTextEmbedding(ai_model_id="sentence-transformers/all-MiniLM-L6-v2")
+                if hugging_face_setup
+                else None,
                 PromptExecutionSettings,
             ),
             "ollama": (OllamaTextEmbedding() if ollama_setup else None, OllamaEmbeddingPromptExecutionSettings),

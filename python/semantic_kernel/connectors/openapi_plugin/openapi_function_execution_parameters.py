@@ -1,24 +1,22 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
 from pydantic import Field
 
+from semantic_kernel.connectors.openapi_plugin.operation_selection_predicate_context import (
+    OperationSelectionPredicateContext,
+)
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.utils.experimental_decorator import experimental_class
-
-if TYPE_CHECKING:
-    from semantic_kernel.connectors.openapi_plugin import (
-        OperationSelectionPredicateContext,
-    )
+from semantic_kernel.utils.feature_stage_decorator import experimental
 
 AuthCallbackType = Callable[..., Awaitable[Any]]
 
 
-@experimental_class
+@experimental
 class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     """OpenAPI function execution parameters."""
 
@@ -30,7 +28,7 @@ class OpenAPIFunctionExecutionParameters(KernelBaseModel):
     enable_dynamic_payload: bool = True
     enable_payload_namespacing: bool = False
     operations_to_exclude: list[str] = Field(default_factory=list, description="The operationId(s) to exclude")
-    operation_selection_predicate: Callable[["OperationSelectionPredicateContext"], bool] | None = None
+    operation_selection_predicate: Callable[[OperationSelectionPredicateContext], bool] | None = None
 
     def model_post_init(self, __context: Any) -> None:
         """Post initialization method for the model."""

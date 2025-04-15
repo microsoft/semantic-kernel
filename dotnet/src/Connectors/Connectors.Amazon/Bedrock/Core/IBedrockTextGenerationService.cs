@@ -32,5 +32,5 @@ internal interface IBedrockTextGenerationService
     /// </summary>
     /// <param name="chunk">The payloadPart bytes provided from the streaming response.</param>
     /// <returns><see cref="IEnumerable{String}"/> output strings.</returns>
-    internal IEnumerable<string> GetTextStreamOutput(JsonNode chunk);
+    internal IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk);
 }

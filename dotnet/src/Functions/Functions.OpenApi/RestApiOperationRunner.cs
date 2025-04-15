@@ -36,6 +36,11 @@ internal sealed class RestApiOperationRunner
     private const string HttpRequestBody = "http.request.body";
 
     /// <summary>
+    /// The HTTP request options.
+    /// </summary>
+    private const string HttpRequestOptions = "http.request.options";
+
+    /// <summary>
     /// Absolute URL describing a network resource according to RFC3986.
     /// </summary>
     private const string UrlFull = "url.full";
@@ -89,6 +94,11 @@ internal sealed class RestApiOperationRunner
     private readonly HttpResponseContentReader? _httpResponseContentReader;
 
     /// <summary>
+    /// The external response factory for creating <see cref="RestApiOperationResponse"/>.
+    /// </summary>
+    private readonly RestApiOperationResponseFactory? _responseFactory;
+
+    /// <summary>
     /// The external URL factory to use if provided, instead of the default one.
     /// </summary>
     private readonly RestApiOperationUrlFactory? _urlFactory;
@@ -115,6 +125,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="enablePayloadNamespacing">Determines whether payload parameters are resolved from the arguments by
     /// full name (parameter name prefixed with the parent property name).</param>
     /// <param name="httpResponseContentReader">Custom HTTP response content reader.</param>
+    /// <param name="responseFactory">The external response factory for creating <see cref="RestApiOperationResponse"/>.</param>
     /// <param name="urlFactory">The external URL factory to use if provided if provided instead of the default one.</param>
     /// <param name="headersFactory">The external headers factory to use if provided instead of the default one.</param>
     /// <param name="payloadFactory">The external payload factory to use if provided instead of the default one.</param>
@@ -125,6 +136,7 @@ internal sealed class RestApiOperationRunner
         bool enableDynamicPayload = false,
         bool enablePayloadNamespacing = false,
         HttpResponseContentReader? httpResponseContentReader = null,
+        RestApiOperationResponseFactory? responseFactory = null,
         RestApiOperationUrlFactory? urlFactory = null,
         RestApiOperationHeadersFactory? headersFactory = null,
         RestApiOperationPayloadFactory? payloadFactory = null)
@@ -134,6 +146,7 @@ internal sealed class RestApiOperationRunner
         this._enableDynamicPayload = enableDynamicPayload;
         this._enablePayloadNamespacing = enablePayloadNamespacing;
         this._httpResponseContentReader = httpResponseContentReader;
+        this._responseFactory = responseFactory;
         this._urlFactory = urlFactory;
         this._headersFactory = headersFactory;
         this._payloadFactory = payloadFactory;
@@ -175,7 +188,7 @@ internal sealed class RestApiOperationRunner
 
         var (Payload, Content) = this._payloadFactory?.Invoke(operation, arguments, this._enableDynamicPayload, this._enablePayloadNamespacing, options) ?? this.BuildOperationPayload(operation, arguments);
 
-        return this.SendAsync(url, operation.Method, headers, Payload, Content, operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), options, cancellationToken);
+        return this.SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
     }
 
     #region private
@@ -183,26 +196,24 @@ internal sealed class RestApiOperationRunner
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
+    /// <param name="operation">The REST API operation.</param>
     /// <param name="url">The url to send request to.</param>
-    /// <param name="method">The HTTP request method.</param>
     /// <param name="headers">Headers to include into the HTTP request.</param>
     /// <param name="payload">HTTP request payload.</param>
     /// <param name="requestContent">HTTP request content.</param>
-    /// <param name="expectedSchemas">The dictionary of expected response schemas.</param>
     /// <param name="options">Options for REST API operation run.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Response content and content type</returns>
     private async Task<RestApiOperationResponse> SendAsync(
+        RestApiOperation operation,
         Uri url,
-        HttpMethod method,
         IDictionary<string, string>? headers = null,
         object? payload = null,
         HttpContent? requestContent = null,
-        IDictionary<string, KernelJsonSchema?>? expectedSchemas = null,
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        using var requestMessage = new HttpRequestMessage(method, url);
+        using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
 #if NET5_0_OR_GREATER
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
@@ -237,9 +248,7 @@ internal sealed class RestApiOperationRunner
         {
             responseMessage = await this._httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-            response = await this.ReadContentAndCreateOperationResponseAsync(requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
-
-            response.ExpectedSchema ??= GetExpectedSchema(expectedSchemas, responseMessage.StatusCode);
+            response = await this.BuildResponseAsync(operation, requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
 
             return response;
         }
@@ -249,6 +258,8 @@ internal sealed class RestApiOperationRunner
             exception.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
             exception.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
             exception.Data.Add(HttpRequestBody, payload);
+            AddRequestOptions(exception, requestMessage);
+
             throw exception;
         }
         catch (HttpOperationException ex)
@@ -262,6 +273,7 @@ internal sealed class RestApiOperationRunner
             ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
             ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
             ex.Data.Add(HttpRequestBody, payload);
+            AddRequestOptions(ex, requestMessage);
 
             throw;
         }
@@ -270,6 +282,7 @@ internal sealed class RestApiOperationRunner
             ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
             ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
             ex.Data.Add(HttpRequestBody, payload);
+            AddRequestOptions(ex, requestMessage);
 
             throw;
         }
@@ -278,6 +291,7 @@ internal sealed class RestApiOperationRunner
             ex.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
             ex.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
             ex.Data.Add(HttpRequestBody, payload);
+            AddRequestOptions(ex, requestMessage);
 
             throw;
         }
@@ -302,7 +316,9 @@ internal sealed class RestApiOperationRunner
     /// <returns>The operation response.</returns>
     private async Task<RestApiOperationResponse> ReadContentAndCreateOperationResponseAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
     {
-        if (responseMessage.StatusCode == HttpStatusCode.NoContent)
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent ||
+         (string.IsNullOrEmpty(responseMessage.Content.Headers.ContentType?.MediaType) &&
+            (responseMessage.StatusCode is HttpStatusCode.Accepted or HttpStatusCode.Created)))
         {
             return new RestApiOperationResponse(null, null)
             {
@@ -350,7 +366,15 @@ internal sealed class RestApiOperationRunner
             mediaType = mediaTypeFallback;
         }
 
-        if (!this._payloadFactoryByMediaType.TryGetValue(mediaType!, out var payloadFactory))
+        // Remove media type parameters, such as x-api-version, from the "text/plain; x-api-version=2.0" media type string.
+        mediaType = mediaType!.Split(';').First();
+
+        // Normalize the media type to lowercase and remove trailing whitespaces.
+#pragma warning disable CA1308 // Normalize strings to uppercase
+        mediaType = mediaType!.ToLowerInvariant().Trim();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+
+        if (!this._payloadFactoryByMediaType.TryGetValue(mediaType, out var payloadFactory))
         {
             throw new KernelException($"The media type {mediaType} of the {operation.Id} operation is not supported by {nameof(RestApiOperationRunner)}.");
         }
@@ -413,13 +437,13 @@ internal sealed class RestApiOperationRunner
             // Use property argument name to look up the property value
             if (!string.IsNullOrEmpty(propertyMetadata.ArgumentName) && arguments.TryGetValue(propertyMetadata.ArgumentName!, out object? argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument));
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument, propertyMetadata.Schema));
                 continue;
             }
             // Use property name to look up the property value
             else if (arguments.TryGetValue(argumentName, out argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument));
+                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument, propertyMetadata.Schema));
                 continue;
             }
 
@@ -558,6 +582,65 @@ internal sealed class RestApiOperationRunner
         }
 
         return content;
+    }
+
+    /// <summary>
+    /// Builds the operation response.
+    /// </summary>
+    /// <param name="operation">The REST API operation.</param>
+    /// <param name="requestMessage">The HTTP request message.</param>
+    /// <param name="responseMessage">The HTTP response message.</param>
+    /// <param name="payload">The payload sent in the HTTP request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The operation response.</returns>
+    private async Task<RestApiOperationResponse> BuildResponseAsync(RestApiOperation operation, HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
+    {
+        async Task<RestApiOperationResponse> Build(RestApiOperationResponseFactoryContext context, CancellationToken ct)
+        {
+            var response = await this.ReadContentAndCreateOperationResponseAsync(context.Request, context.Response, payload, ct).ConfigureAwait(false);
+
+            response.ExpectedSchema ??= GetExpectedSchema(context.Operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), context.Response.StatusCode);
+
+            return response;
+        }
+
+        // Delegate the response building to the custom response factory if provided.
+        if (this._responseFactory is not null)
+        {
+            var response = await this._responseFactory(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: Build), cancellationToken).ConfigureAwait(false);
+
+            // Handling the case when the content is a stream
+            if (response.Content is Stream stream and not HttpResponseStream)
+            {
+                // Wrap the stream content to capture the HTTP response message, delegating its disposal to the caller.
+                response.Content = new HttpResponseStream(stream, responseMessage);
+            }
+
+            return response;
+        }
+
+        return await Build(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: null!), cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Adds the request options to the exception Data collection.
+    /// </summary>
+    /// <param name="exception">The exception.</param>
+    /// <param name="requestMessage">The HTTP request message.</param>
+    private static void AddRequestOptions(Exception exception, HttpRequestMessage requestMessage)
+    {
+        IDictionary<string, object?>? requestOptions = null;
+
+#if NET5_0_OR_GREATER
+        requestOptions = requestMessage.Options;
+#else
+        requestOptions = requestMessage.Properties;
+#endif
+
+        if (requestOptions is not null)
+        {
+            exception.Data[HttpRequestOptions] = requestOptions;
+        }
     }
 
     #endregion

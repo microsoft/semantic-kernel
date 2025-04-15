@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,6 +119,7 @@ internal sealed class FunctionCallsProcessor
     /// Processes AI function calls by iterating over the function calls, invoking them and adding the results to the chat history.
     /// </summary>
     /// <param name="chatMessageContent">The chat message content representing AI model response and containing function calls.</param>
+    /// <param name="executionSettings">The prompt execution settings.</param>
     /// <param name="chatHistory">The chat history to add function invocation results to.</param>
     /// <param name="requestIndex">AI model function(s) call request sequence index.</param>
     /// <param name="checkIfFunctionAdvertised">Callback to check if a function was advertised to AI model or not.</param>
@@ -128,6 +130,7 @@ internal sealed class FunctionCallsProcessor
     /// <returns>Last chat history message if function invocation filter requested processing termination, otherwise null.</returns>
     public async Task<ChatMessageContent?> ProcessFunctionCallsAsync(
         ChatMessageContent chatMessageContent,
+        PromptExecutionSettings? executionSettings,
         ChatHistory chatHistory,
         int requestIndex,
         Func<FunctionCallContent, bool> checkIfFunctionAdvertised,
@@ -176,7 +179,8 @@ internal sealed class FunctionCallsProcessor
                     FunctionCount = functionCalls.Length,
                     CancellationToken = cancellationToken,
                     IsStreaming = isStreaming,
-                    ToolCallId = functionCall.Id
+                    ToolCallId = functionCall.Id,
+                    ExecutionSettings = executionSettings
                 };
 
             s_inflightAutoInvokes.Value++;
@@ -312,14 +316,14 @@ internal sealed class FunctionCallsProcessor
         // Check if the function call has an exception.
         if (functionCall.Exception is not null)
         {
-            errorMessage = $"Error: Function call processing failed. {functionCall.Exception.Message}";
+            errorMessage = $"Error: Function call processing failed. Correct yourself. {functionCall.Exception.Message}";
             return false;
         }
 
         // Make sure the requested function is one of the functions that was advertised to the AI model.
         if (!checkIfFunctionAdvertised(functionCall))
         {
-            errorMessage = "Error: Function call request for a function that wasn't defined.";
+            errorMessage = "Error: Function call request for a function that wasn't defined. Correct yourself.";
             return false;
         }
 
@@ -330,7 +334,7 @@ internal sealed class FunctionCallsProcessor
             return true;
         }
 
-        errorMessage = "Error: Requested function could not be found.";
+        errorMessage = "Error: Requested function could not be found. Correct yourself.";
         return false;
     }
 
@@ -490,6 +494,23 @@ internal sealed class FunctionCallsProcessor
             return chatMessageContent.ToString();
         }
 
-        return JsonSerializer.Serialize(functionResult);
+        // Same optimization but for a enumerable of ChatMessageContent
+        if (functionResult is IEnumerable<ChatMessageContent> chatMessageContents)
+        {
+            return string.Join(",", chatMessageContents.Select(c => c.ToString()));
+        }
+
+        return JsonSerializer.Serialize(functionResult, s_functionResultSerializerOptions);
     }
+
+    /// <summary>
+    /// The <see cref="JsonSerializerOptions" /> which will be used in <see cref="ProcessFunctionResult(object)"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="JsonSerializer.Serialize{TValue}(TValue, JsonSerializerOptions?)"/> is very likely to escape characters and generates LLM unfriendly results by default.
+    /// </remarks>
+    private static readonly JsonSerializerOptions s_functionResultSerializerOptions = new()
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
 }

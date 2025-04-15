@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
@@ -17,7 +19,7 @@ internal interface IPostgresVectorStoreDbClient
     /// <summary>
     /// The <see cref="NpgsqlDataSource"/> used to connect to the database.
     /// </summary>
-    public NpgsqlDataSource DataSource { get; }
+    NpgsqlDataSource DataSource { get; }
 
     /// <summary>
     /// Check if a table exists.
@@ -118,15 +120,18 @@ internal interface IPostgresVectorStoreDbClient
     /// Gets the nearest matches to the <see cref="Vector"/>.
     /// </summary>
     /// <param name="tableName">The name assigned to a table of entries.</param>
-    /// <param name="properties">The properties to retrieve.</param>
-    /// <param name="vectorProperty">The property which the vectors to compare are stored in.</param>
+    /// <param name="propertyReader">The property reader.</param>
+    /// <param name="vectorProperty">The vector property.</param>
     /// <param name="vectorValue">The <see cref="Vector"/> to compare the table's vector with.</param>
     /// <param name="limit">The maximum number of similarity results to return.</param>
-    /// <param name="filter">Optional conditions to filter the results.</param>
+    /// <param name="legacyFilter">Optional conditions to filter the results.</param>
+    /// <param name="newFilter">Optional conditions to filter the results.</param>
     /// <param name="skip">The number of entries to skip.</param>
     /// <param name="includeVectors">If true, the vectors will be returned in the entries.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous stream of <see cref="PostgresMemoryEntry"/> objects that the nearest matches to the <see cref="Vector"/>.</returns>
-    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync(string tableName, IReadOnlyList<VectorStoreRecordProperty> properties, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, int limit,
-        VectorSearchFilter? filter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
+#pragma warning disable CS0618 // VectorSearchFilter is obsolete
+    IAsyncEnumerable<(Dictionary<string, object?> Row, double Distance)> GetNearestMatchesAsync<TRecord>(string tableName, VectorStoreRecordPropertyReader propertyReader, VectorStoreRecordVectorProperty vectorProperty, Vector vectorValue, int limit,
+        VectorSearchFilter? legacyFilter = default, Expression<Func<TRecord, bool>>? newFilter = default, int? skip = default, bool includeVectors = false, CancellationToken cancellationToken = default);
+#pragma warning restore CS0618 // VectorSearchFilter is obsolete
 }

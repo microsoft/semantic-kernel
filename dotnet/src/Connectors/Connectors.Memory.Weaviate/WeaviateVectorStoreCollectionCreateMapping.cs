@@ -112,7 +112,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         return distanceFunction switch
         {
             DistanceFunction.CosineDistance => Cosine,
-            DistanceFunction.DotProductSimilarity => Dot,
+            DistanceFunction.NegativeDotProductSimilarity => Dot,
             DistanceFunction.EuclideanSquaredDistance => EuclideanSquared,
             DistanceFunction.Hamming => Hamming,
             DistanceFunction.ManhattanDistance => Manhattan,
@@ -120,7 +120,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
                 $"Distance function '{distanceFunction}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
                 $"Supported distance functions: {string.Join(", ",
                     DistanceFunction.CosineDistance,
-                    DistanceFunction.DotProductSimilarity,
+                    DistanceFunction.NegativeDotProductSimilarity,
                     DistanceFunction.EuclideanSquaredDistance,
                     DistanceFunction.Hamming,
                     DistanceFunction.ManhattanDistance)}")

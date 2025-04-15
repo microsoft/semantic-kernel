@@ -21,7 +21,7 @@ public sealed class KernelProcessStepContext
     }
 
     /// <summary>
-    /// Emit an event from the current step.
+    /// Emit an SK process event from the current step.
     /// </summary>
     /// <param name="processEvent">An instance of <see cref="KernelProcessEvent"/> to be emitted from the <see cref="KernelProcessStep"/></param>
     /// <returns>A <see cref="ValueTask"/></returns>
@@ -31,7 +31,7 @@ public sealed class KernelProcessStepContext
     }
 
     /// <summary>
-    /// Emit an event from the current step with a simplified method signature.
+    /// Emit an SK process event from the current step with a simplified method signature.
     /// </summary>
     /// <param name="eventId"></param>
     /// <param name="data"></param>

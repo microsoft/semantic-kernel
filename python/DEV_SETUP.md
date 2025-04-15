@@ -54,7 +54,7 @@ make install
 ```
 
 This will install uv, python, Semantic Kernel and all dependencies and the pre-commit config. It uses python 3.10 by default, if you want to change that set the `PYTHON_VERSION` environment variable to the desired version (currently supported are 3.10, 3.11, 3.12). For instance for 3.12"
-    
+
 ```bash
 make install PYTHON_VERSION=3.12
 ```
@@ -71,6 +71,8 @@ Alternatively you can run the VSCode task `Python: Install` to run the same comm
 
 ## VSCode Setup
 
+Install the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python) for VSCode.
+
 Open the workspace in [VSCode](https://code.visualstudio.com/docs/editor/workspaces).
 > The workspace for python should be rooted in the `./python` folder.
 
@@ -82,6 +84,24 @@ If prompted, install `ruff`. (It should have been installed as part of `uv sync 
 
 You also need to install the `ruff` extension in VSCode so that auto-formatting uses the `ruff` formatter on save.
 Read more about the extension [here](https://github.com/astral-sh/ruff-vscode).
+
+### Configuring Unit Testing in VSCode
+
+- We have removed the strict dependency on forcing `pytest` usage via the `.vscode/settings.json` file.
+- Developers are free to set up unit tests using their preferred framework, whether it is `pytest` or `unittest`.
+- If needed, adjust VSCode's local `settings.json` (accessed via the Command Palette(`Ctrl+Shift+P`) and type `Preferences: Open User Settings (JSON)`) to configure the test framework. For example:
+
+  ```json
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  ```
+
+  Or, for `unittest`:
+
+  ```json
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  ```
 
 ## LLM setup
 
@@ -104,6 +124,7 @@ There are a lot of settings, for a more extensive list of settings, see [ALL_SET
 To configure a `.env` file with just the keys needed for OpenAI Chat Completions, you can create a `openai.env` (this name is just as an example, a single `.env` with all required keys is more common) file in the root of the `python` folder with the following content:
 
 Content of `openai.env`:
+
 ```env
 OPENAI_API_KEY=""
 OPENAI_CHAT_MODEL_ID="gpt-4o-mini"
@@ -141,7 +162,6 @@ You can also run all the tests together under the [tests](tests/) folder.
 Alternatively, you can run them using VSCode Tasks. Open the command palette
 (`Ctrl+Shift+P`) and type `Tasks: Run Task`. Select `Python: Tests - All` from the list.
 
-
 ## Implementation Decisions
 
 ### Asynchronous programming
@@ -158,17 +178,18 @@ We follow the [Google Docstring](https://github.com/google/styleguide/blob/gh-pa
 They are currently not checked for private functions (functions starting with '_').
 
 They should contain:
+
 - Single line explaining what the function does, ending with a period.
 - If necessary to further explain the logic a newline follows the first line and then the explanation is given.
 - The following three sections are optional, and if used should be separated by a single empty line.
 - Arguments are then specified after a header called `Args:`, with each argument being specified in the following format:
-    - `arg_name`: Explanation of the argument.
+  - `arg_name`: Explanation of the argument.
     - if a longer explanation is needed for a argument, it should be placed on the next line, indented by 4 spaces.
     - Type and default values do not have to be specified, they will be pulled from the definition.
 - Returns are specified after a header called `Returns:` or `Yields:`, with the return type and explanation of the return value.
 - Finally, a header for exceptions can be added, called `Raises:`, with each exception being specified in the following format:
-    - `ExceptionType`: Explanation of the exception.
-    - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
+  - `ExceptionType`: Explanation of the exception.
+  - if a longer explanation is needed for a exception, it should be placed on the next line, indented by 4 spaces.
 
 Putting them all together, gives you at minimum this:
 
@@ -177,6 +198,7 @@ def equal(arg1: str, arg2: str) -> bool:
     """Compares two strings and returns True if they are the same."""
     ...
 ```
+
 Or a complete version of this:
 
 ```python
@@ -278,6 +300,7 @@ To run the same checks that run during a commit and the GitHub Action `Python Co
 ```
 
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python - Run Checks` to run the checks on the whole project.
 - `Python - Run Checks - Staged` to run the checks on the currently staged files only.
 
@@ -290,12 +313,15 @@ We try to maintain a high code coverage for the project. To run the code coverag
 ```bash
     uv run pytest --cov=semantic_kernel --cov-report=term-missing:skip-covered tests/unit/
 ```
+
 or use the following task (using `Ctrl+Shift+P`):
+
 - `Python: Tests - Code Coverage` to run the code coverage on the whole project.
 
 This will show you which files are not covered by the tests, including the specific lines not covered. Make sure to consider the untested lines from the code you are working on, but feel free to add other tests as well, that is always welcome!
 
 ## Catching up with the latest changes
+
 There are many people committing to Semantic Kernel, so it is important to keep your local repository up to date. To do this, you can run the following commands:
 
 ```bash
@@ -303,6 +329,7 @@ There are many people committing to Semantic Kernel, so it is important to keep 
     git rebase upstream/main
     git push --force-with-lease
 ```
+
 or:
 
 ```bash

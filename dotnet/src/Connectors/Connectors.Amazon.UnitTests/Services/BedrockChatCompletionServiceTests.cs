@@ -120,6 +120,7 @@ public sealed class BedrockChatCompletionServiceTests
         Assert.Equal(AuthorRole.Assistant, result[0].Role);
         Assert.Single(result[0].Items);
         Assert.Equal("Hello, world!", result[0].Items[0].ToString());
+        Assert.NotNull(result[0].InnerContent);
     }
 
     /// <summary>
@@ -138,11 +139,13 @@ public sealed class BedrockChatCompletionServiceTests
             {
                 URL = "https://bedrock-runtime.us-east-1.amazonaws.com"
             });
+#pragma warning disable CA2000 // Dispose objects before losing scope
         mockBedrockApi.Setup(m => m.ConverseStreamAsync(It.IsAny<ConverseStreamRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ConverseStreamResponse
             {
                 Stream = new ConverseStreamOutput(new MemoryStream(content))
             });
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         var kernel = Kernel.CreateBuilder().AddBedrockChatCompletionService(modelId, mockBedrockApi.Object).Build();
         var service = kernel.GetRequiredService<IChatCompletionService>();
@@ -160,6 +163,7 @@ public sealed class BedrockChatCompletionServiceTests
             Assert.NotNull(item);
             Assert.NotNull(item.Content);
             Assert.NotNull(item.Role);
+            Assert.NotNull(item.InnerContent);
             output.Add(item);
         }
         Assert.True(output.Count > 0);

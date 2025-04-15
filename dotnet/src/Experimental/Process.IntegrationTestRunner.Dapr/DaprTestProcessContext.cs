@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Serialization;
+using SemanticKernel.Process.TestsShared.CloudEvents;
 
 namespace SemanticKernel.Process.IntegrationTests;
 internal sealed class DaprTestProcessContext : KernelProcessContext
@@ -68,4 +69,16 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     {
         throw new NotImplementedException();
     }
+
+    public override async Task<IExternalKernelProcessMessageChannel?> GetExternalMessageChannelAsync()
+    {
+        var response = await this._httpClient.GetFromJsonAsync<MockCloudEventClient>($"http://localhost:5200/processes/{this._processId}/mockCloudClient", options: this._serializerOptions);
+        return response switch
+        {
+            null => throw new InvalidOperationException("Process not found"),
+            _ => response
+        };
+    }
+
+    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process.State.Id!);
 }

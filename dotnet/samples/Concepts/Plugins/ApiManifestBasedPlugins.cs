@@ -55,19 +55,28 @@ namespace Plugins;
 /// <param name="output">The output helper to use to the test can emit status information</param>
 public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output)
 {
+    private static readonly PromptExecutionSettings s_promptExecutionSettings = new()
+    {
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(
+                    options: new FunctionChoiceBehaviorOptions
+                    {
+                        AllowStrictSchemaAdherence = true
+                    }
+                )
+    };
     public static readonly IEnumerable<object[]> s_parameters =
     [
         // function names are sanitized operationIds from the OpenAPI document
-        ["MessagesPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "MessagesPlugin"],
-        ["DriveItemPlugin", "drive_root_GetChildrenContent", new KernelArguments { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
-        ["ContactsPlugin", "me_ListContacts", new KernelArguments() { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
-        ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments() { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
+        ["MessagesPlugin", "me_ListMessages", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "MessagesPlugin"],
+        ["DriveItemPlugin", "drive_root_GetChildrenContent", new KernelArguments(s_promptExecutionSettings) { { "driveItem-Id", "test.txt" } }, "DriveItemPlugin", "MessagesPlugin"],
+        ["ContactsPlugin", "me_ListContacts", new KernelArguments(s_promptExecutionSettings) { { "_count", "true" } }, "ContactsPlugin", "MessagesPlugin"],
+        ["CalendarPlugin", "me_calendar_ListEvents", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "CalendarPlugin", "MessagesPlugin"],
 
         #region Multiple API dependencies (multiple auth requirements) scenario within the same plugin
         // Graph API uses MSAL
-        ["AstronomyPlugin", "me_ListMessages", new KernelArguments { { "_top", "1" } }, "AstronomyPlugin"],
+        ["AstronomyPlugin", "me_ListMessages", new KernelArguments(s_promptExecutionSettings) { { "_top", "1" } }, "AstronomyPlugin"],
         // Astronomy API uses API key authentication
-        ["AstronomyPlugin", "apod", new KernelArguments { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
+        ["AstronomyPlugin", "apod", new KernelArguments(s_promptExecutionSettings) { { "_date", "2022-02-02" } }, "AstronomyPlugin"],
         #endregion
     ];
 
@@ -116,7 +125,9 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
         // Microsoft Graph API execution parameters
         var graphOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
             authCallback: authenticationProvider.AuthenticateRequestAsync,
-            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"));
+            serverUrlOverride: new Uri("https://graph.microsoft.com/v1.0"),
+            enableDynamicOperationPayload: false,
+            enablePayloadNamespacing: false);
 
         // NASA API execution parameters
         var nasaOpenApiFunctionExecutionParameters = new OpenApiFunctionExecutionParameters(
@@ -127,7 +138,9 @@ public class ApiManifestBasedPlugins(ITestOutputHelper output) : BaseTest(output
                 query["api_key"] = "DEMO_KEY";
                 uriBuilder.Query = query.ToString();
                 request.RequestUri = uriBuilder.Uri;
-            });
+            },
+            enableDynamicOperationPayload: false,
+            enablePayloadNamespacing: false);
 
         var apiManifestPluginParameters = new ApiManifestPluginParameters(
             functionExecutionParameters: new()

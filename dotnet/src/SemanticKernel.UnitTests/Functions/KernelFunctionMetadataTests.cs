@@ -197,6 +197,40 @@ public class KernelFunctionMetadataTests
         Assert.Equal("POST", actual.AdditionalProperties["method"]);
         Assert.Equal("/api/v1", actual.AdditionalProperties["path"]);
     }
+    [Fact]
+    public void CopyConstructorCopiesPropertiesValues()
+    {
+        var original = new KernelFunctionMetadata("funcA")
+        {
+            Description = "description",
+            Parameters =
+            [
+                new("p1") { Description = "param 1", DefaultValue = "default 1" },
+                new("p2") { Description = "param 2", DefaultValue = "default 2" },
+            ],
+            ReturnParameter = new KernelReturnParameterMetadata
+            {
+                Description = "ReturnParameterA",
+                ParameterType = typeof(string),
+                Schema = KernelJsonSchema.Parse("""{"type": "object" }"""),
+            },
+            AdditionalProperties = new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>
+            {
+                { "method", "POST" },
+                { "path", "/api/v1" },
+            }),
+            PluginName = "plugin",
+            Name = "funcA",
+        };
+
+        var copy = new KernelFunctionMetadata(original);
+        Assert.Equal(original.AdditionalProperties, copy.AdditionalProperties);
+        Assert.Equal(original.Description, copy.Description);
+        Assert.Equal(original.Name, copy.Name);
+        Assert.Equal(original.Parameters, copy.Parameters);
+        Assert.Equal(original.PluginName, copy.PluginName);
+        Assert.Equal(original.ReturnParameter, copy.ReturnParameter);
+    }
 
     private static void ValidFunctionName() { }
     private static async Task ValidFunctionNameAsync()

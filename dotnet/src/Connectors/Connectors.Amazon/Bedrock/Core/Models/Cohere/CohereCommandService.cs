@@ -41,19 +41,20 @@ internal sealed class CohereCommandService : IBedrockTextGenerationService
     {
         using var reader = new StreamReader(response.Body);
         var responseBody = JsonSerializer.Deserialize<CommandResponse>(reader.ReadToEnd());
-        List<TextContent> textContents = [];
+
         if (responseBody?.Generations is not { Count: > 0 })
         {
-            return textContents;
+            return [];
         }
-        textContents.AddRange(from generation in responseBody.Generations
-                              where !string.IsNullOrEmpty(generation.Text)
-                              select new TextContent(generation.Text));
-        return textContents;
+
+        return responseBody.Generations
+               .Where(g => !string.IsNullOrEmpty(g.Text))
+               .Select(g => new TextContent(g.Text, innerContent: responseBody))
+               .ToList();
     }
 
     /// <inheritdoc/>
-    public IEnumerable<string> GetTextStreamOutput(JsonNode chunk)
+    public IEnumerable<StreamingTextContent> GetTextStreamOutput(JsonNode chunk)
     {
         var generations = chunk["generations"]?.AsArray();
         if (generations != null)
@@ -63,7 +64,7 @@ internal sealed class CohereCommandService : IBedrockTextGenerationService
                 var text = generation?["text"]?.ToString();
                 if (!string.IsNullOrEmpty(text))
                 {
-                    yield return text!;
+                    yield return new StreamingTextContent(text, innerContent: chunk)!;
                 }
             }
         }
