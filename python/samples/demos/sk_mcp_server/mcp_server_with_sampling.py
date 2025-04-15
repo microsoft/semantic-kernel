@@ -19,7 +19,8 @@ from semantic_kernel.prompt_template import InputVariable, KernelPromptTemplate,
 logger = logging.getLogger(__name__)
 
 """
-This sample demonstrates how to expose your Semantic Kernel instance as a MCP server.
+This sample demonstrates how to expose your Semantic Kernel `kernel` instance as a MCP server, with the a function 
+that uses sampling (see the docs: https://modelcontextprotocol.io/docs/concepts/sampling) to generate release notes.
 
 To run this sample, set up your MCP host (like Claude Desktop or VSCode Github Copilot Agents)
 with the following configuration:
@@ -37,6 +38,8 @@ with the following configuration:
     }
 }
 ```
+
+Note: You might need to set the uv to it's full path.
 """
 
 template = """{{$messages}}
@@ -60,6 +63,8 @@ async def sampling_function(
     messages: Annotated[str, "The list of PR messages, as a string with newlines"],
     temperature: float = 0.0,
     max_tokens: int = 1000,
+    # The include_in_function_choices is set to False, so it won't be included in the function choices,
+    # but it will get the server instance from the MCPPlugin that consumes this server.
     server: Annotated[Server | None, "The server session", {"include_in_function_choices": False}] = None,
 ) -> str:
     if not server:
@@ -92,7 +97,7 @@ def run() -> None:
                     name="messages",
                     description="These are the PR messages, they are a single string with new lines.",
                     is_required=True,
-                    json_schema='{ "type": "string"}',
+                    json_schema='{"type": "string"}',
                 )
             ],
         )

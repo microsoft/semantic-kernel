@@ -10,8 +10,13 @@ from semantic_kernel.connectors.mcp import MCPStdioPlugin
 """
 The following sample demonstrates how to create a chat completion agent that
 answers questions about Github using a Semantic Kernel Plugin from a MCP server. 
-The Chat Completion Service is passed directly via the ChatCompletionAgent constructor.
-Additionally, the plugin is supplied via the constructor.
+
+It uses the Azure OpenAI service to create a agent, so make sure to 
+set the required environment variables for the Azure AI Foundry service:
+- AZURE_OPENAI_CHAT_DEPLOYMENT_NAME
+- Optionally: AZURE_OPENAI_API_KEY 
+If this is not set, it will try to use DefaultAzureCredential.
+
 """
 
 

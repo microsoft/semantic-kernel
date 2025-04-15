@@ -23,11 +23,11 @@ The reverse, using Semantic Kernel as a server, can be found in the [demos/sk_mc
 ## Running the samples
 
 1. Depending on the sample you want to run:
-    1. Install [Node.js](https://nodejs.org/en/download/), make sure you have the [npx](https://docs.npmjs.com/cli/v8/commands/npx) available in PATH.
-    1. [Docker](https://www.docker.com/products/docker-desktop/) installed.
-    1. [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
+    1. [Docker](https://www.docker.com/products/docker-desktop/) installed, for the samples that use the Github MCP server.
+    1. [uv](https://docs.astral.sh/uv/getting-started/installation/) installed, for the samples that use the local MCP server.
 2. The Github MCP Server uses a Github Personal Access Token (PAT) to authenticate, see [the documentation](https://github.com/modelcontextprotocol/servers/tree/main/src/github) on how to create one.
-3. Install Semantic Kernel with the mcp extra:
+1. Check the comment at the start of the sample you want to run, for the appropriate environment variables to set.
+1. Install Semantic Kernel with the mcp extra:
 
 ```bash
 pip install semantic-kernel[mcp]

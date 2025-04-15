@@ -151,8 +151,9 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
                 if isinstance(meta, str):
                     ret["description"] = meta
                 elif isinstance(meta, dict):
-                    if "description" in meta and "description" not in ret:
-                        ret["description"] = meta["description"]
+                    # only override from the metadata if it is not already set
+                    if "description" not in ret and (description := meta.pop("description", None)):
+                        ret["description"] = description
                     ret.update(meta)
                 else:
                     logger.debug(f"Unknown metadata type: {meta}")
@@ -186,4 +187,7 @@ def _parse_parameter(name: str, param: Any, default: Any) -> dict[str, Any]:
             param = param.replace(" |", ",")
         ret["type_"] = param
         ret["is_required"] = True
+    # if the include_in_function_choices is set to false, we set the is_required to false
+    if not ret.get("include_in_function_choices", True):
+        ret["is_required"] = False
     return ret

@@ -11,6 +11,11 @@ from semantic_kernel.connectors.mcp import MCPStdioPlugin
 """
 The following sample demonstrates how to create a AzureAIAgent that
 answers questions about Github using a Semantic Kernel Plugin from a MCP server.
+
+It uses the Azure AI Foundry Agent service to create a agent, so make sure to 
+set the required environment variables for the Azure AI Foundry service:
+- AZURE_AI_AGENT_PROJECT_CONNECTION_STRING
+- AZURE_AI_AGENT_MODEL_DEPLOYMENT_NAME
 """
 
 

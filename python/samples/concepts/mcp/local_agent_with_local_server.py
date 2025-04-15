@@ -13,6 +13,10 @@ from semantic_kernel.functions import KernelArguments
 """
 The following sample demonstrates how to create a chat completion agent that
 answers questions about Github using a Local Agent with two local MCP Servers.
+
+It uses a Ollama Chat Completion to create a agent, so make sure to 
+set the required environment variables for the Azure AI Foundry service:
+- OLLAMA_CHAT_MODEL_ID
 """
 
 USER_INPUTS = [

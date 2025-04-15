@@ -5,8 +5,8 @@ import logging
 import os
 from pathlib import Path
 
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.agents import ChatCompletionAgent
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
 
 # set this lower or higher depending on your needs
@@ -16,6 +16,11 @@ logger = logging.getLogger(__name__)
 """
 The following sample demonstrates how to use a MCP Server that requires sampling
 to generate release notes from a list of issues.
+
+It uses the OpenAI service to create a agent, so make sure to 
+set the required environment variables for the Azure AI Foundry service:
+- OPENAI_API_KEY
+- OPENAI_CHAT_MODEL_ID
 """
 
 PR_MESSAGES = """* Python: Add ChatCompletionAgent integration tests by @moonbox3 in https://github.com/microsoft/semantic-kernel/pull/11430

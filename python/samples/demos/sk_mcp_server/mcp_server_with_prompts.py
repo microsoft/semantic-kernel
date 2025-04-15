@@ -16,7 +16,7 @@ from semantic_kernel.prompt_template import InputVariable, KernelPromptTemplate,
 logger = logging.getLogger(__name__)
 
 """
-This sample demonstrates how to expose your a Semantic Kernel prompt through a MCP server.
+This sample demonstrates how to expose a Semantic Kernel prompt through a MCP server.
 
 To run this sample, set up your MCP host (like Claude Desktop or VSCode Github Copilot Agents)
 with the following configuration:
@@ -34,6 +34,8 @@ with the following configuration:
     }
 }
 ```
+Note: You might need to set the uv to it's full path.
+
 """
 
 template = """{{$messages}}
@@ -62,7 +64,7 @@ def run() -> None:
                     name="messages",
                     description="These are the PR messages, they are a single string with new lines.",
                     is_required=True,
-                    json_schema='{ "type": "string"}',
+                    json_schema='{"type": "string"}',
                 )
             ],
         )
