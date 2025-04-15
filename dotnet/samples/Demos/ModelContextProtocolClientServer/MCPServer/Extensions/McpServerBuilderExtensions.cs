@@ -17,19 +17,20 @@ public static class McpServerBuilderExtensions
     /// Adds all functions of the kernel plugins as tools to the server.
     /// </summary>
     /// <param name="builder">The MCP builder instance.</param>
-    /// <param name="plugins">The kernel plugins to add as tools to the server if specified.
-    /// Otherwise, all functions from the kernel plugins registered in DI container will be added.</param>
+    /// <param name="kernel">An optional kernel instance which plugins will be added as tools.
+    /// If not provided, all functions from the kernel plugins registered in DI container will be added.
+    /// </param>
     /// <returns>The builder instance.</returns>
-    public static IMcpServerBuilder WithTools(this IMcpServerBuilder builder, KernelPluginCollection? plugins = null)
+    public static IMcpServerBuilder WithTools(this IMcpServerBuilder builder, Kernel? kernel = null)
     {
         // If plugins are provided directly, add them as tools
-        if (plugins is not null)
+        if (kernel is not null)
         {
-            foreach (var plugin in plugins)
+            foreach (var plugin in kernel.Plugins)
             {
                 foreach (var function in plugin)
                 {
-                    builder.Services.AddSingleton(McpServerTool.Create(function.AsAIFunction()));
+                    builder.Services.AddSingleton(McpServerTool.Create(function.AsAIFunction(kernel)));
                 }
             }
 
@@ -40,6 +41,7 @@ public static class McpServerBuilderExtensions
         builder.Services.AddSingleton<IEnumerable<McpServerTool>>(services =>
         {
             IEnumerable<KernelPlugin> plugins = services.GetServices<KernelPlugin>();
+            Kernel kernel = services.GetRequiredService<Kernel>();
 
             List<McpServerTool> tools = new(plugins.Count());
 
@@ -47,7 +49,7 @@ public static class McpServerBuilderExtensions
             {
                 foreach (var function in plugin)
                 {
-                    tools.Add(McpServerTool.Create(function.AsAIFunction()));
+                    tools.Add(McpServerTool.Create(function.AsAIFunction(kernel)));
                 }
             }
 
