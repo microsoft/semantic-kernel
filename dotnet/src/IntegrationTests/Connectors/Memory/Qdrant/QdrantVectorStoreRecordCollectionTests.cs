@@ -84,7 +84,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.HotelRating, getResult?.HotelRating);
         Assert.Equal(record.ParkingIncluded, getResult?.ParkingIncluded);
         Assert.Equal(record.LastRenovationDate, getResult?.LastRenovationDate);
-        Assert.Equal(record.OpeningDate, getResult?.OpeningDate);
         Assert.Equal(record.Tags.ToArray(), getResult?.Tags.ToArray());
         Assert.Equal(record.Description, getResult?.Description);
 
@@ -96,7 +95,6 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(record.HotelRating, searchResultRecord?.HotelRating);
         Assert.Equal(record.ParkingIncluded, searchResultRecord?.ParkingIncluded);
         Assert.Equal(record.LastRenovationDate, searchResultRecord?.LastRenovationDate);
-        Assert.Equal(record.OpeningDate, searchResultRecord?.OpeningDate);
         Assert.Equal(record.Tags.ToArray(), searchResultRecord?.Tags.ToArray());
         Assert.Equal(record.Description, searchResultRecord?.Description);
 
@@ -227,8 +225,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         Assert.Equal(11, getResult?.HotelCode);
         Assert.True(getResult?.ParkingIncluded);
         Assert.Equal(4.5f, getResult?.HotelRating);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), getResult?.LastRenovationDate);
-        Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), getResult?.OpeningDate);
+        Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.Zero), getResult?.LastRenovationDate);
         Assert.Equal(2, getResult?.Tags.Count);
         Assert.Equal("t11.1", getResult?.Tags[0]);
         Assert.Equal("t11.2", getResult?.Tags[1]);
@@ -470,8 +467,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
             HotelCode = (int)hotelId,
             HotelRating = 4.5f,
             ParkingIncluded = true,
-            LastRenovationDate = new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc),
-            OpeningDate = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)),
+            LastRenovationDate = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.Zero),
             Tags = { "t1", "t2" },
             Description = "This is a great hotel.",
             DescriptionEmbedding = await embeddingGenerator.GenerateEmbeddingAsync("This is a great hotel."),
