@@ -9,7 +9,7 @@ from self_hosted_api_chat_completion import SelfHostedChatCompletion
 
 from semantic_kernel.agents import AgentGroupChat, ChatCompletionAgent
 from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
-from semantic_kernel.contents import ChatMessageContent, AuthorRole
+from semantic_kernel.contents import AuthorRole, ChatMessageContent
 from semantic_kernel.kernel import Kernel
 
 load_dotenv()
