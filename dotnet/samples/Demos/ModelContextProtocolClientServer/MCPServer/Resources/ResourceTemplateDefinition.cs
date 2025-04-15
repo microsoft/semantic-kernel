@@ -61,10 +61,6 @@ public sealed class ResourceTemplateDefinition
             ??= context.Server.Services?.GetRequiredService<Kernel>()
             ?? throw new InvalidOperationException("Kernel is not available.");
 
-        this.Kernel
-            ??= context.Server.Services?.GetRequiredService<Kernel>()
-            ?? throw new InvalidOperationException("Kernel is not available.");
-
         KernelArguments args = new(source: this.GetArguments(context.Params!.Uri!))
         {
             { "context", context },
