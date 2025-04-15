@@ -22,6 +22,7 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.utils.list_handler import desync_list
+from tests.unit.connectors.memory.conftest import filter_lambda_list
 
 BASE_PATH_SEARCH_CLIENT = "azure.search.documents.aio.SearchClient"
 BASE_PATH_INDEX_CLIENT = "azure.search.documents.indexes.aio.SearchIndexClient"
@@ -396,3 +397,10 @@ async def test_search_keyword_hybrid_search(collection, mock_search, include_vec
         assert call[1]["vector_queries"][0].vector == [0.1, 0.2, 0.3]
         assert call[1]["vector_queries"][0].fields == "vector"
         assert call[1]["vector_queries"][0].k_nearest_neighbors == 3
+
+
+@mark.parametrize("filter, result", filter_lambda_list("ai_search"))
+def test_lambda_filter(collection, filter, result):
+    options = VectorSearchOptions(filter=filter)
+    filter_string = collection._build_filter_string(options.filter)
+    assert filter_string == result

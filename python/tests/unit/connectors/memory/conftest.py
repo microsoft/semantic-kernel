@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from pytest import fixture
+from _pytest.mark.structures import ParameterSet
+from pytest import fixture, param
 
 
 @fixture()
@@ -135,3 +136,66 @@ def sql_server_unit_test_env(monkeypatch, exclude_list, override_env_param_dict)
             monkeypatch.delenv(key, raising=False)
 
     return env_vars
+
+
+def filter_lambda_list(store: str) -> list[ParameterSet]:
+    """Fixture to provide a list of filter lambdas for testing."""
+    sets = [
+        (
+            lambda x: x.content == "value",
+            {
+                "ai_search": "content eq 'value'",
+            },
+            "equal",
+        ),
+        (
+            lambda x: x.content != "value",
+            {
+                "ai_search": "content ne 'value'",
+            },
+            "not equal",
+        ),
+        (
+            lambda x: x.id > 0,
+            {
+                "ai_search": "id gt '0'",
+            },
+            "greater than",
+        ),
+        (
+            lambda x: x.id >= 0,
+            {
+                "ai_search": "id ge '0'",
+            },
+            "greater than or equal",
+        ),
+        (
+            lambda x: x.id < 0,
+            {
+                "ai_search": "id lt '0'",
+            },
+            "less than",
+        ),
+        (
+            lambda x: x.id <= 0,
+            {
+                "ai_search": "id le '0'",
+            },
+            "less than or equal",
+        ),
+        (
+            lambda x: x.content == "value" and x.id == 0,
+            {
+                "ai_search": "content eq 'value' and id eq '0'",
+            },
+            "and",
+        ),
+        (
+            lambda x: x.content == "value" or x.id == 0,
+            {
+                "ai_search": "content eq 'value' or id eq '0'",
+            },
+            "or",
+        ),
+    ]
+    return [param(s[0], s[1][store], id=s[2]) for s in sets if store in s[1]]
