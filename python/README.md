@@ -11,7 +11,12 @@ python -m pip install --upgrade semantic-kernel[hugging_face]
 
 or all of them:
 ```bash
-python -m pip install --upgrade semantic-kernel[all]
+```bash
+# Create and activate a new conda 
+
+# Install semantic-kernel with all optional dependencies
+python -m pip install --upgrade 'semantic-kernel[all]'
+```
 ```
 # AI Services
 
