@@ -297,42 +297,12 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
         {
-            var pointStruct = new PointStruct
-            {
-                Id = retrievedPoint.Id,
-                Payload = { }
-            };
-
-            if (includeVectors)
-            {
-                pointStruct.Vectors = new();
-                switch (retrievedPoint.Vectors.VectorsOptionsCase)
-                {
-                    case VectorsOutput.VectorsOptionsOneofCase.Vector:
-                        pointStruct.Vectors.Vector = retrievedPoint.Vectors.Vector.Data.ToArray();
-                        break;
-                    case VectorsOutput.VectorsOptionsOneofCase.Vectors:
-                        pointStruct.Vectors.Vectors_ = new();
-                        foreach (var v in retrievedPoint.Vectors.Vectors.Vectors)
-                        {
-                            // TODO: Refactor mapper to not require pre-mapping to pointstruct to avoid this ToArray conversion.
-                            pointStruct.Vectors.Vectors_.Vectors.Add(v.Key, v.Value.Data.ToArray());
-                        }
-                        break;
-                }
-            }
-
-            foreach (KeyValuePair<string, Value> payloadEntry in retrievedPoint.Payload)
-            {
-                pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
-            }
-
             yield return VectorStoreErrorHandler.RunModelConversion(
                 QdrantConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
+                () => this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, new() { IncludeVectors = includeVectors }));
         }
     }
 
@@ -595,7 +565,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
                 orderBy,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantVectorStoreCollectionSearchMapping.MapRetrievedPointToVectorSearchResult(
+        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantVectorStoreCollectionSearchMapping.MapRetrievedPointToRecord(
                 point,
                 this._mapper,
                 options.IncludeVectors,

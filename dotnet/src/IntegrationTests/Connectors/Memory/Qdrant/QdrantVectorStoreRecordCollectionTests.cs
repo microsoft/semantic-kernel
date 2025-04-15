@@ -416,10 +416,10 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
         var sut = new QdrantVectorStoreRecordCollection<object, Dictionary<string, object?>>(fixture.QdrantClient, "singleVectorHotels", options);
 
         // Act
-        var baseSetGetResult = await sut.GetAsync(11, new GetRecordOptions { IncludeVectors = true });
+        var baseSetGetResult = await sut.GetAsync(11ul, new GetRecordOptions { IncludeVectors = true });
         var upsertResult = await sut.UpsertAsync(new Dictionary<string, object?>
         {
-            ["HotelId"] = 40,
+            ["HotelId"] = 40ul,
 
             ["HotelName"] = "Dynamic Mapper Hotel",
             ["HotelCode"] = 40,
@@ -430,7 +430,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
             ["DescriptionEmbedding"] = await fixture.EmbeddingGenerator.GenerateEmbeddingAsync("This is a dynamic mapper hotel")
         });
-        var localGetResult = await sut.GetAsync(40, new GetRecordOptions { IncludeVectors = true });
+        var localGetResult = await sut.GetAsync(40ul, new GetRecordOptions { IncludeVectors = true });
 
         // Assert
         Assert.NotNull(baseSetGetResult);
@@ -448,7 +448,7 @@ public sealed class QdrantVectorStoreRecordCollectionTests(ITestOutputHelper out
 
         Assert.NotNull(localGetResult);
         Assert.Equal(40ul, localGetResult["HotelId"]);
-        Assert.Equal("Ddynamic Mapper Hotel", localGetResult["HotelName"]);
+        Assert.Equal("Dynamic Mapper Hotel", localGetResult["HotelName"]);
         Assert.Equal(40, localGetResult["HotelCode"]);
         Assert.False((bool)localGetResult["ParkingIncluded"]!);
         Assert.Equal(3.6f, localGetResult["HotelRating"]);
