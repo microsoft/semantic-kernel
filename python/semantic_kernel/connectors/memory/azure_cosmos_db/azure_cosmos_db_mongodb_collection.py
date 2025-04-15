@@ -198,7 +198,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
             "vector": vector,
             "path": options.vector_field_name,
         }
-        if options.filter.filters:
+        if options.filter is not None:
             vector_search_query["filter"] = self._build_filter_dict(options.filter)
         projection_query: dict[str, int | dict] = {
             field: 1
