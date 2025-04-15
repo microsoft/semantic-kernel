@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using MCPServer;
+using MCPServer.ProjectResources;
 using MCPServer.Prompts;
 using MCPServer.Resources;
 using MCPServer.Tools;
@@ -20,6 +21,7 @@ IKernelBuilder kernelBuilder = builder.Services.AddKernel();
 // Register SK plugins
 kernelBuilder.Plugins.AddFromType<DateTimeUtils>();
 kernelBuilder.Plugins.AddFromType<WeatherUtils>();
+kernelBuilder.Plugins.AddFromType<MailboxUtils>();
 
 // Register embedding generation service and in-memory vector store
 (string modelId, string apiKey) = GetConfiguration();
@@ -35,7 +37,7 @@ builder.Services
     .WithTools()
 
     // Register the `getCurrentWeatherForCity` prompt
-    .WithPrompt(PromptDefinition.Create(EmbeddedResource.ReadAsString("Prompts.getCurrentWeatherForCity.json")))
+    .WithPrompt(PromptDefinition.Create(EmbeddedResource.ReadAsString("getCurrentWeatherForCity.json")))
 
     // Register vector search as MCP resource template
     .WithResourceTemplate(CreateVectorStoreSearchResourceTemplate())
@@ -44,7 +46,7 @@ builder.Services
     .WithResource(ResourceDefinition.CreateBlobResource(
         uri: "image://cat.jpg",
         name: "cat-image",
-        content: EmbeddedResource.ReadAsBytes("Resources.cat.jpg"),
+        content: EmbeddedResource.ReadAsBytes("cat.jpg"),
         mimeType: "image/jpeg"));
 
 await builder.Build().RunAsync();
@@ -87,8 +89,8 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
             RequestContext<ReadResourceRequestParams> context,
             string collection,
             string prompt,
-            [FromKernelServicesAttribute] ITextEmbeddingGenerationService embeddingGenerationService,
-            [FromKernelServicesAttribute] IVectorStore vectorStore,
+            [FromKernelServices] ITextEmbeddingGenerationService embeddingGenerationService,
+            [FromKernelServices] IVectorStore vectorStore,
             CancellationToken cancellationToken) =>
         {
             // Get the vector store collection
@@ -107,7 +109,7 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
                     };
                 }
 
-                string content = EmbeddedResource.ReadAsString("Resources.semantic-kernel-info.txt");
+                string content = EmbeddedResource.ReadAsString("semantic-kernel-info.txt");
 
                 // Create a collection from the lines in the file
                 await vectorStore.CreateCollectionFromListAsync<Guid, TextDataModel>(collection, content.Split('\n'), embeddingGenerationService, CreateRecord);

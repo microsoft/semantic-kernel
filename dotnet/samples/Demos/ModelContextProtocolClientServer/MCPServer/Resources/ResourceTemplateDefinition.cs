@@ -55,10 +55,7 @@ public sealed class ResourceTemplateDefinition
     /// <returns>The result of the invocation.</returns>
     public async Task<ReadResourceResult> InvokeHandlerAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
     {
-        if (this._kernelFunction == null)
-        {
-            this._kernelFunction = KernelFunctionFactory.CreateFromMethod(this.Handler);
-        }
+        this._kernelFunction ??= KernelFunctionFactory.CreateFromMethod(this.Handler);
 
         this.Kernel
             ??= context.Server.Services?.GetRequiredService<Kernel>()
