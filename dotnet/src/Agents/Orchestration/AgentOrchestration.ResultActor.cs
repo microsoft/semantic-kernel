@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
@@ -25,12 +25,14 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// <param name="runtime">The runtime associated with the agent.</param>
         /// <param name="transform">A delegate that transforms a TResult instance into a TOutput instance.</param>
         /// <param name="completionSource">Optional TaskCompletionSource to signal orchestration completion.</param>
+        /// <param name="logger">The logger to use for the actor</param>
         public ResultActor(
             AgentId id,
             IAgentRuntime runtime,
             Func<TResult, ValueTask<TOutput>> transform,
-            TaskCompletionSource<TOutput>? completionSource = null)
-            : base(id, runtime, $"{id.Type}_Actor")
+            TaskCompletionSource<TOutput>? completionSource = null,
+            ILogger<RequestActor>? logger = null)
+            : base(id, runtime, $"{id.Type}_Actor", logger)
         {
             this._completionSource = completionSource;
             this._transform = transform;
@@ -51,7 +53,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// <returns>A ValueTask representing asynchronous operation.</returns>
         public async ValueTask HandleAsync(TResult item, MessageContext messageContext)
         {
-            Trace.WriteLine($"> ORCHESTRATION EXIT: {this.Id.Type}");
+            this.Logger.LogOrchestrationResultInvoke(this.Id);
 
             try
             {
@@ -66,8 +68,8 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             }
             catch (Exception exception)
             {
-                Trace.WriteLine($"ERROR: {exception.Message}");
                 // Log exception details and fail orchestration as per design.
+                this.Logger.LogOrchestrationResultFailure(this.Id, exception);
                 throw;
             }
         }

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
@@ -27,12 +27,14 @@ internal sealed class ConcurrentResultActor : PatternActor,
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="expectedCount">The expected number of messages to be received.</param>
+    /// <param name="logger">The logger to use for the actor</param>
     public ConcurrentResultActor(
         AgentId id,
         IAgentRuntime runtime,
         AgentType orchestrationType,
-        int expectedCount)
-        : base(id, runtime, "Captures the results of the ConcurrentOrchestration")
+        int expectedCount,
+        ILogger logger)
+        : base(id, runtime, "Captures the results of the ConcurrentOrchestration", logger)
     {
         this._orchestrationType = orchestrationType;
         this._expectedCount = expectedCount;
@@ -42,7 +44,7 @@ internal sealed class ConcurrentResultActor : PatternActor,
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ConcurrentMessages.Result item, MessageContext messageContext)
     {
-        Trace.WriteLine($"> CONCURRENT RESULT: {this.Id.Type} (#{this._resultCount + 1}/{this._expectedCount})");
+        this.Logger.LogConcurrentResultCapture(this.Id, this._resultCount + 1, this._expectedCount);
 
         this._results.Enqueue(item);
 

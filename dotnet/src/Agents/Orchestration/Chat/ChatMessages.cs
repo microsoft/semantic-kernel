@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 
 /// <summary>
 /// Common messages used for agent chat patterns.

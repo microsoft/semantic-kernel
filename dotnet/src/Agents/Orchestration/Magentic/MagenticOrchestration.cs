@@ -6,20 +6,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 
 /// <summary>
 /// An orchestration that coordinates a group-chat.
 /// </summary>
-public class GroupChatOrchestration<TInput, TOutput> :
+public class MagenticOrchestration<TInput, TOutput> :
     AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="GroupChatOrchestration{TInput, TOutput}"/> class.
+    /// Initializes a new instance of the <see cref="MagenticOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public GroupChatOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+    public MagenticOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
         : base(runtime, agents)
     {
     }
@@ -62,7 +62,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic))).ConfigureAwait(false);
+                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 

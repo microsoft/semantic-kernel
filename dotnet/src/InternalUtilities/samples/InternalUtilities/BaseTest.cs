@@ -90,10 +90,6 @@ public abstract class BaseTest : TextWriter
             .AddUserSecrets(Assembly.GetExecutingAssembly())
             .Build();
 
-        TextWriterTraceListener traceListener = new(this);
-        Trace.Listeners.Clear();
-        Trace.Listeners.Add(traceListener);
-
         TestConfiguration.Initialize(configRoot);
 
         // Redirect System.Console output to the test output if requested

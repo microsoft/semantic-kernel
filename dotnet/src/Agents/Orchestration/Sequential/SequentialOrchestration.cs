@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
@@ -26,19 +26,16 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
     /// <inheritdoc />
     protected override async ValueTask StartAsync(TopicId topic, SequentialMessage input, AgentType? entryAgent)
     {
-        Trace.WriteLine($"> SEQUENTIAL START: {topic} [{entryAgent}]");
-
         await this.Runtime.SendMessageAsync(input, entryAgent!.Value).ConfigureAwait(false); // NULL OVERRIDE
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType)
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger)
     {
         // Each agent handsoff its result to the next agent.
         AgentType nextAgent = orchestrationType;
         for (int index = this.Members.Count - 1; index >= 0; --index)
         {
-            Trace.WriteLine($"> SEQUENTIAL NEXT #{index}: {nextAgent}");
             OrchestrationTarget member = this.Members[index];
 
             if (member.IsAgent(out Agent? agent))
@@ -47,9 +44,9 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
-                nextAgent = await orchestration.RegisterAsync(topic, nextAgent).ConfigureAwait(false);
+                nextAgent = await orchestration.RegisterAsync(topic, nextAgent, logger).ConfigureAwait(false);
             }
-            Trace.WriteLine($"> SEQUENTIAL MEMBER #{index}: {nextAgent}");
+            logger.LogConcurrentRegistration(nextAgent, "MEMBER", index);
         }
 
         return nextAgent;

@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 
 /// <summary>
 /// An <see cref="AgentActor"/> used with the <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
@@ -51,11 +52,11 @@ internal sealed class ChatAgentActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ChatMessages.Speak item, MessageContext messageContext)
     {
-        Trace.WriteLine($"> GROUPCHAT ACTOR: {this.Id.Type} SPEAK");
+        this.Logger.LogChatAgentInvoke(this.Id);
 
         ChatMessageContent response = await this.InvokeAsync(this._cache, messageContext.CancellationToken).ConfigureAwait(false);
 
-        Trace.WriteLine($"> GROUPCHAT ACTOR: {this.Id.Type} OUTPUT - {response}");
+        this.Logger.LogChatAgentResult(this.Id, response.Content);
 
         this._cache.Clear();
         await this.PublishMessageAsync(response.ToGroup(), this._groupTopic).ConfigureAwait(false);

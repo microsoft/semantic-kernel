@@ -22,7 +22,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        ConcurrentOrchestration orchestration = new(runtime, agent1, agent2, agent3);
+        ConcurrentOrchestration orchestration = new(runtime, agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();

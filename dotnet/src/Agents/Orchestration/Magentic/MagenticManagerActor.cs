@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 
 /// <summary>
-/// An <see cref="ChatManagerActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
+/// An <see cref="ChatManagerActor"/> used to manage a <see cref="MagenticOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal sealed class GroupChatManagerActor : ChatManagerActor
+internal sealed class MagenticManagerActor : ChatManagerActor
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="GroupChatManagerActor"/> class.
+    /// Initializes a new instance of the <see cref="MagenticManagerActor"/> class.
     /// </summary>
     /// <param name="id">The unique identifier of the agent.</param>
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
-    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
+    public MagenticManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
         : base(id, runtime, team, orchestrationType, groupTopic)
     {
     }

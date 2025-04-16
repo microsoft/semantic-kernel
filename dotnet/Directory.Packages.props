@@ -6,14 +6,14 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.BedrockAgentRuntime" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.13" />
-    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.1.0" />
-    <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0-preview.10" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
     <PackageVersion Include="Azure.AI.Inference" Version="1.0.0-beta.2" />
@@ -42,9 +42,9 @@
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
     <PackageVersion Include="JsonSchema.Net" Version="5.4.2" />
     <PackageVersion Include="Markdig" Version="0.40.0" />
-    <PackageVersion Include="Microsoft.AgentRuntime.Abstractions" Version="0.1.7" />
-    <PackageVersion Include="Microsoft.AgentRuntime.Core" Version="0.1.7" />
-    <PackageVersion Include="Microsoft.AgentRuntime.InProcess" Version="0.1.7" />
+    <PackageVersion Include="Microsoft.AgentRuntime.Abstractions" Version="0.1.9" />
+    <PackageVersion Include="Microsoft.AgentRuntime.Core" Version="0.1.9" />
+    <PackageVersion Include="Microsoft.AgentRuntime.InProcess" Version="0.1.9" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
@@ -56,8 +56,8 @@
     <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.8" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.OpenApi" Version="1.5.1" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="5.3.2" />
-    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageVersion Include="Microsoft.Bcl.Numerics" Version="8.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />

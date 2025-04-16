@@ -5,19 +5,19 @@ using Microsoft.AgentRuntime;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 
 /// <summary>
 /// An orchestration that broadcasts the input message to each agent.
 /// </summary>
-public sealed partial class GroupChatOrchestration : GroupChatOrchestration<string, string>
+public sealed partial class MagenticOrchestration : MagenticOrchestration<string, string>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="GroupChatOrchestration"/> class.
+    /// Initializes a new instance of the <see cref="MagenticOrchestration"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="members">The agents to be orchestrated.</param>
-    public GroupChatOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
+    public MagenticOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
         : base(runtime, members)
     {
         this.InputTransform = (string input) => ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input).ToInputTask());

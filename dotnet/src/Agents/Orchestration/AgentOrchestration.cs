@@ -2,11 +2,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
@@ -43,6 +44,11 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     public string Description { get; init; } = string.Empty;
 
     /// <summary>
+    /// Gets the associated logger.
+    /// </summary>
+    public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
+
+    /// <summary>
     /// Transforms the orchestration input into a source input suitable for processing.
     /// </summary>
     public Func<TInput, ValueTask<TSource>>? InputTransform { get; init; }
@@ -69,23 +75,25 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="timeout">Optional timeout for the orchestration process.</param>
     public async ValueTask<OrchestrationResult<TOutput>> InvokeAsync(TInput input, TimeSpan? timeout = null)
     {
+        ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
+
         Verify.NotNull(input, nameof(input));
 
         TopicId topic = new($"ID_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
 
         TaskCompletionSource<TOutput> completion = new();
 
-        Trace.WriteLine($"!!! ORCHESTRATION REGISTER: {topic}\n");
+        logger.LogOrchestrationRegistration(this._orchestrationRoot, topic);
 
-        AgentType orchestrationType = await this.RegisterAsync(topic, completion).ConfigureAwait(false);
+        AgentType orchestrationType = await this.RegisterAsync(topic, completion, targetActor: null, logger).ConfigureAwait(false);
 
-        Trace.WriteLine($"\n!!! ORCHESTRATION INVOKE: {orchestrationType}\n");
+        logger.LogOrchestrationInvoke(this._orchestrationRoot, topic);
 
         Task task = this.Runtime.SendMessageAsync(input, orchestrationType).AsTask();
 
-        Trace.WriteLine($"\n!!! ORCHESTRATION YIELD: {orchestrationType}");
+        logger.LogOrchestrationYield(this._orchestrationRoot, topic);
 
-        return new OrchestrationResult<TOutput>(topic, completion);
+        return new OrchestrationResult<TOutput>(topic, completion, logger);
     }
 
     /// <summary>
@@ -110,7 +118,8 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="topic">The topic identifier for the orchestration session.</param>
     /// <param name="orchestrationType">The orchestration type used in registration.</param>
     /// <returns>The entry AgentType for the orchestration, if any.</returns>
-    protected abstract ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType);
+    /// <param name="logger">The logger to use during registration</param>
+    protected abstract ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger);
 
     /// <summary>
     /// Registers the orchestration with the runtime using an external topic and an optional target actor.
@@ -118,11 +127,12 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="externalTopic">The external topic identifier to register with.</param>
     /// <param name="targetActor">An optional target actor that may influence registration behavior.</param>
     /// <returns>A ValueTask containing the AgentType that indicates the registered agent.</returns>
-    protected internal override ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor)
+    /// <param name="logger">The logger to use during registration</param>
+    protected internal override ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor, ILogger logger)
     {
         TopicId orchestrationTopic = new($"{externalTopic.Type}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
 
-        return this.RegisterAsync(orchestrationTopic, completion: null, targetActor);
+        return this.RegisterAsync(orchestrationTopic, completion: null, targetActor, logger);
     }
 
     /// <summary>
@@ -144,8 +154,9 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="topic">The unique topic for the orchestration session.</param>
     /// <param name="completion">A TaskCompletionSource for the final result output, if applicable.</param>
     /// <param name="targetActor">An optional target actor for routing results.</param>
+    /// <param name="logger">The logger to use during registration</param>
     /// <returns>The AgentType representing the orchestration entry point.</returns>
-    private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? targetActor = null)
+    private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? targetActor, ILogger logger)
     {
         // %%% REQUIRED
         if (this.InputTransform == null)
@@ -169,7 +180,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
                     })).ConfigureAwait(false);
 
         // Register orchestration members
-        AgentType? entryAgent = await this.RegisterMembersAsync(topic, orchestrationFinal).ConfigureAwait(false);
+        AgentType? entryAgent = await this.RegisterMembersAsync(topic, orchestrationFinal, logger).ConfigureAwait(false);
 
         // Register actor for orchestration entry-point
         AgentType orchestrationEntry = this.FormatAgentType(topic, "Boot");

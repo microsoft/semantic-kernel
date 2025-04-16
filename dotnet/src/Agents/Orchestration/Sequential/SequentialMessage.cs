@@ -10,10 +10,10 @@ public sealed class SequentialMessage
     /// <summary>
     /// The input task.
     /// </summary>
-    public ChatMessageContent Content { get; init; } = new();
+    public ChatMessageContent Message { get; init; } = new();
 
     /// <summary>
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="SequentialMessage"/>.
     /// </summary>
-    public static SequentialMessage FromChat(ChatMessageContent content) => new() { Content = content };
+    public static SequentialMessage FromChat(ChatMessageContent content) => new() { Message = content };
 }

@@ -21,6 +21,6 @@ public sealed partial class SequentialOrchestration : SequentialOrchestration<st
         : base(runtime, members)
     {
         this.InputTransform = (string input) => ValueTask.FromResult(SequentialMessage.FromChat(new ChatMessageContent(AuthorRole.User, input)));
-        this.ResultTransform = (SequentialMessage result) => ValueTask.FromResult(result.Content.ToString());
+        this.ResultTransform = (SequentialMessage result) => ValueTask.FromResult(result.Message.ToString());
     }
 }

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
@@ -15,11 +15,13 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 public sealed class OrchestrationResult<TValue>
 {
     private readonly TaskCompletionSource<TValue> _completion;
+    private readonly ILogger _logger;
 
-    internal OrchestrationResult(TopicId topic, TaskCompletionSource<TValue> completion)
+    internal OrchestrationResult(TopicId topic, TaskCompletionSource<TValue> completion, ILogger logger)
     {
         this.Topic = topic;
         this._completion = completion;
+        this._logger = logger;
     }
 
     /// <summary>
@@ -37,16 +39,19 @@ public sealed class OrchestrationResult<TValue>
     /// <exception cref="TimeoutException">Thrown if the orchestration does not complete within the specified timeout period.</exception>
     public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null)
     {
-        Trace.WriteLine($"\n!!! ORCHESTRATION AWAIT: {this.Topic}\n");
+        this._logger.LogOrchestrationResultAwait(this.Topic);
 
         if (timeout.HasValue)
         {
             Task[] tasks = { this._completion.Task };
             if (!Task.WaitAll(tasks, timeout.Value))
             {
+                this._logger.LogOrchestrationResultTimeout(this.Topic);
                 throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout}).");
             }
         }
+
+        this._logger.LogOrchestrationResultComplete(this.Topic);
 
         return await this._completion.Task.ConfigureAwait(false);
     }

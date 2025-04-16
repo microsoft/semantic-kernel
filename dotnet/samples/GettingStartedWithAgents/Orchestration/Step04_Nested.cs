@@ -29,7 +29,7 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
         ConcurrentOrchestration<SequentialMessage, SequentialMessage> innerOrchestration =
             new(runtime, agent3, agent4)
             {
-                InputTransform = (SequentialMessage input) => ValueTask.FromResult(new ConcurrentMessages.Request { Message = input.Content }),
+                InputTransform = (SequentialMessage input) => ValueTask.FromResult(new ConcurrentMessages.Request { Message = input.Message }),
                 ResultTransform = (ConcurrentMessages.Result[] output) => ValueTask.FromResult(SequentialMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content)))))
             };
         SequentialOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
@@ -59,8 +59,8 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
         SequentialOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> innerOrchestration =
             new(runtime, agent3, agent4)
             {
-                InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(new SequentialMessage { Content = input.Message }),
-                ResultTransform = (SequentialMessage result) => ValueTask.FromResult(new ConcurrentMessages.Result { Message = result.Content })
+                InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(new SequentialMessage { Message = input.Message }),
+                ResultTransform = (SequentialMessage result) => ValueTask.FromResult(new ConcurrentMessages.Result { Message = result.Message })
             };
         ConcurrentOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
 

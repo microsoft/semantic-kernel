@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
@@ -16,6 +17,7 @@ public abstract class Orchestratable
     /// </summary>
     /// <param name="externalTopic">The topic identifier to be used for registration.</param>
     /// <param name="targetActor">An optional target actor type, if applicable, that may influence registration behavior.</param>
+    /// <param name="logger">The logger to use during registration</param>
     /// <returns>A ValueTask containing the AgentType that indicates the registered agent.</returns>
-    protected internal abstract ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor);
+    protected internal abstract ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor, ILogger logger);
 }

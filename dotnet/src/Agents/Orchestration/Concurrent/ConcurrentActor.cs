@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
@@ -30,11 +29,11 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ConcurrentMessages.Request item, MessageContext messageContext)
     {
-        Trace.WriteLine($"> CONCURRENT ACTOR: {this.Id.Type} INPUT - {item.Message}");
+        this.Logger.LogConcurrentAgentInvoke(this.Id, item.Message.Content);
 
         ChatMessageContent response = await this.InvokeAsync(item.Message, messageContext.CancellationToken).ConfigureAwait(false);
 
-        Trace.WriteLine($"> CONCURRENT ACTOR: {this.Id.Type} OUTPUT - {response}");
+        this.Logger.LogConcurrentAgentResult(this.Id, response.Content);
 
         await this.SendMessageAsync(response.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
     }

@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+namespace Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 
 /// <summary>
 /// An <see cref="PatternActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
@@ -40,8 +40,6 @@ public abstract class ChatManagerActor :
         this.Chat = [];
         this.Team = team;
         this._orchestrationType = orchestrationType;
-        Trace.WriteLine($">>> MANAGER NAMES: {this.Team.FormatNames()}");
-        Trace.WriteLine($">>> MANAGER TEAM:\n{this.Team.FormatList()}");
         this._groupTopic = groupTopic;
     }
 
@@ -65,7 +63,7 @@ public abstract class ChatManagerActor :
     /// </summary>
     protected ValueTask RequestAgentResponseAsync(AgentType agentType, CancellationToken cancellationToken)
     {
-        Trace.WriteLine($">>> MANAGER NEXT: {agentType}");
+        this.Logger.LogChatManagerSelect(this.Id, agentType);
         return this.SendMessageAsync(new ChatMessages.Speak(), agentType, cancellationToken);
     }
 
@@ -94,7 +92,7 @@ public abstract class ChatManagerActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ChatMessages.InputTask item, MessageContext messageContext)
     {
-        Trace.WriteLine($">>> MANAGER TASK: {item.Message}");
+        this.Logger.LogChatManagerInit(this.Id);
         this.InputTask = item;
         AgentType? agentType = await this.PrepareTaskAsync().ConfigureAwait(false);
         if (agentType != null)
@@ -104,7 +102,7 @@ public abstract class ChatManagerActor :
         }
         else
         {
-            Trace.WriteLine(">>> MANAGER NO AGENT");
+            this.Logger.LogChatManagerTerminate(this.Id);
             await this.SendMessageAsync(item.Message.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false); // %%% PLACEHOLDER - FINAL MESSAGE
         }
     }
@@ -112,7 +110,8 @@ public abstract class ChatManagerActor :
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ChatMessages.Group item, MessageContext messageContext)
     {
-        Trace.WriteLine($">>> MANAGER CHAT: {item.Message}");
+        this.Logger.LogChatManagerInvoke(this.Id);
+
         this.Chat.Add(item.Message);
         AgentType? agentType = await this.SelectAgentAsync().ConfigureAwait(false);
         if (agentType != null)
@@ -121,7 +120,7 @@ public abstract class ChatManagerActor :
         }
         else
         {
-            Trace.WriteLine(">>> MANAGER NO AGENT");
+            this.Logger.LogChatManagerTerminate(this.Id);
             await this.SendMessageAsync(item.Message.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false); // %%% PLACEHOLDER - FINAL MESSAGE
         }
     }
@@ -129,7 +128,7 @@ public abstract class ChatManagerActor :
     /// <inheritdoc/>
     public ValueTask HandleAsync(ChatMessages.Result item, MessageContext messageContext)
     {
-        Trace.WriteLine($">>> MANAGER RESULT: {item.Message}");
+        this.Logger.LogChatManagerResult(this.Id);
         return ValueTask.CompletedTask;
     }
 }

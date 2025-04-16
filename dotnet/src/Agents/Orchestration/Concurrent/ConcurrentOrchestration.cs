@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
@@ -25,12 +25,11 @@ public class ConcurrentOrchestration<TInput, TOutput>
     /// <inheritdoc />
     protected override ValueTask StartAsync(TopicId topic, ConcurrentMessages.Request input, AgentType? entryAgent)
     {
-        Trace.WriteLine($"> CONCURRENT START: {topic}");
         return this.Runtime.PublishMessageAsync(input, topic);
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType)
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger)
     {
         // Register result actor
         AgentType resultType = this.FormatAgentType(topic, "Results");
@@ -38,8 +37,8 @@ public class ConcurrentOrchestration<TInput, TOutput>
             resultType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new ConcurrentResultActor(agentId, runtime, orchestrationType, this.Members.Count))).ConfigureAwait(false);
-        Trace.WriteLine($"> CONCURRENT RESULTS: {resultType}");
+                    new ConcurrentResultActor(agentId, runtime, orchestrationType, this.Members.Count, this.LoggerFactory.CreateLogger<ConcurrentResultActor>()))).ConfigureAwait(false);
+        logger.LogConcurrentRegistration(resultType, "RESULTS");
 
         // Register member actors - All agents respond to the same message.
         int agentCount = 0;
@@ -55,10 +54,10 @@ public class ConcurrentOrchestration<TInput, TOutput>
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
-                memberType = await orchestration.RegisterAsync(topic, resultType).ConfigureAwait(false);
+                memberType = await orchestration.RegisterAsync(topic, resultType, logger).ConfigureAwait(false);
             }
 
-            Trace.WriteLine($"> CONCURRENT MEMBER #{agentCount}: {memberType}");
+            logger.LogConcurrentRegistration(memberType, "MEMBER", agentCount);
 
             await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
