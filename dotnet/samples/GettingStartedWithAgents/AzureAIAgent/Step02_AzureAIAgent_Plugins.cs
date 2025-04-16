@@ -14,7 +14,7 @@ namespace GettingStarted.AzureAgents;
 public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseAzureAgentWithPluginAsync()
+    public async Task UseAzureAgentWithPlugin()
     {
         // Define the agent
         AzureAIAgent agent = await CreateAzureAgentAsync(
@@ -41,7 +41,7 @@ public class Step02_AzureAIAgent_Plugins(ITestOutputHelper output) : BaseAzureAg
     }
 
     [Fact]
-    public async Task UseAzureAgentWithPluginEnumParameterAsync()
+    public async Task UseAzureAgentWithPluginEnumParameter()
     {
         // Define the agent
         AzureAIAgent agent = await CreateAzureAgentAsync(plugin: KernelPluginFactory.CreateFromType<WidgetFactory>());

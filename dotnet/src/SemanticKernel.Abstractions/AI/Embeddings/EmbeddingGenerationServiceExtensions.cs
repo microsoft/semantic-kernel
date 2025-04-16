@@ -177,9 +177,9 @@ public static class EmbeddingGenerationExtensions
             {
                 attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
             }
-            if (metadata?.ModelId is not null)
+            if (metadata?.DefaultModelId is not null)
             {
-                attrs[AIServiceExtensions.ModelIdKey] = metadata.ModelId;
+                attrs[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
             }
         }
 

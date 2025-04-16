@@ -225,12 +225,12 @@ public class KernelPluginTests
         using CancellationTokenSource cts = new();
 
         JsonElement return1 = Assert.IsType<JsonElement>(await funcs[0].InvokeAsync(
-            [KeyValuePair.Create("arg1", (object?)"value1")],
+            new(new Dictionary<string, object?>([KeyValuePair.Create("arg1", (object?)"value1")])),
             cts.Token));
         Assert.Equal("Return1", return1.ToString());
 
         JsonElement return2 = Assert.IsType<JsonElement>(await funcs[1].InvokeAsync(
-            [KeyValuePair.Create("arg2", (object?)42), KeyValuePair.Create("arg3", (object?)84.0)],
+            new(new Dictionary<string, object?>([KeyValuePair.Create("arg2", (object?)42), KeyValuePair.Create("arg3", (object?)84.0)])),
             cts.Token));
         Assert.Equal("Return2", return2.ToString());
 

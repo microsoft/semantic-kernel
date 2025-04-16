@@ -100,7 +100,7 @@ class AnthropicChatCompletion(ChatCompletionClientBase):
             env_file_encoding: The encoding of the environment settings file.
         """
         try:
-            anthropic_settings = AnthropicSettings.create(
+            anthropic_settings = AnthropicSettings(
                 api_key=api_key,
                 chat_model_id=ai_model_id,
                 env_file_path=env_file_path,

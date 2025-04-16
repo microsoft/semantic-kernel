@@ -13,7 +13,7 @@ namespace GettingStarted.AzureAgents;
 public class Step01_AzureAIAgent(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseTemplateForAzureAgentAsync()
+    public async Task UseTemplateForAzureAgent()
     {
         // Define the agent
         string generateStoryYaml = EmbeddedResource.Read("GenerateStory.yaml");

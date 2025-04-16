@@ -207,7 +207,7 @@ class BedrockAgent(BedrockAgentBase):
             An instance of BedrockAgent with the created agent.
         """
         try:
-            bedrock_agent_settings = BedrockAgentSettings.create(
+            bedrock_agent_settings = BedrockAgentSettings(
                 agent_resource_role_arn=agent_resource_role_arn,
                 foundation_model=foundation_model,
                 env_file_path=env_file_path,
