@@ -52,7 +52,7 @@ async def invoke_agent_with_template(template_str: str, template_format: str, de
     # Configure the prompt template
     prompt_config = PromptTemplateConfig(template=template_str, template_format=template_format)
 
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,

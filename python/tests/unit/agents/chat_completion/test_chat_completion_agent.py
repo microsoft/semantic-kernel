@@ -133,6 +133,12 @@ def test_initialization_with_service_via_constructor(openai_unit_test_env):
     assert agent.kernel.services["test_chat_model_id"] == agent.service
 
 
+def test_initialize_chat_history_agent_thread_with_id():
+    thread = ChatHistoryAgentThread(thread_id="test_thread_id")
+    assert thread is not None
+    assert thread.id == "test_thread_id"
+
+
 async def test_get_response(kernel_with_ai_service: tuple[Kernel, ChatCompletionClientBase]):
     kernel, _ = kernel_with_ai_service
     agent = ChatCompletionAgent(

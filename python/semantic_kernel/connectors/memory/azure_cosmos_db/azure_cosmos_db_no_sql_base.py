@@ -55,7 +55,7 @@ class AzureCosmosDBNoSQLBase(KernelBaseModel):
             kwargs: Additional keyword arguments.
         """
         try:
-            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings.create(
+            cosmos_db_nosql_settings = AzureCosmosDBNoSQLSettings(
                 url=url,
                 key=key,
                 database_name=database_name,

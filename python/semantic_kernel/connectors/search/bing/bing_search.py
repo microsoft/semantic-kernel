@@ -61,7 +61,7 @@ class BingSearch(KernelBaseModel, TextSearch):
             env_file_encoding: The optional encoding of the .env file.
         """
         try:
-            settings = BingSettings.create(
+            settings = BingSettings(
                 api_key=api_key,
                 custom_config=custom_config,
                 env_file_path=env_file_path,
