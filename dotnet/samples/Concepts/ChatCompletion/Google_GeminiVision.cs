@@ -6,10 +6,13 @@ using Resources;
 
 namespace ChatCompletion;
 
+/// <summary>
+/// This sample shows how to use Google's Gemini Chat Completion model with vision using VertexAI and GoogleAI APIs.
+/// </summary>
 public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task GoogleAIAsync()
+    public async Task GoogleAIChatCompletionWithVision()
     {
         Console.WriteLine("============= Google AI - Gemini Chat Completion with vision =============");
 
@@ -50,27 +53,21 @@ public sealed class Google_GeminiVision(ITestOutputHelper output) : BaseTest(out
     }
 
     [Fact]
-    public async Task VertexAIAsync()
+    public async Task VertexAIChatCompletionWithVision()
     {
         Console.WriteLine("============= Vertex AI - Gemini Chat Completion with vision =============");
 
-        string geminiBearerKey = TestConfiguration.VertexAI.BearerKey;
-        string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
-        string geminiLocation = TestConfiguration.VertexAI.Location;
-        string geminiProject = TestConfiguration.VertexAI.ProjectId;
-
-        if (geminiBearerKey is null || geminiLocation is null || geminiProject is null)
-        {
-            Console.WriteLine("Gemini vertex ai credentials not found. Skipping example.");
-            return;
-        }
+        Assert.NotNull(TestConfiguration.VertexAI.BearerKey);
+        Assert.NotNull(TestConfiguration.VertexAI.Location);
+        Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
+        Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                bearerKey: geminiBearerKey,
-                location: geminiLocation,
-                projectId: geminiProject)
+                modelId: TestConfiguration.VertexAI.Gemini.ModelId,
+                bearerKey: TestConfiguration.VertexAI.BearerKey,
+                location: TestConfiguration.VertexAI.Location,
+                projectId: TestConfiguration.VertexAI.ProjectId)
             .Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
