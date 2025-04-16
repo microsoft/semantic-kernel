@@ -306,6 +306,22 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
     #endregion Legacy filter support
 
+    protected virtual async Task<List<FilterRecord>> GetRecords(
+        Expression<Func<FilterRecord, bool>> filter, int top, ReadOnlyMemory<float> vector)
+        => await fixture.Collection.VectorizedSearchAsync(
+                vector,
+                top: top,
+                new() { Filter = filter })
+            .Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
+
+    protected virtual async Task<List<Dictionary<string, object?>>> GetDynamicRecords(
+        Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter, int top, ReadOnlyMemory<float> vector)
+        => await fixture.DynamicCollection.VectorizedSearchAsync(
+                vector,
+                top: top,
+                new() { Filter = dynamicFilter })
+            .Select(r => r.Record).OrderBy(r => r[nameof(FilterRecord.Key)]).ToListAsync();
+
     protected virtual async Task TestFilterAsync(
         Expression<Func<FilterRecord, bool>> filter,
         Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter,
@@ -326,11 +342,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         // Execute the query against the vector store, once using the strongly typed filter
         // and once using the dynamic filter
-        var actual = await fixture.Collection.VectorizedSearchAsync(
-                new ReadOnlyMemory<float>([1, 2, 3]),
-                top: fixture.TestData.Count,
-                new() { Filter = filter })
-            .Select(r => r.Record).OrderBy(r => r.Key).ToListAsync();
+        var actual = await this.GetRecords(filter, fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3]));
 
         if (actual.Count != expected.Count)
         {
@@ -344,11 +356,7 @@ public abstract class BasicFilterTests<TKey>(BasicFilterTests<TKey>.Fixture fixt
 
         if (fixture.TestDynamic)
         {
-            var dynamicActual = await fixture.DynamicCollection.VectorizedSearchAsync(
-                    new ReadOnlyMemory<float>([1, 2, 3]),
-                    top: fixture.TestData.Count,
-                    new() { Filter = dynamicFilter })
-                .Select(r => r.Record).OrderBy(r => r[nameof(FilterRecord.Key)]).ToListAsync();
+            var dynamicActual = await this.GetDynamicRecords(dynamicFilter, fixture.TestData.Count, new ReadOnlyMemory<float>([1, 2, 3]));
 
             if (dynamicActual.Count != expected.Count)
             {

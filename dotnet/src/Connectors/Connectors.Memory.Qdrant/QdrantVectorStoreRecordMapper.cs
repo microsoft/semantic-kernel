@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Google.Protobuf.Collections;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
@@ -83,15 +84,15 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
     }
 
     /// <inheritdoc />
-    public TRecord MapFromStorageToDataModel(PointStruct storageModel, StorageToDataModelMapperOptions options)
+    public TRecord MapFromStorageToDataModel(PointId pointId, MapField<string, Value> payload, VectorsOutput vectorsOutput, StorageToDataModelMapperOptions options)
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
         // TODO: Set the following generically to avoid boxing
-        model.KeyProperty.SetValueAsObject(outputRecord, storageModel.Id switch
+        model.KeyProperty.SetValueAsObject(outputRecord, pointId switch
         {
-            { HasNum: true } => storageModel.Id.Num,
-            { HasUuid: true } => Guid.Parse(storageModel.Id.Uuid),
+            { HasNum: true } => pointId.Num,
+            { HasUuid: true } => Guid.Parse(pointId.Uuid),
             _ => throw new UnreachableException()
         });
 
@@ -100,7 +101,7 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
         {
             if (hasNamedVectors)
             {
-                var storageVectors = storageModel.Vectors.Vectors_.Vectors;
+                var storageVectors = vectorsOutput.Vectors.Vectors;
 
                 foreach (var vectorProperty in model.VectorProperties)
                 {
@@ -113,11 +114,9 @@ internal sealed class QdrantVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
             {
                 model.VectorProperty.SetValueAsObject(
                     outputRecord,
-                    new ReadOnlyMemory<float>(storageModel.Vectors.Vector.Data.ToArray()));
+                    new ReadOnlyMemory<float>(vectorsOutput.Vector.Data.ToArray()));
             }
         }
-
-        var payload = storageModel.Payload;
 
         foreach (var dataProperty in model.DataProperties)
         {
