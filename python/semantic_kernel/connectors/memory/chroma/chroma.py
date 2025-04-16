@@ -296,15 +296,14 @@ class ChromaCollection(
         vector: list[float | int] | None = None,
         **kwargs: Any,
     ) -> KernelSearchResults[VectorSearchResult[TModel]]:
-        where = self._parse_filter(options.filter)
         args = {
             "n_results": options.top,
             "include": ["documents", "metadatas", "embeddings", "distances"]
             if options.include_vectors
             else ["documents", "metadatas", "distances"],
         }
-        if where:
-            args["where"] = where
+        if options.filter and (filter := self._parse_filter(options.filter)):
+            args["where"] = filter
         if vector is not None:
             args["query_embeddings"] = vector
         results = self._get_collection().query(**args)

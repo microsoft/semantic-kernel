@@ -287,7 +287,7 @@ async def test_search(collection, mock_search):
     mock_search.assert_called_with(
         collection_name="test",
         query_vector=[1.0, 2.0, 3.0],
-        query_filter=Filter(must=[]),
+        query_filter=None,
         with_vectors=False,
         limit=3,
         offset=0,
@@ -307,7 +307,7 @@ async def test_search_named_vectors(collection, mock_search):
     mock_search.assert_called_with(
         collection_name="test",
         query_vector=("vector", [1.0, 2.0, 3.0]),
-        query_filter=Filter(must=[]),
+        query_filter=None,
         with_vectors=False,
         limit=3,
         offset=0,

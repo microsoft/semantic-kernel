@@ -11,7 +11,7 @@ from semantic_kernel.connectors.search.google.google_search_response import (
     GoogleSearchResponse,
 )
 from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
-from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, TextSearchOptions
+from semantic_kernel.data.text_search import AnyTagsEqualTo, SearchFilter, TextSearchOptions
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
 
@@ -136,12 +136,9 @@ async def test_get_search_results(google_search) -> None:
 
 async def test_build_query_equal_to_filter(google_search) -> None:
     """Test that if an EqualTo filter is recognized, it is sent along in query params."""
-    filters = [
-        EqualTo(field_name="lr", value="lang_en"),
-        AnyTagsEqualTo(field_name="tags", value="tag1"),
-    ]  # second one is not recognized
     options = TextSearchOptions()
-    options.filter.filters = filters
+    options.filter = SearchFilter.equal_to(field_name="lr", value="lang_en")
+    options.filter.filters.append(AnyTagsEqualTo(field_name="tags", value="tag1"))
 
     with patch.object(google_search, "_inner_search", new=AsyncMock(return_value=GoogleSearchResponse())):
         await google_search.search(query="hello world", options=options)

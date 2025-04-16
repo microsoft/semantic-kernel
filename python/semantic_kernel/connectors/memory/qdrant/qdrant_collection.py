@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from typing import Any, ClassVar, Generic
 
 from pydantic import ValidationError
@@ -193,7 +193,7 @@ class QdrantCollection(
         results = await self.qdrant_client.search(
             collection_name=self.collection_name,
             query_vector=query_vector,
-            query_filter=self._create_filter(options),
+            query_filter=self._create_filter(options.filter) if options.filter else None,
             with_vectors=options.include_vectors,
             limit=options.top,
             offset=options.skip,
@@ -212,13 +212,14 @@ class QdrantCollection(
     def _get_score_from_result(self, result: ScoredPoint) -> float:
         return result.score
 
-    def _create_filter(self, options: VectorSearchOptions) -> Filter:
-        if not isinstance(options.filter, VectorSearchFilter):
+    def _create_filter(self, filter: VectorSearchFilter | Callable) -> Filter | None:
+        if not isinstance(filter, VectorSearchFilter):
             raise VectorStoreOperationException("Lambda filters are not supported yet.")
+        if not filter.filters:
+            return None
         return Filter(
             must=[
-                FieldCondition(key=filter.field_name, match=MatchAny(any=[filter.value]))
-                for filter in options.filter.filters
+                FieldCondition(key=filter.field_name, match=MatchAny(any=[filter.value])) for filter in filter.filters
             ]
         )
 

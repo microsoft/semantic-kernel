@@ -331,7 +331,7 @@ async def test_search_embed(collection):
             vectorizable_text="test", options=VectorSearchOptions(top=1, include_vectors=True)
         )
         mock_query.assert_awaited_once_with(
-            query={"inputs": {"text": "test"}, "top_k": 1, "filter": {}},
+            query={"inputs": {"text": "test"}, "top_k": 1},
             namespace=collection.namespace,
         )
         assert query_response.total_count == 1

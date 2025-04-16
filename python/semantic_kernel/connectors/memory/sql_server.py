@@ -1033,7 +1033,8 @@ def _build_search_query(
     # add the FROM clause
     command.query.append_table_name(schema, table, prefix=" FROM", newline=True)
     # add the WHERE clause
-    _build_filter(command, options.filter)
+    if options.filter:
+        _build_filter(command, options.filter)
     # add the ORDER BY clause
     command.query.append(f"ORDER BY {SCORE_FIELD_NAME} {'ASC' if asc else 'DESC'}\n")
     command.query.append(f"OFFSET {options.skip} ROWS FETCH NEXT {options.top} ROWS ONLY;")

@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME, TextSearchFunctions
 from semantic_kernel.exceptions import TextSearchException
+from semantic_kernel.exceptions.search_exceptions import SearchException
 from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.functions.kernel_function_from_method import KernelFunctionFromMethod
@@ -105,7 +106,7 @@ class SearchFilter:
 class SearchOptions(ABC, KernelBaseModel):
     """Options for a search."""
 
-    filter: SearchFilter = Field(default_factory=SearchFilter)
+    filter: SearchFilter | None = None
     include_total_count: bool = False
 
 
@@ -185,7 +186,7 @@ def create_options(
     # options are the right class, just update based on kwargs
     if isinstance(options, options_class):
         for key, value in kwargs.items():
-            if key in options.model_fields:
+            if key in options.__class__.model_fields:
                 setattr(options, key, value)
         return options
     # options are not the right class, so create new options
@@ -224,9 +225,19 @@ def default_options_update_function(
         if param.name in {"query", "top", "skip"}:
             continue
         if param.name in kwargs:
-            options.filter.equal_to(param.name, kwargs[param.name])
+            if options.filter is None:
+                options.filter = SearchFilter.equal_to(param.name, kwargs[param.name])
+            elif isinstance(options.filter, SearchFilter):
+                options.filter.equal_to(param.name, kwargs[param.name])
+            else:
+                raise SearchException("Callable filters are not yet supported.")
         if param.default_value:
-            options.filter.equal_to(param.name, param.default_value)
+            if options.filter is None:
+                options.filter = SearchFilter.equal_to(param.name, param.default_value)
+            elif isinstance(options.filter, SearchFilter):
+                options.filter.equal_to(param.name, param.default_value)
+            else:
+                raise SearchException("Callable filters are not yet supported.")
 
     return query, options
 

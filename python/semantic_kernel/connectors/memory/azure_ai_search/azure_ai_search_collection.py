@@ -259,8 +259,7 @@ class AzureAISearchCollection(
             "include_total_count": options.include_total_count,
         }
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
-        filter = self._build_filter_string(options.filter)
-        if filter:
+        if options.filter and (filter := self._build_filter_string(options.filter)):
             search_args["filter"] = filter
         if search_text is not None:
             search_args["search_text"] = search_text
