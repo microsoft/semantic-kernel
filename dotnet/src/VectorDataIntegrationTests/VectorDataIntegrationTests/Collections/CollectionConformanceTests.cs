@@ -20,7 +20,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
         Assert.True(await collection.CollectionExistsAsync());
 
         // Act.
-        await fixture.TestStore.DefaultVectorStore.DeleteCollectionAsync(collection.CollectionName);
+        await fixture.TestStore.DefaultVectorStore.DeleteCollectionAsync(collection.Name);
 
         // Assert.
         Assert.False(await collection.CollectionExistsAsync());
@@ -43,7 +43,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
             await collection.CreateCollectionAsync();
 
             // Act & Assert.
-            Assert.True(await fixture.TestStore.DefaultVectorStore.CollectionExistsAsync(collection.CollectionName));
+            Assert.True(await fixture.TestStore.DefaultVectorStore.CollectionExistsAsync(collection.Name));
         }
         finally
         {
