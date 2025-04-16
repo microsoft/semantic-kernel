@@ -141,14 +141,12 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         const string OperationName = "CreateCollectionSchema";
 
         var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
-            this.CollectionName,
+            this.Name,
             this._options.HasNamedVectors,
             this._model);
 
         return this.RunOperationAsync(OperationName, () =>
         {
-            var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(this.Name, this._model);
-
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
