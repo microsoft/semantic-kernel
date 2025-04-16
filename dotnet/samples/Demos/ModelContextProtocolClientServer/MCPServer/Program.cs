@@ -150,7 +150,7 @@ static Agent CreateSalesAssistantAgent(string chatModelId, string apiKey)
 {
     IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
 
-    // Register the SK plugin fot the agent to use
+    // Register the SK plugin for the agent to use
     kernelBuilder.Plugins.AddFromType<OrderProcessingUtils>();
 
     // Register chat completion service
