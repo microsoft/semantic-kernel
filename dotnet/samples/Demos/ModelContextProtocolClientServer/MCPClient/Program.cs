@@ -21,7 +21,7 @@ using ModelContextProtocol.Protocol.Types;
 
 namespace MCPClient;
 
-internal sealed partial class Program
+internal sealed class Program
 {
     public static async Task Main(string[] args)
     {
