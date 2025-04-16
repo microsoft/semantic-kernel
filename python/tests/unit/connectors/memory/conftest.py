@@ -3,6 +3,8 @@
 from _pytest.mark.structures import ParameterSet
 from pytest import fixture, param
 
+from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
+
 
 @fixture()
 def mongodb_atlas_unit_test_env(monkeypatch, exclude_list, override_env_param_dict):
@@ -146,7 +148,14 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
             {
                 "ai_search": "content eq 'value'",
             },
-            "equal",
+            "equal with string",
+        ),
+        (
+            lambda x: x.id == 0,
+            {
+                "ai_search": "id eq 0",
+            },
+            "equal with int",
         ),
         (
             lambda x: x.content != "value",
@@ -163,7 +172,7 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
             "greater than",
         ),
         (
-            lambda x: x.id >= 0,
+            lambda x: x.id >= +0,
             {
                 "ai_search": "id ge 0",
             },
@@ -216,7 +225,21 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
             {
                 "ai_search": "not content",
             },
-            "not",
+            "not with truthy",
+        ),
+        (
+            lambda x: not (x.content == "value"),  # noqa: SIM201
+            {
+                "ai_search": "not content eq 'value'",
+            },
+            "not with equal",
+        ),
+        (
+            lambda x: not (x.content != "value"),  # noqa: SIM202
+            {
+                "ai_search": "not content ne 'value'",
+            },
+            "not with not equal",
         ),
         (
             lambda x: "value" in x.content,
@@ -238,6 +261,34 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
                 "ai_search": "((id gt 0 and id lt 3) or (id gt 7 and id lt 10))",
             },
             "complex",
+        ),
+        (
+            lambda x: x.unknown_field == "value",
+            {
+                "ai_search": VectorStoreOperationException,
+            },
+            "fail unknown field",
+        ),
+        (
+            lambda x: any(x == "a" for x in x.content),
+            {
+                "ai_search": NotImplementedError,
+            },
+            "comprehension",
+        ),
+        (
+            lambda x: ~x.id,
+            {
+                "ai_search": NotImplementedError,
+            },
+            "invert",
+        ),
+        (
+            lambda x: constant,  # noqa: F821
+            {
+                "ai_search": NotImplementedError,
+            },
+            "constant",
         ),
     ]
     return [param(s[0], s[1][store], id=s[2]) for s in sets if store in s[1]]

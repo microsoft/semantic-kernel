@@ -400,7 +400,7 @@ class AzureAISearchCollection(
                     case ast.USub():
                         return f"-{self._lambda_parser(node.operand)}"
                     case ast.Invert():
-                        return f"~{self._lambda_parser(node.operand)}"
+                        raise NotImplementedError("Invert operation is not supported.")
                     case ast.Not():
                         return f"not {self._lambda_parser(node.operand)}"
             case ast.Attribute():
@@ -409,7 +409,7 @@ class AzureAISearchCollection(
                     raise VectorStoreOperationException(f"Field '{node.attr}' not in data model.")
                 return node.attr
             case ast.Name():
-                return f"'{node.id}'"
+                raise NotImplementedError("Constants are not supported, make sure to use a value or a attribute.")
             case ast.Constant():
                 return str(node.value) if isinstance(node.value, float | int) else f"'{node.value}'"
         raise NotImplementedError(f"Unsupported AST node: {type(node)}")
