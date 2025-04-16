@@ -31,7 +31,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
                 apiKey: geminiApiKey)
             .Build();
 
-        await SimpleChatAsync(kernel);
+        await this.ProcessChatAsync(kernel);
     }
 
     [Fact]
@@ -100,13 +100,11 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
             return bearerToken;
         }
 
-        await SimpleChatAsync(kernel);
+        await this.ProcessChatAsync(kernel);
     }
 
-    private async Task SimpleChatAsync(Kernel kernel)
+    private async Task ProcessChatAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Simple Chat ========");
-
         var chatHistory = new ChatHistory("You are an expert in the tool shop.");
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 

@@ -32,7 +32,7 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
                 apiKey: geminiApiKey)
             .Build();
 
-        await StreamingChatAsync(kernel);
+        await this.ProcessStreamingChatAsync(kernel);
     }
 
     [Fact]
@@ -101,13 +101,11 @@ public sealed class Google_GeminiChatCompletionStreaming(ITestOutputHelper outpu
             return bearerToken;
         }
 
-        await StreamingChatAsync(kernel);
+        await this.ProcessStreamingChatAsync(kernel);
     }
 
-    private async Task StreamingChatAsync(Kernel kernel)
+    private async Task ProcessStreamingChatAsync(Kernel kernel)
     {
-        Console.WriteLine("======== Streaming Chat ========");
-
         var chatHistory = new ChatHistory("You are an expert in the tool shop.");
         var chat = kernel.GetRequiredService<IChatCompletionService>();
 
