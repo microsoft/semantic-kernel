@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods for creating KernelPlugin instances from agents.
 /// </summary>
-public static class KernelPluginFactoryExtensions
+public static class AgentKernelPluginFactory
 {
     /// <summary>
     /// Creates a plugin from a collection of agents. Each agent is converted into a KernelFunction via AgentKernelFunctionFactory.
@@ -19,7 +19,7 @@ public static class KernelPluginFactoryExtensions
     /// <param name="agents">A collection of agents to include in the plugin.</param>
     /// <returns>A KernelPlugin with functions derived from the provided agents.</returns>
     /// <exception cref="ArgumentNullException">Thrown when agents is null.</exception>
-    public static KernelPlugin CreateFromFunctions(string pluginName, string? description, IEnumerable<Agent> agents)
+    public static KernelPlugin CreateFromAgents(string pluginName, string? description, IEnumerable<Agent> agents)
     {
         if (agents == null)
         {
@@ -42,6 +42,6 @@ public static class KernelPluginFactoryExtensions
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="agents">The agents to include in the plugin.</param>
     /// <returns>A KernelPlugin with functions derived from the provided agents.</returns>
-    public static KernelPlugin CreateFromFunctions(string pluginName, params Agent[] agents) =>
-        CreateFromFunctions(pluginName, description: null, agents);
+    public static KernelPlugin CreateFromAgents(string pluginName, params Agent[] agents) =>
+        CreateFromAgents(pluginName, description: null, agents);
 }

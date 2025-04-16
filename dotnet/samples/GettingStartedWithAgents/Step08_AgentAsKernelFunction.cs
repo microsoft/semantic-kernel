@@ -68,7 +68,7 @@ public class Step08_AgentAsKernelFunction(ITestOutputHelper output) : BaseAgents
     public async Task MultipleAgentsAsync()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
-        KernelPlugin agentPlugin = KernelPluginFactoryExtensions.CreateFromFunctions("AgentPlugin",
+        KernelPlugin agentPlugin = AgentKernelPluginFactory.CreateFromAgents("AgentPlugin",
             [
                 this.CreateSalesAssistant(),
                 this.CreateRefundAgent()
