@@ -12,7 +12,6 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using OpenAI;
@@ -48,16 +47,16 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task ItCanUseOpenAiChatClientAndContentsAsync()
     {
-        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(OpenAIConfiguration);
-        Assert.NotNull(OpenAIConfiguration.ChatModelId);
-        Assert.NotNull(OpenAIConfiguration.ApiKey);
-        Assert.NotNull(OpenAIConfiguration.ServiceId);
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
         // Arrange
-        var openAIClient = new OpenAIClient(OpenAIConfiguration.ApiKey);
+        var openAIClient = new OpenAIClient(openAIConfiguration.ApiKey);
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddChatClient(openAIClient.AsChatClient(OpenAIConfiguration.ChatModelId));
+        builder.Services.AddChatClient(openAIClient.GetChatClient(openAIConfiguration.ChatModelId).AsIChatClient());
         var kernel = builder.Build();
 
         var func = kernel.CreateFunctionFromPrompt(
@@ -104,16 +103,16 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
     [Fact]
     public async Task ItCanUseOpenAiStreamingChatClientAndContentsAsync()
     {
-        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(OpenAIConfiguration);
-        Assert.NotNull(OpenAIConfiguration.ChatModelId);
-        Assert.NotNull(OpenAIConfiguration.ApiKey);
-        Assert.NotNull(OpenAIConfiguration.ServiceId);
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
         // Arrange
-        var openAIClient = new OpenAIClient(OpenAIConfiguration.ApiKey);
+        var openAIClient = new OpenAIClient(openAIConfiguration.ApiKey);
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddChatClient(openAIClient.AsChatClient(OpenAIConfiguration.ChatModelId));
+        builder.Services.AddChatClient(openAIClient.GetChatClient(openAIConfiguration.ChatModelId).AsIChatClient());
         var kernel = builder.Build();
 
         var plugins = TestHelpers.ImportSamplePlugins(kernel, "ChatPlugin");
@@ -179,7 +178,7 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
         // Assert
         Assert.All(statusCodes, s => Assert.Equal(HttpStatusCode.Unauthorized, s));
-        Assert.Equal(HttpStatusCode.Unauthorized, ((HttpOperationException)exception).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, exception.StatusCode);
     }
 
     [Fact]
@@ -258,11 +257,11 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
         var kernel = this.CreateAndInitializeKernel(httpClient);
 
         // Act
-        var result = await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
+        await kernel.InvokePromptAsync("Where is the most famous fish market in Seattle, Washington, USA?");
 
         // Assert
         Assert.NotNull(httpHeaderHandler.RequestHeaders);
-        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var values));
+        Assert.True(httpHeaderHandler.RequestHeaders.TryGetValues("Semantic-Kernel-Version", out var _));
     }
 
     //[Theory(Skip = "This test is for manual verification.")]
@@ -301,18 +300,18 @@ public sealed class OpenAIChatCompletionTests : BaseIntegrationTest
 
     private Kernel CreateAndInitializeKernel(HttpClient? httpClient = null)
     {
-        var OpenAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
-        Assert.NotNull(OpenAIConfiguration);
-        Assert.NotNull(OpenAIConfiguration.ChatModelId);
-        Assert.NotNull(OpenAIConfiguration.ApiKey);
-        Assert.NotNull(OpenAIConfiguration.ServiceId);
+        var openAIConfiguration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>();
+        Assert.NotNull(openAIConfiguration);
+        Assert.NotNull(openAIConfiguration.ChatModelId);
+        Assert.NotNull(openAIConfiguration.ApiKey);
+        Assert.NotNull(openAIConfiguration.ServiceId);
 
-        var kernelBuilder = base.CreateKernelBuilder();
+        var kernelBuilder = this.CreateKernelBuilder();
 
         kernelBuilder.AddOpenAIChatCompletion(
-            modelId: OpenAIConfiguration.ChatModelId,
-            apiKey: OpenAIConfiguration.ApiKey,
-            serviceId: OpenAIConfiguration.ServiceId,
+            modelId: openAIConfiguration.ChatModelId,
+            apiKey: openAIConfiguration.ApiKey,
+            serviceId: openAIConfiguration.ServiceId,
             httpClient: httpClient);
 
         return kernelBuilder.Build();

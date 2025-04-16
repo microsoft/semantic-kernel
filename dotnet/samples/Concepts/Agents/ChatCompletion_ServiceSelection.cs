@@ -109,11 +109,11 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
             {
                 builder.Services.AddKeyedChatClient(
                     ServiceKeyBad,
-                    new OpenAI.OpenAIClient("bad-key").AsChatClient(TestConfiguration.OpenAI.ChatModelId));
+                    new OpenAI.OpenAIClient("bad-key").GetChatClient(TestConfiguration.OpenAI.ChatModelId).AsIChatClient());
 
                 builder.Services.AddKeyedChatClient(
                     ServiceKeyGood,
-                    new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey).AsChatClient(TestConfiguration.OpenAI.ChatModelId));
+                    new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey).GetChatClient(TestConfiguration.OpenAI.ChatModelId).AsIChatClient());
             }
             else
             {
@@ -122,14 +122,16 @@ public class ChatCompletion_ServiceSelection(ITestOutputHelper output) : BaseAge
                     new Azure.AI.OpenAI.AzureOpenAIClient(
                         new Uri(TestConfiguration.AzureOpenAI.Endpoint),
                         new Azure.AzureKeyCredential("bad-key"))
-                    .AsChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName));
+                        .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                        .AsIChatClient());
 
                 builder.Services.AddKeyedChatClient(
                     ServiceKeyGood,
                     new Azure.AI.OpenAI.AzureOpenAIClient(
                         new Uri(TestConfiguration.AzureOpenAI.Endpoint),
                         new Azure.AzureKeyCredential(TestConfiguration.AzureOpenAI.ApiKey))
-                    .AsChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName));
+                        .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                        .AsIChatClient());
             }
         }
         else

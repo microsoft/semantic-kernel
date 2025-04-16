@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -7,7 +8,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 internal static class ChatMessageExtensions
 {
     /// <summary>Converts a <see cref="ChatMessage"/> to a <see cref="ChatMessageContent"/>.</summary>
-    /// <remarks>This conversion should not be necessary once SK eventually adopts the shared content types.</remarks>
     internal static ChatMessageContent ToChatMessageContent(this ChatMessage message, Microsoft.Extensions.AI.ChatResponse? response = null)
     {
         ChatMessageContent result = new()
@@ -45,5 +45,16 @@ internal static class ChatMessageExtensions
         }
 
         return result;
+    }
+
+    /// <summary>Converts a list of <see cref="ChatMessage"/> to a <see cref="ChatHistory"/>.</summary>
+    internal static ChatHistory ToChatHistory(this IEnumerable<ChatMessage> chatMessages)
+    {
+        ChatHistory chatHistory = [];
+        foreach (var message in chatMessages)
+        {
+            chatHistory.Add(message.ToChatMessageContent());
+        }
+        return chatHistory;
     }
 }

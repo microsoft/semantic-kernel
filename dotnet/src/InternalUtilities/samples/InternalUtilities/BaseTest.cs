@@ -99,25 +99,25 @@ public abstract class BaseTest : TextWriter
         IChatClient chatClient;
         if (this.UseOpenAIConfig)
         {
-            chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
-                new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey),
-                TestConfiguration.OpenAI.ChatModelId);
+            chatClient = new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+                .GetChatClient(TestConfiguration.OpenAI.ChatModelId)
+                .AsIChatClient();
         }
         else if (!string.IsNullOrEmpty(this.ApiKey))
         {
-            chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
-                openAIClient: new AzureOpenAIClient(
+            chatClient = new AzureOpenAIClient(
                     endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
-                    credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey)),
-                modelId: TestConfiguration.AzureOpenAI.ChatDeploymentName);
+                    credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey))
+                .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                .AsIChatClient();
         }
         else
         {
-            chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
-                openAIClient: new AzureOpenAIClient(
+            chatClient = new AzureOpenAIClient(
                     endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
-                    credential: new AzureCliCredential()),
-                modelId: TestConfiguration.AzureOpenAI.ChatDeploymentName);
+                    credential: new AzureCliCredential())
+                .GetChatClient(TestConfiguration.AzureOpenAI.ChatDeploymentName)
+                .AsIChatClient();
         }
 
         var functionCallingChatClient = chatClient!.AsKernelFunctionInvokingChatClient();

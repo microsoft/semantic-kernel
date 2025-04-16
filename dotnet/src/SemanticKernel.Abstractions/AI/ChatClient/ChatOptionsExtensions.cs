@@ -13,6 +13,11 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 /// </summary>
 internal static class ChatOptionsExtensions
 {
+    internal const string KernelKey = "AutoInvokingKernel";
+    internal const string IsStreamingKey = "AutoInvokingIsStreaming";
+    internal const string ChatMessageContentKey = "AutoInvokingChatCompletionContent";
+    internal const string PromptExecutionSettingsKey = "AutoInvokingPromptExecutionSettings";
+
     /// <summary>Converts a <see cref="ChatOptions"/> to a <see cref="PromptExecutionSettings"/>.</summary>
     internal static PromptExecutionSettings? ToPromptExecutionSettings(this ChatOptions? options)
     {
@@ -117,5 +122,24 @@ internal static class ChatOptionsExtensions
         }
 
         return settings;
+    }
+
+    /// <summary>
+    /// To enable usage of AutoFunctionInvocationFilters with ChatClient's the kernel needs to be provided in the ChatOptions
+    /// </summary>
+    /// <param name="options">Chat options.</param>
+    /// <param name="kernel">Kernel to be used for auto function invocation.</param>
+    internal static ChatOptions AddKernel(this ChatOptions options, Kernel? kernel)
+    {
+        Verify.NotNull(options);
+
+        // Only add the kernel if it is provided
+        if (kernel is not null)
+        {
+            options.AdditionalProperties ??= [];
+            options.AdditionalProperties.TryAdd(KernelKey, kernel);
+        }
+
+        return options;
     }
 }

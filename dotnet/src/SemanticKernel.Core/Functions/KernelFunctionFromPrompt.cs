@@ -283,7 +283,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
         else if (result.AIService is IChatClient chatClient)
         {
-            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings.ToChatOptions(kernel), cancellationToken);
+            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
         }
         else
         {
@@ -818,10 +818,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             };
         }
 
-        var modelId = chatClient.GetService<ChatClientMetadata>()?.ModelId;
+        var modelId = chatClient.GetService<ChatClientMetadata>()?.DefaultModelId;
 
         // Usage details are global and duplicated for each chat message content, use first one to get usage information
-        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.ModelId, chatResponse.Usage, this._logger);
+        this.CaptureUsageDetails(chatClient.GetService<ChatClientMetadata>()?.DefaultModelId, chatResponse.Usage, this._logger);
 
         return new FunctionResult(this, chatResponse)
         {

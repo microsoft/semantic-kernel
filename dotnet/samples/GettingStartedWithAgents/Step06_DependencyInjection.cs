@@ -43,25 +43,25 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
             IChatClient chatClient;
             if (this.UseOpenAIConfig)
             {
-                chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
-                    new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey),
-                    TestConfiguration.OpenAI.ChatModelId);
+                chatClient = new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
+                    .GetChatClient(TestConfiguration.OpenAI.ChatModelId)
+                    .AsIChatClient();
             }
             else if (!string.IsNullOrEmpty(this.ApiKey))
             {
-                chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
-                    openAIClient: new AzureOpenAIClient(
+                chatClient = new AzureOpenAIClient(
                         endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
-                        credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey)),
-                    modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+                        credential: new ApiKeyCredential(TestConfiguration.AzureOpenAI.ApiKey))
+                    .GetChatClient(TestConfiguration.OpenAI.ChatModelId)
+                    .AsIChatClient();
             }
             else
             {
-                chatClient = new Microsoft.Extensions.AI.OpenAIChatClient(
-                    openAIClient: new AzureOpenAIClient(
+                chatClient = new AzureOpenAIClient(
                         endpoint: new Uri(TestConfiguration.AzureOpenAI.Endpoint),
-                        credential: new AzureCliCredential()),
-                    modelId: TestConfiguration.AzureOpenAI.ChatModelId);
+                        credential: new AzureCliCredential())
+                    .GetChatClient(TestConfiguration.OpenAI.ChatModelId)
+                    .AsIChatClient();
             }
 
             var functionCallingChatClient = chatClient!.AsKernelFunctionInvokingChatClient();

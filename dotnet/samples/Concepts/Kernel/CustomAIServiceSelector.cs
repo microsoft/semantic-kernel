@@ -10,7 +10,7 @@ using Microsoft.SemanticKernel.Services;
 namespace KernelExamples;
 
 /// <summary>
-/// This sample shows how to use a custom AI service selector to select a specific model by matching it's id.
+/// This sample shows how to use a custom AI service selector to select a specific model by matching the model id.
 /// </summary>
 public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output)
 {
@@ -39,7 +39,8 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
         builder.Services
             .AddSingleton<IAIServiceSelector>(customSelector)
             .AddKeyedChatClient("OpenAIChatClient", new OpenAI.OpenAIClient(TestConfiguration.OpenAI.ApiKey)
-                .AsChatClient("gpt-4o")); // Add a IChatClient to the kernel
+                .GetChatClient("gpt-4o")
+                .AsIChatClient()); // Add a IChatClient to the kernel
 
         Kernel kernel = builder.Build();
 
@@ -60,7 +61,6 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
         private readonly ITestOutputHelper _output = output;
         private readonly string _modelNameStartsWith = modelNameStartsWith;
 
-        /// <inheritdoc/>
         private bool TrySelect<T>(
             Kernel kernel, KernelFunction function, KernelArguments arguments,
             [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class
@@ -78,7 +78,7 @@ public class CustomAIServiceSelector(ITestOutputHelper output) : BaseTest(output
                 else if (serviceToCheck is IChatClient chatClient)
                 {
                     var metadata = chatClient.GetService<ChatClientMetadata>();
-                    serviceModelId = metadata?.ModelId;
+                    serviceModelId = metadata?.DefaultModelId;
                     endpoint = metadata?.ProviderUri?.ToString();
                 }
 

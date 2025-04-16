@@ -211,7 +211,7 @@ internal sealed class FunctionCallsProcessor
         {
             bool terminationRequested = false;
 
-            // Wait for all of the function invocations to complete, then add the results to the chat, but stop when we hit a
+            // Wait for all the function invocations to complete, then add the results to the chat, but stop when we hit a
             // function for which termination was requested.
             FunctionResultContext[] resultContexts = await Task.WhenAll(functionTasks).ConfigureAwait(false);
             foreach (FunctionResultContext resultContext in resultContexts)
@@ -487,8 +487,8 @@ internal sealed class FunctionCallsProcessor
             return stringResult;
         }
 
-        // This is an optimization to use ChatMessageContent content directly  
-        // without unnecessary serialization of the whole message content class.  
+        // This is an optimization to use ChatMessageContent content directly
+        // without unnecessary serialization of the whole message content class.
         if (functionResult is ChatMessageContent chatMessageContent)
         {
             return chatMessageContent.ToString();

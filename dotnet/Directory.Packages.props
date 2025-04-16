@@ -93,7 +93,6 @@
     <PackageVersion Include="SharpToken" Version="2.0.3" />
     <!-- Microsoft.Extensions.* -->
     <PackageVersion Include="Microsoft.Extensions.AI" Version="9.4.0-preview.1.25207.5" />
-    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.4.0-preview.1.25207.5" />
     <PackageVersion Include="Microsoft.Extensions.AI.AzureAIInference" Version="9.4.0-preview.1.25207.5" />
     <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.4.0-preview.1.25207.5" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
@@ -109,7 +108,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.9.1" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
