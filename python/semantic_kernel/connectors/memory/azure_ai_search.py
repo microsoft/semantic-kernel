@@ -6,7 +6,7 @@ import inspect
 import logging
 import sys
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, override
+from typing import TYPE_CHECKING, Any, ClassVar, Generic
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.credentials_async import AsyncTokenCredential
@@ -62,7 +62,6 @@ if TYPE_CHECKING:
     from azure.core.credentials import AzureKeyCredential, TokenCredential
     from azure.core.credentials_async import AsyncTokenCredential
 
-    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
