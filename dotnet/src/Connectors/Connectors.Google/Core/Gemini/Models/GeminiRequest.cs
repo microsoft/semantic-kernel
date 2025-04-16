@@ -390,7 +390,7 @@ internal sealed class GeminiRequest
         return AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
     }
 
-    private static JsonSerializerOptions GetDefaultOptions()
+    internal static JsonSerializerOptions GetDefaultOptions()
     {
         if (s_options is null)
         {
