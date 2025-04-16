@@ -11,6 +11,52 @@ namespace VectorDataSpecificationTests.Collections;
 public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixture)
     where TKey : notnull
 {
+    [ConditionalFact]
+    public async Task VectorStoreDeleteCollectionDeletesExistingCollection()
+    {
+        // Arrange.
+        var collection = await this.GetNonExistingCollectionAsync<SimpleRecord<TKey>>();
+        await collection.CreateCollectionAsync();
+        Assert.True(await collection.CollectionExistsAsync());
+
+        // Act.
+        await fixture.TestStore.DefaultVectorStore.DeleteCollectionAsync(collection.CollectionName);
+
+        // Assert.
+        Assert.False(await collection.CollectionExistsAsync());
+    }
+
+    [ConditionalFact]
+    public async Task VectorStoreDeleteCollectionDoesNotThrowForNonExistingCollection()
+    {
+        await fixture.TestStore.DefaultVectorStore.DeleteCollectionAsync(fixture.GetUniqueCollectionName());
+    }
+
+    [ConditionalFact]
+    public async Task VectorStoreCollectionExistsReturnsTrueForExistingCollection()
+    {
+        // Arrange.
+        var collection = await this.GetNonExistingCollectionAsync<SimpleRecord<TKey>>();
+
+        try
+        {
+            await collection.CreateCollectionAsync();
+
+            // Act & Assert.
+            Assert.True(await fixture.TestStore.DefaultVectorStore.CollectionExistsAsync(collection.CollectionName));
+        }
+        finally
+        {
+            await collection.DeleteCollectionAsync();
+        }
+    }
+
+    [ConditionalFact]
+    public async Task VectorStoreCollectionExistsReturnsFalseForNonExistingCollection()
+    {
+        Assert.False(await fixture.TestStore.DefaultVectorStore.CollectionExistsAsync(fixture.GetUniqueCollectionName()));
+    }
+
     [ConditionalTheory]
     [MemberData(nameof(UseDynamicMappingData))]
     public Task DeleteCollectionDoesNotThrowForNonExistingCollection(bool useDynamicMapping)
@@ -133,7 +179,7 @@ public abstract class CollectionConformanceTests<TKey>(VectorStoreFixture fixtur
                 new VectorStoreRecordKeyProperty(nameof(SimpleRecord<object>.Id), typeof(TKey)) { StoragePropertyName = "key" },
                 new VectorStoreRecordDataProperty(nameof(SimpleRecord<object>.Text), typeof(string)) { StoragePropertyName = "text" },
                 new VectorStoreRecordDataProperty(nameof(SimpleRecord<object>.Number), typeof(int)) { StoragePropertyName = "number" },
-                new VectorStoreRecordVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10)
+                new VectorStoreRecordVectorProperty(nameof(SimpleRecord<object>.Floats), typeof(ReadOnlyMemory<float>), 10) { IndexKind = fixture.TestStore.DefaultIndexKind }
             ]
         };
 

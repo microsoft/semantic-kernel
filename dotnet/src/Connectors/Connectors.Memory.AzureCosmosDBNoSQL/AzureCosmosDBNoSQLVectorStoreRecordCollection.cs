@@ -170,12 +170,28 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("DeleteContainer", () =>
-            this._database
+        try
+        {
+            await this._database
                 .GetContainer(this.CollectionName)
-                .DeleteContainerAsync(cancellationToken: cancellationToken));
+                .DeleteContainerAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            // Do nothing, since the container is already deleted.
+        }
+        catch (CosmosException ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.CollectionName,
+                OperationName = "DeleteContainer"
+            };
+        }
     }
 
     /// <inheritdoc />
@@ -441,7 +457,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (CosmosException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
