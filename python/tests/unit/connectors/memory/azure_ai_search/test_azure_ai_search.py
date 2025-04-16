@@ -402,5 +402,9 @@ async def test_search_keyword_hybrid_search(collection, mock_search, include_vec
 @mark.parametrize("filter, result", filter_lambda_list("ai_search"))
 def test_lambda_filter(collection, filter, result):
     options = VectorSearchOptions(filter=filter)
-    filter_string = collection._build_filter_string(options.filter)
-    assert filter_string == result
+    if isinstance(result, type) and issubclass(result, Exception):
+        with raises(result):
+            collection._build_filter_string(options.filter)
+    else:
+        filter_string = collection._build_filter_string(options.filter)
+        assert filter_string == result
