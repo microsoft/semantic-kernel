@@ -59,7 +59,7 @@ public sealed class AgentDefinition
     /// <summary>
     /// Gets or sets the collection of outputs supported by the agent.
     /// </summary>
-    public IList<AgentOutput>? Outputs { get; set; }
+    public IDictionary<string, AgentOutput>? Outputs { get; set; }
 
     /// <summary>
     /// Gets or sets the template options used by the agent.

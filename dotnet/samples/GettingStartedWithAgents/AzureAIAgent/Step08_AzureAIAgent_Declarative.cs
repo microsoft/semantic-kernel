@@ -17,14 +17,14 @@ namespace GettingStarted.AzureAgents;
 /// </summary>
 public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
 {
-    /// <summary>
-    /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
-    /// </summary>
-    [Fact]
-    public async Task AzureAIAgentWithConfiguration()
-    {
-        var text =
-            """
+  /// <summary>
+  /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
+  /// </summary>
+  [Fact]
+  public async Task AzureAIAgentWithConfiguration()
+  {
+    var text =
+        """
             type: foundry_agent
             name: MyAgent
             description: My helpful agent.
@@ -34,23 +34,23 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
               connection:
                 connection_string: ${AzureAI:ConnectionString}
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
-        var kernel = builder.Build();
+    var builder = Kernel.CreateBuilder();
+    builder.Services.AddSingleton<TokenCredential>(new AzureCliCredential());
+    var kernel = builder.Build();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
-    }
+    await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithKernel()
-    {
-        var text =
-            """
+  [Fact]
+  public async Task AzureAIAgentWithKernel()
+  {
+    var text =
+        """
             type: foundry_agent
             name: MyAgent
             description: My helpful agent.
@@ -58,19 +58,19 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             model:
               id: ${AzureAI:ChatModelId}
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
-    }
+    await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithCodeInterpreter()
-    {
-        var text =
-            """
+  [Fact]
+  public async Task AzureAIAgentWithCodeInterpreter()
+  {
+    var text =
+        """
             type: foundry_agent
             name: CodeInterpreterAgent
             instructions: Use the code interpreter tool to answer questions which require code to be generated and executed.
@@ -80,19 +80,19 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             tools:
               - type: code_interpreter
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
-    }
+    await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithFunctions()
-    {
-        var text =
-            """
+  [Fact]
+  public async Task AzureAIAgentWithFunctions()
+  {
+    var text =
+        """
             type: foundry_agent
             name: FunctionCallingAgent
             instructions: Use the provided functions to answer questions about the menu.
@@ -115,22 +115,22 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                       required: true
                       description: The name of the menu item.  
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
+    KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+    this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
-    }
+    await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithBingGrounding()
-    {
-        var text =
-            $"""
+  [Fact]
+  public async Task AzureAIAgentWithBingGrounding()
+  {
+    var text =
+        $"""
             type: foundry_agent
             name: BingAgent
             instructions: Answer questions using Bing to provide grounding context.
@@ -145,22 +145,22 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                   tool_connections:
                     - {TestConfiguration.AzureAI.BingConnectionId}
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
+    KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+    this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?");
-    }
+    await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithFileSearch()
-    {
-        var text =
-            $"""
+  [Fact]
+  public async Task AzureAIAgentWithFileSearch()
+  {
+    var text =
+        $"""
             type: foundry_agent
             name: FileSearchAgent
             instructions: Answer questions using available files to provide grounding context.
@@ -176,22 +176,22 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                   vector_store_ids:
                     - {TestConfiguration.AzureAI.VectorStoreId}
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        this._kernel.Plugins.Add(plugin);
+    KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
+    this._kernel.Plugins.Add(plugin);
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");
-    }
+    await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithOpenAPI()
-    {
-        var text =
-            """
+  [Fact]
+  public async Task AzureAIAgentWithOpenAPI()
+  {
+    var text =
+        """
             type: foundry_agent
             name: WeatherAgent
             instructions: Answer questions about the weather. For all other questions politely decline to answer.
@@ -269,19 +269,19 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                       }
                     }
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
-    }
+    await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithOpenAPIYaml()
-    {
-        var text =
-            """
+  [Fact]
+  public async Task AzureAIAgentWithOpenAPIYaml()
+  {
+    var text =
+        """
             type: foundry_agent
             name: WeatherAgent
             instructions: Answer questions about the weather. For all other questions politely decline to answer.
@@ -336,19 +336,19 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                     components:  
                       schemes: {}  
             """;
-        AzureAIAgentFactory factory = new();
+    AzureAIAgentFactory factory = new();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
-    }
+    await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
+  }
 
-    [Fact]
-    public async Task AzureAIAgentWithTemplate()
-    {
-        var text =
-            """
+  [Fact]
+  public async Task AzureAIAgentWithTemplate()
+  {
+    var text =
+        """
             type: foundry_agent
             name: StoryAgent
             description: A agent that generates a story about a topic.
@@ -365,89 +365,90 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;
-        AzureAIAgentFactory factory = new();
-        var promptTemplateFactory = new KernelPromptTemplateFactory();
+    AzureAIAgentFactory factory = new();
+    var promptTemplateFactory = new KernelPromptTemplateFactory();
 
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
+    var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+    Assert.NotNull(agent);
 
-        var options = new AgentInvokeOptions()
-        {
-            KernelArguments = new()
+    var options = new AgentInvokeOptions()
+    {
+      KernelArguments = new()
             {
                 { "topic", "Dogs" },
                 { "length", "3" },
             }
-        };
+    };
 
-        Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
-        try
-        {
-            await foreach (var response in agent.InvokeAsync([], agentThread, options))
-            {
-                agentThread = response.Thread;
-                this.WriteAgentChatMessage(response);
-            }
-        }
-        finally
-        {
-            var azureaiAgent = agent as AzureAIAgent;
-            Assert.NotNull(azureaiAgent);
-            await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
-
-            if (agentThread is not null)
-            {
-                await agentThread.DeleteAsync();
-            }
-        }
-    }
-
-    public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
+    Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
+    try
     {
-        var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<AIProjectClient>(this.Client);
-        this._kernel = builder.Build();
+      await foreach (var response in agent.InvokeAsync([], agentThread, options))
+      {
+        agentThread = response.Thread;
+        this.WriteAgentChatMessage(response);
+      }
     }
-
-    #region private
-    private readonly Kernel _kernel;
-
-    /// <summary>
-    /// Invoke the agent with the user input.
-    /// </summary>
-    private async Task InvokeAgentAsync(Agent agent, string input, bool? deleteAgent = true)
+    finally
     {
-        Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
-        try
-        {
-            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
-            {
-                agentThread = response.Thread;
-                WriteAgentChatMessage(response);
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine($"Error invoking agent: {e.Message}");
-        }
-        finally
-        {
-            if (deleteAgent ?? true)
-            {
-                var azureaiAgent = agent as AzureAIAgent;
-                Assert.NotNull(azureaiAgent);
-                await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+      var azureaiAgent = agent as AzureAIAgent;
+      Assert.NotNull(azureaiAgent);
+      await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
 
-                if (agentThread is not null)
-                {
-                    await agentThread.DeleteAsync();
-                }
-            }
-        }
+      if (agentThread is not null)
+      {
+        await agentThread.DeleteAsync();
+      }
     }
-    #endregion
+  }
+
+  public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
+  {
+    var builder = Kernel.CreateBuilder();
+    builder.Services.AddSingleton<AIProjectClient>(this.Client);
+    this._kernel = builder.Build();
+  }
+
+  #region private
+  private readonly Kernel _kernel;
+
+  /// <summary>
+  /// Invoke the agent with the user input.
+  /// </summary>
+  private async Task InvokeAgentAsync(Agent agent, string input, bool? deleteAgent = true)
+  {
+    Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
+    try
+    {
+      await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, input)))
+      {
+        agentThread = response.Thread;
+        WriteAgentChatMessage(response);
+      }
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine($"Error invoking agent: {e.Message}");
+    }
+    finally
+    {
+      if (deleteAgent ?? true)
+      {
+        var azureaiAgent = agent as AzureAIAgent;
+        Assert.NotNull(azureaiAgent);
+        await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+
+        if (agentThread is not null)
+        {
+          await agentThread.DeleteAsync();
+        }
+      }
+    }
+  }
+  #endregion
 }
