@@ -35,7 +35,9 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         this._messages = [];
     }
 
-    // Due to changes using the AutoFunctionInvocation as a dependency of KernelInvocation, that needs to reflect
+    // This allows observation of the chat history changes by-reference  reflecting in an
+    // internal IEnumerable<Microsoft.Extensions.AI.ChatMessage> when used from IChatClients
+    // with AutoFunctionInvocationFilters
     internal void SetOverrides(
         Action<ChatMessageContent> overrideAdd,
         Func<ChatMessageContent, bool> overrideRemove,
