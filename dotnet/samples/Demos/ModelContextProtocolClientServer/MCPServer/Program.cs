@@ -8,12 +8,16 @@ using MCPServer.Tools;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 using Microsoft.SemanticKernel.Embeddings;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
 
 var builder = Host.CreateEmptyApplicationBuilder(settings: null);
+
+// Load and validate configuration
+(string embeddingModelId, string chatModelId, string apiKey) = GetConfiguration();
 
 // Register the kernel
 IKernelBuilder kernelBuilder = builder.Services.AddKernel();
@@ -23,10 +27,12 @@ kernelBuilder.Plugins.AddFromType<DateTimeUtils>();
 kernelBuilder.Plugins.AddFromType<WeatherUtils>();
 kernelBuilder.Plugins.AddFromType<MailboxUtils>();
 
+// Register SK agent as plugin
+kernelBuilder.Plugins.AddFromFunctions("Agents", [AgentKernelFunctionFactory.CreateFromAgent(CreateSalesAssistantAgent(chatModelId, apiKey))]);
+
 // Register embedding generation service and in-memory vector store
-(string modelId, string apiKey) = GetConfiguration();
-kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(modelId, apiKey);
 kernelBuilder.Services.AddSingleton<IVectorStore, InMemoryVectorStore>();
+kernelBuilder.Services.AddOpenAITextEmbeddingGeneration(embeddingModelId, apiKey);
 
 // Register MCP server
 builder.Services
@@ -54,7 +60,7 @@ await builder.Build().RunAsync();
 /// <summary>
 /// Gets configuration.
 /// </summary>
-static (string EmbeddingModelId, string ApiKey) GetConfiguration()
+static (string EmbeddingModelId, string ChatModelId, string ApiKey) GetConfiguration()
 {
     // Load and validate configuration
     IConfigurationRoot config = new ConfigurationBuilder()
@@ -69,11 +75,12 @@ static (string EmbeddingModelId, string ApiKey) GetConfiguration()
         throw new InvalidOperationException(Message);
     }
 
-    string modelId = config["OpenAI:EmbeddingModelId"] ?? "text-embedding-3-small";
+    string embeddingModelId = config["OpenAI:EmbeddingModelId"] ?? "text-embedding-3-small";
 
-    return (modelId, apiKey);
+    string chatModelId = config["OpenAI:ChatModelId"] ?? "gpt-4o-mini";
+
+    return (embeddingModelId, chatModelId, apiKey);
 }
-
 static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel? kernel = null)
 {
     return new ResourceTemplateDefinition
@@ -136,5 +143,33 @@ static ResourceTemplateDefinition CreateVectorStoreSearchResourceTemplate(Kernel
 
             return new ReadResourceResult { Contents = contents };
         }
+    };
+}
+
+static Agent CreateSalesAssistantAgent(string chatModelId, string apiKey)
+{
+    IKernelBuilder kernelBuilder = Kernel.CreateBuilder();
+
+    // Register the SK plugin fot the agent to use
+    kernelBuilder.Plugins.AddFromType<OrderProcessingUtils>();
+
+    // Register chat completion service
+    kernelBuilder.Services.AddOpenAIChatCompletion(chatModelId, apiKey);
+
+    // Using a dedicated kernel with the `OrderProcessingUtils` plugin instead of the global kernel has a few advantages:
+    // - The agent has access to only relevant plugins, leading to better decision-making regarding which plugin to use.
+    //   Fewer plugins mean less ambiguity in selecting the most appropriate one for a given task.
+    // - The plugin is isolated from other plugins exposed by the MCP server. As a result the client's Agent/AI model does
+    //   not have access to irrelevant plugins.
+    Kernel kernel = kernelBuilder.Build();
+
+    // Define the agent
+    return new ChatCompletionAgent()
+    {
+        Name = "SalesAssistant",
+        Instructions = "You are a sales assistant. Place orders for items the user requests and handle refunds.",
+        Description = "Agent to invoke to place orders for items the user requests and handle refunds.",
+        Kernel = kernel,
+        Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
     };
 }
