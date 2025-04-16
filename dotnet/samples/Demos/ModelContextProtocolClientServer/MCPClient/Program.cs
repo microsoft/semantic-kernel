@@ -17,7 +17,7 @@ using ModelContextProtocol.Protocol.Types;
 
 namespace MCPClient;
 
-internal sealed class Program
+internal sealed partial class Program
 {
     public static async Task Main(string[] args)
     {
@@ -30,6 +30,10 @@ internal sealed class Program
         await UseMCPResourceTemplatesAsync();
 
         await UseMCPSamplingAsync();
+
+        await UseChatCompletionAgentWithMCPToolsAsync();
+
+        await UseAzureAIAgentWithMCPToolsAsync();
     }
 
     /// <summary>
