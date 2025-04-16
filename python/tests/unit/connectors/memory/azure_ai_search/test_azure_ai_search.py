@@ -4,14 +4,14 @@
 import asyncio
 from unittest.mock import MagicMock, Mock, patch
 
+from azure.search.documents.aio import SearchClient
+from azure.search.documents.indexes.aio import SearchIndexClient
 from pytest import fixture, mark, raises
 
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection import AzureAISearchCollection
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import AzureAISearchSettings
-from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store import AzureAISearchStore
-from semantic_kernel.connectors.memory.azure_ai_search.utils import (
-    SearchClientWrapper,
-    SearchIndexClientWrapper,
+from semantic_kernel.connectors.memory.azure_ai_search import (
+    AzureAISearchCollection,
+    AzureAISearchSettings,
+    AzureAISearchStore,
     data_model_definition_to_azure_ai_search_index,
     get_search_index_client,
 )
@@ -133,8 +133,8 @@ def test_init_index_fail(azure_ai_search_unit_test_env, data_model_definition):
 
 
 def test_init_with_clients(azure_ai_search_unit_test_env, data_model_definition):
-    search_index_client = MagicMock(spec=SearchIndexClientWrapper)
-    search_client = MagicMock(spec=SearchClientWrapper)
+    search_index_client = MagicMock(spec=SearchIndexClient)
+    search_client = MagicMock(spec=SearchClient)
     search_client._index_name = "test-index-name"
 
     collection = AzureAISearchCollection(
@@ -152,11 +152,9 @@ def test_init_with_clients(azure_ai_search_unit_test_env, data_model_definition)
 
 
 def test_init_with_search_index_client(azure_ai_search_unit_test_env, data_model_definition):
-    search_index_client = MagicMock(spec=SearchIndexClientWrapper)
-    with patch(
-        "semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection.get_search_client"
-    ) as get_search_client:
-        search_client = MagicMock(spec=SearchClientWrapper)
+    search_index_client = MagicMock(spec=SearchIndexClient)
+    with patch("semantic_kernel.connectors.memory.azure_ai_search.get_search_client") as get_search_client:
+        search_client = MagicMock(spec=SearchClient)
         get_search_client.return_value = search_client
 
         collection = AzureAISearchCollection(
@@ -174,7 +172,7 @@ def test_init_with_search_index_client(azure_ai_search_unit_test_env, data_model
 
 
 def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, data_model_definition):
-    search_index_client = MagicMock(spec=SearchIndexClientWrapper)
+    search_index_client = MagicMock(spec=SearchIndexClient)
     with raises(VectorStoreInitializationException, match="Collection name is required."):
         AzureAISearchCollection(
             data_model_type=dict,
@@ -184,8 +182,8 @@ def test_init_with_search_index_client_fail(azure_ai_search_unit_test_env, data_
 
 
 def test_init_with_clients_fail(azure_ai_search_unit_test_env, data_model_definition):
-    search_index_client = MagicMock(spec=SearchIndexClientWrapper)
-    search_client = MagicMock(spec=SearchClientWrapper)
+    search_index_client = MagicMock(spec=SearchIndexClient)
+    search_client = MagicMock(spec=SearchClient)
     search_client._index_name = "test-index-name"
 
     with raises(
@@ -239,7 +237,7 @@ async def test_create_index_from_definition(collection, mock_create_collection):
     from azure.search.documents.indexes.models import SearchIndex
 
     with patch(
-        "semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_collection.data_model_definition_to_azure_ai_search_index",
+        "semantic_kernel.connectors.memory.azure_ai_search.data_model_definition_to_azure_ai_search_index",
         return_value=MagicMock(spec=SearchIndex),
     ):
         await collection.create_collection()
