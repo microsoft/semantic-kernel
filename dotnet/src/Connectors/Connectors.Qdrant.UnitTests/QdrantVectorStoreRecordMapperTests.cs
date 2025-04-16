@@ -82,7 +82,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(5, hasNamedVectors), new() { IncludeVectors = includeVectors });
+        var point = CreateSinglePropsPointStruct(5, hasNamedVectors);
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -113,7 +114,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors), new() { IncludeVectors = includeVectors });
+        var point = CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors);
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -199,7 +201,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(5), new() { IncludeVectors = includeVectors });
+        var point = CreateMultiPropsPointStruct(5);
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -237,7 +240,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111")), new() { IncludeVectors = includeVectors });
+        var point = CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"));
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -293,55 +297,57 @@ public class QdrantVectorStoreRecordMapperTests
         };
     }
 
-    private static PointStruct CreateSinglePropsPointStruct(ulong id, bool hasNamedVectors)
+    private static RetrievedPoint CreateSinglePropsPointStruct(ulong id, bool hasNamedVectors)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Num = id };
         AddDataToSinglePropsPointStruct(pointStruct, hasNamedVectors);
         return pointStruct;
     }
 
-    private static PointStruct CreateSinglePropsPointStruct(Guid id, bool hasNamedVectors)
+    private static RetrievedPoint CreateSinglePropsPointStruct(Guid id, bool hasNamedVectors)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Uuid = id.ToString() };
         AddDataToSinglePropsPointStruct(pointStruct, hasNamedVectors);
         return pointStruct;
     }
 
-    private static void AddDataToSinglePropsPointStruct(PointStruct pointStruct, bool hasNamedVectors)
+    private static void AddDataToSinglePropsPointStruct(RetrievedPoint pointStruct, bool hasNamedVectors)
     {
+        var responseVector = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3, 4] }");
+
         pointStruct.Payload.Add("data", "data value");
 
         if (hasNamedVectors)
         {
-            var namedVectors = new NamedVectors();
-            namedVectors.Vectors.Add("vector", new[] { 1f, 2f, 3f, 4f });
-            pointStruct.Vectors = new Vectors() { Vectors_ = namedVectors };
+            var namedVectors = new NamedVectorsOutput();
+            namedVectors.Vectors.Add("vector", responseVector);
+            pointStruct.Vectors = new VectorsOutput() { Vectors = namedVectors };
         }
         else
         {
-            pointStruct.Vectors = new[] { 1f, 2f, 3f, 4f };
+            pointStruct.Vectors = new VectorsOutput() { Vector = responseVector };
         }
     }
 
-    private static PointStruct CreateMultiPropsPointStruct(ulong id)
+    private static RetrievedPoint CreateMultiPropsPointStruct(ulong id)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Num = id };
         AddDataToMultiPropsPointStruct(pointStruct);
         return pointStruct;
     }
 
-    private static PointStruct CreateMultiPropsPointStruct(Guid id)
+    private static RetrievedPoint CreateMultiPropsPointStruct(Guid id)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Uuid = id.ToString() };
         AddDataToMultiPropsPointStruct(pointStruct);
         return pointStruct;
     }
 
-    private static void AddDataToMultiPropsPointStruct(PointStruct pointStruct)
+    private static void AddDataToMultiPropsPointStruct(RetrievedPoint pointStruct)
     {
         pointStruct.Payload.Add("dataString", "data 1");
         pointStruct.Payload.Add("dataInt", 5);
@@ -358,10 +364,13 @@ public class QdrantVectorStoreRecordMapperTests
         dataIntArray.Values.Add(4);
         pointStruct.Payload.Add("dataArrayInt", new Value { ListValue = dataIntArray });
 
-        var namedVectors = new NamedVectors();
-        namedVectors.Vectors.Add("vector1", new[] { 1f, 2f, 3f, 4f });
-        namedVectors.Vectors.Add("vector2", new[] { 5f, 6f, 7f, 8f });
-        pointStruct.Vectors = new Vectors() { Vectors_ = namedVectors };
+        var responseVector1 = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3, 4] }");
+        var responseVector2 = VectorOutput.Parser.ParseJson("{ \"data\": [5, 6, 7, 8] }");
+
+        var namedVectors = new NamedVectorsOutput();
+        namedVectors.Vectors.Add("vector1", responseVector1);
+        namedVectors.Vectors.Add("vector2", responseVector2);
+        pointStruct.Vectors = new VectorsOutput() { Vectors = namedVectors };
     }
 
     private static VectorStoreRecordDefinition CreateSinglePropsVectorStoreRecordDefinition(Type keyType) => new()
