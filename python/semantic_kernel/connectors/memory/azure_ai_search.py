@@ -6,22 +6,34 @@ import inspect
 import logging
 import sys
 from collections.abc import Callable, Sequence
-from typing import Any, ClassVar, Generic
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, override
 
+from azure.core.credentials import AzureKeyCredential, TokenCredential
+from azure.core.credentials_async import AsyncTokenCredential
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from azure.search.documents.indexes.models import SearchIndex
-from azure.search.documents.models import VectorizableTextQuery, VectorizedQuery
-from pydantic import ValidationError
-
-from semantic_kernel.connectors.memory.azure_ai_search.utils import (
-    data_model_definition_to_azure_ai_search_index,
-    get_search_client,
-    get_search_index_client,
+from azure.search.documents.indexes.models import (
+    ExhaustiveKnnAlgorithmConfiguration,
+    ExhaustiveKnnParameters,
+    HnswAlgorithmConfiguration,
+    HnswParameters,
+    SearchField,
+    SearchFieldDataType,
+    SearchIndex,
+    SearchResourceEncryptionKey,
+    SimpleField,
+    VectorSearch,
+    VectorSearchAlgorithmMetric,
+    VectorSearchProfile,
 )
+from azure.search.documents.models import VectorizableTextQuery, VectorizedQuery
+from pydantic import SecretStr, ValidationError
+
+from semantic_kernel.data.const import DistanceFunction, IndexKind
 from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
     VectorStoreRecordDefinition,
+    VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
@@ -34,14 +46,23 @@ from semantic_kernel.data.vector_search import (
     VectorSearchResult,
     VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
+    ServiceInitializationError,
     VectorSearchExecutionException,
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
+from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 from semantic_kernel.kernel_types import OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.feature_stage_decorator import release_candidate
+from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
+
+if TYPE_CHECKING:
+    from azure.core.credentials import AzureKeyCredential, TokenCredential
+    from azure.core.credentials_async import AsyncTokenCredential
+
+    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -50,8 +71,186 @@ else:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+__all__ = ["AzureAISearchCollection", "AzureAISearchSettings", "AzureAISearchStore"]
 
-@experimental
+INDEX_ALGORITHM_MAP = {
+    IndexKind.HNSW: (HnswAlgorithmConfiguration, HnswParameters),
+    IndexKind.FLAT: (ExhaustiveKnnAlgorithmConfiguration, ExhaustiveKnnParameters),
+    "default": (HnswAlgorithmConfiguration, HnswParameters),
+}
+DISTANCE_FUNCTION_MAP = {
+    DistanceFunction.COSINE_DISTANCE: VectorSearchAlgorithmMetric.COSINE,
+    DistanceFunction.DOT_PROD: VectorSearchAlgorithmMetric.DOT_PRODUCT,
+    DistanceFunction.EUCLIDEAN_DISTANCE: VectorSearchAlgorithmMetric.EUCLIDEAN,
+    DistanceFunction.HAMMING: VectorSearchAlgorithmMetric.HAMMING,
+    "default": VectorSearchAlgorithmMetric.COSINE,
+}
+TYPE_MAPPER_DATA = {
+    "str": SearchFieldDataType.String,
+    "int": SearchFieldDataType.Int64,
+    "float": SearchFieldDataType.Double,
+    "bool": SearchFieldDataType.Boolean,
+    "list[str]": SearchFieldDataType.Collection(SearchFieldDataType.String),
+    "list[int]": SearchFieldDataType.Collection(SearchFieldDataType.Int64),
+    "list[float]": SearchFieldDataType.Collection(SearchFieldDataType.Double),
+    "list[bool]": SearchFieldDataType.Collection(SearchFieldDataType.Boolean),
+    "default": SearchFieldDataType.String,
+}
+TYPE_MAPPER_VECTOR = {
+    "float": SearchFieldDataType.Collection(SearchFieldDataType.Single),
+    "int": "Collection(Edm.Int16)",
+    "binary": "Collection(Edm.Byte)",
+    "default": SearchFieldDataType.Collection(SearchFieldDataType.Single),
+}
+
+
+@release_candidate
+class AzureAISearchSettings(KernelBaseSettings):
+    """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
+
+    Args:
+    - api_key: SecretStr - Azure AI Search API key (Env var AZURE_AI_SEARCH_API_KEY)
+    - endpoint: HttpsUrl - Azure AI Search endpoint (Env var AZURE_AI_SEARCH_ENDPOINT)
+    - index_name: str - Azure AI Search index name (Env var AZURE_AI_SEARCH_INDEX_NAME)
+    """
+
+    env_prefix: ClassVar[str] = "AZURE_AI_SEARCH_"
+
+    api_key: SecretStr | None = None
+    endpoint: HttpsUrl
+    index_name: str | None = None
+
+
+def get_search_client(search_index_client: SearchIndexClient, collection_name: str, **kwargs: Any) -> SearchClient:
+    """Create a search client for a collection."""
+    return SearchClient(search_index_client._endpoint, collection_name, search_index_client._credential, **kwargs)
+
+
+def get_search_index_client(
+    azure_ai_search_settings: AzureAISearchSettings,
+    azure_credential: AzureKeyCredential | None = None,
+    token_credential: "AsyncTokenCredential | TokenCredential | None" = None,
+) -> SearchIndexClient:
+    """Return a client for Azure Cognitive Search.
+
+    Args:
+        azure_ai_search_settings (AzureAISearchSettings): Azure Cognitive Search settings.
+        azure_credential (AzureKeyCredential): Optional Azure credentials (default: {None}).
+        token_credential (TokenCredential): Optional Token credential (default: {None}).
+    """
+    # Credentials
+    credential: "AzureKeyCredential | AsyncTokenCredential | TokenCredential | None" = None
+    if azure_ai_search_settings.api_key:
+        credential = AzureKeyCredential(azure_ai_search_settings.api_key.get_secret_value())
+    elif azure_credential:
+        credential = azure_credential
+    elif token_credential:
+        credential = token_credential
+    else:
+        raise ServiceInitializationError("Error: missing Azure AI Search client credentials.")
+
+    return SearchIndexClient(
+        endpoint=str(azure_ai_search_settings.endpoint),
+        credential=credential,  # type: ignore
+        headers=prepend_semantic_kernel_to_user_agent({}) if APP_INFO else None,
+    )
+
+
+@release_candidate
+def data_model_definition_to_azure_ai_search_index(
+    collection_name: str,
+    definition: VectorStoreRecordDefinition,
+    encryption_key: SearchResourceEncryptionKey | None = None,
+) -> SearchIndex:
+    """Convert a VectorStoreRecordDefinition to an Azure AI Search index."""
+    fields = []
+    search_profiles = []
+    search_algos = []
+
+    for field in definition.fields.values():
+        if isinstance(field, VectorStoreRecordDataField):
+            assert field.name  # nosec
+            if not field.property_type:
+                logger.debug(f"Field {field.name} has not specified type, defaulting to Edm.String.")
+            type_ = TYPE_MAPPER_DATA[field.property_type or "default"]
+            fields.append(
+                SearchField(
+                    name=field.name,
+                    type=type_,
+                    filterable=field.is_filterable,
+                    # searchable is set first on the value of is_full_text_searchable,
+                    # if it is None it checks the field type, if text then it is searchable
+                    searchable=type_ in ("Edm.String", "Collection(Edm.String)")
+                    if field.is_full_text_searchable is None
+                    else field.is_full_text_searchable,
+                    sortable=True,
+                    hidden=False,
+                )
+            )
+        elif isinstance(field, VectorStoreRecordKeyField):
+            assert field.name  # nosec
+            fields.append(
+                SimpleField(
+                    name=field.name,
+                    type="Edm.String",  # hardcoded, only allowed type for key
+                    key=True,
+                    filterable=True,
+                    searchable=True,
+                )
+            )
+        elif isinstance(field, VectorStoreRecordVectorField):
+            assert field.name  # nosec
+            if not field.property_type:
+                logger.debug(f"Field {field.name} has not specified type, defaulting to Collection(Edm.Single).")
+            if not field.index_kind:
+                logger.debug(f"Field {field.name} has not specified index kind, defaulting to hnsw.")
+            if not field.distance_function:
+                logger.debug(f"Field {field.name} has not specified distance function, defaulting to cosine.")
+            profile_name = f"{field.name}_profile"
+            algo_name = f"{field.name}_algorithm"
+            fields.append(
+                SearchField(
+                    name=field.name,
+                    type=TYPE_MAPPER_VECTOR[field.property_type or "default"],
+                    searchable=True,
+                    vector_search_dimensions=field.dimensions,
+                    vector_search_profile_name=profile_name,
+                    hidden=False,
+                )
+            )
+            search_profiles.append(
+                VectorSearchProfile(
+                    name=profile_name,
+                    algorithm_configuration_name=algo_name,
+                )
+            )
+            try:
+                algo_class, algo_params = INDEX_ALGORITHM_MAP[field.index_kind or "default"]
+            except KeyError as e:
+                raise ServiceInitializationError(f"Error: {field.index_kind} not found in INDEX_ALGORITHM_MAP.") from e
+            try:
+                distance_metric = DISTANCE_FUNCTION_MAP[field.distance_function or "default"]
+            except KeyError as e:
+                raise ServiceInitializationError(
+                    f"Error: {field.distance_function} not found in DISTANCE_FUNCTION_MAP."
+                ) from e
+            search_algos.append(
+                algo_class(
+                    name=algo_name,
+                    parameters=algo_params(
+                        metric=distance_metric,
+                    ),
+                )
+            )
+    return SearchIndex(
+        name=collection_name,
+        fields=fields,
+        vector_search=VectorSearch(profiles=search_profiles, algorithms=search_algos),
+        encryption_key=encryption_key,
+    )
+
+
+@release_candidate
 class AzureAISearchCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorizableTextSearchMixin[TKey, TModel],
@@ -130,7 +329,7 @@ class AzureAISearchCollection(
             )
             return
 
-        from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_settings import (
+        from semantic_kernel.connectors.memory.azure_ai_search import (
             AzureAISearchSettings,
         )
 
@@ -427,4 +626,101 @@ class AzureAISearchCollection(
         if self.managed_client:
             await self.search_client.close()
         if self.managed_search_index_client:
+            await self.search_index_client.close()
+
+
+@release_candidate
+class AzureAISearchStore(VectorStore):
+    """Azure AI Search store implementation."""
+
+    search_index_client: SearchIndexClient
+
+    def __init__(
+        self,
+        search_endpoint: str | None = None,
+        api_key: str | None = None,
+        azure_credentials: "AzureKeyCredential | None" = None,
+        token_credentials: "AsyncTokenCredential | TokenCredential | None" = None,
+        search_index_client: SearchIndexClient | None = None,
+        env_file_path: str | None = None,
+        env_file_encoding: str | None = None,
+    ) -> None:
+        """Initializes a new instance of the AzureAISearchStore client.
+
+        Args:
+        search_endpoint (str): The endpoint of the Azure AI Search service, optional.
+            Can be read from environment variables.
+        api_key (str): Azure AI Search API key, optional. Can be read from environment variables.
+        azure_credentials (AzureKeyCredential ): Azure AI Search credentials, optional.
+        token_credentials (AsyncTokenCredential | TokenCredential): Azure AI Search token credentials, optional.
+        search_index_client (SearchIndexClient): The search index client, optional.
+        env_file_path (str): Use the environment settings file as a fallback
+            to environment variables.
+        env_file_encoding (str): The encoding of the environment settings file.
+
+        """
+        from semantic_kernel.connectors.memory.azure_ai_search import (
+            AzureAISearchSettings,
+        )
+
+        managed_client: bool = False
+        if not search_index_client:
+            try:
+                azure_ai_search_settings = AzureAISearchSettings(
+                    env_file_path=env_file_path,
+                    endpoint=search_endpoint,
+                    api_key=api_key,
+                    env_file_encoding=env_file_encoding,
+                )
+            except ValidationError as exc:
+                raise VectorStoreInitializationException("Failed to create Azure AI Search settings.") from exc
+            search_index_client = get_search_index_client(
+                azure_ai_search_settings=azure_ai_search_settings,
+                azure_credential=azure_credentials,
+                token_credential=token_credentials,
+            )
+            managed_client = True
+
+        super().__init__(search_index_client=search_index_client, managed_client=managed_client)
+
+    @override
+    def get_collection(
+        self,
+        collection_name: str,
+        data_model_type: type[TModel],
+        data_model_definition: VectorStoreRecordDefinition | None = None,
+        search_client: SearchClient | None = None,
+        **kwargs: Any,
+    ) -> "VectorStoreRecordCollection":
+        """Get a AzureAISearchCollection tied to a collection.
+
+        Args:
+            collection_name (str): The name of the collection.
+            data_model_type (type[TModel]): The type of the data model.
+            data_model_definition (VectorStoreRecordDefinition | None): The model fields, optional.
+            search_client (SearchClient | None): The search client for interacting with Azure AI Search,
+                will be created if not supplied.
+            **kwargs: Additional keyword arguments, passed to the collection constructor.
+        """
+        if collection_name not in self.vector_record_collections:
+            self.vector_record_collections[collection_name] = AzureAISearchCollection(
+                data_model_type=data_model_type,
+                data_model_definition=data_model_definition,
+                search_index_client=self.search_index_client,
+                search_client=search_client or get_search_client(self.search_index_client, collection_name),
+                collection_name=collection_name,
+                managed_client=search_client is None,
+                **kwargs,
+            )
+        return self.vector_record_collections[collection_name]
+
+    @override
+    async def list_collection_names(self, **kwargs: Any) -> list[str]:
+        if "params" not in kwargs:
+            kwargs["params"] = {"select": ["name"]}
+        return [index async for index in self.search_index_client.list_index_names(**kwargs)]
+
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        """Exit the context manager."""
+        if self.managed_client:
             await self.search_index_client.close()

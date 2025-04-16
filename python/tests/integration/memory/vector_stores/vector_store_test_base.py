@@ -14,7 +14,7 @@ def get_redis_store():
 
 
 def get_azure_ai_search_store():
-    from semantic_kernel.connectors.memory.azure_ai_search.azure_ai_search_store import AzureAISearchStore
+    from semantic_kernel.connectors.memory.azure_ai_search import AzureAISearchStore
 
     return AzureAISearchStore()
 
