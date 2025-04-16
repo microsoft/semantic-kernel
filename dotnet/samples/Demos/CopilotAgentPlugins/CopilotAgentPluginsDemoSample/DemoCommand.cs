@@ -516,6 +516,13 @@ public class DemoCommand : AsyncCommand<DemoCommand.Settings>
     private static readonly RestApiParameterFilter s_restApiParameterFilter = (RestApiParameterFilterContext context) =>
     {
 #pragma warning restore SKEXP0040
+        // Handle _format parameter for drives_GetItemsContent
+        if (context.Operation.Id.Equals("drives_GetItemsContent", StringComparison.OrdinalIgnoreCase)
+            && context.Parameter.Name.Equals("$format", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
         string[] _functionNames = ["drives_GetItemsContent", "me_calendar_CreateEvents", "me_sendMail", "search_query", "sites_lists_items_GetDriveItemContent"];
         bool hasFunctionName = _functionNames.Any(s => s.Equals(context.Operation.Id, StringComparison.OrdinalIgnoreCase));
         if (hasFunctionName && "payload".Equals(context.Parameter.Name, StringComparison.OrdinalIgnoreCase))
