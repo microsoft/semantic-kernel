@@ -102,6 +102,25 @@ public sealed class HttpPluginTests : IDisposable
         this.VerifyMock(mockHandler, HttpMethod.Delete);
     }
 
+    [Fact]
+    public async Task ItThrowsInvalidOperationExceptionForInvalidDomainAsync()
+    {
+        // Arrange
+        var mockHandler = this.CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client)
+        {
+            AllowedDomains = ["www.example.com"]
+        };
+        var invalidUri = "http://www.notexample.com";
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.GetAsync(invalidUri));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PostAsync(invalidUri, this._content));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PutAsync(invalidUri, this._content));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.DeleteAsync(invalidUri));
+    }
+
     private Mock<HttpMessageHandler> CreateMock()
     {
         var mockHandler = new Mock<HttpMessageHandler>();

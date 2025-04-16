@@ -20,11 +20,113 @@ internal sealed class Program
 {
     public static async Task Main(string[] args)
     {
-        // Use the MCP tools with the Semantic Kernel
-        await UseMCPToolsWithSKAsync();
+        await UseMCPToolsAsync();
 
-        // Use the MCP tools and MCP prompt with the Semantic Kernel
-        await UseMCPToolsAndPromptWithSKAsync();
+        await UseMCPPromptAsync();
+
+        await UseMCPResourcesAsync();
+
+        await UseMCPResourceTemplatesAsync();
+    }
+
+    /// <summary>
+    /// Demonstrates how to use the MCP resources with the Semantic Kernel.
+    /// The code in this method:
+    /// 1. Creates an MCP client.
+    /// 2. Retrieves the list of resources provided by the MCP server.
+    /// 3. Retrieves the `image://cat.jpg` resource content from the MCP server.
+    /// 4. Adds the image to the chat history and prompts the AI model to describe the content of the image.
+    /// </summary>
+    private static async Task UseMCPResourcesAsync()
+    {
+        Console.WriteLine($"Running the {nameof(UseMCPResourcesAsync)} sample.");
+
+        // Create an MCP client
+        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+
+        // Retrieve list of resources provided by the MCP server and display them
+        IList<Resource> resources = await mcpClient.ListResourcesAsync();
+        DisplayResources(resources);
+
+        // Create a kernel
+        Kernel kernel = CreateKernelWithChatCompletionService();
+
+        // Enable automatic function calling
+        OpenAIPromptExecutionSettings executionSettings = new()
+        {
+            Temperature = 0,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
+        };
+
+        // Retrieve the `image://cat.jpg` resource from the MCP server
+        ReadResourceResult resource = await mcpClient.ReadResourceAsync("image://cat.jpg");
+
+        // Add the resource to the chat history and prompt the AI model to describe the content of the image
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage(resource.ToChatMessageContentItemCollection());
+        chatHistory.AddUserMessage("Describe the content of the image?");
+
+        // Execute a prompt using the MCP resource and prompt added to the chat history
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+
+        Console.WriteLine(result);
+        Console.WriteLine();
+
+        // The expected output is: The image features a fluffy cat sitting in a lush, colorful garden.
+        // The garden is filled with various flowers and plants, creating a vibrant and serene atmosphere...
+    }
+
+    /// <summary>
+    /// Demonstrates how to use the MCP resource templates with the Semantic Kernel.
+    /// The code in this method:
+    /// 1. Creates an MCP client.
+    /// 2. Retrieves the list of resource templates provided by the MCP server.
+    /// 3. Reads relevant to the prompt records from the `vectorStore://records/{prompt}` MCP resource template.
+    /// 4. Adds the records to the chat history and prompts the AI model to explain what SK is.
+    /// </summary>
+    private static async Task UseMCPResourceTemplatesAsync()
+    {
+        Console.WriteLine($"Running the {nameof(UseMCPResourceTemplatesAsync)} sample.");
+
+        // Create an MCP client
+        await using IMcpClient mcpClient = await CreateMcpClientAsync();
+
+        // Retrieve list of resource templates provided by the MCP server and display them
+        IList<ResourceTemplate> resourceTemplates = await mcpClient.ListResourceTemplatesAsync();
+        DisplayResourceTemplates(resourceTemplates);
+
+        // Create a kernel
+        Kernel kernel = CreateKernelWithChatCompletionService();
+
+        // Enable automatic function calling
+        OpenAIPromptExecutionSettings executionSettings = new()
+        {
+            Temperature = 0,
+            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
+        };
+
+        string prompt = "What is the Semantic Kernel?";
+
+        // Retrieve relevant to the prompt records via MCP resource template
+        ReadResourceResult resource = await mcpClient.ReadResourceAsync($"vectorStore://records/{prompt}");
+
+        // Add the resource content/records to the chat history and prompt the AI model to explain what SK is
+        ChatHistory chatHistory = [];
+        chatHistory.AddUserMessage(resource.ToChatMessageContentItemCollection());
+        chatHistory.AddUserMessage(prompt);
+
+        // Execute a prompt using the MCP resource and prompt added to the chat history
+        IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
+
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+
+        Console.WriteLine(result);
+        Console.WriteLine();
+
+        // The expected output is: The Semantic Kernel (SK) is a lightweight software development kit (SDK) designed for use in .NET applications.
+        // It acts as an orchestrator that facilitates interaction between AI models and available plugins, enabling them to work together to produce desired outputs.
     }
 
     /// <summary>
@@ -38,9 +140,9 @@ internal sealed class Program
     /// 6. The AI model calls WeatherUtils-GetWeatherForCity function with the current date time and the `Boston` arguments extracted from the prompt to get the weather information.
     /// 7. Having received the weather information from the function call, the AI model returns the answer to the prompt.
     /// </summary>
-    private static async Task UseMCPToolsWithSKAsync()
+    private static async Task UseMCPToolsAsync()
     {
-        Console.WriteLine($"Running the {nameof(UseMCPToolsWithSKAsync)} sample.");
+        Console.WriteLine($"Running the {nameof(UseMCPToolsAsync)} sample.");
 
         // Create an MCP client
         await using IMcpClient mcpClient = await CreateMcpClientAsync();
@@ -73,59 +175,50 @@ internal sealed class Program
     }
 
     /// <summary>
-    /// Demonstrates how to use the MCP tools and MCP prompt with the Semantic Kernel.
+    /// Demonstrates how to use the MCP prompt with the Semantic Kernel.
     /// The code in this method:
     /// 1. Creates an MCP client.
-    /// 2. Retrieves the list of tools provided by the MCP server.
-    /// 3. Retrieves the list of prompts provided by the MCP server.
-    /// 4. Creates a kernel and registers the MCP tools as Kernel functions.
-    /// 5. Requests the `GetCurrentWeatherForCity` prompt from the MCP server.
-    /// 6. The MCP server renders the prompt using the `Boston` as value for the `city` parameter and the result of the `DateTimeUtils-GetCurrentDateTimeInUtc` server-side invocation added to the prompt as part of prompt rendering.
-    /// 7. Converts the MCP server prompt: list of messages where each message is represented by content and role to a chat history.
-    /// 8. Sends the chat history to the AI model together with the MCP tools represented as Kernel functions.
-    /// 9. The AI model calls WeatherUtils-GetWeatherForCity function with the current date time and the `Boston` arguments extracted from the prompt to get the weather information.
-    /// 10. Having received the weather information from the function call, the AI model returns the answer to the prompt.
+    /// 2. Retrieves the list of prompts provided by the MCP server.
+    /// 3. Gets the current weather for Boston and Sydney using the `GetCurrentWeatherForCity` prompt.
+    /// 4. Adds the MCP server prompts to the chat history and prompts the AI model to compare the weather in the two cities and suggest the best place to go for a walk.
+    /// 5. After receiving and processing the weather data for both cities and the prompt, the AI model returns an answer.
     /// </summary>
-    private static async Task UseMCPToolsAndPromptWithSKAsync()
+    private static async Task UseMCPPromptAsync()
     {
-        Console.WriteLine($"Running the {nameof(UseMCPToolsAndPromptWithSKAsync)} sample.");
+        Console.WriteLine($"Running the {nameof(UseMCPPromptAsync)} sample.");
 
         // Create an MCP client
         await using IMcpClient mcpClient = await CreateMcpClientAsync();
-
-        // Retrieve and display the list provided by the MCP server
-        IList<McpClientTool> tools = await mcpClient.ListToolsAsync();
-        DisplayTools(tools);
 
         // Retrieve and display the list of prompts provided by the MCP server
         IList<McpClientPrompt> prompts = await mcpClient.ListPromptsAsync();
         DisplayPrompts(prompts);
 
-        // Create a kernel and register the MCP tools
+        // Create a kernel
         Kernel kernel = CreateKernelWithChatCompletionService();
-        kernel.Plugins.AddFromFunctions("Tools", tools.Select(aiFunction => aiFunction.AsKernelFunction()));
 
-        // Enable automatic function calling
-        OpenAIPromptExecutionSettings executionSettings = new()
-        {
-            Temperature = 0,
-            FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
-        };
+        // Get weather for Boston using the `GetCurrentWeatherForCity` prompt from the MCP server
+        GetPromptResult bostonWeatherPrompt = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Boston", ["time"] = DateTime.UtcNow.ToString() });
 
-        // Retrieve the `GetCurrentWeatherForCity` prompt from the MCP server and convert it to a chat history
-        GetPromptResult promptResult = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Boston" });
+        // Get weather for Sydney using the `GetCurrentWeatherForCity` prompt from the MCP server
+        GetPromptResult sydneyWeatherPrompt = await mcpClient.GetPromptAsync("GetCurrentWeatherForCity", new Dictionary<string, object?>() { ["city"] = "Sydney", ["time"] = DateTime.UtcNow.ToString() });
 
-        ChatHistory chatHistory = promptResult.ToChatHistory();
+        // Add the prompts to the chat history
+        ChatHistory chatHistory = [];
+        chatHistory.AddRange(bostonWeatherPrompt.ToChatMessageContents());
+        chatHistory.AddRange(sydneyWeatherPrompt.ToChatMessageContents());
+        chatHistory.AddUserMessage("Compare the weather in the two cities and suggest the best place to go for a walk.");
 
         // Execute a prompt using the MCP tools and prompt
         IChatCompletionService chatCompletion = kernel.GetRequiredService<IChatCompletionService>();
 
-        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, executionSettings, kernel);
+        ChatMessageContent result = await chatCompletion.GetChatMessageContentAsync(chatHistory, kernel: kernel);
 
         Console.WriteLine(result);
         Console.WriteLine();
 
-        // The expected output is: The weather in Boston as of 2025-04-02 16:39:40 is 61°F and rainy.
+        // The expected output is: Given these conditions, Sydney would be the better choice for a pleasant walk, as the sunny and warm weather is ideal for outdoor activities.
+        // The rain in Boston could make walking less enjoyable and potentially inconvenient.
     }
 
     /// <summary>
@@ -208,7 +301,7 @@ internal sealed class Program
         Console.WriteLine("Available MCP tools:");
         foreach (var tool in tools)
         {
-            Console.WriteLine($"- {tool.Name}: {tool.Description}");
+            Console.WriteLine($"- Name: {tool.Name}, Description: {tool.Description}");
         }
         Console.WriteLine();
     }
@@ -222,7 +315,27 @@ internal sealed class Program
         Console.WriteLine("Available MCP prompts:");
         foreach (var prompt in prompts)
         {
-            Console.WriteLine($"- {prompt.Name}: {prompt.Description}");
+            Console.WriteLine($"- Name: {prompt.Name}, Description: {prompt.Description}");
+        }
+        Console.WriteLine();
+    }
+
+    private static void DisplayResources(IList<Resource> resources)
+    {
+        Console.WriteLine("Available MCP resources:");
+        foreach (var resource in resources)
+        {
+            Console.WriteLine($"- Name: {resource.Name}, Uri: {resource.Uri}, Description: {resource.Description}");
+        }
+        Console.WriteLine();
+    }
+
+    private static void DisplayResourceTemplates(IList<ResourceTemplate> resourceTemplates)
+    {
+        Console.WriteLine("Available MCP resource templates:");
+        foreach (var template in resourceTemplates)
+        {
+            Console.WriteLine($"- Name: {template.Name}, Description: {template.Description}");
         }
         Console.WriteLine();
     }
