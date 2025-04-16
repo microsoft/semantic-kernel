@@ -88,8 +88,8 @@ class RestaurantPlugin:
         match restaurant:
             case "The Farm":
                 return """
-                    Special Soup: T-bone steak
-                    Special Salad: Ceasar Salad
+                    Special Entree: T-bone steak
+                    Special Salad: Caesar Salad
                     Special Drink: Old Fashioned
                     """
             case "The Harbor":
@@ -100,7 +100,7 @@ class RestaurantPlugin:
                     """
             case "The Joint":
                 return """
-                    Special Soup: Avocado and Jalapeno Burger
+                    Special Burger: Avocado and Jalapeno Burger
                     Special Salad: Greek Salad
                     Special Drink: Milkshake Strawberry
                     """
