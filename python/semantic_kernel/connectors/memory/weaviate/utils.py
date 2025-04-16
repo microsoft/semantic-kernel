@@ -277,12 +277,12 @@ def extract_vectors_from_weaviate_object_based_on_data_model_definition(
 # region VectorSearch helpers
 
 
-def create_filter_from_vector_search_filters(filters: VectorSearchFilter | Callable | None) -> "_Filters | None":
+def create_filter_from_vector_search_filters(filters: VectorSearchFilter | Callable) -> "_Filters | None":
     """Create a Weaviate filter from a vector search filter."""
-    if not filters:
-        return None
     if not isinstance(filters, VectorSearchFilter):
         raise VectorStoreOperationException("Lambda filters are not supported yet.")
+    if not filters.filters:
+        return None
     weaviate_filters: list["_Filters"] = []
     for filter in filters.filters:
         match filter:

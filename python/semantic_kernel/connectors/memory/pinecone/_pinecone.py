@@ -456,8 +456,8 @@ class PineconeCollection(
             "query": {"inputs": {"text": vectorizable_text}, "top_k": options.top},
             "namespace": kwargs.get("namespace", self.namespace),
         }
-        if options.filter:
-            search_args["query"]["filter"] = self._build_filter(options.filter)
+        if options.filter and (filter := self._build_filter(options.filter)):
+            search_args["query"]["filter"] = filter
 
         results = await self.index_client.search_records(**search_args)
         return KernelSearchResults(
@@ -477,8 +477,8 @@ class PineconeCollection(
             "include_values": options.include_vectors,
             "namespace": kwargs.get("namespace", self.namespace),
         }
-        if options.filter:
-            search_args["filter"] = self._build_filter(options.filter)
+        if options.filter and (filter := self._build_filter(options.filter)):
+            search_args["filter"] = filter
         results = self.index_client.query(**search_args)
         if isawaitable(results):
             results = await results

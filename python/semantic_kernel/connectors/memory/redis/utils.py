@@ -198,11 +198,14 @@ def _field_to_redis_field_json(
 
 
 def _filters_to_redis_filters(
-    filters: VectorSearchFilter | Callable, data_model_definition: VectorStoreRecordDefinition
+    filters: VectorSearchFilter | Callable,
+    data_model_definition: VectorStoreRecordDefinition,
 ) -> FilterExpression | None:
     """Convert filters to Redis filters."""
     if not isinstance(filters, VectorSearchFilter):
         raise VectorStoreOperationException("Lambda filters are not supported yet.")
+    if not filters.filters:
+        return None
     expression: FilterExpression | None = None
     for filter in filters.filters:
         new: FilterExpression | None = None

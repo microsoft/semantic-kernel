@@ -199,16 +199,19 @@ class BingSearch(KernelBaseModel, TextSearch):
             params["q"] = query or ""
             return params
         extra_query_params = []
-        for filter in options.filter.filters:
-            if isinstance(filter, SearchFilter):
-                logger.warning("Groups are not supported by Bing search, ignored.")
-                continue
-            if isinstance(filter, EqualTo):
-                if filter.field_name in QUERY_PARAMETERS:
-                    params[filter.field_name] = escape(filter.value)
-                else:
-                    extra_query_params.append(f"{filter.field_name}:{filter.value}")
-            elif isinstance(filter, AnyTagsEqualTo):
-                logger.debug("Any tag equals to filter is not supported by Bing Search API.")
+        if options.filter:
+            if not isinstance(options.filter, SearchFilter):
+                raise ServiceInvalidRequestError("Bing Search only supports SearchFilter.")
+            for filter in options.filter.filters:
+                if isinstance(filter, SearchFilter):
+                    logger.warning("Groups are not supported by Bing search, ignored.")
+                    continue
+                if isinstance(filter, EqualTo):
+                    if filter.field_name in QUERY_PARAMETERS:
+                        params[filter.field_name] = escape(filter.value)
+                    else:
+                        extra_query_params.append(f"{filter.field_name}:{filter.value}")
+                elif isinstance(filter, AnyTagsEqualTo):
+                    logger.debug("Any tag equals to filter is not supported by Bing Search API.")
         params["q"] = f"{query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
         return params

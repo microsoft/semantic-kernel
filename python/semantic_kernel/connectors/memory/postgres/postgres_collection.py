@@ -530,9 +530,6 @@ class PostgresCollection(
 
         # Select all fields except all vector fields if include_vectors is False
         select_list = self.data_model_definition.get_field_names(include_vector_fields=options.include_vectors)
-
-        where_clause = self._build_where_clauses_from_filter(options.filter)
-
         query = sql.SQL("SELECT {select_list}, {vec_col} {dist_op} %s as {dist_col} FROM {schema}.{table}").format(
             select_list=sql.SQL(", ").join(sql.Identifier(name) for name in select_list),
             vec_col=sql.Identifier(vector_field.name),
@@ -542,7 +539,7 @@ class PostgresCollection(
             table=sql.Identifier(self.collection_name),
         )
 
-        if where_clause:
+        if options.filter and (where_clause := self._build_where_clauses_from_filter(options.filter)):
             query += where_clause
 
         query += sql.SQL(" ORDER BY {dist_col} LIMIT {limit}").format(
@@ -589,7 +586,7 @@ class PostgresCollection(
             ],
         )
 
-    def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | Callable | None) -> sql.Composed | None:
+    def _build_where_clauses_from_filter(self, filters: VectorSearchFilter | Callable) -> sql.Composed | None:
         """Build the WHERE clause for the search query from the filter in the search options.
 
         Args:
@@ -600,7 +597,7 @@ class PostgresCollection(
         """
         if not isinstance(filters, VectorSearchFilter):
             raise VectorStoreOperationException("Lambda filters are not supported yet.")
-        if not filters or not filters.filters:
+        if not filters.filters:
             return None
 
         where_clauses = []

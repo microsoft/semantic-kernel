@@ -201,11 +201,12 @@ class WeaviateCollection(
         vector_field = self.data_model_definition.try_get_vector_field(options.vector_field_name)
         collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
         args = {
-            "filters": create_filter_from_vector_search_filters(options.filter),
             "include_vector": options.include_vectors,
             "limit": options.top,
             "offset": options.skip,
         }
+        if options.filter and (filter := create_filter_from_vector_search_filters(options.filter)):
+            args["filters"] = filter
         if search_text:
             results = await self._inner_vector_text_search(collection, search_text, args)
         elif vectorizable_text:

@@ -269,8 +269,8 @@ class MongoDBAtlasCollection(
             "queryVector": vector,
             "path": options.vector_field_name,
         }
-        if options.filter.filters:
-            vector_search_query["filter"] = self._build_filter_dict(options.filter)
+        if options.filter and (filter := self._build_filter_dict(options.filter)):
+            vector_search_query["filter"] = filter
 
         projection_query: dict[str, int | dict] = {
             field: 1

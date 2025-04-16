@@ -172,11 +172,18 @@ def filter_lambda_list(store: str) -> list[ParameterSet]:
             "greater than",
         ),
         (
-            lambda x: x.id >= +0,
+            lambda x: x.id >= 0,
             {
                 "ai_search": "id ge 0",
             },
             "greater than or equal",
+        ),
+        (
+            lambda x: x.id == +0,
+            {
+                "ai_search": "id eq +0",
+            },
+            "equal with explicit positive",
         ),
         (
             lambda x: x.id < 0,

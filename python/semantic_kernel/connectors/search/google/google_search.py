@@ -16,6 +16,7 @@ from semantic_kernel.data.text_search import (
     AnyTagsEqualTo,
     EqualTo,
     KernelSearchResults,
+    SearchFilter,
     TextSearch,
     TextSearchOptions,
     TextSearchResult,
@@ -187,6 +188,8 @@ class GoogleSearch(KernelBaseModel, TextSearch):
             "start": options.skip,
         }
         if options.filter:
+            if not isinstance(options.filter, SearchFilter):
+                raise ServiceInvalidRequestError("Google Search only supports SearchFilter.")
             for filter in options.filter.filters:
                 if isinstance(filter, EqualTo):
                     if filter.field_name in QUERY_PARAMETERS:

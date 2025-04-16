@@ -14,6 +14,7 @@ from semantic_kernel.data import (
 from semantic_kernel.data.const import DEFAULT_DESCRIPTION, DEFAULT_FUNCTION_NAME
 from semantic_kernel.data.text_search import (
     KernelSearchResults,
+    SearchFilter,
     SearchOptions,
     TextSearchOptions,
     TextSearchResult,
@@ -199,7 +200,10 @@ async def test_create_kernel_function_inner_update_options(kernel: Kernel):
         parameters: list["KernelParameterMetadata"] | None = None,
         **kwargs: Any,
     ) -> tuple[str, SearchOptions]:
-        options.filter.equal_to("address/city", kwargs.get("city", ""))
+        if options.filter is None:
+            options.filter = SearchFilter.equal_to(field_name="address/city", value=kwargs.get("city", ""))
+        else:
+            options.filter.equal_to("address/city", kwargs.get("city", ""))
         nonlocal called, args
         called = True
         args = {"query": query, "options": options, "parameters": parameters}
