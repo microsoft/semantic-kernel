@@ -3,10 +3,9 @@
 import asyncio
 from typing import Annotated
 
-from semantic_kernel.agents.chat_completion.chat_completion_agent import ChatCompletionAgent, ChatHistoryAgentThread
-from semantic_kernel.connectors.ai.open_ai.services.azure_chat_completion import AzureChatCompletion
-from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
-from semantic_kernel.contents.chat_message_content import ChatMessageContent
+from semantic_kernel.agents import ChatCompletionAgent, ChatHistoryAgentThread
+from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+from semantic_kernel.contents import ChatMessageContent, FunctionCallContent, FunctionResultContent
 from semantic_kernel.functions import kernel_function
 
 """
@@ -66,7 +65,7 @@ async def main() -> None:
     ]
 
     for user_input in user_inputs:
-        print(f"# User: '{user_input}'")
+        print(f"\n# User: '{user_input}'")
         first_chunk = True
         async for response in agent.invoke_stream(
             messages=user_input,
@@ -74,9 +73,10 @@ async def main() -> None:
             on_intermediate_message=handle_streaming_intermediate_steps,
         ):
             if first_chunk:
-                print(f"# {response.role}: ", end="", flush=True)
+                print(f"# {response.name}: ", end="", flush=True)
                 first_chunk = False
-            print(response.content, end="", flush=True)
+            if response.content:
+                print(response.content, end="", flush=True)
             thread = response.thread
         print()
 

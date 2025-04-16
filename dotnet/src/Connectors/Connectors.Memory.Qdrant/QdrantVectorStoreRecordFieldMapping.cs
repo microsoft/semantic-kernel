@@ -3,6 +3,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
@@ -23,14 +24,12 @@ internal static class QdrantVectorStoreRecordFieldMapping
         typeof(double),
         typeof(float),
         typeof(bool),
-        typeof(DateTime),
         typeof(DateTimeOffset),
         typeof(int?),
         typeof(long?),
         typeof(double?),
         typeof(float?),
         typeof(bool?),
-        typeof(DateTime?),
         typeof(DateTimeOffset?),
     ];
 
@@ -79,8 +78,7 @@ internal static class QdrantVectorStoreRecordFieldMapping
         {
             return targetType switch
             {
-                Type t when t == typeof(DateTime) || t == typeof(DateTime?) => DateTime.Parse(payloadValue.StringValue),
-                Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => DateTimeOffset.Parse(payloadValue.StringValue),
+                Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => DateTimeOffset.Parse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                 _ => stringValue,
             };
         }
@@ -122,10 +120,6 @@ internal static class QdrantVectorStoreRecordFieldMapping
         else if (sourceValue is bool boolValue)
         {
             value.BoolValue = boolValue;
-        }
-        else if (sourceValue is DateTime datetimeValue)
-        {
-            value.StringValue = datetimeValue.ToString("O");
         }
         else if (sourceValue is DateTimeOffset dateTimeOffsetValue)
         {
