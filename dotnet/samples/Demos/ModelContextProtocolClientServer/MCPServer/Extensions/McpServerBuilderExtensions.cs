@@ -184,18 +184,18 @@ public static class McpServerBuilderExtensions
         return builder;
     }
 
-    private static Task<ListPromptsResult> HandleListPromptRequestsAsync(RequestContext<ListPromptsRequestParams> context, CancellationToken cancellationToken)
+    private static ValueTask<ListPromptsResult> HandleListPromptRequestsAsync(RequestContext<ListPromptsRequestParams> context, CancellationToken cancellationToken)
     {
         // Get and return all prompt definitions registered in the DI container
         IEnumerable<PromptDefinition> promptDefinitions = context.Server.Services!.GetServices<PromptDefinition>();
 
-        return Task.FromResult(new ListPromptsResult
+        return ValueTask.FromResult(new ListPromptsResult
         {
             Prompts = [.. promptDefinitions.Select(d => d.Prompt)]
         });
     }
 
-    private static async Task<GetPromptResult> HandleGetPromptRequestsAsync(RequestContext<GetPromptRequestParams> context, CancellationToken cancellationToken)
+    private static async ValueTask<GetPromptResult> HandleGetPromptRequestsAsync(RequestContext<GetPromptRequestParams> context, CancellationToken cancellationToken)
     {
         // Make sure the prompt name is provided
         if (context.Params?.Name is not string { } promptName || string.IsNullOrEmpty(promptName))
@@ -217,7 +217,7 @@ public static class McpServerBuilderExtensions
         return await definition.Handler(context, cancellationToken);
     }
 
-    private static Task<ReadResourceResult> HandleReadResourceRequestAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
+    private static ValueTask<ReadResourceResult> HandleReadResourceRequestAsync(RequestContext<ReadResourceRequestParams> context, CancellationToken cancellationToken)
     {
         // Make sure the uri of the resource or resource template is provided
         if (context.Params?.Uri is not string { } resourceUri || string.IsNullOrEmpty(resourceUri))
@@ -248,23 +248,23 @@ public static class McpServerBuilderExtensions
         throw new ArgumentException($"No handler found for the resource uri '{resourceUri}'.");
     }
 
-    private static Task<ListResourceTemplatesResult> HandleListResourceTemplatesRequestAsync(RequestContext<ListResourceTemplatesRequestParams> context, CancellationToken cancellationToken)
+    private static ValueTask<ListResourceTemplatesResult> HandleListResourceTemplatesRequestAsync(RequestContext<ListResourceTemplatesRequestParams> context, CancellationToken cancellationToken)
     {
         // Get and return all resource template definitions registered in the DI container
         IEnumerable<ResourceTemplateDefinition> definitions = context.Server.Services!.GetServices<ResourceTemplateDefinition>();
 
-        return Task.FromResult(new ListResourceTemplatesResult
+        return ValueTask.FromResult(new ListResourceTemplatesResult
         {
             ResourceTemplates = [.. definitions.Select(d => d.ResourceTemplate)]
         });
     }
 
-    private static Task<ListResourcesResult> HandleListResourcesRequestAsync(RequestContext<ListResourcesRequestParams> context, CancellationToken cancellationToken)
+    private static ValueTask<ListResourcesResult> HandleListResourcesRequestAsync(RequestContext<ListResourcesRequestParams> context, CancellationToken cancellationToken)
     {
         // Get and return all resource template definitions registered in the DI container
         IEnumerable<ResourceDefinition> definitions = context.Server.Services!.GetServices<ResourceDefinition>();
 
-        return Task.FromResult(new ListResourcesResult
+        return ValueTask.FromResult(new ListResourcesResult
         {
             Resources = [.. definitions.Select(d => d.Resource)]
         });

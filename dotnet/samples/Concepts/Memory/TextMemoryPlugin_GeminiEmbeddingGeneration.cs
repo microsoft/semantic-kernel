@@ -19,23 +19,16 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
     {
         Console.WriteLine("============= Google AI - Gemini Embedding Generation =============");
 
-        string googleAIApiKey = TestConfiguration.GoogleAI.ApiKey;
-        string geminiModelId = TestConfiguration.GoogleAI.Gemini.ModelId;
-        string embeddingModelId = TestConfiguration.GoogleAI.EmbeddingModelId;
-
-        if (googleAIApiKey is null || geminiModelId is null || embeddingModelId is null)
-        {
-            Console.WriteLine("GoogleAI credentials not found. Skipping example.");
-            return;
-        }
+        Assert.NotNull(TestConfiguration.GoogleAI.ApiKey);
+        Assert.NotNull(TestConfiguration.GoogleAI.EmbeddingModelId);
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddGoogleAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                apiKey: googleAIApiKey)
+                modelId: TestConfiguration.GoogleAI.EmbeddingModelId,
+                apiKey: TestConfiguration.GoogleAI.ApiKey)
             .AddGoogleAIEmbeddingGeneration(
-                modelId: embeddingModelId,
-                apiKey: googleAIApiKey)
+                modelId: TestConfiguration.GoogleAI.EmbeddingModelId,
+                apiKey: TestConfiguration.GoogleAI.ApiKey)
             .Build();
 
         await this.RunSimpleSampleAsync(kernel);
@@ -47,30 +40,23 @@ public sealed class TextMemoryPlugin_GeminiEmbeddingGeneration(ITestOutputHelper
     {
         Console.WriteLine("============= Vertex AI - Gemini Embedding Generation =============");
 
-        string vertexBearerKey = TestConfiguration.VertexAI.BearerKey;
-        string geminiModelId = TestConfiguration.VertexAI.Gemini.ModelId;
-        string geminiLocation = TestConfiguration.VertexAI.Location;
-        string geminiProject = TestConfiguration.VertexAI.ProjectId;
-        string embeddingModelId = TestConfiguration.VertexAI.EmbeddingModelId;
-
-        if (vertexBearerKey is null || geminiModelId is null || geminiLocation is null
-            || geminiProject is null || embeddingModelId is null)
-        {
-            Console.WriteLine("VertexAI credentials not found. Skipping example.");
-            return;
-        }
+        Assert.NotNull(TestConfiguration.VertexAI.BearerKey);
+        Assert.NotNull(TestConfiguration.VertexAI.Location);
+        Assert.NotNull(TestConfiguration.VertexAI.ProjectId);
+        Assert.NotNull(TestConfiguration.VertexAI.Gemini.ModelId);
+        Assert.NotNull(TestConfiguration.VertexAI.EmbeddingModelId);
 
         Kernel kernel = Kernel.CreateBuilder()
             .AddVertexAIGeminiChatCompletion(
-                modelId: geminiModelId,
-                bearerKey: vertexBearerKey,
-                location: geminiLocation,
-                projectId: geminiProject)
+                modelId: TestConfiguration.VertexAI.Gemini.ModelId,
+                bearerKey: TestConfiguration.VertexAI.BearerKey,
+                location: TestConfiguration.VertexAI.Location,
+                projectId: TestConfiguration.VertexAI.ProjectId)
             .AddVertexAIEmbeddingGeneration(
-                modelId: embeddingModelId,
-                bearerKey: vertexBearerKey,
-                location: geminiLocation,
-                projectId: geminiProject)
+                modelId: TestConfiguration.VertexAI.EmbeddingModelId,
+                bearerKey: TestConfiguration.VertexAI.BearerKey,
+                location: TestConfiguration.VertexAI.Location,
+                projectId: TestConfiguration.VertexAI.ProjectId)
             .Build();
 
         // To generate bearer key, you need installed google sdk or use google web console with command:
