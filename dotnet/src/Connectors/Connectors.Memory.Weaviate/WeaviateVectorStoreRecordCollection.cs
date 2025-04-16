@@ -103,12 +103,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         this.Name = name;
         this._options = options ?? new();
         this._apiKey = this._options.ApiKey;
-        this._model = new WeaviateModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
+        this._model = new WeaviateModelBuilder(this._options.HasNamedVectors)
+            .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition, s_jsonSerializerOptions);
 
         // Assign mapper.
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new WeaviateDynamicDataModelMapper(this.Name, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
-            : new WeaviateVectorStoreRecordMapper<TRecord>(this.Name, this._model, s_jsonSerializerOptions);
+            ? (new WeaviateDynamicDataModelMapper(this.Name, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
+            : new WeaviateVectorStoreRecordMapper<TRecord>(this.Name, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
@@ -139,13 +140,16 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         const string OperationName = "CreateCollectionSchema";
 
+        var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(
+            this.Name,
+            this._options.HasNamedVectors,
+            this._model);
+
         return this.RunOperationAsync(OperationName, () =>
         {
-            var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(this.Name, this._model);
-
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -167,7 +171,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -187,7 +191,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
             var request = new WeaviateDeleteObjectRequest(this.Name, guid).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -221,7 +225,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
             var request = new WeaviateDeleteObjectBatchRequest(match).Build();
 
-            return this.ExecuteRequestAsync(request, cancellationToken);
+            return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
     }
 
@@ -351,7 +355,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             s_jsonSerializerOptions,
             top,
             searchOptions,
-            this._model);
+            this._model,
+            this._options.HasNamedVectors);
 
         return this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.ScorePropertyName, OperationName, cancellationToken);
     }
@@ -370,7 +375,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             top,
             options,
             this.Name,
-            this._model);
+            this._model,
+            this._options.HasNamedVectors);
 
         return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken)
             .SelectAsync(result => result.Record, cancellationToken: cancellationToken);
@@ -397,7 +403,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             vectorProperty,
             textDataProperty,
             s_jsonSerializerOptions,
-            searchOptions);
+            searchOptions,
+            this._options.HasNamedVectors);
 
         return this.ExecuteQueryAsync(query, searchOptions.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken);
     }
@@ -440,7 +447,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             if (result is not null)
             {
-                var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result, scorePropertyName);
+                var (storageModel, score) = WeaviateVectorStoreCollectionSearchMapping.MapSearchResult(result, scorePropertyName, this._options.HasNamedVectors);
 
                 var record = VectorStoreErrorHandler.RunModelConversion(
                     WeaviateConstants.VectorStoreSystemName,
@@ -454,7 +461,10 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
     }
 
-    private Task<HttpResponseMessage> ExecuteRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> ExecuteRequestAsync(
+        HttpRequestMessage request,
+        bool ensureSuccessStatusCode = true,
+        CancellationToken cancellationToken = default)
     {
         request.RequestUri = new Uri(this._endpoint, request.RequestUri!);
 
@@ -463,12 +473,21 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
         }
 
-        return this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
+        var response = await this._httpClient
+            .SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (ensureSuccessStatusCode)
+        {
+            response.EnsureSuccessStatusCode();
+        }
+
+        return response;
     }
 
     private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
@@ -486,11 +505,14 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
     private async Task<TResponse?> ExecuteRequestWithNotFoundHandlingAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        var response = await this.ExecuteRequestAsync(request, ensureSuccessStatusCode: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
             return default;
         }
+
+        response.EnsureSuccessStatusCode();
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         var responseModel = JsonSerializer.Deserialize<TResponse>(responseContent, s_jsonSerializerOptions);
