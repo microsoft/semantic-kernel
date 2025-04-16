@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
 using System;
-using Microsoft.SemanticKernel.Agents;
-using ModelContextProtocol.Client;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using ModelContextProtocol.Client;
 
 namespace MCPClient;
 

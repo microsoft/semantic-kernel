@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Threading.Tasks;
 using System;
-using ModelContextProtocol.Client;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel;
 using System.Linq;
-using Microsoft.SemanticKernel.Agents.AzureAI;
+using System.Threading.Tasks;
 using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents.AzureAI;
+using ModelContextProtocol.Client;
 
 namespace MCPClient;
 
