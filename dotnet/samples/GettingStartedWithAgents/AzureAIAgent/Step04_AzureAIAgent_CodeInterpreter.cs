@@ -12,7 +12,7 @@ namespace GettingStarted.AzureAgents;
 public class Step04_AzureAIAgent_CodeInterpreter(ITestOutputHelper output) : BaseAzureAgentTest(output)
 {
     [Fact]
-    public async Task UseCodeInterpreterToolWithAgentAsync()
+    public async Task UseCodeInterpreterToolWithAgent()
     {
         // Define the agent
         Azure.AI.Projects.Agent definition = await this.AgentsClient.CreateAgentAsync(

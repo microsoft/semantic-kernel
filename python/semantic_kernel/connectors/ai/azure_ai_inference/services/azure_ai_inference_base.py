@@ -78,7 +78,7 @@ class AzureAIInferenceBase(KernelBaseModel, ABC):
         managed_client = client is None
         if not client:
             try:
-                azure_ai_inference_settings = AzureAIInferenceSettings.create(
+                azure_ai_inference_settings = AzureAIInferenceSettings(
                     api_key=api_key,
                     endpoint=endpoint,
                     env_file_path=env_file_path,

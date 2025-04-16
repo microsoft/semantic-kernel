@@ -66,7 +66,7 @@ class AzureCosmosDBforMongoDBStore(MongoDBAtlasStore):
         )
 
         try:
-            settings = AzureCosmosDBforMongoDBSettings.create(
+            settings = AzureCosmosDBforMongoDBSettings(
                 env_file_path=env_file_path,
                 connection_string=connection_string,
                 database_name=database_name,

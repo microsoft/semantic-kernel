@@ -14,7 +14,7 @@ Semantic Kernel is a model-agnostic SDK that empowers developers to build, orche
 
 ## System Requirements
 
-- **Python**: 3.9+
+- **Python**: 3.10+
 - **.NET**: .NET 8.0+ 
 - **Java**: JDK 17+
 - **OS Support**: Windows, macOS, Linux
@@ -132,6 +132,7 @@ await foreach (AgentResponseItem<ChatMessageContent> response
 Enhance your agent with custom tools (plugins) and structured output:
 
 ```python
+import asyncio
 from typing import Annotated
 from pydantic import BaseModel
 from semantic_kernel.agents import ChatCompletionAgent

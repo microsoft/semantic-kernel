@@ -37,9 +37,7 @@ def model_diagnostics_unit_test_env(monkeypatch):
 
     # Need to reload the settings to pick up the new environment variables since the
     # settings are loaded at import time and this fixture is called after the import
-    semantic_kernel.utils.telemetry.model_diagnostics.decorators.MODEL_DIAGNOSTICS_SETTINGS = (
-        ModelDiagnosticSettings.create()
-    )
+    semantic_kernel.utils.telemetry.model_diagnostics.decorators.MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings()
 
 
 @pytest.fixture()

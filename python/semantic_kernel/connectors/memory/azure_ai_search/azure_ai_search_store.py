@@ -70,7 +70,7 @@ class AzureAISearchStore(VectorStore):
         managed_client: bool = False
         if not search_index_client:
             try:
-                azure_ai_search_settings = AzureAISearchSettings.create(
+                azure_ai_search_settings = AzureAISearchSettings(
                     env_file_path=env_file_path,
                     endpoint=search_endpoint,
                     api_key=api_key,

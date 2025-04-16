@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 # To enable these features, set one of the following environment variables to true:
 #    SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS
 #    SEMANTICKERNEL_EXPERIMENTAL_GENAI_ENABLE_OTEL_DIAGNOSTICS_SENSITIVE
-MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings.create()
+MODEL_DIAGNOSTICS_SETTINGS = ModelDiagnosticSettings()
 
 # Operation names
 CHAT_COMPLETION_OPERATION = "chat.completions"

@@ -61,7 +61,7 @@ class OnnxGenAIChatCompletion(ChatCompletionClientBase, OnnxGenAICompletionBase)
             kwargs : Additional arguments.
         """
         try:
-            settings = OnnxGenAISettings.create(
+            settings = OnnxGenAISettings(
                 chat_model_folder=ai_model_path,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,

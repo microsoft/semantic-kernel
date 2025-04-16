@@ -5,6 +5,7 @@
     <AssemblyName>Microsoft.SemanticKernel.Agents.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
+    <NoWarn>$(NoWarn)</NoWarn>
     <EnablePackageValidation>false</EnablePackageValidation>
   </PropertyGroup>
 
@@ -18,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
+    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Functions/*" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/AppContextSwitchHelper.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/agents/Extensions/AgentExtensions.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />
     <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/arguments/Extensions/KernelArgumentsExtensions.cs" Link="%(RecursiveDir)Utilities/%(Filename)%(Extension)" />

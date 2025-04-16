@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 kernel = sk.Kernel()
 
 # Create the data source settings
-azure_ai_search_settings = AzureAISearchSettings.create()
+azure_ai_search_settings = AzureAISearchSettings()
 az_source = AzureAISearchDataSource(parameters=azure_ai_search_settings.model_dump())
 extra = ExtraBody(data_sources=[az_source])
 req_settings = AzureChatPromptExecutionSettings(service_id="chat-gpt", extra_body=extra, tool_choice="auto")
