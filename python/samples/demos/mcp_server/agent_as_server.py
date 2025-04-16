@@ -12,7 +12,6 @@ import anyio
 from azure.identity.aio import DefaultAzureCredential
 
 from semantic_kernel.agents import AzureAIAgent, AzureAIAgentSettings
-from semantic_kernel.connectors.mcp import create_mcp_server_from_functions
 from semantic_kernel.functions import kernel_function
 
 logger = logging.getLogger(__name__)
@@ -104,7 +103,7 @@ async def run(transport: Literal["sse", "stdio"] = "stdio", port: int | None = N
             ),
             plugins=[MenuPlugin()],  # add the sample plugin to the agent
         )
-        server = create_mcp_server_from_functions(agent)
+        server = agent.as_mcp_server()
 
         if transport == "sse" and port is not None:
             import nest_asyncio

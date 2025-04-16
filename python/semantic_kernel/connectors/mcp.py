@@ -602,13 +602,14 @@ class MCPWebsocketPlugin(MCPPluginBase):
 def create_mcp_server_from_functions(
     functions: OneOrMany[KernelFunction | KernelPlugin | object],
     *,
+    prompts: list[PromptTemplateBase] | None = None,
     server_name: str = "SK",
     version: str | None = None,
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
     plugin_name: str = "mcp",
     **kwargs: Any,
-):
+) -> Server["LifespanResultT"]:
     """Create an MCP server from a function(s) or plugin(s).
 
     This function automatically creates a MCP server from single or multiple functions or plugins,
@@ -620,6 +621,7 @@ def create_mcp_server_from_functions(
         functions: The function(s) or plugin(s) instance to use.
             This can be a mix of functions, plugins or agents.
             Or any object that can be parsed to a plugin.
+        prompts: The list of prompts to expose as prompts.
         server_name: The name of the server.
         version: The version of the server.
         instructions: The instructions to use for the server.
@@ -648,7 +650,8 @@ def create_mcp_server_from_functions(
                     ex,
                 )
     return create_mcp_server_from_kernel(
-        kernel,
+        kernel=kernel,
+        prompts=prompts,
         server_name=server_name,
         version=version,
         instructions=instructions,
