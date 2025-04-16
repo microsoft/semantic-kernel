@@ -8,6 +8,7 @@ using Azure.AI.Projects;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.AzureAI;
 using ModelContextProtocol.Client;
 
@@ -54,15 +55,17 @@ internal sealed partial class Program
         string prompt = "What is the likely color of the sky in Boston today?";
         Console.WriteLine(prompt);
 
-        ChatMessageContent response = await agent.InvokeAsync(message: prompt).FirstAsync();
-
-        Console.WriteLine(response);
+        AgentResponseItem<ChatMessageContent> response = await agent.InvokeAsync(message: prompt).FirstAsync();
+        Console.WriteLine(response.Message);
         Console.WriteLine();
 
         // The expected output is: Today in Boston, the weather is 61°F and rainy. Due to the rain, the likely color of the sky will be gray.
 
+        // Delete the agent thread after use
+        await response!.Thread.DeleteAsync();
+
         // Delete the agent after use
-        agent.Client.DeleteAgentAsync(agent.Id).Wait();
+        await agent.Client.DeleteAgentAsync(agent.Id);
     }
 
     private static async Task<AzureAIAgent> CreateAzureAIAgentAsync(Kernel kernel, string name, string instructions)
