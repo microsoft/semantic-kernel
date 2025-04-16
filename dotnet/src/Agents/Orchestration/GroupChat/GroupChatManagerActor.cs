@@ -12,7 +12,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// An <see cref="ChatManagerActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal sealed class GroupChatManagerActor : ChatManagerActor
+internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManagerActor"/> class.
@@ -23,7 +23,7 @@ internal sealed class GroupChatManagerActor : ChatManagerActor
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger? logger = null)
+    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger<GroupChatManagerActor>? logger = null)
         : base(id, runtime, team, orchestrationType, groupTopic, logger)
     {
     }

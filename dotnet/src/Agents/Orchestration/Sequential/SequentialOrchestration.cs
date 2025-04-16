@@ -54,13 +54,12 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
 
         return nextAgent;
 
-        async Task<AgentType> RegisterAgentAsync(TopicId topic, AgentType nextAgent, int index, Agent agent)
+        ValueTask<AgentType> RegisterAgentAsync(TopicId topic, AgentType nextAgent, int index, Agent agent)
         {
-            AgentType agentType = this.GetAgentType(topic, index);
-            ILogger loggerActor = this.LoggerFactory.CreateLogger<SequentialActor>();
-            return await this.Runtime.RegisterAgentFactoryAsync(
-                agentType,
-                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent, loggerActor))).ConfigureAwait(false);
+            return
+                this.Runtime.RegisterAgentFactoryAsync(
+                    this.GetAgentType(topic, index),
+                    (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent, this.LoggerFactory.CreateLogger<SequentialActor>())));
         }
     }
 

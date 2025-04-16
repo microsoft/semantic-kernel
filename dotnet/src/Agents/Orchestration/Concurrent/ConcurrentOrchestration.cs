@@ -67,16 +67,13 @@ public class ConcurrentOrchestration<TInput, TOutput>
 
         return null;
 
-        async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
+        ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
-            AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
-            ILogger loggerActor = this.LoggerFactory.CreateLogger<ConcurrentActor>();
-            await this.Runtime.RegisterAgentFactoryAsync(
-                agentType,
-                (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType, loggerActor))).ConfigureAwait(false);
-
-            return agentType;
+            return
+                this.Runtime.RegisterAgentFactoryAsync(
+                    this.FormatAgentType(topic, $"Agent_{agentCount}"),
+                    (agentId, runtime) =>
+                        ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType, this.LoggerFactory.CreateLogger<ConcurrentActor>())));
         }
     }
 }

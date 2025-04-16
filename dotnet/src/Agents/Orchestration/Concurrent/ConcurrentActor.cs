@@ -22,7 +22,7 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public ConcurrentActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType orchestrationType, ILogger? logger = null) :
+    public ConcurrentActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType orchestrationType, ILogger<ConcurrentActor>? logger = null) :
         base(id, runtime, agent, noThread: true, logger)
     {
         this._orchestrationType = orchestrationType;

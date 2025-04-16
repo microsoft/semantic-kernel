@@ -23,7 +23,7 @@ internal sealed class MagenticManagerActor : ChatManagerActor
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public MagenticManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger? logger = null)
+    public MagenticManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger<MagenticManagerActor>? logger = null)
         : base(id, runtime, team, orchestrationType, groupTopic, logger)
     {
     }

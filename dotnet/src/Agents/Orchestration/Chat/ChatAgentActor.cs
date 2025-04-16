@@ -29,7 +29,7 @@ internal sealed class ChatAgentActor :
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public ChatAgentActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic, ILogger? logger = null)
+    public ChatAgentActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic, ILogger<ChatAgentActor>? logger = null)
         : base(id, runtime, agent, noThread: false, logger)
     {
         this._cache = [];

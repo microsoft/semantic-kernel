@@ -62,27 +62,23 @@ public class MagenticOrchestration<TInput, TOutput> :
             await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
 
-        ILogger loggerManager = this.LoggerFactory.CreateLogger<MagenticManagerActor>();
         await this.Runtime.RegisterAgentFactoryAsync(
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, loggerManager))).ConfigureAwait(false);
+                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, this.LoggerFactory.CreateLogger<MagenticManagerActor>()))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 
         return managerType;
 
-        async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
+        ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
-            AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
-            ILogger loggerActor = this.LoggerFactory.CreateLogger<ChatAgentActor>();
-            await this.Runtime.RegisterAgentFactoryAsync(
-                agentType,
-                (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, loggerActor))).ConfigureAwait(false);
-
-            return agentType;
+            return
+                this.Runtime.RegisterAgentFactoryAsync(
+                    this.FormatAgentType(topic, $"Agent_{agentCount}"),
+                    (agentId, runtime) =>
+                        ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, this.LoggerFactory.CreateLogger<ChatAgentActor>())));
         }
     }
 }

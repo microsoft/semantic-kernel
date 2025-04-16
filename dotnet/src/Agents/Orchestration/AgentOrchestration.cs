@@ -168,27 +168,27 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         }
 
         // Register actor for final result
-        AgentType orchestrationFinal = this.FormatAgentType(topic, "Root");
-        await this.Runtime.RegisterAgentFactoryAsync(
-            orchestrationFinal,
-            (agentId, runtime) =>
-                ValueTask.FromResult<IHostableAgent>(
-                    new ResultActor(agentId, runtime, this._orchestrationRoot, this.ResultTransform, completion, this.LoggerFactory.CreateLogger<ResultActor>())
-                    {
-                        CompletionTarget = targetActor,
-                    })).ConfigureAwait(false);
+        AgentType orchestrationFinal =
+            await this.Runtime.RegisterAgentFactoryAsync(
+                this.FormatAgentType(topic, "Root"),
+                (agentId, runtime) =>
+                    ValueTask.FromResult<IHostableAgent>(
+                        new ResultActor(agentId, runtime, this._orchestrationRoot, this.ResultTransform, completion, this.LoggerFactory.CreateLogger<ResultActor>())
+                        {
+                            CompletionTarget = targetActor,
+                        })).ConfigureAwait(false);
 
         // Register orchestration members
         AgentType? entryAgent = await this.RegisterMembersAsync(topic, orchestrationFinal, logger).ConfigureAwait(false);
 
         // Register actor for orchestration entry-point
-        AgentType orchestrationEntry = this.FormatAgentType(topic, "Boot");
-        await this.Runtime.RegisterAgentFactoryAsync(
-            orchestrationEntry,
-            (agentId, runtime) =>
-                ValueTask.FromResult<IHostableAgent>(
-                    new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), this.LoggerFactory.CreateLogger<RequestActor>()))
-        ).ConfigureAwait(false);
+        AgentType orchestrationEntry =
+            await this.Runtime.RegisterAgentFactoryAsync(
+                this.FormatAgentType(topic, "Boot"),
+                (agentId, runtime) =>
+                    ValueTask.FromResult<IHostableAgent>(
+                        new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), this.LoggerFactory.CreateLogger<RequestActor>()))
+            ).ConfigureAwait(false);
 
         logger.LogOrchestrationRegistrationDone(this._orchestrationRoot, topic);
 
