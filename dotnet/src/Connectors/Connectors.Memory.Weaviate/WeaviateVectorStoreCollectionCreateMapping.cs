@@ -19,9 +19,10 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
     /// Maps record type properties to Weaviate collection schema for collection creation.
     /// </summary>
     /// <param name="collectionName">The name of the vector store collection.</param>
+    /// <param name="hasNamedVectors">Gets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.</param>
     /// <param name="model">The model.</param>
     /// <returns>Weaviate collection schema.</returns>
-    public static WeaviateCollectionSchema MapToSchema(string collectionName, VectorStoreRecordModel model)
+    public static WeaviateCollectionSchema MapToSchema(string collectionName, bool hasNamedVectors, VectorStoreRecordModel model)
     {
         var schema = new WeaviateCollectionSchema(collectionName);
 
@@ -38,16 +39,28 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
         }
 
         // Handle vector properties.
-        foreach (var property in model.VectorProperties)
+        if (hasNamedVectors)
         {
-            schema.VectorConfigurations.Add(property.StorageName, new WeaviateCollectionSchemaVectorConfig
+            foreach (var property in model.VectorProperties)
             {
-                VectorIndexType = MapIndexKind(property.IndexKind, property.StorageName),
-                VectorIndexConfig = new WeaviateCollectionSchemaVectorIndexConfig
+                schema.VectorConfigurations.Add(property.StorageName, new WeaviateCollectionSchemaVectorConfig
                 {
-                    Distance = MapDistanceFunction(property.DistanceFunction, property.StorageName)
-                }
-            });
+                    VectorIndexType = MapIndexKind(property.IndexKind, property.StorageName),
+                    VectorIndexConfig = new WeaviateCollectionSchemaVectorIndexConfig
+                    {
+                        Distance = MapDistanceFunction(property.DistanceFunction, property.StorageName)
+                    }
+                });
+            }
+        }
+        else
+        {
+            var vectorProperty = model.VectorProperty;
+            schema.VectorIndexType = MapIndexKind(vectorProperty.IndexKind, vectorProperty.StorageName);
+            schema.VectorIndexConfig = new WeaviateCollectionSchemaVectorIndexConfig
+            {
+                Distance = MapDistanceFunction(vectorProperty.DistanceFunction, vectorProperty.StorageName)
+            };
         }
 
         return schema;
@@ -110,7 +123,7 @@ internal static class WeaviateVectorStoreCollectionCreateMapping
             DistanceFunction.EuclideanSquaredDistance => EuclideanSquared,
             DistanceFunction.Hamming => Hamming,
             DistanceFunction.ManhattanDistance => Manhattan,
-            _ => throw new InvalidOperationException(
+            _ => throw new NotSupportedException(
                 $"Distance function '{distanceFunction}' on {nameof(VectorStoreRecordVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
                 $"Supported distance functions: {string.Join(", ",
                     DistanceFunction.CosineDistance,
