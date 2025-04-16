@@ -67,15 +67,15 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> class.
     /// </summary>
-    /// <param name="collectionName">The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="InMemoryVectorStoreRecordCollection{TKey,TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
-    public InMemoryVectorStoreRecordCollection(string collectionName, InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
+    public InMemoryVectorStoreRecordCollection(string name, InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>? options = default)
     {
         // Verify.
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         // Assign.
-        this._collectionName = collectionName;
+        this._collectionName = name;
         this._internalCollections = new();
         this._internalCollectionTypes = new();
         this._options = options ?? new InMemoryVectorStoreRecordCollectionOptions<TKey, TRecord>();
@@ -111,7 +111,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -134,7 +134,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._collectionName;
+    public string Name => this._collectionName;
 
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -155,7 +155,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         return Task.FromException(new VectorStoreOperationException("Collection already exists.")
         {
             VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
-            CollectionName = this.CollectionName,
+            CollectionName = this.Name,
             OperationName = "CreateCollection"
         });
     }
