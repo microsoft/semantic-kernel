@@ -1,10 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
+
 namespace VectorDataSpecificationTests.Filter;
 
 public abstract class BasicQueryTests<TKey>(BasicQueryTests<TKey>.QueryFixture fixture)
     : BasicFilterTests<TKey>(fixture) where TKey : notnull
 {
+    protected override async Task<List<FilterRecord>> GetRecords(Expression<Func<FilterRecord, bool>> filter, int top, ReadOnlyMemory<float> vector)
+        => (await fixture.Collection.GetAsync(filter, top).ToListAsync()).OrderBy(r => r.Key).ToList();
+
+    protected override async Task<List<Dictionary<string, object?>>> GetDynamicRecords(Expression<Func<Dictionary<string, object?>, bool>> dynamicFilter, int top, ReadOnlyMemory<float> vector)
+        => (await fixture.DynamicCollection.GetAsync(dynamicFilter, top).ToListAsync()).OrderBy(r => r[nameof(FilterRecord.Key)]!).ToList();
+
     [Obsolete("Not used by derived types")]
     public sealed override Task Legacy_And() => Task.CompletedTask;
 
