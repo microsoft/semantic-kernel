@@ -602,6 +602,8 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             {
                 yield return result;
             }
+
+            yield break;
         }
 
         // Execute search and map using the built in Azure AI Search mapper.
