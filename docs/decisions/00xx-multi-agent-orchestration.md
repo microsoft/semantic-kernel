@@ -12,15 +12,17 @@ informed: { }
 
 ## Context
 
-The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating single AI agents to perform more complex tasks, the desire for a multi-agent framework is growing.
+The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating single AI agents to perform more complex tasks, the desire for a multi-agent system is growing.
 
-With the recent GA of the Semantic Kernel Agent Framework, which offers a stable solution for single agents, we are now able to build on top of it to create a multi-agent orchestration framework. This will allow our customers to unlock even more complex scenarios.
+With the recent GA of the Semantic Kernel Agent Framework, which offers a stable solution for single agents, we are now able to build on top of it to create multi-agent systems. This will allow our customers to unlock even more complex scenarios.
 
-In addition, the recent collaboration with the AutoGen team that resulted in the shared agent runtime abstraction allowed us to leverage the work to build a multi-agent orchestration framework more rapidly.
+In addition, the recent collaboration with the AutoGen team that resulted in the shared agent runtime abstraction allowed us to leverage their work as the foundation on which we can build our framework.
 
 ## Problem Statement
 
-The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to extend it to a multi-agent orchestration framework to allow our customers to unlock more possibilities using Semantic Kernel agents.
+The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to extend it to support multi-agent orchestration, which will allow our customers to unlock more possibilities using Semantic Kernel agents.
+
+## Background Knowledge
 
 ### Terminology
 
@@ -30,7 +32,7 @@ Before we dive into the details, let's clarify some terminologies that will be u
 |------------|-----------------------------------------------------------------------------------------------------|
 | **Actor**  | An AutoGen agent that can send and receive messages from the runtime.                               |
 | **Runtime**| Facilitates the communication between actors and manages the states and lifecycle of the actors.    |
-| **Agent**  | A Semantic Kernel agent wrapped in an actor.                                                        |
+| **Agent**  | A Semantic Kernel agent.                                                                            |
 | **Orchestration** | Contains actors and rules on how they will interact with each others.                        |
 
 > We are using the term "actor" for AutoGen to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. The name "actor" is also used interchangeably with "agent" in the AutoGen documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
@@ -39,13 +41,21 @@ Before we dive into the details, let's clarify some terminologies that will be u
 
 ### The AutoGen shared runtime abstraction
 
+> The runtime abstraction serves as the foundational layer for this framework. A basic understanding of how orchestrations interact with the runtime is recommended. For more details, refer to the [AutoGen Core User Guide](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/index.html).
+
 The AutoGen team has built a agent runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared agent runtime abstraction which Semantic Kernel will depend on.
 
-Depending on the actual runtime implementation, actors can be local or distributed. Our multi-agent orchestration framework is **not** tied to a specific runtime implementation.
+Depending on the actual runtime implementation, actors can be local or distributed. Our agent framework is **not** tied to a specific runtime implementation.
+
+### Messages
+
+Actors communicate via messages. The runtime is responsible for routing the messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
+
+Orchestration developers will need to define the messages for their orchestrations, uniquely identifiable via namespaces or class names.
 
 ### Targeted audience
 
-The multi-agent orchestration framework is targeted at two types of developers:
+The extension of the current Semantic Kernel Agent framework is targeted at two types of developers:
 
 - **Orchestration developers**: Developers who will create orchestrations using the framework.
 - **Orchestration consumers**: Developers who will use the orchestrations created by orchestration developers.
@@ -68,21 +78,59 @@ To help people get started quickly, we should provide a list of pre-built orches
 
 > Please see Appendix A for a more detailed descriptions of the pre-built orchestrations.
 
-Our framework should also provide a set of building blocks for customers to create more advanced orchestrations for their specific use cases. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
+Using an orchestration should be as simple as the following:
 
-### Runtime
+```python
+agent_1 = ChatCompletionAgent(...)
+agent_2 = ChatCompletionAgent(...)
 
-The runtime abstraction is an important concept in the multi-agent orchestration framework. Some basic understanding of how an orchestration works with the runtime is recommended.
+group_chat = GroupChatOrchestration(members=[agent_1, agent_2])
+
+runtime = SingleThreadedAgentRuntime()
+runtime.start()
+
+task = await group_chat.invoke(task="Hello world", runtime=runtime)
+result = await task.result
+
+await runtime.stop_when_idle()
+```
+
+> This document uses Python as the primary language for examples. However, the concepts are not language-specific and can be applied to other languages as well.
+
+We should also provide a set of building blocks for customers to create more advanced orchestrations for their specific use cases. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
+
+### Application responsibilities
 
 - The lifecycle of an runtime instance should be managed by the application and should be external to any orchestrations.
-- Orchestrations require a runtime instance only when they are invoked, not when they are created.
-- Multiple orchestrations can share the same runtime instance, thus requiring us to define clear orchestration boundaries to avoid collisions, such as actor names or IDs.
+- Orchestrations require a runtime instance only when they are invoked, not when they are created. 
 
-### Messages
+### Graph-like structure with lazy evaluation
 
-Actors communicate via messages. The runtime is responsible for routing the messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
+We should consider an orchestration as a template that describes how the agents will interact with each other similar to a directed graph. The actual execution of the orchestration should be done by the runtime. Therefore, the followings must be true:
 
-Orchestration developers will need to define the messages for their orchestrations.
+- Actors are registered to the runtime before execution starts, not when the orchestration is created.
+- The runtime is responsible for creating the actors and managing their lifecycle.
+
+### Independent & Isolated invocations
+
+An orchestration can be invoked multiple times and each invocation should be independent and isolated from each other. Invocations can also share the same runtime instance. This will require us to define clear invocation boundaries to avoid collisions, such as actor names or IDs, when registering actors and adding subscriptions to the runtime.
+
+For example, in the following code snippet, the `task_1` and `task_2` are independent and don't share any context:
+
+```python
+agent_1 = ChatCompletionAgent(...)
+agent_2 = ChatCompletionAgent(...)
+
+group_chat = GroupChatOrchestration(members=[agent_1, agent_2])
+
+runtime = SingleThreadedAgentRuntime()
+runtime.start()
+
+task_1 = await group_chat.invoke(task=TASK_1, runtime=runtime)
+task_2 = await group_chat.invoke(task=TASK_2, runtime=runtime)
+
+await runtime.stop_when_idle()
+```
 
 ### Support nested orchestrations
 
@@ -109,8 +157,10 @@ graph TD
 
     A --> Sequential_0
     A --> Sequential_1
+    A --> AgentC_0
     Sequential_0 --> B
     Sequential_1 --> B
+    AgentC_0 --> B
   end
 
   External0[External] --> A
@@ -119,14 +169,13 @@ graph TD
 
 > The two external nodes represent the same object external to the concurrent orchestration. Separating them is just for a cleaner diagram.
 
-The above is a simple example that shows what a nested multi-agent orchestration looks like. This orchestration contains two sequential orchestrations that run in the concurrent orchestration.
+The above shows a simple nested orchestration that has two sequential orchestrations and an agent in the concurrent orchestration. By providing a way to nest orchestrations, our customers can create larger, more complex orchestrations that fit their needs.
 
-### Graph-like structure with lazy evaluation
+### Support structured input and output types
 
-We should consider an orchestration as a template that describes how the agents will interact with each other similar to a directed graph. The actual execution of the orchestration should be done by the runtime. Therefore, the followings must be true:
+It will be useful for orchestrations to accept structured inputs and return structured outputs. Chat messages may not be sufficient to represent complex inputs and outputs, and structured data is generally easier to work with from a code perspective. This will become more obvious as orchestrations become more complex. In addition, nested orchestrations will benefit from structured inputs and outputs, because the data flow between orchestrations will be easier to manage.
 
-- Actors are registered to the runtime before execution starts, not when the orchestration is created.
-- The runtime is responsible for creating the actors and managing their lifecycle.
+> Types must be serializable.
 
 ### State management
 
@@ -136,18 +185,18 @@ Orchestrations can be long-running, hours, days, and even years. And they can be
 - An orchestration that enters an error state.
 - etc.
 
-There are also other types of states to consider, such as the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the orchestration framework. Ideally, we want the ability to invoke/restart an orchestration on some existing agent context.
+There are also other types of states to consider, such as the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the framework. Ideally, we want the ability to invoke/restart an orchestration on some existing agent context.
 
-## Decisions
+## Proposals
 
 ### Building blocks
 
 | **Component**         | **Details**                                                                                                                                                                                                                     |
 |------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Agent actor**       | - Semantic Kernel agent <br> - Agent context <br> - Support for streaming                                                                                                                                                       |
+| **Agent actor**       | - Semantic Kernel agent <br> - Agent context                                                                                        |
 | **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types** and for nesting orchestrations.                                                                                                     |
 | **Orchestration actor** | - Broadcast messages to an external topic (e.g., the result of the orchestration) <br> - Send directly to an actor external to the orchestration (e.g., the result of the orchestration) <br> - Receive messages from an external topic (e.g., the start of the orchestration) <br> - Receive messages from an actor external to the orchestration (e.g., the start of the orchestration) |
-| **Orchestration**     | - Consists of one orchestration actor and multiple agent actors and other orchestrations. <br> - Support for streaming                                                                                                         |
+| **Orchestration**     | - Consists of one orchestration actor and multiple agent actors and other orchestrations.|
 
 ```mermaid
 graph TD
@@ -163,8 +212,13 @@ graph TD
     end
 
     subgraph Members[Members]
-      AG0[agent 0]
-      AG1[agent 1]
+      subgraph AA0[Agent Actor]
+        AG0[agent 0]
+      end
+      subgraph AA1[Agent Actor]
+        AG1[agent 1]
+      end
+
       SO0[sub orchestration 0]
       SO1[sub orchestration 1]
       IT[Internal Topic]
@@ -173,21 +227,64 @@ graph TD
   end
 
   %% Connections
-  EXT_Topic <--> |Broadcast| OA
-  EXT_Actor <--> |Direct messaging| OA
-  OA <--> |Broadcast| IT
+  EXT_Topic <-.Broadcast.-> OA
+  EXT_Actor <-.Direct messaging.-> OA
+  OA <-.Broadcast.-> IT
 
-  OA <-.Direct messaging.-> AG0
-  OA <-.Direct messaging.-> AG1
+  OA <-.Direct messaging.-> AA0
+  OA <-.Direct messaging.-> AA1
   OA <-.Direct messaging.-> SO0
   OA <-.Direct messaging.-> SO1
+
+  IT <-.Broadcast.-> AA0
+  IT <-.Broadcast.-> AA1
+  IT <-.Broadcast.-> SO0
+  IT <-.Broadcast.-> SO1
 ```
+
+To support structured input&output types and nesting, this proposal heavily relies on generics, which provides enough flexibility to build complex orchestrations while keeping the system relatively simple. We will also offer a set of defaults and overloads to make it easy for users who don't need the full flexibility.
 
 #### Agent Actor
 
-This is essentially a wrapper around a Semantic Kernel agent so that it can send and receive messages from the runtime.
+This is a wrapper around a Semantic Kernel agent so that it can send and receive messages from the runtime. We will have a simple base class that wraps a Semantic Kernel agent and inherits from [`RoutedAgent`](https://microsoft.github.io/autogen/stable/reference/python/autogen_core.html#autogen_core.RoutedAgent):
 
-> Please note that an agent actor implementation is tightly coupled with the orchestration. For example, the concurrent orchestration will have a different agent actor implementation than the sequential orchestration. This is because the interactions between the actors are different in each orchestration.
+```python
+class AgentActorBase(RoutedAgent):
+    """A agent actor for multi-agent orchestration running on Agent runtime."""
+
+    def __init__(self, agent: Agent) -> None:
+        """Initialize the agent container.
+
+        Args:
+            agent (Agent): An agent to be run in the container.
+        """
+        self._agent = agent
+        self._agent_thread = None
+        RoutedAgent.__init__(self, description=agent.description or "Semantic Kernel Agent")
+```
+
+Orchestrations will have their own implementations of the agent actor because each orchestration has its own message types (explained in [Messages](#messages)).
+
+For example, for the group chat orchestration, the agent actor will look like this:
+
+```python
+class GroupChatAgentActor(AgentActorBase):
+    """An agent actor for agents that process messages in a group chat."""
+
+    @message_handler
+    async def _on_group_chat_reset(self, message: GroupChatResetMessage, ctx: MessageContext) -> None:
+        ...
+
+    @message_handler
+    async def _on_group_chat_message(self, message: GroupChatResponseMessage, ctx: MessageContext) -> None:
+        ...
+
+    @message_handler
+    async def _on_request_to_speak(self, message: GroupChatRequestMessage, ctx: MessageContext) -> None:
+        ...
+```
+
+Agent actors in another orchestration will handle different message types or different number of message types. This proposal doesn't make any restrictions on how agent actors interact with each other inside an orchestration.
 
 #### Data Transform Logic
 
@@ -202,7 +299,7 @@ output_transform: Callable[[TInternalOut], Awaitable[TExternalOut] | TExternalOu
 
 Derived classes will set `TInternalIn` and `TInternalOut` while orchestration consumers will set `TExternalIn` and `TExternalOut`.
 
-> We can offer a set of default transforms to improve the developer quality of life. We can also have LLMs that automatically perform the transforms.
+> We can offer a set of default transforms to improve the developer quality of life. We can also have LLMs that automatically perform the transforms given the types.
 
 #### Orchestration Actor
 
@@ -214,6 +311,17 @@ class OrchestrationActorBase(
     Generic[TExternalIn, TInternalIn, TInternalOut, TExternalOut],
 ):
     ...
+
+    @override
+    async def on_message_impl(self, message: Any, ctx: MessageContext) -> None:
+        if isinstance(message, self._external_input_message_type):
+            if inspect.isawaitable(self._input_transition):
+                transition_message = await self._input_transition(message)
+            else:
+                transition_message = self._input_transition(message)
+            await self._handle_orchestration_input_message(transition_message, ctx)
+        elif isinstance(message, self._internal_output_message_type):
+            await self._handle_orchestration_output_message(message, ctx)
 
     @abstractmethod
     async def _handle_orchestration_input_message(
@@ -238,14 +346,19 @@ class OrchestrationActorBase(
 
 #### Orchestration
 
-Given the data transform logic shapes and the actor defined above, we can create the orchestration.
+An orchestration is simply a collection of Semantic Kernel agents and child orchestrations. Concrete implementations have to provide logic for how to start and prepare the orchestration. "Preparing" an orchestration simply means registering the actors with the runtime and setting up the communication channels between them based on the orchestration type.
 
 ```python
 class OrchestrationBase(
     ABC,
     Generic[TExternalIn, TInternalIn, TInternalOut, TExternalOut],
 ):
-    ... 
+    def __init__(
+        self,
+        members: list[Union[Agent, "OrchestrationBase"]],
+    ) -> None:
+        """Initialize the orchestration base."""
+        self._members = members
 
     async def invoke(self, runtime: AgentRuntime, ...) -> OrchestrationResult:
         """Invoke the orchestration and return an result immediately which can be awaited later.
@@ -277,16 +390,48 @@ class OrchestrationBase(
         ...
 ```
 
-Again, concrete implementations of the orchestration will set `TInternalIn` and `TInternalOut`. For example,
+Concrete implementations will also set `TInternalIn` and `TInternalOut`. For example,
 
 ```python
 class SequentialOrchestration(OrchestrationBase[TExternalIn, SequentialRequestMessage, SequentialResultMessage, TExternalOut]):
     ...
 ```
 
+When using the orchestration, the user will only need to set `TExternalIn` and `TExternalOut`:
+
+```python
+sequential_orchestration = SequentialOrchestration[ConcurrentRequestMessage, ConcurrentResponseMessage](
+    members=[agent_0, agent_1],
+    input_transition=input_transition_func,
+    output_transition=output_transition_func,
+)
+```
+
+And depending on the language, we can offer defaults so that only advanced users will need to set `TExternalIn` and `TExternalOut`. For example, in Python, we can do the following:
+
+```python
+TExternalIn = TypeVar("TExternalIn", default=SequentialRequestMessage)
+TExternalOut = TypeVar("TExternalOut", default=SequentialResultMessage)
+```
+
+And in .Net, we can do the following:
+
+```csharp
+public class SequentialOrchestration<TExternalIn, TExternalOut>
+    : AgentOrchestration<TExternalIn, SequentialRequestMessage, SequentialResultMessage, TExternalOut>
+{
+    ...
+}
+
+public sealed class SequentialOrchestration : SequentialOrchestration<SequentialRequestMessage, SequentialResultMessage>
+{
+    ...
+}
+```
+
 ### Nesting orchestrations
 
-The internal communication between actors within an orchestration depends on the specific orchestration type. This means the `TInternalIn` and `TInternalOut` types will vary for each orchestration. However, input and output transforms provide a seamless way to "bridge" different orchestrations, enabling them to work together.
+As mentioned above, the internal communication between actors within an orchestration depends on the specific orchestration type. This means the `TInternalIn` and `TInternalOut` types can vary for each orchestration. However, input and output transforms provide a seamless way to "bridge" different orchestrations, enabling them to work together.
 
 For example, in the nested orchestration shown in [Support nested orchestrations](#support-nested-orchestrations), two sequential orchestrations are embedded within the concurrent orchestration. To enable this, the sequential orchestrations must accept the same input type as the concurrent orchestration actor and produce the same output type. This is achieved by defining the sequential orchestration as follows:
 
@@ -306,6 +451,59 @@ Here’s how it works:
 4. It then applies the `output_transform` to convert the result into a `ConcurrentResponseMessage` and outputs it.
 
 This approach ensures that different orchestrations can interoperate smoothly, even when their internal message types differ.
+
+In nested orchestrations, the orchestration actor also acts as a message broker between its orchestrations and the parent orchestration, because orchestrations have invocation boundaries, as explained in [Independent & Isolated invocations](#independent--isolated-invocations), requiring internal actors to be isolated from external actors. A more detailed diagram of the one shown in [Support nested orchestrations](#support-nested-orchestrations) is shown below:
+
+```mermaid
+graph TD
+  subgraph Concurrent
+    OA0@{ shape: tag-rect, label: "Orchestration Actor" }
+    OA1@{ shape: tag-rect, label: "Orchestration Actor" }
+
+    subgraph Sequential_0
+        OA_Seq0_0@{ shape: tag-rect, label: "Orchestration Actor" }
+        OA_Seq0_1@{ shape: tag-rect, label: "Orchestration Actor" }
+        subgraph AA_S0_A[Agent Actor]
+            AgentA_0
+        end
+        subgraph AA_S0_B[Agent Actor]
+            AgentB_0
+        end
+        OA_Seq0_0 --> AA_S0_A
+        AA_S0_A --> AA_S0_B
+        AA_S0_B --> OA_Seq0_1
+    end
+
+    subgraph Sequential_1
+        OA_Seq1_0@{ shape: tag-rect, label: "Orchestration Actor" }
+        OA_Seq1_1@{ shape: tag-rect, label: "Orchestration Actor" }
+        subgraph AA_S1_A[Agent Actor]
+            AgentA_1
+        end
+        subgraph AA_S1_B[Agent Actor]
+            AgentB_1
+        end
+        OA_Seq1_0 --> AA_S1_A
+        AA_S1_A --> AA_S1_B
+        AA_S1_B --> OA_Seq1_1
+    end
+    B@{ shape: circle, label: "End" }
+
+    subgraph AA_C[Agent Actor]
+        AgentC_0
+    end
+
+    OA0 --> OA_Seq0_0
+    OA0 --> OA_Seq1_0
+    OA0 --> AA_C
+    OA_Seq0_1 --> OA1
+    OA_Seq1_1 --> OA1
+    AA_C --> OA1
+  end
+
+  External0[External] --> OA0
+  OA1 --> External1[External]
+```
 
 #### Open Discussions
 
