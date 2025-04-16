@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a message type and source in the context of a kernel process.

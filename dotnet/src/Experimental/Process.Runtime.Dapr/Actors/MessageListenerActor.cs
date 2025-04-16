@@ -2,33 +2,48 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dapr.Actors.Runtime;
 using Microsoft.SemanticKernel.Process.Runtime;
 
-namespace Microsoft.SemanticKernel.Process;
-internal class LocalListener : LocalStep
+namespace Microsoft.SemanticKernel;
+
+internal class MessageListenerActor : StepActor
 {
-    private readonly KernelProcessEventListener _eventListener;
-    private readonly HashSet<string> _requiredMessages = new();
-    private readonly HashSet<string> _absentMessages = new();
+    private DaprMessageListenerInfo? _eventListener;
+    private HashSet<string> _requiredMessages = [];
+    private HashSet<string> _absentMessages = [];
     private readonly Dictionary<string, object?> _messageData = [];
 
-    public LocalListener(KernelProcessEventListener eventListener, Kernel kernel, string? parentProcessId = null) : base(eventListener, kernel, parentProcessId)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageListenerActor"/> class.
+    /// </summary>
+    /// <param name="host"></param>
+    /// <param name="kernel"></param>
+    public MessageListenerActor(ActorHost host, Kernel kernel) : base(host, kernel)
     {
-        Verify.NotNull(eventListener, nameof(eventListener));
-
-        this._eventListener = eventListener;
-        this._requiredMessages = this.BuildRequiredEvents(eventListener.MessageSources);
-        this._absentMessages = [.. this._requiredMessages];
     }
 
-    /// <inheritdoc/>
-    protected override ValueTask InitializeStepAsync()
+    protected override void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
-        return default;
+        if (stepInfo is not DaprMessageListenerInfo daprMessageListener)
+        {
+            throw new KernelException($"Invalid step info type: {stepInfo.GetType()}");
+        }
+
+        this._eventListener = daprMessageListener;
+        this._requiredMessages = this.BuildRequiredEvents(this._eventListener.MessageSources);
+        this._absentMessages = [.. this._requiredMessages];
+
+        base.InitializeStep(stepInfo, parentProcessId, eventProxyStepId);
     }
 
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
+        Verify.NotNull(message, nameof(message));
+
+        // Lazy one-time initialization of the step before processing a message
+        await this._activateTask.Value.ConfigureAwait(false);
+
         string messageKey = this.GetKeyForMessageSource(message);
         if (!this._requiredMessages.Contains(messageKey))
         {
@@ -45,7 +60,7 @@ internal class LocalListener : LocalStep
             KernelProcessEvent kernelProcessEvent = new()
             {
                 Data = this._messageData,
-                Id = this._eventListener.State.Id!
+                Id = this._eventListener!.State.Id!
             };
 
             await this.EmitEventAsync(new KernelProcessEvent

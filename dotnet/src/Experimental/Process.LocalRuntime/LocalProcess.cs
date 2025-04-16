@@ -184,8 +184,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
         // Initialize the input and output edges for the process
         this._outputEdges = this._process.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
 
-        List<KernelProcessEventListener> eventListeners = [];
-
         // Initialize the steps within this process
         foreach (var step in this._stepsInfos)
         {
@@ -231,8 +229,12 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
             }
             else if (step is KernelProcessEventListener eventListener)
             {
-                eventListeners.Add(eventListener);
-                continue;
+                localStep =
+                    new LocalListener(eventListener, this._kernel)
+                    {
+                        ParentProcessId = this.Id,
+                        EventProxy = this.EventProxy,
+                    };
             }
             else if (step is KernelProcessStepInfo stepInfo)
             {
@@ -255,23 +257,6 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         EventProxy = this.EventProxy,
                     };
             }
-
-            this._steps.Add(localStep);
-        }
-
-        foreach (var eventListener in eventListeners)
-        {
-            var targetStep = this._steps.FirstOrDefault(v => v.Id == eventListener.DestinationStepId);
-            if (targetStep is null)
-            {
-                throw new KernelException("Target step not found.");
-            }
-            var localStep =
-                    new LocalListener(eventListener, this._kernel, targetStep)
-                    {
-                        ParentProcessId = this.Id,
-                        EventProxy = this.EventProxy,
-                    };
 
             this._steps.Add(localStep);
         }

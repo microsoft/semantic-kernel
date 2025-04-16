@@ -10,6 +10,7 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
@@ -284,6 +285,14 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 IProxy proxyActor = this.ProxyFactory.CreateActorProxy<IProxy>(scopedProxyId, nameof(ProxyActor));
                 await proxyActor.InitializeProxyAsync(proxyStep, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProxyId, nameof(ProxyActor));
+            }
+            else if (step is DaprMessageListenerInfo messageListenerStep)
+            {
+                // Initialize the step as a message listener
+                ActorId scopedMessageListenerId = this.ScopedActorId(new ActorId(messageListenerStep.State.Id!));
+                IStep messageListenerActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMessageListenerId, nameof(MessageListenerActor));
+                await messageListenerActor.InitializeMessageListenerAsync(messageListenerStep, this.Id.GetId()).ConfigureAwait(false);
+                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMessageListenerId, nameof(MessageListenerActor));
             }
             else
             {

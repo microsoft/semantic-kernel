@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel;
 
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private readonly Lazy<ValueTask> _activateTask;
+    protected readonly Lazy<ValueTask> _activateTask;
 
     private DaprStepInfo? _stepInfo;
     private ILogger? _logger;
@@ -91,7 +91,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
-    private void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
+    protected virtual void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
         Verify.NotNull(stepInfo, nameof(stepInfo));
 

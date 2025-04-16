@@ -2,7 +2,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.SemanticKernel.Process;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents an event listener step in a kernel process that listens for messages from specified sources and routes them to a destination step.
