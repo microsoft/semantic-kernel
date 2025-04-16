@@ -10,38 +10,38 @@ informed: { }
 
 # Multi-agent Orchestration
 
-> Items marked with an asterisk (*) are not yet fully fleshed out and need further research.
-
 ## Context
 
 The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating single AI agents to perform more complex tasks, the desire for a multi-agent framework is growing.
 
-With the recent GA of the Semantic Kernel Agent Framework, which offers a stable framework for single agents, we are now able to build on top of it to create a multi-agent orchestration framework. This will allow our customers to unlock even more complex scenarios and use cases.
+With the recent GA of the Semantic Kernel Agent Framework, which offers a stable solution for single agents, we are now able to build on top of it to create a multi-agent orchestration framework. This will allow our customers to unlock even more complex scenarios.
 
-In addition, with the collaboration with the AutoGen team and the shared runtime abstractions, we can leverage the work done by AutoGen to build a multi-agent orchestration framework more rapidly.
+In addition, the recent collaboration with the AutoGen team that resulted in the shared agent runtime abstraction allowed us to leverage the work to build a multi-agent orchestration framework more rapidly.
 
 ## Problem Statement
 
-The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to build a multi-agent orchestration framework to allow our customers to unlock more possibilities using Semantic Kernel agents.
+The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to extend it to a multi-agent orchestration framework to allow our customers to unlock more possibilities using Semantic Kernel agents.
 
 ### Terminology
 
-Before we dive into the details, let's clarify some terminology that will be used throughout this document.
+Before we dive into the details, let's clarify some terminologies that will be used throughout this document.
 
 | **Term**   | **Definition**                                                                                     |
 |------------|-----------------------------------------------------------------------------------------------------|
-| **Agent**  | A Semantic Kernel agent.                                                                            |
 | **Actor**  | An AutoGen agent that can send and receive messages from the runtime.                               |
 | **Runtime**| Facilitates the communication between actors and manages the states and lifecycle of the actors.    |
-| **Orchestration** | Contains SK agents and rules on how they will interact with each others.                     |
+| **Agent**  | A Semantic Kernel agent wrapped in an actor.                                                        |
+| **Orchestration** | Contains actors and rules on how they will interact with each others.                        |
 
 > We are using the term "actor" for AutoGen to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. The name "actor" is also used interchangeably with "agent" in the AutoGen documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
 
+> You may hear the term "pattern" in other contexts. "Pattern" is almost semantically identical to "orchestration" where the latter also implies execution.
+
 ### The AutoGen shared runtime abstraction
 
-The AutoGen team has built a runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared runtime abstraction that our Semantic Kernel will depend on.
+The AutoGen team has built a agent runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared agent runtime abstraction which Semantic Kernel will depend on.
 
-Depending on the actual runtime implementation, actors can be local or distributed. Our multi-agent orchestration framework is **not** tied to a specific runtime.
+Depending on the actual runtime implementation, actors can be local or distributed. Our multi-agent orchestration framework is **not** tied to a specific runtime implementation.
 
 ### Targeted audience
 
@@ -66,7 +66,7 @@ To help people get started quickly, we should provide a list of pre-built orches
 | **GroupChat**      | - Consists of multiple actors. <br> - A group manager actor is responsible for managing the state of the group chat. <br> - **Key Features:** <br> &nbsp;&nbsp;&nbsp;&nbsp;- User input: Requests input from the user. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Termination: Ends when a termination condition is met, and results are returned. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Next actor: Decides the next actor to invoke. <br> - Human-in-the-loop must be supported. <br> - The result is collected and returned to the caller when the orchestration finishes. |
 | **Magentic One**   | - Group chat-like orchestration with unique features. <br> - Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/).                  |
 
-> Please see Appendix A for a more detailed description of the pre-built orchestrations.
+> Please see Appendix A for a more detailed descriptions of the pre-built orchestrations.
 
 Our framework should also provide a set of building blocks for customers to create more advanced orchestrations for their specific use cases. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
 
@@ -78,9 +78,15 @@ The runtime abstraction is an important concept in the multi-agent orchestration
 - Orchestrations require a runtime instance only when they are invoked, not when they are created.
 - Multiple orchestrations can share the same runtime instance, thus requiring us to define clear orchestration boundaries to avoid collisions, such as actor names or IDs.
 
+### Messages
+
+Actors communicate via messages. The runtime is responsible for routing the messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
+
+Orchestration developers will need to define the messages for their orchestrations.
+
 ### Support nested orchestrations
 
-Support for nesting patterns is a critical feature of the multi-agent orchestration framework, as it allows for more complex orchestrations to be built using simpler orchestrations.
+Support for nesting orchestrations is a critical feature, as it allows for more complex orchestrations to be built using simpler orchestrations.
 
 Example:
 
@@ -113,7 +119,7 @@ graph TD
 
 > The two external nodes represent the same object external to the concurrent orchestration. Separating them is just for a cleaner diagram.
 
-The above is a simple example that shows what a nested multi-agent orchestration looks like. This orchestration contains two sequential orchestrations that run in a concurrent orchestration.
+The above is a simple example that shows what a nested multi-agent orchestration looks like. This orchestration contains two sequential orchestrations that run in the concurrent orchestration.
 
 ### Graph-like structure with lazy evaluation
 
@@ -122,18 +128,15 @@ We should consider an orchestration as a template that describes how the agents 
 - Actors are registered to the runtime before execution starts, not when the orchestration is created.
 - The runtime is responsible for creating the actors and managing their lifecycle.
 
-### Orchestration invocation paradigms
+### State management
 
-- Direct invocation: the orchestration is invoked directly by the user.
-- Indirect invocation: the orchestration actor receives a message from another actor within a parent orchestration.
-- State management
-  - Orchestration states are not shared between invocations.
-  - Explore the usage of agent memory to retain context between invocations.
+Orchestrations can be long-running, hours, days, and even years. And they can be short-lived, minutes or seconds or less. The states of an orchestration can mean the following:
 
-### Save states of the agents in an orchestration and rehydration
+- An actively running orchestration that is in a state that waits for user input or other events to continue.
+- An orchestration that enters an error state.
+- etc.
 
-- Being able to save the state of the orchestration process while waiting for user input and restore it later when user provides input for scalability
-- Recursively save the state of all agents and child orchestrations, including threads, chat history, and context from the root orchestration
+There are also other types of states to consider, such as the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the orchestration framework. Ideally, we want the ability to invoke/restart an orchestration on some existing agent context.
 
 ## Decisions
 
@@ -141,14 +144,10 @@ We should consider an orchestration as a template that describes how the agents 
 
 | **Component**         | **Details**                                                                                                                                                                                                                     |
 |------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Agent actor**       | - Semantic Kernel agent <br> - Agent thread <br> - Support for streaming?                                                                                                                                                       |
+| **Agent actor**       | - Semantic Kernel agent <br> - Agent context <br> - Support for streaming                                                                                                                                                       |
 | **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types** and for nesting orchestrations.                                                                                                     |
 | **Orchestration actor** | - Broadcast messages to an external topic (e.g., the result of the orchestration) <br> - Send directly to an actor external to the orchestration (e.g., the result of the orchestration) <br> - Receive messages from an external topic (e.g., the start of the orchestration) <br> - Receive messages from an actor external to the orchestration (e.g., the start of the orchestration) |
-| **Orchestration**     | - Consists of one orchestration actor and multiple agent actors and other orchestrations. <br> - Support for streaming?                                                                                                         |
-
-An orchestration can have multiple agent actors and child orchestrations, but only one orchestration actor (depending on the implementation, there can also be one actor to receive messages and one actor to send messages).
-
-> Input and output transform logic are critical pieces in more advanced orchestrations.
+| **Orchestration**     | - Consists of one orchestration actor and multiple agent actors and other orchestrations. <br> - Support for streaming                                                                                                         |
 
 ```mermaid
 graph TD
@@ -188,26 +187,26 @@ graph TD
 
 This is essentially a wrapper around a Semantic Kernel agent so that it can send and receive messages from the runtime.
 
-> Please note that an agent actor implementation is tightly coupled with the orchestration. For example, a concurrent orchestration will have a different agent actor implementation than a sequential orchestration. This is because the interactions between the actors are different in each orchestration.
+> Please note that an agent actor implementation is tightly coupled with the orchestration. For example, the concurrent orchestration will have a different agent actor implementation than the sequential orchestration. This is because the interactions between the actors are different in each orchestration.
 
 #### Data Transform Logic
 
-The data transform logic is highly configurable and is required by all orchestrations.
-
-> We can offer a set of default transforms to improve the developer quality of life.
-
-In the base abstraction, we will have the following:
+The signature of the data transform logic will be as follows:
 
 ```python
 input_transform: Callable[[TExternalIn], Awaitable[TInternalIn] | TInternalIn]
 output_transform: Callable[[TInternalOut], Awaitable[TExternalOut] | TExternalOut]
 ```
 
-`TExternalIn` denotes the type of input the orchestration will receive. `TInternalIn` denotes the type of input the orchestration is actually expecting. `TInternalOut` denotes the type of output the orchestration will produce. `TExternalOut` denotes the type of output the orchestration will return to the caller. `TExternalIn` and `TInternalIn` can be the same type, but they are not required to be. The same applies to `TExternalOut` and `TInternalOut`.
+`TExternalIn` denotes the type of input the orchestration will receive. `TInternalIn` denotes the type of input the orchestration expects. `TInternalOut` denotes the type of output the orchestration will produce. `TExternalOut` denotes the type of output the orchestration will return to the caller. `TExternalIn` and `TInternalIn` can be the same type, but they are not required to be. The same applies to `TExternalOut` and `TInternalOut`.
+
+Derived classes will set `TInternalIn` and `TInternalOut` while orchestration consumers will set `TExternalIn` and `TExternalOut`.
+
+> We can offer a set of default transforms to improve the developer quality of life. We can also have LLMs that automatically perform the transforms.
 
 #### Orchestration Actor
 
-This is the actor that will be responsible for relaying messages. This is also the representative of an orchestration when it's nested inside another orchestration. The data transforms happen in this actor so it must hold the input and output transforms:
+This is the actor that will be responsible for relaying messages. The data transforms happen in this actor so it must hold the input and output transforms:
 
 ```python
 class OrchestrationActorBase(
@@ -239,7 +238,7 @@ class OrchestrationActorBase(
 
 #### Orchestration
 
-Given the transform logic shapes and the actor abstractions defined above, we can create the base orchestration abstraction.
+Given the data transform logic shapes and the actor defined above, we can create the orchestration.
 
 ```python
 class OrchestrationBase(
@@ -278,7 +277,7 @@ class OrchestrationBase(
         ...
 ```
 
-Concrete implementations of the orchestration will set `TInternalIn` and `TInternalOut`. For example,
+Again, concrete implementations of the orchestration will set `TInternalIn` and `TInternalOut`. For example,
 
 ```python
 class SequentialOrchestration(OrchestrationBase[TExternalIn, SequentialRequestMessage, SequentialResultMessage, TExternalOut]):
@@ -289,7 +288,7 @@ class SequentialOrchestration(OrchestrationBase[TExternalIn, SequentialRequestMe
 
 The internal communication between actors within an orchestration depends on the specific orchestration type. This means the `TInternalIn` and `TInternalOut` types will vary for each orchestration. However, input and output transforms provide a seamless way to "bridge" different orchestrations, enabling them to work together.
 
-For example, in the nested orchestration shown in [Support nested orchestrations](#support-nested-orchestrations), two sequential orchestrations are embedded within a concurrent orchestration. To enable this, the sequential orchestrations must accept the same input type as the concurrent orchestration actor and produce the same output type. This is achieved by defining the sequential orchestration as follows:
+For example, in the nested orchestration shown in [Support nested orchestrations](#support-nested-orchestrations), two sequential orchestrations are embedded within the concurrent orchestration. To enable this, the sequential orchestrations must accept the same input type as the concurrent orchestration actor and produce the same output type. This is achieved by defining the sequential orchestration as follows:
 
 ```python
 sequential_orchestration = SequentialOrchestration[ConcurrentRequestMessage, ConcurrentResponseMessage](
@@ -308,29 +307,181 @@ Here’s how it works:
 
 This approach ensures that different orchestrations can interoperate smoothly, even when their internal message types differ.
 
-#### Future Discussions
+#### Open Discussions
+
+The following items are important topics we need to consider and need further discussion. However, they shouldn't block the initial implementation of the multi-agent orchestration framework.
+
+### Agent context
+
+We mentioned in the [State management](#state-management) section that orchestrations do not manage the state of the agents, while we do want to support the ability to invoke/restart an orchestration on some existing agent context. This means that we need to have a way to provide the state of the agents to the orchestrations.
+
+An option is to have a context provider that provides agent contexts given an agent ID. The context provider will be attached to the agent actors for the agent actor to retrieve and update contexts. Each new invocation of an orchestration will return a text representation (see [Support declarative orchestrations](#support-declarative-orchestrations)) of the orchestration, which can be used to rehydrate the orchestration.
 
 ### Human in the loop
 
-- Keep the user in the loop and allow them to intervene in the orchestration process
-- How would this work for a RestAPI/distributed system?
-- How would this work for an orchestration or an agent that is nested inside another orchestration?
-  - Does the signal need to bubble up to the root orchestration?
-  - Other possibilities?
+Human-in-the-loop is a critical in any autonomous system. We need to consider how to support human-in-the-loop in the multi-agent orchestration framework.
+
+- Support cancellation of an invocation
+- Notify the user of important events
+- Support distributed use cases. For example, the client may live on a different system than the orchestration.
+- Support nested orchestrations. For example, a nested orchestration may request human input.
 
 ### Distributed orchestrations
 
-- Registrations happen locally at which the runtime is running even when the agents are remote.
+Although orchestrations are not tied to a specific runtime, we need to understand how actors and orchestrations will be distributed if a runtime allows distribution. The following questions need to be answered:
+
+- Actor registrations happen locally on the same machine with the runtime via a factory. Does the factory need to be distributed?
 - Can nested orchestrations be distributed?
-- Can agents factories be distributed?
-- If registration occurs per invocation, how to register remote orchestrations/agents?
+- How will the runtime handle actor failures?
 
-### Support declarative orchestrations*
+### Support declarative orchestrations
 
-- Create orchestrations using a declarative syntax (e.g., JSON, YAML)
-- Support for declarative Semantic Kernel agents
+Declarative orchestrations provide a low-code solution for orchestration consumers. We are already working on declarative agents, and we can leverage this work to create declarative orchestrations.
 
-### Guardrails*
+### Guardrails
 
-- In the orchestration level?
-- In the agent level?
+Safety is also a priority. A powerful orchestration may accomplish a lot of things, but it may also do a lot of harm. We need to consider how to implement guardrails in the multi-agent orchestration framework, similar to what OpenAI has in their [agent SDK](https://openai.github.io/openai-agents-python/guardrails/).
+
+- Should we have guardrails in the orchestration level?
+- Should we have guardrails in the actor level?
+- Should we have guardrails in the agent level?
+
+### Observability
+
+SK being an enterprise solution, we should also consider observability.
+
+## Appendix A: Pre-built orchestrations
+
+### Concurrent Orchestration
+
+```mermaid
+graph TD
+  %% External
+  EXT_Topic[External Topic]
+  EXT_Actor[External Actor]
+
+  %% Outer Block
+  subgraph Concurrent Orchestration
+    subgraph OA[Orchstration Actor]
+      InputTransform[Input Transform]
+      OutputTransform[Output Transform]
+    end
+
+    subgraph Members[Members]
+      AG0[agent 0]
+      AG1[agent 1]
+      SO0[sub orchestration 0]
+      SO1[sub orchestration 1]
+      IT0@{ shape: tag-rect, label: "Internal Topic" }
+      IT1@{ shape: tag-rect, label: "Internal Topic" }
+      RC[Result Collector]
+    end
+
+  end
+
+  %% Connections
+  EXT_Topic <--> |Broadcast| OA
+  EXT_Actor <--> |Direct messaging| OA
+  OA <--> |Broadcast| IT0
+
+  IT0 --> AG0
+  IT0 --> AG1
+  IT0 --> SO0
+  IT0 --> SO1
+
+  AG0 --> RC
+  AG1 --> RC
+  SO0 --> RC
+  SO1 --> RC
+
+  RC --> IT1
+```
+
+### Sequential Orchestration
+
+```mermaid
+graph TD
+  %% External
+  EXT_Topic[External Topic]
+  EXT_Actor[External Actor]
+
+  %% Outer Block
+  subgraph Sequential Orchestration
+    subgraph OA0[Orchestration Actor]
+      InputTransform[Input Transform]
+      OutputTransform[Output Transform]
+    end
+
+    subgraph Members[Members]
+      AG0[agent 0]
+      SO0[sub orchestration 0]
+      AG1[agent 1]
+      SO1[sub orchestration 1]
+    end
+
+    OA1@{ shape: tag-rect, label: "Orchestration Actor" }
+  end
+
+  %% Connections
+  EXT_Topic <--> |Broadcast| OA0
+  EXT_Actor <--> |Direct messaging| OA0
+  OA0 <--> |Direct messaging| AG0
+  AG0 --> SO0
+  SO0 --> AG1
+  AG1 --> SO1
+  SO1 --> OA1
+```
+
+### Handoff Orchestration
+
+WIP
+
+### Group Chat Orchestration
+
+```mermaid
+graph TD
+  %% External
+  EXT_Topic[External Topic]
+  EXT_Actor[External Actor]
+
+  %% Outer Block
+  subgraph Grou Chat Orchestration
+    subgraph OA[Orchstration Actor]
+      InputTransform[Input Transform]
+      OutputTransform[Output Transform]
+    end
+
+    subgraph Members[Members]
+      AG0[agent 0]
+      SO0[sub orchestration 0]
+      AG1[agent 1]
+      SO1[sub orchestration 1]
+      GM[Group manager]
+      IT[Internal Topic]
+    end
+  end
+
+  %% Connections
+  EXT_Topic <--> |Broadcast| OA
+  EXT_Actor <--> |Direct messaging| OA
+  OA <--> |Direct messaging| GM
+
+  IT <--> |Broadcast| AG0
+  IT <--> |Broadcast| AG1
+  IT <--> |Broadcast| SO0
+  IT <--> |Broadcast| SO1
+  IT <--> |Broadcast| GM
+```
+
+The group chat orchestration works according to the following rules:
+
+1. The group manager decides the next actor to speak based on the conversation context and by sending a direct "request to speak" message to the next actor.
+2. The group manager decides when the orchestration ends by user-defined criteria and returns the result to the orchestration actor.
+3. Actors are not allowed to speak to each other directly.
+4. Actors are not allowed to speak unless requested by the group manager.
+5. All actors and the group manager subscribe to the internal topic to receive "response" messages from other actors. Whenever the group manager receives a "response" message, it triggers the next iteration.
+6. Each actors maintains a copy of the conversation context and they are not shared.
+
+### Magentic One Orchestration
+
+Magentic one is a group chat-like orchestration with a special group manager. Refer to the [Magentic One blog](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/) or [paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2024/11/MagenticOne.pdf) for more details.
