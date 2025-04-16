@@ -6,10 +6,13 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace ChatCompletion;
 
+/// <summary>
+/// These examples demonstrate different ways of using chat completion with Google VertexAI and GoogleAI APIs.
+/// </summary>
 public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : BaseTest(output)
 {
     [Fact]
-    public async Task GoogleAIAsync()
+    public async Task GoogleAIUsingChatCompletion()
     {
         Console.WriteLine("============= Google AI - Gemini Chat Completion =============");
 
@@ -32,7 +35,7 @@ public sealed class Google_GeminiChatCompletion(ITestOutputHelper output) : Base
     }
 
     [Fact]
-    public async Task VertexAIAsync()
+    public async Task VertexAIUsingChatCompletion()
     {
         Console.WriteLine("============= Vertex AI - Gemini Chat Completion =============");
 

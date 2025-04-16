@@ -27,7 +27,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task StructuredOutputsWithTypeInExecutionSettingsAsync(bool useGoogleAI)
+    public async Task StructuredOutputsWithTypeInExecutionSettings(bool useGoogleAI)
     {
         var kernel = this.InitializeKernel(useGoogleAI);
 
@@ -65,7 +65,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task StructuredOutputsWithFunctionCallingAsync(bool useGoogleAI)
+    public async Task StructuredOutputsWithFunctionCalling(bool useGoogleAI)
     {
         // Initialize kernel.
         var kernel = this.InitializeKernel(useGoogleAI);
@@ -100,7 +100,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task StructuredOutputsWithFunctionsFromPromptAsync(bool useGoogleAI)
+    public async Task StructuredOutputsWithFunctionsFromPrompt(bool useGoogleAI)
     {
         // Initialize kernel.
         var kernel = this.InitializeKernel(useGoogleAI);
@@ -137,7 +137,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task StructuredOutputsWithFunctionsFromYamlAsync(bool useGoogleAI)
+    public async Task StructuredOutputsWithFunctionsFromYaml(bool useGoogleAI)
     {
         // Initialize kernel.
         var kernel = this.InitializeKernel(useGoogleAI);
