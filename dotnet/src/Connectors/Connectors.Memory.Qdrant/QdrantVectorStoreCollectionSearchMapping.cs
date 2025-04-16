@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
@@ -105,37 +103,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
         string collectionName,
         string operationName)
     {
-        // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
-        var pointStruct = new PointStruct
-        {
-            Id = point.Id,
-            Payload = { }
-        };
-
-        if (includeVectors)
-        {
-            pointStruct.Vectors = new();
-            switch (point.Vectors.VectorsOptionsCase)
-            {
-                case VectorsOutput.VectorsOptionsOneofCase.Vector:
-                    pointStruct.Vectors.Vector = point.Vectors.Vector.Data.ToArray();
-                    break;
-                case VectorsOutput.VectorsOptionsOneofCase.Vectors:
-                    pointStruct.Vectors.Vectors_ = new();
-                    foreach (var v in point.Vectors.Vectors.Vectors)
-                    {
-                        // TODO: Refactor mapper to not require pre-mapping to pointstruct to avoid this ToArray conversion.
-                        pointStruct.Vectors.Vectors_.Vectors.Add(v.Key, v.Value.Data.ToArray());
-                    }
-                    break;
-            }
-        }
-
-        foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
-        {
-            pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
-        }
-
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
             VectorStoreErrorHandler.RunModelConversion(
@@ -143,39 +110,25 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 vectorStoreName,
                 collectionName,
                 operationName,
-                () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors })),
+                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors })),
             point.Score);
     }
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point,
+    internal static TRecord MapRetrievedPointToRecord<TRecord>(
+        RetrievedPoint point,
         QdrantVectorStoreRecordMapper<TRecord> mapper,
         bool includeVectors,
         string vectorStoreSystemName,
         string? vectorStoreName,
         string collectionName,
         string operationName)
-#pragma warning restore CS0618
     {
-        // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
-        var pointStruct = new PointStruct
-        {
-            Id = point.Id,
-            Vectors = point.Vectors,
-            Payload = { }
-        };
-
-        foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
-        {
-            pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
-        }
-
         // Do the mapping with error handling.
         return VectorStoreErrorHandler.RunModelConversion(
                 vectorStoreSystemName,
                 vectorStoreName,
                 collectionName,
                 operationName,
-                () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
+                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors }));
     }
 }
