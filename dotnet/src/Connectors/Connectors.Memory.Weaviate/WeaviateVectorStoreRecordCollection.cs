@@ -68,7 +68,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly string? _apiKey;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -78,17 +78,17 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <see cref="HttpClient.BaseAddress"/> should point to remote or local cluster and API key can be configured via <see cref="HttpClient.DefaultRequestHeaders"/>.
     /// It's also possible to provide these parameters via <see cref="WeaviateVectorStoreRecordCollectionOptions{TRecord}"/>.
     /// </param>
-    /// <param name="collectionName">The name of the collection that this <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="WeaviateVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     public WeaviateVectorStoreRecordCollection(
         HttpClient httpClient,
-        string collectionName,
+        string name,
         WeaviateVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(httpClient);
-        VerifyCollectionName(collectionName);
+        VerifyCollectionName(name);
 
         if (typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
@@ -100,7 +100,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         // Assign.
         this._httpClient = httpClient;
         this._endpoint = endpoint;
-        this.CollectionName = collectionName;
+        this.Name = name;
         this._options = options ?? new();
         this._apiKey = this._options.ApiKey;
         this._model = new WeaviateModelBuilder(this._options.HasNamedVectors)
@@ -108,13 +108,13 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         // Assign mapper.
         this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
-            ? (new WeaviateDynamicDataModelMapper(this.CollectionName, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
-            : new WeaviateVectorStoreRecordMapper<TRecord>(this.CollectionName, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions);
+            ? (new WeaviateDynamicDataModelMapper(this.Name, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions) as IWeaviateMapper<TRecord>)!
+            : new WeaviateVectorStoreRecordMapper<TRecord>(this.Name, this._options.HasNamedVectors, this._model, s_jsonSerializerOptions);
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -125,7 +125,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return this.RunOperationAsync(OperationName, async () =>
         {
-            var request = new WeaviateGetCollectionSchemaRequest(this.CollectionName).Build();
+            var request = new WeaviateGetCollectionSchemaRequest(this.Name).Build();
 
             var response = await this
                 .ExecuteRequestWithNotFoundHandlingAsync<WeaviateGetCollectionSchemaResponse>(request, cancellationToken)
@@ -147,6 +147,8 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return this.RunOperationAsync(OperationName, () =>
         {
+            var schema = WeaviateVectorStoreCollectionCreateMapping.MapToSchema(this.Name, this._model);
+
             var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
@@ -169,7 +171,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         return this.RunOperationAsync(OperationName, () =>
         {
-            var request = new WeaviateDeleteCollectionSchemaRequest(this.CollectionName).Build();
+            var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
@@ -189,7 +191,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
                 _ => throw new UnreachableException("Guid key should have been validated during model building")
             };
 
-            var request = new WeaviateDeleteObjectRequest(this.CollectionName, guid).Build();
+            var request = new WeaviateDeleteObjectRequest(this.Name, guid).Build();
 
             return this.ExecuteRequestAsync(request, cancellationToken: cancellationToken);
         });
@@ -214,7 +216,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         {
             var match = new WeaviateQueryMatch
             {
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 WhereClause = new WeaviateQueryMatchWhereClause
                 {
                     Operator = ContainsAnyOperator,
@@ -244,7 +246,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             };
 
             var includeVectors = options?.IncludeVectors is true;
-            var request = new WeaviateGetCollectionObjectRequest(this.CollectionName, guid, includeVectors).Build();
+            var request = new WeaviateGetCollectionObjectRequest(this.Name, guid, includeVectors).Build();
 
             var jsonObject = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonObject>(request, cancellationToken).ConfigureAwait(false);
 
@@ -256,7 +258,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             return VectorStoreErrorHandler.RunModelConversion(
                 WeaviateConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
-                this.CollectionName,
+                this.Name,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject!, new() { IncludeVectors = includeVectors }));
         });
@@ -301,7 +303,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
         var jsonObjects = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
             WeaviateConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
 
@@ -350,7 +352,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         var query = WeaviateVectorStoreRecordCollectionQueryBuilder.BuildSearchQuery(
             vector,
-            this.CollectionName,
+            this.Name,
             vectorProperty.StorageName,
             s_jsonSerializerOptions,
             top,
@@ -374,7 +376,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             filter,
             top,
             options,
-            this.CollectionName,
+            this.Name,
             this._model,
             this._options.HasNamedVectors);
 
@@ -398,7 +400,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             vector,
             top,
             string.Join(" ", keywords),
-            this.CollectionName,
+            this.Name,
             this._model,
             vectorProperty,
             textDataProperty,
@@ -430,7 +432,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         var (responseModel, content) = await this.ExecuteRequestWithResponseContentAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
 
-        var collectionResults = responseModel?.Data?.GetOperation?[this.CollectionName];
+        var collectionResults = responseModel?.Data?.GetOperation?[this.Name];
 
         if (collectionResults is null)
         {
@@ -438,7 +440,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -452,7 +454,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
                 var record = VectorStoreErrorHandler.RunModelConversion(
                     WeaviateConstants.VectorStoreSystemName,
                     this._collectionMetadata.VectorStoreName,
-                    this.CollectionName,
+                    this.Name,
                     operationName,
                     () => this._mapper.MapFromStorageToDataModel(storageModel, new() { IncludeVectors = includeVectors }));
 
@@ -532,7 +534,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }

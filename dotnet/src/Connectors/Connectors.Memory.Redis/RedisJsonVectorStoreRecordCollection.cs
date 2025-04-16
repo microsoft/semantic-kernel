@@ -84,14 +84,14 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
     /// Initializes a new instance of the <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="database">The Redis database to read/write records from.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="RedisJsonVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisJsonVectorStoreRecordCollection(IDatabase database, string collectionName, RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = null)
+    public RedisJsonVectorStoreRecordCollection(IDatabase database, string name, RedisJsonVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(database);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
@@ -100,7 +100,7 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
 
         // Assign.
         this._database = database;
-        this._collectionName = collectionName;
+        this._collectionName = name;
         this._options = options ?? new RedisJsonVectorStoreRecordCollectionOptions<TRecord>();
         this._jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = new VectorStoreRecordJsonModelBuilder(ModelBuildingOptions)
@@ -118,12 +118,12 @@ public sealed class RedisJsonVectorStoreRecordCollection<TKey, TRecord> : IVecto
         {
             VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
             VectorStoreName = database.Database.ToString(),
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._collectionName;
+    public string Name => this._collectionName;
 
     /// <inheritdoc />
     public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
