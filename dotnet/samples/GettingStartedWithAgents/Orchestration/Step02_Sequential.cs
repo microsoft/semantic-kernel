@@ -22,7 +22,7 @@ public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        SequentialOrchestration orchestration = new(runtime, agent1, agent2, agent3);
+        SequentialOrchestration orchestration = new(runtime, agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -49,7 +49,7 @@ public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest
 
         SequentialOrchestration<SequentialMessage, SequentialMessage> orchestrationLeft = CreateNested(runtime, agent1, agent2);
         SequentialOrchestration<SequentialMessage, SequentialMessage> orchestrationRight = CreateNested(runtime, agent3, agent4);
-        SequentialOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
+        SequentialOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -71,7 +71,7 @@ public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        SequentialOrchestration orchestration = new(runtime, agent);
+        SequentialOrchestration orchestration = new(runtime, agent) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -94,7 +94,7 @@ public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest
         // Define the pattern
         InProcessRuntime runtime = new();
         SequentialOrchestration<SequentialMessage, SequentialMessage> orchestrationInner = CreateNested(runtime, agent);
-        SequentialOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+        SequentialOrchestration orchestrationOuter = new(runtime, orchestrationInner) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();

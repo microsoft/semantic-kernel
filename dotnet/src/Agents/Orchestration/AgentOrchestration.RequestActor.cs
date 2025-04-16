@@ -15,25 +15,29 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// </summary>
     private sealed class RequestActor : PatternActor, IHandle<TInput>
     {
+        private readonly string _orchestrationRoot;
         private readonly Func<TInput, ValueTask<TSource>> _transform;
-        private readonly Func<TSource, Task> _action;
+        private readonly Func<TSource, ValueTask> _action;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
+        /// <param name="orchestrationRoot">// %%% COMMENT</param>
         /// <param name="transform">A function that transforms an input of type TInput into a source type TSource.</param>
         /// <param name="action">An asynchronous function that processes the resulting source.</param>
         /// <param name="logger">The logger to use for the actor</param>
         public RequestActor(
             AgentId id,
             IAgentRuntime runtime,
+            string orchestrationRoot,
             Func<TInput, ValueTask<TSource>> transform,
-            Func<TSource, Task> action,
+            Func<TSource, ValueTask> action,
             ILogger<RequestActor>? logger = null)
             : base(id, runtime, $"{id.Type}_Actor", logger)
         {
+            this._orchestrationRoot = orchestrationRoot;
             this._transform = transform;
             this._action = action;
         }
@@ -46,17 +50,18 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// <returns>A ValueTask representing the asynchronous operation.</returns>
         public async ValueTask HandleAsync(TInput item, MessageContext messageContext)
         {
-            this.Logger.LogOrchestrationRequestInvoke(this.Id);
+            this.Logger.LogOrchestrationRequestInvoke(this._orchestrationRoot, this.Id);
             try
             {
                 TSource source = await this._transform.Invoke(item).ConfigureAwait(false);
-                await this._action.Invoke(source).ConfigureAwait(false);
-                Logger.LogOrchestrationStart(this.Id);
+                Task task = this._action.Invoke(source).AsTask();
+                this.Logger.LogOrchestrationStart(this._orchestrationRoot, this.Id);
+                await task.ConfigureAwait(false);
             }
             catch (Exception exception)
             {
                 // Log exception details and allow orchestration to fail
-                this.Logger.LogOrchestrationRequestFailure(this.Id, exception);
+                this.Logger.LogOrchestrationRequestFailure(this._orchestrationRoot, this.Id, exception);
                 throw;
             }
         }

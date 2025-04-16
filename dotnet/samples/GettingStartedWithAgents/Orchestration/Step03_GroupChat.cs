@@ -25,7 +25,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        GroupChatOrchestration orchestration = new(runtime, agent1, agent2, agent3);
+        GroupChatOrchestration orchestration = new(runtime, agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -49,7 +49,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        GroupChatOrchestration orchestration = new(runtime, agent);
+        GroupChatOrchestration orchestration = new(runtime, agent) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -76,7 +76,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
             InputTransform = (ChatMessages.InputTask input) => ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input.Message.ToString()).ToInputTask()),
             ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result.Message.ToResult())
         };
-        GroupChatOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+        GroupChatOrchestration orchestrationOuter = new(runtime, orchestrationInner) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();

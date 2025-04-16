@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -34,8 +35,9 @@ public abstract class ChatManagerActor :
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
-    protected ChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
-        : base(id, runtime, DefaultDescription)
+    /// <param name="logger">The logger to use for the actor</param>
+    protected ChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger? logger = null)
+        : base(id, runtime, DefaultDescription, logger)
     {
         this.Chat = [];
         this.Team = team;

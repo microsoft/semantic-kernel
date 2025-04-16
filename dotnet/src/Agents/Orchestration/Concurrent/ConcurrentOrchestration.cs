@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
@@ -12,13 +14,15 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 public class ConcurrentOrchestration<TInput, TOutput>
     : AgentOrchestration<TInput, ConcurrentMessages.Request, ConcurrentMessages.Result[], TOutput>
 {
+    internal static readonly string OrchestrationName = typeof(ConcurrentOrchestration<,>).Name.Split('`').First();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ConcurrentOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public ConcurrentOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
-        : base(runtime, agents)
+        : base(OrchestrationName, runtime, agents)
     {
     }
 
@@ -38,7 +42,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
                     new ConcurrentResultActor(agentId, runtime, orchestrationType, this.Members.Count, this.LoggerFactory.CreateLogger<ConcurrentResultActor>()))).ConfigureAwait(false);
-        logger.LogConcurrentRegistration(resultType, "RESULTS");
+        logger.LogRegisterActor(OrchestrationName, resultType, "RESULTS");
 
         // Register member actors - All agents respond to the same message.
         int agentCount = 0;
@@ -57,7 +61,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
                 memberType = await orchestration.RegisterAsync(topic, resultType, logger).ConfigureAwait(false);
             }
 
-            logger.LogConcurrentRegistration(memberType, "MEMBER", agentCount);
+            logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
 
             await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
@@ -67,10 +71,11 @@ public class ConcurrentOrchestration<TInput, TOutput>
         async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
             AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
+            ILogger loggerActor = this.LoggerFactory.CreateLogger<ConcurrentActor>();
             await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType))).ConfigureAwait(false);
+                    ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType, loggerActor))).ConfigureAwait(false);
 
             return agentType;
         }

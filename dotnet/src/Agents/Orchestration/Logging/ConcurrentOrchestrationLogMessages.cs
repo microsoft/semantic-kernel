@@ -20,7 +20,7 @@ internal static partial class ConcurrentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Concurrent agent invoked [{AgentId}]: {Message}")]
+        Message = "REQUEST Concurrent agent [{AgentId}]: {Message}")]
     public static partial void LogConcurrentAgentInvoke(
         this ILogger logger,
         AgentId agentId,
@@ -29,36 +29,11 @@ internal static partial class ConcurrentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Concurrent agent result [{AgentId}]: {Message}")]
+        Message = "RESULT Concurrent agent [{AgentId}]: {Message}")]
     public static partial void LogConcurrentAgentResult(
         this ILogger logger,
         AgentId agentId,
         string? message);
-
-    /// <summary>
-    /// Logs actor registration.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Concurrent actor registered [{AgentType}]: {label}")]
-    public static partial void LogConcurrentRegistration(
-        this ILogger logger,
-        AgentType agentType,
-        string label);
-
-    /// <summary>
-    /// Logs actor registration.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Concurrent actor registered [{AgentType}]: {label} #{Count}")]
-    public static partial void LogConcurrentRegistration(
-        this ILogger logger,
-        AgentType agentType,
-        string label,
-        int count);
 
     /// <summary>
     /// Logs result capture.
@@ -66,7 +41,7 @@ internal static partial class ConcurrentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Concurrent result captured [{AgentId}]: ({ResultCount} / {ExpectedCount})")]
+        Message = "COLLECT Concurrent result [{AgentId}]: ({ResultCount} / {ExpectedCount})")]
     public static partial void LogConcurrentResultCapture(
         this ILogger logger,
         AgentId agentId,

@@ -25,12 +25,13 @@ public abstract class AgentActor : PatternActor
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agents.Agent"/>.</param>
     /// <param name="noThread">Option to automatically clean-up agent thread</param>
-    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false)
+    /// <param name="logger">The logger to use for the actor</param>
+    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false, ILogger? logger = null)
         : base(
             id,
             runtime,
             VerifyDescription(agent),
-            GetLogger(agent))
+            logger ?? GetLogger(agent))
     {
         this.Agent = agent;
         this.NoThread = noThread;

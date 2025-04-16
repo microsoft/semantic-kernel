@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Chat;
@@ -28,8 +28,9 @@ internal sealed class ChatAgentActor :
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
-    public ChatAgentActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic)
-        : base(id, runtime, agent)
+    /// <param name="logger">The logger to use for the actor</param>
+    public ChatAgentActor(AgentId id, IAgentRuntime runtime, Agent agent, TopicId groupTopic, ILogger? logger = null)
+        : base(id, runtime, agent, noThread: false, logger)
     {
         this._cache = [];
         this._groupTopic = groupTopic;

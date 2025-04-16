@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
@@ -13,13 +14,15 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 /// </summary>
 public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInput, SequentialMessage, SequentialMessage, TOutput>
 {
+    internal static readonly string OrchestrationName = typeof(SequentialOrchestration<,>).Name.Split('`').First();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SequentialOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public SequentialOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
-        : base(runtime, agents)
+        : base(OrchestrationName, runtime, agents)
     {
     }
 
@@ -46,7 +49,7 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
             {
                 nextAgent = await orchestration.RegisterAsync(topic, nextAgent, logger).ConfigureAwait(false);
             }
-            logger.LogConcurrentRegistration(nextAgent, "MEMBER", index);
+            logger.LogRegisterActor(OrchestrationName, nextAgent, "MEMBER", index + 1);
         }
 
         return nextAgent;
@@ -54,9 +57,10 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
         async Task<AgentType> RegisterAgentAsync(TopicId topic, AgentType nextAgent, int index, Agent agent)
         {
             AgentType agentType = this.GetAgentType(topic, index);
+            ILogger loggerActor = this.LoggerFactory.CreateLogger<SequentialActor>();
             return await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
-                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent))).ConfigureAwait(false);
+                (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent, loggerActor))).ConfigureAwait(false);
         }
     }
 

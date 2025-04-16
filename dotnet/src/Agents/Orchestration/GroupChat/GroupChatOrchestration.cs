@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
+using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
@@ -14,13 +16,15 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 public class GroupChatOrchestration<TInput, TOutput> :
     AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
 {
+    internal static readonly string OrchestrationName = typeof(ConcurrentOrchestration<,>).Name.Split('`').First();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public GroupChatOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
-        : base(runtime, agents)
+        : base(OrchestrationName, runtime, agents)
     {
     }
 
@@ -53,16 +57,17 @@ public class GroupChatOrchestration<TInput, TOutput> :
 
             team[memberType] = (memberType, "an agent"); // %%% DESCRIPTION & NAME ID
 
-            logger.LogGroupChatRegistration(memberType, "MEMBER", agentCount);
+            logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
 
             await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
 
+        ILogger loggerManager = this.LoggerFactory.CreateLogger<ConcurrentActor>();
         await this.Runtime.RegisterAgentFactoryAsync(
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic))).ConfigureAwait(false);
+                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic, loggerManager))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 
@@ -71,10 +76,11 @@ public class GroupChatOrchestration<TInput, TOutput> :
         async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
             AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
+            ILogger loggerActor = this.LoggerFactory.CreateLogger<ConcurrentActor>();
             await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic))).ConfigureAwait(false);
+                    ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, loggerActor))).ConfigureAwait(false);
 
             return agentType;
         }

@@ -50,7 +50,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
 
         ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationLeft = CreateNested(runtime, agent1, agent2);
         ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationRight = CreateNested(runtime, agent3, agent4);
-        ConcurrentOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight);
+        ConcurrentOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -72,7 +72,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        ConcurrentOrchestration orchestration = new(runtime, agent);
+        ConcurrentOrchestration orchestration = new(runtime, agent) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -95,7 +95,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         // Define the pattern
         InProcessRuntime runtime = new();
         ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationInner = CreateNested(runtime, agent);
-        ConcurrentOrchestration orchestrationOuter = new(runtime, orchestrationInner);
+        ConcurrentOrchestration orchestrationOuter = new(runtime, orchestrationInner) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();

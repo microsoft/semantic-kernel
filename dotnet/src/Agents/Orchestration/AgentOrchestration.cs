@@ -22,15 +22,16 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
     /// </summary>
+    /// <param name="name">// %%% COMMENT</param>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="members">Specifies the member agents or orchestrations participating in this orchestration.</param>
-    protected AgentOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
+    protected AgentOrchestration(string name, IAgentRuntime runtime, params OrchestrationTarget[] members)
     {
         Verify.NotNull(runtime, nameof(runtime));
 
         this.Runtime = runtime;
         this.Members = members;
-        this._orchestrationRoot = this.GetType().Name.Split('`').First();
+        this._orchestrationRoot = name;
     }
 
     /// <summary>
@@ -83,8 +84,6 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
         TaskCompletionSource<TOutput> completion = new();
 
-        logger.LogOrchestrationRegistration(this._orchestrationRoot, topic);
-
         AgentType orchestrationType = await this.RegisterAsync(topic, completion, targetActor: null, logger).ConfigureAwait(false);
 
         logger.LogOrchestrationInvoke(this._orchestrationRoot, topic);
@@ -93,7 +92,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
         logger.LogOrchestrationYield(this._orchestrationRoot, topic);
 
-        return new OrchestrationResult<TOutput>(topic, completion, logger);
+        return new OrchestrationResult<TOutput>(this._orchestrationRoot, topic, completion, logger);
     }
 
     /// <summary>
@@ -154,11 +153,12 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="topic">The unique topic for the orchestration session.</param>
     /// <param name="completion">A TaskCompletionSource for the final result output, if applicable.</param>
     /// <param name="targetActor">An optional target actor for routing results.</param>
-    /// <param name="logger">The logger to use during registration</param>
+    /// <param name="logger">The orchestration logger (for use during registration)</param>
     /// <returns>The AgentType representing the orchestration entry point.</returns>
     private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? targetActor, ILogger logger)
     {
-        // %%% REQUIRED
+        logger.LogOrchestrationRegistrationStart(this._orchestrationRoot, topic);
+
         if (this.InputTransform == null)
         {
             throw new InvalidOperationException("InputTransform must be set before invoking the orchestration.");
@@ -174,7 +174,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             orchestrationFinal,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new ResultActor(agentId, runtime, this.ResultTransform, completion)
+                    new ResultActor(agentId, runtime, this._orchestrationRoot, this.ResultTransform, completion, this.LoggerFactory.CreateLogger<ResultActor>())
                     {
                         CompletionTarget = targetActor,
                     })).ConfigureAwait(false);
@@ -188,8 +188,10 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             orchestrationEntry,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new RequestActor(agentId, runtime, this.InputTransform, async (TSource source) => await this.StartAsync(topic, source, entryAgent).ConfigureAwait(false)))
+                    new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), this.LoggerFactory.CreateLogger<RequestActor>()))
         ).ConfigureAwait(false);
+
+        logger.LogOrchestrationRegistrationDone(this._orchestrationRoot, topic);
 
         return orchestrationEntry;
     }

@@ -32,7 +32,7 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
                 InputTransform = (SequentialMessage input) => ValueTask.FromResult(new ConcurrentMessages.Request { Message = input.Message }),
                 ResultTransform = (ConcurrentMessages.Result[] output) => ValueTask.FromResult(SequentialMessage.FromChat(new ChatMessageContent(AuthorRole.Assistant, string.Join("\n", output.Select(item => item.Message.Content)))))
             };
-        SequentialOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
+        SequentialOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -62,7 +62,7 @@ public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(out
                 InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(new SequentialMessage { Message = input.Message }),
                 ResultTransform = (SequentialMessage result) => ValueTask.FromResult(new ConcurrentMessages.Result { Message = result.Message })
             };
-        ConcurrentOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2);
+        ConcurrentOrchestration outerOrchestration = new(runtime, agent1, innerOrchestration, agent2) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();

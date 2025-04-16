@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
+using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
+using Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 
@@ -14,13 +17,15 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 public class MagenticOrchestration<TInput, TOutput> :
     AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
 {
+    internal static readonly string OrchestrationName = typeof(ConcurrentOrchestration<,>).Name.Split('`').First();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
     public MagenticOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
-        : base(runtime, agents)
+        : base(OrchestrationName, runtime, agents)
     {
     }
 
@@ -53,16 +58,17 @@ public class MagenticOrchestration<TInput, TOutput> :
 
             team[memberType] = (memberType, "an agent"); // %%% DESCRIPTION & NAME ID
 
-            logger.LogGroupChatRegistration(memberType, "MEMBER", agentCount);
+            logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
 
             await this.SubscribeAsync(memberType, topic).ConfigureAwait(false);
         }
 
+        ILogger loggerManager = this.LoggerFactory.CreateLogger<MagenticManagerActor>();
         await this.Runtime.RegisterAgentFactoryAsync(
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic))).ConfigureAwait(false);
+                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, loggerManager))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 
@@ -71,10 +77,11 @@ public class MagenticOrchestration<TInput, TOutput> :
         async ValueTask<AgentType> RegisterAgentAsync(Agent agent)
         {
             AgentType agentType = this.FormatAgentType(topic, $"Agent_{agentCount}");
+            ILogger loggerActor = this.LoggerFactory.CreateLogger<ChatAgentActor>();
             await this.Runtime.RegisterAgentFactoryAsync(
                 agentType,
                 (agentId, runtime) =>
-                    ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic))).ConfigureAwait(false);
+                    ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, loggerActor))).ConfigureAwait(false);
 
             return agentType;
         }

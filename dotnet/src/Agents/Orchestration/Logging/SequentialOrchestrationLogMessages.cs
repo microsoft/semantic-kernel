@@ -20,7 +20,7 @@ internal static partial class SequentialOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Sequential agent invoked [{AgentId}]: {Message}")]
+        Message = "REQUEST Sequential agent [{AgentId}]: {Message}")]
     public static partial void LogSequentialAgentInvoke(
         this ILogger logger,
         AgentId agentId,
@@ -29,34 +29,9 @@ internal static partial class SequentialOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Sequential agent result [{AgentId}]: {Message}")]
+        Message = "RESULT Sequential agent [{AgentId}]: {Message}")]
     public static partial void LogSequentialAgentResult(
         this ILogger logger,
         AgentId agentId,
         string? message);
-
-    /// <summary>
-    /// Logs actor registration.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Sequential actor registered [{AgentType}]: {label}")]
-    public static partial void LogSequentialRegistration(
-        this ILogger logger,
-        AgentType agentType,
-        string label);
-
-    /// <summary>
-    /// Logs actor registration.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Sequential actor registered [{AgentType}]: {label} #{Count}")]
-    public static partial void LogSequentialRegistration(
-        this ILogger logger,
-        AgentType agentType,
-        string label,
-        int count);
 }

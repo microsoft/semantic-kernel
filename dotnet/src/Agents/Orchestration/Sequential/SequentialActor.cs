@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 
@@ -20,8 +21,9 @@ internal sealed class SequentialActor : AgentActor, IHandle<SequentialMessage>
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="nextAgent">The identifier of the next agent for which to handoff the result</param>
-    public SequentialActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType nextAgent)
-        : base(id, runtime, agent, noThread: true)
+    /// <param name="logger">The logger to use for the actor</param>
+    public SequentialActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType nextAgent, ILogger? logger = null)
+        : base(id, runtime, agent, noThread: true, logger)
     {
         this._nextAgent = nextAgent;
     }
@@ -33,7 +35,7 @@ internal sealed class SequentialActor : AgentActor, IHandle<SequentialMessage>
 
         ChatMessageContent response = await this.InvokeAsync(item.Message, messageContext.CancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogSequentialAgentResult(this.Id, item.Message.Content);
+        this.Logger.LogSequentialAgentResult(this.Id, response.Content);
 
         await this.SendMessageAsync(SequentialMessage.FromChat(response), this._nextAgent, messageContext.CancellationToken).ConfigureAwait(false);
     }

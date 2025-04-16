@@ -22,9 +22,10 @@ internal static partial class OrchestrationResultLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Awaiting orchestration result for topic: {Topic}")]
+        Message = "AWAIT {Orchestration}: {Topic}")]
     public static partial void LogOrchestrationResultAwait(
         this ILogger logger,
+        string orchestration,
         TopicId topic);
 
     /// <summary>
@@ -33,9 +34,10 @@ internal static partial class OrchestrationResultLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "Orchestration result timeout for topic: {Topic}")]
+        Message = "TIMEOUT {Orchestration}: {Topic}")]
     public static partial void LogOrchestrationResultTimeout(
         this ILogger logger,
+        string orchestration,
         TopicId topic);
 
     /// <summary>
@@ -44,8 +46,9 @@ internal static partial class OrchestrationResultLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Orchestration result completed for topic: {Topic}")]
+        Message = "COMPLETE {Orchestration}: {Topic}")]
     public static partial void LogOrchestrationResultComplete(
         this ILogger logger,
+        string orchestration,
         TopicId topic);
 }

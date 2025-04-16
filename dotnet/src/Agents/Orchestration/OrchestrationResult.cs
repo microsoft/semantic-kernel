@@ -14,11 +14,13 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 /// <typeparam name="TValue">The type of the value produced by the orchestration.</typeparam>
 public sealed class OrchestrationResult<TValue>
 {
+    private readonly string _orchestration;
     private readonly TaskCompletionSource<TValue> _completion;
     private readonly ILogger _logger;
 
-    internal OrchestrationResult(TopicId topic, TaskCompletionSource<TValue> completion, ILogger logger)
+    internal OrchestrationResult(string orchestration, TopicId topic, TaskCompletionSource<TValue> completion, ILogger logger)
     {
+        this._orchestration = orchestration;
         this.Topic = topic;
         this._completion = completion;
         this._logger = logger;
@@ -39,19 +41,19 @@ public sealed class OrchestrationResult<TValue>
     /// <exception cref="TimeoutException">Thrown if the orchestration does not complete within the specified timeout period.</exception>
     public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null)
     {
-        this._logger.LogOrchestrationResultAwait(this.Topic);
+        this._logger.LogOrchestrationResultAwait(this._orchestration, this.Topic);
 
         if (timeout.HasValue)
         {
             Task[] tasks = { this._completion.Task };
             if (!Task.WaitAll(tasks, timeout.Value))
             {
-                this._logger.LogOrchestrationResultTimeout(this.Topic);
+                this._logger.LogOrchestrationResultTimeout(this._orchestration, this.Topic);
                 throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout}).");
             }
         }
 
-        this._logger.LogOrchestrationResultComplete(this.Topic);
+        this._logger.LogOrchestrationResultComplete(this._orchestration, this.Topic);
 
         return await this._completion.Task.ConfigureAwait(false);
     }

@@ -3,6 +3,7 @@
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
 using Microsoft.AgentRuntime.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
@@ -20,8 +21,9 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
-    public ConcurrentActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType orchestrationType) :
-        base(id, runtime, agent, noThread: true)
+    /// <param name="logger">The logger to use for the actor</param>
+    public ConcurrentActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType orchestrationType, ILogger? logger = null) :
+        base(id, runtime, agent, noThread: true, logger)
     {
         this._orchestrationType = orchestrationType;
     }

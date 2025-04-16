@@ -23,32 +23,8 @@ internal static partial class AgentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Registering orchestration {Orchestration} for topic: {Topic}")]
-    public static partial void LogOrchestrationRegistration(
-        this ILogger logger,
-        string orchestration,
-        TopicId topic);
-
-    /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Invoking orchestration {Orchestration} for topic: {Topic}")]
-    public static partial void LogOrchestrationInvoke(
-        this ILogger logger,
-        string orchestration,
-        TopicId topic);
-
-    /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
-    /// </summary>
-    [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Trace,
-        Message = "Yielding orchestration {Orchestration} for topic: {Topic}")]
-    public static partial void LogOrchestrationYield(
+        Message = "REGISTER {Orchestration} Start: {Topic}")]
+    public static partial void LogOrchestrationRegistrationStart(
         this ILogger logger,
         string orchestration,
         TopicId topic);
@@ -59,54 +35,123 @@ internal static partial class AgentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Orchestration started: {AgentId}")]
-    public static partial void LogOrchestrationStart(
+        Message = "REGISTER ACTOR {Orchestration} {label}: {AgentType}")]
+    public static partial void LogRegisterActor(
         this ILogger logger,
-        AgentId agentId);
+        string orchestration,
+        AgentType agentType,
+        string label);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// Logs actor registration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Orchestration request actor initiating pattern: {AgentId}")]
-    public static partial void LogOrchestrationRequestInvoke(
+        Message = "REGISTER ACTOR {Orchestration} {label} #{Count}: {AgentType}")]
+    public static partial void LogRegisterActor(
         this ILogger logger,
-        AgentId agentId);
+        string orchestration,
+        AgentType agentType,
+        string label,
+        int count);
 
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
+        Level = LogLevel.Trace,
+        Message = "REGISTER {Orchestration} Complete: {Topic}")]
+    public static partial void LogOrchestrationRegistrationDone(
+        this ILogger logger,
+        string orchestration,
+        TopicId topic);
+
+    /// <summary>
+    /// Logs <see cref="OrchestrationResult{TValue}"/> orchestration invocation.
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "INVOKE {Orchestration}: {Topic}")]
+    public static partial void LogOrchestrationInvoke(
+        this ILogger logger,
+        string orchestration,
+        TopicId topic);
+
+    /// <summary>
+    /// Logs <see cref="OrchestrationResult{TValue}"/> that the orchestration
+    /// has started successfully and yielded control back to the caller.
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Trace,
+        Message = "YIELD {Orchestration}: {Topic}")]
+    public static partial void LogOrchestrationYield(
+        this ILogger logger,
+        string orchestration,
+        TopicId topic);
+
+    /// <summary>
+    /// Logs the start of the outer orchestration.
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "START {Orchestration}: {AgentId}")]
+    public static partial void LogOrchestrationStart(
+        this ILogger logger,
+        string orchestration,
+        AgentId agentId);
+
+    /// <summary>
+    /// %%% COMMENT
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
+        Level = LogLevel.Information,
+        Message = "INIT {Orchestration}: {AgentId}")]
+    public static partial void LogOrchestrationRequestInvoke(
+        this ILogger logger,
+        string orchestration,
+        AgentId agentId);
+
+    /// <summary>
+    /// %%% COMMENT
+    /// </summary>
+    [LoggerMessage(
+        EventId = 0,
         Level = LogLevel.Error,
-        Message = "Orchestration request actor failed: {AgentId}")]
+        Message = "{Orchestration} request failed: {AgentId}")]
     public static partial void LogOrchestrationRequestFailure(
         this ILogger logger,
+        string orchestration,
         AgentId agentId,
         Exception exception);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// %%% COMMENT
     /// </summary>
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "Orchestration result actor finalizing pattern: {AgentId}")]
+        Message = "EXIT {Orchestration}: {AgentId}")]
     public static partial void LogOrchestrationResultInvoke(
         this ILogger logger,
+        string orchestration,
         AgentId agentId);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// %%% COMMENT
     /// </summary>
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "Orchestration result actor failed: {AgentId}")]
+        Message = "{Orchestration} result failed: {AgentId}")]
     public static partial void LogOrchestrationResultFailure(
         this ILogger logger,
+        string orchestration,
         AgentId agentId,
         Exception exception);
 }

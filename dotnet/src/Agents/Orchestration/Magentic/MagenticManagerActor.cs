@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AgentRuntime;
+using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
@@ -21,8 +22,9 @@ internal sealed class MagenticManagerActor : ChatManagerActor
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
-    public MagenticManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic)
-        : base(id, runtime, team, orchestrationType, groupTopic)
+    /// <param name="logger">The logger to use for the actor</param>
+    public MagenticManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger? logger = null)
+        : base(id, runtime, team, orchestrationType, groupTopic, logger)
     {
     }
 

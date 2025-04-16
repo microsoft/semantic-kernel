@@ -20,7 +20,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat agent invoked [{AgentId}]")]
+        Message = "CHAT AGENT invoked [{AgentId}]")]
     public static partial void LogChatAgentInvoke(
         this ILogger logger,
         AgentId agentId);
@@ -28,7 +28,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat agent result [{AgentId}]: {Message}")]
+        Message = "CHAT AGENT result [{AgentId}]: {Message}")]
     public static partial void LogChatAgentResult(
         this ILogger logger,
         AgentId agentId,
@@ -37,7 +37,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat manager initialized [{AgentId}]")]
+        Message = "CHAT MANAGER initialized [{AgentId}]")]
     public static partial void LogChatManagerInit(
         this ILogger logger,
         AgentId agentId);
@@ -45,7 +45,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat manager invoked [{AgentId}]")]
+        Message = "CHAT MANAGER invoked [{AgentId}]")]
     public static partial void LogChatManagerInvoke(
         this ILogger logger,
         AgentId agentId);
@@ -53,7 +53,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat manager terminating [{AgentId}]")]
+        Message = "CHAT MANAGER terminating [{AgentId}]")]
     public static partial void LogChatManagerTerminate(
         this ILogger logger,
         AgentId agentId);
@@ -61,7 +61,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat manager final result [{AgentId}]")]
+        Message = "CHAT MANAGER answer [{AgentId}]")]
     public static partial void LogChatManagerResult(
         this ILogger logger,
         AgentId agentId);
@@ -69,7 +69,7 @@ internal static partial class ChatOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
-        Message = "Chat manager selected agent [{AgentId}]: {NextAgent}")]
+        Message = "CHAT MANAGER select: {NextAgent} [{AgentId}]")]
     public static partial void LogChatManagerSelect(
         this ILogger logger,
         AgentId agentId,

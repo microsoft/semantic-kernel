@@ -16,6 +16,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     private sealed class ResultActor : PatternActor, IHandle<TResult>
     {
         private readonly TaskCompletionSource<TOutput>? _completionSource;
+        private readonly string _orchestrationRoot;
         private readonly Func<TResult, ValueTask<TOutput>> _transform;
 
         /// <summary>
@@ -23,18 +24,21 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
+        /// <param name="orchestrationRoot">// %%% COMMENT</param>
         /// <param name="transform">A delegate that transforms a TResult instance into a TOutput instance.</param>
         /// <param name="completionSource">Optional TaskCompletionSource to signal orchestration completion.</param>
         /// <param name="logger">The logger to use for the actor</param>
         public ResultActor(
             AgentId id,
             IAgentRuntime runtime,
+            string orchestrationRoot,
             Func<TResult, ValueTask<TOutput>> transform,
             TaskCompletionSource<TOutput>? completionSource = null,
-            ILogger<RequestActor>? logger = null)
+            ILogger<ResultActor>? logger = null)
             : base(id, runtime, $"{id.Type}_Actor", logger)
         {
             this._completionSource = completionSource;
+            this._orchestrationRoot = orchestrationRoot;
             this._transform = transform;
         }
 
@@ -53,7 +57,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// <returns>A ValueTask representing asynchronous operation.</returns>
         public async ValueTask HandleAsync(TResult item, MessageContext messageContext)
         {
-            this.Logger.LogOrchestrationResultInvoke(this.Id);
+            this.Logger.LogOrchestrationResultInvoke(this._orchestrationRoot, this.Id);
 
             try
             {
@@ -69,7 +73,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             catch (Exception exception)
             {
                 // Log exception details and fail orchestration as per design.
-                this.Logger.LogOrchestrationResultFailure(this.Id, exception);
+                this.Logger.LogOrchestrationResultFailure(this._orchestrationRoot, this.Id, exception);
                 throw;
             }
         }
