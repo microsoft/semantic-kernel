@@ -4,7 +4,8 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
-from typing import Annotated, Any, ClassVar, Generic, TypeVar
+from contextlib import AbstractAsyncContextManager
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -21,9 +22,11 @@ from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.prompt_template.kernel_prompt_template import KernelPromptTemplate
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
+
+if TYPE_CHECKING:
+    from mcp.server.lowlevel.server import LifespanResultT, Server
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -31,7 +34,6 @@ TMessage = TypeVar("TMessage", bound=ChatMessageContent)
 TThreadType = TypeVar("TThreadType", bound="AgentThread")
 
 
-@release_candidate
 class AgentThread(ABC):
     """Base class for agent threads."""
 
@@ -107,7 +109,6 @@ class AgentThread(ABC):
         raise NotImplementedError
 
 
-@release_candidate
 class AgentResponseItem(KernelBaseModel, Generic[TMessage]):
     """Class representing a response item from an agent.
 
@@ -268,18 +269,24 @@ class Agent(KernelBaseModel, ABC):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Invoke the agent.
 
-        This invocation method will return the intermediate steps and the final results
-        of the agent's execution as a stream of ChatMessageContent objects to the caller.
+        This invocation method will return the final results of the agent's execution as a
+        stream of ChatMessageContent objects to the caller. The reason for returning a stream
+        is to allow for future extensions to the agent's capabilities, such as multi-modality.
+
+        To get the intermediate steps of the agent's execution, use the on_intermediate_message callback
+        to handle those messages.
 
         Note: A ChatMessageContent object contains an entire message.
 
         Args:
             messages: The message(s) to send to the agent.
             thread: The conversation thread associated with the message(s).
+            on_intermediate_message: A callback function to handle intermediate steps of the agent's execution.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -293,6 +300,7 @@ class Agent(KernelBaseModel, ABC):
         *,
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[StreamingChatMessageContent]]:
         """Invoke the agent as a stream.
@@ -300,11 +308,16 @@ class Agent(KernelBaseModel, ABC):
         This invocation method will return the intermediate steps and final results of the
         agent's execution as a stream of StreamingChatMessageContent objects to the caller.
 
+        To get the intermediate steps of the agent's execution as fully formed messages,
+        use the on_intermediate_message callback.
+
         Note: A StreamingChatMessageContent object contains a chunk of a message.
 
         Args:
             messages: The message(s) to send to the agent.
             thread: The conversation thread associated with the message(s).
+            on_intermediate_message: A callback function to handle intermediate steps of the
+                                     agent's execution as fully formed messages.
             kwargs: Additional keyword arguments.
 
         Yields:
@@ -434,3 +447,34 @@ class Agent(KernelBaseModel, ABC):
     def __hash__(self):
         """Get the hash of the agent."""
         return hash((self.id, self.name, self.description, self.instructions, self.channel_type))
+
+    def as_mcp_server(
+        self,
+        *,
+        prompts: list[PromptTemplateBase] | None = None,
+        server_name: str | None = None,
+        version: str | None = None,
+        instructions: str | None = None,
+        lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+    ) -> "Server[LifespanResultT]":
+        """Convert the agent to an MCP server.
+
+        This will create a MCP Server, with a single Tool, which is the agent itself.
+        Prompts can be added through the prompts keyword.
+
+        By default, the server name will be the same as the agent name.
+        If a server name is provided, it will be used instead.
+
+        Returns:
+            The MCP server instance.
+        """
+        from semantic_kernel.connectors.mcp import create_mcp_server_from_functions
+
+        return create_mcp_server_from_functions(
+            functions=self,
+            prompts=prompts,
+            server_name=server_name or self.name,
+            version=version,
+            instructions=instructions,
+            lifespan=lifespan,
+        )

@@ -54,47 +54,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
     }
 
     [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithAgentChatAsync()
-    {
-        // Define the agent
-        ChatCompletionAgent agent =
-            new()
-            {
-                Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
-            };
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        agent.Kernel.Plugins.Add(plugin);
-
-        // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
-
-        // Respond to user input, invoking functions where appropriate.
-        await InvokeAgentAsync("Hello");
-        await InvokeAgentAsync("What is the special soup?");
-        await InvokeAgentAsync("What is the special drink?");
-        await InvokeAgentAsync("Thank you");
-
-        // Display the entire chat history.
-        WriteChatHistory(await chat.GetChatMessagesAsync().ToArrayAsync());
-
-        // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAgentAsync(string input)
-        {
-            ChatMessageContent message = new(AuthorRole.User, input);
-            chat.AddChatMessage(message);
-            this.WriteAgentChatMessage(message);
-
-            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
-            {
-                this.WriteAgentChatMessage(response);
-            }
-        }
-    }
-
-    [Fact]
     public async Task UseAutoFunctionInvocationFilterWithStreamingAgentInvocationAsync()
     {
         // Define the agent
@@ -152,59 +111,6 @@ public class ChatCompletion_FunctionTermination(ITestOutputHelper output) : Base
                 {
                     this.WriteAgentChatMessage(agentThread.ChatHistory[index]);
                 }
-            }
-        }
-    }
-
-    [Fact]
-    public async Task UseAutoFunctionInvocationFilterWithStreamingAgentChatAsync()
-    {
-        // Define the agent
-        ChatCompletionAgent agent =
-            new()
-            {
-                Instructions = "Answer questions about the menu.",
-                Kernel = CreateKernelWithFilter(),
-                Arguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
-            };
-
-        KernelPlugin plugin = KernelPluginFactory.CreateFromType<MenuPlugin>();
-        agent.Kernel.Plugins.Add(plugin);
-
-        // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
-
-        // Respond to user input, invoking functions where appropriate.
-        await InvokeAgentAsync("Hello");
-        await InvokeAgentAsync("What is the special soup?");
-        await InvokeAgentAsync("What is the special drink?");
-        await InvokeAgentAsync("Thank you");
-
-        // Display the entire chat history.
-        WriteChatHistory(await chat.GetChatMessagesAsync().ToArrayAsync());
-
-        // Local function to invoke agent and display the conversation messages.
-        async Task InvokeAgentAsync(string input)
-        {
-            ChatMessageContent message = new(AuthorRole.User, input);
-            chat.AddChatMessage(message);
-            this.WriteAgentChatMessage(message);
-
-            bool isFirst = false;
-            await foreach (StreamingChatMessageContent response in chat.InvokeStreamingAsync(agent))
-            {
-                if (string.IsNullOrEmpty(response.Content))
-                {
-                    continue;
-                }
-
-                if (!isFirst)
-                {
-                    Console.WriteLine($"\n# {response.Role} - {response.AuthorName ?? "*"}:");
-                    isFirst = true;
-                }
-
-                Console.WriteLine($"\t > streamed: '{response.Content}'");
             }
         }
     }

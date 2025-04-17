@@ -40,10 +40,10 @@ internal static class QdrantVectorStoreCollectionCreateMapping
         { typeof(decimal?), PayloadSchemaType.Float },
 
         { typeof(string), PayloadSchemaType.Keyword },
-        { typeof(DateTime), PayloadSchemaType.Datetime },
+        { typeof(DateTimeOffset), PayloadSchemaType.Datetime },
         { typeof(bool), PayloadSchemaType.Bool },
 
-        { typeof(DateTime?), PayloadSchemaType.Datetime },
+        { typeof(DateTimeOffset?), PayloadSchemaType.Datetime },
         { typeof(bool?), PayloadSchemaType.Bool },
     };
 

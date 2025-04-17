@@ -42,10 +42,12 @@ from semantic_kernel.agents.azure_ai.agent_content_generation import (
     get_function_call_contents,
 )
 from semantic_kernel.agents.azure_ai.azure_ai_agent_utils import AzureAIAgentUtils
+from semantic_kernel.agents.open_ai.assistant_content_generation import (
+    merge_streaming_function_results,
+)
 from semantic_kernel.agents.open_ai.function_action_result import FunctionActionResult
 from semantic_kernel.connectors.ai.function_calling_utils import (
     kernel_function_metadata_to_function_call_format,
-    merge_streaming_function_results,
 )
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
 from semantic_kernel.contents.function_call_content import FunctionCallContent
@@ -60,6 +62,9 @@ if TYPE_CHECKING:
     from semantic_kernel.agents.azure_ai.azure_ai_agent import AzureAIAgent
     from semantic_kernel.contents.chat_history import ChatHistory
     from semantic_kernel.contents.streaming_chat_message_content import StreamingChatMessageContent
+    from semantic_kernel.filters.auto_function_invocation.auto_function_invocation_context import (
+        AutoFunctionInvocationContext,
+    )
     from semantic_kernel.kernel import Kernel
 
 _T = TypeVar("_T", bound="AgentThreadActions")
@@ -198,7 +203,9 @@ class AgentThreadActions:
                     from semantic_kernel.contents.chat_history import ChatHistory
 
                     chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-                    _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
+                    _ = await cls._invoke_function_calls(
+                        kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+                    )
 
                     tool_outputs = cls._format_tool_outputs(fccs, chat_history)
                     await agent.client.agents.submit_tool_outputs_to_run(
@@ -404,6 +411,7 @@ class AgentThreadActions:
             thread_id=thread_id,
             output_messages=output_messages,
             kernel=kernel,
+            arguments=arguments,
             function_steps=function_steps,
             active_messages=active_messages,
         ):
@@ -417,6 +425,7 @@ class AgentThreadActions:
         agent: "AzureAIAgent",
         thread_id: str,
         kernel: "Kernel",
+        arguments: KernelArguments,
         function_steps: dict[str, FunctionCallContent],
         active_messages: dict[str, RunStep],
         output_messages: "list[ChatMessageContent] | None" = None,
@@ -449,14 +458,19 @@ class AgentThreadActions:
                         if not details:
                             continue
                         if isinstance(details, RunStepDeltaToolCallObject) and details.tool_calls:
+                            content_is_visible = False
                             for tool_call in details.tool_calls:
                                 content = None
                                 if tool_call.type == "function":
                                     content = generate_streaming_function_content(agent.name, details)
                                 elif tool_call.type == "code_interpreter":
                                     content = generate_streaming_code_interpreter_content(agent.name, details)
+                                    content_is_visible = True
                                 if content:
-                                    yield content
+                                    if output_messages is not None:
+                                        output_messages.append(content)
+                                    if content_is_visible:
+                                        yield content
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_REQUIRES_ACTION:
                         run = cast(ThreadRun, event_data)
@@ -465,17 +479,13 @@ class AgentThreadActions:
                             kernel=kernel,
                             run=run,
                             function_steps=function_steps,
+                            arguments=arguments,
                         )
                         if action_result is None:
                             raise RuntimeError(
                                 f"Function call required but no function steps found for agent `{agent.name}` "
                                 f"thread: {thread_id}."
                             )
-
-                        if action_result.function_result_streaming_content:
-                            yield action_result.function_result_streaming_content
-                            if output_messages is not None:
-                                output_messages.append(action_result.function_result_streaming_content)
 
                         if action_result.function_call_streaming_content:
                             if output_messages is not None:
@@ -490,7 +500,11 @@ class AgentThreadActions:
                             ):
                                 if sub_content:
                                     yield sub_content
-                            break
+
+                        if action_result.function_result_streaming_content and output_messages is not None:
+                            output_messages.append(action_result.function_result_streaming_content)
+
+                        break
 
                     elif event_type == AgentStreamEvent.THREAD_RUN_COMPLETED:
                         run = cast(ThreadRun, event_data)
@@ -716,7 +730,7 @@ class AgentThreadActions:
     def _generate_options(cls: type[_T], **kwargs: Any) -> dict[str, Any]:
         """Generate a dictionary of options that can be passed directly to create_run."""
         merged = cls._merge_options(**kwargs)
-        trunc_count = merged.get("truncation_message_count", None)
+        truncation_strategy = merged.get("truncation_strategy", None)
         max_completion_tokens = merged.get("max_completion_tokens", None)
         max_prompt_tokens = merged.get("max_prompt_tokens", None)
         parallel_tool_calls = merged.get("parallel_tool_calls_enabled", None)
@@ -726,7 +740,7 @@ class AgentThreadActions:
             "top_p": merged.get("top_p"),
             "response_format": merged.get("response_format"),
             "temperature": merged.get("temperature"),
-            "truncation_strategy": trunc_count,
+            "truncation_strategy": truncation_strategy,
             "metadata": merged.get("metadata"),
             "max_completion_tokens": max_completion_tokens,
             "max_prompt_tokens": max_prompt_tokens,
@@ -823,14 +837,23 @@ class AgentThreadActions:
 
     @classmethod
     async def _invoke_function_calls(
-        cls: type[_T], kernel: "Kernel", fccs: list["FunctionCallContent"], chat_history: "ChatHistory"
-    ) -> list[Any]:
+        cls: type[_T],
+        kernel: "Kernel",
+        fccs: list["FunctionCallContent"],
+        chat_history: "ChatHistory",
+        arguments: KernelArguments,
+    ) -> list["AutoFunctionInvocationContext | None"]:
         """Invoke the function calls."""
-        tasks = [
-            kernel.invoke_function_call(function_call=function_call, chat_history=chat_history)
-            for function_call in fccs
-        ]
-        return await asyncio.gather(*tasks)
+        return await asyncio.gather(
+            *[
+                kernel.invoke_function_call(
+                    function_call=function_call,
+                    chat_history=chat_history,
+                    arguments=arguments,
+                )
+                for function_call in fccs
+            ],
+        )
 
     @classmethod
     def _format_tool_outputs(
@@ -858,6 +881,7 @@ class AgentThreadActions:
         kernel: "Kernel",
         run: ThreadRun,
         function_steps: dict[str, "FunctionCallContent"],
+        arguments: KernelArguments,
         **kwargs: Any,
     ) -> FunctionActionResult | None:
         """Handle the requires action event for a streaming run."""
@@ -867,11 +891,19 @@ class AgentThreadActions:
             from semantic_kernel.contents.chat_history import ChatHistory
 
             chat_history = ChatHistory() if kwargs.get("chat_history") is None else kwargs["chat_history"]
-            _ = await cls._invoke_function_calls(kernel=kernel, fccs=fccs, chat_history=chat_history)
-            function_result_streaming_content = merge_streaming_function_results(chat_history.messages)[0]
+            results = await cls._invoke_function_calls(
+                kernel=kernel, fccs=fccs, chat_history=chat_history, arguments=arguments
+            )
+
+            function_result_streaming_content = merge_streaming_function_results(
+                messages=chat_history.messages[-len(results) :],
+                name=agent_name,
+            )
             tool_outputs = cls._format_tool_outputs(fccs, chat_history)
             return FunctionActionResult(
-                function_call_streaming_content, function_result_streaming_content, tool_outputs
+                function_call_streaming_content,
+                function_result_streaming_content,
+                tool_outputs,
             )
         return None
 

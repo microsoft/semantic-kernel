@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Qdrant.Client.Grpc;
 
@@ -46,6 +47,25 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 throw new InvalidOperationException($"Unsupported filter clause type '{filterClause.GetType().Name}'.");
             }
 
+            // Get the storage name for the field.
+            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
+            {
+                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
+            }
+
+            // Map DateTimeOffset equality.
+            if (filterValue is DateTimeOffset dateTimeOffset)
+            {
+                var range = new global::Qdrant.Client.Grpc.DatetimeRange
+                {
+                    Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                };
+
+                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, DatetimeRange = range } });
+                continue;
+            }
+
             // Map each type of filter value to the appropriate Qdrant match type.
             var match = filterValue switch
             {
@@ -55,12 +75,6 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 bool boolValue => new Match { Boolean = boolValue },
                 _ => throw new InvalidOperationException($"Unsupported filter value type '{filterValue.GetType().Name}'.")
             };
-
-            // Get the storage name for the field.
-            if (!storagePropertyNames.TryGetValue(fieldName, out var storagePropertyName))
-            {
-                throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
-            }
 
             filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = storagePropertyName, Match = match } });
         }
@@ -86,9 +100,27 @@ internal static class QdrantVectorStoreCollectionSearchMapping
         var pointStruct = new PointStruct
         {
             Id = point.Id,
-            Vectors = point.Vectors,
             Payload = { }
         };
+
+        if (includeVectors)
+        {
+            pointStruct.Vectors = new();
+            switch (point.Vectors.VectorsOptionsCase)
+            {
+                case VectorsOutput.VectorsOptionsOneofCase.Vector:
+                    pointStruct.Vectors.Vector = point.Vectors.Vector.Data.ToArray();
+                    break;
+                case VectorsOutput.VectorsOptionsOneofCase.Vectors:
+                    pointStruct.Vectors.Vectors_ = new();
+                    foreach (var v in point.Vectors.Vectors.Vectors)
+                    {
+                        // TODO: Refactor mapper to not require pre-mapping to pointstruct to avoid this ToArray conversion.
+                        pointStruct.Vectors.Vectors_.Vectors.Add(v.Key, v.Value.Data.ToArray());
+                    }
+                    break;
+            }
+        }
 
         foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
         {

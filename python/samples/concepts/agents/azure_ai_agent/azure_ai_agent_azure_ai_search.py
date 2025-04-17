@@ -35,7 +35,7 @@ AZURE_AI_SEARCH_INDEX_NAME = "hotels-sample-index"
 
 
 async def main() -> None:
-    ai_agent_settings = AzureAIAgentSettings.create()
+    ai_agent_settings = AzureAIAgentSettings()
 
     async with (
         DefaultAzureCredential() as creds,

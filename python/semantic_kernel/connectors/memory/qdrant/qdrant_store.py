@@ -5,11 +5,6 @@ import sys
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, TypeVar
 
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
-
 from pydantic import ValidationError
 from qdrant_client.async_qdrant_client import AsyncQdrantClient
 
@@ -21,7 +16,12 @@ from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
 
 if TYPE_CHECKING:
-    from semantic_kernel.data import VectorStoreRecordCollection
+    from semantic_kernel.data.vector_storage import VectorStoreRecordCollection
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -81,7 +81,7 @@ class QdrantStore(VectorStore):
         from semantic_kernel.connectors.memory.qdrant.qdrant_settings import QdrantSettings
 
         try:
-            settings = QdrantSettings.create(
+            settings = QdrantSettings(
                 url=url,
                 api_key=api_key,
                 host=host,

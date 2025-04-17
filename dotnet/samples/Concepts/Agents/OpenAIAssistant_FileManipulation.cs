@@ -29,9 +29,7 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAs
 
         // Create the agent
         OpenAIAssistantAgent agent = new(assistant, this.AssistantClient);
-
-        // Create a chat for agent interaction.
-        AgentGroupChat chat = new();
+        AgentThread? agentThread = null;
 
         // Respond to user input
         try
@@ -42,6 +40,11 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAs
         }
         finally
         {
+            if (agentThread is not null)
+            {
+                await agentThread.DeleteAsync();
+            }
+
             await this.AssistantClient.DeleteAssistantAsync(agent.Id);
             await this.Client.DeleteFileAsync(fileId);
         }
@@ -50,13 +53,14 @@ public class OpenAIAssistant_FileManipulation(ITestOutputHelper output) : BaseAs
         async Task InvokeAgentAsync(string input)
         {
             ChatMessageContent message = new(AuthorRole.User, input);
-            chat.AddChatMessage(new(AuthorRole.User, input));
             this.WriteAgentChatMessage(message);
 
-            await foreach (ChatMessageContent response in chat.InvokeAsync(agent))
+            await foreach (AgentResponseItem<ChatMessageContent> response in agent.InvokeAsync(message))
             {
                 this.WriteAgentChatMessage(response);
                 await this.DownloadResponseContentAsync(response);
+
+                agentThread = response.Thread;
             }
         }
     }

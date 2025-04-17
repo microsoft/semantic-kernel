@@ -1,5 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
+import warnings
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -74,13 +75,15 @@ async def test_generate_calls_with_parameters(mock_generate, openai_unit_test_en
 
     openai_text_to_image = OpenAITextToImage(ai_model_id=ai_model_id)
 
-    await openai_text_to_image.generate_image(description=prompt, width=width, height=width)
+    with warnings.catch_warnings(record=True) as w:
+        await openai_text_to_image.generate_image(description=prompt, width=width, height=width)
 
-    mock_generate.assert_awaited_once_with(
-        prompt=prompt,
-        model=ai_model_id,
-        size=f"{width}x{width}",
-    )
+        mock_generate.assert_awaited_once_with(
+            prompt=prompt,
+            model=ai_model_id,
+            size=f"{width}x{width}",
+        )
+        assert len(w) == 2
 
 
 @patch.object(AsyncImages, "generate", new_callable=AsyncMock, side_effect=Exception)

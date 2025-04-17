@@ -28,7 +28,7 @@ pytestmark = pytest.mark.skipif(
 @pytest.fixture(scope="session")
 def connection_string():
     try:
-        redis_settings = RedisSettings.create()
+        redis_settings = RedisSettings()
         if redis_settings.connection_string:
             return redis_settings.connection_string.get_secret_value()
         return "redis://localhost:6379"

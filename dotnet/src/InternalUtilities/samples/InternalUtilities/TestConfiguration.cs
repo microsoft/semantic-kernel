@@ -19,6 +19,7 @@ public sealed class TestConfiguration
         s_instance = new TestConfiguration(configRoot);
     }
 
+    public static IConfigurationRoot? ConfigurationRoot => s_instance?._configRoot;
     public static OllamaConfig Ollama => LoadSection<OllamaConfig>();
     public static OpenAIConfig OpenAI => LoadSection<OpenAIConfig>();
     public static OnnxConfig Onnx => LoadSection<OnnxConfig>();
@@ -35,6 +36,7 @@ public sealed class TestConfiguration
     public static PineconeConfig Pinecone => LoadSection<PineconeConfig>();
     public static BingConfig Bing => LoadSection<BingConfig>();
     public static GoogleConfig Google => LoadSection<GoogleConfig>();
+    public static TavilyConfig Tavily => LoadSection<TavilyConfig>();
     public static GithubConfig Github => LoadSection<GithubConfig>();
     public static PostgresConfig Postgres => LoadSection<PostgresConfig>();
     public static RedisConfig Redis => LoadSection<RedisConfig>();
@@ -51,6 +53,12 @@ public sealed class TestConfiguration
     public static ApplicationInsightsConfig ApplicationInsights => LoadSection<ApplicationInsightsConfig>();
     public static CrewAIConfig CrewAI => LoadSection<CrewAIConfig>();
     public static BedrockAgentConfig BedrockAgent => LoadSection<BedrockAgentConfig>();
+
+    public static IConfiguration GetSection(string caller)
+    {
+        return s_instance?._configRoot.GetSection(caller) ??
+               throw new ConfigurationNotFoundException(section: caller);
+    }
 
     private static T LoadSection<T>([CallerMemberName] string? caller = null)
     {
@@ -99,6 +107,8 @@ public sealed class TestConfiguration
     {
         public string ConnectionString { get; set; }
         public string ChatModelId { get; set; }
+        public string BingConnectionId { get; set; }
+        public string VectorStoreId { get; set; }
     }
 
     public class AzureOpenAIConfig
@@ -176,6 +186,12 @@ public sealed class TestConfiguration
         public string SearchEngineId { get; set; }
     }
 
+    public class TavilyConfig
+    {
+        public string Endpoint { get; set; } = "https://api.tavily.com/search";
+        public string ApiKey { get; set; }
+    }
+
     public class GithubConfig
     {
         public string PAT { get; set; }
@@ -240,7 +256,7 @@ public sealed class TestConfiguration
 
     public class VertexAIConfig
     {
-        public string BearerKey { get; set; }
+        public string? BearerKey { get; set; }
         public string EmbeddingModelId { get; set; }
         public string Location { get; set; }
         public string ProjectId { get; set; }
@@ -330,5 +346,6 @@ public sealed class TestConfiguration
     {
         public string AgentResourceRoleArn { get; set; }
         public string FoundationModel { get; set; }
+        public string? KnowledgeBaseId { get; set; }
     }
 }

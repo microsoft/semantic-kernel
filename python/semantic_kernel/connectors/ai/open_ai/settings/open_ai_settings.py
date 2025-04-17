@@ -10,8 +10,8 @@ from semantic_kernel.kernel_pydantic import KernelBaseSettings
 class OpenAISettings(KernelBaseSettings):
     """OpenAI model settings.
 
-    The settings are first loaded from environment variables with the prefix 'OPENAI_'. If the
-    environment variables are not found, the settings can be loaded from a .env file with the
+    The settings are first loaded from environment variables with the prefix 'OPENAI_'.
+    If the environment variables are not found, the settings can be loaded from a .env file with the
     encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
     however, validation will fail alerting that the settings are missing.
 
@@ -22,6 +22,8 @@ class OpenAISettings(KernelBaseSettings):
         (Env var OPENAI_ORG_ID)
     - chat_model_id: str | None - The OpenAI chat model ID to use, for example, gpt-3.5-turbo or gpt-4.
         (Env var OPENAI_CHAT_MODEL_ID)
+    - responses_model_id: str | None - The OpenAI responses model ID to use, for example, gpt-4o or o1.
+        (Env var OPENAI_RESPONSES_MODEL_ID)
     - text_model_id: str | None - The OpenAI text model ID to use, for example, gpt-3.5-turbo-instruct.
         (Env var OPENAI_TEXT_MODEL_ID)
     - embedding_model_id: str | None - The OpenAI embedding model ID to use, for example, text-embedding-ada-002.
@@ -43,6 +45,7 @@ class OpenAISettings(KernelBaseSettings):
     api_key: SecretStr | None = None
     org_id: str | None = None
     chat_model_id: str | None = None
+    responses_model_id: str | None = None
     text_model_id: str | None = None
     embedding_model_id: str | None = None
     text_to_image_model_id: str | None = None

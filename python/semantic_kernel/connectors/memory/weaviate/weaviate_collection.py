@@ -3,12 +3,7 @@
 import logging
 import sys
 from collections.abc import Sequence
-from typing import Any, Generic, TypeVar
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, Generic
 
 from pydantic import field_validator
 from weaviate import WeaviateAsyncClient, use_async_with_embedded, use_async_with_local, use_async_with_weaviate_cloud
@@ -31,15 +26,16 @@ from semantic_kernel.connectors.memory.weaviate.utils import (
     to_weaviate_vector_index_config,
 )
 from semantic_kernel.connectors.memory.weaviate.weaviate_settings import WeaviateSettings
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition.vector_store_model_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordVectorField
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vector_text_search import VectorTextSearchMixin
-from semantic_kernel.data.vector_search.vectorizable_text_search import VectorizableTextSearchMixin
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.record_definition import VectorStoreRecordDefinition, VectorStoreRecordVectorField
+from semantic_kernel.data.text_search import KernelSearchResults
+from semantic_kernel.data.vector_search import (
+    VectorizableTextSearchMixin,
+    VectorizedSearchMixin,
+    VectorSearchOptions,
+    VectorSearchResult,
+    VectorTextSearchMixin,
+)
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -49,18 +45,20 @@ from semantic_kernel.exceptions import (
 from semantic_kernel.kernel_types import OneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
-logger = logging.getLogger(__name__)
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
-TModel = TypeVar("TModel")
-TKey = TypeVar("TKey", str, int)
+logger = logging.getLogger(__name__)
 
 
 @experimental
 class WeaviateCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
-    VectorTextSearchMixin[TModel],
-    VectorizableTextSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
+    VectorTextSearchMixin[TKey, TModel],
+    VectorizableTextSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """A Weaviate collection is a collection of records that are stored in a Weaviate database."""
@@ -106,7 +104,7 @@ class WeaviateCollection(
         managed_client: bool = False
         if not async_client:
             managed_client = True
-            weaviate_settings = WeaviateSettings.create(
+            weaviate_settings = WeaviateSettings(
                 url=url,
                 api_key=api_key,
                 local_host=local_host,
@@ -147,9 +145,9 @@ class WeaviateCollection(
             data_model_type=data_model_type,
             data_model_definition=data_model_definition,
             collection_name=collection_name,
-            async_client=async_client,
+            async_client=async_client,  # type: ignore[call-arg]
             managed_client=managed_client,
-            named_vectors=named_vectors,
+            named_vectors=named_vectors,  # type: ignore[call-arg]
         )
 
     @field_validator("collection_name")

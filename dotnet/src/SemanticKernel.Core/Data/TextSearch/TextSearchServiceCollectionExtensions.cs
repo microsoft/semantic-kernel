@@ -12,7 +12,6 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods to register <see cref="ITextSearch"/> for use with <see cref="IServiceCollection"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
 public static class TextSearchServiceCollectionExtensions
 {
     /// <summary>

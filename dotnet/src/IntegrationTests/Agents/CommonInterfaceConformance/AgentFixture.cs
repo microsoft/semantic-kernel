@@ -13,7 +13,7 @@ namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance;
 /// </summary>
 public abstract class AgentFixture : IAsyncLifetime
 {
-    public abstract KernelAgent Agent { get; }
+    public abstract Agent Agent { get; }
 
     public abstract AgentThread AgentThread { get; }
 

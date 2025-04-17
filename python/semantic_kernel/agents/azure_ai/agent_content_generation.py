@@ -14,6 +14,7 @@ from azure.ai.projects.models import (
     MessageTextFileCitationAnnotation,
     MessageTextFilePathAnnotation,
     MessageTextUrlCitationAnnotation,
+    RequiredFunctionToolCall,
     RunStep,
     RunStepDeltaCodeInterpreterDetailItemObject,
     RunStepDeltaCodeInterpreterImageOutput,
@@ -207,18 +208,23 @@ def get_function_call_contents(
     """
     function_call_contents: list[FunctionCallContent] = []
     required_action = getattr(run, "required_action", None)
-    if not required_action or not getattr(required_action, "submit_tool_outputs", False):
+    submit_tool_outputs = getattr(required_action, "submit_tool_outputs", None)
+    if not submit_tool_outputs or not hasattr(submit_tool_outputs, "tool_calls"):
         return function_call_contents
-    for tool_call in required_action.submit_tool_outputs.tool_calls:
-        tool: RunStepFunctionToolCall = tool_call
+    tool_calls = getattr(submit_tool_outputs, "tool_calls", [])
+    if not isinstance(tool_calls, (list, tuple)):
+        return function_call_contents
+    for tool_call in tool_calls:
+        if not isinstance(tool_call, RequiredFunctionToolCall):
+            continue
         fcc = FunctionCallContent(
-            id=tool.id,
-            index=getattr(tool, "index", None),
-            name=tool.function.name,
-            arguments=tool.function.arguments,
+            id=tool_call.id,
+            index=getattr(tool_call, "index", None),
+            name=tool_call.function.name,
+            arguments=tool_call.function.arguments,
         )
         function_call_contents.append(fcc)
-        function_steps[tool.id] = fcc
+        function_steps[tool_call.id] = fcc
     return function_call_contents
 
 

@@ -4,19 +4,7 @@ import logging
 import sys
 from collections.abc import Sequence
 from importlib import metadata
-from typing import Any, ClassVar, Generic, TypeVar
-
-from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
-
-if sys.version_info >= (3, 11):
-    from typing import Self  # pragma: no cover
-else:
-    from typing_extensions import Self  # pragma: no cover
-
-if sys.version_info >= (3, 12):
-    from typing import override  # pragma: no cover
-else:
-    from typing_extensions import override  # pragma: no cover
+from typing import Any, ClassVar, Generic
 
 from pydantic import ValidationError
 from pymongo import AsyncMongoClient, ReplaceOne
@@ -32,34 +20,40 @@ from semantic_kernel.connectors.memory.mongodb_atlas.const import (
     MONGODB_SCORE_FIELD,
 )
 from semantic_kernel.connectors.memory.mongodb_atlas.utils import create_vector_field
-from semantic_kernel.data.filter_clauses import AnyTagsEqualTo, EqualTo
-from semantic_kernel.data.kernel_search_results import KernelSearchResults
-from semantic_kernel.data.record_definition import VectorStoreRecordDefinition
-from semantic_kernel.data.record_definition.vector_store_record_fields import VectorStoreRecordDataField
+from semantic_kernel.data.record_definition import VectorStoreRecordDataField, VectorStoreRecordDefinition
+from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, KernelSearchResults
 from semantic_kernel.data.vector_search import (
+    VectorizedSearchMixin,
     VectorSearchFilter,
     VectorSearchOptions,
+    VectorSearchResult,
 )
-from semantic_kernel.data.vector_search.vector_search import VectorSearchBase
-from semantic_kernel.data.vector_search.vector_search_result import VectorSearchResult
-from semantic_kernel.data.vector_search.vectorized_search import VectorizedSearchMixin
+from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
     VectorStoreOperationException,
 )
 from semantic_kernel.utils.feature_stage_decorator import experimental
+from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
+
+if sys.version_info >= (3, 11):
+    from typing import Self  # pragma: no cover
+else:
+    from typing_extensions import Self  # pragma: no cover
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-TKey = TypeVar("TKey", bound=str)
-TModel = TypeVar("TModel")
 
 
 @experimental
 class MongoDBAtlasCollection(
-    VectorSearchBase[TKey, TModel],
-    VectorizedSearchMixin[TModel],
+    VectorStoreRecordCollection[TKey, TModel],
+    VectorizedSearchMixin[TKey, TModel],
     Generic[TKey, TModel],
 ):
     """MongoDB Atlas collection implementation."""
@@ -116,7 +110,7 @@ class MongoDBAtlasCollection(
         from semantic_kernel.connectors.memory.mongodb_atlas.mongodb_atlas_settings import MongoDBAtlasSettings
 
         try:
-            mongodb_atlas_settings = MongoDBAtlasSettings.create(
+            mongodb_atlas_settings = MongoDBAtlasSettings(
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
                 connection_string=connection_string,

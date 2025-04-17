@@ -19,13 +19,13 @@ from semantic_kernel.connectors.memory.postgres.postgres_collection import Postg
 from semantic_kernel.connectors.memory.postgres.postgres_settings import PostgresSettings
 from semantic_kernel.connectors.memory.postgres.postgres_store import PostgresStore
 from semantic_kernel.data.const import DistanceFunction, IndexKind
-from semantic_kernel.data.record_definition.vector_store_model_decorator import vectorstoremodel
-from semantic_kernel.data.record_definition.vector_store_record_fields import (
+from semantic_kernel.data.record_definition import (
     VectorStoreRecordDataField,
     VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
+    vectorstoremodel,
 )
-from semantic_kernel.data.vector_search.vector_search_options import VectorSearchOptions
+from semantic_kernel.data.vector_search import VectorSearchOptions
 
 
 @fixture(scope="function")
@@ -56,7 +56,7 @@ def mock_connection_pool(mock_cursor: Mock):
 
 @pytest_asyncio.fixture
 async def vector_store(postgres_unit_test_env) -> AsyncGenerator[PostgresStore, None]:
-    async with await PostgresSettings.create(env_file_path="test.env").create_connection_pool() as pool:
+    async with await PostgresSettings(env_file_path="test.env").create_connection_pool() as pool:
         yield PostgresStore(connection_pool=pool)
 
 
