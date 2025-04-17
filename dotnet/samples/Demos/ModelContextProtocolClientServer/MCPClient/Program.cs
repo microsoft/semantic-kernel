@@ -449,7 +449,7 @@ internal sealed class Program
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(options: new() { RetainArgumentTypes = true })
         };
 
-        string prompt = "I'd like to order the 'Grande Mug' and return the 'Wide Rim Mug' bought last.";
+        string prompt = "I'd like to order the 'Grande Mug' and return the 'Wide Rim Mug' bought last week.";
         Console.WriteLine(prompt);
 
         // Execute a prompt using the MCP tools. The AI model will automatically call the appropriate MCP tools to answer the prompt.
