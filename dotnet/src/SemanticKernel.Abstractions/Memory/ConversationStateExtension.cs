@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// to a conversation, listen to changes in the conversation state, and provide additional context to
 /// the AI model in use just before invocation.
 /// </remarks>
-[Experimental("SKEXP0130")]
+[Experimental("SKEXP0001")]
 public abstract class ConversationStateExtension
 {
     /// <summary>

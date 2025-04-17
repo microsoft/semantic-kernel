@@ -30,7 +30,7 @@ public abstract class AgentThread
     /// <summary>
     /// Gets or sets the container for conversation state extension components that manages their lifecycle and interactions.
     /// </summary>
-    [Experimental("SKEXP0130")]
+    [Experimental("SKEXP0110")]
     public virtual ConversationStateExtensionsManager ThreadExtensionsManager { get; init; } = new ConversationStateExtensionsManager();
 
     /// <summary>
@@ -42,7 +42,7 @@ public abstract class AgentThread
     /// In a service that hosts an agent, that is invoked via calls to the service, this might be at the end of each service call.
     /// In a client application, this might be when the user closes the chat window or the application.
     /// </remarks>
-    [Experimental("SKEXP0130")]
+    [Experimental("SKEXP0110")]
     public virtual Task OnSuspendAsync(CancellationToken cancellationToken = default)
     {
         return this.ThreadExtensionsManager.OnSuspendAsync(this.Id, cancellationToken);
@@ -57,7 +57,7 @@ public abstract class AgentThread
     /// In a service that hosts an agent, that is invoked via calls to the service, this might be at the start of each service call where a previous conversation is being continued.
     /// In a client application, this might be when the user re-opens the chat window to resume a conversation after having previously closed it.
     /// </remarks>
-    [Experimental("SKEXP0130")]
+    [Experimental("SKEXP0110")]
     public virtual Task OnResumeAsync(CancellationToken cancellationToken = default)
     {
         if (this.IsDeleted)
@@ -93,9 +93,9 @@ public abstract class AgentThread
 
         this.Id = await this.CreateInternalAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.ThreadExtensionsManager.OnThreadCreatedAsync(this.Id!, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>
@@ -116,9 +116,9 @@ public abstract class AgentThread
             throw new InvalidOperationException("This thread cannot be deleted, since it has not been created.");
         }
 
-#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.ThreadExtensionsManager.OnThreadDeleteAsync(this.Id!, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.DeleteInternalAsync(cancellationToken).ConfigureAwait(false);
 
@@ -147,9 +147,9 @@ public abstract class AgentThread
             await this.CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
-#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         await this.ThreadExtensionsManager.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
-#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.OnNewMessageInternalAsync(newMessage, cancellationToken).ConfigureAwait(false);
     }

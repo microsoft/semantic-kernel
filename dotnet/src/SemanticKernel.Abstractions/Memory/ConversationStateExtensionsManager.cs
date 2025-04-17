@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A container class for <see cref="ConversationStateExtension"/> objects that manages their lifecycle and interactions.
 /// </summary>
-[Experimental("SKEXP0130")]
+[Experimental("SKEXP0001")]
 public class ConversationStateExtensionsManager
 {
     private readonly List<ConversationStateExtension> _conversationStateExtensions = new();

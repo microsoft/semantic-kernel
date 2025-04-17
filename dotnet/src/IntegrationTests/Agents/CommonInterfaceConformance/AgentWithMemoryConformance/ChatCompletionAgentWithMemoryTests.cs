@@ -284,7 +284,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
         agentThread.ThreadExtensionsManager.RegisterThreadExtension(ragComponent);
 
         // Act - Invoke the agent with a question
-        var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread, new() { KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })});
+        var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread, new() { KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }) });
         var results1 = await asyncResults1.ToListAsync();
 
         // Assert - Check if the response contains the expected value from the database.

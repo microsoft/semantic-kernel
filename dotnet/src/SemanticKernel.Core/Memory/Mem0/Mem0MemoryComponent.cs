@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// A component that listens to messages added to the conversation thread, and automatically captures
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
 /// </summary>
+[Experimental("SKEXP0130")]
 public class Mem0MemoryComponent : ConversationStateExtension
 {
     private readonly string? _applicationId;
@@ -31,6 +33,16 @@ public class Mem0MemoryComponent : ConversationStateExtension
     /// </summary>
     /// <param name="httpClient">The HTTP client used for making requests.</param>
     /// <param name="options">Options for configuring the component.</param>
+    /// <remarks>
+    /// The base address of the required mem0 service and any authentication headers should be set on the <paramref name="httpClient"/>
+    /// already when provided here. E.g.:
+    /// <code>
+    /// using var httpClient = new HttpClient();
+    /// httpClient.BaseAddress = new Uri("https://api.mem0.ai");
+    /// httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", "&lt;Your APIKey&gt;");
+    /// new Mem0Client(httpClient);
+    /// </code>
+    /// </remarks>
     public Mem0MemoryComponent(HttpClient httpClient, Mem0MemoryComponentOptions? options = default)
     {
         Verify.NotNull(httpClient);

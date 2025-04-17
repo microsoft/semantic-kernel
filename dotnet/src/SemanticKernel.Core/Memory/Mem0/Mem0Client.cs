@@ -48,13 +48,13 @@ internal sealed class Mem0Client
         };
 
         // Search.
-        using var content = new StringContent(JsonSerializer.Serialize(searchRequest), Encoding.UTF8, "application/json");
+        using var content = new StringContent(JsonSerializer.Serialize(searchRequest, Mem0SourceGenerationContext.Default.SearchRequest), Encoding.UTF8, "application/json");
         var responseMessage = await this._httpClient.PostAsync(s_searchUri, content).ConfigureAwait(false);
         responseMessage.EnsureSuccessStatusCode();
 
         // Process response.
         var response = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
-        var searchResponseItems = JsonSerializer.Deserialize<SearchResponseItem[]>(response);
+        var searchResponseItems = JsonSerializer.Deserialize<SearchResponseItem[]>(response, Mem0SourceGenerationContext.Default.SearchResponseItemArray);
         return searchResponseItems?.Select(item => item.Memory) ?? [];
     }
 
@@ -84,7 +84,7 @@ internal sealed class Mem0Client
             }
         };
 
-        using var content = new StringContent(JsonSerializer.Serialize(createMemoryRequest), Encoding.UTF8, "application/json");
+        using var content = new StringContent(JsonSerializer.Serialize(createMemoryRequest, Mem0SourceGenerationContext.Default.CreateMemoryRequest), Encoding.UTF8, "application/json");
         var responseMessage = await this._httpClient.PostAsync(s_createMemoryUri, content).ConfigureAwait(false);
         responseMessage.EnsureSuccessStatusCode();
     }
@@ -105,7 +105,7 @@ internal sealed class Mem0Client
         responseMessage.EnsureSuccessStatusCode();
     }
 
-    private sealed class CreateMemoryRequest
+    internal sealed class CreateMemoryRequest
     {
         [JsonPropertyName("app_id")]
         public string? AppId { get; set; }
@@ -119,7 +119,7 @@ internal sealed class Mem0Client
         public CreateMemoryMemory[] Messages { get; set; } = [];
     }
 
-    private sealed class CreateMemoryMemory
+    internal sealed class CreateMemoryMemory
     {
         [JsonPropertyName("content")]
         public string Content { get; set; } = string.Empty;
@@ -127,7 +127,7 @@ internal sealed class Mem0Client
         public string Role { get; set; } = string.Empty;
     }
 
-    private sealed class SearchRequest
+    internal sealed class SearchRequest
     {
         [JsonPropertyName("app_id")]
         public string? AppId { get; set; }
@@ -141,8 +141,7 @@ internal sealed class Mem0Client
         public string Query { get; set; } = string.Empty;
     }
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
-    private sealed class SearchResponseItem
+    internal sealed class SearchResponseItem
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
@@ -167,5 +166,15 @@ internal sealed class Mem0Client
         [JsonPropertyName("run_id")]
         public string RunId { get; set; } = string.Empty;
     }
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
+}
+
+[JsonSourceGenerationOptions(JsonSerializerDefaults.General,
+    UseStringEnumConverter = false,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    WriteIndented = false)]
+[JsonSerializable(typeof(Mem0Client.CreateMemoryRequest))]
+[JsonSerializable(typeof(Mem0Client.SearchRequest))]
+[JsonSerializable(typeof(Mem0Client.SearchResponseItem[]))]
+internal partial class Mem0SourceGenerationContext : JsonSerializerContext
+{
 }

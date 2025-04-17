@@ -414,10 +414,10 @@ public sealed partial class OpenAIAssistantAgent : Agent
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
-#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
         openAIAssistantAgentThread.ThreadExtensionsManager.RegisterPlugins(kernel);
-#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
@@ -559,10 +559,10 @@ public sealed partial class OpenAIAssistantAgent : Agent
         var kernel = (options?.Kernel ?? this.Kernel).Clone();
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
-#pragma warning disable SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var extensionsContext = await openAIAssistantAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
         openAIAssistantAgentThread.ThreadExtensionsManager.RegisterPlugins(kernel);
-#pragma warning restore SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Create options that use the RunCreationOptions from the options param if provided or
         // falls back to creating a new RunCreationOptions if additional instructions is provided
