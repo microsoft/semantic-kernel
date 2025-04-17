@@ -102,7 +102,7 @@ class PineconeCollection(
         managed_client = not client
 
         try:
-            settings = PineconeSettings.create(
+            settings = PineconeSettings(
                 api_key=api_key,
                 embed_model=embed_model,
                 namespace=namespace,
@@ -551,7 +551,7 @@ class PineconeStore(VectorStore):
         managed_client = not client
         if not client:
             try:
-                settings = PineconeSettings.create(
+                settings = PineconeSettings(
                     api_key=api_key,
                     env_file_path=env_file_path,
                     env_file_encoding=env_file_encoding,

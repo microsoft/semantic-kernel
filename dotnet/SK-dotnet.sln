@@ -224,10 +224,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Functions.OpenApi.Extension
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Text", "Text", "{EB2C141A-AE5F-4080-8790-13EB16323CEF}"
 	ProjectSection(SolutionItems) = preProject
-		src\Connectors\Connectors.OpenAI\Text\BoolJsonConverter.cs = src\Connectors\Connectors.OpenAI\Text\BoolJsonConverter.cs
+		src\InternalUtilities\src\Text\BoolJsonConverter.cs = src\InternalUtilities\src\Text\BoolJsonConverter.cs
 		src\InternalUtilities\src\Text\ExceptionJsonConverter.cs = src\InternalUtilities\src\Text\ExceptionJsonConverter.cs
 		src\InternalUtilities\src\Text\JsonOptionsCache.cs = src\InternalUtilities\src\Text\JsonOptionsCache.cs
-		OptionalBoolJsonConverter.cs = OptionalBoolJsonConverter.cs
 		src\InternalUtilities\src\Text\OptionalBoolJsonConverter.cs = src\InternalUtilities\src\Text\OptionalBoolJsonConverter.cs
 		src\InternalUtilities\src\Text\SseData.cs = src\InternalUtilities\src\Text\SseData.cs
 		src\InternalUtilities\src\Text\SseJsonParser.cs = src\InternalUtilities\src\Text\SseJsonParser.cs

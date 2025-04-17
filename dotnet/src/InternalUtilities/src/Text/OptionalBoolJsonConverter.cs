@@ -31,14 +31,6 @@ internal sealed class OptionalBoolJsonConverter : JsonConverter<bool?>
             {
                 return boolValue;
             }
-            if (value.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-            else if (value.Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
 
             throw new ArgumentException($"Value '{value}' can be parsed as a boolean value");
         }

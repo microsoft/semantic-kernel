@@ -2,10 +2,11 @@
 
 import asyncio
 import logging
-from collections.abc import AsyncIterable
+from collections.abc import AsyncIterable, Sequence
 from functools import reduce
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, TypeVar, cast
 
+from openai import BadRequestError
 from openai._streaming import AsyncStream
 from openai.types.responses import ResponseFunctionToolCall
 from openai.types.responses.response import Response
@@ -28,6 +29,7 @@ from semantic_kernel.connectors.ai.function_calling_utils import (
     merge_function_results,
 )
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai.open_ai.exceptions.content_filter_ai_exception import ContentFilterAIException
 from semantic_kernel.contents.annotation_content import AnnotationContent
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.chat_message_content import CMC_ITEM_TYPES, ChatMessageContent
@@ -41,6 +43,7 @@ from semantic_kernel.contents.text_content import TextContent
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.contents.utils.status import Status
 from semantic_kernel.exceptions.agent_exceptions import (
+    AgentExecutionException,
     AgentInvokeException,
 )
 from semantic_kernel.functions.kernel_arguments import KernelArguments
@@ -421,8 +424,9 @@ class ResponsesAgentThreadActions:
                 return
 
             full_completion: StreamingChatMessageContent = reduce(lambda x, y: x + y, all_messages)
-            # Yield FunctionCallContent
-            yield full_completion
+            if output_messages is not None:
+                # Append the content with function call content to the msgs used for the callback
+                output_messages.append(full_completion)
             function_calls = [item for item in full_completion.items if isinstance(item, FunctionCallContent)]
             chat_history.add_message(message=full_completion)
 
@@ -481,15 +485,31 @@ class ResponsesAgentThreadActions:
         response_options: dict | None = None,
         stream: bool = False,
     ) -> Response | AsyncStream[ResponseStreamEvent]:
-        response: Response = await agent.client.responses.create(
-            input=cls._prepare_chat_history_for_request(chat_history),
-            instructions=merged_instructions or agent.instructions,
-            previous_response_id=previous_response_id,
-            store=store_output_enabled,
-            tools=tools,  # type: ignore
-            stream=stream,
-            **response_options,
-        )
+        try:
+            response: Response = await agent.client.responses.create(
+                input=cls._prepare_chat_history_for_request(chat_history),
+                instructions=merged_instructions or agent.instructions,
+                previous_response_id=previous_response_id,
+                store=store_output_enabled,
+                tools=tools,  # type: ignore
+                stream=stream,
+                **response_options,
+            )
+        except BadRequestError as ex:
+            if ex.code == "content_filter":
+                raise ContentFilterAIException(
+                    f"{type(agent)} encountered a content error",
+                    ex,
+                ) from ex
+            raise AgentExecutionException(
+                f"{type(agent)} failed to complete the request",
+                ex,
+            ) from ex
+        except Exception as ex:
+            raise AgentExecutionException(
+                f"{type(agent)} service failed to complete the request",
+                ex,
+            ) from ex
         if response is None:
             raise AgentInvokeException("Response is None")
         return response
@@ -567,7 +587,9 @@ class ResponsesAgentThreadActions:
         )
 
     @classmethod
-    def _yield_function_result_messages(cls: type[_T], function_result_messages: list) -> bool:
+    def _yield_function_result_messages(
+        cls: type[_T], function_result_messages: Sequence[ChatMessageContent | StreamingChatMessageContent]
+    ) -> bool:
         """Determine if the function result messages should be yielded.
 
         If there are messages and if the first message has items, then yield the messages.

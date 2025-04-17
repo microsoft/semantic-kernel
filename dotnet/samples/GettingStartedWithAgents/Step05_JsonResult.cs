@@ -28,7 +28,7 @@ public class Step05_JsonResult(ITestOutputHelper output) : BaseAgentsTest(output
         """;
 
     [Fact]
-    public async Task UseKernelFunctionStrategiesWithJsonResultAsync()
+    public async Task UseKernelFunctionStrategiesWithJsonResult()
     {
         // Define the agents
         ChatCompletionAgent agent =

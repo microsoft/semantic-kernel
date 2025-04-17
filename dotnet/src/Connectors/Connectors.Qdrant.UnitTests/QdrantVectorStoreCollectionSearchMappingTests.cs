@@ -92,12 +92,14 @@ public class QdrantVectorStoreCollectionSearchMappingTests
     [Fact]
     public void MapScoredPointToVectorSearchResultMapsResults()
     {
+        var responseVector = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3] }");
+
         // Arrange.
         var scoredPoint = new ScoredPoint
         {
             Id = 1,
             Payload = { ["storage_DataField"] = "data 1" },
-            Vectors = new float[] { 1, 2, 3 },
+            Vectors = new VectorsOutput() { Vector = responseVector },
             Score = 0.5f
         };
 

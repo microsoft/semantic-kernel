@@ -401,6 +401,47 @@ public sealed class PromptyTests
         Assert.Equal(new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } }, openaiExecutionSettings.TokenSelectionBiases);
     }
 
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlContainingRelativeFileReferences()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var promptyPath = Path.Combine("TestData", "relativeFileReference.prompty");
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(promptyPath);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+        var defaultExecutionSetting = executionSettings["default"];
+        Assert.Equal("gpt-35-turbo", defaultExecutionSetting.ModelId);
+    }
+
+    [Fact]
+    public void ItShouldCreateFunctionFromPromptYamlContainingRelativeFileReferencesWithFileProvider()
+    {
+        // Arrange
+        Kernel kernel = new();
+        var currentDirectory = Directory.GetCurrentDirectory();
+        var promptyPath = Path.Combine("TestData", "relativeFileReference.prompty");
+        using PhysicalFileProvider fileProvider = new(currentDirectory);
+
+        // Act
+        var kernelFunction = kernel.CreateFunctionFromPromptyFile(promptyPath,
+            fileProvider);
+
+        // Assert
+        Assert.NotNull(kernelFunction);
+        var executionSettings = kernelFunction.ExecutionSettings;
+        Assert.Single(executionSettings!);
+        Assert.True(executionSettings!.ContainsKey("default"));
+        var defaultExecutionSetting = executionSettings["default"];
+        Assert.Equal("gpt-35-turbo", defaultExecutionSetting.ModelId);
+    }
+
     private sealed class EchoTextGenerationService : ITextGenerationService
     {
         public IReadOnlyDictionary<string, object?> Attributes { get; } = new Dictionary<string, object?>();

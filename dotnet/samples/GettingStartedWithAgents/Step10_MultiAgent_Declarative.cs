@@ -22,7 +22,7 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
     /// Demonstrates creating and using a Chat Completion Agent with a Kernel.
     /// </summary>
     [Fact]
-    public async Task ChatCompletionAgentWithKernelAsync()
+    public async Task ChatCompletionAgentWithKernel()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
@@ -46,7 +46,7 @@ public class Step10_MultiAgent_Declarative : BaseAgentsTest
     /// Demonstrates creating and using an Azure AI Agent with a Kernel.
     /// </summary>
     [Fact]
-    public async Task AzureAIAgentWithKernelAsync()
+    public async Task AzureAIAgentWithKernel()
     {
         var text =
             """

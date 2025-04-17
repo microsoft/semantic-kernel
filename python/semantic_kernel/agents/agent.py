@@ -4,7 +4,8 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterable, Awaitable, Callable, Iterable, Sequence
-from typing import Annotated, Any, ClassVar, Generic, TypeVar
+from contextlib import AbstractAsyncContextManager
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Generic, TypeVar
 
 from pydantic import Field, model_validator
 
@@ -23,6 +24,9 @@ from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateB
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from semantic_kernel.utils.naming import generate_random_ascii_name
 from semantic_kernel.utils.validation import AGENT_NAME_REGEX
+
+if TYPE_CHECKING:
+    from mcp.server.lowlevel.server import LifespanResultT, Server
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -443,3 +447,34 @@ class Agent(KernelBaseModel, ABC):
     def __hash__(self):
         """Get the hash of the agent."""
         return hash((self.id, self.name, self.description, self.instructions, self.channel_type))
+
+    def as_mcp_server(
+        self,
+        *,
+        prompts: list[PromptTemplateBase] | None = None,
+        server_name: str | None = None,
+        version: str | None = None,
+        instructions: str | None = None,
+        lifespan: Callable[["Server[LifespanResultT]"], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+    ) -> "Server[LifespanResultT]":
+        """Convert the agent to an MCP server.
+
+        This will create a MCP Server, with a single Tool, which is the agent itself.
+        Prompts can be added through the prompts keyword.
+
+        By default, the server name will be the same as the agent name.
+        If a server name is provided, it will be used instead.
+
+        Returns:
+            The MCP server instance.
+        """
+        from semantic_kernel.connectors.mcp import create_mcp_server_from_functions
+
+        return create_mcp_server_from_functions(
+            functions=self,
+            prompts=prompts,
+            server_name=server_name or self.name,
+            version=version,
+            instructions=instructions,
+            lifespan=lifespan,
+        )

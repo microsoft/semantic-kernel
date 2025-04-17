@@ -360,5 +360,5 @@ async def test_invoke_stream_with_tool_calls(mock_agent, mock_chat_history, mock
                 if isinstance(item, StreamingTextContent):
                     received_text += item.text
 
-        assert len(collected_stream_messages) == 1, "Expected exactly one final message after tool call."
+        assert len(collected_stream_messages) == 2, "Expected exactly two final messages after tool call."
         assert collected_stream_messages[0].role == AuthorRole.ASSISTANT

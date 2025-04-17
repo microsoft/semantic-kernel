@@ -293,10 +293,12 @@ public class BedrockAgentTests
             }
         });
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
         mockRuntimeClient.Setup(x => x.InvokeAgentAsync(
             It.IsAny<InvokeAgentRequest>(),
             It.IsAny<CancellationToken>()))
             .ReturnsAsync(new InvokeAgentResponse() { HttpStatusCode = System.Net.HttpStatusCode.OK });
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
         return (mockClient, mockRuntimeClient);
     }
