@@ -3,8 +3,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Moq;
 using Xunit;
 
 namespace SemanticKernel.Agents.UnitTests.Core;
@@ -139,6 +142,135 @@ public class AgentThreadTests
         Assert.Equal(1, thread.CreateInternalAsyncCount);
         Assert.Equal(1, thread.DeleteInternalAsyncCount);
         Assert.Equal(0, thread.OnNewMessageInternalAsyncCount);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method throws an InvalidOperationException if the thread is not yet created.
+    /// </summary>
+    [Fact]
+    public async Task OnResumeShouldThrowIfThreadNotCreatedAsync()
+    {
+        // Arrange
+        var thread = new TestAgentThread();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => thread.OnResumeAsync());
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method throws an InvalidOperationException if the thread is deleted.
+    /// </summary>
+    [Fact]
+    public async Task OnResumeShouldThrowIfThreadDeletedAsync()
+    {
+        // Arrange
+        var thread = new TestAgentThread();
+        await thread.CreateAsync();
+        await thread.DeleteAsync();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => thread.OnResumeAsync());
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnSuspendAsync(CancellationToken)"/> method
+    /// calls each registered extension in turn.
+    /// </summary>
+    [Fact]
+    public async Task OnSuspendShouldCallOnSuspendOnRegisteredExtensionsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockExtension = new Mock<ConversationStateExtension>();
+        thread.StateExtensions.Add(mockExtension.Object);
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.OnSuspendAsync();
+
+        // Assert.
+        mockExtension.Verify(x => x.OnSuspendAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method
+    /// calls each registered extension in turn.
+    /// </summary>
+    [Fact]
+    public async Task OnResumeShouldCallOnResumeOnRegisteredExtensionsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockExtension = new Mock<ConversationStateExtension>();
+        thread.StateExtensions.Add(mockExtension.Object);
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.OnResumeAsync();
+
+        // Assert.
+        mockExtension.Verify(x => x.OnResumeAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.CreateAsync(CancellationToken)"/> method
+    /// calls each registered extension in turn.
+    /// </summary>
+    [Fact]
+    public async Task CreateShouldCallOnThreadCreatedOnRegisteredExtensionsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockExtension = new Mock<ConversationStateExtension>();
+        thread.StateExtensions.Add(mockExtension.Object);
+
+        // Act.
+        await thread.CreateAsync();
+
+        // Assert.
+        mockExtension.Verify(x => x.OnThreadCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.DeleteAsync(CancellationToken)"/> method
+    /// calls each registered extension in turn.
+    /// </summary>
+    [Fact]
+    public async Task DeleteShouldCallOnThreadDeleteOnRegisteredExtensionsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockExtension = new Mock<ConversationStateExtension>();
+        thread.StateExtensions.Add(mockExtension.Object);
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.DeleteAsync();
+
+        // Assert.
+        mockExtension.Verify(x => x.OnThreadDeleteAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that the <see cref="AgentThread.OnNewMessageAsync(ChatMessageContent, CancellationToken)"/> method
+    /// calls each registered extension in turn.
+    /// </summary>
+    [Fact]
+    public async Task OnNewMessageShouldCallOnNewMessageOnRegisteredExtensionsAsync()
+    {
+        // Arrange.
+        var thread = new TestAgentThread();
+        var mockExtension = new Mock<ConversationStateExtension>();
+        thread.StateExtensions.Add(mockExtension.Object);
+        var message = new ChatMessageContent(AuthorRole.User, "Test Message.");
+
+        await thread.CreateAsync();
+
+        // Act.
+        await thread.OnNewMessageAsync(message);
+
+        // Assert.
+        mockExtension.Verify(x => x.OnNewMessageAsync(It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class TestAgentThread : AgentThread
