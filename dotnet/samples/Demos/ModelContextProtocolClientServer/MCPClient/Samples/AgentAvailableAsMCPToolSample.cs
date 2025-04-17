@@ -13,7 +13,7 @@ namespace MCPClient.Samples;
 /// <summary>
 /// Demonstrates how to use SK agent available as MCP tool.
 /// </summary>
-internal class AgentAvailableAsMCPToolSample : BaseSample
+internal sealed class AgentAvailableAsMCPToolSample : BaseSample
 {
     /// <summary>
     /// Demonstrates how to use SK agent available as MCP tool.

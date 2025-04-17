@@ -13,7 +13,7 @@ namespace MCPClient.Samples;
 /// <summary>
 /// Demonstrates how to use the Model Context Protocol (MCP) prompt with the Semantic Kernel.
 /// </summary>
-internal class MCPPromptSample : BaseSample
+internal sealed class MCPPromptSample : BaseSample
 {
     /// <summary>
     /// Demonstrates how to use the MCP prompt with the Semantic Kernel.

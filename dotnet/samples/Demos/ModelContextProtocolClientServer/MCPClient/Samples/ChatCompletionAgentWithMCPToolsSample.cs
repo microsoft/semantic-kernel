@@ -14,7 +14,7 @@ namespace MCPClient.Samples;
 /// <summary>
 /// Demonstrates how to use <see cref="ChatCompletionAgent"/> with MCP tools represented as Kernel functions.
 /// </summary>
-internal class ChatCompletionAgentWithMCPToolsSample : BaseSample
+internal sealed class ChatCompletionAgentWithMCPToolsSample : BaseSample
 {
     /// <summary>
     /// Demonstrates how to use <see cref="ChatCompletionAgent"/> with MCP tools represented as Kernel functions.

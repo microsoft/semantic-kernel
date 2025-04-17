@@ -17,7 +17,7 @@ namespace MCPClient.Samples;
 /// <summary>
 /// Demonstrates how to use <see cref="AzureAIAgent"/> with MCP tools represented as Kernel functions.
 /// </summary>
-internal class AzureAIAgentWithMCPToolsSample : BaseSample
+internal sealed class AzureAIAgentWithMCPToolsSample : BaseSample
 {
     /// <summary>
     /// Demonstrates how to use <see cref="AzureAIAgent"/> with MCP tools represented as Kernel functions.

@@ -13,7 +13,7 @@ namespace MCPClient.Samples;
 /// <summary>
 /// This sample demonstrates how to use the Model Context Protocol (MCP) tools with the Semantic Kernel.
 /// </summary>
-internal class MCPToolsSample : BaseSample
+internal sealed class MCPToolsSample : BaseSample
 {
     /// <summary>
     /// Demonstrates how to use the MCP tools with the Semantic Kernel.
