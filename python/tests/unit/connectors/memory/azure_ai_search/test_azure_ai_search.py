@@ -292,6 +292,25 @@ async def test_vector_store_list_collection_names(vector_store, mock_list_collec
     mock_list_collection_names.assert_called_once()
 
 
+async def test_vector_store_does_collection_exists(vector_store, mock_list_collection_names):
+    assert vector_store.search_index_client is not None
+    exists = await vector_store.does_collection_exist("test")
+    assert exists
+    mock_list_collection_names.assert_called_once()
+    assert vector_store.vector_record_collections == {}
+    mock_list_collection_names.reset_mock()
+    exists = await vector_store.does_collection_exist("test_not_exist")
+    assert not exists
+    mock_list_collection_names.assert_called_once()
+
+
+async def test_vector_store_delete_collection(vector_store, mock_delete_collection):
+    assert vector_store.search_index_client is not None
+    await vector_store.delete_collection("test")
+    mock_delete_collection.assert_called_once()
+    assert vector_store.vector_record_collections == {}
+
+
 def test_get_collection(vector_store, data_model_definition):
     collection = vector_store.get_collection(
         collection_name="test",
