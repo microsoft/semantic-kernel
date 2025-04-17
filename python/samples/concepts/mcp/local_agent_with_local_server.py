@@ -56,7 +56,7 @@ async def main():
             description="SK Release Notes Plugin",
             command="uv",
             args=[
-                f"--directory={str(Path(os.path.dirname(__file__)).parent.parent.joinpath('demos', 'sk_mcp_server'))}",
+                f"--directory={str(Path(os.path.dirname(__file__)).parent.parent.joinpath('demos', 'mcp_server'))}",
                 "run",
                 "mcp_server_with_prompts.py",
             ],
