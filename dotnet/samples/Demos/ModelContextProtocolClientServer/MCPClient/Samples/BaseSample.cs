@@ -14,7 +14,7 @@ using ModelContextProtocol.Protocol.Types;
 
 namespace MCPClient.Samples;
 
-internal class BaseSample
+internal abstract class BaseSample
 {
     /// <summary>
     /// Creates an MCP client and connects it to the MCPServer server.
