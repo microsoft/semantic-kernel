@@ -591,15 +591,22 @@ public sealed class GeminiRequestTests
         var prompt = "prompt-example";
         var schemaWithEnum = """
             {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "enum": ["active", "inactive", null],
-                        "description": "user status"
-                    },
-                    "role": {
-                        "enum": ["admin", "user"],
-                        "description": "user role"
+                "properties" : {
+                    "Movies": {
+                        "type" : "array",
+                        "items" : {
+                            "type" : "object",
+                            "properties" : {
+                                "status": {
+                                    "enum": ["active", "inactive", null],
+                                    "description": "user status"
+                                },
+                                "role": {
+                                    "enum": ["admin", "user"],
+                                    "description": "user role"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -616,7 +623,11 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.NotNull(request.Configuration?.ResponseSchema);
-        var properties = request.Configuration.ResponseSchema.Value.GetProperty("properties");
+        var properties = request.Configuration.ResponseSchema.Value
+            .GetProperty("properties")
+            .GetProperty("Movies")
+            .GetProperty("items")
+            .GetProperty("properties");
 
         var statusProperty = properties.GetProperty("status");
         Assert.Equal("string", statusProperty.GetProperty("type").GetString());
