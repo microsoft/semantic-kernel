@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentInput
 {
     /// <summary>
-    /// Gets or sets the name of the input.
+    /// Gets or sets the type of the input.
     /// </summary>
     /// <remarks>
     /// This can be either a string, number, array, object, or boolean.
