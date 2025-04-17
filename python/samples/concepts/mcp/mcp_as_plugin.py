@@ -2,10 +2,11 @@
 
 import asyncio
 import logging
+import os
 
 from samples.concepts.setup.chat_completion_services import Services, get_chat_completion_service_and_request_settings
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.mcp import MCPStdioPlugin
 from semantic_kernel.contents import ChatHistory
 from semantic_kernel.utils.logging import setup_logging
@@ -99,8 +100,9 @@ async def main() -> None:
     async with MCPStdioPlugin(
         name="Github",
         description="Github Plugin",
-        command="npx",
-        args=["-y", "@modelcontextprotocol/server-github"],
+        command="docker",
+        args=["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+        env={"GITHUB_PERSONAL_ACCESS_TOKEN": os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN")},
     ) as github_plugin:
         # instead of using this async context manager, you can also use:
         # await github_plugin.connect()
