@@ -331,6 +331,7 @@ class CopilotStudioAgent(Agent):
 
         # Ask Copilot Studio
         logger.debug("Sending text to Copilot Studio: %s", user_text)
+        self.client.ask_question_with_activity()
         async for activity in self.client.ask_question(user_text):
             thread._buffer.append(activity)
         # Flush to ChatMessageContent
