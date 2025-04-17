@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +18,9 @@ public sealed class GeminiChatMessageContent : ChatMessageContent
     /// Creates a new instance of the <see cref="GeminiChatMessageContent"/> class
     /// </summary>
     [JsonConstructor]
-    public GeminiChatMessageContent() {}
+    public GeminiChatMessageContent()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GeminiChatMessageContent"/> class.
