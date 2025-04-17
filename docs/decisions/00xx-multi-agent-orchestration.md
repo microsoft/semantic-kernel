@@ -14,7 +14,7 @@ informed: { }
 
 The industry is moving up the stack to build more complex systems using LLMs. From interacting with foundation models to building RAG systems, and now creating single AI agents to perform more complex tasks, the desire for a multi-agent system is growing.
 
-With the recent GA of the Semantic Kernel Agent Framework, which offers a stable solution for single agents, we are now able to build on top of it to create multi-agent systems. This will allow our customers to unlock even more complex scenarios.
+With the recent GA of the Semantic Kernel Agent Framework, which offers a stable agent abstraction and support for multiple agent services, we are now able to build on top of it to create multi-agent systems. This will allow our customers to unlock even more complex scenarios.
 
 In addition, the recent collaboration with the AutoGen team that resulted in the shared agent runtime abstraction allowed us to leverage their work as the foundation on which we can build our framework.
 
@@ -37,21 +37,21 @@ Before we dive into the details, let's clarify some terminologies that will be u
 
 > We are using the term "actor" for AutoGen to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. The name "actor" is also used interchangeably with "agent" in the AutoGen documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
 
-> You may hear the term "pattern" in other contexts. "Pattern" is almost semantically identical to "orchestration" where the latter also implies execution.
+> You may hear the term "pattern" in other contexts. "Pattern" is almost semantically identical to "orchestration" where the latter implies the management and execution of patterns. You can also think of "patterns" as types of "orchestrations". For example, "concurrent orchestration" is a type of orchestration that follows the concurrent pattern.
 
 ### The AutoGen shared runtime abstraction
 
-> The runtime abstraction serves as the foundational layer for this framework. A basic understanding of how orchestrations interact with the runtime is recommended. For more details, refer to the [AutoGen Core User Guide](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/index.html).
+> The runtime abstraction serves as the foundational layer for the system. A basic understanding of how orchestrations interact with the runtime is recommended. For more details, refer to the [AutoGen Core User Guide](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/index.html).
 
 The AutoGen team has built a agent runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared agent runtime abstraction which Semantic Kernel will depend on.
 
-Depending on the actual runtime implementation, actors can be local or distributed. Our agent framework is **not** tied to a specific runtime implementation.
+Depending on the actual runtime implementation, actors can be local or distributed. Our agent framework is **not** tied to a specific runtime implementation, aka runtime agnostic.
 
 ### Messages
 
-Actors communicate via messages. The runtime is responsible for routing the messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
+Actors communicate via messages. The runtime is responsible for routing messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
 
-Orchestration developers will need to define the messages for their orchestrations, uniquely identifiable via namespaces or class names.
+It will a best practice for orchestration developers will need to define the messages for their orchestrations, uniquely identifiable via namespaces or class names, to avoid unexpected collisions, even when the message data structures are the same.
 
 ### Targeted audience
 
@@ -97,12 +97,12 @@ await runtime.stop_when_idle()
 
 > This document uses Python as the primary language for examples. However, the concepts are not language-specific and can be applied to other languages as well.
 
-We should also provide a set of building blocks for customers to create more advanced orchestrations for their specific use cases. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
+We should also provide a set of building blocks for customers to create more advanced orchestrations for their specific needs. These building blocks will be the same building blocks we use to build the pre-built orchestrations.
 
 ### Application responsibilities
 
 - The lifecycle of an runtime instance should be managed by the application and should be external to any orchestrations.
-- Orchestrations require a runtime instance only when they are invoked, not when they are created. 
+- Orchestrations require a runtime instance only when they are invoked, not when they are created.
 
 ### Graph-like structure with lazy evaluation
 
@@ -113,7 +113,7 @@ We should consider an orchestration as a template that describes how the agents 
 
 ### Independent & Isolated invocations
 
-An orchestration can be invoked multiple times and each invocation should be independent and isolated from each other. Invocations can also share the same runtime instance. This will require us to define clear invocation boundaries to avoid collisions, such as actor names or IDs, when registering actors and adding subscriptions to the runtime.
+An orchestration can be invoked multiple times and each invocation should be independent and isolated from each other. Invocations can also share the same runtime instance. This will require us to define clear invocation boundaries to avoid collisions, such as actor names or IDs.
 
 For example, in the following code snippet, the `task_1` and `task_2` are independent and don't share any context:
 
@@ -169,7 +169,7 @@ graph TD
 
 > The two external nodes represent the same object external to the concurrent orchestration. Separating them is just for a cleaner diagram.
 
-The above shows a simple nested orchestration that has two sequential orchestrations and an agent in the concurrent orchestration. By providing a way to nest orchestrations, our customers can create larger, more complex orchestrations that fit their needs.
+The above shows a simple nested orchestration that has two sequential orchestrations and an agent in the concurrent orchestration. By providing a way to nest orchestrations, our customers can create larger, more complex orchestrations using existing ones that fit their needs.
 
 ### Support structured input and output types
 
@@ -188,6 +188,8 @@ Orchestrations can be long-running, hours, days, and even years. And they can be
 There are also other types of states to consider, such as the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the framework. Ideally, we want the ability to invoke/restart an orchestration on some existing agent context.
 
 ## Proposals
+
+> Code snippets shown are not complete but they provide enough context to understand the proposal.
 
 ### Building blocks
 
@@ -246,7 +248,7 @@ To support structured input&output types and nesting, this proposal heavily reli
 
 #### Agent Actor
 
-This is a wrapper around a Semantic Kernel agent so that it can send and receive messages from the runtime. We will have a simple base class that wraps a Semantic Kernel agent and inherits from [`RoutedAgent`](https://microsoft.github.io/autogen/stable/reference/python/autogen_core.html#autogen_core.RoutedAgent):
+This is a wrapper around a Semantic Kernel agent so that it can send and receive messages from the runtime. We will have a base class that wraps a Semantic Kernel agent and inherits from [`RoutedAgent`](https://microsoft.github.io/autogen/stable/reference/python/autogen_core.html#autogen_core.RoutedAgent):
 
 ```python
 class AgentActorBase(RoutedAgent):
@@ -263,7 +265,7 @@ class AgentActorBase(RoutedAgent):
         RoutedAgent.__init__(self, description=agent.description or "Semantic Kernel Agent")
 ```
 
-Orchestrations will have their own implementations of the agent actor because each orchestration has its own message types (explained in [Messages](#messages)).
+Orchestrations will have their own implementations of the agent actor because each orchestration can have its own message types (explained in [Messages](#messages)).
 
 For example, for the group chat orchestration, the agent actor will look like this:
 
@@ -315,10 +317,10 @@ class OrchestrationActorBase(
     @override
     async def on_message_impl(self, message: Any, ctx: MessageContext) -> None:
         if isinstance(message, self._external_input_message_type):
-            if inspect.isawaitable(self._input_transition):
-                transition_message = await self._input_transition(message)
+            if inspect.isawaitable(self._input_transform):
+                transition_message = await self._input_transform(message)
             else:
-                transition_message = self._input_transition(message)
+                transition_message = self._input_transform(message)
             await self._handle_orchestration_input_message(transition_message, ctx)
         elif isinstance(message, self._internal_output_message_type):
             await self._handle_orchestration_output_message(message, ctx)
@@ -390,7 +392,7 @@ class OrchestrationBase(
         ...
 ```
 
-Concrete implementations will also set `TInternalIn` and `TInternalOut`. For example,
+Concrete implementations will set `TInternalIn` and `TInternalOut`. For example,
 
 ```python
 class SequentialOrchestration(OrchestrationBase[TExternalIn, SequentialRequestMessage, SequentialResultMessage, TExternalOut]):
@@ -431,7 +433,7 @@ public sealed class SequentialOrchestration : SequentialOrchestration<Sequential
 
 ### Nesting orchestrations
 
-As mentioned above, the internal communication between actors within an orchestration depends on the specific orchestration type. This means the `TInternalIn` and `TInternalOut` types can vary for each orchestration. However, input and output transforms provide a seamless way to "bridge" different orchestrations, enabling them to work together.
+As mentioned above, the internal communication between actors within an orchestration depends on the specific orchestration type. This means the `TInternalIn` and `TInternalOut` can vary for each orchestration. However, input and output transforms provide a seamless way to "bridge" different orchestrations, enabling them to work together.
 
 For example, in the nested orchestration shown in [Support nested orchestrations](#support-nested-orchestrations), two sequential orchestrations are embedded within the concurrent orchestration. To enable this, the sequential orchestrations must accept the same input type as the concurrent orchestration actor and produce the same output type. This is achieved by defining the sequential orchestration as follows:
 
