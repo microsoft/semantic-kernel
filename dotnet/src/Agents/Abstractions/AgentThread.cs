@@ -65,12 +65,12 @@ public abstract class AgentThread
             throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
         }
 
-        if (this.Id is not null)
+        if (this.Id is null)
         {
             throw new InvalidOperationException("This thread cannot be resumed, since it has not been created.");
         }
 
-        return this.StateExtensions.OnSuspendAsync(this.Id, cancellationToken);
+        return this.StateExtensions.OnResumeAsync(this.Id, cancellationToken);
     }
 
     /// <summary>

@@ -20,10 +20,10 @@ public class OpenAIAssistantAgentWithMemoryTests() : AgentWithMemoryTests<OpenAI
         var memoryComponent = new UserFactsMemoryComponent(this.Fixture.Agent.Kernel);
 
         var agentThread1 = new OpenAIAssistantAgentThread(this.Fixture.AssistantClient);
-        agentThread1.StateExtensions.RegisterThreadExtension(memoryComponent);
+        agentThread1.StateExtensions.Add(memoryComponent);
 
         var agentThread2 = new OpenAIAssistantAgentThread(this.Fixture.AssistantClient);
-        agentThread2.StateExtensions.RegisterThreadExtension(memoryComponent);
+        agentThread2.StateExtensions.Add(memoryComponent);
 
         // Act
         var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hello, my name is Caoimhe."), agentThread1);
