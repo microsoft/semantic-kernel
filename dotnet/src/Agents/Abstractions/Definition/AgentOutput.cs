@@ -11,6 +11,14 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AgentOutput
 {
     /// <summary>
+    /// Gets or sets the type of the output.
+    /// </summary>
+    /// <remarks>
+    /// This can be either a string, number, array, object, or boolean.
+    /// </remarks>
+    public string? Type { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the output.
     /// </summary>
     public string? Name { get; set; }
