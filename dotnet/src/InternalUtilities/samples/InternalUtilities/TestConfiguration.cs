@@ -256,7 +256,7 @@ public sealed class TestConfiguration
 
     public class VertexAIConfig
     {
-        public string BearerKey { get; set; }
+        public string? BearerKey { get; set; }
         public string EmbeddingModelId { get; set; }
         public string Location { get; set; }
         public string ProjectId { get; set; }
