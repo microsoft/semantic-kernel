@@ -73,6 +73,9 @@
     <EmbeddedResource Include="OpenApi\TestPlugins\multipart-form-data.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="OpenApi\TestPlugins\example-apimanifest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="OpenApi\TestPlugins\messages-apiplugin.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

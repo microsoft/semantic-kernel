@@ -1,0 +1,46 @@
+{
+  "applicationName": "My Application",
+  "publisher": {
+    "name": "Alice",
+    "contactEmail": "alice@example.org"
+  },
+  "apiDependencies": {
+    "moostodon": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/APIPatterns/Moostodon/main/spec/tsp-output/%40typespec/openapi3/openapi.yaml",
+      "auth": {
+        "clientIdentifier": "some-uuid-here",
+        "access": [
+          "resourceA.ReadWrite",
+          "resourceB.ReadWrite",
+          "resourceB.Read"
+        ]
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/api/v1/accounts/search"
+        },
+        {
+          "method": "GET",
+          "uriTemplate": "/api/v1/accounts/{id}"
+        }
+      ]
+    },
+    "MicrosoftGraph": {
+      "apiDescriptionUrl": "https://raw.githubusercontent.com/microsoftgraph/msgraph-sdk-powershell/dev/openApiDocs/v1.0/DirectoryObjects.yml",
+      "auth": {
+        "clientIdentifier": "some-uuid-here",
+        "access": [
+          "resourceA.ReadWrite",
+          "resourceB.Read"
+        ]
+      },
+      "requests": [
+        {
+          "method": "GET",
+          "uriTemplate": "/directoryObjects/{directoryObject-id}"
+        }
+      ]
+    }
+  }
+}
