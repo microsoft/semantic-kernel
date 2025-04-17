@@ -60,8 +60,7 @@ public sealed class AgentInput
     /// </summary>
     /// <remarks>
     /// This is used to provide examples to the user of the agent.
-    /// They can also be used to provide examples to the tooling that will be used to load and execute the agent.
-    /// If this section is not included, the runtime will use the default value for the input.
+    /// This can also be used by developer tooling as the value to use without needing to prompt the developer to enter a value.
     /// </remarks>
     public object? Sample { get; set; }
 }

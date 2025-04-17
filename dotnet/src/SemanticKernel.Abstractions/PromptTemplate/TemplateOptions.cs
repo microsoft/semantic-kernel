@@ -11,6 +11,7 @@ public class TemplateOptions
     /// The format of the template.
     /// </summary>
     /// <remarks>
+    /// The default is 'handlebars'.
     /// Used to identify which templating language is being used e.g., semantic-kernel, handlebars.
     /// </remarks>
     public string? Format
@@ -27,6 +28,9 @@ public class TemplateOptions
     /// The parser to use with the template.
     /// </summary>
     /// <remarks>
+    /// The default is
+    /// - 'semantic-kernel' for agent definitions loaded using the standard YAML format
+    /// - 'prompty' for agent definitions loaded using the prompty format
     /// The parser is used to parse the rendered template into a form that can be consumed by the current API
     /// e.g., if we have api: chat then we expect the rendered template to represent a collection of chat messages.
     /// The rendered template can represent the collection of chat messages in different formats e.g. prompty or semantic-kernel or chatxml.
