@@ -54,8 +54,14 @@ dependencies = [
 
 ### Optional dependencies
 [project.optional-dependencies]
+anthropic = [
+    "anthropic ~= 0.32"
+]
 autogen = [
     "autogen-agentchat >= 0.2, <0.4"
+]
+aws = [
+    "boto3>=1.36.4,<1.38.0",
 ]
 azure = [
     "azure-ai-inference >= 1.0.0b6",
@@ -67,12 +73,21 @@ azure = [
 chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
-google = [
-    "google-cloud-aiplatform == 1.87.0",
-    "google-generativeai ~= 0.8"
+copilot_studio = [
+  "microsoft-agents-core",
+  "microsoft-agents-copilotstudio-client",
+]
+dapr = [
+    "dapr>=1.14.0",
+    "dapr-ext-fastapi>=1.14.0",
+    "flask-dapr>=1.14.0"
 ]
 faiss = [
     "faiss-cpu>=1.10.0"
+]
+google = [
+    "google-cloud-aiplatform == 1.87.0",
+    "google-generativeai ~= 0.8"
 ]
 hugging_face = [
     "transformers[torch] ~= 4.28",
@@ -82,13 +97,6 @@ hugging_face = [
 mcp = [
     "mcp ~= 1.6"
 ]
-mongo = [
-    "pymongo >= 4.8.0, < 4.12",
-    "motor >= 3.3.2,< 3.8.0"
-]
-notebooks = [
-    "ipykernel ~= 6.29"
-]
 milvus = [
     "pymilvus >= 2.3,< 2.6",
     "milvus >= 2.3,<2.3.8; platform_system != 'Windows'"
@@ -96,14 +104,21 @@ milvus = [
 mistralai = [
     "mistralai >= 1.2,< 2.0"
 ]
+mongo = [
+    "pymongo >= 4.8.0, < 4.12",
+    "motor >= 3.3.2,< 3.8.0"
+]
+notebooks = [
+    "ipykernel ~= 6.29"
+]
 ollama = [
     "ollama ~= 0.4"
 ]
 onnx = [
     "onnxruntime-genai ~= 0.5; python_version < '3.13'"
 ]
-anthropic = [
-    "anthropic ~= 0.32"
+pandas = [
+    "pandas ~= 2.2"
 ]
 pinecone = [
     "pinecone[asyncio, grpc] ~= 6.0"
@@ -119,30 +134,19 @@ redis = [
     "types-redis ~= 4.6.0.20240425",
     "redisvl ~= 0.4"
 ]
-usearch = [
-    "usearch ~= 2.16",
-    "pyarrow >= 12.0,< 20.0"
-]
-weaviate = [
-    "weaviate-client>=4.10,<5.0",
-]
-pandas = [
-    "pandas ~= 2.2"
-]
-aws = [
-    "boto3>=1.36.4,<1.38.0",
-]
-dapr = [
-    "dapr>=1.14.0",
-    "dapr-ext-fastapi>=1.14.0",
-    "flask-dapr>=1.14.0"
-]
 realtime = [
     "websockets >= 13, < 16",
     "aiortc>=1.9.0",
 ]
 sql = [
     "pyodbc >= 5.2"
+]
+usearch = [
+    "usearch ~= 2.16",
+    "pyarrow >= 12.0,< 20.0"
+]
+weaviate = [
+    "weaviate-client>=4.10,<5.0",
 ]
 
 [tool.uv]
@@ -241,3 +245,7 @@ name = "semantic_kernel"
 [build-system]
 requires = ["flit-core >= 3.9,<4.0"]
 build-backend = "flit_core.buildapi"
+
+[tool.uv.sources]
+microsoft-agents-core = { git = "https://github.com/microsoft/Agents-for-python", rev = "main", subdirectory = "libraries/Core/microsoft-agents-core" }
+microsoft-agents-copilotstudio-client = { git = "https://github.com/microsoft/Agents-for-python", rev = "main", subdirectory = "libraries/Client/microsoft-agents-copilotstudio-client" }

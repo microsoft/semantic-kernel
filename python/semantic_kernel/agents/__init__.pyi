@@ -6,6 +6,7 @@ from .azure_ai.azure_ai_agent import AzureAIAgent, AzureAIAgentThread
 from .azure_ai.azure_ai_agent_settings import AzureAIAgentSettings
 from .bedrock.bedrock_agent import BedrockAgent, BedrockAgentThread
 from .chat_completion.chat_completion_agent import ChatCompletionAgent, ChatHistoryAgentThread
+from .copilot_studio.copilot_studio_agent import CopilotStudioAgent, CopilotStudioAgentThread
 from .group_chat.agent_chat import AgentChat
 from .group_chat.agent_group_chat import AgentGroupChat
 from .open_ai.azure_assistant_agent import AzureAssistantAgent
@@ -31,6 +32,8 @@ __all__ = [
     "BedrockAgentThread",
     "ChatCompletionAgent",
     "ChatHistoryAgentThread",
+    "CopilotStudioAgent",
+    "CopilotStudioAgentThread",
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",
