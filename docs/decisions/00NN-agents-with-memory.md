@@ -1,11 +1,11 @@
 ---
 # These are optional elements. Feel free to remove any of them.
-status: {proposed | rejected | accepted | deprecated | … | superseded by [ADR-0001](0001-madr-architecture-decisions.md)}
-contact: {person proposing the ADR}
-date: {YYYY-MM-DD when the decision was last updated}
-deciders: {list everyone involved in the decision}
-consulted: {list everyone whose opinions are sought (typically subject-matter experts); and with whom there is a two-way communication}
-informed: {list everyone who is kept up-to-date on progress; and with whom there is a one-way communication}
+status: accepted
+contact: westey-m
+date: 2025-04-17
+deciders: westey-m, markwallace-microsoft, alliscode, TaoChenOSU, moonbox3, crickman
+consulted: westey-m, markwallace-microsoft, alliscode, TaoChenOSU, moonbox3, crickman
+informed: westey-m, markwallace-microsoft, alliscode, TaoChenOSU, moonbox3, crickman
 ---
 
 # Agents with Memory
