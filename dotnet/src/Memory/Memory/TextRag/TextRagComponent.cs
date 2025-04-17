@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Data;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -17,6 +18,8 @@ namespace Microsoft.SemanticKernel.Memory;
 public class TextRagComponent : ConversationStateExtension
 {
     private readonly ITextSearch _textSearch;
+
+    private readonly AIFunction[] _aIFunctions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextRagComponent"/> class.
@@ -30,6 +33,14 @@ public class TextRagComponent : ConversationStateExtension
 
         this._textSearch = textSearch;
         this.Options = options ?? new();
+
+        this._aIFunctions =
+        [
+            AIFunctionFactory.Create(
+            this.SearchAsync,
+            name: this.Options.PluginSearchFunctionName ?? "Search",
+            description: this.Options.PluginSearchFunctionDescription ?? "Allows searching for additional information to help answer the user question.")
+        ];
     }
 
     /// <summary>
@@ -38,7 +49,21 @@ public class TextRagComponent : ConversationStateExtension
     public TextRagComponentOptions Options { get; }
 
     /// <inheritdoc/>
-    public override async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    public override IReadOnlyCollection<AIFunction> AIFunctions
+    {
+        get
+        {
+            if (this.Options.SearchTime != TextRagComponentOptions.TextRagSearchTime.ViaPlugin)
+            {
+                return Array.Empty<AIFunction>();
+            }
+
+            return this._aIFunctions;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override async Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (this.Options.SearchTime != TextRagComponentOptions.TextRagSearchTime.BeforeAIInvoke)
         {
@@ -47,7 +72,7 @@ public class TextRagComponent : ConversationStateExtension
 
         Verify.NotNull(newMessages);
 
-        string input = string.Join("\n", newMessages.Where(m => m is not null).Select(m => m.Content));
+        string input = string.Join("\n", newMessages.Where(m => m is not null).Select(m => m.Text));
 
         var searchResults = await this._textSearch.GetTextSearchResultsAsync(
             input,
@@ -69,26 +94,6 @@ public class TextRagComponent : ConversationStateExtension
         sb.AppendLine("-------------------");
 
         return sb.ToString();
-    }
-
-    /// <inheritdoc/>
-    public override void RegisterPlugins(Kernel kernel)
-    {
-        if (this.Options.SearchTime != TextRagComponentOptions.TextRagSearchTime.ViaPlugin)
-        {
-            return;
-        }
-
-        Verify.NotNull(kernel);
-
-        KernelFunctionFactory.CreateFromMethod(
-            typeof(TextRagComponent).GetMethod(nameof(SearchAsync))!,
-            target: this,
-            functionName: this.Options.PluginSearchFunctionName ?? "Search",
-            description: this.Options.PluginSearchFunctionDescription ?? "Allows searching for additional information to help answer the user question.");
-
-        base.RegisterPlugins(kernel);
-        kernel.Plugins.AddFromObject(this, "UserFactsMemory");
     }
 
     /// <summary>

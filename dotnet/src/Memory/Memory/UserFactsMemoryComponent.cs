@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Memory;
 
 namespace Microsoft.SemanticKernel.Agents.Memory;
@@ -20,6 +20,8 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     private string _userFacts = string.Empty;
     private bool _contextLoaded = false;
 
+    private readonly AIFunction[] _aIFunctions;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UserFactsMemoryComponent"/> class.
     /// </summary>
@@ -29,6 +31,8 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     {
         this._kernel = kernel;
         this._textMemoryStore = textMemoryStore;
+
+        this._aIFunctions = [AIFunctionFactory.Create(this.ClearUserFactsAsync)];
     }
 
     /// <summary>
@@ -40,7 +44,12 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     {
         this._kernel = kernel;
         this._textMemoryStore = new OptionalTextMemoryStore(kernel, userFactsStoreName);
+
+        this._aIFunctions = [AIFunctionFactory.Create(this.ClearUserFactsAsync)];
     }
+
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AIFunction> AIFunctions => this._aIFunctions;
 
     /// <summary>
     /// Gets or sets the name of the document to use for storing user preferfactsences.
@@ -109,28 +118,19 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     }
 
     /// <inheritdoc/>
-    public override async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public override async Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
-        if (newMessage.Role == AuthorRole.User && !string.IsNullOrWhiteSpace(newMessage.Content))
+        if (newMessage.Role == ChatRole.User && !string.IsNullOrWhiteSpace(newMessage.Text))
         {
             // Don't wait for task to complete. Just run in the background.
-            await this.ExtractAndSaveMemoriesAsync(newMessage.Content, cancellationToken).ConfigureAwait(false);
+            await this.ExtractAndSaveMemoriesAsync(newMessage.Text, cancellationToken).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
-    public override Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    public override Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         return Task.FromResult("The following list contains facts about the user:\n" + this._userFacts);
-    }
-
-    /// <inheritdoc/>
-    public override void RegisterPlugins(Kernel kernel)
-    {
-        Verify.NotNull(kernel);
-
-        base.RegisterPlugins(kernel);
-        kernel.Plugins.AddFromObject(this, "UserFactsMemory");
     }
 
     /// <inheritdoc/>
@@ -148,8 +148,7 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     /// <summary>
     /// Plugin method to clear user facts stored in memory.
     /// </summary>
-    [KernelFunction]
-    [Description("Deletes any user facts stored about the user.")]
+    [Description("Deletes any user facts that are stored acros multiple conversations.")]
     public async Task ClearUserFactsAsync(CancellationToken cancellationToken = default)
     {
         this._userFacts = string.Empty;

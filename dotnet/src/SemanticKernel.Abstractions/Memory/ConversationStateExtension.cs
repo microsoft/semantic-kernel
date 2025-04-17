@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Base class for all conversation state extensions.
@@ -18,6 +20,12 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public abstract class ConversationStateExtension
 {
+    /// <summary>
+    /// Gets the list of AI functions that this extension component exposes
+    /// and which should be used by the consuming AI when using this component.
+    /// </summary>
+    public virtual IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
+
     /// <summary>
     /// Called just after a new thread is created.
     /// </summary>
@@ -42,7 +50,7 @@ public abstract class ConversationStateExtension
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been updated.</returns>
-    public virtual Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public virtual Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -70,15 +78,7 @@ public abstract class ConversationStateExtension
     /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
-    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Register plugins required by this extension component on the provided <see cref="Kernel"/>.
-    /// </summary>
-    /// <param name="kernel">The kernel to register the plugins on.</param>
-    public virtual void RegisterPlugins(Kernel kernel)
-    {
-    }
+    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.

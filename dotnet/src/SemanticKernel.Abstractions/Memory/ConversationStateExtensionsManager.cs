@@ -6,9 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A container class for <see cref="ConversationStateExtension"/> objects that manages their lifecycle and interactions.
@@ -17,6 +18,8 @@ namespace Microsoft.SemanticKernel.Memory;
 public class ConversationStateExtensionsManager
 {
     private readonly List<ConversationStateExtension> _conversationStateExtensions = new();
+
+    private List<AIFunction>? _currentAIFunctions = null;
 
     /// <summary>
     /// Gets the list of registered conversation state extensions.
@@ -28,6 +31,23 @@ public class ConversationStateExtensionsManager
     /// </summary>
     public ConversationStateExtensionsManager()
     {
+    }
+
+    /// <summary>
+    /// Gets the list of AI functions that all contained extension component expose
+    /// and which should be used by the consuming AI when using these components.
+    /// </summary>
+    public virtual IReadOnlyCollection<AIFunction> AIFunctions
+    {
+        get
+        {
+            if (this._currentAIFunctions == null)
+            {
+                this._currentAIFunctions = this.ConversationStateExtensions.SelectMany(ConversationStateExtensions => ConversationStateExtensions.AIFunctions).ToList();
+            }
+
+            return this._currentAIFunctions;
+        }
     }
 
     /// <summary>
@@ -46,6 +66,7 @@ public class ConversationStateExtensionsManager
     public virtual void RegisterThreadExtension(ConversationStateExtension conversationtStateExtension)
     {
         this._conversationStateExtensions.Add(conversationtStateExtension);
+        this._currentAIFunctions = null;
     }
 
     /// <summary>
@@ -58,6 +79,7 @@ public class ConversationStateExtensionsManager
         {
             this.RegisterThreadExtension(extension);
         }
+        this._currentAIFunctions = null;
     }
 
     /// <summary>
@@ -88,7 +110,7 @@ public class ConversationStateExtensionsManager
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public virtual async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public virtual async Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(this.ConversationStateExtensions.Select(x => x.OnNewMessageAsync(newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
     }
@@ -99,22 +121,10 @@ public class ConversationStateExtensionsManager
     /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all conversation state extensions.</returns>
-    public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    public virtual async Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         var subContexts = await Task.WhenAll(this.ConversationStateExtensions.Select(x => x.OnAIInvocationAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         return string.Join("\n", subContexts);
-    }
-
-    /// <summary>
-    /// Registers plugins required by all conversation state extensions contained by this manager on the provided <see cref="Kernel"/>.
-    /// </summary>
-    /// <param name="kernel">The kernel to register the plugins on.</param>
-    public virtual void RegisterPlugins(Kernel kernel)
-    {
-        foreach (var threadExtension in this.ConversationStateExtensions)
-        {
-            threadExtension.RegisterPlugins(kernel);
-        }
     }
 
     /// <summary>

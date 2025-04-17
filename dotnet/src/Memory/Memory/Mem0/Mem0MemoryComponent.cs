@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -21,6 +21,8 @@ public class Mem0MemoryComponent : ConversationStateExtension
     private string? _threadId;
     private readonly string? _userId;
     private readonly bool _scopeToThread;
+
+    private readonly AIFunction[] _aIFunctions;
 
     private readonly Mem0Client _mem0Client;
 
@@ -39,8 +41,13 @@ public class Mem0MemoryComponent : ConversationStateExtension
         this._userId = options?.UserId;
         this._scopeToThread = options?.ScopeToThread ?? false;
 
+        this._aIFunctions = [AIFunctionFactory.Create(this.ClearStoredUserFactsAsync)];
+
         this._mem0Client = new(httpClient);
     }
+
+    /// <inheritdoc/>
+    public override IReadOnlyCollection<AIFunction> AIFunctions => this._aIFunctions;
 
     /// <inheritdoc/>
     public override Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
@@ -50,32 +57,32 @@ public class Mem0MemoryComponent : ConversationStateExtension
     }
 
     /// <inheritdoc/>
-    public override async Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
+    public override async Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
 
-        if (newMessage.Role == AuthorRole.User && !string.IsNullOrWhiteSpace(newMessage.Content))
+        if (newMessage.Role == ChatRole.User && !string.IsNullOrWhiteSpace(newMessage.Text))
         {
             await this._mem0Client.CreateMemoryAsync(
                 this._applicationId,
                 this._agentId,
                 this._scopeToThread ? this._threadId : null,
                 this._userId,
-                newMessage.Content,
-                newMessage.Role.Label).ConfigureAwait(false);
+                newMessage.Text,
+                newMessage.Role.Value).ConfigureAwait(false);
         }
     }
 
     /// <inheritdoc/>
-    public override async Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessages);
 
         string inputText = string.Join(
             "\n",
             newMessages.
-                Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Content)).
-                Select(m => m.Content));
+                Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Text)).
+                Select(m => m.Text));
 
         var memories = await this._mem0Client.SearchAsync(
                 this._applicationId,
@@ -88,22 +95,12 @@ public class Mem0MemoryComponent : ConversationStateExtension
         return "The following list contains facts about the user:\n" + userInformation;
     }
 
-    /// <inheritdoc/>
-    public override void RegisterPlugins(Kernel kernel)
-    {
-        Verify.NotNull(kernel);
-
-        base.RegisterPlugins(kernel);
-        kernel.Plugins.AddFromObject(this, "MemZeroMemory");
-    }
-
     /// <summary>
     /// Plugin method to clear user preferences stored in memory for the current agent/thread/user.
     /// </summary>
     /// <returns>A task that completes when the memory is cleared.</returns>
-    [KernelFunction]
-    [Description("Deletes any user preferences stored about the user.")]
-    public async Task ClearUserPreferencesAsync()
+    [Description("Deletes any user facts that are stored across multiple conversations.")]
+    public async Task ClearStoredUserFactsAsync()
     {
         await this._mem0Client.ClearMemoryAsync(
             this._applicationId,

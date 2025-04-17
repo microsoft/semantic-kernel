@@ -85,18 +85,20 @@ be used for non-agent scenarios too.
 This type should live in the `Microsoft.SemanticKernel.Abstractions` nuget, since these components can be used by systems other than just agents.
 
 ```csharp
-namespace Microsoft.SemanticKernel.Memory;
+namespace Microsoft.SemanticKernel;
 
 public abstract class ConversationStateExtension
 {
+    public virtual IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
+
     public virtual Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default);
-    public virtual Task OnThreadCheckpointAsync(string threadId, CancellationToken cancellationToken = default);
     public virtual Task OnThreadDeleteAsync(string? threadId, CancellationToken cancellationToken = default);
 
-    public virtual Task OnNewMessageAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default);
-    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessageContent> newMessages, CancellationToken cancellationToken = default);
+    // OnThreadCheckpointAsync not included in initial release, maybe in future.
+    public virtual Task OnThreadCheckpointAsync(string? threadId, CancellationToken cancellationToken = default);
 
-    public virtual void RegisterPlugins(Kernel kernel);
+    public virtual Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default);
+    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     public virtual Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default);
     public virtual Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default);
@@ -184,14 +186,21 @@ var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023",
 1. MemoryComponent
     1. Too specific
 
+Chose ConversationStateExtension.
+
 ### Location for abstractions
 
 1. Microsoft.SemanticKernel.<baseclass>
 1. Microsoft.SemanticKernel.Memory.<baseclass>
 1. Microsoft.SemanticKernel.Memory.<baseclass> (in separate nuget)
 
+Chose Microsoft.SemanticKernel.<baseclass>.
+
 ### Location for memory components
 
 1. A nuget for each component
 1. Microsoft.SemanticKernel.Core nuget
 1. Microsoft.SemanticKernel.Memory nuget
+1. Microsoft.SemanticKernel.ConversationStateExtensions nuget
+
+Chose Microsoft.SemanticKernel.Core nuget
