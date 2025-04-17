@@ -6,7 +6,7 @@ import inspect
 import logging
 import sys
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Generic
+from typing import Any, ClassVar, Generic
 
 from azure.core.credentials import AzureKeyCredential, TokenCredential
 from azure.core.credentials_async import AsyncTokenCredential
@@ -46,7 +46,13 @@ from semantic_kernel.data.vector_search import (
     VectorSearchResult,
     VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import (
+    GetFilteredRecordOptions,
+    TKey,
+    TModel,
+    VectorStore,
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.exceptions import (
     ServiceInitializationError,
     VectorSearchExecutionException,
@@ -55,13 +61,8 @@ from semantic_kernel.exceptions import (
 )
 from semantic_kernel.kernel_pydantic import HttpsUrl, KernelBaseSettings
 from semantic_kernel.kernel_types import OptionalOneOrMany
-from semantic_kernel.utils.feature_stage_decorator import release_candidate
+from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import APP_INFO, prepend_semantic_kernel_to_user_agent
-
-if TYPE_CHECKING:
-    from azure.core.credentials import AzureKeyCredential, TokenCredential
-    from azure.core.credentials_async import AsyncTokenCredential
-
 
 if sys.version_info >= (3, 12):
     from typing import override  # pragma: no cover
@@ -103,7 +104,7 @@ TYPE_MAPPER_VECTOR = {
 }
 
 
-@release_candidate
+@experimental
 class AzureAISearchSettings(KernelBaseSettings):
     """Azure AI Search model settings currently used by the AzureCognitiveSearchMemoryStore connector.
 
@@ -155,7 +156,7 @@ def get_search_index_client(
     )
 
 
-@release_candidate
+@experimental
 def data_model_definition_to_azure_ai_search_index(
     collection_name: str,
     definition: VectorStoreRecordDefinition,
@@ -176,12 +177,12 @@ def data_model_definition_to_azure_ai_search_index(
                 SearchField(
                     name=field.name,
                     type=type_,
-                    filterable=field.is_filterable,
+                    filterable=field.is_indexed,
                     # searchable is set first on the value of is_full_text_searchable,
                     # if it is None it checks the field type, if text then it is searchable
                     searchable=type_ in ("Edm.String", "Collection(Edm.String)")
-                    if field.is_full_text_searchable is None
-                    else field.is_full_text_searchable,
+                    if field.is_full_text_indexed is None
+                    else field.is_full_text_indexed,
                     sortable=True,
                     hidden=False,
                 )
@@ -249,7 +250,7 @@ def data_model_definition_to_azure_ai_search_index(
     )
 
 
-@release_candidate
+@experimental
 class AzureAISearchCollection(
     VectorStoreRecordCollection[TKey, TModel],
     VectorizableTextSearchMixin[TKey, TModel],
@@ -372,7 +373,12 @@ class AzureAISearchCollection(
         return [result.key for result in results]  # type: ignore
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> Sequence[dict[str, Any]]:
+    async def _inner_get(
+        self,
+        keys: Sequence[TKey] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> Sequence[dict[str, Any]]:
         client = self.search_client
         if "selected_fields" in kwargs:
             selected_fields = kwargs["selected_fields"]
@@ -384,12 +390,31 @@ class AzureAISearchCollection(
             ]
         else:
             selected_fields = ["*"]
+        if keys is not None:
+            result = await asyncio.gather(
+                *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],  # type: ignore
+                return_exceptions=True,
+            )
+            return [res for res in result if not isinstance(res, BaseException)]
+        if options is not None:
+            ordering = []
+            if options.order_by:
+                order_by = options.order_by if isinstance(options.order_by, Sequence) else [options.order_by]
+                for order in order_by:
+                    if order.field not in self.data_model_definition.fields:
+                        logger.warning(f"Field {order.field} not in data model, skipping.")
+                        continue
+                    ordering.append(order.field if order.ascending else f"{order.field} desc")
 
-        result = await asyncio.gather(
-            *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],  # type: ignore
-            return_exceptions=True,
-        )
-        return [res for res in result if not isinstance(res, BaseException)]
+            result = await client.search(
+                search_text="*",
+                top=options.top,
+                skip=options.skip,
+                select=selected_fields,
+                order_by=ordering,
+            )
+            return [res async for res in result]
+        raise VectorStoreOperationException("No keys or options provided for get operation.")
 
     @override
     async def _inner_delete(self, keys: Sequence[TKey], **kwargs: Any) -> None:
@@ -478,7 +503,7 @@ class AzureAISearchCollection(
                     else [
                         field.name
                         for field in self.data_model_definition.fields
-                        if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_searchable
+                        if isinstance(field, VectorStoreRecordDataField) and field.is_full_text_indexed
                     ]
                 )
                 if not search_args["search_fields"]:
@@ -628,7 +653,7 @@ class AzureAISearchCollection(
             await self.search_index_client.close()
 
 
-@release_candidate
+@experimental
 class AzureAISearchStore(VectorStore):
     """Azure AI Search store implementation."""
 

@@ -227,7 +227,7 @@ class MongoDBAtlasCollection(
         data_fields = [
             {"path": field.name, "type": "filter"}
             for field in self.data_model_definition.fields
-            if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+            if isinstance(field, VectorStoreRecordDataField) and (field.is_indexed or field.is_full_text_indexed)
         ]
         key_field = [{"path": self.data_model_definition.key_field.name, "type": "filter"}]
         return SearchIndexModel(

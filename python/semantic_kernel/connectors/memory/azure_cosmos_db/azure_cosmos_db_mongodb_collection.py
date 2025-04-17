@@ -142,7 +142,7 @@ class AzureCosmosDBforMongoDBCollection(MongoDBAtlasCollection[TKey, TModel], Ge
         indexes = [
             {"name": f"{field.name}_", "key": {field.name: 1}}
             for field in self.data_model_definition.fields.values()
-            if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+            if isinstance(field, VectorStoreRecordDataField) and (field.is_indexed or field.is_full_text_indexed)
         ]
         for vector_field in self.data_model_definition.vector_fields:
             index_name = f"{vector_field.name}_"

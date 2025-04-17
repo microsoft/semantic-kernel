@@ -78,13 +78,11 @@ def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distan
                     has_embedding=True,
                     embedding_property_name="vector",
                     property_type="str",
-                    is_full_text_searchable=True,
+                    is_full_text_indexed=True,
                 ),
             ] = "content1"
-            title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = (
-                "title"
-            )
-            tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
+            title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_indexed=True)] = "title"
+            tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_indexed=True)] = "tag"
 
         return DataModelArray
 
@@ -108,11 +106,11 @@ def get_data_model(type: Literal["array", "list"], index_kind: IndexKind, distan
                 has_embedding=True,
                 embedding_property_name="vector",
                 property_type="str",
-                is_full_text_searchable=True,
+                is_full_text_indexed=True,
             ),
         ] = "content1"
-        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
-        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
+        title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_indexed=True)] = "title"
+        tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_indexed=True)] = "tag"
 
     return DataModelList
 
@@ -262,10 +260,10 @@ async def main(collection: str, use_azure_openai: bool):
         print_with_color("Adding records!", Colors.CBLUE)
         records = await add_vector_to_records(kernel, [record1, record2, record3], data_model_type=DataModel)
         records = [record1, record2, record3]
-        keys = await record_collection.upsert_batch(records)
+        keys = await record_collection.upsert(records)
         print(f"    Upserted {keys=}")
         print_with_color("Getting records!", Colors.CBLUE)
-        results = await record_collection.get([record1.id, record2.id, record3.id])
+        results = await record_collection.get(top=10, order_by={"field": "id"})
         if results:
             [print_record(record=result) for result in results]
         else:
@@ -311,7 +309,7 @@ async def main(collection: str, use_azure_openai: bool):
                 print_with_color(f"Searching for '{search_text}', with filter 'tag == general'", Colors.CBLUE)
                 print("-" * 30)
                 print_with_color("Using text search", Colors.CBLUE)
-                search_results = await record_collection.text_search(search_text, options)
+                search_results = await record_collection.text_search(search_text=search_text, options=options)
                 if search_results.total_count == 0:
                     print("\nNothing found...\n")
                 else:
@@ -370,4 +368,5 @@ if __name__ == "__main__":
     # Option of whether to use OpenAI or Azure OpenAI.
     parser.add_argument("--use-azure-openai", action="store_true", help="Use Azure OpenAI instead of OpenAI.")
     args = parser.parse_args()
+    args.collection = "ai_search"
     asyncio.run(main(collection=args.collection, use_azure_openai=args.use_azure_openai))

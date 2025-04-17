@@ -107,7 +107,7 @@ def data_model_definition() -> object:
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="vector"),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         }
     )
 
@@ -124,7 +124,7 @@ def data_model_serialize_definition() -> object:
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         },
         serialize=serialize,
         deserialize=deserialize,
@@ -143,7 +143,7 @@ def data_model_to_from_dict_definition() -> object:
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         },
         to_dict=to_dict,
         from_dict=from_dict,
@@ -166,7 +166,7 @@ def data_model_container_definition() -> object:
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         },
         container_mode=True,
         to_dict=to_dict,
@@ -190,7 +190,7 @@ def data_model_container_serialize_definition() -> object:
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         },
         container_mode=True,
         serialize=serialize,

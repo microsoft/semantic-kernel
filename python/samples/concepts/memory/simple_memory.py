@@ -66,11 +66,11 @@ class DataModel:
             has_embedding=True,
             embedding_property_name="vector",
             property_type="str",
-            is_full_text_searchable=True,
+            is_full_text_indexed=True,
         ),
     ] = "content1"
-    title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_searchable=True)] = "title"
-    tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_filterable=True)] = "tag"
+    title: Annotated[str, VectorStoreRecordDataField(property_type="str", is_full_text_indexed=True)] = "title"
+    tag: Annotated[str, VectorStoreRecordDataField(property_type="str", is_indexed=True)] = "tag"
 
 
 records = [

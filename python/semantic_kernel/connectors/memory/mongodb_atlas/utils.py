@@ -107,7 +107,7 @@ def create_index_definition(record_definition: VectorStoreRecordDefinition, inde
     data_fields = [
         {"path": field.name, "type": "filter"}
         for field in record_definition.fields
-        if isinstance(field, VectorStoreRecordDataField) and (field.is_filterable or field.is_full_text_searchable)
+        if isinstance(field, VectorStoreRecordDataField) and (field.is_indexed or field.is_full_text_indexed)
     ]
     key_field = [{"path": record_definition.key_field.name, "type": "filter"}]
     return SearchIndexModel(

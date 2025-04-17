@@ -4,7 +4,7 @@ import logging
 import sys
 from abc import abstractmethod
 from collections.abc import AsyncIterable, Callable, Sequence
-from typing import TYPE_CHECKING, Annotated, Any, Generic
+from typing import TYPE_CHECKING, Annotated, Any, Generic, TypeVar
 
 from pydantic import Field
 
@@ -44,7 +44,7 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import Self  # pragma: no cover
 
-
+TSearchOptions = TypeVar("TSearchOptions", bound=SearchOptions)
 logger = logging.getLogger(__name__)
 
 
@@ -231,8 +231,8 @@ class VectorizedSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel
 
         Args:
             vector: The vector to search for.
-            options: options, should include query_text
-            **kwargs: if options are not set, this is used to create them.
+            options: options, the options to use for the search
+            kwargs: if options are not set, this is used to create them.
 
         Raises:
             VectorSearchExecutionException: If an error occurs during the search.
@@ -298,8 +298,8 @@ class VectorizableTextSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, 
 
         Args:
             vectorizable_text: The text to search for, will be vectorized downstream.
-            options: options for the search
-            **kwargs: if options are not set, this is used to create them.
+            options: options, the options to use for the search
+            kwargs: if options are not set, this is used to create them.
 
         Raises:
             VectorSearchExecutionException: If an error occurs during the search.
@@ -356,8 +356,8 @@ class VectorTextSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TModel
 
         Args:
             search_text: The query to search for.
-            options: options, should include query_text
-            **kwargs: if options are not set, this is used to create them.
+            options: options, the options to use for the search
+            kwargs: if options are not set, this is used to create them.
 
         Raises:
             VectorSearchExecutionException: If an error occurs during the search.
@@ -416,8 +416,8 @@ class KeywordHybridSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TMo
         Args:
             vector: The vector to search for.
             keywords: The keywords to search for.
-            options: options, should include query_text
-            **kwargs: if options are not set, this is used to create them.
+            options: options, the options to use for the search
+            kwargs: if options are not set, this is used to create them.
 
         Raises:
             VectorSearchExecutionException: If an error occurs during the search.
@@ -426,7 +426,7 @@ class KeywordHybridSearchMixin(VectorSearchBase[TKey, TModel], Generic[TKey, TMo
             VectorStoreMixinException: raised when the method is not used in combination with the VectorSearchBase.
 
         """
-        options = create_options(self.options_class, options, **kwargs)  # type: ignore
+        options = create_options(self.options_class, options, **kwargs)
         try:
             return await self._inner_search(vector=vector, keywords=keywords, options=options)  # type: ignore
         except (VectorStoreModelDeserializationException, VectorSearchOptionsException, VectorSearchExecutionException):
@@ -494,19 +494,19 @@ async def add_vector_to_records(
         if (
             not isinstance(field, VectorStoreRecordDataField)
             or not field.has_embedding
+            or not field.has_local_embedding
             or not field.embedding_property_name
         ):
             continue
         embedding_field = data_model_definition.fields.get(field.embedding_property_name)
         if not isinstance(embedding_field, VectorStoreRecordVectorField):
             raise VectorStoreModelException("Embedding field must be a VectorStoreRecordVectorField")
-        if embedding_field.local_embedding:
-            embeddings_to_make.append((
-                name,
-                field.embedding_property_name,
-                embedding_field.embedding_settings,
-                embedding_field.deserialize_function,
-            ))
+        embeddings_to_make.append((
+            name,
+            field.embedding_property_name,
+            embedding_field.embedding_settings,
+            embedding_field.deserialize_function,
+        ))
 
     for field_to_embed, field_to_store, settings, cast_callable in embeddings_to_make:
         await kernel.add_embedding_to_object(

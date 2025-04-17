@@ -163,12 +163,6 @@ class PineconeCollection(
                 "Pass in the `embed` parameter to the collection creation method. "
                 "See https://docs.pinecone.io/guides/inference/understanding-inference for more details."
             )
-        if self.embed_settings is not None and not self.data_model_definition.vector_fields[0].local_embedding:
-            raise VectorStoreInitializationException(
-                "Pinecone collection with integrated inference only supports a non-local embedding field."
-                "Change the `local_embedding` property to False in the data model."
-                f"Field name: {self.data_model_definition.vector_field_names[0]}"
-            )
 
     @override
     async def create_collection(self, **kwargs: Any) -> None:

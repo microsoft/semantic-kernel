@@ -40,8 +40,8 @@ in order to search for similar conversations.
 @dataclass
 class ChatHistoryModel:
     session_id: Annotated[str, VectorStoreRecordKeyField]
-    user_id: Annotated[str, VectorStoreRecordDataField(is_filterable=True)]
-    messages: Annotated[list[dict[str, str]], VectorStoreRecordDataField(is_filterable=True)]
+    user_id: Annotated[str, VectorStoreRecordDataField(is_indexed=True)]
+    messages: Annotated[list[dict[str, str]], VectorStoreRecordDataField(is_indexed=True)]
 
 
 # 2. We then create a class that extends the ChatHistory class

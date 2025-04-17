@@ -378,7 +378,7 @@ def data_model_definition(
         fields={
             "id": VectorStoreRecordKeyField(property_type="str"),
             "content": VectorStoreRecordDataField(
-                has_embedding=True, embedding_property_name="vector", property_type="str", is_full_text_searchable=True
+                has_embedding=True, embedding_property_name="vector", property_type="str", is_full_text_indexed=True
             ),
             "vector": VectorStoreRecordVectorField(
                 dimensions=dimensions,
