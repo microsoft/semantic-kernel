@@ -9,33 +9,26 @@ namespace Microsoft.SemanticKernel;
 /// A serializable representation of a Dapr Message Listener.
 /// </summary>
 [KnownType(typeof(KernelProcessEdge))]
+[KnownType(typeof(KernelProcessMapState))]
 [KnownType(typeof(KernelProcessStepState))]
 [KnownType(typeof(KernelProcessStepState<>))]
-internal record DaprMessageListenerInfo : DaprStepInfo
+[KnownType(typeof(KernelProcessMessageSource))]
+public record DaprMessageListenerInfo : DaprStepInfo
 {
-    private readonly List<KernelProcessMessageSource> _messageSources;
-    private readonly string _destinationStepId;
-
-    public DaprMessageListenerInfo(List<KernelProcessMessageSource> messageSources, string destinationStepId)
-    {
-        this._messageSources = messageSources;
-        this._destinationStepId = destinationStepId;
-    }
-
     /// <summary>
     /// Gets the list of message sources that this event listener is listening to.
     /// </summary>
-    public List<KernelProcessMessageSource> MessageSources => this._messageSources;
+    public required List<KernelProcessMessageSource> MessageSources { get; init; }
 
     /// <summary>
     /// Gets the unique identifier of the destination step that this event listener routes messages to.
     /// </summary>
-    public string DestinationStepId => this._destinationStepId;
+    public required string DestinationStepId { get; init; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="KernelProcessMap"/> class from this instance of <see cref="DaprMapInfo"/>.
+    /// Initializes a new instance of the <see cref="KernelProcessEventListener"/> class from this instance of <see cref="KernelProcessEventListener"/>.
     /// </summary>
-    /// <returns>An instance of <see cref="KernelProcessMap"/></returns>
+    /// <returns>An instance of <see cref="KernelProcessEventListener"/></returns>
     /// <exception cref="KernelException"></exception>
     public KernelProcessEventListener ToKernelProcessMessageListener()
     {
@@ -59,11 +52,13 @@ internal record DaprMessageListenerInfo : DaprStepInfo
 
         DaprStepInfo proxyStepInfo = DaprStepInfo.FromKernelStepInfo(kernelEventListenerInfo);
 
-        return new DaprMessageListenerInfo(kernelEventListenerInfo.MessageSources, kernelEventListenerInfo.DestinationStepId)
+        return new()
         {
             InnerStepDotnetType = proxyStepInfo.InnerStepDotnetType,
             State = proxyStepInfo.State,
-            Edges = proxyStepInfo.Edges
+            Edges = proxyStepInfo.Edges,
+            MessageSources = kernelEventListenerInfo.MessageSources,
+            DestinationStepId = kernelEventListenerInfo.DestinationStepId
         };
     }
 }

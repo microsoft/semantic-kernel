@@ -40,13 +40,21 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     /// <returns></returns>
     internal async Task StartWithEventAsync(KernelProcessEvent initialEvent)
     {
-        var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
-        var request = new ProcessStartRequest { Process = daprProcess, InitialEvent = initialEvent.ToJson() };
-
-        var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._processId}", request, options: this._serializerOptions).ConfigureAwait(false);
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            throw new InvalidOperationException("Failed to start process");
+            var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
+            var request = new ProcessStartRequest { Process = daprProcess, InitialEvent = initialEvent.ToJson() };
+
+            var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._processId}", request, options: this._serializerOptions).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new InvalidOperationException("Failed to start process");
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
         }
     }
 

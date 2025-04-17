@@ -70,22 +70,30 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     [Fact]
     public async Task ProcessWithWhenAllListenerAsync()
     {
-        // Arrange
-        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
-        this._kernelBuilder.AddOpenAIChatCompletion(
-            modelId: configuration.ModelId!,
-            apiKey: configuration.ApiKey);
+        try
+        {
+            // Arrange
+            OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+            this._kernelBuilder.AddOpenAIChatCompletion(
+                modelId: configuration.ModelId!,
+                apiKey: configuration.ApiKey);
 
-        Kernel kernel = this._kernelBuilder.Build();
-        var process = this.GetProcess().Build();
+            Kernel kernel = this._kernelBuilder.Build();
+            var process = this.GetProcess().Build();
 
-        // Act
-        string testInput = "Test";
-        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
-        var processInfo = await processHandle.GetStateAsync();
+            // Act
+            string testInput = "Test";
+            var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+            var processInfo = await processHandle.GetStateAsync();
 
-        // Assert
-        this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 2)));
+            // Assert
+            this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 2)));
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
     }
 
     /// <summary>

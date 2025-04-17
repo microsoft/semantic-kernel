@@ -7,4 +7,11 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public sealed class KernelProcessEventListenerStep : KernelProcessStep
 {
+    /// <summary>
+    /// Handle events sent to the listener.
+    /// </summary>
+    [KernelFunction]
+    public void HandleEvent()
+    {
+    }
 }

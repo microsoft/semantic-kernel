@@ -291,7 +291,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 // Initialize the step as a message listener
                 ActorId scopedMessageListenerId = this.ScopedActorId(new ActorId(messageListenerStep.State.Id!));
                 IStep messageListenerActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMessageListenerId, nameof(MessageListenerActor));
-                await messageListenerActor.InitializeMessageListenerAsync(messageListenerStep, this.Id.GetId()).ConfigureAwait(false);
+                await messageListenerActor.InitializeStepAsync(messageListenerStep, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMessageListenerId, nameof(MessageListenerActor));
             }
             else

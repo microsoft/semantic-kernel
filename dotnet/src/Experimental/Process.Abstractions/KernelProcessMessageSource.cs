@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Runtime.Serialization;
+
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Represents a message type and source in the context of a kernel process.
 /// </summary>
+[DataContract]
 public class KernelProcessMessageSource
 {
     /// <summary>
@@ -24,10 +27,12 @@ public class KernelProcessMessageSource
     /// <summary>
     /// The type of message.
     /// </summary>
+    [DataMember]
     public string MessageType { get; set; }
 
     /// <summary>
     /// The unique identifier of the step that generated this message.
     /// </summary>
+    [DataMember]
     public string SourceStepId { get; set; }
 }
