@@ -23,5 +23,5 @@ public sealed class AgentOutput
     /// <summary>
     /// Gets or sets JSON Schema describing this output.
     /// </summary>
-    public string? Schema { get; set; }
+    public string? JsonSchema { get; set; }
 }
