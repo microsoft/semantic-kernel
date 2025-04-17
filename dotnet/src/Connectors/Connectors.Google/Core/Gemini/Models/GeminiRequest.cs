@@ -326,7 +326,7 @@ internal sealed class GeminiRequest
             _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions())
         };
 
-        jsonElement = AdjustOpenApi3Nullables(jsonElement);
+        jsonElement = TransformToOpenApi3Schema(jsonElement);
         return jsonElement;
     }
 
@@ -343,17 +343,17 @@ internal sealed class GeminiRequest
     /// - Replaces the type array with a single type value
     /// - Adds "nullable": true as a property
     /// </remarks>
-    private static JsonElement AdjustOpenApi3Nullables(JsonElement jsonElement)
+    private static JsonElement TransformToOpenApi3Schema(JsonElement jsonElement)
     {
         JsonNode? node = JsonNode.Parse(jsonElement.GetRawText());
         if (node is JsonObject rootObject)
         {
-            AdjustOpenApi3Object(rootObject);
+            TransformOpenApi3Object(rootObject);
         }
 
         return JsonSerializer.SerializeToElement(node, GetDefaultOptions());
 
-        static void AdjustOpenApi3Object(JsonObject obj)
+        static void TransformOpenApi3Object(JsonObject obj)
         {
             if (obj.TryGetPropertyValue("properties", out JsonNode? propsNode) && propsNode is JsonObject properties)
             {
@@ -382,13 +382,13 @@ internal sealed class GeminiRequest
                             {
                                 if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
                                 {
-                                    AdjustOpenApi3Object(itemsObj);
+                                    TransformOpenApi3Object(itemsObj);
                                 }
                             }
                         }
 
                         // Recursively process nested objects
-                        AdjustOpenApi3Object(propertyObj);
+                        TransformOpenApi3Object(propertyObj);
                     }
                 }
             }
