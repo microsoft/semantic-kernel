@@ -26,7 +26,7 @@ def test_vanilla():
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
             content2: Annotated[str, VectorStoreRecordDataField],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)],
             id: Annotated[str, VectorStoreRecordKeyField()],
             non_vector_store_content: str | None = None,
             optional_content: Annotated[str | None, VectorStoreRecordDataField()] = None,
@@ -80,7 +80,7 @@ def test_dataclass():
     class DataModelClass:
         content: Annotated[str, VectorStoreRecordDataField()]
         content2: Annotated[str, VectorStoreRecordDataField]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         id: Annotated[str, VectorStoreRecordKeyField()]
         non_vector_store_content: str | None = None
         optional_content: Annotated[str | None, VectorStoreRecordDataField()] = None
@@ -118,7 +118,7 @@ def test_pydantic_base_model():
     class DataModelClass(BaseModel):
         content: Annotated[str, VectorStoreRecordDataField()]
         content2: Annotated[str, VectorStoreRecordDataField]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         id: Annotated[str, VectorStoreRecordKeyField()]
         non_vector_store_content: str | None = None
         optional_content: Annotated[str | None, VectorStoreRecordDataField()] = None
@@ -147,7 +147,7 @@ def test_pydantic_dataclass():
     class DataModelClass:
         content: Annotated[str, VectorStoreRecordDataField()]
         content2: Annotated[str, VectorStoreRecordDataField]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         id: Annotated[str, VectorStoreRecordKeyField()]
         non_vector_store_content: str | None = None
         optional_content: Annotated[str | None, VectorStoreRecordDataField()] = None
@@ -236,11 +236,12 @@ def test_vector_fields_checks():
     class DataModelClass(BaseModel):
         model_config = ConfigDict(arbitrary_types_allowed=True)
         id: Annotated[str, VectorStoreRecordKeyField()]
-        vector_str: Annotated[str, VectorStoreRecordVectorField()]
-        vector_list: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector_str: Annotated[str, VectorStoreRecordVectorField(dimensions=5)]
+        vector_list: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         vector_array: Annotated[
             ndarray,
             VectorStoreRecordVectorField(
+                dimensions=5,
                 serialize_function=lambda _: [0.1],  # fake functions
                 deserialize_function=lambda _: "test",  # fake functions
             ),
@@ -266,6 +267,7 @@ def test_vector_fields_array_without_serialization():
             vector_array: Annotated[
                 ndarray,
                 VectorStoreRecordVectorField(
+                    dimensions=5,
                     serialize_function=lambda _: [0.1],  # fake functions
                     # deserialize_function=lambda _: "test",  # fake functions
                 ),
@@ -280,6 +282,7 @@ def test_vector_fields_array_without_serialization():
             vector_array: Annotated[
                 ndarray,
                 VectorStoreRecordVectorField(
+                    dimensions=5,
                     # serialize_function=lambda _: [0.1],  # fake functions
                     deserialize_function=lambda _: "test",  # fake functions
                 ),

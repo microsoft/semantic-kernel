@@ -232,7 +232,7 @@ def data_model_type_vanilla():
         def __init__(
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)],
             id: Annotated[str, VectorStoreRecordKeyField()],
         ):
             self.content = content
@@ -255,6 +255,7 @@ def data_model_type_vector_array():
             vector: Annotated[
                 np.ndarray,
                 VectorStoreRecordVectorField(
+                    dimensions=5,
                     serialize_function=np.ndarray.tolist,
                     deserialize_function=np.array,
                 ),
@@ -278,7 +279,7 @@ def data_model_type_vanilla_serialize():
         def __init__(
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)],
             id: Annotated[str, VectorStoreRecordKeyField()],
         ):
             self.content = content
@@ -307,7 +308,7 @@ def data_model_type_vanilla_to_from_dict():
         def __init__(
             self,
             content: Annotated[str, VectorStoreRecordDataField()],
-            vector: Annotated[list[float], VectorStoreRecordVectorField()],
+            vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)],
             id: Annotated[str, VectorStoreRecordKeyField()],
         ):
             self.content = content
@@ -334,7 +335,7 @@ def data_model_type_pydantic():
     @vectorstoremodel
     class DataModelClass(BaseModel):
         content: Annotated[str, VectorStoreRecordDataField()]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         id: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass
@@ -349,6 +350,7 @@ def data_model_type_pydantic_array():
         vector: Annotated[
             np.ndarray,
             VectorStoreRecordVectorField(
+                dimensions=5,
                 serialize_function=np.ndarray.tolist,
                 deserialize_function=np.array,
             ),
@@ -364,7 +366,7 @@ def data_model_type_dataclass():
     @dataclass
     class DataModelClass:
         content: Annotated[str, VectorStoreRecordDataField()]
-        vector: Annotated[list[float], VectorStoreRecordVectorField()]
+        vector: Annotated[list[float], VectorStoreRecordVectorField(dimensions=5)]
         id: Annotated[str, VectorStoreRecordKeyField()]
 
     return DataModelClass

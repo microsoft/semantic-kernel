@@ -382,7 +382,7 @@ class AzureAISearchCollection(
         client = self.search_client
         if "selected_fields" in kwargs:
             selected_fields = kwargs["selected_fields"]
-        elif "include_vector" in kwargs and not kwargs["include_vector"]:
+        elif kwargs.get("include_vectors"):
             selected_fields = [
                 name
                 for name, field in self.data_model_definition.fields.items()
@@ -391,11 +391,11 @@ class AzureAISearchCollection(
         else:
             selected_fields = ["*"]
         if keys is not None:
-            result = await asyncio.gather(
+            gather_result = await asyncio.gather(
                 *[client.get_document(key=key, selected_fields=selected_fields) for key in keys],  # type: ignore
                 return_exceptions=True,
             )
-            return [res for res in result if not isinstance(res, BaseException)]
+            return [res for res in gather_result if not isinstance(res, BaseException)]
         if options is not None:
             ordering = []
             if options.order_by:

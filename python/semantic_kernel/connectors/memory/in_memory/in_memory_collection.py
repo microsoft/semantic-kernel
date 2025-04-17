@@ -20,7 +20,7 @@ from semantic_kernel.data.vector_search import (
     VectorSearchResult,
     VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorSearchExecutionException, VectorStoreModelValidationError
 from semantic_kernel.exceptions.vector_store_exceptions import VectorStoreOperationException
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
@@ -73,7 +73,13 @@ class InMemoryVectorCollection(
             self.inner_storage.pop(key, None)
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> Any | OneOrMany[TModel] | None:
+    async def _inner_get(
+        self, keys: Sequence[TKey] | None = None, options: GetFilteredRecordOptions | None = None, **kwargs: Any
+    ) -> Any | OneOrMany[TModel] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         return [self.inner_storage[key] for key in keys if key in self.inner_storage]
 
     @override

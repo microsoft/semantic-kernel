@@ -26,7 +26,13 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchResult,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import (
+    GetFilteredRecordOptions,
+    TKey,
+    TModel,
+    VectorStore,
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreOperationException,
@@ -375,8 +381,14 @@ class PineconeCollection(
         return [record.id for record in records]
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(
+        self, keys: Sequence[TKey] | None = None, options: GetFilteredRecordOptions | None = None, **kwargs: Any
+    ) -> OneOrMany[Any] | None:
         """Get the records from the Pinecone collection."""
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         if not self.index_client:
             await self._load_index_client()
         if not self.index_client:

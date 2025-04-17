@@ -424,6 +424,6 @@ async def test_weaviate_collection_deserialize_data(
     )
 
     with patch.object(collection, "_inner_get", return_value=[weaviate_data_object]) as mock_inner_get:
-        await collection.get(data.id)
+        await collection.get(key=data.id)
 
-        mock_inner_get.assert_called_once_with([data.id], include_vectors=True)
+        mock_inner_get.assert_called_once_with([data.id], include_vectors=True, options=None)

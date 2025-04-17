@@ -35,7 +35,7 @@ from semantic_kernel.data.vector_search import (
     VectorSearchResult,
     VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -174,7 +174,16 @@ class WeaviateCollection(
         return [str(v) for _, v in response.uuids.items()]
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(
+        self,
+        keys: Sequence[TKey] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> OneOrMany[Any] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         collection: CollectionAsync = self.async_client.collections.get(self.collection_name)
         result = await collection.query.fetch_objects(
             filters=Filter.any_of([Filter.by_id().equal(key) for key in keys]),

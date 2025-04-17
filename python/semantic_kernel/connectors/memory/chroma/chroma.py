@@ -18,7 +18,13 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchResult,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import (
+    GetFilteredRecordOptions,
+    TKey,
+    TModel,
+    VectorStore,
+    VectorStoreRecordCollection,
+)
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorStoreInitializationException,
     VectorStoreModelValidationError,
@@ -212,7 +218,16 @@ class ChromaCollection(
         return upsert_obj["ids"]
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[Any]:
+    async def _inner_get(
+        self,
+        keys: Sequence[str] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> Sequence[Any] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         include_vectors = kwargs.get("include_vectors", True)
         results = self._get_collection().get(
             ids=keys,

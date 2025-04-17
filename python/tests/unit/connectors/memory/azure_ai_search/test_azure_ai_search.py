@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.indexes.aio import SearchIndexClient
-from pytest import fixture, mark, raises
+from pytest import fixture, mark, param, raises
 
 from semantic_kernel.connectors.memory.azure_ai_search import (
     AzureAISearchCollection,
@@ -97,14 +97,14 @@ def collection(azure_ai_search_unit_test_env, data_model_definition):
     return AzureAISearchCollection(data_model_type=dict, data_model_definition=data_model_definition)
 
 
-def test_init(azure_ai_search_unit_test_env, data_model_definition):
-    collection = AzureAISearchCollection(data_model_type=dict, data_model_definition=data_model_definition)
-    assert collection is not None
-    assert collection.data_model_type is dict
-    assert collection.data_model_definition == data_model_definition
-    assert collection.collection_name == "test-index-name"
-    assert collection.search_index_client is not None
-    assert collection.search_client is not None
+async def test_init(azure_ai_search_unit_test_env, data_model_definition):
+    async with AzureAISearchCollection(data_model_type=dict, data_model_definition=data_model_definition) as collection:
+        assert collection is not None
+        assert collection.data_model_type is dict
+        assert collection.data_model_definition == data_model_definition
+        assert collection.collection_name == "test-index-name"
+        assert collection.search_index_client is not None
+        assert collection.search_client is not None
 
 
 def test_init_with_type(azure_ai_search_unit_test_env, data_model_type):
@@ -212,6 +212,28 @@ async def test_get(collection, mock_get):
 
     records = await collection.get("id1")
     assert records is not None
+
+
+@mark.parametrize(
+    "order_by, ordering",
+    [
+        param({"field": "id"}, ["id"], id="single id"),
+        param({"field": "id", "ascending": True}, ["id"], id="ascending id"),
+        param({"field": "id", "ascending": False}, ["id desc"], id="descending id"),
+        param([{"field": "id", "ascending": True}], ["id"], id="ascending id list"),
+        param([{"field": "id"}, {"field": "content"}], ["id", "content"], id="multiple"),
+    ],
+)
+async def test_get_without_key(collection, mock_get, mock_search, order_by, ordering):
+    records = await collection.get(top=10, order_by=order_by)
+    assert records is not None
+    mock_search.assert_called_once_with(
+        search_text="*",
+        top=10,
+        skip=0,
+        select=["id", "content"],
+        order_by=ordering,
+    )
 
 
 async def test_delete(collection, mock_delete):

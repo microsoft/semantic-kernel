@@ -28,7 +28,7 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchResult,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreInitializationException,
@@ -171,7 +171,16 @@ class MongoDBAtlasCollection(
         return [str(value) for key, value in result.upserted_ids.items()]
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs: Any) -> Sequence[dict[str, Any]]:
+    async def _inner_get(
+        self,
+        keys: Sequence[str] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> Sequence[dict[str, Any]] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         result = self._get_collection().find({MONGODB_ID_FIELD: {"$in": keys}})
         return await result.to_list(length=len(keys))
 

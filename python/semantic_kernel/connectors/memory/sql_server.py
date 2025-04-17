@@ -29,7 +29,7 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchResult,
 )
-from semantic_kernel.data.vector_storage import VectorStore, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, VectorStore, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import (
     VectorSearchExecutionException,
@@ -385,17 +385,15 @@ class SqlServerCollection(
         return keys
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[dict[str, Any]] | None:
-        """Get records from the database.
-
-        Args:
-            keys: The keys to get.
-            **kwargs: Additional arguments.
-
-        Returns:
-            The records from the store, not deserialized.
-        """
+    async def _inner_get(
+        self,
+        keys: Sequence[TKey] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> OneOrMany[dict[str, Any]] | None:
         if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
             return None
         query = _build_select_query(
             *self._get_schema_and_table(),
