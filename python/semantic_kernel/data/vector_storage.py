@@ -15,6 +15,7 @@ from semantic_kernel.data.record_definition import (
     SerializeMethodProtocol,
     ToDictMethodProtocol,
     VectorStoreRecordDefinition,
+    VectorStoreRecordKeyField,
     VectorStoreRecordVectorField,
 )
 from semantic_kernel.exceptions import (
@@ -732,6 +733,37 @@ class VectorStore(KernelBaseModel):
     async def list_collection_names(self, **kwargs) -> Sequence[str]:
         """Get the names of all collections."""
         ...  # pragma: no cover
+
+    async def does_collection_exist(self, collection_name: str) -> bool:
+        """Check if a collection exists.
+
+        This is a wrapper around the get_collection method, to check if the collection exists.
+        """
+        try:
+            data_model = VectorStoreRecordDefinition(
+                fields={"id": VectorStoreRecordKeyField()},
+            )
+            collection = self.get_collection(collection_name, data_model_type=dict, data_model_definition=data_model)
+            exists = await collection.does_collection_exist()
+            del self.vector_record_collections[collection_name]
+            return exists
+        except VectorStoreOperationException:
+            return False
+
+    async def delete_collection(self, collection_name: str) -> None:
+        """Delete a collection.
+
+        This is a wrapper around the get_collection method, to delete the collection.
+        """
+        try:
+            data_model = VectorStoreRecordDefinition(
+                fields={"id": VectorStoreRecordKeyField()},
+            )
+            collection = self.get_collection(collection_name, data_model_type=dict, data_model_definition=data_model)
+            await collection.delete_collection()
+            del self.vector_record_collections[collection_name]
+        except VectorStoreOperationException:
+            pass
 
     async def __aenter__(self) -> Self:
         """Enter the context manager."""
