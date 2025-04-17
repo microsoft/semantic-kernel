@@ -47,7 +47,7 @@ public sealed class AgentInput
     public string? JsonSchema { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the input can emit structural text.
+    /// Gets or sets a value indicating whether the input can contain structural text.
     /// </summary>
     /// <remarks>
     /// The default is true.
