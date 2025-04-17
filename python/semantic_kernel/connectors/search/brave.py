@@ -43,7 +43,7 @@ QUERY_PARAMETERS: Final[list[str]] = [
 # endregion Constants
 
 
-# region BraveSetttings
+# region BraveSettings
 class BraveSettings(KernelBaseSettings):
     """Brave Connector settings.
 
@@ -62,7 +62,7 @@ class BraveSettings(KernelBaseSettings):
     api_key: SecretStr
 
 
-# endregion BraveSetttings
+# endregion BraveSettings
 
 
 # region BraveWeb
@@ -205,9 +205,9 @@ class BraveSearch(KernelBaseModel, TextSearch):
         }
 
     def _get_total_count(self, response: BraveSearchResponse, options: TextSearchOptions) -> int | None:
-        if not (options.include_total_count or response.web_pages):
-            return None
-        return len(response.web_pages.results)
+        if options.include_total_count and response.web_pages is not None:
+            return len(response.web_pages.results)
+        return None
 
     def _get_options(self, options: "SearchOptions | None", **kwargs: Any) -> TextSearchOptions:
         if options is not None and isinstance(options, TextSearchOptions):
