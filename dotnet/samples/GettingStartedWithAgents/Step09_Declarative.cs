@@ -96,7 +96,8 @@ public class Step09_Declarative(ITestOutputHelper output) : BaseAgentsTest(outpu
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;
