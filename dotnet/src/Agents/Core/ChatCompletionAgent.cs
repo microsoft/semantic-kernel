@@ -78,8 +78,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
-        chatHistoryAgentThread.ThreadExtensionsManager.RegisterPlugins(kernel);
+        var extensionsContext = await chatHistoryAgentThread.StateExtensions.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        chatHistoryAgentThread.StateExtensions.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
@@ -169,8 +169,8 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await chatHistoryAgentThread.ThreadExtensionsManager.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
-        chatHistoryAgentThread.ThreadExtensionsManager.RegisterPlugins(kernel);
+        var extensionsContext = await chatHistoryAgentThread.StateExtensions.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        chatHistoryAgentThread.StateExtensions.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Invoke Chat Completion with the updated chat history.
