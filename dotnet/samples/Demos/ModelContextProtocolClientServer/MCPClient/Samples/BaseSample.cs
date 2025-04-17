@@ -2,15 +2,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.SemanticKernel;
+using ModelContextProtocol;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol.Transport;
 using ModelContextProtocol.Protocol.Types;
-using ModelContextProtocol;
-using Microsoft.SemanticKernel;
-using System.IO;
-using Microsoft.Extensions.Configuration;
 
 namespace MCPClient.Samples;
 
