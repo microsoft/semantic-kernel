@@ -17,7 +17,7 @@ a conversation and re-use those later in the same conversation or later in a sub
 
 ## Context and Problem Statement
 
-Today we support multiple agent types with different characteristcs:
+Today we support multiple agent types with different characteristics:
 
 1. In process vs remote.
 1. Remote agents that store and maintain conversation state in the service vs those that require the caller to provide conversation state on each invocation.
@@ -47,13 +47,13 @@ This is achieved via a simple mechanism of:
 1. Passing additional context to the agent per invocation.
 
 With our current `AgentThread` implementation, when an agent is invoked, all input and output messages are already passed to the `AgentThread`
-and can be made availble to any components attached to the `AgentThread`.
+and can be made available to any components attached to the `AgentThread`.
 Where agents are remote/external and manage conversation state in the service, passing the messages to the `AgentThread` may not have any
 affect on the thread in the service. This is OK, since the service will have already updated the thread during the remote invocation.
 It does however, still allow us to subscribe to messages in any attached components.
 
-For the second requirement of getting addtional context per invocation, the agent may ask the thread passed to it, to in turn ask
-each of the components attached to it, to provide context ot pass to the Agent.
+For the second requirement of getting additional context per invocation, the agent may ask the thread passed to it, to in turn ask
+each of the components attached to it, to provide context to pass to the Agent.
 This enables the component to provide memories that it contains to the Agent as needed.
 
 Different memory capabilities can be built using separate components. Each component would have the following characteristics:
