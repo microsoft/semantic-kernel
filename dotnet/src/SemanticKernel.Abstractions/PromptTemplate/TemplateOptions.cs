@@ -44,7 +44,7 @@ public class TemplateOptions
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the template can emit structural text used when parsing the output.
+    /// Gets or sets a value indicating whether the template may emit structural text.
     /// </summary>
     /// <remarks>
     /// The default is true.
