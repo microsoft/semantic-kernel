@@ -34,7 +34,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task LoggingAsync(bool useChatClient)
+    public async Task Logging(bool useChatClient)
     {
         await RunExampleAsync(loggerFactory: this.LoggerFactory, useChatClient: useChatClient);
 
@@ -61,7 +61,7 @@ public class Step07_Telemetry(ITestOutputHelper output) : BaseAssistantTest(outp
     [InlineData(false, false, true)]
     [InlineData(true, true, true)]
     [InlineData(false, true, true)]
-    public async Task TracingAsync(bool useApplicationInsights, bool useStreaming, bool useChatClient)
+    public async Task Tracing(bool useApplicationInsights, bool useStreaming, bool useChatClient)
     {
         using var tracerProvider = GetTracerProvider(useApplicationInsights);
 

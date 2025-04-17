@@ -12,7 +12,7 @@
     <PackageVersion Include="AWSSDK.BedrockRuntime" Version="4.0.0-preview.13" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.0-preview.13" />
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.0-preview.10" />
     <PackageVersion Include="Azure.AI.ContentSafety" Version="1.0.0" />
@@ -35,7 +35,7 @@
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.70.0" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.7" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.9" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.13" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.14" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
@@ -123,7 +123,7 @@
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.abstractions" Version="2.0.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
     <PackageVersion Include="xretry" Version="1.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
@@ -156,7 +156,7 @@
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.1.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-    <PackageVersion Include="Qdrant.Client" Version="1.12.0" />
+    <PackageVersion Include="Qdrant.Client" Version="1.13.0" />
     <!-- Symbols -->
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <!-- Toolset -->

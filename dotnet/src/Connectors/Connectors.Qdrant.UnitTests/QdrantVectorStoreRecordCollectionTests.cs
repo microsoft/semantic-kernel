@@ -691,15 +691,17 @@ public class QdrantVectorStoreRecordCollectionTests
 
     private static RetrievedPoint CreateRetrievedPoint<TKey>(bool hasNamedVectors, TKey recordKey)
     {
+        var responseVector = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3, 4] }");
+
         RetrievedPoint point;
         if (hasNamedVectors)
         {
-            var namedVectors = new NamedVectors();
-            namedVectors.Vectors.Add("vector_storage_name", new[] { 1f, 2f, 3f, 4f });
+            var namedVectors = new NamedVectorsOutput();
+            namedVectors.Vectors.Add("vector_storage_name", responseVector);
             point = new RetrievedPoint()
             {
                 Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
-                Vectors = new Vectors { Vectors_ = namedVectors }
+                Vectors = new VectorsOutput { Vectors = namedVectors }
             };
         }
         else
@@ -707,7 +709,7 @@ public class QdrantVectorStoreRecordCollectionTests
             point = new RetrievedPoint()
             {
                 Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
-                Vectors = new[] { 1f, 2f, 3f, 4f }
+                Vectors = new VectorsOutput() { Vector = responseVector }
             };
         }
 
@@ -726,16 +728,18 @@ public class QdrantVectorStoreRecordCollectionTests
 
     private static ScoredPoint CreateScoredPoint<TKey>(bool hasNamedVectors, TKey recordKey)
     {
+        var responseVector = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3, 4] }");
+
         ScoredPoint point;
         if (hasNamedVectors)
         {
-            var namedVectors = new NamedVectors();
-            namedVectors.Vectors.Add("vector_storage_name", new[] { 1f, 2f, 3f, 4f });
+            var namedVectors = new NamedVectorsOutput();
+            namedVectors.Vectors.Add("vector_storage_name", responseVector);
             point = new ScoredPoint()
             {
                 Score = 0.5f,
                 Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
-                Vectors = new Vectors { Vectors_ = namedVectors }
+                Vectors = new VectorsOutput { Vectors = namedVectors }
             };
         }
         else
@@ -744,7 +748,7 @@ public class QdrantVectorStoreRecordCollectionTests
             {
                 Score = 0.5f,
                 Payload = { ["OriginalNameData"] = "data 1", ["data_storage_name"] = "data 1" },
-                Vectors = new[] { 1f, 2f, 3f, 4f }
+                Vectors = new VectorsOutput() { Vector = responseVector }
             };
         }
 
