@@ -42,6 +42,12 @@ public class TextEmbeddingVectorStore : IVectorStore
     }
 
     /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => _decoratedVectorStore.CollectionExistsAsync(name, cancellationToken);
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => _decoratedVectorStore.DeleteCollectionAsync(name, cancellationToken);
+
+    /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
     {
         ArgumentNullException.ThrowIfNull(serviceType);
