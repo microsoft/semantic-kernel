@@ -171,7 +171,7 @@ def _field_to_redis_field_hashset(
         )
     if field.property_type in ["int", "float"]:
         return NumericField(name=name)
-    if field.is_full_text_searchable:
+    if field.is_full_text_indexed:
         return TextField(name=name)
     return TagField(name=name)
 
@@ -192,7 +192,7 @@ def _field_to_redis_field_json(
         )
     if field.property_type in ["int", "float"]:
         return NumericField(name=f"$.{name}", as_name=name)
-    if field.is_full_text_searchable:
+    if field.is_full_text_indexed:
         return TextField(name=f"$.{name}", as_name=name)
     return TagField(name=f"$.{name}", as_name=name)
 
@@ -210,9 +210,7 @@ def _filters_to_redis_filters(
     for filter in filters.filters:
         new: FilterExpression | None = None
         field = data_model_definition.fields.get(filter.field_name)
-        text_field = (
-            field.is_full_text_searchable if isinstance(field, VectorStoreRecordDataField) else False
-        ) or False
+        text_field = (field.is_full_text_indexed if isinstance(field, VectorStoreRecordDataField) else False) or False
         match filter:
             case EqualTo():
                 match filter.value:

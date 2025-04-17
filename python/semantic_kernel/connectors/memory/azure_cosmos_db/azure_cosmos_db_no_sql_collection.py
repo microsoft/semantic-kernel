@@ -179,7 +179,7 @@ class AzureCosmosDBNoSQLCollection(
         contains_clauses = " OR ".join(
             f"CONTAINS(c.{field}, @search_text)"
             for field, field_def in self.data_model_definition.fields.items()
-            if isinstance(field_def, VectorStoreRecordDataField) and field_def.is_full_text_searchable
+            if isinstance(field_def, VectorStoreRecordDataField) and field_def.is_full_text_indexed
         )
         if where_clauses:
             where_clauses = f" {where_clauses} AND"

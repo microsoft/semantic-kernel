@@ -128,9 +128,7 @@ def create_default_indexing_policy(data_model_definition: VectorStoreRecordDefin
     }
 
     for _, field in data_model_definition.fields.items():
-        if isinstance(field, VectorStoreRecordDataField) and (
-            not field.is_full_text_searchable and not field.is_filterable
-        ):
+        if isinstance(field, VectorStoreRecordDataField) and (not field.is_full_text_indexed and not field.is_indexed):
             indexing_policy["excludedPaths"].append({"path": f'/"{field.name}"/*'})
 
         if isinstance(field, VectorStoreRecordVectorField):

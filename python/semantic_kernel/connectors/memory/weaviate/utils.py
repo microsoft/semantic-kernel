@@ -46,8 +46,8 @@ def data_model_definition_to_weaviate_properties(
                 Property(
                     name=field.name,
                     data_type=TYPE_MAPPER_DATA[field.property_type or "default"],
-                    index_filterable=field.is_filterable,
-                    index_full_text=field.is_full_text_searchable,
+                    index_filterable=field.is_indexed,
+                    index_full_text=field.is_full_text_indexed,
                 )
             )
 

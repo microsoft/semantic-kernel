@@ -9,6 +9,7 @@ from contextlib import suppress
 from typing import Any, ClassVar, Generic, TypeVar, overload
 
 from pydantic import BaseModel, Field, model_validator
+from pydantic.dataclasses import dataclass
 
 from semantic_kernel.data.record_definition import (
     SerializeMethodProtocol,
@@ -23,7 +24,7 @@ from semantic_kernel.exceptions import (
     VectorStoreOperationException,
 )
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.kernel_types import OneOrMany
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 11):
@@ -41,6 +42,23 @@ TKey = TypeVar("TKey")
 _T = TypeVar("_T", bound="VectorStoreRecordHandler")
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class OrderBy:
+    """Order by class."""
+
+    field: str
+    ascending: bool = True
+
+
+@dataclass
+class GetFilteredRecordOptions:
+    """Options for filtering records."""
+
+    top: int = 10
+    skip: int = 0
+    order_by: OptionalOneOrMany[OrderBy] = None
 
 
 class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
@@ -201,9 +219,6 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
 
         store_model = {}
         for field_name, field in self.data_model_definition.fields.items():
-            if isinstance(field, VectorStoreRecordVectorField) and not field.local_embedding:
-                logger.info(f"Vector field {field_name} is not local, skipping serialization.")
-                continue
             value = record.get(field_name, None) if isinstance(record, Mapping) else getattr(record, field_name)
             if isinstance(field, VectorStoreRecordVectorField):
                 if (func := getattr(field, "serialize_function", None)) and value is not None:
@@ -306,7 +321,7 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
         for field_name, field in self.data_model_definition.fields.items():
             value = record.get(field_name, None)
             if isinstance(field, VectorStoreRecordVectorField):
-                if not include_vectors or not field.local_embedding:
+                if not include_vectors:
                     continue
                 if field.deserialize_function and value is not None:
                     value = field.deserialize_function(value)
@@ -321,9 +336,6 @@ class VectorStoreRecordHandler(KernelBaseModel, Generic[TKey, TModel]):
     def _deserialize_vector(self, record: dict[str, Any]) -> dict[str, Any]:
         for field in self.data_model_definition.vector_fields:
             if field.deserialize_function:
-                if not field.local_embedding:
-                    logger.info(f"Vector field {field.name} is not local, skipping deserialization.")
-                    continue
                 record[field.name] = field.deserialize_function(record[field.name])
         return record
 
@@ -384,11 +396,17 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         ...  # pragma: no cover
 
     @abstractmethod
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[Any] | None:
+    async def _inner_get(
+        self,
+        keys: Sequence[TKey] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> OneOrMany[Any] | None:
         """Get the records, this should be overridden by the child class.
 
         Args:
             keys: The keys to get.
+            options: the options to use for the get.
             **kwargs: Additional arguments.
 
         Returns:
@@ -556,6 +574,15 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         return await self.get(*args, **kwargs)
 
     @overload
+    async def get(
+        self,
+        include_vectors: bool = True,
+        top: int = ...,
+        skip: int = ...,
+        order_by: OptionalOneOrMany[OrderBy | dict[str, Any] | list[dict[str, Any]]] = None,
+    ) -> TModel | None: ...
+
+    @overload
     async def get(self, key: TKey = ..., include_vectors: bool = True, **kwargs: Any) -> TModel | None: ...
 
     @overload
@@ -563,7 +590,13 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
         self, keys: Sequence[TKey] = ..., include_vectors: bool = True, **kwargs: Any
     ) -> OneOrMany[TModel] | None: ...
 
-    async def get(self, key=None, keys=None, include_vectors=True, **kwargs):
+    async def get(
+        self,
+        key=None,
+        keys=None,
+        include_vectors=True,
+        **kwargs,
+    ):
         """Get a batch of records whose keys exist in the collection, i.e. keys that do not exist are ignored.
 
         Args:
@@ -573,6 +606,13 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
                 Some vector stores do not support retrieving without vectors, even when set to false.
                 Some vector stores have specific parameters to control that behavior, when
                 that parameter is set, include_vectors is ignored.
+            top: The number of records to return.
+                Only used if keys are not provided.
+            skip: The number of records to skip.
+                Only used if keys are not provided.
+            order_by: The order by clause, this is a list of dicts with the field name and ascending flag,
+                (default is True, which means ascending).
+                Only used if keys are not provided.
             **kwargs: Additional arguments.
 
         Returns:
@@ -590,9 +630,15 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             else:
                 keys = key
         if not keys:
-            raise VectorStoreOperationException("Either key or keys must be provided.")
+            if kwargs:
+                try:
+                    options = GetFilteredRecordOptions(**kwargs)
+                except Exception as exc:
+                    raise VectorStoreOperationException(f"Error creating options: {exc}") from exc
+            else:
+                raise VectorStoreOperationException("Either key, keys or options must be provided.")
         try:
-            records = await self._inner_get(keys, include_vectors=include_vectors, **kwargs)
+            records = await self._inner_get(keys, include_vectors=include_vectors, options=options, **kwargs)
         except Exception as exc:
             raise VectorStoreOperationException(f"Error getting record(s): {exc}") from exc
 

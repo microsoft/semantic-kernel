@@ -32,14 +32,13 @@ class HotelSampleClass(BaseModel):
     description: Annotated[
         str,
         VectorStoreRecordDataField(
-            has_embedding=True, embedding_property_name="description_vector", is_full_text_searchable=True
+            has_embedding=True, embedding_property_name="description_vector", is_full_text_indexed=True
         ),
     ]
     description_vector: Annotated[
         list[float] | None,
         VectorStoreRecordVectorField(
             dimensions=1536,
-            local_embedding=True,
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
         ),
     ] = None
@@ -50,7 +49,6 @@ class HotelSampleClass(BaseModel):
         list[float] | None,
         VectorStoreRecordVectorField(
             dimensions=1536,
-            local_embedding=True,
             embedding_settings={"embedding": OpenAIEmbeddingPromptExecutionSettings(dimensions=1536)},
         ),
     ] = None

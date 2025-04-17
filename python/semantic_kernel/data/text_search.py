@@ -27,6 +27,7 @@ else:
 
 TSearchResult = TypeVar("TSearchResult")
 TSearchFilter = TypeVar("TSearchFilter", bound="SearchFilter")
+TSearchOptions = TypeVar("TSearchOptions", bound="SearchOptions")
 TMapInput = TypeVar("TMapInput")
 
 logger = logging.getLogger(__name__)
@@ -157,10 +158,10 @@ class OptionsUpdateFunctionType(Protocol):
 
 
 def create_options(
-    options_class: type["SearchOptions"],
+    options_class: type["TSearchOptions"],
     options: "SearchOptions | None",
     **kwargs: Any,
-) -> "SearchOptions":
+) -> "TSearchOptions":
     """Create search options.
 
     If options are supplied, they are checked for the right type, and the kwargs are used to update the options.
@@ -174,7 +175,7 @@ def create_options(
         **kwargs: The keyword arguments to use to create the options.
 
     Returns:
-        SearchOptions: The options.
+        The options of type options_class.
 
     Raises:
         ValidationError: If the options are not valid.
