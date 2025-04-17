@@ -1,11 +1,11 @@
 ---
 # These are optional elements. Feel free to remove any of them.
 status: { proposed }
-contact: { }
+contact: {}
 date: { 2025-04-11 }
-deciders: { }
-consulted: { }
-informed: { }
+deciders: {}
+consulted: {}
+informed: {}
 ---
 
 # Multi-agent Orchestration
@@ -20,7 +20,7 @@ In addition, the recent collaboration with the AutoGen team that resulted in the
 
 ## Problem Statement
 
-The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to extend it to support multi-agent orchestration, which will allow our customers to unlock more possibilities using Semantic Kernel agents.
+The current state of the Semantic Kernel Agent Framework is limited to single agents. We need to extend it to support multi-agent orchestration, which will allow our customers to unlock more possibilities using Semantic Kernel agents. Please continue to the [Considerations](#considerations) section to see success criteria for this proposal.
 
 ## Background Knowledge
 
@@ -28,22 +28,23 @@ The current state of the Semantic Kernel Agent Framework is limited to single ag
 
 Before we dive into the details, let's clarify some terminologies that will be used throughout this document.
 
-| **Term**   | **Definition**                                                                                     |
-|------------|-----------------------------------------------------------------------------------------------------|
-| **Actor**  | An AutoGen agent that can send and receive messages from the runtime.                               |
-| **Runtime**| Facilitates the communication between actors and manages the states and lifecycle of the actors.    |
-| **Agent**  | A Semantic Kernel agent.                                                                            |
-| **Orchestration** | Contains actors and rules on how they will interact with each others.                        |
+| **Term**                                                                                                             | **Definition**                                                                             |
+| -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **Actor**                                                                                                            | An entity in the runtime that can send and receive messages.                               |
+| **[Runtime](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/core-concepts/architecture.html)** | Facilitates the communication between actors and manages the states and lifecycle of them. |
+| **Runtime Abstraction**                                                                                              | An abstraction that provides a common interface for different runtime implementations.     |
+| **Agent**                                                                                                            | A Semantic Kernel agent.                                                                   |
+| **Orchestration**                                                                                                    | Contains actors and rules on how they will interact with each others.                      |
 
-> We are using the term "actor" for AutoGen to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. The name "actor" is also used interchangeably with "agent" in the AutoGen documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
+> We are using the term "actor" to avoid confusion with the term "agent" used in the Semantic Kernel Agent Framework. You may see the name "actor" interchangeably with "agent" in the runtime documentation. To learn more about "actor"s in software design, please refer to: https://en.wikipedia.org/wiki/Actor_model.
 
 > You may hear the term "pattern" in other contexts. "Pattern" is almost semantically identical to "orchestration" where the latter implies the management and execution of patterns. You can also think of "patterns" as types of "orchestrations". For example, "concurrent orchestration" is a type of orchestration that follows the concurrent pattern.
 
-### The AutoGen shared runtime abstraction
+### The shared runtime abstraction from AutoGen
 
 > The runtime abstraction serves as the foundational layer for the system. A basic understanding of how orchestrations interact with the runtime is recommended. For more details, refer to the [AutoGen Core User Guide](https://microsoft.github.io/autogen/stable/user-guide/core-user-guide/index.html).
 
-The AutoGen team has built a agent runtime abstraction that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared agent runtime abstraction which Semantic Kernel will depend on.
+The AutoGen team has built a runtime abstraction (along with an in-process runtime implementation) that supports pub-sub communication between actors in a system. We have had the opportunity to leverage this work, which led to a shared agent runtime abstraction which Semantic Kernel will depend on.
 
 Depending on the actual runtime implementation, actors can be local or distributed. Our agent framework is **not** tied to a specific runtime implementation, aka runtime agnostic.
 
@@ -51,30 +52,32 @@ Depending on the actual runtime implementation, actors can be local or distribut
 
 Actors communicate via messages. The runtime is responsible for routing messages to the correct actor(s). In essence, messages define the internal contract of an orchestration. For example, actors in the concurrent orchestration will communicate by `ConcurrentRequestMessage`, `ConcurrentResponseMessage`, and `ConcurrentResultMessage` types, while actors in the sequential orchestration will use the `SequentialRequestMessage` and `SequentialResultMessage` types.
 
+> PLease see Appendix A for additional details on the message types for the pre-built orchestrations.
+
 It will a best practice for orchestration developers will need to define the messages for their orchestrations, uniquely identifiable via namespaces or class names, to avoid unexpected collisions, even when the message data structures are the same.
 
-### Targeted audience
+## Considerations
 
-The extension of the current Semantic Kernel Agent framework is targeted at two types of developers:
+### Developer experience
 
-- **Orchestration developers**: Developers who will create orchestrations using the framework.
-- **Orchestration consumers**: Developers who will use the orchestrations created by orchestration developers.
+It is important to consider the developer experience when designing the multi-agent orchestration framework. We want to make it easy for developers to **create** and **use** orchestrations. To achieve this, we need to consider the following:
+
+- **Orchestration developers**: Developers who will create orchestrations using the framework. This will require the framework to offer a set of building blocks and establish clear patterns for creating orchestrations.
+- **Orchestration consumers**: Developers who will use the orchestrations created by orchestration developers. This will require the framwork to offer a set of consistant, simple and intuitive APIs for using orchestrations.
 
 It is possible that the same developer will be both an orchestration developer and an orchestration consumer.
-
-## Considerations
 
 ### Pre-built orchestrations and custom orchestrations
 
 To help people get started quickly, we should provide a list of pre-built orchestrations that cover common patterns.
 
-| **Orchestrations**       | **Description**                                                                                                                                                                                                                     |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Concurrent**     | - Consists of multiple actors that run in parallel. <br> - Tasks are broadcasted to all actors. <br> - The results are collected and returned to the caller when all actors finish. <br> - The order of the results is not guaranteed. |
-| **Sequential**     | - Consists of multiple actors that run in sequence. <br> - The output of the previous actor is the input of the next actor. <br> - The result is collected and returned to the caller when the last actor finishes.                  |
-| **Handoff**        | - Consists of multiple actors. <br> - The actors can decide the next actor to send the task to. <br> - The full context (conversation) of the previous actor is passed to the next actor. <br> - The result is collected and returned to the caller when the orchestration finishes. |
+| **Orchestrations** | **Description**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Concurrent**     | - Consists of multiple actors that run in parallel. <br> - Tasks are broadcasted to all actors. <br> - The results are collected and returned to the caller when all actors finish. <br> - The order of the results is not guaranteed.                                                                                                                                                                                                                                                                         |
+| **Sequential**     | - Consists of multiple actors that run in sequence. <br> - The output of the previous actor is the input of the next actor. <br> - The result is collected and returned to the caller when the last actor finishes.                                                                                                                                                                                                                                                                                            |
+| **Handoff**        | - Consists of multiple actors. <br> - The actors can decide the next actor to send the task to. <br> - The full context (conversation) of the previous actor is passed to the next actor. <br> - The result is collected and returned to the caller when the orchestration finishes.                                                                                                                                                                                                                           |
 | **GroupChat**      | - Consists of multiple actors. <br> - A group manager actor is responsible for managing the state of the group chat. <br> - **Key Features:** <br> &nbsp;&nbsp;&nbsp;&nbsp;- User input: Requests input from the user. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Termination: Ends when a termination condition is met, and results are returned. <br> &nbsp;&nbsp;&nbsp;&nbsp;- Next actor: Decides the next actor to invoke. <br> - The result is collected and returned to the caller when the orchestration finishes. |
-| **Magentic One**   | - Group chat-like orchestration with unique features. <br> - Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/).                  |
+| **Magentic One**   | - Group chat-like orchestration with unique features. <br> - Inspired by [Magentic One](https://www.microsoft.com/en-us/research/articles/magentic-one-a-generalist-multi-agent-system-for-solving-complex-tasks/).                                                                                                                                                                                                                                                                                            |
 
 > Please see Appendix A for a more detailed descriptions of the pre-built orchestrations.
 
@@ -179,13 +182,26 @@ It will be useful for orchestrations to accept structured inputs and return stru
 
 ### State management
 
+Definitions for `resume` and `restart` before proceeding:
+
+- **Resume**: The process is still active but at an idle state waiting for some events to continue. The runtime resumes the process from the idle state.
+- **Restart**: The process is no longer running. It has been stopped manually or errors occured. The orchestration can be restarted from scratch, or from a previous checkpoint. Restarting is idempotent, meaning that the orchestration can be restarted multiple times from the same checkpoint without side effects on the orchestration, runtime, and agents.
+
 Orchestrations can be long-running, hours, days, and even years. And they can be short-lived, minutes or seconds or less. The states of an orchestration can mean the following:
 
-- An actively running orchestration that is in a state that waits for user input or other events to continue.
+- An actively running orchestration that is in an idle state waiting for user input or other events to continue.
 - An orchestration that enters an error state.
 - etc.
 
-There are also other types of states to consider, such as the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the framework. Ideally, we want the ability to invoke/restart an orchestration on some existing agent context.
+**Resuming** from an idle state will be handled by the runtime. The runtime is responsible for saving the state of the actors and rehydrating them when the orchestration is resumed.
+
+Another type of states are the agents' conversational context. There is an active discussion on agent **threads** and **memories**, and we should consider how these concepts fit into the framework. Ideally, we want the ability to **restart** an orchestration on some existing agent context. Please refer to [Agent context](#agent-context) in the [Open Discussions](#open-discussions) section for further discussion.
+
+## Out of Scope
+
+- The runtime implementation is out of scope for this proposal.
+- Specific orchestration implementations are out of scope for this proposal.
+- Topics mentioned in the [Open Discussions](#open-discussions) section will not be addressed in the initial implementation of the multi-agent orchestration framework. However, we will keep them in mind for future iterations and we should leave enough room for future extensions.
 
 ## Proposals
 
@@ -193,12 +209,12 @@ There are also other types of states to consider, such as the agents' conversati
 
 ### Building blocks
 
-| **Component**         | **Details**                                                                                                                                                                                                                     |
-|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Agent actor**       | - Semantic Kernel agent <br> - Agent context                                                                                        |
-| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types** and for nesting orchestrations.                                                                                                     |
-| **Orchestration actor** | - Broadcast messages to an external topic (e.g., the result of the orchestration) <br> - Send directly to an actor external to the orchestration (e.g., the result of the orchestration) <br> - Receive messages from an external topic (e.g., the start of the orchestration) <br> - Receive messages from an actor external to the orchestration (e.g., the start of the orchestration) |
-| **Orchestration**     | - Consists of one orchestration actor and multiple agent actors and other orchestrations.|
+| **Component**            | **Details**                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Agent actor**          | - Semantic Kernel agent <br> - Agent context                                                                                                                                                                                                                                                                                                                                              |
+| **Data transform logic** | - Provide hooks to transform the input and output of the orchestration to **custom types** and for nesting orchestrations.                                                                                                                                                                                                                                                                |
+| **Orchestration actor**  | - Broadcast messages to an external topic (e.g., the result of the orchestration) <br> - Send directly to an actor external to the orchestration (e.g., the result of the orchestration) <br> - Receive messages from an external topic (e.g., the start of the orchestration) <br> - Receive messages from an actor external to the orchestration (e.g., the start of the orchestration) |
+| **Orchestration**        | - Consists of one orchestration actor and multiple agent actors and other orchestrations.                                                                                                                                                                                                                                                                                                 |
 
 ```mermaid
 graph TD
@@ -507,7 +523,7 @@ graph TD
   OA1 --> External1[External]
 ```
 
-#### Open Discussions
+## Open Discussions
 
 The following items are important topics we need to consider and need further discussion. However, they shouldn't block the initial implementation of the multi-agent orchestration framework.
 
@@ -550,9 +566,39 @@ Safety is also a priority. A powerful orchestration may accomplish a lot of thin
 
 SK being an enterprise solution, we should also consider observability.
 
+### A middle layer before the runtime for additional security and safety
+
+We can consider adding a layer before the runtime that standardize all messages between actors for the following benefits:
+
+- Runtime/domain decoupling: actors focus on business-logic objects (like `ConcurrentRequestMessage`). The runtime only sees envelopes, so changing transports (in-proc, distributed) or injecting middleware (tracing, guardrails) requires no orchestration code changes.
+- Built-in idempotency & retries: the standardized message type carries id, causation_id, retry_count, ttl, which can enable deterministic deduplication, causal graphs for telemetry, and safe redelivery (dead letter queue support if we or someone ever went down that route).
+- First-class observability: standardized message fields can map 1:1 to OpenTelemetry attributes for traceability and metrics on every hop.
+- Cross-language portability: a single JSON/Protobuf schema allows, for example, Python and C# SK agents to interoperate on the same message bus; envelope remains the same, payloads are language-specific.
+- Persistence/rehydration: standardized messages can be serialized to storage and deserialized as needed.
+- Testing: unit tests can inject mock standardized messages into an in-memory bus to validate orchestration graphs without creating real agents or LLM calls.
+- Guardrails: the uniform wrapper allows policy/guardrail checks to be centralized in the runtime, so no payload reaches an agent unchecked.
+
+For example:
+
 ## Appendix A: Pre-built orchestrations
 
 ### Concurrent Orchestration
+
+The concurrent orchestration operates on the following message types:
+
+```python
+@datamodel
+class ConcurrentRequestMessage:
+  body: ChatMessageContent
+
+@datamodel
+class ConcurrentResponseMessage:
+  body: ChatMessageContent
+
+@datamodel
+class ConcurrentResultMessage:
+  body: dict[str, ChatMessageContent]
+```
 
 ```mermaid
 graph TD
@@ -582,22 +628,34 @@ graph TD
   %% Connections
   EXT_Topic <--> |Broadcast| OA
   EXT_Actor <--> |Direct messaging| OA
-  OA <--> |Broadcast| IT0
+  OA <--> IT0
 
-  IT0 --> AG0
-  IT0 --> AG1
-  IT0 --> SO0
-  IT0 --> SO1
+  IT0 --> |ConcurrentRequestMessage| AG0
+  IT0 --> |ConcurrentRequestMessage| AG1
+  IT0 --> |ConcurrentRequestMessage| SO0
+  IT0 --> |ConcurrentRequestMessage| SO1
 
-  AG0 --> RC
-  AG1 --> RC
-  SO0 --> RC
-  SO1 --> RC
+  AG0 --> |ConcurrentResponseMessage| RC
+  AG1 --> |ConcurrentResponseMessage| RC
+  SO0 --> |ConcurrentResponseMessage| RC
+  SO1 --> |ConcurrentResponseMessage| RC
 
-  RC --> IT1
+  RC --> |ConcurrentResultMessage| IT1
 ```
 
 ### Sequential Orchestration
+
+The sequential orchestration operates on the following message types:
+
+```python
+@datamodel
+class SequentialRequestMessage:
+  body: ChatMessageContent
+
+@datamodel
+class SequentialResultMessage:
+  body: ChatMessageContent
+```
 
 ```mermaid
 graph TD
@@ -625,11 +683,11 @@ graph TD
   %% Connections
   EXT_Topic <--> |Broadcast| OA0
   EXT_Actor <--> |Direct messaging| OA0
-  OA0 <--> |Direct messaging| AG0
-  AG0 --> SO0
-  SO0 --> AG1
-  AG1 --> SO1
-  SO1 --> OA1
+  OA0 --> |SequentialRequestMessage| AG0
+  AG0 --> |SequentialResponseMessage| SO0
+  SO0 --> |SequentialResponseMessage| AG1
+  AG1 --> |SequentialResponseMessage| SO1
+  SO1 --> |SequentialResponseMessage| OA1
 ```
 
 ### Handoff Orchestration
@@ -637,6 +695,22 @@ graph TD
 WIP
 
 ### Group Chat Orchestration
+
+The group chat orchestration operates on the following message types:
+
+```python
+@datamodel
+class GroupChatRequestMessage:
+  body: ChatMessageContent
+
+@datamodel
+class GroupChatResponseMessage:
+  body: ChatMessageContent
+
+@datamodel
+class GroupChatResetMessage:
+  pass
+```
 
 ```mermaid
 graph TD
