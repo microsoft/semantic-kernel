@@ -2,11 +2,17 @@
 
 import asyncio
 
-from semantic_kernel.agents import AgentGroupChat, AzureAssistantAgent, ChatCompletionAgent
-from semantic_kernel.agents.strategies.termination.termination_strategy import TerminationStrategy
+from azure.identity.aio import DefaultAzureCredential
+
+from semantic_kernel.agents import (
+    AgentGroupChat,
+    AzureAIAgent,
+    AzureAIAgentSettings,
+    ChatCompletionAgent,
+)
+from semantic_kernel.agents.strategies import TerminationStrategy
 from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
 from semantic_kernel.contents import AuthorRole
-from semantic_kernel.kernel import Kernel
 
 #####################################################################
 # The following sample demonstrates how to create an OpenAI         #
@@ -43,44 +49,34 @@ Consider suggestions when refining an idea.
 """
 
 
-def _create_kernel_with_chat_completion(service_id: str) -> Kernel:
-    kernel = Kernel()
-    kernel.add_service(AzureChatCompletion(service_id=service_id))
-    return kernel
-
-
 async def main():
-    agent_reviewer = ChatCompletionAgent(
-        kernel=_create_kernel_with_chat_completion("artdirector"),
-        name=REVIEWER_NAME,
-        instructions=REVIEWER_INSTRUCTIONS,
-    )
+    async with (
+        # 1. Login to Azure and create a Azure AI Project Client
+        DefaultAzureCredential() as creds,
+        AzureAIAgent.create_client(credential=creds) as client,
+    ):
+        agent_writer = AzureAIAgent(
+            client=client,
+            definition=await client.agents.create_agent(
+                model=AzureAIAgentSettings().model_deployment_name,
+                name=COPYWRITER_NAME,
+                instructions=COPYWRITER_INSTRUCTIONS,
+            ),
+        )
+        agent_reviewer = ChatCompletionAgent(
+            service=AzureChatCompletion(service_id="artdirector"),
+            name=REVIEWER_NAME,
+            instructions=REVIEWER_INSTRUCTIONS,
+        )
 
-    # To create an AzureAssistantAgent for Azure OpenAI, use the following:
-    client, model = AzureAssistantAgent.setup_resources()
+        # Create the AgentGroupChat object and specify the list of agents along with the termination strategy
+        chat = AgentGroupChat(
+            agents=[agent_writer, agent_reviewer],
+            termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
+        )
 
-    # Create the assistant definition
-    definition = await client.beta.assistants.create(
-        model=model,
-        name=COPYWRITER_NAME,
-        instructions=COPYWRITER_INSTRUCTIONS,
-    )
+        input = "a slogan for a new line of electric cars."
 
-    # Create the AzureAssistantAgent instance using the client and the assistant definition
-    agent_writer = AzureAssistantAgent(
-        client=client,
-        definition=definition,
-    )
-
-    # Create the AgentGroupChat object and specify the list of agents along with the termination strategy
-    chat = AgentGroupChat(
-        agents=[agent_writer, agent_reviewer],
-        termination_strategy=ApprovalTerminationStrategy(agents=[agent_reviewer], maximum_iterations=10),
-    )
-
-    input = "a slogan for a new line of electric cars."
-
-    try:
         await chat.add_chat_message(input)
         print(f"# {AuthorRole.USER}: '{input}'")
 
@@ -88,8 +84,6 @@ async def main():
             print(f"# {content.role} - {content.name or '*'}: '{content.content}'")
 
         print(f"# IS COMPLETE: {chat.is_complete}")
-    finally:
-        await client.beta.assistants.delete(agent_writer.id)
 
 
 if __name__ == "__main__":
