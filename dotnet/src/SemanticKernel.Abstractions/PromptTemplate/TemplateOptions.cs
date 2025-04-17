@@ -48,7 +48,7 @@ public class TemplateOptions
     /// </summary>
     /// <remarks>
     /// The default is true.
-    /// When set to false the value of the input is treated as safe content i.e. the template can emit structural text.
+    /// When set to false the value of the template output is treated as safe content i.e. the template can emit structural text.
     /// </remarks>
     public bool Strict { get; set; } = true;
 
