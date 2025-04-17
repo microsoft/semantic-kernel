@@ -361,7 +361,7 @@ internal sealed class GeminiRequest
                 {
                     if (property.Value is JsonObject propertyObj)
                     {
-                        // Handle enum properties - add "type": "enum" if missing
+                        // Handle enum properties - add "type": "string" if missing
                         if (propertyObj.TryGetPropertyValue("enum", out JsonNode? enumNode) && !propertyObj.ContainsKey("type"))
                         {
                             propertyObj["type"] = JsonValue.Create("string");
