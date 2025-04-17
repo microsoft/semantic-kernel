@@ -191,7 +191,24 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
 
         public bool IsAvailableOnStreaming { get; set; }
 
+        public MovieGenre? Genre { get; set; }
+
         public List<string> Tags { get; set; }
+    }
+
+    private enum MovieGenre
+    {
+        Action,
+        Adventure,
+        Comedy,
+        Drama,
+        Fantasy,
+        Horror,
+        Mystery,
+        Romance,
+        SciFi,
+        Thriller,
+        Western
     }
 
     private sealed class EmailResult
@@ -256,6 +273,7 @@ public class Google_GeminiStructuredOutputs(ITestOutputHelper output) : BaseTest
                       Director: {movie.Director}
                       Release year: {movie.ReleaseYear}
                       Rating: {movie.Rating}
+                      Genre: {movie.Genre}
                       Is available on streaming: {movie.IsAvailableOnStreaming}
                       Tags: {string.Join(",", movie.Tags ?? [])}
                 """);

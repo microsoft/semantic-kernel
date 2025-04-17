@@ -361,14 +361,29 @@ internal sealed class GeminiRequest
                 {
                     if (property.Value is JsonObject propertyObj)
                     {
-                        if (propertyObj.TryGetPropertyValue("type", out JsonNode? typeNode) && typeNode is JsonArray typeArray)
+                        // Handle enum properties - add "type": "enum" if missing
+                        if (propertyObj.TryGetPropertyValue("enum", out JsonNode? enumNode) && !propertyObj.ContainsKey("type"))
                         {
-                            var types = typeArray.Select(t => t?.GetValue<string>()).Where(t => t != null).ToList();
-                            if (types.Contains("null"))
+                            propertyObj["type"] = JsonValue.Create("string");
+                        }
+                        else if (propertyObj.TryGetPropertyValue("type", out JsonNode? typeNode))
+                        {
+                            if (typeNode is JsonArray typeArray)
                             {
-                                var mainType = types.First(t => t != "null");
-                                propertyObj["type"] = JsonValue.Create(mainType);
-                                propertyObj["nullable"] = JsonValue.Create(true);
+                                var types = typeArray.Select(t => t?.GetValue<string>()).Where(t => t != null).ToList();
+                                if (types.Contains("null"))
+                                {
+                                    var mainType = types.First(t => t != "null");
+                                    propertyObj["type"] = JsonValue.Create(mainType);
+                                    propertyObj["nullable"] = JsonValue.Create(true);
+                                }
+                            }
+                            else if (typeNode is JsonValue typeValue && typeValue.GetValue<string>() == "array")
+                            {
+                                if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
+                                {
+                                    AdjustOpenApi3Object(itemsObj);
+                                }
                             }
                         }
 
