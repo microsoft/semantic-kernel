@@ -62,7 +62,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     /// Demonstrate the usage of <see cref="ChatCompletionAgent"/> where a conversation history is maintained.
     /// </summary>
     [Fact]
-    public async Task UseSingleChatCompletionAgentWithConversationAsync()
+    public async Task UseSingleChatCompletionAgentWithConversation()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
 
@@ -103,7 +103,7 @@ public class Step01_Agent(ITestOutputHelper output) : BaseAgentsTest(output)
     /// and where the thread containing the conversation is created manually.
     /// </summary>
     [Fact]
-    public async Task UseSingleChatCompletionAgentWithManuallyCreatedThreadAsync()
+    public async Task UseSingleChatCompletionAgentWithManuallyCreatedThread()
     {
         Kernel kernel = this.CreateKernelWithChatCompletion();
 

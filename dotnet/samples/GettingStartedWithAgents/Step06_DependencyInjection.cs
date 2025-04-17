@@ -32,7 +32,7 @@ public class Step06_DependencyInjection(ITestOutputHelper output) : BaseAgentsTe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task UseDependencyInjectionToCreateAgentAsync(bool useChatClient)
+    public async Task UseDependencyInjectionToCreateAgent(bool useChatClient)
     {
         ServiceCollection serviceContainer = new();
 

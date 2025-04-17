@@ -57,8 +57,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
                 new VectorStoreRecordDataProperty("HotelCode", typeof(int)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("ParkingIncluded", typeof(bool)) { IsFilterable = true, StoragePropertyName = "parking_is_included" },
                 new VectorStoreRecordDataProperty("HotelRating", typeof(float)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTime)) { IsFilterable = true },
-                new VectorStoreRecordDataProperty("OpeningDate", typeof(DateTimeOffset)) { IsFilterable = true },
+                new VectorStoreRecordDataProperty("LastRenovationDate", typeof(DateTimeOffset)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("Tags", typeof(List<string>)) { IsFilterable = true },
                 new VectorStoreRecordDataProperty("Description", typeof(string)),
                 new VectorStoreRecordVectorProperty("DescriptionEmbedding", typeof(ReadOnlyMemory<float>?)) { Dimensions = VectorDimensions, DistanceFunction = DistanceFunction.ManhattanDistance }
@@ -179,7 +178,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             {
                 Id = 11,
                 Vectors = new Vectors { Vectors_ = namedVectors1 },
-                Payload = { ["HotelName"] = "My Hotel 11", ["HotelCode"] = 11, ["parking_is_included"] = true, ["Tags"] = tagsValue, ["HotelRating"] = 4.5f, ["Description"] = "This is a great hotel.", ["LastRenovationDate"] = "2025-02-10T05:10:15.0000000Z", ["OpeningDate"] = "2025-02-10T05:10:15.0000000+01:00" }
+                Payload = { ["HotelName"] = "My Hotel 11", ["HotelCode"] = 11, ["parking_is_included"] = true, ["Tags"] = tagsValue, ["HotelRating"] = 4.5f, ["Description"] = "This is a great hotel.", ["LastRenovationDate"] = "2025-02-10T05:10:15.0000000Z" }
             },
             new PointStruct
             {
@@ -210,7 +209,7 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
             {
                 Id = 11,
                 Vectors = embeddingArray,
-                Payload = { ["HotelName"] = "My Hotel 11", ["HotelCode"] = 11, ["parking_is_included"] = true, ["Tags"] = tagsValue, ["HotelRating"] = 4.5f, ["Description"] = "This is a great hotel.", ["LastRenovationDate"] = "2025-02-10T05:10:15.0000000Z", ["OpeningDate"] = "2025-02-10T05:10:15.0000000+01:00" }
+                Payload = { ["HotelName"] = "My Hotel 11", ["HotelCode"] = 11, ["parking_is_included"] = true, ["Tags"] = tagsValue, ["HotelRating"] = 4.5f, ["Description"] = "This is a great hotel.", ["LastRenovationDate"] = "2025-02-10T05:10:15.0000000Z" }
             },
             new PointStruct
             {
@@ -338,13 +337,9 @@ public class QdrantVectorStoreFixture : IAsyncLifetime
         [VectorStoreRecordData(IsFilterable = true)]
         public List<string> Tags { get; set; } = new List<string>();
 
-        /// <summary>A datetime metadata field.</summary>
+        /// <summary>A DateTimeOffset metadata field.</summary>
         [VectorStoreRecordData(IsFilterable = true)]
-        public DateTime? LastRenovationDate { get; set; }
-
-        /// <summary>A datetimeoffset metadata field.</summary>
-        [VectorStoreRecordData(IsFilterable = true)]
-        public DateTimeOffset? OpeningDate { get; set; }
+        public DateTimeOffset? LastRenovationDate { get; set; }
 
         /// <summary>A data field.</summary>
         [VectorStoreRecordData]

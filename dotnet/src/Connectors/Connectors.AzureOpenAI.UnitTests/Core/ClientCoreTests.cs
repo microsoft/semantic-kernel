@@ -9,7 +9,6 @@ using Azure.AI.OpenAI;
 using Azure.Core;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
-using SemanticKernel.Connectors.AzureOpenAI.Core;
 
 namespace SemanticKernel.Connectors.AzureOpenAI.UnitTests.Core;
 
@@ -45,9 +44,6 @@ public sealed class ClientCoreTests : IDisposable
             RetryPolicy = new ClientRetryPolicy(2),
             NetworkTimeout = TimeSpan.FromSeconds(10),
         };
-
-        // Bug fix workaround
-        options.AddPolicy(new SingleAuthorizationHeaderPolicy(), PipelinePosition.PerTry);
 
         var azureClient = new AzureOpenAIClient(
             endpoint: new Uri("http://any"),
