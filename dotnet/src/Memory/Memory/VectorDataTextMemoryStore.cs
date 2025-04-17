@@ -36,7 +36,7 @@ public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
     /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings for the memories.</param>
     /// <param name="collectionName">The name of the collection in the vector store to store and read the memories from.</param>
     /// <param name="storageNamespace">The namespace to scope memories to within the collection.</param>
-    /// <param name="vectorDimensions">The number of dimentions to use for the memory embeddings.</param>
+    /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
     public VectorDataTextMemoryStore(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, string collectionName, string storageNamespace, int vectorDimensions)
     {

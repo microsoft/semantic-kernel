@@ -36,7 +36,7 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     /// <param name="vectorStore">The vector store to store and read the memories from.</param>
     /// <param name="textEmbeddingGenerationService">The service to use for generating embeddings for the memories.</param>
     /// <param name="collectionName">The name of the collection in the vector store to store and read the memories from.</param>
-    /// <param name="vectorDimensions">The number of dimentions to use for the memory embeddings.</param>
+    /// <param name="vectorDimensions">The number of dimensions to use for the memory embeddings.</param>
     /// <param name="searchNamespace">An optional namespace to filter search results to.</param>
     /// <exception cref="NotSupportedException">Thrown if the key type provided is not supported.</exception>
     public TextRagStore(IVectorStore vectorStore, ITextEmbeddingGenerationService textEmbeddingGenerationService, string collectionName, int vectorDimensions, string? searchNamespace)

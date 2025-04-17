@@ -59,7 +59,7 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     /// <summary>
     /// Gets or sets the prompt template to use for extracting user facts and merging them with existing facts.
     /// </summary>
-    public string MaintainencePromptTemplate { get; init; } =
+    public string MaintenancePromptTemplate { get; init; } =
         """
         You are an expert in extracting facts about a user from text and combining these facts with existing facts to output a new list of facts.
         Facts are short statements that each contain a single piece of information.
@@ -158,7 +158,7 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     private async Task ExtractAndSaveMemoriesAsync(string inputText, CancellationToken cancellationToken = default)
     {
         var result = await this._kernel.InvokePromptAsync(
-            this.MaintainencePromptTemplate,
+            this.MaintenancePromptTemplate,
             new KernelArguments() { ["inputText"] = inputText, ["existingFacts"] = this._userFacts },
             cancellationToken: cancellationToken).ConfigureAwait(false);
 

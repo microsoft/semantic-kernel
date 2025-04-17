@@ -53,7 +53,7 @@ public class TextRagComponentOptions
     public enum TextRagSearchTime
     {
         /// <summary>
-        /// A seach is performed each time that the AI is invoked just before the AI is invoked
+        /// A search is performed each time that the AI is invoked just before the AI is invoked
         /// and the results are provided to the AI via the invocation context.
         /// </summary>
         BeforeAIInvoke,

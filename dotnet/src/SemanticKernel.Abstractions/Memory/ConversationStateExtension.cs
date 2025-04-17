@@ -31,7 +31,7 @@ public abstract class ConversationStateExtension
     /// </summary>
     /// <remarks>
     /// Implementers can use this method to do any operations required at the creation of a new thread.
-    /// For exmple, checking long term storage for any data that is relevant to the current session based on the input text.
+    /// For example, checking long term storage for any data that is relevant to the current session based on the input text.
     /// </remarks>
     /// <param name="threadId">The ID of the new thread, if the thread has an ID.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
@@ -60,7 +60,7 @@ public abstract class ConversationStateExtension
     /// </summary>
     /// <remarks>
     /// Implementers can use this method to do any operations required before a thread is deleted.
-    /// For exmple, storing the context to long term storage.
+    /// For example, storing the context to long term storage.
     /// </remarks>
     /// <param name="threadId">The ID of the thread that will be deleted, if the thread has an ID.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>

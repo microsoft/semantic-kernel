@@ -11,7 +11,7 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
-/// A component that listenes to messages added to the conversation thread, and automatically captures
+/// A component that listens to messages added to the conversation thread, and automatically captures
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
 /// </summary>
 public class Mem0MemoryComponent : ConversationStateExtension
