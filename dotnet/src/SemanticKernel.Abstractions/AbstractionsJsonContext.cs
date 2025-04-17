@@ -18,6 +18,7 @@ namespace Microsoft.SemanticKernel;
 [JsonSerializable(typeof(JsonElement))]
 [JsonSerializable(typeof(KernelFunctionSchemaModel))]
 [JsonSerializable(typeof(PromptExecutionSettings))]
+[JsonSerializable(typeof(KernelArguments))]
 // types commonly used as values in settings dictionaries
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(int))]
