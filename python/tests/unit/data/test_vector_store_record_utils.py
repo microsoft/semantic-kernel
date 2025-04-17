@@ -28,7 +28,7 @@ async def test_add_vector_wrong_fields():
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(has_embedding=True, embedding_property_name="id"),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         }
     )
     kernel = MagicMock(spec=Kernel)

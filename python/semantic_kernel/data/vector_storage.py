@@ -623,6 +623,7 @@ class VectorStoreRecordCollection(VectorStoreRecordHandler, Generic[TKey, TModel
             VectorStoreModelDeserializationException: If an error occurs during deserialization.
         """
         batch = True
+        options = None
         if not keys and key:
             if not isinstance(key, list):
                 keys = [key]

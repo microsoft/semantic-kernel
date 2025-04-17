@@ -29,13 +29,13 @@ from semantic_kernel.data.vector_search import (
     VectorSearchResult,
     VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorStoreModelDeserializationException,
     VectorStoreOperationException,
 )
-from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
+from semantic_kernel.kernel_types import OptionalOneOrMany
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
 if sys.version_info >= (3, 12):
@@ -123,7 +123,16 @@ class AzureCosmosDBNoSQLCollection(
         return [result[COSMOS_ITEM_ID_PROPERTY_NAME] for result in results]
 
     @override
-    async def _inner_get(self, keys: Sequence[TGetKey], **kwargs: Any) -> OneOrMany[Any] | None:  # type: ignore
+    async def _inner_get(  # type: ignore
+        self,
+        keys: Sequence[TGetKey] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> Sequence[Any] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         include_vectors = kwargs.pop("include_vectors", False)
         query = (
             f"SELECT {self._build_select_clause(include_vectors)} FROM c WHERE "  # nosec: B608

@@ -38,7 +38,7 @@ from semantic_kernel.data.vector_search import (
     VectorSearchOptions,
     VectorSearchResult,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import VectorStoreModelValidationError, VectorStoreOperationException
 from semantic_kernel.exceptions.vector_store_exceptions import VectorSearchExecutionException
 from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
@@ -219,16 +219,16 @@ class PostgresCollection(
         return keys
 
     @override
-    async def _inner_get(self, keys: Sequence[TKey], **kwargs: Any) -> OneOrMany[dict[str, Any]] | None:
-        """Get records from the database.
-
-        Args:
-            keys: The keys to get.
-            **kwargs: Additional arguments.
-
-        Returns:
-            The records from the store, not deserialized.
-        """
+    async def _inner_get(
+        self,
+        keys: Sequence[TKey] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs: Any,
+    ) -> OneOrMany[dict[str, Any]] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         if self.connection_pool is None:
             raise VectorStoreOperationException(
                 "Connection pool is not available, use the collection as a context manager."

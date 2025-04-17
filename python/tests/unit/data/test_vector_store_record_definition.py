@@ -54,7 +54,7 @@ def test_vector_and_non_vector_field_names():
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         }
     )
     assert definition.vector_field_names == ["vector"]
@@ -66,7 +66,7 @@ def test_try_get_vector_field():
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         }
     )
     assert definition.try_get_vector_field() == definition.fields["vector"]
@@ -101,7 +101,7 @@ def test_get_field_names():
         fields={
             "id": VectorStoreRecordKeyField(),
             "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
+            "vector": VectorStoreRecordVectorField(dimensions=5),
         }
     )
     assert definition.get_field_names() == ["id", "content", "vector"]

@@ -43,7 +43,7 @@ from semantic_kernel.data.vector_search import (
     VectorSearchResult,
     VectorTextSearchMixin,
 )
-from semantic_kernel.data.vector_storage import TKey, TModel, VectorStoreRecordCollection
+from semantic_kernel.data.vector_storage import GetFilteredRecordOptions, TKey, TModel, VectorStoreRecordCollection
 from semantic_kernel.exceptions import (
     VectorSearchExecutionException,
     VectorSearchOptionsException,
@@ -314,7 +314,16 @@ class RedisHashsetCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel
         return self._unget_redis_key(upsert_record["name"])
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[str, Any]] | None:
+    async def _inner_get(
+        self,
+        keys: Sequence[str] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs,
+    ) -> Sequence[dict[str, Any]] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         results = await asyncio.gather(*[self._single_get(self._get_redis_key(key)) for key in keys])
         return [result for result in results if result]
 
@@ -434,7 +443,16 @@ class RedisJsonCollection(RedisCollection[TKey, TModel], Generic[TKey, TModel]):
         return self._unget_redis_key(upsert_record["name"])
 
     @override
-    async def _inner_get(self, keys: Sequence[str], **kwargs) -> Sequence[dict[bytes, bytes]] | None:
+    async def _inner_get(
+        self,
+        keys: Sequence[str] | None = None,
+        options: GetFilteredRecordOptions | None = None,
+        **kwargs,
+    ) -> Sequence[dict[bytes, bytes]] | None:
+        if not keys:
+            if options is not None:
+                raise NotImplementedError("Get without keys is not yet implemented.")
+            return None
         kwargs_copy = copy(kwargs)
         kwargs_copy.pop("include_vectors", None)
         redis_keys = [self._get_redis_key(key) for key in keys]
