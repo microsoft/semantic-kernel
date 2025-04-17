@@ -112,6 +112,7 @@ public class AmazonCommandExecutionSettings : PromptExecutionSettings
     /// (Required to support streaming) Specify true to return the response piece-by-piece in real-time and false to return the complete response after the process finishes.
     /// </summary>
     [JsonPropertyName("stream")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Stream
     {
         get => this._stream;

@@ -41,7 +41,7 @@
 
   <ItemGroup>
     <!-- Already gets included by Connectors.OpenAI which has [InternalsVisibleTo] to this project, causing CS1685 on RuntimeHelpers -->
-    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)"/>
+    <Compile Remove="$(RepoRoot)/dotnet/src/InternalUtilities/src/System/IndexRange.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

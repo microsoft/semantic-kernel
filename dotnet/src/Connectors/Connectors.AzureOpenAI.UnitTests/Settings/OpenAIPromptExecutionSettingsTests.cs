@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Azure.AI.OpenAI.Chat;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
@@ -64,6 +65,119 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(functionChoiceBehavior, result.FunctionChoiceBehavior);
     }
 
+    [Fact]
+    public void ItCanCreateAzureOpenAIPromptExecutionSettingsFromPromptExecutionSettings()
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", 0.7 },
+                { "top_p", 0.7 },
+                { "frequency_penalty", 0.7 },
+                { "presence_penalty", 0.7 },
+                { "stop_sequences", new string[] { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "token_selection_biases", new Dictionary<int, int>() { { 1, 2 }, { 3, 4 } } },
+                { "max_tokens", 128 },
+                { "logprobs", true },
+                { "seed", 123456 },
+                { "top_logprobs", 5 },
+            }
+        };
+
+        // Act
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItCanCreateAzureOpenAIPromptExecutionSettingsFromJson()
+    {
+        // Arrange
+        var json =
+            """
+            {
+                "temperature": 0.7,
+                "top_p": 0.7,
+                "frequency_penalty": 0.7,
+                "presence_penalty": 0.7,
+                "stop_sequences": [ "foo", "bar" ],
+                "chat_system_prompt": "chat system prompt",
+                "token_selection_biases":
+                    {
+                      "1": "2",
+                      "3": "4"
+                    },
+                "max_tokens": 128,
+                "logprobs": true,
+                "seed": 123456,
+                "top_logprobs": 5
+            }
+            """;
+
+        // Act
+        var originalSettings = JsonSerializer.Deserialize<PromptExecutionSettings>(json);
+        OpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Fact]
+    public void ItCanCreateAzureOpenAIPromptExecutionSettingsFromPromptExecutionSettingsWithIncorrectTypes()
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "temperature", "0.7" },
+                { "top_p", "0.7" },
+                { "frequency_penalty", "0.7" },
+                { "presence_penalty", "0.7" },
+                { "stop_sequences", new List<object> { "foo", "bar" } },
+                { "chat_system_prompt", "chat system prompt" },
+                { "token_selection_biases", new Dictionary<string, object>() { { "1", "2" }, { "3", "4" } } },
+                { "max_tokens", "128" },
+                { "logprobs", "true" },
+                { "seed", "123456" },
+                { "top_logprobs", "5" },
+            }
+        };
+
+        // Act
+        AzureOpenAIPromptExecutionSettings executionSettings = AzureOpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings);
+
+        // Assert
+        AssertExecutionSettings(executionSettings);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("123")]
+    [InlineData("Foo")]
+    [InlineData(1)]
+    [InlineData(1.0)]
+    public void ItCannotCreateAzureOpenAIPromptExecutionSettingsWithInvalidBoolValues(object value)
+    {
+        // Arrange
+        PromptExecutionSettings originalSettings = new()
+        {
+            ExtensionData = new Dictionary<string, object>()
+            {
+                { "logprobs", value }
+            }
+        };
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => AzureOpenAIPromptExecutionSettings.FromExecutionSettings(originalSettings));
+    }
+
+    #region private
     private static void AssertExecutionSettings(OpenAIPromptExecutionSettings executionSettings)
     {
         Assert.NotNull(executionSettings);
@@ -79,4 +193,5 @@ public class OpenAIPromptExecutionSettingsTests
         Assert.Equal(true, executionSettings.Logprobs);
         Assert.Equal(5, executionSettings.TopLogprobs);
     }
+    #endregion
 }
