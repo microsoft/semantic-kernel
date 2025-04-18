@@ -19,6 +19,6 @@ public class InMemoryDynamicRecordConformanceTests(InMemoryDynamicDataModelFixtu
             (int)expectedRecord[DynamicDataModelFixture<int>.KeyPropertyName]!,
             new() { IncludeVectors = false });
 
-        AssertEquivalent(expectedRecord, received, includeVectors: true);
+        AssertEquivalent(expectedRecord, received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 }
