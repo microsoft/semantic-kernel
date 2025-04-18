@@ -13,9 +13,9 @@ public class KernelProcessEdgeGroup
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessEdgeGroup"/> class.
     /// </summary>
-    /// <param name="groupId"></param>
-    /// <param name="messageSources"></param>
-    /// <param name="inputMapping"></param>
+    /// <param name="groupId">The unique Id of the edge group.</param>
+    /// <param name="messageSources">The message sources.</param>
+    /// <param name="inputMapping">The input mapping.</param>
     public KernelProcessEdgeGroup(string groupId, List<KernelProcessMessageSource> messageSources, Func<Dictionary<string, object?>, IReadOnlyDictionary<string, object?>> inputMapping)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));

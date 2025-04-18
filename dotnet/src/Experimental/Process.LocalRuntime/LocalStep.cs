@@ -23,6 +23,7 @@ internal class LocalStep : IKernelProcessMessageChannel
 
     protected readonly Kernel _kernel;
     protected readonly Dictionary<string, KernelFunction> _functions = [];
+    private readonly Dictionary<string, LocalEdgeGroupProcessor> _edgeGroupProcessors = [];
 
     protected KernelProcessStepState _stepState;
     protected Dictionary<string, Dictionary<string, object?>?>? _inputs = [];
@@ -60,6 +61,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
         this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._edgeGroupProcessors = this._stepInfo.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new LocalEdgeGroupProcessor(kvp.Value)) ?? [];
     }
 
     /// <summary>
@@ -185,6 +187,24 @@ internal class LocalStep : IKernelProcessMessageChannel
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
         this._logger.LogDebug("Received message from '{SourceId}' targeting function '{FunctionName}' and parameters '{Parameters}'.", message.SourceId, message.FunctionName, messageLogParameters);
+
+        if (!string.IsNullOrEmpty(message.GroupId))
+        {
+            this._logger.LogDebug("Step {StepName} received message from Step named '{SourceId}' with group Id '{GroupId}'.", this.Name, message.SourceId, message.GroupId);
+            if (!this._edgeGroupProcessors.TryGetValue(message.GroupId, out LocalEdgeGroupProcessor? edgeGroupProcessor) || edgeGroupProcessor is null)
+            {
+                throw new KernelException($"Step {this.Name} received message from Step named '{message.SourceId}' with group Id '{message.GroupId}' that is not registered.").Log(this._logger);
+            }
+
+            if (!edgeGroupProcessor.TryGetResult(message, out Dictionary<string, object?>? result))
+            {
+                // The edge group processor has not received all required messages yet.
+                return;
+            }
+
+            // The edge group processor has received all required messages and has produced a result.
+            message = message with { Values = result };
+        }
 
         // Add the message values to the inputs for the function
         this.AssignStepFunctionParameterValues(message);

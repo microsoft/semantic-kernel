@@ -36,4 +36,9 @@ public record ProcessMessage(
     /// The data associated with the target event. This may be null if the message is not targeting a sub-process.
     /// </summary>
     public object? TargetEventData { get; init; }
+
+    /// <summary>
+    /// The Id of the group that the message belongs to. This may be null if the message is not part of a group.
+    /// </summary>
+    public string? GroupId { get; init; }
 }

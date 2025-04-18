@@ -403,8 +403,8 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
                     // and the output of BStep to the second input parameter of CStep.
                     return new()
                     {
-                        { "astepdata", inputEvents[CommonEvents.AStepDone] },
-                        { "bstepdata", inputEvents[CommonEvents.BStepDone] }
+                        { "astepdata", inputEvents[$"aStep.{CommonEvents.AStepDone}"] },
+                        { "bstepdata", inputEvents[$"bStep.{CommonEvents.BStepDone}"] }
                     };
                 }));
 

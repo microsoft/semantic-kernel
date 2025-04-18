@@ -23,7 +23,10 @@ public class ProcessStepEdgeBuilder
     /// </summary>
     internal ProcessStepBuilder Source { get; }
 
-    internal KernelProcessEdgeGroupBuilder? EdgeGroupBuilder { get; }
+    /// <summary>
+    /// The EdgeGroupBuilder for the edge
+    /// </summary>
+    internal KernelProcessEdgeGroupBuilder? EdgeGroupBuilder { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepEdgeBuilder"/> class.
@@ -50,7 +53,7 @@ public class ProcessStepEdgeBuilder
         Verify.NotNull(this.Source?.Id);
         Verify.NotNull(this.Target);
 
-        if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder && stepTargetBuilder.InputMapping is not null)
+        if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder)
         {
             var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
 

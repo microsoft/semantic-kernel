@@ -86,16 +86,15 @@ public record ProcessStepTargetBuilder : ProcessFunctionTargetBuilder
         this.InputMapping = inputMapping;
     }
 
-    /// <summary>
-    /// Builds the function target.
-    /// </summary>
-    /// <returns>An instance of <see cref="KernelProcessFunctionTarget"/></returns>
-    internal override KernelProcessFunctionTarget Build(ProcessBuilder? processBuilder = null)
-    {
-        Verify.NotNull(this.Step.Id);
-        //this.Step.RegisterGroupInputMapping(this. this.InputMapping);
-        return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName, this.TargetEventId); //, this.InputMapping);
-    }
+    ///// <summary>
+    ///// Builds the function target.
+    ///// </summary>
+    ///// <returns>An instance of <see cref="KernelProcessFunctionTarget"/></returns>
+    //internal override KernelProcessFunctionTarget Build(ProcessBuilder? processBuilder = null)
+    //{
+    //    Verify.NotNull(this.Step.Id);
+    //    return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName, this.TargetEventId); //, this.InputMapping);
+    //}
 
     /// <summary>
     /// An instance of <see cref="ProcessStepBuilder"/> representing the target Step.

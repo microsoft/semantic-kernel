@@ -24,8 +24,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>Maps external input event Ids to the target entry step for the event.</summary>
     private readonly Dictionary<string, ProcessFunctionTargetBuilder> _externalEventTargetMap = [];
 
-    private readonly Dictionary<string, Func<Dictionary<string, object?>, Dictionary<string, object?>>> _multiInputMappings = [];
-
     /// <summary>
     /// A boolean indicating if the current process is a step within another process.
     /// </summary>
@@ -35,15 +33,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Version of the process, used when saving the state of the process
     /// </summary>
     public string Version { get; init; } = "v1";
-
-    internal void RegisterMultiInputMapping(string mappingId, Func<Dictionary<string, object?>, Dictionary<string, object?>> mapping)
-    {
-        if (this._multiInputMappings.ContainsKey(mappingId))
-        {
-            throw new InvalidOperationException($"Mapping for event {mappingId} already exists");
-        }
-        this._multiInputMappings[mappingId] = mapping;
-    }
 
     /// <summary>
     /// Used to resolve the target function and parameter for a given optional function name and parameter name.

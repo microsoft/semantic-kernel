@@ -56,8 +56,6 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
         //v.Target = target;
         //eventListener.LinkTo(v.EventData.EventId, v);
 
-        this.Target = target;
-
         foreach (var messageSource in this._messageSources)
         {
             if (messageSource.Source == null)
@@ -65,11 +63,16 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
                 throw new InvalidOperationException("Source step cannot be null.");
             }
 
-            messageSource.Source.LinkTo(messageSource.MessageType, this);
+            var sourcedTargetBuilder = new ProcessStepEdgeBuilder(source: messageSource.Source, eventId: messageSource.MessageType, eventName: messageSource.MessageType, edgeGroupBuilder: this.EdgeGroupBuilder)
+            {
+                //Target = target,
+            };
+            //messageSource.Source.LinkTo(messageSource.MessageType, sourcedTargetBuilder);
 
             //// Link all the source steps to the event listener
-            //messageSource.Source.OnEvent(messageSource.MessageType)
-            //    .SendEventTo(target);
+            var b = messageSource.Source.OnEvent(messageSource.MessageType);
+            b.EdgeGroupBuilder = this.EdgeGroupBuilder;
+            b.SendEventTo(target);
         }
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);

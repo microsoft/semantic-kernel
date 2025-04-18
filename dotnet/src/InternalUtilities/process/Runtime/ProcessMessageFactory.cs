@@ -29,7 +29,8 @@ internal static class ProcessMessageFactory
         {
             SourceEventId = sourceEventId,
             TargetEventId = target.TargetEventId,
-            TargetEventData = data
+            TargetEventData = data,
+            GroupId = edge.GroupId
         };
 
         return newMessage;
