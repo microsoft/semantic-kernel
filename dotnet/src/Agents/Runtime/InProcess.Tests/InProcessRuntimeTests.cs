@@ -210,7 +210,7 @@ public class InProcessRuntimeTests()
     [InlineData(false, 0)]
     [InlineData(true, 1)]
     [Trait("Category", "Unit")]
-    public async Task RuntimeAgentPublishToSelfTest(bool selfPublish, int recieveCount)
+    public async Task RuntimeAgentPublishToSelfTest(bool selfPublish, int receiveCount)
     {
         // Arrange
         await using InProcessRuntime runtime = new()
@@ -246,7 +246,7 @@ public class InProcessRuntimeTests()
         await runtime.RunUntilIdleAsync();
 
         // Assert
-        Assert.Equal(recieveCount, agent.ReceivedMessages.Count);
+        Assert.Equal(receiveCount, agent.ReceivedMessages.Count);
     }
 
     [Fact]

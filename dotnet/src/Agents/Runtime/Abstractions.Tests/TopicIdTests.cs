@@ -20,7 +20,7 @@ public class TopicIdTests
     }
 
     [Fact]
-    public void ConstrucWithTypeAndSourceTest()
+    public void ConstructWithTypeAndSourceTest()
     {
         // Arrange & Act
         TopicId topicId = new("testtype", "customsource");
