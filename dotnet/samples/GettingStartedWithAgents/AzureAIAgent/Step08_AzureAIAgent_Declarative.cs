@@ -365,7 +365,8 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;
