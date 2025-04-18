@@ -71,11 +71,6 @@ async def execute_process_with_state(
 
 
 # region Local JSON file handling for process state
-
-# Compute the base directory of this file's grandparent folder:
-#  1) __file__  => current script
-#  2) .parent   => folder of current script
-#  3) .parent   => up one more level
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Build the path to "step03/processes_states"
@@ -166,7 +161,7 @@ async def use_prepare_stateful_fried_fish_process_shared_state():
     Showcases building the stateful process once and reusing it,
     meaning runs #2 and #3 continue from the prior run's state.
     """
-    builder = FriedFishProcess.create_process_with_stateful_steps_v1()
+    builder = FriedFishProcess.create_process_with_stateful_steps_v2()
     kernel = _create_kernel_with_chat_completion()
     event_name = FriedFishProcess.ProcessEvents.PrepareFriedFish.value
 
@@ -337,10 +332,74 @@ async def run_stateful_fish_sandwich_process_with_low_stock_from_file():
     print("=== End run_stateful_fish_sandwich_process_with_low_stock_from_file ===\n")
 
 
+async def run_stateful_fried_fish_v2_with_low_stock_v1_state() -> None:
+    state_metadata = load_process_state_metadata(STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME)
+    if not state_metadata:
+        return
+
+    kernel = _create_kernel_with_chat_completion()
+    process = FriedFishProcess.create_process_with_stateful_steps_v2().build(state_metadata=state_metadata)
+
+    await execute_process_with_state(
+        process,
+        kernel,
+        FriedFishProcess.ProcessEvents.PrepareFriedFish.value,
+        "V2+low-stockV1state",
+    )
+
+
+async def run_stateful_fish_sandwich_v2_with_low_stock_v1_state() -> None:
+    state_metadata = load_process_state_metadata(STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME)
+    if not state_metadata:
+        return
+
+    kernel = _create_kernel_with_chat_completion()
+    process = FishSandwichProcess.create_process_with_stateful_steps_v2().build(state_metadata=state_metadata)
+
+    await execute_process_with_state(
+        process,
+        kernel,
+        FishSandwichProcess.ProcessEvents.PrepareFishSandwich.value,
+        "V2+low-stockV1state",
+    )
+
+
 # endregion
 
 
+async def _make_low_and_no_stock_states() -> None:
+    """Create the three 'low/no stock' JSON files expected by the sample."""
+    # ------------------------------------------------------------------ #
+    # 1.  Fried‑Fish  — base stateful process (V1)                       #
+    # ------------------------------------------------------------------ #
+    ff_builder = FriedFishProcess.create_process_with_stateful_steps_v1()
+    ff_state_meta = ff_builder.build().to_process_state_metadata()
+
+    gather_meta = ff_state_meta.steps_state["GatherFriedFishIngredientsWithStockStep"]
+    gather_meta.state.ingredients_stock = 1
+    dump_process_state_metadata_locally(ff_state_meta, STATEFUL_FRIED_FISH_LOWSTOCK_FILENAME)
+
+    gather_meta.state.ingredients_stock = 0
+    dump_process_state_metadata_locally(ff_state_meta, STATEFUL_FRIED_FISH_NOSTOCK_FILENAME)
+
+    # ------------------------------------------------------------------ #
+    # 2.  Fish‑Sandwich  — nested Fried‑Fish low‑stock                   #
+    # ------------------------------------------------------------------ #
+    fs_builder = FishSandwichProcess.create_process_with_stateful_steps_v1()
+    fs_state_meta = fs_builder.build().to_process_state_metadata()
+
+    nested_ff_meta = fs_state_meta.steps_state["FriedFishWithStatefulStepsProcess"].steps_state[
+        "GatherFriedFishIngredientsWithStockStep"
+    ]
+    nested_ff_meta.state.ingredients_stock = 1
+
+    dump_process_state_metadata_locally(fs_state_meta, STATEFUL_FISH_SANDWICH_LOWSTOCK_FILENAME)
+
+
 async def main():
+    # Uncomment the following line to create the low/no stock states
+    # await _make_low_and_no_stock_states()
+
     # Show basic usage of "stateless" processes
     await use_prepare_fried_fish_process()
     await use_prepare_potato_fries_process()
@@ -362,6 +421,9 @@ async def main():
 
     await run_stateful_fish_sandwich_process_from_file()
     await run_stateful_fish_sandwich_process_with_low_stock_from_file()
+
+    await run_stateful_fried_fish_v2_with_low_stock_v1_state()
+    await run_stateful_fish_sandwich_v2_with_low_stock_v1_state()
 
 
 if __name__ == "__main__":

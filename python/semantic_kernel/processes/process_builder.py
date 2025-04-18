@@ -45,8 +45,8 @@ class ProcessBuilder(ProcessStepBuilder):
         step_type: type[TStep],
         name: str | None = None,
         initial_state: TState | None = None,
-        aliases: list[str] | None = None,
         factory_function: Callable | None = None,
+        aliases: list[str] | None = None,
         **kwargs,
     ) -> ProcessStepBuilder[TState, TStep]:
         """Register a step type with optional constructor arguments.
@@ -57,6 +57,7 @@ class ProcessBuilder(ProcessStepBuilder):
             initial_state: The initial state of the step. Defaults to None.
             factory_function: The factory function. Allows for a callable that is used to create the step instance
                 that may have complex dependencies that cannot be JSON serialized or deserialized. Defaults to None.
+            aliases: The aliases of the step. Defaults to None.
             kwargs: Additional keyword arguments.
 
         Returns:
@@ -72,14 +73,28 @@ class ProcessBuilder(ProcessStepBuilder):
             self.factories[fq_name] = factory_function
 
         name = name or step_type.__name__
-        process_step_builder = ProcessStepBuilder(type=step_type, name=name, initial_state=initial_state, **kwargs)
+        process_step_builder = ProcessStepBuilder(
+            type=step_type, name=name, initial_state=initial_state, aliases=aliases, **kwargs
+        )
         self.steps.append(process_step_builder)
 
         return process_step_builder
 
-    def add_step_from_process(self, kernel_process: "ProcessBuilder") -> "ProcessBuilder":
-        """Adds a step from the given process."""
+    def add_step_from_process(
+        self, kernel_process: "ProcessBuilder", aliases: list[str] | None = None
+    ) -> "ProcessBuilder":
+        """Adds a step from the given process.
+
+        Args:
+            kernel_process: The process to add.
+            aliases: The aliases of the step. Defaults to None.
+
+        Returns:
+            The process builder.
+        """
         kernel_process.has_parent_process = True
+        if aliases:
+            kernel_process.aliases = aliases
         self.steps.append(kernel_process)
         return kernel_process
 
