@@ -195,6 +195,26 @@ public sealed class OpenAIChatCompletionNonStreamingTests : BaseIntegrationTest
         Assert.NotEmpty(audioContent.Metadata!["Transcript"]!.ToString()!);
     }
 
+    [Fact]
+    public async Task ChatCompletionWithFileInputAsync()
+    {
+        // Arrange
+        var kernel = this.CreateAndInitializeKernel();
+        var chatService = kernel.Services.GetRequiredService<IChatCompletionService>();
+
+        ChatHistory chatHistory = [];
+        chatHistory.Add(new Microsoft.SemanticKernel.ChatMessageContent(AuthorRole.User, [
+            new BinaryContent(File.ReadAllBytes("TestData/employees.pdf"), mimeType: "application/pdf")
+        ]));
+
+        // Act
+        var result = await chatService.GetChatMessageContentAsync(chatHistory);
+
+        // Assert
+        var chatCompletion = Assert.IsType<ChatCompletion>(result.InnerContent);
+        Assert.NotNull(chatCompletion);
+    }
+
     #region internals
 
     private Kernel CreateAndInitializeKernel(string? modelIdOverride = null)
