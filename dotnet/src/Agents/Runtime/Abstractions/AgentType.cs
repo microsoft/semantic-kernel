@@ -11,13 +11,18 @@ namespace Microsoft.AgentRuntime;
 /// <remarks>
 /// This struct is immutable and provides implicit conversion to and from <see cref="string"/>.
 /// </remarks>
-public readonly struct AgentType : IEquatable<AgentType>
+public readonly partial struct AgentType : IEquatable<AgentType>
 {
-    private static readonly Regex TypeRegex = new(@"^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
+#if NET
+    [GeneratedRegex("^[a-zA-Z_][a-zA-Z0-9_]*$")]
+    private static partial Regex TypeRegex();
+#else
+    private static Regex TypeRegex() => new("^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
+#endif
 
     internal static void Validate(string type)
     {
-        if (string.IsNullOrWhiteSpace(type) || !TypeRegex.IsMatch(type))
+        if (string.IsNullOrWhiteSpace(type) || !TypeRegex().IsMatch(type))
         {
             throw new ArgumentException($"Invalid AgentId type: '{type}'. Must be alphanumeric (a-z, 0-9, _) and cannot start with a number or contain spaces.");
         }
