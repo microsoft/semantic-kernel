@@ -21,20 +21,16 @@ public class RedisHashSetNoDataConformanceTests(RedisHashSetNoDataConformanceTes
         Assert.Null(await fixture.Collection.GetAsync(expectedRecord.Id, new() { IncludeVectors = false }));
     }
 
-    [ConditionalFact]
+    [ConditionalFact(Skip = "When using HashSets there is no way to distinguish between no fields being returned and the record not existing so this test isn't useful.")]
     public override Task UpsertAsyncCanInsertNewRecord_WithoutVectors()
     {
-        // When using HashSets there is no way to distinguish between no fields being returned and
-        // the record not existing so this test isn't useful.
-        return Task.CompletedTask;
+        return base.UpsertAsyncCanInsertNewRecord_WithoutVectors();
     }
 
-    [ConditionalFact]
+    [ConditionalFact(Skip = "When using HashSets there is no way to distinguish between no fields being returned and the record not existing so this test isn't useful.")]
     public override Task UpsertAsyncCanUpdateExistingRecord_WithoutVectors()
     {
-        // When using HashSets there is no way to distinguish between no fields being returned and
-        // the record not existing so this test isn't useful.
-        return Task.CompletedTask;
+        return base.UpsertAsyncCanUpdateExistingRecord_WithoutVectors();
     }
 
     public new class Fixture : NoDataConformanceTests<string>.Fixture
