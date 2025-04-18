@@ -8,11 +8,9 @@ from samples.getting_started_with_processes.step03.processes.fish_and_chips_proc
 from samples.getting_started_with_processes.step03.processes.fish_sandwich_process import FishSandwichProcess
 from samples.getting_started_with_processes.step03.processes.fried_fish_process import FriedFishProcess
 from samples.getting_started_with_processes.step03.processes.potato_fries_process import PotatoFriesProcess
-from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
+from semantic_kernel.connectors.ai.open_ai import OpenAIChatCompletion
 from semantic_kernel.kernel import Kernel
-from semantic_kernel.processes.kernel_process.kernel_process import KernelProcess
-from semantic_kernel.processes.kernel_process.kernel_process_event import KernelProcessEvent
-from semantic_kernel.processes.kernel_process.kernel_process_state_metadata import KernelProcessStateMetadata
+from semantic_kernel.processes.kernel_process import KernelProcess, KernelProcessEvent, KernelProcessStateMetadata
 from semantic_kernel.processes.local_runtime.local_kernel_process import start
 from semantic_kernel.processes.process_builder import ProcessBuilder
 
@@ -100,7 +98,7 @@ def load_process_state_metadata(json_filename: str) -> KernelProcessStateMetadat
         return None
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
         return KernelProcessStateMetadata(**data)
     except Exception as ex:

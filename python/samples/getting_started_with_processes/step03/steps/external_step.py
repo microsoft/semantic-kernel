@@ -3,12 +3,12 @@
 
 from typing import Any
 
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_event import (
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes.kernel_process import (
     KernelProcessEventVisibility,
+    KernelProcessStep,
+    KernelProcessStepContext,
 )
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
 
 
 class ExternalStep(KernelProcessStep):

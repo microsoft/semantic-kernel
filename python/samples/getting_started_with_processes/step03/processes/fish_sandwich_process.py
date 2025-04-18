@@ -6,16 +6,11 @@ from samples.getting_started_with_processes.step03.processes.fried_fish_process 
 )
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_event import (
+from semantic_kernel.processes import ProcessBuilder
+from semantic_kernel.processes.kernel_process import (
     KernelProcessEventVisibility,
-)
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import (
+    KernelProcessStep,
     KernelProcessStepContext,
-)
-from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import (
-    ProcessFunctionTargetBuilder,
 )
 
 
@@ -74,17 +69,11 @@ class FishSandwichProcess:
             make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_buns_step)
-        )
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(add_buns_step)
 
-        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(
-            ProcessFunctionTargetBuilder(add_sauce_step)
-        )
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(add_sauce_step)
 
-        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
-        )
+        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(external_step)
 
         return process_builder
 
@@ -105,17 +94,11 @@ class FishSandwichProcess:
             make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_buns_step)
-        )
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(add_buns_step)
 
-        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(
-            ProcessFunctionTargetBuilder(add_sauce_step)
-        )
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(add_sauce_step)
 
-        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
-        )
+        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(external_step)
 
         return process_builder
 
@@ -137,16 +120,10 @@ class FishSandwichProcess:
             make_fried_fish_step.where_input_event_is(FriedFishProcess.ProcessEvents.PrepareFriedFish)
         )
 
-        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_buns_step)
-        )
+        make_fried_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(add_buns_step)
 
-        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(
-            ProcessFunctionTargetBuilder(add_sauce_step)
-        )
+        add_buns_step.on_event(AddBunStep.OutputEvents.BunsAdded).send_event_to(add_sauce_step)
 
-        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
-        )
+        add_sauce_step.on_event(AddSpecialSauceStep.OutputEvents.SpecialSauceAdded).send_event_to(external_step)
 
         return process_builder

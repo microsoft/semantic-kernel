@@ -5,13 +5,13 @@ from random import Random
 
 from pydantic import Field
 
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_event import (
+from semantic_kernel.functions import kernel_function
+from semantic_kernel.processes.kernel_process import (
     KernelProcessEventVisibility,
+    KernelProcessStep,
+    KernelProcessStepContext,
+    kernel_process_step_metadata,
 )
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
-from semantic_kernel.processes.kernel_process.kernel_process_step_metadata import kernel_process_step_metadata
 
 
 @kernel_process_step_metadata("FryFoodStep.V1")

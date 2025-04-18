@@ -10,13 +10,10 @@ from samples.getting_started_with_processes.step03.processes.potato_fries_proces
 )
 from samples.getting_started_with_processes.step03.steps.external_step import ExternalStep
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import (
+from semantic_kernel.processes import ProcessBuilder
+from semantic_kernel.processes.kernel_process import (
+    KernelProcessStep,
     KernelProcessStepContext,
-)
-from semantic_kernel.processes.process_builder import ProcessBuilder
-from semantic_kernel.processes.process_function_target_builder import (
-    ProcessFunctionTargetBuilder,
 )
 
 
@@ -67,14 +64,14 @@ class FishAndChipsProcess:
         ).send_event_to(make_potato_step.where_input_event_is(PotatoFriesProcess.ProcessEvents.PreparePotatoFries))
 
         make_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_condiments_step, parameter_name="fishActions")
+            add_condiments_step, parameter_name="fishActions"
         )
         make_potato_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_condiments_step, parameter_name="potatoActions")
+            add_condiments_step, parameter_name="potatoActions"
         )
 
         add_condiments_step.on_event(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
+            external_step
         )
 
         return process_builder
@@ -97,14 +94,14 @@ class FishAndChipsProcess:
         ).send_event_to(make_potato_step.where_input_event_is(PotatoFriesProcess.ProcessEvents.PreparePotatoFries))
 
         make_fish_step.on_event(FriedFishProcess.ProcessEvents.FriedFishReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_condiments_step, parameter_name="fishActions")
+            add_condiments_step, parameter_name="fishActions"
         )
         make_potato_step.on_event(PotatoFriesProcess.ProcessEvents.PotatoFriesReady).send_event_to(
-            ProcessFunctionTargetBuilder(add_condiments_step, parameter_name="potatoActions")
+            add_condiments_step, parameter_name="potatoActions"
         )
 
         add_condiments_step.on_event(AddFishAndChipsCondimentsStep.OutputEvents.CondimentsAdded).send_event_to(
-            ProcessFunctionTargetBuilder(external_step)
+            external_step
         )
 
         return process_builder

@@ -2,12 +2,14 @@
 
 from enum import Enum
 
-from semantic_kernel.functions.kernel_function_decorator import kernel_function
+from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.processes.kernel_process.kernel_process_step import KernelProcessStep
-from semantic_kernel.processes.kernel_process.kernel_process_step_context import KernelProcessStepContext
-from semantic_kernel.processes.kernel_process.kernel_process_step_metadata import kernel_process_step_metadata
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
+from semantic_kernel.processes.kernel_process import (
+    KernelProcessStep,
+    KernelProcessStepContext,
+    KernelProcessStepState,
+    kernel_process_step_metadata,
+)
 
 
 class CutFoodWithSharpeningState(KernelBaseModel):

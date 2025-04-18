@@ -29,5 +29,4 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/samples/learn_resources"
     ],
-    "pythonTestExplorer.testFramework": "pytest"
 }
