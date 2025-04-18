@@ -46,6 +46,10 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CachedContent { get; set; }
 
+    [JsonPropertyName("thinkingConfig")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public GeminiThinkingConfig? ThinkingConfig { get; set; }
+
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
@@ -305,7 +309,7 @@ internal sealed class GeminiRequest
             CandidateCount = executionSettings.CandidateCount,
             AudioTimestamp = executionSettings.AudioTimestamp,
             ResponseMimeType = executionSettings.ResponseMimeType,
-            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema)
+            ResponseSchema = GetResponseSchemaConfig(executionSettings.ResponseSchema),
         };
     }
 
@@ -430,6 +434,7 @@ internal sealed class GeminiRequest
     private static void AddAdditionalBodyFields(GeminiPromptExecutionSettings executionSettings, GeminiRequest request)
     {
         request.CachedContent = executionSettings.CachedContent;
+        request.ThinkingConfig = executionSettings.ThinkingConfig;
     }
 
     internal sealed class ConfigurationElement

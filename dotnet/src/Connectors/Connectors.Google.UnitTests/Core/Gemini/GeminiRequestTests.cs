@@ -638,6 +638,110 @@ public sealed class GeminiRequestTests
         Assert.Equal(2, roleProperty.GetProperty("enum").GetArrayLength());
     }
 
+    [Fact]
+    public void WithThinkingConfigReturnsInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-2.5-flash-preview-04-17",
+            ThinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1024 }
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.ThinkingConfig?.ThinkingBudget);
+    }
+
+    [Fact]
+    public void WithoutThinkingConfigDoesNotIncludeThinkingConfigInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-pro" // Not a Gemini 2.5 model
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Null(request.ThinkingConfig);
+    }
+
+    [Fact]
+    public void WithNullThinkingConfigDoesNotIncludeThinkingConfigInGenerationConfig()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ModelId = "gemini-2.5-flash-preview-04-17",
+            ThinkingConfig = null
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.Null(request.ThinkingConfig);
+    }
+
+    [Fact]
+    public void ThinkingConfigSetValueOnNonGemini25ModelThrowsInvalidOperationException()
+    {
+        // Arrange
+        var executionSettings = new GeminiPromptExecutionSettings { ModelId = "gemini-pro" };
+        var thinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1024 };
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => executionSettings.ThinkingConfig = thinkingConfig);
+    }
+
+    [Fact]
+    public void ThinkingConfigSetValueNullOnNonGemini25ModelDoesNotThrowException()
+    {
+        // Arrange
+        var executionSettings = new GeminiPromptExecutionSettings { ModelId = "gemini-pro" };
+
+        // Act
+        executionSettings.ThinkingConfig = null;
+
+        // Assert
+        Assert.Null(executionSettings.ThinkingConfig);
+    }
+
+    [Fact]
+    public void ThinkingConfigSetValueOnGemini25ModelDoesNotThrowException()
+    {
+        // Arrange
+        var executionSettings = new GeminiPromptExecutionSettings { ModelId = "gemini-2.5-flash-preview-04-17" };
+        var thinkingConfig = new GeminiThinkingConfig { ThinkingBudget = 1024 };
+
+        // Act
+        executionSettings.ThinkingConfig = thinkingConfig;
+
+        // Assert
+        Assert.NotNull(executionSettings.ThinkingConfig);
+        Assert.Equal(1024, executionSettings.ThinkingConfig.ThinkingBudget);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(24577)]
+    public void ThinkingBudgetSetValueOutOfRangeThrowsArgumentOutOfRangeException(int invalidBudget)
+    {
+        // Arrange
+        var thinkingConfig = new GeminiThinkingConfig();
+
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(() => thinkingConfig.ThinkingBudget = invalidBudget);
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
 
