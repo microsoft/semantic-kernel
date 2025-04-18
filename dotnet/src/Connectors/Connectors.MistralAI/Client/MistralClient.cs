@@ -89,11 +89,11 @@ internal sealed class MistralClient
                         {
                             if (usage.PromptTokens is int promptTokens)
                             {
-                                activity.SetPromptTokenUsage(promptTokens);
+                                activity.SetInputTokensUsage(promptTokens);
                             }
                             if (usage.CompletionTokens is int completionTokens)
                             {
-                                activity.SetCompletionTokenUsage(completionTokens);
+                                activity.SetOutputTokensUsage(completionTokens);
                             }
                         }
                     }

@@ -133,20 +133,20 @@ internal static class ModelDiagnostics
     internal static Activity SetResponseId(this Activity activity, string responseId) => activity.SetTag(ModelDiagnosticsTags.ResponseId, responseId);
 
     /// <summary>
-    /// Set the prompt token usage for a given activity.
+    /// Set the input tokens usage for a given activity.
     /// </summary>
-    /// <param name="activity">The activity to set the prompt token usage</param>
-    /// <param name="promptTokens">The number of prompt tokens used</param>
-    /// <returns>The activity with the prompt token usage set for chaining</returns>
-    internal static Activity SetPromptTokenUsage(this Activity activity, int promptTokens) => activity.SetTag(ModelDiagnosticsTags.PromptToken, promptTokens);
+    /// <param name="activity">The activity to set the input tokens usage</param>
+    /// <param name="inputTokens">The number of input tokens used</param>
+    /// <returns>The activity with the input tokens usage set for chaining</returns>
+    internal static Activity SetInputTokensUsage(this Activity activity, int inputTokens) => activity.SetTag(ModelDiagnosticsTags.InputTokens, inputTokens);
 
     /// <summary>
-    /// Set the completion token usage for a given activity.
+    /// Set the output tokens usage for a given activity.
     /// </summary>
-    /// <param name="activity">The activity to set the completion token usage</param>
-    /// <param name="completionTokens">The number of completion tokens used</param>
-    /// <returns>The activity with the completion token usage set for chaining</returns>
-    internal static Activity SetCompletionTokenUsage(this Activity activity, int completionTokens) => activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
+    /// <param name="activity">The activity to set the output tokens usage</param>
+    /// <param name="outputTokens">The number of output tokens used</param>
+    /// <returns>The activity with the output tokens usage set for chaining</returns>
+    internal static Activity SetOutputTokensUsage(this Activity activity, int outputTokens) => activity.SetTag(ModelDiagnosticsTags.OutputTokens, outputTokens);
 
     /// <summary>
     /// Check if model diagnostics is enabled
@@ -316,8 +316,8 @@ internal static class ModelDiagnostics
     private static void SetCompletionResponse<T>(
         Activity activity,
         T completions,
-        int? promptTokens,
-        int? completionTokens,
+        int? inputTokens,
+        int? outputTokens,
         Func<T, string> formatCompletions) where T : IEnumerable<KernelContent>
     {
         if (!IsModelDiagnosticsEnabled())
@@ -325,14 +325,14 @@ internal static class ModelDiagnostics
             return;
         }
 
-        if (promptTokens != null)
+        if (inputTokens != null)
         {
-            activity.SetTag(ModelDiagnosticsTags.PromptToken, promptTokens);
+            activity.SetTag(ModelDiagnosticsTags.InputTokens, inputTokens);
         }
 
-        if (completionTokens != null)
+        if (outputTokens != null)
         {
-            activity.SetTag(ModelDiagnosticsTags.CompletionToken, completionTokens);
+            activity.SetTag(ModelDiagnosticsTags.OutputTokens, outputTokens);
         }
 
         activity
@@ -409,7 +409,8 @@ internal static class ModelDiagnostics
 
         if (finishReasons.Any())
         {
-            activity.SetTag(ModelDiagnosticsTags.FinishReason, $"{string.Join(",", finishReasons)}");
+            activity.SetTag(ModelDiagnosticsTags.FinishReason, $"[{string.Join(",",
+                finishReasons.Select(finishReason => $"\"{finishReason}\""))}]");
         }
 
         return activity;
@@ -466,10 +467,8 @@ internal static class ModelDiagnostics
         public const string ResponseId = "gen_ai.response.id";
         public const string ResponseModel = "gen_ai.response.model";
         public const string FinishReason = "gen_ai.response.finish_reason";
-        public const string PromptToken = "gen_ai.response.prompt_tokens";
-        public const string CompletionToken = "gen_ai.response.completion_tokens";
-        public const string Prompt = "gen_ai.content.prompt";
-        public const string Completion = "gen_ai.content.completion";
+        public const string InputTokens = "gen_ai.usage.input_tokens";
+        public const string OutputTokens = "gen_ai.usage.output_tokens";
         public const string Address = "server.address";
         public const string Port = "server.port";
         public const string AgentId = "gen_ai.agent.id";
