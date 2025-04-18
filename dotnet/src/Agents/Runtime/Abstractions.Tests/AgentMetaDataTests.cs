@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentMetaDataTests.cs
+
 using FluentAssertions;
 using Xunit;
 

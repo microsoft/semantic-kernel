@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// TypePrefixSubscriptionTests.cs
 
 using FluentAssertions;
 using Xunit;

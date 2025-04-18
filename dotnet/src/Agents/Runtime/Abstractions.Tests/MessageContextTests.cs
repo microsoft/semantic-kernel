@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// MessageContextTests.cs
 
 using Xunit;
 

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentsAppTests.cs
 
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

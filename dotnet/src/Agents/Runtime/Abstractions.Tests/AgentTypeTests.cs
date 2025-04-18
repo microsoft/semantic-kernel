@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentTypeTests.cs
 
 using Xunit;
 

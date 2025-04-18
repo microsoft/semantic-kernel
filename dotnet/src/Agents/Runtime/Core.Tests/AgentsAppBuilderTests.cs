@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentsAppBuilderTests.cs
 
 using System.Reflection;
 using FluentAssertions;
