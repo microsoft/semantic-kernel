@@ -6,49 +6,49 @@ namespace Microsoft.AgentRuntime.InProcess;
 
 internal interface IResultSink<TResult> : IValueTaskSource<TResult>
 {
-    public void SetResult(TResult result);
-    public void SetException(Exception exception);
-    public void SetCancelled(OperationCanceledException? exception = null);
+    void SetResult(TResult result);
+    void SetException(Exception exception);
+    void SetCancelled(OperationCanceledException? exception = null);
 
-    public ValueTask<TResult> Future { get; }
+    ValueTask<TResult> Future { get; }
 }
 
 internal sealed class ResultSink<TResult> : IResultSink<TResult>
 {
-    private ManualResetValueTaskSourceCore<TResult> core;
+    private ManualResetValueTaskSourceCore<TResult> _core;
 
     public bool IsCancelled { get; private set; }
 
     public TResult GetResult(short token)
     {
-        return this.core.GetResult(token);
+        return this._core.GetResult(token);
     }
 
     public ValueTaskSourceStatus GetStatus(short token)
     {
-        return this.core.GetStatus(token);
+        return this._core.GetStatus(token);
     }
 
     public void OnCompleted(Action<object?> continuation, object? state, short token, ValueTaskSourceOnCompletedFlags flags)
     {
-        this.core.OnCompleted(continuation, state, token, flags);
+        this._core.OnCompleted(continuation, state, token, flags);
     }
 
     public void SetCancelled(OperationCanceledException? exception = null)
     {
         this.IsCancelled = true;
-        this.core.SetException(exception ?? new OperationCanceledException());
+        this._core.SetException(exception ?? new OperationCanceledException());
     }
 
     public void SetException(Exception exception)
     {
-        this.core.SetException(exception);
+        this._core.SetException(exception);
     }
 
     public void SetResult(TResult result)
     {
-        this.core.SetResult(result);
+        this._core.SetResult(result);
     }
 
-    public ValueTask<TResult> Future => new(this, this.core.Version);
+    public ValueTask<TResult> Future => new(this, this._core.Version);
 }
