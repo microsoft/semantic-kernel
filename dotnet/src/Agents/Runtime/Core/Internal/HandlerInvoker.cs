@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// HandlerInvoker.cs
 
 using System.Diagnostics;
 using System.Reflection;

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// KeyValueParserExtensions.cs
 
 using System.Text.RegularExpressions;
 
