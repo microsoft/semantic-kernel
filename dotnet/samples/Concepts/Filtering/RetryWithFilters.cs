@@ -131,6 +131,9 @@ public class RetryWithFilters(ITestOutputHelper output) : BaseTest(output)
                 }
                 catch (ClientResultException exception) when (exception.Status == (int)HttpStatusCode.Unauthorized)
                 {
+                    // In a scenario where the streaming already started and it was interrupted by an exception,
+                    // would be advisable some extra logic to handle any update necessary in the caller side before the retrial starts
+
                     // If any exception is thrown, get current execution settings to override settings with fallback model id
                     PromptExecutionSettings executionSettings = context.Arguments.ExecutionSettings![PromptExecutionSettings.DefaultServiceId];
 
