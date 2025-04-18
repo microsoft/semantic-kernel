@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// TestAgents.cs
 
 using System.Text.Json;
 using Microsoft.AgentRuntime.Core;

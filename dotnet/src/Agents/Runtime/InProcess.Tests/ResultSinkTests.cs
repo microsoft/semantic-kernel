@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// ResultSinkTests.cs
 
 using System.Threading.Tasks.Sources;
 using Xunit;

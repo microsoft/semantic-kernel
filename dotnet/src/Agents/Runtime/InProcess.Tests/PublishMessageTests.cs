@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// PublishMessageTests.cs
 
 using FluentAssertions;
 using Xunit;

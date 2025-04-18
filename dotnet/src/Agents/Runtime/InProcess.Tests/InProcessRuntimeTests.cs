@@ -1,5 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// InProcessRuntimeTests.cs
+
 using System.Text.Json;
 using FluentAssertions;
 using Xunit;

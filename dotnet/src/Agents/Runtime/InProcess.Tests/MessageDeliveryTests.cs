@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// MessageDeliveryTests.cs
 
 using Xunit;
 

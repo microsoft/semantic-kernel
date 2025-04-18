@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// SendMessageTests.cs
 
 using System.Diagnostics;
 using FluentAssertions;
