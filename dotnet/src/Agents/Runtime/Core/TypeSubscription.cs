@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// TypeSubscription.cs
 
 using System.Diagnostics.CodeAnalysis;
 

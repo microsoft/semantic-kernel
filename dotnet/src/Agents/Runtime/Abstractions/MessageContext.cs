@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// MessageContext.cs
 
 namespace Microsoft.AgentRuntime;
 

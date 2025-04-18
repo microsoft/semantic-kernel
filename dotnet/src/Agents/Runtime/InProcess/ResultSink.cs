@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// ResultSink.cs
 
 using System.Threading.Tasks.Sources;
 

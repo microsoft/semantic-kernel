@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// InProcessRuntime.cs
 
 using System.Collections.Concurrent;
 using System.Diagnostics;

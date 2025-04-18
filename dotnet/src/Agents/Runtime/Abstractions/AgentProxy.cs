@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentProxy.cs
 
 using System.Text.Json;
 

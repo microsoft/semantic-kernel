@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// MessageDelivery.cs
 
 namespace Microsoft.AgentRuntime.InProcess;
 

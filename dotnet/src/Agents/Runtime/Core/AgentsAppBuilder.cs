@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentsAppBuilder.cs
 
 using System.Reflection;
 using Microsoft.Extensions.Configuration;

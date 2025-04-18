@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// MessageEnvelope.cs
 
 namespace Microsoft.AgentRuntime.InProcess;
 

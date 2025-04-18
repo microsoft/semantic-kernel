@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// IAgentRuntime.cs
 
 using System.Text.Json;
 using Microsoft.Extensions.Hosting;

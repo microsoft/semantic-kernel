@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentsApp.cs
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

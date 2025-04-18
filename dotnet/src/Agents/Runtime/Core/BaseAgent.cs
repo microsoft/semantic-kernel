@@ -1,6 +1,4 @@
-﻿
-// Copyright (c) Microsoft. All rights reserved.
-// BaseAgent.cs
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
 using System.Text.Json;

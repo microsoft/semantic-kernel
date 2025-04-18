@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// TopicId.cs
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AgentRuntime.Internal;

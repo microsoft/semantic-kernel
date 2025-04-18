@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// TypeSubscriptionAttribute.cs
 
 namespace Microsoft.AgentRuntime.Core;
 

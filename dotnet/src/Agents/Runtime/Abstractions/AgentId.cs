@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentId.cs
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;

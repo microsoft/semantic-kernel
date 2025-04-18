@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// IAgent.cs
 
 namespace Microsoft.AgentRuntime;
 

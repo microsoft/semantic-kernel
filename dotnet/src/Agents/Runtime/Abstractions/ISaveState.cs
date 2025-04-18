@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// ISaveState.cs
 
 using System.Text.Json;
 

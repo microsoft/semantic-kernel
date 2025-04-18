@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// AgentRuntimeExtensions.cs
 
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
