@@ -135,10 +135,10 @@ public class BaseAgentTests
         await using InProcessRuntime runtime = new();
         TopicId topic = new("TestTopic");
         AgentType senderType = nameof(TestAgentC);
-        AgentType recieverType = nameof(TestAgentB);
-        await runtime.RegisterAgentTypeAsync<TestAgentB>(recieverType, services);
-        await runtime.AddSubscriptionAsync(new TypeSubscription(topic.Type, recieverType));
-        AgentId recieverId = await runtime.GetAgentAsync(recieverType, lazy: false);
+        AgentType receiverType = nameof(TestAgentB);
+        await runtime.RegisterAgentTypeAsync<TestAgentB>(receiverType, services);
+        await runtime.AddSubscriptionAsync(new TypeSubscription(topic.Type, receiverType));
+        AgentId receiverId = await runtime.GetAgentAsync(receiverType, lazy: false);
         await runtime.RegisterAgentTypeAsync<TestAgentC>(senderType, services, [topic]);
         AgentId senderId = await runtime.GetAgentAsync(senderType, lazy: false);
 
@@ -156,7 +156,7 @@ public class BaseAgentTests
 
         // Assert
         await VerifyMessagHandled(runtime, senderId, message.Content);
-        await VerifyMessagHandled(runtime, recieverId, message.Content);
+        await VerifyMessagHandled(runtime, receiverId, message.Content);
     }
 
     [Fact]
@@ -166,10 +166,10 @@ public class BaseAgentTests
         ServiceProvider services = new ServiceCollection().BuildServiceProvider();
         await using InProcessRuntime runtime = new();
         AgentType senderType = nameof(TestAgentD);
-        AgentType recieverType = nameof(TestAgentB);
-        await runtime.RegisterAgentTypeAsync<TestAgentB>(recieverType, services);
-        AgentId recieverId = await runtime.GetAgentAsync(recieverType, lazy: false);
-        await runtime.RegisterAgentTypeAsync<TestAgentD>(senderType, services, [recieverId]);
+        AgentType receiverType = nameof(TestAgentB);
+        await runtime.RegisterAgentTypeAsync<TestAgentB>(receiverType, services);
+        AgentId receiverId = await runtime.GetAgentAsync(receiverType, lazy: false);
+        await runtime.RegisterAgentTypeAsync<TestAgentD>(senderType, services, [receiverId]);
         AgentId senderId = await runtime.GetAgentAsync(senderType, lazy: false);
 
         // Act
@@ -186,7 +186,7 @@ public class BaseAgentTests
 
         // Assert
         await VerifyMessagHandled(runtime, senderId, message.Content);
-        await VerifyMessagHandled(runtime, recieverId, message.Content);
+        await VerifyMessagHandled(runtime, receiverId, message.Content);
     }
 
     private static async Task VerifyMessagHandled(InProcessRuntime runtime, AgentId agentId, string expectedContent)
@@ -335,18 +335,18 @@ public class BaseAgentTests
     // TestAgent that implements handler for TestMessage that responds by messaging another agent
     private sealed class TestAgentD : TestAgent, IHandle<TestMessage>
     {
-        private readonly AgentId _recieverId;
+        private readonly AgentId _receiverId;
 
-        public TestAgentD(AgentId id, IAgentRuntime runtime, AgentId recieverId)
+        public TestAgentD(AgentId id, IAgentRuntime runtime, AgentId receiverId)
             : base(id, runtime, "Test agent that sends")
         {
-            this._recieverId = recieverId;
+            this._receiverId = receiverId;
         }
 
         public async ValueTask HandleAsync(TestMessage item, MessageContext messageContext)
         {
             this.ReceivedMessages.Add(item.Content);
-            await this.SendMessageAsync(item, this._recieverId, messageContext.MessageId, messageContext.CancellationToken);
+            await this.SendMessageAsync(item, this._receiverId, messageContext.MessageId, messageContext.CancellationToken);
         }
     }
 }

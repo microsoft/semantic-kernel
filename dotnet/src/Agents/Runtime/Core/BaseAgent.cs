@@ -138,13 +138,13 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     /// Sends a message to a specified recipient agent through the runtime.
     /// </summary>
     /// <param name="message">The message object to send.</param>
-    /// <param name="recepient">The recipient agent's identifier.</param>
+    /// <param name="recipient">The recipient agent's identifier.</param>
     /// <param name="messageId">An optional identifier for the message.</param>
     /// <param name="cancellationToken">A token used to cancel the operation if needed.</param>
     /// <returns>A ValueTask that represents the asynchronous operation, returning the response object or null.</returns>
-    protected ValueTask<object?> SendMessageAsync(object message, AgentId recepient, string? messageId = null, CancellationToken cancellationToken = default)
+    protected ValueTask<object?> SendMessageAsync(object message, AgentId recipient, string? messageId = null, CancellationToken cancellationToken = default)
     {
-        return this._runtime.SendMessageAsync(message, recepient, sender: this.Id, messageId, cancellationToken);
+        return this._runtime.SendMessageAsync(message, recipient, sender: this.Id, messageId, cancellationToken);
     }
 
     /// <summary>

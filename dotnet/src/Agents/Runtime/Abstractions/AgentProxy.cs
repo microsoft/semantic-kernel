@@ -36,7 +36,7 @@ public class AgentProxy
     /// <value>
     /// An instance of <see cref="AgentMetadata"/> containing details about the agent.
     /// </value>
-    public AgentMetadata Metadata => this._metadata ??= this.QueryMetdataAndUnwrap();
+    public AgentMetadata Metadata => this._metadata ??= this.QueryMetadataAndUnwrap();
 
     /// <summary>
     /// Sends a message to the agent and processes the response.
@@ -75,7 +75,7 @@ public class AgentProxy
         return this._runtime.SaveAgentStateAsync(this.Id);
     }
 
-    private AgentMetadata QueryMetdataAndUnwrap()
+    private AgentMetadata QueryMetadataAndUnwrap()
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
         return this._runtime.GetAgentMetadataAsync(this.Id).AsTask().ConfigureAwait(false).GetAwaiter().GetResult(); // %%% PRAGMA

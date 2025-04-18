@@ -113,14 +113,14 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     }
 
     /// <inheritdoc/>
-    public async ValueTask<object?> SendMessageAsync(object message, AgentId recepient, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default)
+    public async ValueTask<object?> SendMessageAsync(object message, AgentId recipient, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default)
     {
         return await this.ExecuteTracedAsync(async () =>
         {
             MessageDelivery delivery =
                 new MessageEnvelope(message, messageId, cancellationToken)
                     .WithSender(sender)
-                    .ForSend(recepient, this.SendMessageServicerAsync);
+                    .ForSend(recipient, this.SendMessageServicerAsync);
 
             this._messageDeliveryQueue.Enqueue(delivery);
             Interlocked.Increment(ref this.messageQueueCount);
