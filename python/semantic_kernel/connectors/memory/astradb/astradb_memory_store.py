@@ -56,7 +56,7 @@ class AstraDBMemoryStore(MemoryStoreBase):
             env_file_encoding (str | None): The encoding of the environment settings file. (Optional)
         """
         try:
-            astradb_settings = AstraDBSettings.create(
+            astradb_settings = AstraDBSettings(
                 app_token=astra_application_token,
                 db_id=astra_id,
                 region=astra_region,

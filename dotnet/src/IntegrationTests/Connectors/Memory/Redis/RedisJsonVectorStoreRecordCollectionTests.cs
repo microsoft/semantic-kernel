@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Redis;
@@ -446,21 +445,6 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
     }
 
     [Fact(Skip = SkipReason)]
-    public async Task ItThrowsMappingExceptionForFailedMapperAsync()
-    {
-        // Arrange
-        var options = new RedisJsonVectorStoreRecordCollectionOptions<RedisHotel>
-        {
-            PrefixCollectionNameToKeyNames = true,
-            JsonNodeCustomMapper = new FailingMapper()
-        };
-        var sut = new RedisJsonVectorStoreRecordCollection<string, RedisHotel>(fixture.Database, TestCollectionName, options);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<VectorStoreRecordMappingException>(async () => await sut.GetAsync("BaseSet-1", new GetRecordOptions { IncludeVectors = true }));
-    }
-
-    [Fact(Skip = SkipReason)]
     public async Task ItCanUpsertAndRetrieveUsingTheDynamicMapperAsync()
     {
         // Arrange
@@ -539,18 +523,5 @@ public sealed class RedisJsonVectorStoreRecordCollectionTests(ITestOutputHelper 
             DescriptionEmbedding = new[] { 30f, 31f, 32f, 33f }
         };
         return record;
-    }
-
-    private sealed class FailingMapper : IVectorStoreRecordMapper<RedisHotel, (string Key, JsonNode Node)>
-    {
-        public (string Key, JsonNode Node) MapFromDataToStorageModel(RedisHotel dataModel)
-        {
-            throw new NotImplementedException();
-        }
-
-        public RedisHotel MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, StorageToDataModelMapperOptions options)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

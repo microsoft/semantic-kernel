@@ -16,7 +16,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
     /// Show how to create a <see cref="Kernel"/> that participates in Dependency Injection.
     /// </summary>
     [Fact]
-    public async Task GetKernelUsingDependencyInjectionAsync()
+    public async Task GetKernelUsingDependencyInjection()
     {
         // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations
@@ -36,7 +36,7 @@ public sealed class Step4_Dependency_Injection(ITestOutputHelper output) : BaseT
     /// Show how to use a plugin that participates in Dependency Injection.
     /// </summary>
     [Fact]
-    public async Task PluginUsingDependencyInjectionAsync()
+    public async Task PluginUsingDependencyInjection()
     {
         // If an application follows DI guidelines, the following line is unnecessary because DI will inject an instance of the KernelClient class to a class that references it.
         // DI container guidelines - https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection-guidelines#recommendations

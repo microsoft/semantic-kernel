@@ -35,9 +35,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private readonly SqliteVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the SQLite record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, Dictionary<string, object?>> _mapper;
-#pragma warning restore CS0618
+    private readonly SqliteVectorStoreRecordMapper<TRecord> _mapper;
 
     /// <summary>The default options for vector search.</summary>
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
@@ -61,22 +59,22 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private readonly string _vectorSearchExtensionName;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="connectionString">The connection string for the SQLite database represented by this <see cref="SqliteVectorStore"/>.</param>
-    /// <param name="collectionName">The name of the collection/table that this <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection/table that this <see cref="SqliteVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public SqliteVectorStoreRecordCollection(
         string connectionString,
-        string collectionName,
+        string name,
         SqliteVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(connectionString);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(object))
         {
@@ -85,12 +83,12 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Assign.
         this._connectionString = connectionString;
-        this.CollectionName = collectionName;
+        this.Name = name;
         this._options = options ?? new();
         this._vectorSearchExtensionName = this._options.VectorSearchExtensionName ?? SqliteConstants.VectorSearchExtensionName;
 
         // Escape both table names before exposing them to anything that may build SQL commands.
-        this._dataTableName = collectionName.EscapeIdentifier();
+        this._dataTableName = name.EscapeIdentifier();
         this._vectorTableName = GetVectorTableName(this._dataTableName, this._options).EscapeIdentifier();
 
         this._model = new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
@@ -100,9 +98,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Populate some collections of properties
         this._keyStorageName = this._model.KeyProperty.StorageName;
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.DictionaryCustomMapper ?? new SqliteVectorStoreRecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new SqliteVectorStoreRecordMapper<TRecord>(this._model);
 
         var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
 
@@ -110,7 +106,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         {
             VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
             VectorStoreName = connectionStringBuilder.DataSource,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -338,7 +334,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
@@ -364,7 +360,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var storageModels = records.Select(record => VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record))).ToList();
 
@@ -675,7 +671,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         return VectorStoreErrorHandler.RunModelConversion(
             SqliteConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             operationName,
             () => this._mapper.MapFromStorageToDataModel(storageModel, options));
     }
@@ -692,7 +688,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             {
                 VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }

@@ -14,7 +14,7 @@ public sealed class MongoDBVectorStoreRecordCollectionOptions<TRecord>
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the MongoDB BSON object.
     /// </summary>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, BsonDocument>? BsonDocumentCustomMapper { get; init; } = null;
 
     /// <summary>

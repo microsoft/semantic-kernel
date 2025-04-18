@@ -34,13 +34,11 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     private readonly Sdk.PineconeClient _pineconeClient;
     private readonly PineconeVectorStoreRecordCollectionOptions<TRecord> _options;
     private readonly VectorStoreRecordModel _model;
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, Sdk.Vector> _mapper;
-#pragma warning restore CS0618
+    private readonly PineconeVectorStoreRecordMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> class.
@@ -48,12 +46,12 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <param name="pineconeClient">Pinecone client that can be used to manage the collections and vectors in a Pinecone store.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="pineconeClient"/> is null.</exception>
-    /// <param name="collectionName">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="PineconeVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public PineconeVectorStoreRecordCollection(Sdk.PineconeClient pineconeClient, string collectionName, PineconeVectorStoreRecordCollectionOptions<TRecord>? options = null)
+    public PineconeVectorStoreRecordCollection(Sdk.PineconeClient pineconeClient, string name, PineconeVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         Verify.NotNull(pineconeClient);
-        VerifyCollectionName(collectionName);
+        VerifyCollectionName(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
@@ -61,18 +59,16 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         this._pineconeClient = pineconeClient;
-        this.CollectionName = collectionName;
+        this.Name = name;
         this._options = options ?? new PineconeVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new VectorStoreRecordModelBuilder(PineconeVectorStoreRecordFieldMapping.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.VectorCustomMapper ?? new PineconeVectorStoreRecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new PineconeVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -84,7 +80,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 var collections = await this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                return collections.Indexes?.Any(x => x.Name == this.CollectionName) is true;
+                return collections.Indexes?.Any(x => x.Name == this.Name) is true;
             });
 
     /// <inheritdoc />
@@ -101,7 +97,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         CreateIndexRequest request = new()
         {
-            Name = this.CollectionName,
+            Name = this.Name,
             Dimension = vectorProperty.Dimensions,
             Metric = MapDistanceFunction(vectorProperty),
             Spec = new ServerlessIndexSpec
@@ -139,7 +135,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         try
         {
-            await this._pineconeClient.DeleteIndexAsync(this.CollectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await this._pineconeClient.DeleteIndexAsync(this.Name, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (NotFoundError)
         {
@@ -151,7 +147,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = "DeleteCollection"
             };
         }
@@ -180,7 +176,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         return VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             "Get",
             () => this._mapper.MapFromStorageToDataModel(result, mapperOptions));
     }
@@ -225,7 +221,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         var records = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             "GetBatch",
             () => response.Vectors.Values.Select(x => this._mapper.MapFromStorageToDataModel(x, mapperOptions)));
 
@@ -285,7 +281,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         var vector = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             "Upsert",
             () => this._mapper.MapFromDataToStorageModel(record));
 
@@ -310,7 +306,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         var vectors = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             "UpsertBatch",
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
 
@@ -383,7 +379,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         var records = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             "VectorizedSearch",
             () => skippedResults.Select(x => new VectorSearchResult<TRecord>(this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
             {
@@ -438,7 +434,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
         var records = VectorStoreErrorHandler.RunModelConversion(
             PineconeConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             "Query",
             () => response.Matches.Skip(options.Skip).Select(x => this._mapper.MapFromStorageToDataModel(new Sdk.Vector()
             {
@@ -475,7 +471,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 // If we don't provide "host" to the Index method, it's going to perform
                 // a blocking call to DescribeIndexAsync!!
-                string hostName = (await this._pineconeClient.DescribeIndexAsync(this.CollectionName).ConfigureAwait(false)).Host;
+                string hostName = (await this._pineconeClient.DescribeIndexAsync(this.Name).ConfigureAwait(false)).Host;
                 this._indexClient = this._pineconeClient.Index(host: hostName);
             }
 
@@ -487,7 +483,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -505,7 +501,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
             {
                 VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }

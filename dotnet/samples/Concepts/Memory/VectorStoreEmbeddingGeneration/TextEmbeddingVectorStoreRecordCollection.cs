@@ -49,7 +49,7 @@ public class TextEmbeddingVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._decoratedVectorStoreRecordCollection.CollectionName;
+    public string Name => this._decoratedVectorStoreRecordCollection.Name;
 
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)

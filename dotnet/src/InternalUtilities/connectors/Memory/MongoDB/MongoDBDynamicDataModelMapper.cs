@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// </summary>
 [ExcludeFromCodeCoverage]
 #pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model) : IVectorStoreRecordMapper<Dictionary<string, object?>, BsonDocument>
+internal sealed class MongoDBDynamicDataModelMapper(VectorStoreRecordModel model) : IMongoDBMapper<Dictionary<string, object?>>
 #pragma warning restore CS0618
 {
     /// <inheritdoc />

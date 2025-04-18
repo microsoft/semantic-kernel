@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
-using Moq;
 using Qdrant.Client.Grpc;
 using Xunit;
 
@@ -107,20 +106,34 @@ public class QdrantVectorStoreCollectionSearchMappingTests
     [Fact]
     public void MapScoredPointToVectorSearchResultMapsResults()
     {
+        var responseVector = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3] }");
+
         // Arrange.
         var scoredPoint = new ScoredPoint
         {
             Id = 1,
             Payload = { ["storage_DataField"] = "data 1" },
-            Vectors = new float[] { 1, 2, 3 },
+            Vectors = new VectorsOutput() { Vector = responseVector },
             Score = 0.5f
         };
 
-        var mapperMock = new Mock<IVectorStoreRecordMapper<DataModel, PointStruct>>(MockBehavior.Strict);
-        mapperMock.Setup(x => x.MapFromStorageToDataModel(It.IsAny<PointStruct>(), It.IsAny<StorageToDataModelMapperOptions>())).Returns(new DataModel { Id = 1, DataField = "data 1", Embedding = new float[] { 1, 2, 3 } });
+        var model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(hasNamedVectors: false))
+            .Build(
+                typeof(DataModel),
+                new()
+                {
+                    Properties =
+                    [
+                        new VectorStoreRecordKeyProperty("Id", typeof(ulong)),
+                        new VectorStoreRecordDataProperty("DataField", typeof(string)) { StoragePropertyName = "storage_DataField" },
+                        new VectorStoreRecordVectorProperty("Embedding", typeof(ReadOnlyMemory<float>), 10),
+                    ]
+                });
+
+        var mapper = new QdrantVectorStoreRecordMapper<DataModel>(model, hasNamedVectors: false);
 
         // Act.
-        var actual = QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult<DataModel>(scoredPoint, mapperMock.Object, true, "Qdrant", "myvectorstore", "mycollection", "query");
+        var actual = QdrantVectorStoreCollectionSearchMapping.MapScoredPointToVectorSearchResult<DataModel>(scoredPoint, mapper, true, "Qdrant", "myvectorstore", "mycollection", "query");
 
         // Assert.
         Assert.Equal(1ul, actual.Record.Id);

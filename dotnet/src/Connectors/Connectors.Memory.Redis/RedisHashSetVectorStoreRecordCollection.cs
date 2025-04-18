@@ -87,22 +87,20 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
     private readonly string[] _dataStoragePropertyNamesWithScore;
 
     /// <summary>The mapper to use when mapping between the consumer data model and the Redis record.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)> _mapper;
-#pragma warning restore CS0618
+    private readonly RedisHashSetVectorStoreRecordMapper<TRecord> _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="database">The Redis database to read/write records from.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="RedisHashSetVectorStoreRecordCollectionOptions{TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="RedisHashSetVectorStoreRecordCollectionOptions{TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Throw when parameters are invalid.</exception>
-    public RedisHashSetVectorStoreRecordCollection(IDatabase database, string collectionName, RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = null)
+    public RedisHashSetVectorStoreRecordCollection(IDatabase database, string name, RedisHashSetVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(database);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
@@ -111,7 +109,7 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
 
         // Assign.
         this._database = database;
-        this._collectionName = collectionName;
+        this._collectionName = name;
         this._options = options ?? new RedisHashSetVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new VectorStoreRecordModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
@@ -120,20 +118,18 @@ public sealed class RedisHashSetVectorStoreRecordCollection<TKey, TRecord> : IVe
         this._dataStoragePropertyNamesWithScore = [.. this._model.DataProperties.Select(p => p.StorageName), "vector_score"];
 
         // Assign Mapper.
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.HashEntriesCustomMapper ?? new RedisHashSetVectorStoreRecordMapper<TRecord>(this._model);
-#pragma warning restore CS0618
+        this._mapper = new RedisHashSetVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
             VectorStoreName = database.Database.ToString(),
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._collectionName;
+    public string Name => this._collectionName;
 
     /// <inheritdoc />
     public async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)

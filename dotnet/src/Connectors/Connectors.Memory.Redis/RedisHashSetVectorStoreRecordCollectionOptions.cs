@@ -24,7 +24,7 @@ public sealed class RedisHashSetVectorStoreRecordCollectionOptions<TRecord>
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and the Redis record.
     /// </summary>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, (string Key, HashEntry[] HashEntries)>? HashEntriesCustomMapper { get; init; } = null;
 
     /// <summary>

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.VectorData;
 using Qdrant.Client;
@@ -26,6 +27,9 @@ public sealed class QdrantVectorStore : IVectorStore
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly QdrantVectorStoreOptions _options;
+
+    /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(ulong)), new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
@@ -99,6 +103,20 @@ public sealed class QdrantVectorStore : IVectorStore
         {
             yield return collection;
         }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.CollectionExistsAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.DeleteCollectionAsync(cancellationToken);
     }
 
     /// <inheritdoc />

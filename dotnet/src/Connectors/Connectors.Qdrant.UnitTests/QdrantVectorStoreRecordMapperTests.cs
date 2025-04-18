@@ -82,7 +82,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<ulong>>(model, hasNamedVectors);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(5, hasNamedVectors), new() { IncludeVectors = includeVectors });
+        var point = CreateSinglePropsPointStruct(5, hasNamedVectors);
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -113,7 +114,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<SinglePropsModel<Guid>>(model, hasNamedVectors);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors), new() { IncludeVectors = includeVectors });
+        var point = CreateSinglePropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"), hasNamedVectors);
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -146,14 +148,13 @@ public class QdrantVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(5ul, actual.Id.Num);
-        Assert.Equal(9, actual.Payload.Count);
+        Assert.Equal(8, actual.Payload.Count);
         Assert.Equal("data 1", actual.Payload["dataString"].StringValue);
         Assert.Equal(5, actual.Payload["dataInt"].IntegerValue);
         Assert.Equal(5, actual.Payload["dataLong"].IntegerValue);
         Assert.Equal(5.5f, actual.Payload["dataFloat"].DoubleValue);
         Assert.Equal(5.5d, actual.Payload["dataDouble"].DoubleValue);
         Assert.True(actual.Payload["dataBool"].BoolValue);
-        Assert.Equal("2025-02-10T05:10:15.0000000Z", actual.Payload["dataDateTime"].StringValue);
         Assert.Equal("2025-02-10T05:10:15.0000000+01:00", actual.Payload["dataDateTimeOffset"].StringValue);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["dataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector1"].Data.ToArray());
@@ -175,14 +176,13 @@ public class QdrantVectorStoreRecordMapperTests
         // Assert.
         Assert.NotNull(actual);
         Assert.Equal(Guid.Parse("11111111-1111-1111-1111-111111111111"), Guid.Parse(actual.Id.Uuid));
-        Assert.Equal(9, actual.Payload.Count);
+        Assert.Equal(8, actual.Payload.Count);
         Assert.Equal("data 1", actual.Payload["dataString"].StringValue);
         Assert.Equal(5, actual.Payload["dataInt"].IntegerValue);
         Assert.Equal(5, actual.Payload["dataLong"].IntegerValue);
         Assert.Equal(5.5f, actual.Payload["dataFloat"].DoubleValue);
         Assert.Equal(5.5d, actual.Payload["dataDouble"].DoubleValue);
         Assert.True(actual.Payload["dataBool"].BoolValue);
-        Assert.Equal("2025-02-10T05:10:15.0000000Z", actual.Payload["dataDateTime"].StringValue);
         Assert.Equal("2025-02-10T05:10:15.0000000+01:00", actual.Payload["dataDateTimeOffset"].StringValue);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.Payload["dataArrayInt"].ListValue.Values.Select(x => (int)x.IntegerValue).ToArray());
         Assert.Equal(new float[] { 1, 2, 3, 4 }, actual.Vectors.Vectors_.Vectors["vector1"].Data.ToArray());
@@ -201,7 +201,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<ulong>>(model, hasNamedVectors: true);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(5), new() { IncludeVectors = includeVectors });
+        var point = CreateMultiPropsPointStruct(5);
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -212,7 +213,6 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.Equal(5.5f, actual.DataFloat);
         Assert.Equal(5.5d, actual.DataDouble);
         Assert.True(actual.DataBool);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime);
         Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), actual.DataDateTimeOffset);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.DataArrayInt);
 
@@ -240,7 +240,8 @@ public class QdrantVectorStoreRecordMapperTests
         var sut = new QdrantVectorStoreRecordMapper<MultiPropsModel<Guid>>(model, hasNamedVectors: true);
 
         // Act.
-        var actual = sut.MapFromStorageToDataModel(CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111")), new() { IncludeVectors = includeVectors });
+        var point = CreateMultiPropsPointStruct(Guid.Parse("11111111-1111-1111-1111-111111111111"));
+        var actual = sut.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors });
 
         // Assert.
         Assert.NotNull(actual);
@@ -251,7 +252,6 @@ public class QdrantVectorStoreRecordMapperTests
         Assert.Equal(5.5f, actual.DataFloat);
         Assert.Equal(5.5d, actual.DataDouble);
         Assert.True(actual.DataBool);
-        Assert.Equal(new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc), actual.DataDateTime);
         Assert.Equal(new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)), actual.DataDateTimeOffset);
         Assert.Equal(new int[] { 1, 2, 3, 4 }, actual.DataArrayInt);
 
@@ -289,7 +289,6 @@ public class QdrantVectorStoreRecordMapperTests
             DataFloat = 5.5f,
             DataDouble = 5.5d,
             DataBool = true,
-            DataDateTime = new DateTime(2025, 2, 10, 5, 10, 15, DateTimeKind.Utc),
             DataDateTimeOffset = new DateTimeOffset(2025, 2, 10, 5, 10, 15, TimeSpan.FromHours(1)),
             DataArrayInt = new List<int> { 1, 2, 3, 4 },
             Vector1 = new float[] { 1, 2, 3, 4 },
@@ -298,55 +297,57 @@ public class QdrantVectorStoreRecordMapperTests
         };
     }
 
-    private static PointStruct CreateSinglePropsPointStruct(ulong id, bool hasNamedVectors)
+    private static RetrievedPoint CreateSinglePropsPointStruct(ulong id, bool hasNamedVectors)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Num = id };
         AddDataToSinglePropsPointStruct(pointStruct, hasNamedVectors);
         return pointStruct;
     }
 
-    private static PointStruct CreateSinglePropsPointStruct(Guid id, bool hasNamedVectors)
+    private static RetrievedPoint CreateSinglePropsPointStruct(Guid id, bool hasNamedVectors)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Uuid = id.ToString() };
         AddDataToSinglePropsPointStruct(pointStruct, hasNamedVectors);
         return pointStruct;
     }
 
-    private static void AddDataToSinglePropsPointStruct(PointStruct pointStruct, bool hasNamedVectors)
+    private static void AddDataToSinglePropsPointStruct(RetrievedPoint pointStruct, bool hasNamedVectors)
     {
+        var responseVector = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3, 4] }");
+
         pointStruct.Payload.Add("data", "data value");
 
         if (hasNamedVectors)
         {
-            var namedVectors = new NamedVectors();
-            namedVectors.Vectors.Add("vector", new[] { 1f, 2f, 3f, 4f });
-            pointStruct.Vectors = new Vectors() { Vectors_ = namedVectors };
+            var namedVectors = new NamedVectorsOutput();
+            namedVectors.Vectors.Add("vector", responseVector);
+            pointStruct.Vectors = new VectorsOutput() { Vectors = namedVectors };
         }
         else
         {
-            pointStruct.Vectors = new[] { 1f, 2f, 3f, 4f };
+            pointStruct.Vectors = new VectorsOutput() { Vector = responseVector };
         }
     }
 
-    private static PointStruct CreateMultiPropsPointStruct(ulong id)
+    private static RetrievedPoint CreateMultiPropsPointStruct(ulong id)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Num = id };
         AddDataToMultiPropsPointStruct(pointStruct);
         return pointStruct;
     }
 
-    private static PointStruct CreateMultiPropsPointStruct(Guid id)
+    private static RetrievedPoint CreateMultiPropsPointStruct(Guid id)
     {
-        var pointStruct = new PointStruct();
+        var pointStruct = new RetrievedPoint();
         pointStruct.Id = new PointId() { Uuid = id.ToString() };
         AddDataToMultiPropsPointStruct(pointStruct);
         return pointStruct;
     }
 
-    private static void AddDataToMultiPropsPointStruct(PointStruct pointStruct)
+    private static void AddDataToMultiPropsPointStruct(RetrievedPoint pointStruct)
     {
         pointStruct.Payload.Add("dataString", "data 1");
         pointStruct.Payload.Add("dataInt", 5);
@@ -354,7 +355,6 @@ public class QdrantVectorStoreRecordMapperTests
         pointStruct.Payload.Add("dataFloat", 5.5f);
         pointStruct.Payload.Add("dataDouble", 5.5d);
         pointStruct.Payload.Add("dataBool", true);
-        pointStruct.Payload.Add("dataDateTime", "2025-02-10T05:10:15.0000000Z");
         pointStruct.Payload.Add("dataDateTimeOffset", "2025-02-10T05:10:15.0000000+01:00");
 
         var dataIntArray = new ListValue();
@@ -364,10 +364,13 @@ public class QdrantVectorStoreRecordMapperTests
         dataIntArray.Values.Add(4);
         pointStruct.Payload.Add("dataArrayInt", new Value { ListValue = dataIntArray });
 
-        var namedVectors = new NamedVectors();
-        namedVectors.Vectors.Add("vector1", new[] { 1f, 2f, 3f, 4f });
-        namedVectors.Vectors.Add("vector2", new[] { 5f, 6f, 7f, 8f });
-        pointStruct.Vectors = new Vectors() { Vectors_ = namedVectors };
+        var responseVector1 = VectorOutput.Parser.ParseJson("{ \"data\": [1, 2, 3, 4] }");
+        var responseVector2 = VectorOutput.Parser.ParseJson("{ \"data\": [5, 6, 7, 8] }");
+
+        var namedVectors = new NamedVectorsOutput();
+        namedVectors.Vectors.Add("vector1", responseVector1);
+        namedVectors.Vectors.Add("vector2", responseVector2);
+        pointStruct.Vectors = new VectorsOutput() { Vectors = namedVectors };
     }
 
     private static VectorStoreRecordDefinition CreateSinglePropsVectorStoreRecordDefinition(Type keyType) => new()
@@ -405,7 +408,6 @@ public class QdrantVectorStoreRecordMapperTests
             new VectorStoreRecordDataProperty("DataFloat", typeof(float)) { StoragePropertyName = "dataFloat" },
             new VectorStoreRecordDataProperty("DataDouble", typeof(double)) { StoragePropertyName = "dataDouble" },
             new VectorStoreRecordDataProperty("DataBool", typeof(bool)) { StoragePropertyName = "dataBool" },
-            new VectorStoreRecordDataProperty("DataDateTime", typeof(DateTime)) { StoragePropertyName = "dataDateTime" },
             new VectorStoreRecordDataProperty("DataDateTimeOffset", typeof(DateTimeOffset)) { StoragePropertyName = "dataDateTimeOffset" },
             new VectorStoreRecordDataProperty("DataArrayInt", typeof(List<int>)) { StoragePropertyName = "dataArrayInt" },
             new VectorStoreRecordVectorProperty("Vector1", typeof(ReadOnlyMemory<float>), 10) { StoragePropertyName = "vector1" },
@@ -436,9 +438,6 @@ public class QdrantVectorStoreRecordMapperTests
 
         [VectorStoreRecordData(StoragePropertyName = "dataBool")]
         public bool DataBool { get; set; } = false;
-
-        [VectorStoreRecordData(StoragePropertyName = "dataDateTime")]
-        public DateTime DataDateTime { get; set; }
 
         [VectorStoreRecordData(StoragePropertyName = "dataDateTimeOffset")]
         public DateTimeOffset DataDateTimeOffset { get; set; }

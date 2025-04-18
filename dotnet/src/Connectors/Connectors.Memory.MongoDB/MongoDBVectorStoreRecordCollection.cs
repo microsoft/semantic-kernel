@@ -52,30 +52,28 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
     private readonly MongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
-#pragma warning restore CS0618
+    private readonly IMongoDBMapper<TRecord> _mapper;
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="MongoDBVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public MongoDBVectorStoreRecordCollection(
         IMongoDatabase mongoDatabase,
-        string collectionName,
+        string name,
         MongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
@@ -84,17 +82,19 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
-        this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
-        this.CollectionName = collectionName;
+        this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
+        this.Name = name;
         this._options = options ?? new MongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-        this._mapper = this.InitializeMapper();
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new MongoDBDynamicDataModelMapper(this._model) as IMongoDBMapper<TRecord>)!
+            : new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
             VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -113,7 +113,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             {
                 VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = "CreateCollection"
             };
         }
@@ -127,13 +127,13 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
         // So for CreateCollectionIfNotExistsAsync, we don't perform an additional check.
         await this.RunOperationAsync("CreateCollection",
-            () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._mongoDatabase.CreateCollectionAsync(this.Name, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         await this.RunOperationWithRetryAsync(
             "CreateIndexes",
             this._options.MaxRetries,
             this._options.DelayInMilliseconds,
-            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken),
+            () => this.CreateIndexesAsync(this.Name, cancellationToken),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -159,7 +159,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
-        => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.CollectionName, cancellationToken));
+        => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.Name, cancellationToken));
 
     /// <inheritdoc />
     public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
@@ -187,7 +187,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         return VectorStoreErrorHandler.RunModelConversion(
             MongoDBConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
     }
@@ -217,7 +217,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     yield return VectorStoreErrorHandler.RunModelConversion(
                         MongoDBConstants.VectorStoreSystemName,
                         this._collectionMetadata.VectorStoreName,
-                        this.CollectionName,
+                        this.Name,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(record, new()));
                 }
@@ -236,7 +236,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
             MongoDBConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
@@ -374,7 +374,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                 var record = VectorStoreErrorHandler.RunModelConversion(
                     MongoDBConstants.VectorStoreSystemName,
                     this._collectionMetadata.VectorStoreName,
-                    this.CollectionName,
+                    this.Name,
                     "GetAsync",
                     () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
 
@@ -412,7 +412,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
         BsonDocument[] pipeline = MongoDBVectorStoreCollectionSearchMapping.GetHybridSearchPipeline(
             vectorArray,
             keywords,
-            this.CollectionName,
+            this.Name,
             this._options.VectorIndexName,
             this._options.FullTextSearchIndexName,
             vectorProperty.StorageName,
@@ -569,7 +569,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     var record = VectorStoreErrorHandler.RunModelConversion(
                         MongoDBConstants.VectorStoreSystemName,
                         this._collectionMetadata.VectorStoreName,
-                        this.CollectionName,
+                        this.Name,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new() { IncludeVectors = includeVectors }));
 
@@ -589,7 +589,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
-        var filter = new BsonDocument("name", this.CollectionName);
+        var filter = new BsonDocument("name", this.Name);
         var options = new ListCollectionNamesOptions { Filter = filter };
 
         using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(options, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -609,7 +609,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             {
                 VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -627,7 +627,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
             {
                 VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -659,7 +659,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     {
                         VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
                         VectorStoreName = this._collectionMetadata.VectorStoreName,
-                        CollectionName = this.CollectionName,
+                        CollectionName = this.Name,
                         OperationName = operationName
                     };
                 }
@@ -694,7 +694,7 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
                     {
                         VectorStoreSystemName = MongoDBConstants.VectorStoreSystemName,
                         VectorStoreName = this._collectionMetadata.VectorStoreName,
-                        CollectionName = this.CollectionName,
+                        CollectionName = this.Name,
                         OperationName = operationName
                     };
                 }
@@ -705,26 +705,6 @@ public sealed class MongoDBVectorStoreRecordCollection<TKey, TRecord> : IVectorS
 
         throw new VectorStoreOperationException("Retry logic failed.");
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
-    {
-        if (this._options.BsonDocumentCustomMapper is not null)
-        {
-            return this._options.BsonDocumentCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            return (new MongoDBDynamicDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
-        }
-
-        return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
-    }
-#pragma warning restore CS0618
 
     private static Array VerifyVectorParam<TVector>(TVector vector)
     {

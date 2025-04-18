@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
@@ -18,7 +19,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     private readonly VectorStoreMetadata _metadata;
 
     /// <summary>Internal storage for the record collection.</summary>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollection;
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<object, object>> _internalCollections;
 
     /// <summary>The data type of each collection, to enforce a single type per collection.</summary>
     private readonly ConcurrentDictionary<string, Type> _internalCollectionTypes = new();
@@ -28,7 +29,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     /// </summary>
     public InMemoryVectorStore()
     {
-        this._internalCollection = new();
+        this._internalCollections = new();
 
         this._metadata = new()
         {
@@ -42,7 +43,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     /// <param name="internalCollection">Allows passing in the dictionary used for storage, for testing purposes.</param>
     internal InMemoryVectorStore(ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection)
     {
-        this._internalCollection = internalCollection;
+        this._internalCollections = internalCollection;
 
         this._metadata = new()
         {
@@ -61,7 +62,7 @@ public sealed class InMemoryVectorStore : IVectorStore
         }
 
         var collection = new InMemoryVectorStoreRecordCollection<TKey, TRecord>(
-            this._internalCollection,
+            this._internalCollections,
             this._internalCollectionTypes,
             name,
             new() { VectorStoreRecordDefinition = vectorStoreRecordDefinition }) as IVectorStoreRecordCollection<TKey, TRecord>;
@@ -71,7 +72,21 @@ public sealed class InMemoryVectorStore : IVectorStore
     /// <inheritdoc />
     public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
-        return this._internalCollection.Keys.ToAsyncEnumerable();
+        return this._internalCollections.Keys.ToAsyncEnumerable();
+    }
+
+    /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return this._internalCollections.ContainsKey(name) ? Task.FromResult(true) : Task.FromResult(false);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    {
+        this._internalCollections.TryRemove(name, out _);
+        this._internalCollectionTypes.TryRemove(name, out _);
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -82,7 +97,7 @@ public sealed class InMemoryVectorStore : IVectorStore
         return
             serviceKey is not null ? null :
             serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollection :
+            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
             serviceType.IsInstanceOfType(this) ? this :
             null;
     }

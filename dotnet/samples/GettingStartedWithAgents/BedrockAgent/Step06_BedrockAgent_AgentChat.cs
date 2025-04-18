@@ -26,7 +26,7 @@ public class Step06_BedrockAgent_AgentChat(ITestOutputHelper output) : BaseBedro
     /// Demonstrates how to put two <see cref="BedrockAgent"/> instances in a chat.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithAgentChatAsync()
+    public async Task UseAgentWithAgentChat()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step06_BedrockAgent_AgentChat");

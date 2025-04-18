@@ -65,6 +65,8 @@ public class WeaviateBasicFilterTests(WeaviateBasicFilterTests.Fixture fixture)
 
     public new class Fixture : BasicFilterTests<Guid>.Fixture
     {
-        public override TestStore TestStore => WeaviateTestStore.Instance;
+        public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
+
+        protected override string DistanceFunction => Microsoft.Extensions.VectorData.DistanceFunction.CosineDistance;
     }
 }

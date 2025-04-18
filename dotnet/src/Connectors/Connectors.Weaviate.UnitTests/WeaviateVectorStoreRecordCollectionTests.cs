@@ -10,7 +10,6 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
-using Moq;
 using Xunit;
 
 namespace SemanticKernel.Connectors.Weaviate.UnitTests;
@@ -348,87 +347,6 @@ public sealed class WeaviateVectorStoreRecordCollectionTests : IDisposable
         Assert.Equal("22222222-2222-2222-2222-222222222222", jsonObject2["id"]?.GetValue<string>());
         Assert.Equal("Test Name 2", jsonObject2["properties"]?["hotelName"]?.GetValue<string>());
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    [Fact]
-    public async Task UpsertWithCustomMapperWorksCorrectlyAsync()
-    {
-        // Arrange
-        var id = new Guid("11111111-1111-1111-1111-111111111111");
-        var hotel = new WeaviateHotel { HotelId = id, HotelName = "Test Name" };
-
-        var jsonObject = new JsonObject { ["id"] = id.ToString(), ["properties"] = new JsonObject() };
-
-        jsonObject["properties"]!["hotel_name"] = "Test Name from Mapper";
-
-        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
-
-        mockMapper
-            .Setup(l => l.MapFromDataToStorageModel(It.IsAny<WeaviateHotel>()))
-            .Returns(jsonObject);
-
-        var batchResponse = new List<WeaviateUpsertCollectionObjectBatchResponse> { new() { Id = id, Result = new() { Status = "Success" } } };
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(JsonSerializer.Serialize(batchResponse)),
-        };
-
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(
-            this._mockHttpClient,
-            "Collection",
-            new() { JsonObjectCustomMapper = mockMapper.Object });
-
-        // Act
-        var result = await sut.UpsertAsync(hotel);
-
-        // Assert
-        Assert.Equal(id, result);
-
-        var request = JsonSerializer.Deserialize<WeaviateUpsertCollectionObjectBatchRequest>(this._messageHandlerStub.RequestContent);
-
-        Assert.NotNull(request?.CollectionObjects);
-
-        var requestObject = request.CollectionObjects[0];
-
-        Assert.Equal("11111111-1111-1111-1111-111111111111", requestObject["id"]?.GetValue<string>());
-        Assert.Equal("Test Name from Mapper", requestObject["properties"]?["hotel_name"]?.GetValue<string>());
-    }
-
-    [Fact]
-    public async Task GetWithCustomMapperWorksCorrectlyAsync()
-    {
-        // Arrange
-        var id = new Guid("11111111-1111-1111-1111-111111111111");
-        var jsonObject = new JsonObject { ["id"] = id.ToString(), ["properties"] = new JsonObject() };
-
-        jsonObject["properties"]!["hotelName"] = "Test Name";
-
-        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = new StringContent(JsonSerializer.Serialize(jsonObject))
-        };
-
-        var mockMapper = new Mock<IVectorStoreRecordMapper<WeaviateHotel, JsonObject>>();
-
-        mockMapper
-            .Setup(l => l.MapFromStorageToDataModel(It.IsAny<JsonObject>(), It.IsAny<StorageToDataModelMapperOptions>()))
-            .Returns(new WeaviateHotel { HotelId = id, HotelName = "Test Name from mapper" });
-
-        var sut = new WeaviateVectorStoreRecordCollection<Guid, WeaviateHotel>(
-            this._mockHttpClient,
-            "Collection",
-            new() { JsonObjectCustomMapper = mockMapper.Object });
-
-        // Act
-        var result = await sut.GetAsync(id);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Equal(id, result.HotelId);
-        Assert.Equal("Test Name from mapper", result.HotelName);
-    }
-#pragma warning restore CS0618
 
     [Theory]
     [InlineData(true, "http://test-endpoint/schema", "Bearer fake-key")]

@@ -56,20 +56,18 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     private readonly VectorStoreRecordModel _model;
 
     /// <summary>A mapper to use for converting between qdrant point and consumer models.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, PointStruct> _mapper;
-#pragma warning restore CS0618
+    private readonly QdrantVectorStoreRecordMapper<TRecord> _mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    public QdrantVectorStoreRecordCollection(QdrantClient qdrantClient, string collectionName, QdrantVectorStoreRecordCollectionOptions<TRecord>? options = null)
-        : this(new MockableQdrantClient(qdrantClient), collectionName, options)
+    public QdrantVectorStoreRecordCollection(QdrantClient qdrantClient, string name, QdrantVectorStoreRecordCollectionOptions<TRecord>? options = null)
+        : this(new MockableQdrantClient(qdrantClient), name, options)
     {
     }
 
@@ -77,15 +75,15 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
     /// Initializes a new instance of the <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="qdrantClient">Qdrant client that can be used to manage the collections and points in a Qdrant store.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="QdrantVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     /// <exception cref="ArgumentNullException">Thrown if the <paramref name="qdrantClient"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
-    internal QdrantVectorStoreRecordCollection(MockableQdrantClient qdrantClient, string collectionName, QdrantVectorStoreRecordCollectionOptions<TRecord>? options = null)
+    internal QdrantVectorStoreRecordCollection(MockableQdrantClient qdrantClient, string name, QdrantVectorStoreRecordCollectionOptions<TRecord>? options = null)
     {
         // Verify.
         Verify.NotNull(qdrantClient);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(ulong) && typeof(TKey) != typeof(Guid) && typeof(TKey) != typeof(object))
         {
@@ -94,25 +92,23 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         // Assign.
         this._qdrantClient = qdrantClient;
-        this._collectionName = collectionName;
+        this._collectionName = name;
         this._options = options ?? new QdrantVectorStoreRecordCollectionOptions<TRecord>();
 
         this._model = new VectorStoreRecordModelBuilder(QdrantVectorStoreRecordFieldMapping.GetModelBuildOptions(this._options.HasNamedVectors))
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-        this._mapper = this._options.PointStructCustomMapper ?? new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
-#pragma warning restore CS0618
+        this._mapper = new QdrantVectorStoreRecordMapper<TRecord>(this._model, this._options.HasNamedVectors);
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
     /// <inheritdoc />
-    public string CollectionName => this._collectionName;
+    public string Name => this._collectionName;
 
     /// <inheritdoc />
     public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -301,24 +297,12 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
         {
-            var pointStruct = new PointStruct
-            {
-                Id = retrievedPoint.Id,
-                Vectors = retrievedPoint.Vectors,
-                Payload = { }
-            };
-
-            foreach (KeyValuePair<string, Value> payloadEntry in retrievedPoint.Payload)
-            {
-                pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
-            }
-
             yield return VectorStoreErrorHandler.RunModelConversion(
                 QdrantConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
                 this._collectionName,
                 OperationName,
-                () => this._mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
+                () => this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, new() { IncludeVectors = includeVectors }));
         }
     }
 
@@ -515,7 +499,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var points = await this.RunOperationAsync(
             "Query",
             () => this._qdrantClient.QueryAsync(
-                this.CollectionName,
+                this.Name,
                 query: query,
                 usingVector: this._options.HasNamedVectors ? vectorProperty.StorageName : null,
                 filter: filter,
@@ -574,14 +558,14 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var scrollResponse = await this.RunOperationAsync(
             "Scroll",
             () => this._qdrantClient.ScrollAsync(
-                this.CollectionName,
+                this.Name,
                 translatedFilter,
                 vectorsSelector,
                 limit: (uint)(top + options.Skip),
                 orderBy,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantVectorStoreCollectionSearchMapping.MapRetrievedPointToVectorSearchResult(
+        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantVectorStoreCollectionSearchMapping.MapRetrievedPointToRecord(
                 point,
                 this._mapper,
                 options.IncludeVectors,
@@ -661,7 +645,7 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         var points = await this.RunOperationAsync(
             "Query",
             () => this._qdrantClient.QueryAsync(
-                this.CollectionName,
+                this.Name,
                 prefetch: new List<PrefetchQuery>() { vectorQuery, keywordQuery },
                 query: fusionQuery,
                 limit: (ulong)top,

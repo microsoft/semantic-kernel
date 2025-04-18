@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
 using Qdrant.Client.Grpc;
@@ -53,13 +52,9 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 throw new InvalidOperationException($"Property name '{fieldName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            // Map datetime equality.
-            if (filterValue is DateTime or DateTimeOffset)
+            // Map DateTimeOffset equality.
+            if (filterValue is DateTimeOffset dateTimeOffset)
             {
-                var dateTimeOffset = filterValue is DateTime dateTime
-                    ? new DateTimeOffset(dateTime, TimeSpan.Zero)
-                    : (DateTimeOffset)filterValue;
-
                 var range = new global::Qdrant.Client.Grpc.DatetimeRange
                 {
                     Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
@@ -99,30 +94,15 @@ internal static class QdrantVectorStoreCollectionSearchMapping
     /// <param name="collectionName">The name of the collection the operation is being run on.</param>
     /// <param name="operationName">The type of database operation being run.</param>
     /// <returns>The mapped <see cref="VectorSearchResult{TRecord}"/>.</returns>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
     public static VectorSearchResult<TRecord> MapScoredPointToVectorSearchResult<TRecord>(
         ScoredPoint point,
-        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+        QdrantVectorStoreRecordMapper<TRecord> mapper,
         bool includeVectors,
         string vectorStoreSystemName,
         string? vectorStoreName,
         string collectionName,
         string operationName)
-#pragma warning restore CS0618
     {
-        // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
-        var pointStruct = new PointStruct
-        {
-            Id = point.Id,
-            Vectors = point.Vectors,
-            Payload = { }
-        };
-
-        foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
-        {
-            pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
-        }
-
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
             VectorStoreErrorHandler.RunModelConversion(
@@ -130,39 +110,25 @@ internal static class QdrantVectorStoreCollectionSearchMapping
                 vectorStoreName,
                 collectionName,
                 operationName,
-                () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors })),
+                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors })),
             point.Score);
     }
 
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    internal static TRecord MapRetrievedPointToVectorSearchResult<TRecord>(RetrievedPoint point,
-        IVectorStoreRecordMapper<TRecord, PointStruct> mapper,
+    internal static TRecord MapRetrievedPointToRecord<TRecord>(
+        RetrievedPoint point,
+        QdrantVectorStoreRecordMapper<TRecord> mapper,
         bool includeVectors,
         string vectorStoreSystemName,
         string? vectorStoreName,
         string collectionName,
         string operationName)
-#pragma warning restore CS0618
     {
-        // Since the mapper doesn't know about scored points, we need to convert the scored point to a point struct first.
-        var pointStruct = new PointStruct
-        {
-            Id = point.Id,
-            Vectors = point.Vectors,
-            Payload = { }
-        };
-
-        foreach (KeyValuePair<string, Value> payloadEntry in point.Payload)
-        {
-            pointStruct.Payload.Add(payloadEntry.Key, payloadEntry.Value);
-        }
-
         // Do the mapping with error handling.
         return VectorStoreErrorHandler.RunModelConversion(
                 vectorStoreSystemName,
                 vectorStoreName,
                 collectionName,
                 operationName,
-                () => mapper.MapFromStorageToDataModel(pointStruct, new() { IncludeVectors = includeVectors }));
+                () => mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, new() { IncludeVectors = includeVectors }));
     }
 }

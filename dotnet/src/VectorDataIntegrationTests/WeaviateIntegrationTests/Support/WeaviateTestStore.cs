@@ -12,9 +12,11 @@ namespace WeaviateIntegrationTests.Support;
 
 public sealed class WeaviateTestStore : TestStore
 {
-    public static WeaviateTestStore Instance { get; } = new();
+    public static WeaviateTestStore NamedVectorsInstance { get; } = new(hasNamedVectors: true);
+    public static WeaviateTestStore UnnamedVectorInstance { get; } = new(hasNamedVectors: false);
 
     private readonly WeaviateContainer _container = new WeaviateBuilder().Build();
+    private readonly bool _hasNamedVectors;
     public HttpClient? _httpClient { get; private set; }
     private WeaviateVectorStore? _defaultVectorStore;
 
@@ -22,20 +24,13 @@ public sealed class WeaviateTestStore : TestStore
 
     public override IVectorStore DefaultVectorStore => this._defaultVectorStore ?? throw new InvalidOperationException("Not initialized");
 
-    public override string DefaultDistanceFunction => DistanceFunction.CosineDistance;
-
-    public WeaviateVectorStore GetVectorStore(WeaviateVectorStoreOptions options)
-        => new(this.Client, options);
-
-    private WeaviateTestStore()
-    {
-    }
+    private WeaviateTestStore(bool hasNamedVectors) => this._hasNamedVectors = hasNamedVectors;
 
     protected override async Task StartAsync()
     {
         await this._container.StartAsync();
         this._httpClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{this._container.GetMappedPublicPort(WeaviateBuilder.WeaviateHttpPort)}/v1/") };
-        this._defaultVectorStore = new(this._httpClient);
+        this._defaultVectorStore = new(this._httpClient, new() { HasNamedVectors = this._hasNamedVectors });
     }
 
     protected override Task StopAsync()

@@ -14,7 +14,7 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
     /// <summary>
     /// Gets or sets an optional custom mapper to use when converting between the data model and Weaviate record.
     /// </summary>
-    [Obsolete("Custom mappers are being obsoleted.")]
+    [Obsolete("Custom mappers are no longer supported.", error: true)]
     public IVectorStoreRecordMapper<TRecord, JsonObject>? JsonObjectCustomMapper { get; init; } = null;
 
     /// <summary>
@@ -39,4 +39,11 @@ public sealed class WeaviateVectorStoreRecordCollectionOptions<TRecord>
     /// This parameter is optional because authentication may be disabled in local clusters for testing purposes.
     /// </remarks>
     public string? ApiKey { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.
+    /// Defaults to multiple named vectors.
+    /// <see href="https://weaviate.io/developers/weaviate/config-refs/schema/multi-vector"/>.
+    /// </summary>
+    public bool HasNamedVectors { get; set; } = true;
 }

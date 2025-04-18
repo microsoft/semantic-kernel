@@ -28,20 +28,23 @@ public sealed class ResourceDefinition
 
     /// <summary>
     /// Gets or sets the kernel instance to invoke the resource handler.
+    /// If not provided, an instance registered in DI container will be used.
     /// </summary>
-    public required Kernel Kernel { get; init; }
+    public Kernel? Kernel { get; set; }
 
     /// <summary>
     /// Creates a new blob resource definition.
     /// </summary>
-    /// <param name="kernel">The kernel instance to invoke the resource handler.</param>
     /// <param name="uri">The URI of the resource.</param>
     /// <param name="name">The name of the resource.</param>
     /// <param name="content">The content of the resource.</param>
     /// <param name="mimeType">The MIME type of the resource.</param>
     /// <param name="description">The description of the resource.</param>
+    /// <param name="kernel">The kernel instance to invoke the resource handler.
+    /// If not provided, an instance registered in DI container will be used.
+    /// </param>
     /// <returns>The created resource definition.</returns>
-    public static ResourceDefinition CreateBlobResource(Kernel kernel, string uri, string name, byte[] content, string mimeType, string? description = null)
+    public static ResourceDefinition CreateBlobResource(string uri, string name, byte[] content, string mimeType, string? description = null, Kernel? kernel = null)
     {
         return new()
         {
@@ -77,6 +80,10 @@ public sealed class ResourceDefinition
         {
             this._kernelFunction = KernelFunctionFactory.CreateFromMethod(this.Handler);
         }
+
+        this.Kernel
+            ??= context.Server.Services?.GetRequiredService<Kernel>()
+            ?? throw new InvalidOperationException("Kernel is not available.");
 
         KernelArguments args = new()
         {

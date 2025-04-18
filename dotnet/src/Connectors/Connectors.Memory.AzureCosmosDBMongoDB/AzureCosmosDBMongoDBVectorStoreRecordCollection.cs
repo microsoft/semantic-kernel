@@ -52,30 +52,28 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
     private readonly AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord> _options;
 
     /// <summary>Interface for mapping between a storage model, and the consumer record data model.</summary>
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    private readonly IVectorStoreRecordMapper<TRecord, BsonDocument> _mapper;
-#pragma warning restore CS0618
+    private readonly IMongoDBMapper<TRecord> _mapper;
 
     /// <summary>The model for this collection.</summary>
     private readonly VectorStoreRecordModel _model;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="mongoDatabase"><see cref="IMongoDatabase"/> that can be used to manage the collections in Azure CosmosDB MongoDB.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="AzureCosmosDBMongoDBVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public AzureCosmosDBMongoDBVectorStoreRecordCollection(
         IMongoDatabase mongoDatabase,
-        string collectionName,
+        string name,
         AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(mongoDatabase);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(object))
         {
@@ -84,17 +82,19 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
         // Assign.
         this._mongoDatabase = mongoDatabase;
-        this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
-        this.CollectionName = collectionName;
+        this._mongoCollection = mongoDatabase.GetCollection<BsonDocument>(name);
+        this.Name = name;
         this._options = options ?? new AzureCosmosDBMongoDBVectorStoreRecordCollectionOptions<TRecord>();
         this._model = new MongoDBModelBuilder().Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);
-        this._mapper = this.InitializeMapper();
+        this._mapper = typeof(TRecord) == typeof(Dictionary<string, object?>)
+            ? (new MongoDBDynamicDataModelMapper(this._model) as IMongoDBMapper<TRecord>)!
+            : new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
 
         this._collectionMetadata = new()
         {
             VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
             VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -113,7 +113,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             {
                 VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = "CreateCollection"
             };
         }
@@ -125,10 +125,10 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
     public async Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default)
     {
         await this.RunOperationAsync("CreateCollection",
-            () => this._mongoDatabase.CreateCollectionAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this._mongoDatabase.CreateCollectionAsync(this.Name, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
         await this.RunOperationAsync("CreateIndexes",
-            () => this.CreateIndexesAsync(this.CollectionName, cancellationToken: cancellationToken)).ConfigureAwait(false);
+            () => this.CreateIndexesAsync(this.Name, cancellationToken: cancellationToken)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -153,7 +153,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
     /// <inheritdoc />
     public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
-        => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.CollectionName, cancellationToken));
+        => this.RunOperationAsync("DropCollection", () => this._mongoDatabase.DropCollectionAsync(this.Name, cancellationToken));
 
     /// <inheritdoc />
     public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
@@ -181,7 +181,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         return VectorStoreErrorHandler.RunModelConversion(
             AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromStorageToDataModel(record, new() { IncludeVectors = includeVectors }));
     }
@@ -211,7 +211,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
                     yield return VectorStoreErrorHandler.RunModelConversion(
                         AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                         this._collectionMetadata.VectorStoreName,
-                        this.CollectionName,
+                        this.Name,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(record, new()));
                 }
@@ -230,7 +230,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
         var storageModel = VectorStoreErrorHandler.RunModelConversion(
             AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
             this._collectionMetadata.VectorStoreName,
-            this.CollectionName,
+            this.Name,
             OperationName,
             () => this._mapper.MapFromDataToStorageModel(record));
 
@@ -391,7 +391,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
                 var record = VectorStoreErrorHandler.RunModelConversion(
                     AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                     this._collectionMetadata.VectorStoreName,
-                    this.CollectionName,
+                    this.Name,
                     "GetAsync",
                     () => this._mapper.MapFromStorageToDataModel(response, new() { IncludeVectors = options.IncludeVectors }));
 
@@ -475,7 +475,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
                     var record = VectorStoreErrorHandler.RunModelConversion(
                         AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                         this._collectionMetadata.VectorStoreName,
-                        this.CollectionName,
+                        this.Name,
                         OperationName,
                         () => this._mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, new()));
 
@@ -495,7 +495,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
     private async Task<bool> InternalCollectionExistsAsync(CancellationToken cancellationToken)
     {
-        var filter = new BsonDocument("name", this.CollectionName);
+        var filter = new BsonDocument("name", this.Name);
         var options = new ListCollectionNamesOptions { Filter = filter };
 
         using var cursor = await this._mongoDatabase.ListCollectionNamesAsync(options, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -515,7 +515,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             {
                 VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -533,7 +533,7 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
             {
                 VectorStoreSystemName = AzureCosmosDBMongoDBConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -569,26 +569,6 @@ public sealed class AzureCosmosDBMongoDBVectorStoreRecordCollection<TKey, TRecor
 
         return storagePropertyNames;
     }
-
-#pragma warning disable CS0618 // IVectorStoreRecordMapper is obsolete
-    /// <summary>
-    /// Returns custom mapper, generic data model mapper or default record mapper.
-    /// </summary>
-    private IVectorStoreRecordMapper<TRecord, BsonDocument> InitializeMapper()
-    {
-        if (this._options.BsonDocumentCustomMapper is not null)
-        {
-            return this._options.BsonDocumentCustomMapper;
-        }
-
-        if (typeof(TRecord) == typeof(Dictionary<string, object?>))
-        {
-            return (new MongoDBDynamicDataModelMapper(this._model) as IVectorStoreRecordMapper<TRecord, BsonDocument>)!;
-        }
-
-        return new MongoDBVectorStoreRecordMapper<TRecord>(this._model);
-    }
-#pragma warning restore CS0618
 
     private string GetStringKey(TKey key)
     {

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
@@ -26,6 +27,9 @@ public sealed class WeaviateVectorStore : IVectorStore
 
     /// <summary>Optional configuration options for this class.</summary>
     private readonly WeaviateVectorStoreOptions _options;
+
+    /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(Guid))] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
@@ -72,7 +76,8 @@ public sealed class WeaviateVectorStore : IVectorStore
             {
                 VectorStoreRecordDefinition = vectorStoreRecordDefinition,
                 Endpoint = this._options.Endpoint,
-                ApiKey = this._options.ApiKey
+                ApiKey = this._options.ApiKey,
+                HasNamedVectors = this._options.HasNamedVectors
             }) as IVectorStoreRecordCollection<TKey, TRecord>;
 
         return recordCollection;
@@ -87,6 +92,9 @@ public sealed class WeaviateVectorStore : IVectorStore
         try
         {
             var httpResponse = await this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+
+            httpResponse.EnsureSuccessStatusCode();
+
             var httpResponseContent = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
             collectionsResponse = JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(httpResponseContent)!;
@@ -108,6 +116,20 @@ public sealed class WeaviateVectorStore : IVectorStore
                 yield return collection.CollectionName;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.CollectionExistsAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.DeleteCollectionAsync(cancellationToken);
     }
 
     /// <inheritdoc />
