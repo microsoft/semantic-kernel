@@ -58,4 +58,9 @@ public sealed class VectorStoreRecordModelBuildingOptions
     /// When set, the model builder will manage the key storage name, and users may not customize it.
     /// </summary>
     public string? ReservedKeyStorageName { get; init; }
+
+    /// <summary>
+    /// A method for escaping storage names.
+    /// </summary>
+    public Func<string, string>? EscapeIdentifier { get; init; }
 }

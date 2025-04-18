@@ -25,7 +25,9 @@ internal static class SqliteConstants
         SupportedKeyPropertyTypes = SqliteConstants.SupportedKeyTypes,
         SupportedDataPropertyTypes = SqliteConstants.SupportedDataTypes,
         SupportedEnumerableDataPropertyElementTypes = [],
-        SupportedVectorPropertyTypes = SqliteConstants.SupportedVectorTypes
+        SupportedVectorPropertyTypes = SqliteConstants.SupportedVectorTypes,
+
+        EscapeIdentifier = SqliteVectorStoreCollectionCommandBuilder.EscapeIdentifier
     };
 
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
