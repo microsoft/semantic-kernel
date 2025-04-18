@@ -19,7 +19,7 @@ public class InMemoryBatchConformanceTests(InMemorySimpleModelFixture fixture)
 
         foreach (var record in expectedRecords)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true, fixture.TestStore.VectorsComparable);
         }
     }
 }

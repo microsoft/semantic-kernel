@@ -29,7 +29,7 @@ public sealed class WeaviateVectorStore : IVectorStore
     private readonly WeaviateVectorStoreOptions _options;
 
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
-    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(Guid))] };
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(Guid)), new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.

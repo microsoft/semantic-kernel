@@ -44,7 +44,7 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
 
         var received = await fixture.Collection.GetAsync(expectedRecord.Id, new() { IncludeVectors = includeVectors });
 
-        expectedRecord.AssertEqual(received, includeVectors);
+        expectedRecord.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
@@ -65,7 +65,7 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
         Assert.Equal(expectedKey, key);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = true });
-        inserted.AssertEqual(received, includeVectors: true);
+        inserted.AssertEqual(received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
@@ -78,7 +78,7 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
             Id = existingRecord.Id,
             Text = "updated",
             Number = 456,
-            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.2f, SimpleRecord<TKey>.DimensionCount).ToArray())
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.25f, SimpleRecord<TKey>.DimensionCount).ToArray())
         };
 
         Assert.NotNull(await collection.GetAsync(existingRecord.Id));
@@ -86,7 +86,7 @@ public class RecordConformanceTests<TKey>(SimpleModelFixture<TKey> fixture) wher
         Assert.Equal(existingRecord.Id, key);
 
         var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = true });
-        updated.AssertEqual(received, includeVectors: true);
+        updated.AssertEqual(received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]

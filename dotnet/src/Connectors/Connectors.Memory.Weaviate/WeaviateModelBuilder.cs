@@ -12,7 +12,7 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : VectorStoreRecordJso
     {
         return new()
         {
-            RequiresAtLeastOneVector = false,
+            RequiresAtLeastOneVector = !hasNamedVectors,
             SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors,
 

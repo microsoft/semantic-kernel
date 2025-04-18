@@ -46,7 +46,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
             (TKey)expectedRecord[DynamicDataModelFixture<TKey>.KeyPropertyName]!,
             new() { IncludeVectors = includeVectors });
 
-        AssertEquivalent(expectedRecord, received, includeVectors);
+        AssertEquivalent(expectedRecord, received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
@@ -67,7 +67,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
         Assert.Equal(expectedKey, key);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = true });
-        AssertEquivalent(inserted, received, includeVectors: true);
+        AssertEquivalent(inserted, received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
@@ -88,7 +88,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
         Assert.Equal(existingRecord[DynamicDataModelFixture<TKey>.KeyPropertyName], key);
 
         var received = await collection.GetAsync((TKey)existingRecord[DynamicDataModelFixture<TKey>.KeyPropertyName]!, new() { IncludeVectors = true });
-        AssertEquivalent(updated, received, includeVectors: true);
+        AssertEquivalent(updated, received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
@@ -109,7 +109,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
         Assert.Null(await fixture.Collection.GetAsync((TKey)recordToRemove[DynamicDataModelFixture<TKey>.KeyPropertyName]!));
     }
 
-    protected static void AssertEquivalent(Dictionary<string, object?> expected, Dictionary<string, object?>? actual, bool includeVectors)
+    protected static void AssertEquivalent(Dictionary<string, object?> expected, Dictionary<string, object?>? actual, bool includeVectors, bool compareVectors)
     {
         Assert.NotNull(actual);
         Assert.Equal(expected[DynamicDataModelFixture<TKey>.KeyPropertyName], actual[DynamicDataModelFixture<TKey>.KeyPropertyName]);
@@ -119,9 +119,14 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
 
         if (includeVectors)
         {
-            Assert.Equal(
-                ((ReadOnlyMemory<float>)expected[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).ToArray(),
-                ((ReadOnlyMemory<float>)actual[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).ToArray());
+            Assert.Equal(DynamicDataModelFixture<TKey>.DimensionCount, ((ReadOnlyMemory<float>)actual[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).Length);
+
+            if (compareVectors)
+            {
+                Assert.Equal(
+                    ((ReadOnlyMemory<float>)expected[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).ToArray(),
+                    ((ReadOnlyMemory<float>)actual[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).ToArray());
+            }
         }
         else
         {
