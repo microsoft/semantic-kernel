@@ -42,10 +42,12 @@ public static class MistralAIKernelBuilderExtensions
         {
             var resolvedHttpClient = HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
 
-            // Add header if it's not already present
-            if (!resolvedHttpClient.DefaultRequestHeaders.Contains("extra-parameters"))
+            if (httpClient == null && serviceProvider?.GetService<HttpClient>() == null)
             {
-                resolvedHttpClient.DefaultRequestHeaders.Add("extra-parameters", "pass-through");
+                if (!resolvedHttpClient.DefaultRequestHeaders.Contains("extra-parameters"))
+                {
+                    resolvedHttpClient.DefaultRequestHeaders.Add("extra-parameters", "pass-through");
+                }
             }
 
             return new MistralAIChatCompletionService(
@@ -53,8 +55,9 @@ public static class MistralAIKernelBuilderExtensions
                 apiKey,
                 endpoint,
                 resolvedHttpClient,
-                serviceProvider.GetService<ILoggerFactory>());
+                serviceProvider?.GetService<ILoggerFactory>());
         });
+
 
         return builder;
     }
