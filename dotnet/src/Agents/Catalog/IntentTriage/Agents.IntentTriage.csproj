@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Agents.IntentTriage</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Agents.IntentTriage</RootNamespace>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <NoWarn>$(NoWarn);CA2007;VSTHRD111;SKEXP0001;SKEXP0040;SKEXP0110</NoWarn>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <VersionSuffix>preview</VersionSuffix>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+
+  <PropertyGroup>
+    <!-- NuGet Package Settings -->
+    <Title>Semantic Kernel - Intent Triage Agent</Title>
+    <Description>Defines an agent that is able to triage the intent.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Service\Agents.Service.csproj" />
+    <ProjectReference Include="..\..\Core\Agents.Core.csproj" />
+    <ProjectReference Include="..\..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\..\Functions\Functions.OpenApi\Functions.OpenApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ToolResources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ToolResources\*" />
+  </ItemGroup>
+
+</Project>
