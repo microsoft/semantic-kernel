@@ -33,7 +33,7 @@ def actor_context():
 async def test_initialize_step(actor_context):
     input_data = json.dumps({
         "step_info": {
-            "state": {"name": "TestStep", "id": "step_1"},
+            "state": {"name": "TestStep", "version": "1.0", "id": "step_1"},
             "inner_step_python_type": "SomeStepType",
             "edges": {},
         },
@@ -81,7 +81,7 @@ async def test_prepare_incoming_messages(actor_context):
 
 async def test_process_incoming_messages(actor_context):
     actor_context.step_info = DaprStepInfo(
-        state=KernelProcessStepState(name="Test Step", id="step_123"),
+        state=KernelProcessStepState(name="Test Step", version="1.0", id="step_123"),
         inner_step_python_type="SomeStepType",
         edges={},
     )
@@ -133,7 +133,7 @@ async def test_activate_step_with_factory_creates_state(actor_context):
         actor_context.factories = {"FakeStep": lambda: fake_step_instance}
         actor_context.inner_step_type = "FakeStep"
         actor_context.step_info = DaprStepInfo(
-            state=KernelProcessStepState(name="default_name", id="step_123"),
+            state=KernelProcessStepState(name="default_name", version="2.0", id="step_123"),
             inner_step_python_type="FakeStep",
             edges={},
         )
@@ -148,6 +148,7 @@ async def test_activate_step_with_factory_creates_state(actor_context):
         assert actor_context.initial_inputs == {"channel": {"input": "value"}}
         assert actor_context.inputs == {"channel": {"input": "value"}}
         assert actor_context.step_state is not None
+        assert actor_context.step_state.version == "2.0"
         assert isinstance(actor_context.step_state.state, FakeState)
         fake_step_instance.activate.assert_awaited_once_with(actor_context.step_state)
 
@@ -159,7 +160,7 @@ async def test_activate_step_with_factory_uses_existing_state(actor_context):
     fake_plugin = MagicMock()
     fake_plugin.functions = {"test_function": lambda x: x}
 
-    pre_existing_state = KernelProcessStepState(name="ExistingState", id="ExistingState", state=None)
+    pre_existing_state = KernelProcessStepState(name="ExistingState", version="v1.0", id="ExistingState", state=None)
 
     with (
         patch.object(
@@ -193,6 +194,8 @@ async def test_activate_step_with_factory_uses_existing_state(actor_context):
         assert actor_context.functions == fake_plugin.functions
         assert actor_context.initial_inputs == {"channel": {"input": "value"}}
         assert actor_context.inputs == {"channel": {"input": "value"}}
+        assert actor_context.step_state is not None
+        assert actor_context.step_state.version == "v1.0"
         actor_context._state_manager.try_add_state.assert_any_await(
             ActorStateKeys.StepStateType.value, "FakeStateFullyQualified"
         )

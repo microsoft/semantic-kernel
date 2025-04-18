@@ -12,8 +12,8 @@ class KernelProcessStateMetadata(KernelProcessStepStateMetadata):
     """Process state used for State Persistence serialization."""
 
     type_: Literal["Process"] = Field("Process", alias="$type")
-    steps_state: dict[str, "KernelProcessStateMetadata | KernelProcessStepStateMetadata"] | None = Field(
-        None, alias="stepsState"
+    steps_state: dict[str, "KernelProcessStateMetadata | KernelProcessStepStateMetadata"] = Field(
+        default_factory=dict, alias="stepsState"
     )
 
     model_config: ClassVar = {

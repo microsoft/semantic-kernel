@@ -201,7 +201,7 @@ class ProcessStepBuilder(KernelBaseModel, Generic[TState, TStep]):
             if actual_state is None:
                 actual_state = t_state() if hasattr(t_state, "__fields__") else t_state
 
-            state_object = KernelProcessStepState[t_state](
+            state_object = KernelProcessStepState[t_state](  # type: ignore
                 name=self.name, id=self.id, version=version, state=actual_state
             )
         else:

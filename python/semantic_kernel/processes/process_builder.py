@@ -5,7 +5,7 @@ import inspect
 from collections.abc import Callable
 from copy import copy
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from pydantic import Field
 
@@ -148,7 +148,17 @@ class ProcessBuilder(ProcessStepBuilder):
     def build_step(self, state_metadata: KernelProcessStepStateMetadata | None = None) -> KernelProcessStepInfo:
         """Builds the process step."""
         # The process is a step so we can return the step info directly
-        return self.build(state_metadata=state_metadata)
+        # convert to KernelProcessStateMetadata...
+        if state_metadata is None or isinstance(state_metadata, KernelProcessStateMetadata):
+            metadata: KernelProcessStateMetadata | None = cast(KernelProcessStateMetadata | None, state_metadata)
+        else:
+            metadata = KernelProcessStateMetadata(
+                name=self.name,
+                id=self.id if self.has_parent_process else None,
+                version_info=self.version,
+                steps_state={self.name: state_metadata},
+            )
+        return self.build(state_metadata=metadata)
 
     def build(self, state_metadata: KernelProcessStateMetadata | None = None) -> "KernelProcess":
         """Builds the KernelProcess."""
@@ -216,10 +226,16 @@ class ProcessBuilder(ProcessStepBuilder):
                     if saved_state_metadata.version_info == current_version_state_metadata.version_info:
                         # key mismatch only, but same version
                         sanitized_state_metadata.steps_state[step.name] = saved_state_metadata
-                        # TODO: Should there be state formatting check too?
                     else:
                         # version mismatch - check if migration logic in place
                         if isinstance(step, ProcessBuilder):
+                            if isinstance(saved_state_metadata, KernelProcessStepStateMetadata):
+                                saved_state_metadata = KernelProcessStateMetadata(
+                                    name=step.name,
+                                    id=step.id,
+                                    version_info=step.version,
+                                    steps_state={},
+                                )
                             sanitized_step_state = self._sanitize_process_state_metadata(
                                 saved_state_metadata, step.steps
                             )

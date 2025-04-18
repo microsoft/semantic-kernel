@@ -1,5 +1,13 @@
 # Copyright (c) Microsoft. All rights reserved.
+import sys
 from typing import TYPE_CHECKING, ClassVar
+
+from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStepStateMetadata
+
+if sys.version_info >= (3, 12):
+    from typing import override  # pragma: no cover
+else:
+    from typing_extensions import override  # pragma: no cover
 
 from semantic_kernel.processes.kernel_process.kernel_process_step_info import KernelProcessStepInfo
 from semantic_kernel.processes.kernel_process.kernel_process_step_state import KernelProcessStepState
@@ -18,6 +26,7 @@ class EndStep(ProcessStepBuilder):
     END_STEP_VALUE: ClassVar[str] = "Microsoft.SemanticKernel.Process.EndStep"
     END_STEP_NAME: ClassVar[str] = END_STEP_VALUE
     END_STEP_ID: ClassVar[str] = END_STEP_VALUE
+    END_STEP_VERSION: ClassVar[str] = "v0"
 
     @staticmethod
     def get_instance() -> "EndStep":
@@ -36,10 +45,11 @@ class EndStep(ProcessStepBuilder):
         """Gets the function metadata map."""
         return {}
 
-    def build_step(self) -> KernelProcessStepInfo:
+    @override
+    def build_step(self, state_metadata: KernelProcessStepStateMetadata | None = None) -> KernelProcessStepInfo:
         """Build the step."""
         return KernelProcessStepInfo(
             inner_step_type=KernelProcessStepState,
-            state=KernelProcessStepState(name=self.END_STEP_NAME),
+            state=KernelProcessStepState(name=self.END_STEP_NAME, version=self.END_STEP_VERSION),
             output_edges={},
         )

@@ -2,10 +2,6 @@
 
 from typing import TYPE_CHECKING
 
-from semantic_kernel.processes.kernel_process.kernel_process_map import KernelProcessMap
-from semantic_kernel.processes.kernel_process.kernel_process_map_step_state_metadata import (
-    KernelProcessMapStateMetadata,
-)
 from semantic_kernel.processes.kernel_process.kernel_process_state_metadata import KernelProcessStateMetadata
 from semantic_kernel.processes.kernel_process.kernel_process_step_metadata import KernelProcessStepMetadataAttribute
 from semantic_kernel.processes.kernel_process.kernel_process_step_state_metadata import KernelProcessStepStateMetadata
@@ -44,20 +40,8 @@ def to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProce
 
     if isinstance(step_info, KernelProcess):
         return kernel_process_to_process_state_metadata(step_info)
-    if isinstance(step_info, KernelProcessMap):
-        return kernel_process_map_to_process_state_metadata(step_info)
 
     return step_info_to_process_state_metadata(step_info)
-
-
-def kernel_process_map_to_process_state_metadata(step_map: KernelProcessMap) -> KernelProcessMapStateMetadata:
-    """Converts a kernel process map to process state metadata."""
-    return KernelProcessMapStateMetadata(
-        name=step_map.state.name,
-        id=step_map.state.id,
-        version_info=step_map.state.version,
-        operation_state=to_process_state_metadata(step_map.operation),
-    )
 
 
 def step_info_to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProcessStepStateMetadata:
