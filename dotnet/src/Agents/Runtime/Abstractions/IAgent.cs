@@ -10,12 +10,12 @@ public interface IAgent : ISaveState
     /// <summary>
     /// Gets the unique identifier of the agent.
     /// </summary>
-    public AgentId Id { get; }
+    AgentId Id { get; }
 
     /// <summary>
     /// Gets metadata associated with the agent.
     /// </summary>
-    public AgentMetadata Metadata { get; }
+    AgentMetadata Metadata { get; }
 
     /// <summary>
     /// Handles an incoming message for the agent.
@@ -29,5 +29,5 @@ public interface IAgent : ISaveState
     /// </returns>
     /// <exception cref="OperationCanceledException">Thrown if the message was cancelled.</exception>
     /// <exception cref="CantHandleException">Thrown if the agent cannot handle the message.</exception>
-    public ValueTask<object?> OnMessageAsync(object message, MessageContext messageContext); // TODO: How do we express this properly in .NET?
+    ValueTask<object?> OnMessageAsync(object message, MessageContext messageContext); // TODO: How do we express this properly in .NET?
 }
