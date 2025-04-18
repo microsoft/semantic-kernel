@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// NotAccessibleError.cs
 
 using System.Diagnostics.CodeAnalysis;
 

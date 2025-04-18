@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-// UndeliverableException.cs
 
 using System.Diagnostics.CodeAnalysis;
 
