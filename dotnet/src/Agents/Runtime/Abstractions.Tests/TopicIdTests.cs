@@ -145,7 +145,7 @@ public class TopicIdTests
     }
 
     [Fact]
-    public void ExplicitConverstionTest()
+    public void ExplicitConversionTest()
     {
         // Arrange
         string topicIdStr = "testtype/customsource";

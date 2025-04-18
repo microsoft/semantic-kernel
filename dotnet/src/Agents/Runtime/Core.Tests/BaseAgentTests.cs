@@ -128,7 +128,7 @@ public class BaseAgentTests
     }
 
     [Fact]
-    public async Task PublishMessageAsync_Recieved()
+    public async Task PublishMessageAsync_Received()
     {
         // Arrange
         ServiceProvider services = new ServiceCollection().BuildServiceProvider();
@@ -155,12 +155,12 @@ public class BaseAgentTests
         }
 
         // Assert
-        await VerifyMessagHandled(runtime, senderId, message.Content);
-        await VerifyMessagHandled(runtime, receiverId, message.Content);
+        await VerifyMessageHandled(runtime, senderId, message.Content);
+        await VerifyMessageHandled(runtime, receiverId, message.Content);
     }
 
     [Fact]
-    public async Task SendMessageAsync_Recieved()
+    public async Task SendMessageAsync_Received()
     {
         // Arrange
         ServiceProvider services = new ServiceCollection().BuildServiceProvider();
@@ -185,11 +185,11 @@ public class BaseAgentTests
         }
 
         // Assert
-        await VerifyMessagHandled(runtime, senderId, message.Content);
-        await VerifyMessagHandled(runtime, receiverId, message.Content);
+        await VerifyMessageHandled(runtime, senderId, message.Content);
+        await VerifyMessageHandled(runtime, receiverId, message.Content);
     }
 
-    private static async Task VerifyMessagHandled(InProcessRuntime runtime, AgentId agentId, string expectedContent)
+    private static async Task VerifyMessageHandled(InProcessRuntime runtime, AgentId agentId, string expectedContent)
     {
         TestAgent agent = await runtime.TryGetUnderlyingAgentInstanceAsync<TestAgent>(agentId);
         agent.ReceivedMessages.Should().ContainSingle();
