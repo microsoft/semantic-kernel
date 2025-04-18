@@ -88,8 +88,8 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
         this._vectorSearchExtensionName = this._options.VectorSearchExtensionName ?? SqliteConstants.VectorSearchExtensionName;
 
         // Escape both table names before exposing them to anything that may build SQL commands.
-        this._dataTableName = name.EscapeIdentifier();
-        this._vectorTableName = GetVectorTableName(name, this._options).EscapeIdentifier();
+        this._dataTableName = SqliteConstants.Escape(name);
+        this._vectorTableName = SqliteConstants.Escape(GetVectorTableName(name, this._options));
 
         this._model = new VectorStoreRecordModelBuilder(SqliteConstants.ModelBuildingOptions)
             .Build(typeof(TRecord), this._options.VectorStoreRecordDefinition);

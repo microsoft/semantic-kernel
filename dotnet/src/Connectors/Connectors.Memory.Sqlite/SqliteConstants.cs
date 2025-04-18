@@ -27,7 +27,7 @@ internal static class SqliteConstants
         SupportedEnumerableDataPropertyElementTypes = [],
         SupportedVectorPropertyTypes = SqliteConstants.SupportedVectorTypes,
 
-        EscapeIdentifier = SqliteVectorStoreCollectionCommandBuilder.EscapeIdentifier
+        EscapeIdentifier = Escape
     };
 
     /// <summary>A <see cref="HashSet{T}"/> of types that a key on the provided model may have.</summary>
@@ -59,4 +59,8 @@ internal static class SqliteConstants
         typeof(ReadOnlyMemory<float>),
         typeof(ReadOnlyMemory<float>?)
     ];
+
+    internal static string Escape(string value) => value.Replace("\"", "\"\"");
+
+    internal static string Unescape(string value) => value.Replace("\"\"", "\"");
 }

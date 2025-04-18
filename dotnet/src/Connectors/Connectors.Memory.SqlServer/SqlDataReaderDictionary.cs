@@ -64,7 +64,7 @@ internal sealed class SqlDataReaderDictionary(SqlDataReader sqlDataReader, IRead
     // This is the only method used by the default mapper.
     public object? this[string key]
     {
-        get => this.Unwrap(key, sqlDataReader[key]);
+        get => this.Unwrap(key, sqlDataReader[SqlServerConstants.Unescape(key)]);
         set => throw new InvalidOperationException();
     }
 
@@ -114,7 +114,7 @@ internal sealed class SqlDataReaderDictionary(SqlDataReader sqlDataReader, IRead
     {
         try
         {
-            value = this.Unwrap(key, sqlDataReader[key]);
+            value = this.Unwrap(key, sqlDataReader[SqlServerConstants.Unescape(key)]);
             return true;
         }
         catch (IndexOutOfRangeException)

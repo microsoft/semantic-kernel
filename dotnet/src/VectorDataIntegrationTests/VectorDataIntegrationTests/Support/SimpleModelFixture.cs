@@ -45,15 +45,26 @@ public abstract class SimpleModelFixture<TKey> : VectorStoreCollectionFixture<TK
         {
             Properties =
             [
-                new VectorStoreRecordKeyProperty(nameof(SimpleRecord<TKey>.Id), typeof(TKey)),
+                new VectorStoreRecordKeyProperty(nameof(SimpleRecord<TKey>.Id), typeof(TKey))
+                {
+                    StoragePropertyName = "i d" // intentionally with a space
+                },
                 new VectorStoreRecordVectorProperty(nameof(SimpleRecord<TKey>.Floats), typeof(ReadOnlyMemory<float>?), SimpleRecord<TKey>.DimensionCount)
                 {
                     DistanceFunction = this.DistanceFunction,
-                    IndexKind = this.IndexKind
+                    IndexKind = this.IndexKind,
+                    StoragePropertyName = "embed\"ding" // intentionally with quotes
                 },
-
-                new VectorStoreRecordDataProperty(nameof(SimpleRecord<TKey>.Number), typeof(int)) { IsIndexed = true },
-                new VectorStoreRecordDataProperty(nameof(SimpleRecord<TKey>.Text), typeof(string)) { IsIndexed = true },
+                new VectorStoreRecordDataProperty(nameof(SimpleRecord<TKey>.Number), typeof(int))
+                {
+                    IsIndexed = true,
+                    StoragePropertyName = "num'ber" // intentionally with single quote
+                },
+                new VectorStoreRecordDataProperty(nameof(SimpleRecord<TKey>.Text), typeof(string))
+                {
+                    IsIndexed = true,
+                    StoragePropertyName = "te]xt" // intentionally with a character that requires escaping for Sql Server
+                },
             ]
         };
 }

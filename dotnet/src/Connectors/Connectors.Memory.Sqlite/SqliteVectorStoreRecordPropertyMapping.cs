@@ -107,7 +107,7 @@ internal static class SqliteVectorStoreRecordPropertyMapping
 
     public static object? GetPropertyValue(DbDataReader reader, string propertyName, Type propertyType)
     {
-        int propertyIndex = reader.GetOrdinal(propertyName);
+        int propertyIndex = reader.GetOrdinal(SqliteConstants.Unescape(propertyName));
 
         if (reader.IsDBNull(propertyIndex))
         {

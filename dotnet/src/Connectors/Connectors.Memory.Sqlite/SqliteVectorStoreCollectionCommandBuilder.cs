@@ -21,8 +21,6 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 {
     internal const string DistancePropertyName = "distance";
 
-    internal static string EscapeIdentifier(this string value) => value.Replace("'", "''").Replace("\"", "\"\"");
-
     public static DbCommand BuildTableCountCommand(SqliteConnection connection, string tableName)
     {
         Verify.NotNullOrWhiteSpace(tableName);
@@ -114,8 +112,6 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
         for (var recordIndex = 0; recordIndex < records.Count; recordIndex++)
         {
-            var rowIdentifierParameterName = GetParameterName(rowIdentifier, recordIndex);
-
             var (columns, parameters, values) = GetQueryParts(
                 properties,
                 records[recordIndex],
@@ -410,7 +406,23 @@ internal static class SqliteVectorStoreCollectionCommandBuilder
 
     private static string GetParameterName(string propertyName, int index)
     {
-        return $"@{propertyName}{index}";
+        StringBuilder builder = new();
+        // In SQLite, parameter names must follow these rules:
+        // 1. They must start with a prefix like '@', ':' or '$'.
+        builder.Append('@');
+        // 2. After the prefix, the parameter name can include alphanumeric characters (a-z, A-Z, 0-9) and underscores (_)
+        foreach (char character in propertyName)
+        {
+            if ((character is >= 'a' and <= 'z') || (character is >= 'A' and <= 'Z')
+                || (character is >= '0' and <= '9')
+                || character is '_')
+            {
+                builder.Append(character);
+            }
+        }
+        // 3. Each parameter name in a query must be unique.
+        builder.Append(index);
+        return builder.ToString();
     }
 
     #endregion

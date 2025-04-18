@@ -24,7 +24,9 @@ internal static class SqlServerConstants
         SupportedKeyPropertyTypes = SqlServerConstants.SupportedKeyTypes,
         SupportedDataPropertyTypes = SqlServerConstants.SupportedDataTypes,
         SupportedEnumerableDataPropertyElementTypes = [],
-        SupportedVectorPropertyTypes = SqlServerConstants.SupportedVectorTypes
+        SupportedVectorPropertyTypes = SqlServerConstants.SupportedVectorTypes,
+
+        EscapeIdentifier = Escape
     };
 
     internal static readonly HashSet<Type> SupportedKeyTypes =
@@ -63,4 +65,8 @@ internal static class SqlServerConstants
         typeof(ReadOnlyMemory<float>), // VECTOR
         typeof(ReadOnlyMemory<float>?)
     ];
+
+    internal static string Escape(string input) => input.Replace("]", "]]");
+
+    internal static string Unescape(string input) => input.Replace("]]", "]");
 }

@@ -59,7 +59,9 @@ internal static class PostgresConstants
             typeof(Guid),
         ],
 
-        SupportedVectorPropertyTypes = [typeof(ReadOnlyMemory<float>)]
+        SupportedVectorPropertyTypes = [typeof(ReadOnlyMemory<float>)],
+
+        EscapeIdentifier = Escape,
     };
 
     /// <summary>A <see cref="HashSet{T}"/> of types that vector properties on the provided model may have.</summary>
@@ -87,4 +89,8 @@ internal static class PostgresConstants
     {
         { IndexKind.Hnsw, 2000 },
     };
+
+    internal static string Escape(string input) => input.Replace("\"", "\"\"");
+
+    internal static string Unescape(string input) => input.Replace("\"\"", "\"");
 }

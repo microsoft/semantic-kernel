@@ -10,15 +10,13 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 {
     private readonly List<object> _parameterValues = new();
-    private int _parameterIndex;
 
     internal PostgresFilterTranslator(
         VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
         int startParamIndex,
-        StringBuilder? sql = null) : base(model, lambdaExpression, sql)
+        StringBuilder? sql = null) : base(model, lambdaExpression, startParamIndex, sql)
     {
-        this._parameterIndex = startParamIndex;
     }
 
     internal List<object> ParameterValues => this._parameterValues;
@@ -39,7 +37,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateCapturedVariable(string name, object? capturedValue)
+    protected override void TranslateCapturedVariable(object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

@@ -12,16 +12,14 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 {
     private readonly List<object> _parameterValues = new();
-    private int _parameterIndex;
 
     internal SqlServerFilterTranslator(
         VectorStoreRecordModel model,
         LambdaExpression lambdaExpression,
         StringBuilder sql,
         int startParamIndex)
-        : base(model, lambdaExpression, sql)
+        : base(model, lambdaExpression, startParamIndex, sql)
     {
-        this._parameterIndex = startParamIndex;
     }
 
     internal List<object> ParameterValues => this._parameterValues;
@@ -45,9 +43,10 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-    protected override void GenerateColumn(string column, bool isSearchCondition = false)
+    protected override void GenerateColumn(VectorStoreRecordPropertyModel column, bool isSearchCondition = false)
     {
-        this._sql.Append('[').Append(column).Append(']');
+        // all SQL-based connectors are required to escape values returned by StorageName property
+        this._sql.Append('[').Append(column.StorageName).Append(']');
 
         // "SELECT * FROM MyTable WHERE BooleanColumn;" is not supported.
         // "SELECT * FROM MyTable WHERE BooleanColumn = 1;" is supported.
@@ -88,7 +87,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         this._sql.Append(')');
     }
 
-    protected override void TranslateCapturedVariable(string name, object? capturedValue)
+    protected override void TranslateCapturedVariable(object? capturedValue)
     {
         // For null values, simply inline rather than parameterize; parameterized NULLs require setting NpgsqlDbType which is a bit more complicated,
         // plus in any case equality with NULL requires different SQL (x IS NULL rather than x = y)

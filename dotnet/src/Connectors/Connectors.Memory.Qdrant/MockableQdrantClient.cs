@@ -109,7 +109,7 @@ internal class MockableQdrantClient
         string fieldName,
         PayloadSchemaType schemaType = PayloadSchemaType.Keyword,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.CreatePayloadIndexAsync(collectionName, fieldName, schemaType, cancellationToken: cancellationToken);
+        => this._qdrantClient.CreatePayloadIndexAsync(collectionName, $"\"{fieldName}\"", schemaType, cancellationToken: cancellationToken);
 
     /// <summary>
     /// Drop a collection and all its associated data.

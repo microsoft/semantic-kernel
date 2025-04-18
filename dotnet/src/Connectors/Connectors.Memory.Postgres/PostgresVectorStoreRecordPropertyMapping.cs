@@ -33,7 +33,7 @@ internal static class PostgresVectorStoreRecordPropertyMapping
 
     public static object? GetPropertyValue(NpgsqlDataReader reader, string propertyName, Type propertyType)
     {
-        int propertyIndex = reader.GetOrdinal(propertyName);
+        int propertyIndex = reader.GetOrdinal(PostgresConstants.Unescape(propertyName));
 
         if (reader.IsDBNull(propertyIndex))
         {
