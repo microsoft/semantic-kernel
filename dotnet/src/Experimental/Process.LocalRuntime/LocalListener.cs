@@ -36,7 +36,7 @@ internal class LocalListener : LocalStep
             return;
         }
 
-        this._messageData[messageKey] = message.TargetEventData;
+        this._messageData[messageKey] = (message.TargetEventData as KernelProcessEventData)!.ToObject();
 
         this._absentMessages.Remove(messageKey);
         if (this._absentMessages.Count == 0)

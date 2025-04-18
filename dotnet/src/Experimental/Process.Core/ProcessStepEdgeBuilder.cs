@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Linq;
 using Microsoft.SemanticKernel.Process.Internal;
 
 namespace Microsoft.SemanticKernel;
@@ -22,30 +23,42 @@ public class ProcessStepEdgeBuilder
     /// </summary>
     internal ProcessStepBuilder Source { get; }
 
+    internal KernelProcessEdgeGroupBuilder? EdgeGroupBuilder { get; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepEdgeBuilder"/> class.
     /// </summary>
     /// <param name="source">The source step.</param>
     /// <param name="eventId">The Id of the event.</param>
     /// <param name="eventName"></param>
-    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName)
+    /// <param name="edgeGroupBuilder">The group Id for the edge.</param>
+    internal ProcessStepEdgeBuilder(ProcessStepBuilder source, string eventId, string eventName, KernelProcessEdgeGroupBuilder? edgeGroupBuilder = null)
     {
         Verify.NotNull(source, nameof(source));
         Verify.NotNullOrWhiteSpace(eventId, nameof(eventId));
 
         this.Source = source;
         this.EventData = new() { EventId = eventId, EventName = eventName };
+        this.EdgeGroupBuilder = edgeGroupBuilder;
     }
 
     /// <summary>
     /// Builds the edge.
     /// </summary>
-    internal KernelProcessEdge Build()
+    internal KernelProcessEdge Build(ProcessBuilder? processBuilder = null)
     {
         Verify.NotNull(this.Source?.Id);
         Verify.NotNull(this.Target);
 
-        return new KernelProcessEdge(this.Source.Id, this.Target.Build());
+        if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder && stepTargetBuilder.InputMapping is not null)
+        {
+            var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
+
+            var edgeGroup = new KernelProcessEdgeGroup(this.EdgeGroupBuilder.GroupId, messageSources, stepTargetBuilder.InputMapping);
+            this.Target.Step.RegisterGroupInputMapping(edgeGroup);
+        }
+
+        return new KernelProcessEdge(this.Source.Id, this.Target.Build(processBuilder), groupId: this.EdgeGroupBuilder?.GroupId);
     }
 
     /// <summary>
@@ -73,7 +86,7 @@ public class ProcessStepEdgeBuilder
         this.Target = target;
         this.Source.LinkTo(this.EventData.EventId, this);
 
-        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName);
+        return new ProcessStepEdgeBuilder(this.Source, this.EventData.EventId, this.EventData.EventName, this.EdgeGroupBuilder);
     }
 
     /// <summary>

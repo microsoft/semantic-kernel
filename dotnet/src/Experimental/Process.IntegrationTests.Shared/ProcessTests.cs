@@ -91,7 +91,6 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         }
         catch (Exception)
         {
-
             throw;
         }
     }
@@ -368,15 +367,15 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         ProcessBuilder processBuilder = new("ProcessWithDapr");
 
         // Add some steps to the process.
-        var kickoffStep = processBuilder.AddStepFromType<KickoffStep>();
-        var myAStep = processBuilder.AddStepFromType<AStep>();
-        var myBStep = processBuilder.AddStepFromType<BStep>();
+        var kickoffStep = processBuilder.AddStepFromType<KickoffStep>(id: "kickoffStep");
+        var myAStep = processBuilder.AddStepFromType<AStep>(id: "aStep");
+        var myBStep = processBuilder.AddStepFromType<BStep>(id: "bStep");
 
         // ########## Configuring initial state on steps in a process ###########
         // For demonstration purposes, we add the CStep and configure its initial state with a CurrentCycle of 1.
         // Initializing state in a step can be useful for when you need a step to start out with a predetermines
         // configuration that is not easily accomplished with dependency injection.
-        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(initialState: new() { CurrentCycle = 1 });
+        var myCStep = processBuilder.AddStepFromType<CStep, CStepState>(initialState: new() { CurrentCycle = 1 }, id: "cStep");
 
         // Setup the input event that can trigger the process to run and specify which step and function it should be routed to.
         processBuilder
@@ -397,7 +396,17 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
                     new(messageType: CommonEvents.AStepDone, source: myAStep),
                     new(messageType: CommonEvents.BStepDone, source: myBStep)
                 })
-                .SendEventTo(new(myCStep));
+                .SendEventTo(new ProcessStepTargetBuilder(myCStep, inputMapping: (inputEvents) =>
+                {
+                    // Map the input events to the CStep's input parameters.
+                    // In this case, we are mapping the output of AStep to the first input parameter of CStep
+                    // and the output of BStep to the second input parameter of CStep.
+                    return new()
+                    {
+                        { "astepdata", inputEvents[CommonEvents.AStepDone] },
+                        { "bstepdata", inputEvents[CommonEvents.BStepDone] }
+                    };
+                }));
 
         // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep

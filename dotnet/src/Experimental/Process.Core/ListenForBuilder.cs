@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Microsoft.SemanticKernel;
 
@@ -42,6 +46,38 @@ public class ListenForBuilder
     public ListenForTargetBuilder AllOf(List<MessageSourceBuilder> messageSources)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
-        return new ListenForTargetBuilder(messageSources, this._processBuilder);
+
+        var edgeGroup = new KernelProcessEdgeGroupBuilder(this.GetGroupId(messageSources), messageSources);
+        return new ListenForTargetBuilder(messageSources, this._processBuilder, edgeGroup: edgeGroup);
+    }
+
+    private string GetGroupId(List<MessageSourceBuilder> messageSources)
+    {
+        var sortedKeys = messageSources
+            .Select(source => $"{source.Source.Id}.{source.MessageType}")
+            .OrderBy(id => id, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return GenerateHash(sortedKeys);
+    }
+
+    /// <summary>
+    /// Produces a base-64 encoded hash for a set of input strings.
+    /// </summary>
+    /// <param name="keys">A set of input strings</param>
+    /// <returns>A base-64 encoded hash</returns>
+    private static string GenerateHash(IEnumerable<string> keys)
+    {
+        byte[] buffer = Encoding.UTF8.GetBytes(string.Join(":", keys));
+
+#if NET
+        Span<byte> hash = stackalloc byte[32];
+        SHA256.HashData(buffer, hash);
+#else
+        using SHA256 shaProvider = SHA256.Create();
+        byte[] hash = shaProvider.ComputeHash(buffer);
+#endif
+
+        return Convert.ToBase64String(hash);
     }
 }

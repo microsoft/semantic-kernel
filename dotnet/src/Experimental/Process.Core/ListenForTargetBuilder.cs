@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
 
@@ -19,11 +18,22 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
     /// </summary>
     /// <param name="messageSources">The list of message sources.</param>
     /// <param name="processBuilder">The process builder.</param>
-    public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder) : base(processBuilder, "Aggregate", "Aggregate")
+    /// <param name="edgeGroup">The group ID for the message sources.</param>
+    public ListenForTargetBuilder(List<MessageSourceBuilder> messageSources, ProcessBuilder processBuilder, KernelProcessEdgeGroupBuilder? edgeGroup = null) : base(processBuilder, "Aggregate", "Aggregate", edgeGroupBuilder: edgeGroup)
     {
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
         this._messageSources = messageSources;
         this._processBuilder = processBuilder;
+    }
+
+    /// <summary>
+    /// Signals that the output of the source step should be sent to the specified target when the associated event fires.
+    /// </summary>
+    /// <param name="target">The output target.</param>
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    public ProcessStepEdgeBuilder SendEventTo(ProcessStepTargetBuilder target)
+    {
+        return this.SendEventTo_Internal(target);
     }
 
     /// <summary>
@@ -35,16 +45,18 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
     {
         Verify.NotNull(target, nameof(target));
 
-        // Create a new event listener for the source messages and the destination step
-        var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id, id: Guid.NewGuid().ToString("n"));
+        //// Create a new event listener for the source messages and the destination step
+        //var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id, id: Guid.NewGuid().ToString("n"));
 
-        // Add the listener to the process builder
-        this._processBuilder.AddListenerStep(eventListener);
+        //// Add the listener to the process builder
+        //this._processBuilder.AddListenerStep(eventListener);
 
-        // Link the listener to the destination step
-        var v = eventListener.OnEvent("events_received");
-        v.Target = target;
-        eventListener.LinkTo(v.EventData.EventId, v);
+        //// Link the listener to the destination step
+        //var v = eventListener.OnEvent("events_received");
+        //v.Target = target;
+        //eventListener.LinkTo(v.EventData.EventId, v);
+
+        this.Target = target;
 
         foreach (var messageSource in this._messageSources)
         {
@@ -53,11 +65,13 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
                 throw new InvalidOperationException("Source step cannot be null.");
             }
 
-            // Link all the source steps to the event listener
-            messageSource.Source.OnEvent(messageSource.MessageType)
-                .SendEventTo(new ProcessFunctionTargetBuilder(eventListener));
+            messageSource.Source.LinkTo(messageSource.MessageType, this);
+
+            //// Link all the source steps to the event listener
+            //messageSource.Source.OnEvent(messageSource.MessageType)
+            //    .SendEventTo(target);
         }
 
-        return new ListenForTargetBuilder(this._messageSources, this._processBuilder);
+        return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);
     }
 }

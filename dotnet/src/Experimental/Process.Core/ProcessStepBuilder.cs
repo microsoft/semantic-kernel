@@ -33,6 +33,11 @@ public abstract class ProcessStepBuilder
     public IReadOnlyList<string> Aliases { get; internal set; } = [];
 
     /// <summary>
+    /// A mapping of group Ids to functions that will be used to map the input of the step to the input of the group.
+    /// </summary>
+    public Dictionary<string, KernelProcessEdgeGroup> IncomingEdgeGroups { get; internal set; } = [];
+
+    /// <summary>
     /// Define the behavior of the step when the event with the specified Id is fired.
     /// </summary>
     /// <param name="eventId">The Id of the event of interest.</param>
@@ -75,6 +80,16 @@ public abstract class ProcessStepBuilder
     }
 
     #endregion
+
+    internal void RegisterGroupInputMapping(KernelProcessEdgeGroup edgeGroup)
+    {
+        if (this.IncomingEdgeGroups.ContainsKey(edgeGroup.GroupId))
+        {
+            return;
+        }
+
+        this.IncomingEdgeGroups[edgeGroup.GroupId] = edgeGroup;
+    }
 
     /// <summary>The namespace for events that are scoped to this step.</summary>
     private readonly string _eventNamespace;
@@ -310,7 +325,7 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
 
         // Then build the step with the edges and state.
-        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges);
+        var builtStep = new KernelProcessStepInfo(this._stepType, stateObject, builtEdges, this.IncomingEdgeGroups);
         return builtStep;
     }
 
