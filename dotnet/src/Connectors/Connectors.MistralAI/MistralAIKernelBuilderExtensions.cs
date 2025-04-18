@@ -39,7 +39,22 @@ public static class MistralAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(apiKey);
 
         builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-            new MistralAIChatCompletionService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), serviceProvider.GetService<ILoggerFactory>()));
+        {
+            var resolvedHttpClient = HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
+
+            // Add header if it's not already present
+            if (!resolvedHttpClient.DefaultRequestHeaders.Contains("extra-parameters"))
+            {
+                resolvedHttpClient.DefaultRequestHeaders.Add("extra-parameters", "pass-through");
+            }
+
+            return new MistralAIChatCompletionService(
+                modelId,
+                apiKey,
+                endpoint,
+                resolvedHttpClient,
+                serviceProvider.GetService<ILoggerFactory>());
+        });
 
         return builder;
     }

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Net.Http;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -80,5 +82,32 @@ public class MistralAIExtensionTests
         // Assert
         Assert.NotNull(service);
         Assert.IsType<MistralAITextEmbeddingGenerationService>(service);
+    }
+
+    [Fact]
+    public void AddMistralChatCompletionInjectsExtraParametersHeader()
+    {
+        // Arrange
+        using var handler = new HttpClientHandler();
+        using var httpClient = new HttpClient(handler);
+        var collection = new ServiceCollection();
+        var kernelBuilder = collection.AddKernel();
+
+        kernelBuilder.AddMistralChatCompletion(
+            modelId: "model",
+            apiKey: "key",
+            endpoint: new Uri("https://example.com"),
+            httpClient: httpClient);
+
+        // Act
+        var kernel = collection.BuildServiceProvider().GetRequiredService<Kernel>();
+        var service = kernel.GetRequiredService<IChatCompletionService>();
+
+        // Assert
+        Assert.NotNull(service);
+        Assert.IsType<MistralAIChatCompletionService>(service);
+        Assert.True(httpClient.DefaultRequestHeaders.Contains("extra-parameters"));
+        var headerValues = httpClient.DefaultRequestHeaders.GetValues("extra-parameters");
+        Assert.Contains("pass-through", headerValues);
     }
 }
