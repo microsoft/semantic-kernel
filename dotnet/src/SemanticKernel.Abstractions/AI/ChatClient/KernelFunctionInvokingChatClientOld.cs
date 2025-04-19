@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.AI;
 /// invocation requests to that same function.
 /// </para>
 /// </remarks>
-public partial class KernelFunctionInvokingChatClientOld : DelegatingChatClient
+internal partial class KernelFunctionInvokingChatClientOld : DelegatingChatClient
 {
     /// <summary>The <see cref="AutoFunctionInvocationContext"/> for the current function invocation.</summary>
     private static readonly AsyncLocal<AutoFunctionInvocationContext?> _currentContext = new();

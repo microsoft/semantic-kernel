@@ -11,42 +11,15 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
-#pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable IDE0009 // This
-#pragma warning disable CA2213 // Disposable fields should be disposed
-#pragma warning disable EA0002 // Use 'System.TimeProvider' to make the code easier to test
-#pragma warning disable SA1202 // 'protected' members should come before 'private' members
-
 // Modified source from 2025-04-07
 // https://raw.githubusercontent.com/dotnet/extensions/84d09b794d994435568adcbb85a981143d4f15cb/src/Libraries/Microsoft.Extensions.AI/ChatCompletion/FunctionInvokingChatClient.cs
 
 namespace Microsoft.Extensions.AI;
 
 /// <summary>
-/// A delegating chat client that invokes functions defined on <see cref="ChatOptions"/>.
-/// Include this in a chat pipeline to resolve function calls automatically.
+/// Specialization of <see cref="FunctionInvokingChatClientV2"/> that uses <see cref="KernelFunction"/> and supports <see cref="IAutoFunctionInvocationFilter"/>.
 /// </summary>
-/// <remarks>
-/// <para>
-/// When this client receives a <see cref="FunctionCallContent"/> in a chat response, it responds
-/// by calling the corresponding <see cref="AIFunction"/> defined in <see cref="ChatOptions.Tools"/>,
-/// producing a <see cref="FunctionResultContent"/> that it sends back to the inner client. This loop
-/// is repeated until there are no more function calls to make, or until another stop condition is met,
-/// such as hitting <see cref="MaximumIterationsPerRequest"/>.
-/// </para>
-/// <para>
-/// The provided implementation of <see cref="IChatClient"/> is thread-safe for concurrent use so long as the
-/// <see cref="AIFunction"/> instances employed as part of the supplied <see cref="ChatOptions"/> are also safe.
-/// The <see cref="AllowConcurrentInvocation"/> property can be used to control whether multiple function invocation
-/// requests as part of the same request are invocable concurrently, but even with that set to <see langword="false"/>
-/// (the default), multiple concurrent requests to this same instance and using the same tools could result in those
-/// tools being used concurrently (one per request). For example, a function that accesses the HttpContext of a specific
-/// ASP.NET web request should only be used as part of a single <see cref="ChatOptions"/> at a time, and only with
-/// <see cref="AllowConcurrentInvocation"/> set to <see langword="false"/>, in case the inner client decided to issue multiple
-/// invocation requests to that same function.
-/// </para>
-/// </remarks>
-public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClientV2
+internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatClientV2
 {
     /// <inheritdoc/>
     public KernelFunctionInvokingChatClient(IChatClient innerClient, ILoggerFactory? loggerFactory = null, IServiceProvider? functionInvocationServices = null)
@@ -87,7 +60,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
 
     /// <inheritdoc/>
     protected override async Task<(bool ShouldTerminate, int NewConsecutiveErrorCount, IList<ChatMessage> MessagesAdded)> ProcessFunctionCallsAsync(
-        ChatResponse response, List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, bool isStreaming, IServiceProvider functionInvocationServices, CancellationToken cancellationToken)
+        ChatResponse response, List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> functionCallContents, int iteration, int consecutiveErrorCount, bool isStreaming, CancellationToken cancellationToken)
     {
         // Prepare the options for the next auto function invocation iteration.
         UpdateOptionsForAutoFunctionInvocation(ref options!, response.Messages.Last().ToChatMessageContent(), isStreaming: false);
@@ -104,7 +77,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
         if (functionCallContents.Count == 1)
         {
             FunctionInvocationResult functionResult = await this.ProcessFunctionCallAsync(
-                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, isStreaming, functionInvocationServices, cancellationToken).ConfigureAwait(false);
+                messages, options, functionCallContents, iteration, 0, captureCurrentIterationExceptions, isStreaming, cancellationToken).ConfigureAwait(false);
 
             IList<ChatMessage> added = this.CreateResponseMessages([functionResult]);
             this.ThrowIfNoFunctionResultsAdded(added);
@@ -128,7 +101,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
                     from i in Enumerable.Range(0, functionCallContents.Count)
                     select this.ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureExceptions: true, isStreaming, functionInvocationServices, cancellationToken)).ConfigureAwait(false));
+                        iteration, i, captureExceptions: true, isStreaming, cancellationToken)).ConfigureAwait(false));
 
                 terminationRequested = results.Any(r => r.ShouldTerminate);
             }
@@ -139,12 +112,12 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
                 {
                     var functionResult = await this.ProcessFunctionCallAsync(
                         messages, options, functionCallContents,
-                        iteration, i, captureCurrentIterationExceptions, isStreaming, functionInvocationServices, cancellationToken).ConfigureAwait(false);
+                        iteration, i, captureCurrentIterationExceptions, isStreaming, cancellationToken).ConfigureAwait(false);
 
                     results.Add(functionResult);
 
                     // Differently from the original FunctionInvokingChatClient, as soon the termination is requested,
-                    // we stop and don't continue
+                    // we stop and don't continue, if that can be parametrized, this override won't be needed
                     if (functionResult.ShouldTerminate)
                     {
                         shouldTerminate = true;
@@ -182,7 +155,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
     /// <inheritdoc/>
     protected override async Task<FunctionInvocationResult> ProcessFunctionCallAsync(
         List<ChatMessage> messages, ChatOptions options, List<FunctionCallContent> callContents,
-        int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, IServiceProvider functionInvocationServices, CancellationToken cancellationToken)
+        int iteration, int functionCallIndex, bool captureExceptions, bool isStreaming, CancellationToken cancellationToken)
     {
         var callContent = callContents[functionCallIndex];
 
@@ -201,7 +174,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
         var context = new AutoFunctionInvocationContext(new()
         {
             Function = function,
-            Arguments = new(callContent.Arguments) { Services = functionInvocationServices },
+            Arguments = new(callContent.Arguments) { Services = this.FunctionInvocationServices },
 
             Messages = messages,
             Options = options,
@@ -216,7 +189,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
         object? result;
         try
         {
-            result = await InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
+            result = await this.InvokeFunctionAsync(context, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
@@ -227,7 +200,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
 
             return new(
                 shouldTerminate: false,
-                FunctionInvokingChatClient.FunctionInvocationStatus.Exception,
+                FunctionInvocationStatus.Exception,
                 callContent,
                 result: null,
                 exception: e);
@@ -235,7 +208,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
 
         return new(
             shouldTerminate: context.Terminate,
-            FunctionInvokingChatClient.FunctionInvocationStatus.RanToCompletion,
+            FunctionInvocationStatus.RanToCompletion,
             callContent,
             result,
             exception: null);
@@ -259,7 +232,7 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
             Verify.NotNull(result);
 
             object? functionResult;
-            if (result.Status == FunctionInvokingChatClient.FunctionInvocationStatus.RanToCompletion)
+            if (result.Status == FunctionInvocationStatus.RanToCompletion)
             {
                 functionResult = result.Result ?? "Success: Function completed.";
             }
@@ -267,12 +240,12 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
             {
                 string message = result.Status switch
                 {
-                    FunctionInvokingChatClient.FunctionInvocationStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
-                    FunctionInvokingChatClient.FunctionInvocationStatus.Exception => "Error: Function failed.",
+                    FunctionInvocationStatus.NotFound => $"Error: Requested function \"{result.CallContent.Name}\" not found.",
+                    FunctionInvocationStatus.Exception => "Error: Function failed.",
                     _ => "Error: Unknown error.",
                 };
 
-                if (IncludeDetailedErrors && result.Exception is not null)
+                if (this.IncludeDetailedErrors && result.Exception is not null)
                 {
                     message = $"{message} Exception: {result.Exception.Message}";
                 }
@@ -326,7 +299,8 @@ public partial class KernelFunctionInvokingChatClient : FunctionInvokingChatClie
         }
     }
 
-    protected override async Task<(FunctionInvocationContext context, object? result)> TryInvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    protected override async Task<(FunctionInvocationContextV2 context, object? result)> TryInvokeFunctionAsync(FunctionInvocationContextV2 context, CancellationToken cancellationToken)
     {
         object? result = null;
         if (context is AutoFunctionInvocationContext autoContext)
