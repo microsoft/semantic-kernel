@@ -87,7 +87,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
             var processInfo = await processHandle.GetStateAsync();
 
             // Assert
-            this.AssertStepStateLastMessage(processInfo, nameof(RepeatStep), expectedLastMessage: string.Join(" ", Enumerable.Repeat(testInput, 2)));
+            this.AssertStepState(processInfo, nameof(CStep), (KernelProcessStepState<CStepState> state) => state.State?.CurrentCycle == 3);
         }
         catch (Exception)
         {
@@ -567,6 +567,15 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         {
             Assert.Equal(expectedInvocationCount.Value, outputStepResult.State.InvocationCount);
         }
+    }
+
+    private void AssertStepState<T>(KernelProcess processInfo, string stepName, Predicate<KernelProcessStepState<T>> predicate) where T : class, new()
+    {
+        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
+        Assert.NotNull(stepInfo);
+        var outputStepResult = stepInfo.State as KernelProcessStepState<T>;
+        Assert.NotNull(outputStepResult?.State);
+        Assert.True(predicate(outputStepResult));
     }
     #endregion
 }
