@@ -21,23 +21,26 @@ public class AutoFunctionInvocationContext : FunctionInvocationContextV2
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
     /// </summary>
-    internal AutoFunctionInvocationContext(Microsoft.Extensions.AI.FunctionInvocationContextV2 invocationContext)
+    internal AutoFunctionInvocationContext(ChatOptions options)
     {
-        Verify.NotNull(invocationContext);
-        Verify.NotNull(invocationContext.Options);
+        Verify.NotNull(options);
 
         // the ChatOptions must be provided with AdditionalProperties.
-        Verify.NotNull(invocationContext.Options.AdditionalProperties);
+        Verify.NotNull(options.AdditionalProperties);
 
-        invocationContext.Options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
+        // The ChatOptions must be provided with the kernel.
+        options.AdditionalProperties.TryGetValue<Kernel>(ChatOptionsExtensions.KernelKey, out var kernel);
         Verify.NotNull(kernel);
 
-        invocationContext.Options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
+        // The ChatOptions must be provided with the chat message content.
+        options.AdditionalProperties.TryGetValue<ChatMessageContent>(ChatOptionsExtensions.ChatMessageContentKey, out var chatMessageContent);
         Verify.NotNull(chatMessageContent);
 
-        invocationContext.Options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
-        this.ExecutionSettings = executionSettings;
+        // The ChatOptions can be provided with the execution settings.
+        options.AdditionalProperties.TryGetValue<PromptExecutionSettings>(ChatOptionsExtensions.PromptExecutionSettingsKey, out var executionSettings);
 
+        this.ExecutionSettings = executionSettings;
+        this.Options = options;
         this.Result = new FunctionResult(this.Function) { Culture = kernel.Culture };
     }
 
@@ -90,8 +93,8 @@ public class AutoFunctionInvocationContext : FunctionInvocationContextV2
     /// </summary>
     public new KernelArguments? Arguments
     {
-        get => this.CallContent.Arguments is KernelArguments kernelArguments ? kernelArguments : null;
-        init => this.CallContent.Arguments = value;
+        get => new(base.Arguments);
+        init => base.Arguments = new(value);
     }
 
     /// <summary>
@@ -191,9 +194,22 @@ public class AutoFunctionInvocationContext : FunctionInvocationContextV2
     /// </summary>
     public FunctionResult Result { get; set; }
 
+    /// <summary>
+    /// Gets or sets the <see cref="Microsoft.Extensions.AI.AIFunction"/> with which this filter is associated.
+    /// </summary>
     internal AIFunction AIFunction
     {
         get => base.Function;
+        set => base.Function = value;
+    }
+
+    /// <summary>
+    /// Gets or sets the arguments associated with this invocation context.
+    /// </summary>
+    internal AIFunctionArguments AIArguments
+    {
+        get => base.Arguments;
+        set => base.Arguments = value;
     }
 
     private static bool IsSameSchema(KernelFunction kernelFunction, AIFunction aiFunction)

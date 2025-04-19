@@ -166,25 +166,22 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
-        if (callContent.Arguments is not null)
-        {
-            callContent.Arguments = new KernelArguments(callContent.Arguments);
-        }
+        //if (callContent.Arguments is not null)
+        //{
+        //    callContent.Arguments = new KernelArguments(callContent.Arguments);
+        //}
 
-        var context = new AutoFunctionInvocationContext(new()
+        var context = new AutoFunctionInvocationContext(options)
         {
-            Function = function,
-            Arguments = new(callContent.Arguments) { Services = this.FunctionInvocationServices },
-
+            AIFunction = function,
+            AIArguments = new AIFunctionArguments(callContent.Arguments) { Services = this.FunctionInvocationServices },
             Messages = messages,
-            Options = options,
-
             CallContent = callContent,
             Iteration = iteration,
             FunctionCallIndex = functionCallIndex,
             FunctionCount = callContents.Count,
-        })
-        { IsStreaming = isStreaming };
+            IsStreaming = isStreaming
+        };
 
         object? result;
         try

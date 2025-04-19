@@ -783,7 +783,7 @@ public partial class FunctionInvokingChatClientV2 : DelegatingChatClient
         try
         {
             CurrentContext = context; // doesn't need to be explicitly reset after, as that's handled automatically at async method exit
-            result = await TryInvokeFunctionAsync(context, cancellationToken);
+            (context, result) = await TryInvokeFunctionAsync(context, cancellationToken);
         }
         catch (Exception e)
         {
