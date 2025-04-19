@@ -47,11 +47,47 @@ public class ProcessSerializationTests
         // Assert
         Assert.NotNull(process);
 
-        var eventListenerSteps = process.Steps.Where(s => s is KernelProcessEventListener);
-        Assert.Single(eventListenerSteps);
+        var stepKickoff = process.Steps.FirstOrDefault(s => s.State.Id == "kickoff_agent");
+        var stepA = process.Steps.FirstOrDefault(s => s.State.Id == "a_step_agent");
+        var stepB = process.Steps.FirstOrDefault(s => s.State.Id == "b_step_agent");
+        var stepC = process.Steps.FirstOrDefault(s => s.State.Id == "c_step_agent");
 
-        KernelProcessEventListener eventListenerStep = (eventListenerSteps.First() as KernelProcessEventListener)!;
-        Assert.Single(eventListenerStep.Edges);
+        Assert.NotNull(stepKickoff);
+        Assert.NotNull(stepA);
+        Assert.NotNull(stepB);
+        Assert.NotNull(stepC);
+
+        // kickoff step has outgoing edge to aStep and bStep on event startAStep
+        Assert.Single(stepKickoff.Edges);
+        var kickoffStartEdges = stepKickoff.Edges["kickoff_agent.StartARequested"];
+        Assert.Equal(2, kickoffStartEdges.Count);
+        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "a_step_agent");
+        Assert.Contains(kickoffStartEdges, e => e.OutputTarget.StepId == "b_step_agent");
+
+        // aStep and bStep have grouped outgoing edges to cStep on event aStepDone and bStepDone
+        Assert.Single(stepA.Edges);
+        var aStepDoneEdges = stepA.Edges["a_step_agent.AStepDone"];
+        Assert.Single(aStepDoneEdges);
+        var aStepDoneEdge = aStepDoneEdges.First();
+        Assert.Equal("c_step_agent", aStepDoneEdge.OutputTarget.StepId);
+        Assert.NotEmpty(aStepDoneEdge.GroupId ?? "");
+
+        Assert.Single(stepB.Edges);
+        var bStepDoneEdges = stepB.Edges["b_step_agent.BStepDone"];
+        Assert.Single(bStepDoneEdges);
+        var bStepDoneEdge = bStepDoneEdges.First();
+        Assert.Equal("c_step_agent", bStepDoneEdge.OutputTarget.StepId);
+        Assert.NotEmpty(bStepDoneEdge.GroupId ?? "");
+
+        Assert.Single(stepC.Edges);
+        var cStepDoneEdges = stepC.Edges["c_step_agent.CStepDone"];
+        Assert.Single(cStepDoneEdges);
+        var cStepDoneEdge = cStepDoneEdges.First();
+        Assert.Equal("kickoff_agent", cStepDoneEdge.OutputTarget.StepId);
+        Assert.Null(cStepDoneEdge.GroupId);
+
+        // edges to cStep are in the same group
+        Assert.Equal(aStepDoneEdge.GroupId, bStepDoneEdge.GroupId);
     }
 
     /// <summary>
@@ -112,7 +148,17 @@ public class ProcessSerializationTests
                     new(messageType: CommonEvents.AStepDone, source: myAStep),
                     new(messageType: CommonEvents.BStepDone, source: myBStep)
                 })
-                .SendEventTo(new(myCStep));
+                .SendEventTo(new ProcessStepTargetBuilder(myCStep, inputMapping: (inputEvents) =>
+                {
+                    // Map the input events to the CStep's input parameters.
+                    // In this case, we are mapping the output of AStep to the first input parameter of CStep
+                    // and the output of BStep to the second input parameter of CStep.
+                    return new()
+                    {
+                        { "astepdata", inputEvents[$"aStep.{CommonEvents.AStepDone}"] },
+                        { "bstepdata", inputEvents[$"bStep.{CommonEvents.BStepDone}"] }
+                    };
+                }));
 
         // When CStep has finished without requesting an exit, activate the Kickoff step to start again.
         myCStep

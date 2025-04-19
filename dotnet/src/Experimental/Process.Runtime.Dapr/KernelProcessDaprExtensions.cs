@@ -20,7 +20,6 @@ public static class KernelProcessDaprExtensions
         actorOptions.Actors.RegisterActor<StepActor>();
         actorOptions.Actors.RegisterActor<MapActor>();
         actorOptions.Actors.RegisterActor<ProxyActor>();
-        actorOptions.Actors.RegisterActor<MessageListenerActor>();
         actorOptions.Actors.RegisterActor<EventBufferActor>();
         actorOptions.Actors.RegisterActor<MessageBufferActor>();
         actorOptions.Actors.RegisterActor<ExternalEventBufferActor>();

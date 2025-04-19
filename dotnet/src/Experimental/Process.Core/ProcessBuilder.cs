@@ -143,12 +143,6 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         return builder;
     }
 
-    internal void AddListenerStep(ProcessEventListenerBuilder listenerBuilder)
-    {
-        Verify.NotNull(listenerBuilder, nameof(listenerBuilder));
-        this._steps.Add(listenerBuilder);
-    }
-
     #region Public Interface
 
     /// <summary>

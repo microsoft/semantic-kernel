@@ -236,9 +236,14 @@ public abstract class ProcessStepBuilder
         this.Name ??= name;
         Verify.NotNullOrWhiteSpace(name);
 
+        if (this is not ProcessBuilder)
+        {
+            Verify.NotNullOrWhiteSpace(id, nameof(id));
+        }
+
         this.FunctionsDict = [];
-        this.Id = id ?? Guid.NewGuid().ToString("n");
-        this._eventNamespace = $"{this.Name}_{this.Id}";
+        this.Id = id ?? Guid.NewGuid().ToString("n"); // TODO: Remove possibility for null Id
+        this._eventNamespace = this.Id;
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
     }
 }

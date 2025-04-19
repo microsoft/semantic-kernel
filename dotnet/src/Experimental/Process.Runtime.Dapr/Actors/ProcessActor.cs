@@ -286,14 +286,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
                 await proxyActor.InitializeProxyAsync(proxyStep, this.Id.GetId()).ConfigureAwait(false);
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedProxyId, nameof(ProxyActor));
             }
-            else if (step is DaprMessageListenerInfo messageListenerStep)
-            {
-                // Initialize the step as a message listener
-                ActorId scopedMessageListenerId = this.ScopedActorId(new ActorId(messageListenerStep.State.Id!));
-                IStep messageListenerActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMessageListenerId, nameof(MessageListenerActor));
-                await messageListenerActor.InitializeStepAsync(messageListenerStep, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
-                stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedMessageListenerId, nameof(MessageListenerActor));
-            }
             else
             {
                 // The current step should already have an Id.

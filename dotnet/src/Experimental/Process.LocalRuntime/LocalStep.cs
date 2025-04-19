@@ -203,7 +203,7 @@ internal class LocalStep : IKernelProcessMessageChannel
             }
 
             // The edge group processor has received all required messages and has produced a result.
-            message = message with { Values = result };
+            message = message with { Values = result ?? [] };
         }
 
         // Add the message values to the inputs for the function
