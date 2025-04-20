@@ -16,8 +16,8 @@ public abstract class Orchestratable
     /// Registers the orchestratable component with the external system using a specified topic and an optional target actor.
     /// </summary>
     /// <param name="externalTopic">The topic identifier to be used for registration.</param>
-    /// <param name="targetActor">An optional target actor type, if applicable, that may influence registration behavior.</param>
-    /// <param name="logger">The logger to use during registration</param>
+    /// <param name="handoff">The actor type used for handoff.  Only defined for nested orchestrations.</param>
+    /// <param name="loggerFactory">The active logger factory.</param>
     /// <returns>A ValueTask containing the AgentType that indicates the registered agent.</returns>
-    protected internal abstract ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor, ILogger logger);
+    protected internal abstract ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? handoff, ILoggerFactory loggerFactory);
 }

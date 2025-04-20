@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents;
 /// </summary>
 public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgentsTest(output)
 {
-    protected const int ResultTimeoutInSeconds = 10;
+    protected const int ResultTimeoutInSeconds = 15;
 
     protected ChatCompletionAgent CreateAgent(string instructions, string? name = null, string? description = null)
     {

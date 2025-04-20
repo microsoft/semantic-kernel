@@ -33,7 +33,7 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger)
     {
         // Each agent handsoff its result to the next agent.
         AgentType nextAgent = orchestrationType;
@@ -47,7 +47,7 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
-                nextAgent = await orchestration.RegisterAsync(topic, nextAgent, logger).ConfigureAwait(false);
+                nextAgent = await orchestration.RegisterAsync(topic, nextAgent, loggerFactory).ConfigureAwait(false);
             }
             logger.LogRegisterActor(OrchestrationName, nextAgent, "MEMBER", index + 1);
         }
@@ -59,7 +59,7 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
             return
                 this.Runtime.RegisterAgentFactoryAsync(
                     this.GetAgentType(topic, index),
-                    (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent, this.LoggerFactory.CreateLogger<SequentialActor>())));
+                    (agentId, runtime) => ValueTask.FromResult<IHostableAgent>(new SequentialActor(agentId, runtime, agent, nextAgent, loggerFactory.CreateLogger<SequentialActor>())));
         }
     }
 

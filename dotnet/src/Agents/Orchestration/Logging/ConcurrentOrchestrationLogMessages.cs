@@ -41,7 +41,7 @@ internal static partial class ConcurrentOrchestrationLogMessages
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Information,
-        Message = "COLLECT Concurrent result [{AgentId}]: ({ResultCount} / {ExpectedCount})")]
+        Message = "COLLECT Concurrent result [{AgentId}]: #{ResultCount} / {ExpectedCount}")]
     public static partial void LogConcurrentResultCapture(
         this ILogger logger,
         AgentId agentId,

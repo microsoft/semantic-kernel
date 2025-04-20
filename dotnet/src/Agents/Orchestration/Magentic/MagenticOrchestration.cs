@@ -35,7 +35,7 @@ public class MagenticOrchestration<TInput, TOutput> :
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger)
     {
         AgentType managerType = this.FormatAgentType(topic, "Manager");
 
@@ -52,7 +52,7 @@ public class MagenticOrchestration<TInput, TOutput> :
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
-                memberType = await orchestration.RegisterAsync(topic, managerType, logger).ConfigureAwait(false);
+                memberType = await orchestration.RegisterAsync(topic, managerType, loggerFactory).ConfigureAwait(false);
             }
 
             team[memberType] = (memberType, "an agent"); // %%% DESCRIPTION & NAME ID
@@ -66,7 +66,7 @@ public class MagenticOrchestration<TInput, TOutput> :
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, this.LoggerFactory.CreateLogger<MagenticManagerActor>()))).ConfigureAwait(false);
+                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, loggerFactory.CreateLogger<MagenticManagerActor>()))).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 
@@ -78,7 +78,7 @@ public class MagenticOrchestration<TInput, TOutput> :
                 this.Runtime.RegisterAgentFactoryAsync(
                     this.FormatAgentType(topic, $"Agent_{agentCount}"),
                     (agentId, runtime) =>
-                        ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, this.LoggerFactory.CreateLogger<ChatAgentActor>())));
+                        ValueTask.FromResult<IHostableAgent>(new ChatAgentActor(agentId, runtime, agent, topic, loggerFactory.CreateLogger<ChatAgentActor>())));
         }
     }
 }

@@ -32,7 +32,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
     }
 
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger)
     {
         // Register result actor
         AgentType resultType = this.FormatAgentType(topic, "Results");
@@ -40,7 +40,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
             resultType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new ConcurrentResultActor(agentId, runtime, orchestrationType, this.Members.Count, this.LoggerFactory.CreateLogger<ConcurrentResultActor>()))).ConfigureAwait(false);
+                    new ConcurrentResultActor(agentId, runtime, orchestrationType, this.Members.Count, loggerFactory.CreateLogger<ConcurrentResultActor>()))).ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationName, resultType, "RESULTS");
 
         // Register member actors - All agents respond to the same message.
@@ -57,7 +57,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
-                memberType = await orchestration.RegisterAsync(topic, resultType, logger).ConfigureAwait(false);
+                memberType = await orchestration.RegisterAsync(topic, resultType, loggerFactory).ConfigureAwait(false);
             }
 
             logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
@@ -73,7 +73,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
                 this.Runtime.RegisterAgentFactoryAsync(
                     this.FormatAgentType(topic, $"Agent_{agentCount}"),
                     (agentId, runtime) =>
-                        ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType, this.LoggerFactory.CreateLogger<ConcurrentActor>())));
+                        ValueTask.FromResult<IHostableAgent>(new ConcurrentActor(agentId, runtime, agent, resultType, loggerFactory.CreateLogger<ConcurrentActor>())));
         }
     }
 }

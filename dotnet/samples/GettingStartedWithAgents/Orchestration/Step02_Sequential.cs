@@ -10,10 +10,10 @@ namespace GettingStarted.Orchestration;
 /// <summary>
 /// Demonstrates how to use the <see cref="SequentialOrchestration{TInput, TOutput}"/>.
 /// </summary>
-public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step02_Sequential(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
-    public async Task SimpleSequentailAsync()
+    public async Task SimpleSequentialAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
@@ -36,7 +36,7 @@ public class Step02_Sequentail(ITestOutputHelper output) : BaseOrchestrationTest
     }
 
     [Fact]
-    public async Task NestedSequentailAsync()
+    public async Task NestedSequentialAsync()
     {
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");

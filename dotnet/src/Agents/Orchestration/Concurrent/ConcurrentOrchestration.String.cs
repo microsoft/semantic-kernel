@@ -19,7 +19,15 @@ public sealed class ConcurrentOrchestration : ConcurrentOrchestration<string, st
     public ConcurrentOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
         : base(runtime, members)
     {
-        this.InputTransform = (string input) => ValueTask.FromResult(input.ToRequest());
-        this.ResultTransform = (ConcurrentMessages.Result[] result) => ValueTask.FromResult<string[]>([.. result.Select(r => r.Message.Content ?? string.Empty)]);
+        this.InputTransform = (string input) =>
+        {
+            System.Console.WriteLine("*** TRANSFORM INPUT - OUTER");
+            return ValueTask.FromResult(input.ToRequest());
+        };
+        this.ResultTransform = (ConcurrentMessages.Result[] result) =>
+        {
+            System.Console.WriteLine("*** TRANSFORM OUTPUT - OUTER");
+            return ValueTask.FromResult<string[]>([.. result.Select(r => r.Message.Content ?? string.Empty)]);
+        };
     }
 }

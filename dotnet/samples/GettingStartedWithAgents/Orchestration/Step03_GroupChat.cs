@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.AgentRuntime.InProcess;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace GettingStarted.Orchestration;
 
@@ -73,8 +71,8 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         InProcessRuntime runtime = new();
         GroupChatOrchestration<ChatMessages.InputTask, ChatMessages.Result> orchestrationInner = new(runtime, agent)
         {
-            InputTransform = (ChatMessages.InputTask input) => ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input.Message.ToString()).ToInputTask()),
-            ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result.Message.ToResult())
+            InputTransform = (ChatMessages.InputTask input) => ValueTask.FromResult(input),
+            ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result),
         };
         GroupChatOrchestration orchestrationOuter = new(runtime, orchestrationInner) { LoggerFactory = this.LoggerFactory };
 

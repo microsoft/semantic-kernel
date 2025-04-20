@@ -18,7 +18,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 internal static partial class AgentOrchestrationLogMessages
 {
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// Logs the start of the registration phase for an orchestration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -30,7 +30,7 @@ internal static partial class AgentOrchestrationLogMessages
         TopicId topic);
 
     /// <summary>
-    /// Logs actor registration.
+    /// Logs pattern actor registration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -43,7 +43,7 @@ internal static partial class AgentOrchestrationLogMessages
         string label);
 
     /// <summary>
-    /// Logs actor registration.
+    /// Logs agent actor registration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -57,7 +57,7 @@ internal static partial class AgentOrchestrationLogMessages
         int count);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> awaiting the orchestration.
+    /// Logs the end of the registration phase for an orchestration.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -69,7 +69,7 @@ internal static partial class AgentOrchestrationLogMessages
         TopicId topic);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> orchestration invocation.
+    /// Logs an orchestration invocation
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -81,8 +81,8 @@ internal static partial class AgentOrchestrationLogMessages
         TopicId topic);
 
     /// <summary>
-    /// Logs <see cref="OrchestrationResult{TValue}"/> that the orchestration
-    /// has started successfully and yielded control back to the caller.
+    /// Logs that the orchestration has started successfully and
+    /// yielded control back to the caller.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -94,7 +94,7 @@ internal static partial class AgentOrchestrationLogMessages
         TopicId topic);
 
     /// <summary>
-    /// Logs the start of the outer orchestration.
+    /// Logs the start an orchestration (top/outer).
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -106,7 +106,7 @@ internal static partial class AgentOrchestrationLogMessages
         AgentId agentId);
 
     /// <summary>
-    /// %%% COMMENT
+    /// Logs that orchestration request actor is active
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -118,12 +118,12 @@ internal static partial class AgentOrchestrationLogMessages
         AgentId agentId);
 
     /// <summary>
-    /// %%% COMMENT
+    /// Logs that orchestration request actor experienced an unexpected failure.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "{Orchestration} request failed: {AgentId}")]
+        Message = "FAILURE {Orchestration}: {AgentId}")]
     public static partial void LogOrchestrationRequestFailure(
         this ILogger logger,
         string orchestration,
@@ -131,7 +131,7 @@ internal static partial class AgentOrchestrationLogMessages
         Exception exception);
 
     /// <summary>
-    /// %%% COMMENT
+    /// Logs that orchestration result actor is active
     /// </summary>
     [LoggerMessage(
         EventId = 0,
@@ -143,12 +143,12 @@ internal static partial class AgentOrchestrationLogMessages
         AgentId agentId);
 
     /// <summary>
-    /// %%% COMMENT
+    /// Logs that orchestration result actor experienced an unexpected failure.
     /// </summary>
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Error,
-        Message = "{Orchestration} result failed: {AgentId}")]
+        Message = "FAILURE {Orchestration}: {AgentId}")]
     public static partial void LogOrchestrationResultFailure(
         this ILogger logger,
         string orchestration,

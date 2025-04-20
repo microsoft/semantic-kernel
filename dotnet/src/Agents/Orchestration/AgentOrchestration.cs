@@ -83,7 +83,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
 
         TaskCompletionSource<TOutput> completion = new();
 
-        AgentType orchestrationType = await this.RegisterAsync(topic, completion, targetActor: null, logger).ConfigureAwait(false);
+        AgentType orchestrationType = await this.RegisterAsync(topic, completion, handoff: null, this.LoggerFactory).ConfigureAwait(false);
 
         logger.LogOrchestrationInvoke(this._orchestrationRoot, topic);
 
@@ -116,21 +116,22 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// <param name="topic">The topic identifier for the orchestration session.</param>
     /// <param name="orchestrationType">The orchestration type used in registration.</param>
     /// <returns>The entry AgentType for the orchestration, if any.</returns>
+    /// <param name="loggerFactory">The active logger factory.</param>
     /// <param name="logger">The logger to use during registration</param>
-    protected abstract ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILogger logger);
+    protected abstract ValueTask<AgentType?> RegisterMembersAsync(TopicId topic, AgentType orchestrationType, ILoggerFactory loggerFactory, ILogger logger); // %%% TODO - CLASS LEVEL
 
     /// <summary>
     /// Registers the orchestration with the runtime using an external topic and an optional target actor.
     /// </summary>
     /// <param name="externalTopic">The external topic identifier to register with.</param>
-    /// <param name="targetActor">An optional target actor that may influence registration behavior.</param>
+    /// <param name="handoff">The actor type used for handoff.  Only defined for nested orchestrations.</param>
+    /// <param name="loggerFactory">The active logger factory.</param>
     /// <returns>A ValueTask containing the AgentType that indicates the registered agent.</returns>
-    /// <param name="logger">The logger to use during registration</param>
-    protected internal override ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? targetActor, ILogger logger)
+    protected internal override ValueTask<AgentType> RegisterAsync(TopicId externalTopic, AgentType? handoff, ILoggerFactory loggerFactory)
     {
         TopicId orchestrationTopic = new($"{externalTopic.Type}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
 
-        return this.RegisterAsync(orchestrationTopic, completion: null, targetActor, logger);
+        return this.RegisterAsync(orchestrationTopic, completion: null, handoff, loggerFactory);
     }
 
     /// <summary>
@@ -151,11 +152,19 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     /// </summary>
     /// <param name="topic">The unique topic for the orchestration session.</param>
     /// <param name="completion">A TaskCompletionSource for the final result output, if applicable.</param>
-    /// <param name="targetActor">An optional target actor for routing results.</param>
-    /// <param name="logger">The orchestration logger (for use during registration)</param>
+    /// <param name="handoff">The actor type used for handoff.  Only defined for nested orchestrations.</param>
+    /// <param name="loggerFactory">The logger factory to use during initialization.</param>
     /// <returns>The AgentType representing the orchestration entry point.</returns>
-    private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? targetActor, ILogger logger)
+    private async ValueTask<AgentType> RegisterAsync(TopicId topic, TaskCompletionSource<TOutput>? completion, AgentType? handoff, ILoggerFactory loggerFactory)
     {
+        // Use the orchestration's logger factory, if assigned; otherwise, use the provided factory.
+        if (this.LoggerFactory.GetType() != typeof(NullLoggerFactory))
+        {
+            loggerFactory = this.LoggerFactory;
+        }
+        // Create a logger for the orchestration registration.
+        ILogger logger = loggerFactory.CreateLogger(this.GetType());
+
         logger.LogOrchestrationRegistrationStart(this._orchestrationRoot, topic);
 
         if (this.InputTransform == null)
@@ -173,13 +182,13 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
                 this.FormatAgentType(topic, "Root"),
                 (agentId, runtime) =>
                     ValueTask.FromResult<IHostableAgent>(
-                        new ResultActor(agentId, runtime, this._orchestrationRoot, this.ResultTransform, completion, this.LoggerFactory.CreateLogger<ResultActor>())
+                        new ResultActor(agentId, runtime, this._orchestrationRoot, this.ResultTransform, completion, loggerFactory.CreateLogger<ResultActor>())
                         {
-                            CompletionTarget = targetActor,
+                            CompletionTarget = handoff,
                         })).ConfigureAwait(false);
 
         // Register orchestration members
-        AgentType? entryAgent = await this.RegisterMembersAsync(topic, orchestrationFinal, logger).ConfigureAwait(false);
+        AgentType? entryAgent = await this.RegisterMembersAsync(topic, orchestrationFinal, loggerFactory, logger).ConfigureAwait(false);
 
         // Register actor for orchestration entry-point
         AgentType orchestrationEntry =
@@ -187,7 +196,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
                 this.FormatAgentType(topic, "Boot"),
                 (agentId, runtime) =>
                     ValueTask.FromResult<IHostableAgent>(
-                        new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), this.LoggerFactory.CreateLogger<RequestActor>()))
+                        new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), loggerFactory.CreateLogger<RequestActor>()))
             ).ConfigureAwait(false);
 
         logger.LogOrchestrationRegistrationDone(this._orchestrationRoot, topic);
