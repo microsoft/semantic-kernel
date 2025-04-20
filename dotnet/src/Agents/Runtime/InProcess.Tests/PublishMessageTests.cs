@@ -108,7 +108,7 @@ public class PublishMessageTests
 
         await fixture.RegisterFactoryMapInstances(
             nameof(PublisherAgent),
-            (id, runtime) => ValueTask.FromResult(new PublisherAgent(id, runtime, string.Empty, new List<TopicId> { new TopicId("TestTopic") })));
+            (id, runtime) => ValueTask.FromResult(new PublisherAgent(id, runtime, string.Empty, [new TopicId("TestTopic")])));
 
         await fixture.Runtime.AddSubscriptionAsync(new TestSubscription("RunTest", nameof(PublisherAgent)));
 
