@@ -107,7 +107,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             MessageDelivery delivery =
                 new MessageEnvelope(message, messageId, cancellationToken)
                     .WithSender(sender)
-                    .ForPublish(topic, this.PublishMessageServicer);
+                    .ForPublish(topic, this.PublishMessageServicerAsync);
 
             this._messageDeliveryQueue.Enqueue(delivery);
             Interlocked.Increment(ref this.messageQueueCount);
@@ -345,7 +345,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         await this.FinishAsync(this._finishSource?.Token ?? CancellationToken.None).ConfigureAwait(false);
     }
 
-    private async ValueTask PublishMessageServicer(MessageEnvelope envelope, CancellationToken deliveryToken)
+    private async ValueTask PublishMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
         if (!envelope.Topic.HasValue)
         {
