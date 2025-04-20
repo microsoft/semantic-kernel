@@ -84,7 +84,7 @@ public class AgentsApp
     {
         if (Volatile.Read(ref this.runningCount) == 0)
         {
-            await StartAsync().ConfigureAwait(false);
+            await this.StartAsync().ConfigureAwait(false);
         }
 
         await this.AgentRuntime.PublishMessageAsync(message, topic, messageId: messageId, cancellationToken: cancellationToken).ConfigureAwait(false);

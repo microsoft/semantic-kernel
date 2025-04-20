@@ -19,7 +19,7 @@ internal static class ValueTaskExtensions
     /// return value.AsValueTask();
     /// </c>
     /// </example>
-    public static ValueTask<TValue> AsValueTask<TValue>(this TValue value) => new ValueTask<TValue>(value);
+    public static ValueTask<TValue> AsValueTask<TValue>(this TValue value) => new(value);
 
     /// <summary>
     /// Creates a <see cref="ValueTask{TResult}"/> that's failed and is associated with an exception.
@@ -30,7 +30,7 @@ internal static class ValueTaskExtensions
     /// return value.AsValueTask();
     /// </c>
     /// </example>
-    public static ValueTask<TValue> AsValueTask<TValue>(this Exception exception) => new ValueTask<TValue>(Task.FromException<TValue>(exception));
+    public static ValueTask<TValue> AsValueTask<TValue>(this Exception exception) => new(Task.FromException<TValue>(exception));
 
     /// <summary>
     /// Present a regular task as a ValueTask.
@@ -38,7 +38,7 @@ internal static class ValueTaskExtensions
     /// <example>
     /// <c>return Task.CompletedTask.AsValueTask();</c>
     /// </example>
-    public static ValueTask AsValueTask(this Task task) => new ValueTask(task);
+    public static ValueTask AsValueTask(this Task task) => new(task);
 }
 
 #endif

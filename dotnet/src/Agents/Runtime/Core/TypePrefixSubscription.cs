@@ -66,7 +66,7 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     /// <exception cref="InvalidOperationException">Thrown if the topic does not match the subscription.</exception>
     public AgentId MapToAgent(TopicId topic)
     {
-        if (!Matches(topic))
+        if (!this.Matches(topic))
         {
             throw new InvalidOperationException("TopicId does not match the subscription.");
         }
