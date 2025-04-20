@@ -23,7 +23,8 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     /// <see href="https://learn.microsoft.com/en-us/azure/defender-for-cloud/gain-end-user-context-ai">Learn more</see> about protecting AI applications using Microsoft Defender for Cloud.
     /// </summary>
     [JsonIgnore]
-    public UserSecurityContext UserSecurityContext
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    public UserSecurityContext? UserSecurityContext
     {
         get => this._userSecurityContext;
         set
@@ -32,6 +33,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
             this._userSecurityContext = value;
         }
     }
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     /// <summary>
     /// Enabling this property will enforce the new <c>max_completion_tokens</c> parameter to be send the Azure OpenAI API.
@@ -143,7 +145,9 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     [Experimental("SKEXP0010")]
     private AzureSearchChatDataSource? _azureChatDataSource;
     private bool _setNewMaxCompletionTokensEnabled;
-    private UserSecurityContext _userSecurityContext;
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    private UserSecurityContext? _userSecurityContext;
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
     #endregion
 }

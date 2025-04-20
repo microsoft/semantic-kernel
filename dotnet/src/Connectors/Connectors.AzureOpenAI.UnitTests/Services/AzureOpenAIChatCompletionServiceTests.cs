@@ -317,10 +317,11 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var userSecurityContext = new UserSecurityContext()
         {
             ApplicationName = "My-AI-App",
-            SourceIP = "203.0.113.42"
+            SourceIP = "203.0.113.42",
+            EndUserId = "f3b8e23c-36a1-4e47-8f12-bd77a33f29b4",
+            EndUserTenantId = "8c946a0e-c75b-4f3a-b2e6-0d12e63c7e48"
         };
-        settings.SetUserSecurityContext(userSecurityContext)
-#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        settings.UserSecurityContext = userSecurityContext;
 
         using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -339,7 +340,13 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
 
         Assert.True(content.TryGetProperty("user_security_context", out var propertyValue));
-        //Assert.Equal(123, propertyValue.GetInt32());
+
+        using JsonDocument doc = JsonDocument.Parse(propertyValue.GetRawText());
+        Assert.Equal(userSecurityContext.ApplicationName, doc.RootElement.GetProperty("application_name").GetString());
+        Assert.Equal(userSecurityContext.SourceIP, doc.RootElement.GetProperty("source_ip").GetString());
+        Assert.Equal(userSecurityContext.EndUserId, doc.RootElement.GetProperty("end_user_id").GetString());
+        Assert.Equal(userSecurityContext.EndUserTenantId, doc.RootElement.GetProperty("end_user_tenant_id").GetString());
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     [Theory]
