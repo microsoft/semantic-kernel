@@ -83,7 +83,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
 
             // Act
             string testInput = "Test";
-            var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+            var processHandle = await this._fixture.StartAsync("cStep", Guid.NewGuid().ToString(), new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
             var processInfo = await processHandle.GetStateAsync();
 
             // Assert

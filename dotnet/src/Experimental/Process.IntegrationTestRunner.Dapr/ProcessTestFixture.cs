@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics;
 using System.Net;
+using Dapr.Actors.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using Xunit;
@@ -127,6 +129,21 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     {
         // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
         var context = new DaprTestProcessContext(process, this._httpClient!);
+        await context.StartWithEventAsync(initialEvent);
+        return context;
+    }
+
+    /// <summary>
+    /// Starts the specified process.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="processId"></param>
+    /// <param name="initialEvent"></param>
+    /// <returns></returns>
+    public async Task<KernelProcessContext> StartAsync(string key, string processId, KernelProcessEvent initialEvent)
+    {
+        // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
+        var context = new DaprTestProcessContext(key, processId, this._httpClient!);
         await context.StartWithEventAsync(initialEvent);
         return context;
     }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.Process;
 using SemanticKernel.Process.IntegrationTests;
 using SemanticKernel.Process.TestsShared.CloudEvents;
 
@@ -27,6 +28,15 @@ builder.Services.AddActors(static options =>
     options.AddProcessActors();
     options.Actors.RegisterActor<HealthActor>();
 });
+
+builder.Services.AddKeyedSingleton<KernelProcess>("cStep", (sp, key) =>
+{
+    return ProcessResources.GetCStepProcess();
+});
+
+// TODO: Should not need to explicitly do this
+builder.Services.RegisterKeyedProcesses();
+builder.Services.AddSingleton<DaprKernelProcessFactory2>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

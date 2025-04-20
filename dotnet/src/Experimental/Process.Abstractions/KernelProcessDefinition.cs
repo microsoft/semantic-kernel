@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Base class for process definitions.
 /// </summary>
-public abstract class ProcessDefinition
+public abstract class KernelProcessDefinition
 {
     /// <summary>
     /// Build the process.
