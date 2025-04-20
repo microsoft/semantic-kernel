@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Microsoft.AgentRuntime;
 

@@ -4,8 +4,6 @@
     <AssemblyName>Microsoft.Agents.Runtime.Abstractions</AssemblyName>
     <RootNamespace>Microsoft.Agents.Runtime.Abstractions</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);IDE1006;IDE0130</NoWarn>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>

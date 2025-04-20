@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Threading;
+
 namespace Microsoft.AgentRuntime;
 
 /// <summary>

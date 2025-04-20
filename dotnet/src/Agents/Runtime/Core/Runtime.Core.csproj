@@ -4,8 +4,6 @@
     <AssemblyName>Microsoft.Agents.Runtime.Core</AssemblyName>
     <RootNamespace>Microsoft.Agents.Runtime.Core</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <VersionSuffix>preview</VersionSuffix>
   </PropertyGroup>
 

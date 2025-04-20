@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.AgentRuntime.InProcess;
 using Microsoft.Extensions.Configuration;

@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AgentRuntime.InProcess.Tests;
@@ -29,7 +32,7 @@ public class MessageDeliveryTests
     {
         // Arrange
         MessageEnvelope message = new(new object());
-        Func<MessageEnvelope, CancellationToken, ValueTask> servicer = (_, _) => new ValueTask();
+        static ValueTask servicer(MessageEnvelope msg, CancellationToken token) => new ValueTask();
 
         ResultSink<object?> resultSink = new();
         int expectedResult = 42;
@@ -54,13 +57,13 @@ public class MessageDeliveryTests
         MessageEnvelope? passedMessage = null;
         CancellationToken? passedToken = null;
 
-        Func<MessageEnvelope, CancellationToken, ValueTask> servicer = (msg, token) =>
+        ValueTask servicer(MessageEnvelope msg, CancellationToken token)
         {
             servicerCalled = true;
             passedMessage = msg;
             passedToken = token;
             return ValueTask.CompletedTask;
-        };
+        }
 
         ResultSink<object?> sink = new();
         MessageDelivery delivery = new(message, servicer, sink);

@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AgentRuntime.Core;
 
 namespace Microsoft.AgentRuntime.InProcess.Tests;
@@ -15,7 +19,7 @@ public sealed class TestException : Exception { }
 
 public sealed class PublisherAgent : TestAgent, IHandle<BasicMessage>
 {
-    private IList<TopicId> targetTopics;
+    private readonly IList<TopicId> targetTopics;
 
     public PublisherAgent(AgentId id, IAgentRuntime runtime, string description, IList<TopicId> targetTopics)
         : base(id, runtime, description)

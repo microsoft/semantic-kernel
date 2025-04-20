@@ -4,8 +4,6 @@
     <AssemblyName>Microsoft.Agents.Runtime.Core.Tests</AssemblyName>
     <RootNamespace>Microsoft.Agents.Runtime.Core.Tests</RootNamespace>
     <TargetFrameworks>net8.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsTestProject>True</IsTestProject>
     <NoWarn>$(NoWarn);CA1707;CA2007;CA1812;CA1861;CA1063;CS0618;CS1591;IDE1006;VSTHRD111;SKEXP0001;SKEXP0050;SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>

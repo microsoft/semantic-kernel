@@ -2,6 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+using System;
 namespace Microsoft.AgentRuntime;
 
 /// <summary>

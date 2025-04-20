@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,7 +14,7 @@ namespace Microsoft.AgentRuntime.Core;
 /// </summary>
 public class AgentsApp
 {
-    private int runningCount;
+    private int _runningCount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentsApp"/> class.
@@ -48,7 +51,7 @@ public class AgentsApp
     /// </summary>
     public async ValueTask StartAsync()
     {
-        if (Interlocked.Exchange(ref this.runningCount, 1) != 0)
+        if (Interlocked.Exchange(ref this._runningCount, 1) != 0)
         {
             throw new InvalidOperationException("Application is already running.");
         }
@@ -62,7 +65,7 @@ public class AgentsApp
     /// </summary>
     public async ValueTask ShutdownAsync()
     {
-        if (Interlocked.Exchange(ref this.runningCount, 0) != 1)
+        if (Interlocked.Exchange(ref this._runningCount, 0) != 1)
         {
             throw new InvalidOperationException("Application is already stopped.");
         }
@@ -82,7 +85,7 @@ public class AgentsApp
     public async ValueTask PublishMessageAsync<TMessage>(TMessage message, TopicId topic, string? messageId = null, CancellationToken cancellationToken = default)
         where TMessage : notnull
     {
-        if (Volatile.Read(ref this.runningCount) == 0)
+        if (Volatile.Read(ref this._runningCount) == 0)
         {
             await this.StartAsync().ConfigureAwait(false);
         }
