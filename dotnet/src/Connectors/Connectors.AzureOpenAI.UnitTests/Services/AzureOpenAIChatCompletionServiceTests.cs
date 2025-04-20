@@ -306,6 +306,42 @@ public sealed class AzureOpenAIChatCompletionServiceTests : IDisposable
         Assert.Equal(123, propertyValue.GetInt32());
     }
 
+    [Fact]
+    public async Task GetChatMessageContentsHandlesUserSecurityContextCorrectlyAsync()
+    {
+        // Arrange
+        var service = new AzureOpenAIChatCompletionService("deployment", "https://endpoint", "api-key", "model-id", this._httpClient);
+        var settings = new AzureOpenAIPromptExecutionSettings();
+
+#pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var userSecurityContext = new UserSecurityContext()
+        {
+            ApplicationName = "My-AI-App",
+            SourceIP = "203.0.113.42"
+        };
+        settings.SetUserSecurityContext(userSecurityContext)
+#pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        using var responseMessage = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(AzureOpenAITestHelper.GetTestResponse("chat_completion_test_response.json"))
+        };
+        this._messageHandlerStub.ResponsesToReturn.Add(responseMessage);
+
+        // Act
+        var result = await service.GetChatMessageContentsAsync(new ChatHistory("System message"), settings);
+
+        // Assert
+        var requestContent = this._messageHandlerStub.RequestContents[0];
+
+        Assert.NotNull(requestContent);
+
+        var content = JsonSerializer.Deserialize<JsonElement>(Encoding.UTF8.GetString(requestContent));
+
+        Assert.True(content.TryGetProperty("user_security_context", out var propertyValue));
+        //Assert.Equal(123, propertyValue.GetInt32());
+    }
+
     [Theory]
     [InlineData("stream", "true")]
     [InlineData("stream_options", "{\"include_usage\":true}")]
