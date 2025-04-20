@@ -50,7 +50,7 @@ public class DaprKernelProcessFactory2
         }
 
         DaprKernelProcessContext processContext = new(process, actorProxyFactory);
-        await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
+        await processContext.KeyedStartWithEventAsync(key, processId, initialEvent).ConfigureAwait(false);
         return processContext;
     }
 }

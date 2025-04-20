@@ -10,7 +10,6 @@ using Dapr.Actors;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Runtime;
 using Microsoft.SemanticKernel.Process.Serialization;
@@ -23,6 +22,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
+    private readonly IReadOnlyDictionary<string, KernelProcess> _registeredProcesses;
 
     internal readonly List<IStep> _steps = [];
 
@@ -38,12 +38,22 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    public ProcessActor(ActorHost host, Kernel kernel)
+    /// <param name="registeredProcesses">The registered processes</param>
+    public ProcessActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
         : base(host, kernel)
     {
+        Verify.NotNull(registeredProcesses, nameof(registeredProcesses));
+
+        if (registeredProcesses.Count == 0)
+        {
+            throw new ArgumentException("The registered processes cannot be empty.", nameof(registeredProcesses));
+        }
+
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
+
+        this._registeredProcesses = registeredProcesses;
     }
 
     #region Public Actor Methods
@@ -91,6 +101,26 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             => this.Internal_ExecuteAsync(keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Starts the process with an initial event and an optional kernel.
+    /// </summary>
+    /// <param name="processKey"></param>
+    /// <param name="parentProcessId"></param>
+    /// <param name="eventProxyStepId"></param>
+    /// <param name="processEvent"></param>
+    /// <returns></returns>
+    public async Task KeyedRunOnceAsync(string processKey, string parentProcessId, string? eventProxyStepId, string processEvent)
+    {
+        if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
+        {
+            throw new ArgumentException($"The process with key '{processKey}' is not registered.", nameof(processKey));
+        }
+
+        var daprProcess = DaprProcessInfo.FromKernelProcess(process);
+        await this.InitializeProcessAsync(daprProcess, null, eventProxyStepId).ConfigureAwait(false);
+        await this.RunOnceAsync(processEvent).ConfigureAwait(false);
     }
 
     /// <summary>

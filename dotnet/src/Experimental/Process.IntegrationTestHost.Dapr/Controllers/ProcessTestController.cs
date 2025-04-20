@@ -26,6 +26,7 @@ public class ProcessTestController : Controller
     /// Initializes a new instance of the <see cref="ProcessTestController"/> class.
     /// </summary>
     /// <param name="kernel"></param>
+    /// <param name="daprKernelProcessFactory2"></param>
     public ProcessTestController(Kernel kernel, DaprKernelProcessFactory2 daprKernelProcessFactory2)
     {
         this._kernel = kernel;

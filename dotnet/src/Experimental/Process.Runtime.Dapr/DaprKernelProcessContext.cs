@@ -62,6 +62,18 @@ public class DaprKernelProcessContext : KernelProcessContext
         }
     }
 
+    internal async Task KeyedStartWithEventAsync(string key, string processId, KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
+    {
+        try
+        {
+            await this._daprProcess.KeyedRunOnceAsync(processId, key, eventProxyStepId?.GetId(), initialEvent.ToJson()).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
     /// <summary>
     /// Sends a message to the process.
     /// </summary>
