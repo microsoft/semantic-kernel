@@ -60,7 +60,7 @@ internal class LocalStep : IKernelProcessMessageChannel
         this._initializeTask = new Lazy<ValueTask>(this.InitializeStepAsync);
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._stepInfo.InnerStepType) ?? new NullLogger<LocalStep>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._eventNamespace = this.Id;
         this._edgeGroupProcessors = this._stepInfo.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new LocalEdgeGroupProcessor(kvp.Value)) ?? [];
     }
 
@@ -362,6 +362,6 @@ internal class LocalStep : IKernelProcessMessageChannel
     protected ProcessEvent ScopedEvent(ProcessEvent localEvent)
     {
         Verify.NotNull(localEvent, nameof(localEvent));
-        return localEvent with { Namespace = $"{this.Name}_{this.Id}" };
+        return localEvent with { Namespace = this.Id };
     }
 }

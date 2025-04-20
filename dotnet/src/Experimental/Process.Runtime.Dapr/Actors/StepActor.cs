@@ -132,7 +132,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._stepState = this._stepInfo.State;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._eventNamespace = this._stepInfo.State.Id;
 
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
         {
