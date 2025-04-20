@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Process.Runtime;
+using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 internal class DaprEdgeGroupProcessor
@@ -27,7 +29,22 @@ internal class DaprEdgeGroupProcessor
             throw new KernelException($"Message {messageKey} is not expected for edge group {this._edgeGroup.GroupId}.");
         }
 
-        this._messageData[messageKey] = (message.TargetEventData as KernelProcessEventData)!.ToObject();
+        if (message.TargetEventData is KernelProcessEventData eventData)
+        {
+            this._messageData[messageKey] = (message.TargetEventData as KernelProcessEventData)!.ToObject();
+        }
+        else if (message.TargetEventData is JsonElement jsonElement)
+        {
+            var deserialized = jsonElement.Deserialize<KernelProcessEventData>();
+            if (deserialized != null)
+            {
+                this._messageData[messageKey] = deserialized.Content;
+            }
+        }
+        else
+        {
+            this._messageData[messageKey] = message.TargetEventData;
+        }
 
         this._absentMessages.Remove(messageKey);
         if (this._absentMessages.Count == 0)
