@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Dapr.Actors.Runtime;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Process;
@@ -49,6 +48,6 @@ public static class KernelProcessDaprExtensions
 
         // For completeness, let's also allow IReadOnlyDictionary to be resolved.
         sc.AddTransient(
-            typeof(IReadOnlyDictionary<string, IExternalKernelProcessMessageChannel>), typeof(KeyedServiceDictionary));
+            typeof(IReadOnlyDictionary<string, KernelProcess>), typeof(KeyedServiceDictionary));
     }
 }

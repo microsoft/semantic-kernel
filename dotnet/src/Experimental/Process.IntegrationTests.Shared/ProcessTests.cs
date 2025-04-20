@@ -89,7 +89,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
             // Assert
             this.AssertStepState(processInfo, nameof(CStep), (KernelProcessStepState<CStepState> state) => state.State?.CurrentCycle == 3);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             throw;
         }
