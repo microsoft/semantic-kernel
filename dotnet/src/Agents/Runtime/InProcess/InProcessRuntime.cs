@@ -362,7 +362,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
                 AgentId? sender = envelope.Sender;
 
-                using CancellationTokenSource combinedSource = CancellationTokenSource.CreateLinkedTokenSource(envelope.Cancellation, deliveryToken); // %%% CHANGE - USING
+                using CancellationTokenSource combinedSource = CancellationTokenSource.CreateLinkedTokenSource(envelope.Cancellation, deliveryToken);
                 MessageContext messageContext = new(envelope.MessageId, combinedSource.Token)
                 {
                     Sender = sender,
@@ -401,7 +401,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             throw new InvalidOperationException("Message must have a receiver to be sent.");
         }
 
-        using CancellationTokenSource combinedSource = CancellationTokenSource.CreateLinkedTokenSource(envelope.Cancellation, deliveryToken); // %%% CHANGE - USING
+        using CancellationTokenSource combinedSource = CancellationTokenSource.CreateLinkedTokenSource(envelope.Cancellation, deliveryToken);
         MessageContext messageContext = new(envelope.MessageId, combinedSource.Token)
         {
             Sender = envelope.Sender,

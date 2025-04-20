@@ -79,7 +79,7 @@ public class AgentProxy
     private AgentMetadata QueryMetadataAndUnwrap()
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        return this._runtime.GetAgentMetadataAsync(this.Id).AsTask().ConfigureAwait(false).GetAwaiter().GetResult(); // %%% PRAGMA
+        return this._runtime.GetAgentMetadataAsync(this.Id).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
     }
 }
