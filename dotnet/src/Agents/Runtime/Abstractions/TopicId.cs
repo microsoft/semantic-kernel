@@ -70,7 +70,7 @@ public struct TopicId : IEquatable<TopicId>
     /// <param name="maybeTopicId">The topic ID string.</param>
     /// <returns>An instance of <see cref="TopicId"/>.</returns>
     /// <exception cref="FormatException">Thrown when the string is not in the valid "type/source" format.</exception>
-    public static TopicId FromStr(string maybeTopicId) => new TopicId(maybeTopicId.ToKeyValuePair(nameof(Type), nameof(Source)));
+    public static TopicId FromStr(string maybeTopicId) => new(maybeTopicId.ToKeyValuePair(nameof(Type), nameof(Source)));
 
     /// <summary>
     /// Returns the string representation of the <see cref="TopicId"/>.
