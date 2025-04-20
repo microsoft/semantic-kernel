@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 using System;
+using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.AgentRuntime;
 
 /// <summary>
