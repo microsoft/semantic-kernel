@@ -66,9 +66,9 @@ public class DaprKernelProcessContext : KernelProcessContext
     {
         try
         {
-            await this._daprProcess.KeyedRunOnceAsync(processId, key, eventProxyStepId?.GetId(), initialEvent.ToJson()).ConfigureAwait(false);
+            await this._daprProcess.KeyedRunOnceAsync(key, processId, "", eventProxyStepId?.GetId(), initialEvent.ToJson()).ConfigureAwait(false);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             throw;
         }

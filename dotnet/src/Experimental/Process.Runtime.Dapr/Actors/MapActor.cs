@@ -29,8 +29,8 @@ internal sealed class MapActor : StepActor, IMap
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    public MapActor(ActorHost host, Kernel kernel)
-        : base(host, kernel)
+    public MapActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
+        : base(host, kernel, registeredProcesses)
     {
     }
 

@@ -32,6 +32,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private CancellationTokenSource? _processCancelSource;
     private bool _isInitialized;
     private ILogger? _logger;
+    private string? _processKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessActor"/> class.
@@ -40,7 +41,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
     /// <param name="registeredProcesses">The registered processes</param>
     public ProcessActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
-        : base(host, kernel)
+        : base(host, kernel, registeredProcesses)
     {
         Verify.NotNull(registeredProcesses, nameof(registeredProcesses));
 
@@ -107,18 +108,21 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// Starts the process with an initial event and an optional kernel.
     /// </summary>
     /// <param name="processKey"></param>
+    /// <param name="processId"></param>
     /// <param name="parentProcessId"></param>
     /// <param name="eventProxyStepId"></param>
     /// <param name="processEvent"></param>
     /// <returns></returns>
-    public async Task KeyedRunOnceAsync(string processKey, string parentProcessId, string? eventProxyStepId, string processEvent)
+    public async Task KeyedRunOnceAsync(string processKey, string processId, string parentProcessId, string? eventProxyStepId, string processEvent)
     {
         if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
         {
             throw new ArgumentException($"The process with key '{processKey}' is not registered.", nameof(processKey));
         }
 
-        var daprProcess = DaprProcessInfo.FromKernelProcess(process);
+        this._processKey = processKey; // TODO: save state
+        var processWithId = process with { State = process.State with { Id = processId } };
+        var daprProcess = DaprProcessInfo.FromKernelProcess(processWithId);
         await this.InitializeProcessAsync(daprProcess, null, eventProxyStepId).ConfigureAwait(false);
         await this.RunOnceAsync(processEvent).ConfigureAwait(false);
     }
@@ -323,7 +327,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
                 var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
-                await stepActor.InitializeStepAsync(step, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
+                await stepActor.InitializeStepAsync(step, this.Id.GetId(), eventProxyStepId, this._processKey).ConfigureAwait(false);
             }
 
             this._steps.Add(stepActor);

@@ -66,17 +66,24 @@ public class ProcessTestController : Controller
     [HttpPost("processes/{processKey}/{processId}")]
     public async Task<IActionResult> StartProcessAsync(string processKey, string processId, [FromBody] KeyedProcessStartRequest request)
     {
-        if (s_processes.ContainsKey(processId))
+        try
         {
-            return this.BadRequest("Process already started");
+            if (s_processes.ContainsKey(processId))
+            {
+                return this.BadRequest("Process already started");
+            }
+
+            KernelProcessEvent initialEvent = request.InitialEvent.ToKernelProcessEvent();
+
+            var context = await this._daprKernelProcessFactory.StartAsync(processKey, processId, initialEvent);
+            s_processes.Add(processId, context);
+
+            return this.Ok();
         }
-
-        KernelProcessEvent initialEvent = request.InitialEvent.ToKernelProcessEvent();
-
-        var context = await this._daprKernelProcessFactory.StartAsync(processKey, processId, initialEvent);
-        s_processes.Add(processId, context);
-
-        return this.Ok();
+        catch (Exception)
+        {
+            throw;
+        }
     }
 
     /// <summary>

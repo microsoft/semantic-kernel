@@ -23,11 +23,12 @@ public interface IProcess : IActor, IStep
     /// Initializes the process with the specified process key.
     /// </summary>
     /// <param name="processKey"></param>
+    /// <param name="processId"></param>
     /// <param name="parentProcessId"></param>
     /// <param name="eventProxyStepId"></param>
     /// <param name="processEvent"></param>
     /// <returns></returns>
-    Task KeyedRunOnceAsync(string processKey, string parentProcessId, string? eventProxyStepId, string processEvent);
+    Task KeyedRunOnceAsync(string processKey, string processId, string parentProcessId, string? eventProxyStepId, string processEvent);
 
     /// <summary>
     /// Starts an initialized process.
