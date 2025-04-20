@@ -5,6 +5,7 @@
     <RootNamespace>Microsoft.Agents.Runtime.InProcess</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>preview</VersionSuffix>
+    <DefineConstants>SKIPSKABSTRACTION</DefineConstants>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -23,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" /> <!--// %%% REMOVE-->
     <ProjectReference Include="..\Abstractions\Runtime.Abstractions.csproj" />
   </ItemGroup>
 

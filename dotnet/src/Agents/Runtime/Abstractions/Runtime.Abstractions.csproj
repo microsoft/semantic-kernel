@@ -6,6 +6,7 @@
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);IDE1006;IDE0130</NoWarn>
     <VersionSuffix>preview</VersionSuffix>
+    <DefineConstants>SKIPSKABSTRACTION</DefineConstants>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
@@ -27,10 +28,6 @@
     <PackageReference Include="Microsoft.Bcl.HashCode" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Tasks.Extensions" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\SemanticKernel.Abstractions\SemanticKernel.Abstractions.csproj" /> <!--// %%% REMOVE-->
   </ItemGroup>
 
   <ItemGroup>
