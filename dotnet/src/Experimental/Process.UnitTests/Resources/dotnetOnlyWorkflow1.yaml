@@ -146,9 +146,8 @@ workflow:
         type: "Microsoft.SemanticKernel.Process.UnitTests.ProcessSerializationTests+CStep, SemanticKernel.Process.UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         id: c_step_agent
       inputs:
-        report:
-          schema:
-            $ref: "#/workflow/schemas/report"
+        aStepData: string
+        bStepData: string
       agent_input_mapping:
         event_payload: "$.inputs.report"
         event_type: "human_approval_request"
@@ -191,19 +190,10 @@ workflow:
           from: b_step
       then:
         - node: c_step
-            
-    # - listen_for:
-    #     event: "AStepDone"
-    #     from: a_step
-    #   then:
-    #     - node: c_step
-
-    # - listen_for:
-    #     event: "BStepDone"
-    #     from: b_step
-    #   then:
-    #     - node: c_step
-
+          inputs:
+            aStepData: a_step.AStepDone
+            bStepData: b_step.BStepDone
+  
     - listen_for:
         event: "CStepDone"
         from: c_step
