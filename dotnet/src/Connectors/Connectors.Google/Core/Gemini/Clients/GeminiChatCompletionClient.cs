@@ -604,13 +604,13 @@ internal sealed class GeminiChatCompletionClient : ClientBase
 
     private GeminiChatMessageContent GetChatMessageContentFromCandidate(GeminiResponse geminiResponse, GeminiResponseCandidate candidate)
     {
-        GeminiPart? part = candidate.Content?.Parts?[0];
-        GeminiPart.FunctionCallPart[]? toolCalls = part?.FunctionCall is { } function ? [function] : null;
+        string? text = candidate?.Content?.Parts?.Select(p => p.Text).FirstOrDefault(t => t != null);
+        GeminiPart.FunctionCallPart? functionCall = candidate?.Content?.Parts?.Select(p => p.FunctionCall).FirstOrDefault(fc => fc != null);
         return new GeminiChatMessageContent(
             role: candidate.Content?.Role ?? AuthorRole.Assistant,
-            content: part?.Text ?? string.Empty,
+            content: text ?? string.Empty,
             modelId: this._modelId,
-            functionsToolCalls: toolCalls,
+            functionsToolCalls: functionCall is { } function ? [function] : null,
             metadata: GetResponseMetadata(geminiResponse, candidate));
     }
 
