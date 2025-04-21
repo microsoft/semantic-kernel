@@ -3,7 +3,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.Core.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core.Tests;
 
 [Trait("Category", "Unit")]
 public class TypeSubscriptionAttributeTests

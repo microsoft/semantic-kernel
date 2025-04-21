@@ -4,9 +4,9 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using Microsoft.AgentRuntime.Internal;
+using Microsoft.SemanticKernel.Agents.Runtime.Internal;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Agent ID uniquely identifies an agent instance within an agent runtime, including a distributed runtime.

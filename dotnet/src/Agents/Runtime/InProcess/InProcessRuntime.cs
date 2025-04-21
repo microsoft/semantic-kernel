@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime.InProcess;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 
 /// <summary>
 /// Provides an in-process/in-memory implementation of the agent runtime.

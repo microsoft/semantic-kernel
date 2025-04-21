@@ -6,14 +6,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AgentRuntime.InProcess;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.Core.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core.Tests;
 
 [Trait("Category", "Unit")]
 public class BaseAgentTests
@@ -21,7 +21,7 @@ public class BaseAgentTests
     [Fact]
     public void Constructor_InitializesActivitySource_Correctly()
     {
-        BaseAgent.TraceSource.Name.Should().Be("Microsoft.AgentRuntime");
+        BaseAgent.TraceSource.Name.Should().Be("Microsoft.SemanticKernel.Agents.Runtime");
     }
 
     [Fact]

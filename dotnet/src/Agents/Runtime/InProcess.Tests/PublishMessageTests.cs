@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.InProcess.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess.Tests;
 
 [Trait("Category", "Unit")]
 public class PublishMessageTests

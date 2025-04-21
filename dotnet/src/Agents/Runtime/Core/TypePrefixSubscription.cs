@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// This subscription matches on topics based on a prefix of the type and maps to agents using the source of the topic as the agent key.

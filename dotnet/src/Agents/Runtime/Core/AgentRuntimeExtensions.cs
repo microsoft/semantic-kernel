@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// Provides extension methods for managing and registering agents within an <see cref="IAgentRuntime"/>.

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.Core.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core.Tests;
 
 [Trait("Category", "Unit")]
 public class AgentsAppTests

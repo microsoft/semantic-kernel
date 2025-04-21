@@ -2,9 +2,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AgentRuntime.Internal;
+using Microsoft.SemanticKernel.Agents.Runtime.Internal;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Represents a topic identifier that defines the scope of a broadcast message.

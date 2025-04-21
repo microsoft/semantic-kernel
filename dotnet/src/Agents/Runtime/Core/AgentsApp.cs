@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// Represents the core application hosting the agent runtime.

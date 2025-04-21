@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 
-namespace Microsoft.AgentRuntime.InProcess;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 
 internal interface IResultSink<TResult> : IValueTaskSource<TResult>
 {

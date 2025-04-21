@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// Specifies that the attributed class subscribes to topics based on a type prefix.

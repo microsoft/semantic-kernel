@@ -3,7 +3,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Represents the context of a message being sent within the agent runtime.

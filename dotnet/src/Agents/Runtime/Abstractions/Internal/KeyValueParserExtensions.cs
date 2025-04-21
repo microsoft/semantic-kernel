@@ -3,7 +3,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AgentRuntime.Internal;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Internal;
 
 /// <summary>
 /// Provides helper methods for parsing key-value string representations.

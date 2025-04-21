@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// Specifies that the attributed class subscribes to a particular topic for agent message handling.
