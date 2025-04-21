@@ -4,6 +4,9 @@
       "content": {
         "parts": [
           {
+            "text": "I'm fine, thanks. How are you?"
+          },
+          {
             "functionCall": {
               "name": "TimePlugin%nameSeparator%Now",
               "args": {
