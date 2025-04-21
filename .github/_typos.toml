@@ -47,6 +47,7 @@ asend = "asend"           # Async generator method
 
 [default.extend-identifiers]
 ags = "ags" # Azure Graph Service
+magnetic "magnetic" # Agent orchestration demo
 
 [type.jupyter]
 extend-ignore-re = [
