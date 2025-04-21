@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="9.1.0-preview.1.25121.10" />
     <PackageVersion Include="Aspire.Azure.Search.Documents" Version="9.1.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.1.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.CognitiveServices" Version="9.1.0" />
     <PackageVersion Include="Aspire.Hosting.Azure.Search" Version="9.1.0" />
     <PackageVersion Include="AWSSDK.BedrockAgent" Version="4.0.0-preview.13" />
@@ -64,7 +64,7 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.8" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.9" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
