@@ -79,6 +79,7 @@ async def main():
 
         # 5. Done and remove the Auzre AI Foundry Agent.
         print(f"# IS COMPLETE: {chat.is_complete}")
+
         await client.agents.delete_agent(agent_writer.definition.id)
 
 
