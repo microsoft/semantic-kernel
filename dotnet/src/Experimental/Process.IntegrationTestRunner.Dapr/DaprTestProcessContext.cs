@@ -87,7 +87,6 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
         }
         catch (Exception)
         {
-
             throw;
         }
     }

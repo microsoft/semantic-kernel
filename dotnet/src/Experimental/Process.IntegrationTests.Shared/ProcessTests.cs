@@ -272,7 +272,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         // Arrange
         Kernel kernel = this._kernelBuilder.Build();
         var processBuilder = new ProcessBuilder("StepAndFanIn");
-        var startStep = processBuilder.AddStepFromType<StartStep>();
+        var startStep = processBuilder.AddStepFromType<StartStep>(id: "startStep");
         var fanInStepName = "InnerFanIn";
         var fanInStep = processBuilder.AddStepFromProcess(this.CreateFanInProcess(fanInStepName));
 
@@ -479,8 +479,8 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     private ProcessBuilder CreateLinearProcess(string name)
     {
         var processBuilder = new ProcessBuilder(name);
-        var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>();
-        var repeatStep = processBuilder.AddStepFromType<RepeatStep>();
+        var echoStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>(id: nameof(CommonSteps.EchoStep));
+        var repeatStep = processBuilder.AddStepFromType<RepeatStep>(id: nameof(RepeatStep));
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess)
             .SendEventTo(new ProcessFunctionTargetBuilder(echoStep));
@@ -514,7 +514,7 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         var processBuilder = new ProcessBuilder(name);
         var echoAStep = processBuilder.AddStepFromType<CommonSteps.EchoStep>("EchoStepA");
         var repeatBStep = processBuilder.AddStepFromType<RepeatStep>("RepeatStepB");
-        var fanInCStep = processBuilder.AddStepFromType<FanInStep>();
+        var fanInCStep = processBuilder.AddStepFromType<FanInStep>(id: nameof(FanInStep));
 
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(echoAStep));
         processBuilder.OnInputEvent(ProcessTestsEvents.StartProcess).SendEventTo(new ProcessFunctionTargetBuilder(repeatBStep, parameterName: "message"));

@@ -154,13 +154,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process.
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
-    /// <param name="id">The unique identifier for the step. If not provided, a new GUID will be generated.</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null, string? id = null) where TStep : KernelProcessStep
+    public ProcessStepBuilder AddStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name, id: id);
+        ProcessStepBuilder<TStep> stepBuilder = new(id: id ?? typeof(TStep).Name);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -169,13 +168,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process.
     /// </summary>
     /// <param name="stepType">The step Type.</param>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
-    /// <param name="id">The unique identifier for the step. If not provided, a new GUID will be generated.</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType(Type stepType, string? name = null, IReadOnlyList<string>? aliases = null, string? id = null)
+    public ProcessStepBuilder AddStepFromType(Type stepType, string? id = null, IReadOnlyList<string>? aliases = null)
     {
-        ProcessStepBuilderTyped stepBuilder = new(stepType, name: name, id: id);
+        ProcessStepBuilderTyped stepBuilder = new(stepType: stepType, id: id ?? stepType.Name);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -186,13 +184,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <typeparam name="TState">The state Type.</typeparam>
     /// <param name="initialState">The initial state of the step.</param>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
-    /// <param name="id">The unique identifier for the step. If not provided, a new GUID will be generated.</param>
     /// <returns>An instance of <see cref="ProcessStepBuilder"/></returns>
-    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? name = null, IReadOnlyList<string>? aliases = null, string? id = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    public ProcessStepBuilder AddStepFromType<TStep, TState>(TState initialState, string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name, initialState: initialState, id: id);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name, initialState: initialState);
 
         return this.AddStep(stepBuilder, aliases);
     }
@@ -214,12 +211,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// Adds a step to the process.
     /// </summary>
     /// <typeparam name="TStep">The step Type.</typeparam>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step. If not provided, the name of the step Type will be used.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapStepFromType<TStep>(string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
+    public ProcessMapBuilder AddMapStepFromType<TStep>(string? id = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name);
+        ProcessStepBuilder<TStep> stepBuilder = new(id ?? typeof(TStep).Name);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -232,12 +229,12 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <typeparam name="TStep">The step Type.</typeparam>
     /// <typeparam name="TState">The state Type.</typeparam>
     /// <param name="initialState">The initial state of the step.</param>
-    /// <param name="name">The name of the step. This parameter is optional.</param>
+    /// <param name="id">The unique Id of the step.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessMapBuilder"/></returns>
-    public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string? name = null, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
+    public ProcessMapBuilder AddMapStepFromType<TStep, TState>(TState initialState, string id, IReadOnlyList<string>? aliases = null) where TStep : KernelProcessStep<TState> where TState : class, new()
     {
-        ProcessStepBuilder<TStep> stepBuilder = new(name, initialState: initialState);
+        ProcessStepBuilder<TStep> stepBuilder = new(id, initialState: initialState);
 
         ProcessMapBuilder mapBuilder = new(stepBuilder);
 
@@ -266,13 +263,13 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// of <see cref="IExternalKernelProcessMessageChannel"/> passed.
     /// For now, the current implementation only allows for 1 implementation of <see cref="IExternalKernelProcessMessageChannel"/> at the time.
     /// </summary>
-    /// <param name="externalTopics">topic names to be used externally</param>
-    /// <param name="name">name of the proxy step</param>
+    /// <param name="id">The unique Id of the proxy step.</param>
+    /// <param name="externalTopics">topic names to be used externally.</param>
     /// <param name="aliases">Aliases that have been used by previous versions of the step, used for supporting backward compatibility when reading old version Process States</param>
     /// <returns>An instance of <see cref="ProcessProxyBuilder"/></returns>
-    public ProcessProxyBuilder AddProxyStep(IReadOnlyList<string> externalTopics, string? name = null, IReadOnlyList<string>? aliases = null)
+    public ProcessProxyBuilder AddProxyStep(string id, IReadOnlyList<string> externalTopics, IReadOnlyList<string>? aliases = null)
     {
-        ProcessProxyBuilder proxyBuilder = new(externalTopics, name ?? nameof(KernelProxyStep));
+        ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep));
 
         return this.AddStep(proxyBuilder, aliases);
     }
@@ -352,9 +349,9 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessBuilder"/> class.
     /// </summary>
-    /// <param name="name">The name of the process. This is required.</param>
-    public ProcessBuilder(string name)
-        : base(name)
+    /// <param name="id">The name of the process. This is required.</param>
+    public ProcessBuilder(string id)
+        : base(id)
     {
     }
 

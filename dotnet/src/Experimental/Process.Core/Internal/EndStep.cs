@@ -20,7 +20,7 @@ internal sealed class EndStep : ProcessStepBuilder
     /// Represents the end of a process.
     /// </summary>
     internal EndStep()
-        : base(ProcessConstants.EndStepName, id: ProcessConstants.EndStepName)
+        : base(id: ProcessConstants.EndStepName)
     {
     }
 

@@ -229,20 +229,14 @@ public abstract class ProcessStepBuilder
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessStepBuilder"/> class.
     /// </summary>
-    /// <param name="name">The name of the step.</param>
-    /// <param name="id">Optional: The Id of the step.</param>
-    protected ProcessStepBuilder(string name, string? id = null)
+    /// <param name="id">The unique Id of the step.</param>
+    protected ProcessStepBuilder(string id)
     {
-        this.Name ??= name;
-        Verify.NotNullOrWhiteSpace(name);
+        Verify.NotNullOrWhiteSpace(id, nameof(id));
 
-        if (this is not ProcessBuilder)
-        {
-            Verify.NotNullOrWhiteSpace(id, nameof(id));
-        }
-
+        this.Id ??= id;
+        this.Name = id;
         this.FunctionsDict = [];
-        this.Id = id ?? Guid.NewGuid().ToString("n"); // TODO: Remove possibility for null Id
         this._eventNamespace = this.Id;
         this.Edges = new Dictionary<string, List<ProcessStepEdgeBuilder>>(StringComparer.OrdinalIgnoreCase);
     }
@@ -264,11 +258,10 @@ public class ProcessStepBuilderTyped : ProcessStepBuilder
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
     /// <param name="stepType">The <see cref="Type"/> of the step.</param>
-    /// <param name="name">Optional: The name of the step.</param>
+    /// <param name="id">The unique id of the step.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    /// <param name="id">Optional: The Id of the step.</param>
-    internal ProcessStepBuilderTyped(Type stepType, string? name = null, object? initialState = default, string? id = null)
-        : base(name ?? stepType.Name, id)
+    internal ProcessStepBuilderTyped(Type stepType, string id, object? initialState = default)
+        : base(id)
     {
         Verify.NotNull(stepType);
 
@@ -350,11 +343,10 @@ public class ProcessStepBuilder<TStep> : ProcessStepBuilderTyped where TStep : K
     /// <summary>
     /// Creates a new instance of the <see cref="ProcessStepBuilder"/> class. If a name is not provided, the name will be derived from the type of the step.
     /// </summary>
-    /// <param name="name">Optional: The name of the step.</param>
+    /// <param name="id">The unique Id of the step.</param>
     /// <param name="initialState">Initial state of the step to be used on the step building stage</param>
-    /// <param name="id">Optional: The Id of the step.</param>
-    internal ProcessStepBuilder(string? name = null, object? initialState = default, string? id = null)
-        : base(typeof(TStep), name, initialState, id)
+    internal ProcessStepBuilder(string id, object? initialState = default)
+        : base(typeof(TStep), id, initialState)
     {
     }
 }
