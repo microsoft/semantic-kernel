@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.Abstractions.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Abstractions.Tests;
 
 [Trait("Category", "Unit")]
 public class MessageContextTests

@@ -2,11 +2,11 @@
 
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
+using Microsoft.SemanticKernel.Agents.Runtime;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 

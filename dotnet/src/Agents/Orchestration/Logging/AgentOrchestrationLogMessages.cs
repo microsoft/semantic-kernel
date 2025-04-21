@@ -2,8 +2,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Runtime;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 

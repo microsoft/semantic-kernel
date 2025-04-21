@@ -3,14 +3,14 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.AgentRuntime.InProcess;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.Core.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core.Tests;
 
 [Trait("Category", "Unit")]
 public class AgentsAppBuilderTests

@@ -3,7 +3,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Represents the type of an agent as a string.

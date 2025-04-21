@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.Agents.Runtime.Abstractions</AssemblyName>
-    <RootNamespace>Microsoft.Agents.Runtime.Abstractions</RootNamespace>
+    <AssemblyName>Microsoft.SemanticKernel.Agents.Runtime.Abstractions</AssemblyName>
+    <RootNamespace>Microsoft.SemanticKernel.Agents.Runtime.Abstractions</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);IDE1006;IDE0130</NoWarn>
     <VersionSuffix>preview</VersionSuffix>
@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Agents.Runtime.Abstractions.Tests" />
+    <InternalsVisibleTo Include="Microsoft.SemanticKernel.Agents.Runtime.Abstractions.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

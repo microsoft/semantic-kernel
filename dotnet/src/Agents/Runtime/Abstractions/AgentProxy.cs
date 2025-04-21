@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// A proxy that allows you to use an <see cref="AgentId"/> in place of its associated <see cref="IAgent"/>.

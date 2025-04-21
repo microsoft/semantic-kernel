@@ -2,9 +2,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime;
-using Microsoft.AgentRuntime.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Runtime;
+using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// Provides a fluent API to configure and build an <see cref="AgentsApp"/> instance.

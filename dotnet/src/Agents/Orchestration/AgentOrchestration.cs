@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime;
-using Microsoft.AgentRuntime.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
+using Microsoft.SemanticKernel.Agents.Runtime;
+using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 

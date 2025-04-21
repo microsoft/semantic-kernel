@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Represents metadata associated with an agent, including its type, unique key, and description.

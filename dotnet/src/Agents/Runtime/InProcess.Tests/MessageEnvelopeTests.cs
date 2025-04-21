@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.InProcess.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess.Tests;
 
 [Trait("Category", "Unit")]
 public class MessageEnvelopeTests

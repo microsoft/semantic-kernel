@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime.Core.Internal;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core.Internal;
 
 /// <summary>
 /// Invokes handler methods asynchronously using reflection.

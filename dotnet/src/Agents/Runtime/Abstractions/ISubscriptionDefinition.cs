@@ -2,7 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Defines a subscription that matches topics and maps them to agents.

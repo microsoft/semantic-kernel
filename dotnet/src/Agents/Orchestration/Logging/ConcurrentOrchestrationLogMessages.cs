@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AgentRuntime;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
+using Microsoft.SemanticKernel.Agents.Runtime;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 

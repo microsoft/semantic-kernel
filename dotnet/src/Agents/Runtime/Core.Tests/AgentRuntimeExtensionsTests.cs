@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime.InProcess;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Xunit;
 
-namespace Microsoft.AgentRuntime.Core.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core.Tests;
 
 [Trait("Category", "Unit")]
 public class AgentRuntimeExtensionsTests

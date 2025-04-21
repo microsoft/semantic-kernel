@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
+using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;

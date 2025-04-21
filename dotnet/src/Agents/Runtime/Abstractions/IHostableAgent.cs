@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Represents an agent that can be explicitly hosted and closed when the runtime shuts down.

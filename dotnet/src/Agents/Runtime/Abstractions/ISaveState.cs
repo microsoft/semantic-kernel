@@ -3,7 +3,7 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Defines a contract for saving and loading the state of an object.

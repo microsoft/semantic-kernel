@@ -3,16 +3,17 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime;
-using Microsoft.AgentRuntime.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Runtime;
+using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
 /// <summary>
 /// Actor for capturing each <see cref="ConcurrentMessages.Result"/> message.
 /// </summary>
-internal sealed class ConcurrentResultActor : PatternActor,
+internal sealed class ConcurrentResultActor :
+    PatternActor,
     IHandle<ConcurrentMessages.Result>
 {
     private readonly ConcurrentQueue<ConcurrentMessages.Result> _results;

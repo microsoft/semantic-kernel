@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.AgentRuntime.InProcess;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
+using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 
 namespace GettingStarted.Orchestration;
 

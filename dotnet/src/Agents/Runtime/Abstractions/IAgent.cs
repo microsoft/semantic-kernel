@@ -3,7 +3,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime;
+namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
 /// Represents an agent within the runtime that can process messages, maintain state, and be closed when no longer needed.

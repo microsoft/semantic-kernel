@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime.InProcess;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 
 internal sealed class MessageEnvelope
 {

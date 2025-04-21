@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AgentRuntime.Core;
+using Microsoft.SemanticKernel.Agents.Runtime.Core;
 
-namespace Microsoft.AgentRuntime.InProcess.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess.Tests;
 
 public sealed class BasicMessage
 {

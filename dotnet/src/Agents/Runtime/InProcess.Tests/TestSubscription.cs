@@ -3,7 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.AgentRuntime.InProcess.Tests;
+namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess.Tests;
 
 public class TestSubscription(string topicType, string agentType, string? id = null) : ISubscriptionDefinition
 {

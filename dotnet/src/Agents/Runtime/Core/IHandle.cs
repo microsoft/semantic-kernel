@@ -2,7 +2,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AgentRuntime.Core;
+namespace Microsoft.SemanticKernel.Agents.Runtime.Core;
 
 /// <summary>
 /// Defines a handler interface for processing items of type <typeparamref name="T"/>.
