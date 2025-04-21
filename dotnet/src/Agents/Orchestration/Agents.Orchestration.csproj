@@ -28,33 +28,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AgentRuntime.Abstractions" />
-    <PackageReference Include="Microsoft.AgentRuntime.Core" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
+    <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
+    <ProjectReference Include="..\Runtime\Core\Runtime.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="SemanticKernel.Agents.UnitTests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.LegacyThreadSwitchingMembers.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.MainThreadAssertingMethods.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.MainThreadSwitchingMethods.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Remove="C:\Users\crickman\.nuget\packages\microsoft.visualstudio.threading.analyzers\17.12.19\build\AdditionalFiles\vs-threading.MembersRequiringMainThread.txt" />
   </ItemGroup>
 
 </Project>
