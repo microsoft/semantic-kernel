@@ -81,6 +81,7 @@ class CopilotStudioAgentThread(AgentThread):
         Copilot Studio returns the conversation ID in the first `Activity`
         yielded by `start_conversation`.
         """
+        return ""
         logger.debug("Starting Copilot Studio conversation …")
         async for activity in self._client.start_conversation():
             self._buffer.append(activity)
@@ -271,6 +272,7 @@ class CopilotStudioAgent(Agent):
 
     @staticmethod
     def setup_resources(
+        token: str | None = None,
         app_client_id: str | None = None,
         tenant_id: str | None = None,
         environment_id: str | None = None,
@@ -297,13 +299,14 @@ class CopilotStudioAgent(Agent):
         except ValidationError as exc:
             raise AgentInitializationException(f"Failed to create Copilot Studio Agent settings: {exc}") from exc
 
-        if not connection_settings.app_client_id and not connection_settings.tenant_id:
-            raise AgentInitializationException("The Copilot Studio Agent app client ID and tenant ID are required.")
+        # if not connection_settings.app_client_id and not connection_settings.tenant_id:
+        #     raise AgentInitializationException("The Copilot Studio Agent app client ID and tenant ID are required.")
 
-        token = CopilotStudioAgent.acquire_token(
-            connection_settings,
-            environ.get("TOKEN_CACHE_PATH") or path.join(path.dirname(__file__), "bin/token_cache.bin"),
-        )
+        if not token:
+            token = CopilotStudioAgent.acquire_token(
+                connection_settings,
+                environ.get("TOKEN_CACHE_PATH") or path.join(path.dirname(__file__), "bin/token_cache.bin"),
+            )
         return CopilotClient(connection_settings, token)
 
     @override
@@ -331,7 +334,7 @@ class CopilotStudioAgent(Agent):
 
         # Ask Copilot Studio
         logger.debug("Sending text to Copilot Studio: %s", user_text)
-        self.client.ask_question_with_activity()
+        # self.client.ask_question_with_activity()
         async for activity in self.client.ask_question(user_text):
             thread._buffer.append(activity)
         # Flush to ChatMessageContent
