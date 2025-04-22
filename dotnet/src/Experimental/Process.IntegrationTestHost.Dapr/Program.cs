@@ -36,7 +36,7 @@ builder.Services.AddKeyedSingleton<KernelProcess>("cStep", (sp, key) =>
 });
 
 // Register our processes
-builder.Services.AddSingleton<DaprKernelProcessFactory2>();
+builder.Services.AddSingleton<DaprKernelProcessFactory>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

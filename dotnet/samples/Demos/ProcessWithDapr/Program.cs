@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
+using ProcessWithDapr.Processes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,10 +16,17 @@ builder.Services.AddLogging((logging) =>
 builder.Services.AddKernel();
 
 // Configure Dapr
+builder.Services.AddDaprKernelProcesses();
 builder.Services.AddActors(static options =>
 {
     // Register the actors required to run Processes
     options.AddProcessActors();
+});
+
+// Register the processes we want to run
+builder.Services.AddKeyedSingleton<KernelProcess>(ProcessWithCycle.Key, (sp, key) =>
+{
+    return ProcessWithCycle.Build();
 });
 
 builder.Services.AddControllers();

@@ -5,6 +5,7 @@ using ProcessWithCloudEvents.Grpc.Clients;
 using ProcessWithCloudEvents.Grpc.Extensions;
 using ProcessWithCloudEvents.Grpc.Options;
 using ProcessWithCloudEvents.Grpc.Services;
+using ProcessWithCloudEvents.Processes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,10 +32,17 @@ builder.Services.AddSingleton<DocumentGenerationService>();
 builder.Services.AddSingleton<IExternalKernelProcessMessageChannel, DocumentGenerationGrpcClient>();
 
 // Configure Dapr
+builder.Services.AddDaprKernelProcesses();
 builder.Services.AddActors(static options =>
 {
     // Register the actors required to run Processes
     options.AddProcessActors();
+});
+
+// Register the processes we want to run
+builder.Services.AddKeyedSingleton<KernelProcess>(DocumentGenerationProcess.Key, (sp, key) =>
+{
+    return DocumentGenerationProcess.CreateProcessBuilder().Build();
 });
 
 // Enabling CORS for grpc-web when using webApp as client, remove if not needed
