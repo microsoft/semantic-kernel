@@ -275,16 +275,6 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
         set
         {
             this.ThrowIfFrozen();
-            bool isGemini25 = false;
-            if (this.ModelId != null)
-            {
-                isGemini25 = this.ModelId?.StartsWith("gemini-2.5", StringComparison.OrdinalIgnoreCase) ?? false;
-            }
-
-            if (!isGemini25 && value != null)
-            {
-                throw new InvalidOperationException("ThinkingConfig is only applicable to Gemini-2.5 models.");
-            }
             this._thinkingConfig = value;
         }
     }
