@@ -20,6 +20,17 @@ public interface IProcess : IActor, IStep
     Task InitializeProcessAsync(DaprProcessInfo processInfo, string? parentProcessId, string? eventProxyStepId);
 
     /// <summary>
+    /// Initializes the process with the specified process key.
+    /// </summary>
+    /// <param name="processKey"></param>
+    /// <param name="processId"></param>
+    /// <param name="parentProcessId"></param>
+    /// <param name="eventProxyStepId"></param>
+    /// <param name="processEvent"></param>
+    /// <returns></returns>
+    Task KeyedRunOnceAsync(string processKey, string processId, string parentProcessId, string? eventProxyStepId, string processEvent);
+
+    /// <summary>
     /// Starts an initialized process.
     /// </summary>
     /// <param name="keepAlive">Indicates if the process should wait for external events after it's finished processing.</param>

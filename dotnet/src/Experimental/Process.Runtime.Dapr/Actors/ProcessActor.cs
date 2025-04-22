@@ -31,15 +31,24 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private CancellationTokenSource? _processCancelSource;
     private bool _isInitialized;
     private ILogger? _logger;
+    private string? _processKey;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessActor"/> class.
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    public ProcessActor(ActorHost host, Kernel kernel)
-        : base(host, kernel)
+    /// <param name="registeredProcesses">The registered processes</param>
+    public ProcessActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
+        : base(host, kernel, registeredProcesses)
     {
+        Verify.NotNull(registeredProcesses, nameof(registeredProcesses));
+
+        if (registeredProcesses.Count == 0)
+        {
+            throw new ArgumentException("The registered processes cannot be empty.", nameof(registeredProcesses));
+        }
+
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
@@ -90,6 +99,29 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
             => this.Internal_ExecuteAsync(keepAlive: keepAlive, cancellationToken: this._processCancelSource.Token));
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Starts the process with an initial event and an optional kernel.
+    /// </summary>
+    /// <param name="processKey">The registration key of the process.</param>
+    /// <param name="processId">The unique Id of the process.</param>
+    /// <param name="parentProcessId">The unique Id of the parent process.</param>
+    /// <param name="eventProxyStepId">The unique Id of the associated step proxy.</param>
+    /// <param name="processEvent">The process event.</param>
+    /// <returns></returns>
+    public async Task KeyedRunOnceAsync(string processKey, string processId, string parentProcessId, string? eventProxyStepId, string processEvent)
+    {
+        if (!this._registeredProcesses.TryGetValue(processKey, out KernelProcess? process) || process is null)
+        {
+            throw new ArgumentException($"The process with key '{processKey}' is not registered.", nameof(processKey));
+        }
+
+        this._processKey = processKey; // TODO: save state
+        var processWithId = process with { State = process.State with { Id = processId } };
+        var daprProcess = DaprProcessInfo.FromKernelProcess(processWithId);
+        await this.InitializeProcessAsync(daprProcess, null, eventProxyStepId).ConfigureAwait(false);
+        await this.RunOnceAsync(processEvent).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -292,7 +324,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
 
                 var scopedStepId = this.ScopedActorId(new ActorId(step.State.Id!));
                 stepActor = this.ProxyFactory.CreateActorProxy<IStep>(scopedStepId, nameof(StepActor));
-                await stepActor.InitializeStepAsync(step, this.Id.GetId(), eventProxyStepId).ConfigureAwait(false);
+                await stepActor.InitializeStepAsync(step, this.Id.GetId(), eventProxyStepId, this._processKey).ConfigureAwait(false);
             }
 
             this._steps.Add(stepActor);
@@ -502,7 +534,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private ProcessEvent ScopedEvent(ProcessEvent daprEvent)
     {
         Verify.NotNull(daprEvent);
-        return daprEvent with { Namespace = $"{this.Name}_{this._process!.State.Id}" };
+        return daprEvent with { Namespace = this._process!.State.Id ?? throw new KernelException("Id not set in process state.") };
     }
 
     #endregion

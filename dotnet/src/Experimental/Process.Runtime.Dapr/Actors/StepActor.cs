@@ -19,7 +19,9 @@ namespace Microsoft.SemanticKernel;
 
 internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 {
-    private readonly Lazy<ValueTask> _activateTask;
+    protected readonly Lazy<ValueTask> _activateTask;
+    protected readonly IReadOnlyDictionary<string, KernelProcess> _registeredProcesses;
+    protected Dictionary<string, DaprEdgeGroupProcessor> _edgeGroupProcessors = [];
 
     private DaprStepInfo? _stepInfo;
     private ILogger? _logger;
@@ -46,11 +48,15 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// </summary>
     /// <param name="host">The host.</param>
     /// <param name="kernel">Required. An instance of <see cref="Kernel"/>.</param>
-    public StepActor(ActorHost host, Kernel kernel)
+    /// <param name="registeredProcesses"></param>
+    public StepActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
         : base(host)
     {
+        Verify.NotNull(kernel, nameof(kernel));
+
         this._kernel = kernel;
         this._activateTask = new Lazy<ValueTask>(this.ActivateStepAsync);
+        this._registeredProcesses = registeredProcesses;
     }
 
     #region Public Actor Methods
@@ -61,10 +67,27 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
+    /// <param name="processKey"></param>
     /// <returns>A <see cref="ValueTask"/></returns>
-    public async Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
+    public async Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null, string? processKey = null)
     {
         Verify.NotNull(stepInfo, nameof(stepInfo));
+
+        if (!string.IsNullOrWhiteSpace(processKey))
+        {
+            if (!this._registeredProcesses.TryGetValue(processKey, out var registeredProcess) || registeredProcess is null)
+            {
+                throw new InvalidOperationException("No process registered with the specified key");
+            }
+
+            var currentStep = registeredProcess.Steps.Where(s => s.State.Id == stepInfo.State.Id).FirstOrDefault();
+            if (currentStep is null)
+            {
+                throw new InvalidOperationException("");
+            }
+
+            this._edgeGroupProcessors = currentStep.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new DaprEdgeGroupProcessor(kvp.Value)) ?? [];
+        }
 
         // Only initialize once. This check is required as the actor can be re-activated from persisted state and
         // this should not result in multiple initializations.
@@ -91,7 +114,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
     /// <param name="stepInfo">The <see cref="KernelProcessStepInfo"/> instance describing the step.</param>
     /// <param name="parentProcessId">The Id of the parent process if one exists.</param>
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
-    private void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
+    protected virtual void InitializeStep(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId = null)
     {
         Verify.NotNull(stepInfo, nameof(stepInfo));
 
@@ -107,7 +130,7 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._stepState = this._stepInfo.State;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._innerStepType) ?? new NullLogger<StepActor>();
         this._outputEdges = this._stepInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = $"{this._stepInfo.State.Name}_{this._stepInfo.State.Id}";
+        this._eventNamespace = this._stepInfo.State.Id;
 
         if (!string.IsNullOrWhiteSpace(eventProxyStepId))
         {
@@ -265,6 +288,24 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
 
         string messageLogParameters = string.Join(", ", message.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
         this._logger?.LogDebug("Received message from '{SourceId}' targeting function '{FunctionName}' and parameters '{Parameters}'.", message.SourceId, message.FunctionName, messageLogParameters);
+
+        if (!string.IsNullOrEmpty(message.GroupId))
+        {
+            this._logger?.LogDebug("Step {StepName} received message from Step named '{SourceId}' with group Id '{GroupId}'.", this.Name, message.SourceId, message.GroupId);
+            if (!this._edgeGroupProcessors.TryGetValue(message.GroupId, out DaprEdgeGroupProcessor? edgeGroupProcessor) || edgeGroupProcessor is null)
+            {
+                throw new KernelException($"Step {this.Name} received message from Step named '{message.SourceId}' with group Id '{message.GroupId}' that is not registered.").Log(this._logger);
+            }
+
+            if (!edgeGroupProcessor.TryGetResult(message, out Dictionary<string, object?>? result))
+            {
+                // The edge group processor has not received all required messages yet.
+                return;
+            }
+
+            // The edge group processor has received all required messages and has produced a result.
+            message = message with { Values = result ?? [] };
+        }
 
         // Add the message values to the inputs for the function
         this.AssignStepFunctionParameterValues(message);

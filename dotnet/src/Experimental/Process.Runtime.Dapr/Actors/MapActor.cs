@@ -29,8 +29,9 @@ internal sealed class MapActor : StepActor, IMap
     /// </summary>
     /// <param name="host">The Dapr host actor</param>
     /// <param name="kernel">An instance of <see cref="Kernel"/></param>
-    public MapActor(ActorHost host, Kernel kernel)
-        : base(host, kernel)
+    /// <param name="registeredProcesses"></param>
+    public MapActor(ActorHost host, Kernel kernel, IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
+        : base(host, kernel, registeredProcesses)
     {
     }
 
@@ -174,7 +175,7 @@ internal sealed class MapActor : StepActor, IMap
         this.ParentProcessId = parentProcessId;
         this._logger = this._kernel.LoggerFactory?.CreateLogger(this._mapInfo.State.Name) ?? new NullLogger<MapActor>();
         this._outputEdges = this._mapInfo.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToList());
-        this._eventNamespace = $"{this._mapInfo.State.Name}_{this._mapInfo.State.Id}";
+        this._eventNamespace = this._mapInfo.State.Id;
 
         // Capture the events that the map is interested in as hashtable for performant lookup
         this._mapEvents = [.. this._mapInfo.Edges.Keys.Select(key => key.Split(ProcessConstants.EventIdSeparator).Last())];

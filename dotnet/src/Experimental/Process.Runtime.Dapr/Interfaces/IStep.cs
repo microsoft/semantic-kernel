@@ -15,7 +15,7 @@ public interface IStep : IActor
     /// </summary>
     /// <returns>A <see cref="Task"/></returns>
     /// <exception cref="KernelException"></exception>
-    Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId);
+    Task InitializeStepAsync(DaprStepInfo stepInfo, string? parentProcessId, string? eventProxyStepId, string? processKey);
 
     /// <summary>
     /// Triggers the step to dequeue all pending messages and prepare for processing.

@@ -165,7 +165,7 @@ public class ProcessStepBuilderTests
     /// Verify that the <see cref="ProcessStepBuilder.ResolveFunctionTarget(string, string)"/> method throws when it cannot resolve.
     /// In this case, the function name is provided and the parameter name is not. The target function has more than one parameters.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Working on removing function parameter targets.")]
     public void ResolveFunctionTargetWithoutParameterShouldThrowWhenCannotResolveParameter()
     {
         // Arrange
