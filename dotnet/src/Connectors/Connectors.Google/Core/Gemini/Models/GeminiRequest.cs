@@ -326,7 +326,73 @@ internal sealed class GeminiRequest
             _ => CreateSchema(responseSchemaSettings.GetType(), GetDefaultOptions())
         };
 
+        jsonElement = TransformToOpenApi3Schema(jsonElement);
         return jsonElement;
+    }
+
+    /// <summary>
+    /// Adjusts the schema to conform to OpenAPI 3.0 nullable format by converting properties with type arrays
+    /// containing "null" (e.g., ["string", "null"]) to use the "nullable" keyword instead (e.g., { "type": "string", "nullable": true }).
+    /// </summary>
+    /// <param name="jsonElement">The JSON schema to be transformed.</param>
+    /// <returns>A new JsonElement with the adjusted schema format.</returns>
+    /// <remarks>
+    /// This method recursively processes all nested objects in the schema. For each property that has a type array
+    /// containing "null", it:
+    /// - Extracts the main type (non-null value)
+    /// - Replaces the type array with a single type value
+    /// - Adds "nullable": true as a property
+    /// </remarks>
+    private static JsonElement TransformToOpenApi3Schema(JsonElement jsonElement)
+    {
+        JsonNode? node = JsonNode.Parse(jsonElement.GetRawText());
+        if (node is JsonObject rootObject)
+        {
+            TransformOpenApi3Object(rootObject);
+        }
+
+        return JsonSerializer.SerializeToElement(node, GetDefaultOptions());
+
+        static void TransformOpenApi3Object(JsonObject obj)
+        {
+            if (obj.TryGetPropertyValue("properties", out JsonNode? propsNode) && propsNode is JsonObject properties)
+            {
+                foreach (var property in properties)
+                {
+                    if (property.Value is JsonObject propertyObj)
+                    {
+                        // Handle enum properties - add "type": "string" if missing
+                        if (propertyObj.TryGetPropertyValue("enum", out JsonNode? enumNode) && !propertyObj.ContainsKey("type"))
+                        {
+                            propertyObj["type"] = JsonValue.Create("string");
+                        }
+                        else if (propertyObj.TryGetPropertyValue("type", out JsonNode? typeNode))
+                        {
+                            if (typeNode is JsonArray typeArray)
+                            {
+                                var types = typeArray.Select(t => t?.GetValue<string>()).Where(t => t != null).ToList();
+                                if (types.Contains("null"))
+                                {
+                                    var mainType = types.First(t => t != "null");
+                                    propertyObj["type"] = JsonValue.Create(mainType);
+                                    propertyObj["nullable"] = JsonValue.Create(true);
+                                }
+                            }
+                            else if (typeNode is JsonValue typeValue && typeValue.GetValue<string>() == "array")
+                            {
+                                if (propertyObj.TryGetPropertyValue("items", out JsonNode? itemsNode) && itemsNode is JsonObject itemsObj)
+                                {
+                                    TransformOpenApi3Object(itemsObj);
+                                }
+                            }
+                        }
+
+                        // Recursively process nested objects
+                        TransformOpenApi3Object(propertyObj);
+                    }
+                }
+            }
+        }
     }
 
     private static JsonElement CreateSchema(
@@ -339,7 +405,7 @@ internal sealed class GeminiRequest
         return AIJsonUtilities.CreateJsonSchema(type, description, serializerOptions: options, inferenceOptions: configuration);
     }
 
-    private static JsonSerializerOptions GetDefaultOptions()
+    internal static JsonSerializerOptions GetDefaultOptions()
     {
         if (s_options is null)
         {

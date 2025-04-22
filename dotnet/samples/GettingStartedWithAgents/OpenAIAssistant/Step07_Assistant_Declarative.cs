@@ -115,7 +115,8 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;

@@ -39,8 +39,27 @@ public static class ApiManifestKernelExtensions
         string filePath,
         ApiManifestPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
+        => await kernel.ImportPluginFromApiManifestAsync(pluginName, filePath, null, pluginParameters, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Imports a plugin from an API manifest asynchronously.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
+    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="description">The description of the plugin.</param>
+    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The imported plugin.</returns>
+    public static async Task<KernelPlugin> ImportPluginFromApiManifestAsync(
+        this Kernel kernel,
+        string pluginName,
+        string filePath,
+        string? description,
+        ApiManifestPluginParameters? pluginParameters = null,
+        CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, pluginParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, description, pluginParameters, cancellationToken).ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
@@ -58,6 +77,25 @@ public static class ApiManifestKernelExtensions
         this Kernel kernel,
         string pluginName,
         string filePath,
+        ApiManifestPluginParameters? pluginParameters = null,
+        CancellationToken cancellationToken = default)
+        => await kernel.CreatePluginFromApiManifestAsync(pluginName, filePath, null, pluginParameters, cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Creates a kernel plugin from an API manifest file asynchronously.
+    /// </summary>
+    /// <param name="kernel">The kernel instance.</param>
+    /// <param name="pluginName">The name of the plugin.</param>
+    /// <param name="filePath">The file path of the API manifest.</param>
+    /// <param name="description">The description of the plugin.</param>
+    /// <param name="pluginParameters">Optional parameters for the plugin setup.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created kernel plugin.</returns>
+    public static async Task<KernelPlugin> CreatePluginFromApiManifestAsync(
+        this Kernel kernel,
+        string pluginName,
+        string filePath,
+        string? description,
         ApiManifestPluginParameters? pluginParameters = null,
         CancellationToken cancellationToken = default)
     {
@@ -187,6 +225,6 @@ public static class ApiManifestKernelExtensions
             }
         }
 
-        return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
+        return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 }

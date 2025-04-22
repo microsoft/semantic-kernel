@@ -4,6 +4,7 @@ using System;
 using System.Net.Http;
 using Azure.AI.Inference;
 using Azure.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Connectors.AzureAIInference;
 
 namespace Microsoft.SemanticKernel;
@@ -22,6 +23,8 @@ public static class AzureAIInferenceKernelBuilderExtensions
     /// <param name="endpoint">Endpoint / Target URI</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="openTelemetrySourceName">An optional source name that will be used on the telemetry data.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAzureAIInferenceChatCompletion(
         this IKernelBuilder builder,
@@ -29,11 +32,13 @@ public static class AzureAIInferenceKernelBuilderExtensions
         string? apiKey = null,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddAzureAIInferenceChatCompletion(modelId, apiKey, endpoint, httpClient, serviceId);
+        builder.Services.AddAzureAIInferenceChatCompletion(modelId, apiKey, endpoint, httpClient, serviceId, openTelemetrySourceName, openTelemetryConfig);
 
         return builder;
     }
@@ -47,6 +52,8 @@ public static class AzureAIInferenceKernelBuilderExtensions
     /// <param name="endpoint">Endpoint / Target URI</param>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="openTelemetrySourceName">An optional source name that will be used on the telemetry data.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAzureAIInferenceChatCompletion(
         this IKernelBuilder builder,
@@ -54,11 +61,13 @@ public static class AzureAIInferenceKernelBuilderExtensions
         TokenCredential credential,
         Uri? endpoint = null,
         HttpClient? httpClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddAzureAIInferenceChatCompletion(modelId, credential, endpoint, httpClient, serviceId);
+        builder.Services.AddAzureAIInferenceChatCompletion(modelId, credential, endpoint, httpClient, serviceId, openTelemetrySourceName, openTelemetryConfig);
 
         return builder;
     }
@@ -70,16 +79,20 @@ public static class AzureAIInferenceKernelBuilderExtensions
     /// <param name="modelId">Azure AI Inference model id</param>
     /// <param name="chatClient"><see cref="ChatCompletionsClient"/> to use for the service. If null, one must be available in the service provider when this service is resolved.</param>
     /// <param name="serviceId">A local identifier for the given AI service</param>
+    /// <param name="openTelemetrySourceName">An optional source name that will be used on the telemetry data.</param>
+    /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The same instance as <paramref name="builder"/>.</returns>
     public static IKernelBuilder AddAzureAIInferenceChatCompletion(
         this IKernelBuilder builder,
         string modelId,
         ChatCompletionsClient? chatClient = null,
-        string? serviceId = null)
+        string? serviceId = null,
+        string? openTelemetrySourceName = null,
+        Action<OpenTelemetryChatClient>? openTelemetryConfig = null)
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddAzureAIInferenceChatCompletion(modelId, chatClient, serviceId);
+        builder.Services.AddAzureAIInferenceChatCompletion(modelId, chatClient, serviceId, openTelemetrySourceName, openTelemetryConfig);
 
         return builder;
     }

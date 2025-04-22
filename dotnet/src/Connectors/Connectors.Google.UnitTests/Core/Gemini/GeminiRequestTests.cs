@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
 using Microsoft.SemanticKernel.Connectors.Google.Core;
 using Xunit;
+using TextContent = Microsoft.SemanticKernel.TextContent;
 
 namespace SemanticKernel.Connectors.Google.UnitTests.Core.Gemini;
 
@@ -39,7 +41,7 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.MaxTokens, request.Configuration.MaxOutputTokens);
         Assert.Equal(executionSettings.AudioTimestamp, request.Configuration.AudioTimestamp);
         Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
-        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
+        Assert.Equal(executionSettings.ResponseSchema.ToString(), request.Configuration.ResponseSchema.ToString());
         Assert.Equal(executionSettings.TopP, request.Configuration.TopP);
     }
 
@@ -51,7 +53,7 @@ public sealed class GeminiRequestTests
         var executionSettings = new GeminiPromptExecutionSettings
         {
             ResponseMimeType = "application/json",
-            ResponseSchema = Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int))
+            ResponseSchema = Microsoft.Extensions.AI.AIJsonUtilities.CreateJsonSchema(typeof(int), serializerOptions: GeminiRequest.GetDefaultOptions())
         };
 
         // Act
@@ -59,8 +61,11 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.NotNull(request.Configuration);
+        Assert.NotNull(request.Configuration.ResponseSchema);
         Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
-        Assert.Equal(executionSettings.ResponseSchema, request.Configuration.ResponseSchema);
+        var settingsSchema = Assert.IsType<JsonElement>(executionSettings.ResponseSchema);
+
+        AssertDeepEquals(settingsSchema, request.Configuration.ResponseSchema.Value);
     }
 
     [Fact]
@@ -79,8 +84,9 @@ public sealed class GeminiRequestTests
 
         // Assert
         Assert.NotNull(request.Configuration);
+        Assert.NotNull(request.Configuration.ResponseSchema);
         Assert.Equal(executionSettings.ResponseMimeType, request.Configuration.ResponseMimeType);
-        Assert.Equal(((KernelJsonSchema)executionSettings.ResponseSchema).RootElement, request.Configuration.ResponseSchema);
+        AssertDeepEquals(((KernelJsonSchema)executionSettings.ResponseSchema).RootElement, request.Configuration.ResponseSchema.Value);
     }
 
     [Fact]
@@ -535,6 +541,127 @@ public sealed class GeminiRequestTests
         Assert.Equal(executionSettings.CachedContent, request.CachedContent);
     }
 
+    [Fact]
+    public void ResponseSchemaConvertsNullableTypesToOpenApiFormat()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var schemaWithNullableArray = """
+            {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": ["string", "null"],
+                        "description": "user name"
+                    },
+                    "age": {
+                        "type": ["integer", "null"],
+                        "description": "user age"
+                    }
+                }
+            }
+            """;
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithNullableArray)
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration?.ResponseSchema);
+        var properties = request.Configuration.ResponseSchema.Value.GetProperty("properties");
+
+        var nameProperty = properties.GetProperty("name");
+        Assert.Equal("string", nameProperty.GetProperty("type").GetString());
+        Assert.True(nameProperty.GetProperty("nullable").GetBoolean());
+
+        var ageProperty = properties.GetProperty("age");
+        Assert.Equal("integer", ageProperty.GetProperty("type").GetString());
+        Assert.True(ageProperty.GetProperty("nullable").GetBoolean());
+    }
+
+    [Fact]
+    public void ResponseSchemaAddsTypeToEnumProperties()
+    {
+        // Arrange
+        var prompt = "prompt-example";
+        var schemaWithEnum = """
+            {
+                "properties" : {
+                    "Movies": {
+                        "type" : "array",
+                        "items" : {
+                            "type" : "object",
+                            "properties" : {
+                                "status": {
+                                    "enum": ["active", "inactive", null],
+                                    "description": "user status"
+                                },
+                                "role": {
+                                    "enum": ["admin", "user"],
+                                    "description": "user role"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            """;
+
+        var executionSettings = new GeminiPromptExecutionSettings
+        {
+            ResponseMimeType = "application/json",
+            ResponseSchema = JsonSerializer.Deserialize<JsonElement>(schemaWithEnum)
+        };
+
+        // Act
+        var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
+
+        // Assert
+        Assert.NotNull(request.Configuration?.ResponseSchema);
+        var properties = request.Configuration.ResponseSchema.Value
+            .GetProperty("properties")
+            .GetProperty("Movies")
+            .GetProperty("items")
+            .GetProperty("properties");
+
+        var statusProperty = properties.GetProperty("status");
+        Assert.Equal("string", statusProperty.GetProperty("type").GetString());
+        Assert.Equal(3, statusProperty.GetProperty("enum").GetArrayLength());
+
+        var roleProperty = properties.GetProperty("role");
+        Assert.Equal("string", roleProperty.GetProperty("type").GetString());
+        Assert.Equal(2, roleProperty.GetProperty("enum").GetArrayLength());
+    }
+
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
         KernelContent(innerContent, modelId, metadata);
+
+    private static bool DeepEquals(JsonElement element1, JsonElement element2)
+    {
+#if NET9_0_OR_GREATER
+        return JsonElement.DeepEquals(element1, element2);
+#else
+        return JsonNode.DeepEquals(
+            JsonSerializer.SerializeToNode(element1, AIJsonUtilities.DefaultOptions),
+            JsonSerializer.SerializeToNode(element2, AIJsonUtilities.DefaultOptions));
+#endif
+    }
+
+    private static void AssertDeepEquals(JsonElement element1, JsonElement element2)
+    {
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+        Assert.True(DeepEquals(element1, element2), $"""
+                                                     Elements are not equal.
+                                                     Expected:
+                                                     {element1}
+                                                     Actual:
+                                                     {element2}
+                                                     """);
+#pragma warning restore SA1118 // Parameter should not span multiple lines
+    }
 }

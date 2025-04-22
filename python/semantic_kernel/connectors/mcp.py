@@ -31,8 +31,10 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions import FunctionExecutionException, KernelPluginInvalidConfigurationError
 from semantic_kernel.functions.function_result import FunctionResult
 from semantic_kernel.functions.kernel_arguments import KernelArguments
+from semantic_kernel.functions.kernel_function import KernelFunction
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
-from semantic_kernel.kernel_types import OptionalOneOrMany
+from semantic_kernel.functions.kernel_plugin import KernelPlugin
+from semantic_kernel.kernel_types import OneOrMany, OptionalOneOrMany
 from semantic_kernel.prompt_template.prompt_template_base import PromptTemplateBase
 from semantic_kernel.utils.feature_stage_decorator import experimental
 
@@ -594,6 +596,68 @@ class MCPWebsocketPlugin(MCPPluginBase):
 
 
 # region: Kernel as MCP Server
+
+
+@experimental
+def create_mcp_server_from_functions(
+    functions: OneOrMany[KernelFunction | KernelPlugin | object],
+    *,
+    prompts: list[PromptTemplateBase] | None = None,
+    server_name: str = "SK",
+    version: str | None = None,
+    instructions: str | None = None,
+    lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
+    plugin_name: str = "mcp",
+    **kwargs: Any,
+) -> Server["LifespanResultT"]:
+    """Create an MCP server from a function(s) or plugin(s).
+
+    This function automatically creates a MCP server from single or multiple functions or plugins,
+    all functions are added under the plugin_name that can be set by using the `plugin_name` argument.
+    It further uses the provided arguments to
+    configure the server and expose functions as tools, see the mcp documentation for more details.
+
+    Args:
+        functions: The function(s) or plugin(s) instance to use.
+            This can be a mix of functions, plugins or agents.
+            Or any object that can be parsed to a plugin.
+        prompts: The list of prompts to expose as prompts.
+        server_name: The name of the server.
+        version: The version of the server.
+        instructions: The instructions to use for the server.
+        lifespan: The lifespan of the server.
+        plugin_name: The name of the plugin to use.
+        kwargs: Any extra arguments to pass to the server creation.
+
+    Returns:
+        The MCP server instance, it is a instance of
+        mcp.server.lowlevel.Server
+
+    """
+    kernel = Kernel()
+    if not isinstance(functions, list):
+        functions = [functions]
+    for func in functions:
+        if isinstance(func, KernelFunction):
+            kernel.add_function(plugin_name, func)
+        else:
+            try:
+                kernel.add_plugin(func, plugin_name)
+            except ValueError as ex:
+                logger.warning(
+                    "Failed to add plugin %s to kernel: %s",
+                    func.__class__.__name__,
+                    ex,
+                )
+    return create_mcp_server_from_kernel(
+        kernel=kernel,
+        prompts=prompts,
+        server_name=server_name,
+        version=version,
+        instructions=instructions,
+        lifespan=lifespan,
+        **kwargs,
+    )
 
 
 @experimental
