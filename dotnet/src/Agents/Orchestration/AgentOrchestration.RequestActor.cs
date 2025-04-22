@@ -24,7 +24,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
-        /// <param name="orchestrationRoot">// %%% COMMENT</param>
+        /// <param name="orchestrationRoot">A descriptive root label for the orchestration.</param>
         /// <param name="transform">A function that transforms an input of type TInput into a source type TSource.</param>
         /// <param name="action">An asynchronous function that processes the resulting source.</param>
         /// <param name="logger">The logger to use for the actor</param>

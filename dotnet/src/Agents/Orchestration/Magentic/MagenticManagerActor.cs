@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -14,6 +13,8 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 /// </summary>
 internal sealed class MagenticManagerActor : ChatManagerActor
 {
+    private int _index;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticManagerActor"/> class.
     /// </summary>
@@ -38,15 +39,13 @@ internal sealed class MagenticManagerActor : ChatManagerActor
     protected override Task<AgentType?> SelectAgentAsync()
     {
         // %%% PLACEHOLDER SELECTION LOGIC
-#pragma warning disable CA5394 // Do not use insecure randomness
-        int index = Random.Shared.Next(this.Team.Count + 1);
-#pragma warning restore CA5394 // Do not use insecure randomness
-        AgentType[] agentTypes = [.. this.Team.Keys.Select(value => new AgentType(value))];
-        AgentType? agentType = null;
-        if (index < this.Team.Count)
+        if (this._index >= 2)
         {
-            agentType = agentTypes[index];
+            return Task.FromResult<AgentType?>(null);
         }
+        AgentType[] agentTypes = [.. this.Team.Keys.Select(value => new AgentType(value))];
+        AgentType? agentType = agentTypes[this._index % this.Team.Count];
+        ++this._index;
         return Task.FromResult(agentType);
     }
 }

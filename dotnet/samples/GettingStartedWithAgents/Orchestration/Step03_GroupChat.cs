@@ -62,7 +62,7 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
     }
 
     [Fact]
-    public async Task SingleNestedActorAsync()
+    public async Task SingleNestedActorAsync() // %%% BROKEN
     {
         // Define the agents
         ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");

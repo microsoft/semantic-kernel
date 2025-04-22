@@ -10,7 +10,7 @@ namespace GettingStarted.Orchestration;
 public class Step05_Custom(ITestOutputHelper output) : BaseAgentsTest(output)
 {
     [Fact]
-    public Task UseCustomPatternAsync() // %%% TODO
+    public Task UseCustomPatternAsync() // %%% SAMPLE - CUSTOM
     {
         return Task.CompletedTask;
     }

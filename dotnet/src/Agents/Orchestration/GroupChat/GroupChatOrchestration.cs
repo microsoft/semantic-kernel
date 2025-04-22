@@ -66,6 +66,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
                     new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic, loggerFactory.CreateLogger<GroupChatManagerActor>()))).ConfigureAwait(false);
+        logger.LogRegisterActor(OrchestrationName, managerType, "MANAGER");
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 

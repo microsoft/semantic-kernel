@@ -11,9 +11,9 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// An <see cref="ChatManagerActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT
+internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT ???
 {
-    private int _count = 0;
+    private int _index = 0;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManagerActor"/> class.
@@ -39,13 +39,13 @@ internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT
     protected override Task<AgentType?> SelectAgentAsync()
     {
         // %%% PLACEHOLDER SELECTION LOGIC
-        if (this._count >= 2)
+        if (this._index >= 2)
         {
             return Task.FromResult<AgentType?>(null);
         }
         AgentType[] agentTypes = [.. this.Team.Keys.Select(value => new AgentType(value))];
-        AgentType? agentType = agentTypes[this._count % this.Team.Count];
-        ++this._count;
+        AgentType? agentType = agentTypes[this._index % this.Team.Count];
+        ++this._index;
         return Task.FromResult(agentType);
     }
 }
