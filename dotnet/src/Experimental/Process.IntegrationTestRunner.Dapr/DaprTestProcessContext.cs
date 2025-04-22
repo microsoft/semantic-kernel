@@ -107,7 +107,7 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
             throw new InvalidOperationException("Key is not set");
         }
 
-        var request = new KeyedProcessStartRequest { InitialEvent = initialEvent.ToJson() };
+        var request = new ProcessStartRequest { InitialEvent = initialEvent.ToJson() };
 
         var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._key}/{this._processId}", request, options: this._serializerOptions).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)

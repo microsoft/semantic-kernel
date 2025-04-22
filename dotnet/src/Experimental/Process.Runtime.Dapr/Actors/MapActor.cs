@@ -94,14 +94,18 @@ internal sealed class MapActor : StepActor, IMap
         {
             KernelProcess mapProcess = mapOperation with { State = mapOperation.State with { Id = $"{this.Name}-{mapOperations.Count}-{Guid.NewGuid():N}" } };
             DaprKernelProcessContext processContext = new(mapProcess);
-            Task processTask =
-                processContext.StartWithEventAsync(
-                    new KernelProcessEvent
-                    {
-                        Id = startEventId,
-                        Data = value
-                    },
-                    eventProxyStepId: this.Id);
+
+            Task processTask = Task.CompletedTask;
+
+            // TODO: This needs to be updated to not dynamically create a process. Map will be broken until then.
+            //Task processTask =
+            //    processContext.StartWithEventAsync(
+            //        new KernelProcessEvent
+            //        {
+            //            Id = startEventId,
+            //            Data = value
+            //        },
+            //        eventProxyStepId: this.Id);
 
             mapOperations.Add(processTask);
         }
