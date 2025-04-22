@@ -4,7 +4,6 @@ using System.Text.Json;
 using Dapr.Actors.Client;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Serialization;
 using SemanticKernel.Process.TestsShared.CloudEvents;
 
