@@ -29,6 +29,7 @@ public class DocumentGenerationService : GrpcDocumentationGeneration.GrpcDocumen
     /// <param name="logger"></param>
     /// <param name="kernel"></param>
     /// <param name="actorProxy"></param>
+    /// <param name="kernelProcessFactory"></param>
     public DocumentGenerationService(ILogger<DocumentGenerationService> logger, Kernel kernel, IActorProxyFactory actorProxy, DaprKernelProcessFactory kernelProcessFactory)
     {
         this._logger = logger;
