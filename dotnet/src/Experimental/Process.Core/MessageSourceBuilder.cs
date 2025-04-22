@@ -11,7 +11,7 @@ public sealed class MessageSourceBuilder
     /// Initializes a new instance of the <see cref="MessageSourceBuilder"/> class.
     /// </summary>
     /// <param name="messageType">The meassage type</param>
-    /// <param name="source">The source step builer</param>
+    /// <param name="source">The source step builder</param>
     public MessageSourceBuilder(string messageType, ProcessStepBuilder source)
     {
         this.MessageType = messageType;

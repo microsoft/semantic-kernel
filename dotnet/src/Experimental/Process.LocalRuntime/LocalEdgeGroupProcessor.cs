@@ -32,7 +32,7 @@ internal class LocalEdgeGroupProcessor
         this._absentMessages.Remove(messageKey);
         if (this._absentMessages.Count == 0)
         {
-            // We have recieved all required events so forward them to the target
+            // We have received all required events so forward them to the target
             result = (Dictionary<string, object?>?)this._edgeGroup.InputMapping(this._messageData);
 
             // TODO: Reset state according to configured logic i.e. reset after first message or after all messages are received.
