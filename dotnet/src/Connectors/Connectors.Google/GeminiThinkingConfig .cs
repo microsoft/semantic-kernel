@@ -17,8 +17,8 @@ public class GeminiThinkingConfig
     /// A greater number of tokens is typically associated with more detailed thinking, which is needed for solving more complex tasks.
     /// thinkingBudget must be an integer in the range 0 to 24576. Setting the thinking budget to 0 disables thinking.
     /// Budgets from 1 to 1024 tokens will be set to 1024.
-    /// **This parameter is specific to Gemini 2.5 and similar experimental models.**
     /// </summary>
+    /// <remarks>This parameter is specific to Gemini 2.5 and similar experimental models.</remarks>
     [JsonPropertyName("thinkingBudget")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? ThinkingBudget
