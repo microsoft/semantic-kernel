@@ -2,16 +2,12 @@
 
 import logging
 from collections.abc import AsyncIterable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Final
 from urllib.parse import quote_plus
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
-from pydantic import ValidationError
+from pydantic import Field, SecretStr, ValidationError
 
-from semantic_kernel.connectors.search.google.const import CUSTOM_SEARCH_URL, QUERY_PARAMETERS
-from semantic_kernel.connectors.search.google.google_search_response import GoogleSearchResponse
-from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
-from semantic_kernel.connectors.search.google.google_search_settings import GoogleSearchSettings
 from semantic_kernel.data.text_search import (
     AnyTagsEqualTo,
     EqualTo,
@@ -21,7 +17,7 @@ from semantic_kernel.data.text_search import (
     TextSearchResult,
 )
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -29,6 +25,134 @@ if TYPE_CHECKING:
     from semantic_kernel.data.text_search import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+# region Constants
+
+CUSTOM_SEARCH_URL: Final[str] = "https://www.googleapis.com/customsearch/v1"
+
+# For more info on this list: https://developers.google.com/custom-search/v1/reference/rest/v1/cse/list
+QUERY_PARAMETERS: Final[list[str]] = [
+    # Country, Restricts search results to documents originating in a particular country.
+    # You may use Boolean operators in the cr parameter's value.
+    "cr",
+    # Date Restrict, Restricts results to URLs based on date. Supported values include:
+    # d[number]: requests results from the specified number of past days.
+    # w[number]: requests results from the specified number of past weeks.
+    # m[number]: requests results from the specified number of past months.
+    # y[number]: requests results from the specified number of past years.
+    "dateRestrict",
+    # exactTerms, Identifies a phrase that all documents in the search results must contain.
+    "exactTerms",
+    # excludeTerms, Identifies a word or phrase that should not appear in any documents in the search results.
+    "excludeTerms",
+    # fileType, Restricts results to files of a specified extension. A list of file types indexable by Google
+    # can be found in Search Console Help Center: https://support.google.com/webmasters/answer/35287
+    "fileType",
+    # filter, Controls turning on or off the duplicate content filter.
+    "filter",
+    # gl, Geolocation of end user. The gl parameter value is a two-letter country code. The gl parameter boosts search
+    # results whose country of origin matches the parameter value.
+    # See the Country Codes page for a list of valid values.
+    "gl",
+    # highRange, Specifies the ending value for a search range.
+    "highRange",
+    # hl, Sets the user interface language.
+    "hl",
+    # linkSite, Specifies that all search results should contain a link to a particular URL.
+    "linkSite",
+    # Language of the result. Restricts the search to documents written in a particular language (e.g., lr=lang_ja).
+    "lr",
+    # or Terms, Provides additional search terms to check for in a document, where each document in the search results
+    # must contain at least one of the additional search terms.
+    "orTerms",
+    # rights, Filters based on licensing. Supported values include:
+    # cc_publicdomain, cc_attribute, cc_sharealike, cc_noncommercial, cc_nonderived
+    "rights",
+    # siteSearch, Specifies all search results should be pages from a given site.
+    "siteSearch",
+    # siteSearchFilter, Controls whether to include or exclude results from the site named in the siteSearch parameter.
+    "siteSearchFilter",
+]
+
+
+# endregion Constants
+
+
+# region GoogleSettings
+class GoogleSearchSettings(KernelBaseSettings):
+    """Google Search Connector settings.
+
+    The settings are first loaded from environment variables with the prefix 'GOOGLE_'. If the
+    environment variables are not found, the settings can be loaded from a .env file with the
+    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
+    however, validation will fail alerting that the settings are missing.
+
+    Required settings for prefix 'GOOGLE_SEARCH_' are:
+    - api_key: SecretStr - The Google Search API key (Env var GOOGLE_SEARCH_API_KEY)
+
+    Optional settings for prefix 'GOOGLE_SEARCH_' are:
+    - engine_id: str - The Google search engine ID (Env var GOOGLE_SEARCH_ENGINE_ID)
+    - env_file_path: str | None - if provided, the .env settings are read from this file path location
+    - env_file_encoding: str - if provided, the .env file encoding used. Defaults to "utf-8".
+    """
+
+    env_prefix: ClassVar[str] = "GOOGLE_SEARCH_"
+
+    api_key: SecretStr
+    engine_id: str | None = None
+
+
+# endregion GoogleSettings
+
+# region GoogleWeb
+
+
+@experimental
+class GoogleSearchInformation(KernelBaseModel):
+    """Information about the search."""
+
+    search_time: float = Field(alias="searchTime")
+    formatted_search_time: str = Field(alias="formattedSearchTime")
+    total_results: str = Field(alias="totalResults")
+    formatted_total_results: str = Field(alias="formattedTotalResults")
+
+
+@experimental
+class GoogleSearchResult(KernelBaseModel):
+    """A Google web page."""
+
+    kind: str = ""
+    title: str = ""
+    html_title: str = Field(default="", alias="htmlTitle")
+    link: str = ""
+    display_link: str = Field(default="", alias="displayLink")
+    snippet: str = ""
+    html_snippet: str = Field(default="", alias="htmlSnippet")
+    cache_id: str = Field(default="", alias="cacheId")
+    formatted_url: str = Field(default="", alias="formattedUrl")
+    html_formatted_url: str = Field(default="", alias="htmlFormattedUrl")
+    pagemap: dict[str, Any] = Field(default_factory=dict)
+    mime: str = ""
+    file_format: str = Field(default="", alias="fileFormat")
+    image: dict[str, Any] = Field(default_factory=dict)
+    labels: list[dict[str, Any]] = Field(default_factory=list)
+
+
+@experimental
+class GoogleSearchResponse(KernelBaseModel):
+    """The response from a Google search."""
+
+    kind: str = ""
+    url: dict[str, str] = Field(default_factory=dict)
+    queries: dict[str, list[dict[str, str | int]]] = Field(default_factory=dict)
+    context: dict[str, Any] = Field(default_factory=dict)
+    search_information: GoogleSearchInformation | None = None
+    spelling: dict[str, Any] = Field(default_factory=dict)
+    promotions: list[dict[str, Any]] = Field(default_factory=list)
+    items: list[GoogleSearchResult] | None = Field(None)
+
+
+# endregion GoogleWeb
 
 
 @experimental
@@ -194,3 +318,10 @@ class GoogleSearch(KernelBaseModel, TextSearch):
                 elif isinstance(filter, AnyTagsEqualTo):
                     logger.debug("AnyTagEqualTo filter is not supported by Google Search API.")
         return f"?q={quote_plus(query)}&{'&'.join(f'{k}={v}' for k, v in params.items())}"
+
+
+__all__ = [
+    "GoogleSearch",
+    "GoogleSearchResponse",
+    "GoogleSearchResult",
+]

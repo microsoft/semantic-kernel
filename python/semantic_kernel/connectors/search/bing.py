@@ -3,19 +3,11 @@
 import logging
 from collections.abc import AsyncIterable
 from html import escape
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar, Final
 
 from httpx import AsyncClient, HTTPStatusError, RequestError
-from pydantic import ValidationError
+from pydantic import Field, SecretStr, ValidationError
 
-from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse
-from semantic_kernel.connectors.search.bing.bing_search_settings import BingSettings
-from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
-from semantic_kernel.connectors.search.bing.const import (
-    DEFAULT_CUSTOM_URL,
-    DEFAULT_URL,
-    QUERY_PARAMETERS,
-)
 from semantic_kernel.data.text_search import (
     AnyTagsEqualTo,
     EqualTo,
@@ -26,7 +18,7 @@ from semantic_kernel.data.text_search import (
     TextSearchResult,
 )
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
-from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.kernel_pydantic import KernelBaseModel, KernelBaseSettings
 from semantic_kernel.utils.feature_stage_decorator import experimental
 from semantic_kernel.utils.telemetry.user_agent import SEMANTIC_KERNEL_USER_AGENT
 
@@ -34,6 +26,109 @@ if TYPE_CHECKING:
     from semantic_kernel.data.text_search import SearchOptions
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+# region Constants
+DEFAULT_URL: Final[str] = "https://api.bing.microsoft.com/v7.0/search"
+DEFAULT_CUSTOM_URL: Final[str] = "https://api.bing.microsoft.com/"
+QUERY_PARAMETERS: Final[list[str]] = [
+    "answerCount",
+    "cc",
+    "freshness",
+    "mkt",
+    "promote",
+    "responseFilter",
+    "safeSearch",
+    "setLang",
+    "textDecorations",
+    "textFormat",
+]
+QUERY_ADVANCED_SEARCH_KEYWORDS: Final[list[str]] = [
+    "site",
+    "contains",
+    "ext",
+    "filetype",
+    "inanchor",
+    "inbody",
+    "intitle",
+    "ip",
+    "language",
+    "loc",
+    "location",
+    "prefer",
+    "feed",
+    "hasfeed",
+    "url",
+]
+
+
+# endregion Constants
+
+
+# region BingSettings
+class BingSettings(KernelBaseSettings):
+    """Bing Search settings.
+
+    The settings are first loaded from environment variables with the prefix 'BING_'. If the
+    environment variables are not found, the settings can be loaded from a .env file with the
+    encoding 'utf-8'. If the settings are not found in the .env file, the settings are ignored;
+    however, validation will fail alerting that the settings are missing.
+
+    Optional settings for prefix 'BING_' are:
+    - api_key: SecretStr - The Bing API key (Env var BING_API_KEY)
+    - custom_config: str - The Bing Custom Search instance's unique identifier (Env var BING_CUSTOM_CONFIG)
+
+    """
+
+    env_prefix: ClassVar[str] = "BING_"
+
+    api_key: SecretStr
+    custom_config: str | None = None
+
+
+# endregion BingSettings
+
+# region BingWebPage
+
+
+@experimental
+class BingWebPage(KernelBaseModel):
+    """A Bing web page."""
+
+    id: str | None = None
+    name: str | None = None
+    url: str | None = None
+    display_url: str | None = None
+    snippet: str | None = None
+    date_last_crawled: str | None = None
+    deep_links: list["BingWebPage"] | None = None
+    open_graph_image: list[dict[str, str | int]] | None = None
+    search_tags: list[dict[str, str]] | None = None
+    language: str | None = None
+    is_family_friendly: bool | None = None
+    is_navigational: bool | None = None
+
+
+@experimental
+class BingWebPages(KernelBaseModel):
+    """The web pages from a Bing search."""
+
+    id: str | None = None
+    some_results_removed: bool | None = Field(default=None, alias="someResultsRemoved")
+    total_estimated_matches: int | None = Field(default=None, alias="totalEstimatedMatches")
+    web_search_url: str | None = Field(default=None, alias="webSearchUrl")
+    value: list[BingWebPage] = Field(default_factory=list)
+
+
+@experimental
+class BingSearchResponse(KernelBaseModel):
+    """The response from a Bing search."""
+
+    type_: str = Field(default="", alias="_type")
+    query_context: dict[str, Any] = Field(default_factory=dict, validation_alias="queryContext")
+    web_pages: BingWebPages | None = Field(default=None, alias="webPages")
+
+
+# endregion BingWebPage
 
 
 @experimental
@@ -212,3 +307,6 @@ class BingSearch(KernelBaseModel, TextSearch):
                 logger.debug("Any tag equals to filter is not supported by Bing Search API.")
         params["q"] = f"{query}+{f' {options.filter.group_type} '.join(extra_query_params)}".strip()
         return params
+
+
+__all__ = ["BingSearch", "BingSearchResponse", "BingWebPage"]

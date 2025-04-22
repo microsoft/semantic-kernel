@@ -5,9 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from semantic_kernel.connectors.search.bing.bing_search import BingSearch
-from semantic_kernel.connectors.search.bing.bing_search_response import BingSearchResponse, BingWebPages
-from semantic_kernel.connectors.search.bing.bing_web_page import BingWebPage
+from semantic_kernel.connectors.search.bing import BingSearch, BingSearchResponse, BingWebPage, BingWebPages
 from semantic_kernel.data.text_search import KernelSearchResults, SearchFilter, TextSearchOptions, TextSearchResult
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
@@ -22,9 +20,7 @@ def bing_search(bing_unit_test_env):
 def async_client_mock():
     """Set up the fixture to mock AsyncClient."""
     async_client_mock = AsyncMock()
-    with patch(
-        "semantic_kernel.connectors.search.bing.bing_search.AsyncClient.__aenter__", return_value=async_client_mock
-    ):
+    with patch("semantic_kernel.connectors.search.bing.AsyncClient.__aenter__", return_value=async_client_mock):
         yield async_client_mock
 
 

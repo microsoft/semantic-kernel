@@ -5,12 +5,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from httpx import HTTPStatusError, RequestError, Response
 
-from semantic_kernel.connectors.search.google.google_search import GoogleSearch
-from semantic_kernel.connectors.search.google.google_search_response import (
+from semantic_kernel.connectors.search.google import (
+    GoogleSearch,
     GoogleSearchInformation,
     GoogleSearchResponse,
+    GoogleSearchResult,
 )
-from semantic_kernel.connectors.search.google.google_search_result import GoogleSearchResult
 from semantic_kernel.data.text_search import AnyTagsEqualTo, EqualTo, TextSearchOptions
 from semantic_kernel.exceptions import ServiceInitializationError, ServiceInvalidRequestError
 
