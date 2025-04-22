@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Net;
+using System.Text;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using Xunit;
@@ -32,6 +33,7 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
     /// <returns></returns>
     private async Task StartTestHostAsync()
     {
+        var sb = new StringBuilder();
         try
         {
             string workingDirectory = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\..\Process.IntegrationTestHost.Dapr"));
@@ -40,9 +42,9 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
                 FileName = "dapr",
                 Arguments = "run --app-id daprprocesstests --app-port 5200 --dapr-http-port 3500 -- dotnet run --urls http://localhost:5200",
                 WorkingDirectory = workingDirectory,
-                RedirectStandardOutput = false,
-                RedirectStandardError = false,
-                UseShellExecute = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
                 CreateNoWindow = false
             };
 
@@ -51,11 +53,22 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
                 StartInfo = processStartInfo
             };
 
+            // hookup the eventhandlers to capture the data that is received
+            this._process.OutputDataReceived += (sender, args) => sb.AppendLine(args.Data);
+            this._process.ErrorDataReceived += (sender, args) => sb.AppendLine(args.Data);
+
             this._process.Start();
+
+            // start our event pumps
+            this._process.BeginOutputReadLine();
+            this._process.BeginErrorReadLine();
+
             await this.WaitForHostStartupAsync();
         }
         catch (Exception)
         {
+            string output = sb.ToString();
+            Console.WriteLine(output);
             throw;
         }
     }
@@ -128,6 +141,21 @@ public sealed class ProcessTestFixture : IDisposable, IAsyncLifetime
         // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
         var context = new DaprTestProcessContext(process, this._httpClient!);
         await context.StartWithEventAsync(initialEvent);
+        return context;
+    }
+
+    /// <summary>
+    /// Starts the specified process.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="processId"></param>
+    /// <param name="initialEvent"></param>
+    /// <returns></returns>
+    public async Task<KernelProcessContext> StartAsync(string key, string processId, KernelProcessEvent initialEvent)
+    {
+        // Actual Kernel injection of Kernel and ExternalKernelProcessMessageChannel is in dotnet\src\Experimental\Process.IntegrationTestHost.Dapr\Program.cs
+        var context = new DaprTestProcessContext(key, processId, this._httpClient!);
+        await context.StartKeyedWithEventAsync(processId, initialEvent);
         return context;
     }
 

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -13,7 +15,7 @@ public record KernelProcessFunctionTarget
     /// <summary>
     /// Creates an instance of the <see cref="KernelProcessFunctionTarget"/> class.
     /// </summary>
-    public KernelProcessFunctionTarget(string stepId, string functionName, string? parameterName = null, string? targetEventId = null)
+    public KernelProcessFunctionTarget(string stepId, string functionName, string? parameterName = null, string? targetEventId = null, Func<Dictionary<string, object?>, Dictionary<string, object?>>? inputMapping = null)
     {
         Verify.NotNullOrWhiteSpace(stepId);
         Verify.NotNullOrWhiteSpace(functionName);
@@ -22,6 +24,7 @@ public record KernelProcessFunctionTarget
         this.FunctionName = functionName;
         this.ParameterName = parameterName;
         this.TargetEventId = targetEventId;
+        this.InputMapping = inputMapping;
     }
 
     /// <summary>
@@ -47,4 +50,9 @@ public record KernelProcessFunctionTarget
     /// </summary>
     [DataMember]
     public string? TargetEventId { get; init; }
+
+    /// <summary>
+    /// The mapping function to apply to the input data before passing it to the function.
+    /// </summary>
+    public Func<Dictionary<string, object?>, Dictionary<string, object?>>? InputMapping { get; init; }
 }

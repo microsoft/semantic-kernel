@@ -61,7 +61,7 @@ public static class DocumentGenerationProcess
         var docsProofreadStep = processBuilder.AddStepFromType<ProofReadDocumentationStep>();
         var docsPublishStep = processBuilder.AddStepFromType<PublishDocumentationStep>();
 
-        var proxyStep = processBuilder.AddProxyStep([DocGenerationTopics.RequestUserReview, DocGenerationTopics.PublishDocumentation]);
+        var proxyStep = processBuilder.AddProxyStep(id: "proxy", [DocGenerationTopics.RequestUserReview, DocGenerationTopics.PublishDocumentation]);
 
         // Orchestrate the external input events
         processBuilder

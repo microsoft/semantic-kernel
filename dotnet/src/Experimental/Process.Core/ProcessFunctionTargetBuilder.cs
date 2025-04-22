@@ -1,12 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// Provides functionality for incrementally defining a process function target.
 /// </summary>
-public sealed record ProcessFunctionTargetBuilder
+public record ProcessFunctionTargetBuilder
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessFunctionTargetBuilder"/> class.
@@ -43,7 +44,7 @@ public sealed record ProcessFunctionTargetBuilder
     /// Builds the function target.
     /// </summary>
     /// <returns>An instance of <see cref="KernelProcessFunctionTarget"/></returns>
-    internal KernelProcessFunctionTarget Build()
+    internal virtual KernelProcessFunctionTarget Build(ProcessBuilder? processBuilder = null)
     {
         Verify.NotNull(this.Step.Id);
         return new KernelProcessFunctionTarget(this.Step.Id, this.FunctionName, this.ParameterName, this.TargetEventId);
@@ -68,4 +69,25 @@ public sealed record ProcessFunctionTargetBuilder
     /// The unique identifier for the event to target. This may be null if the target is not a sub-process.
     /// </summary>
     public string? TargetEventId { get; init; }
+}
+
+/// <summary>
+/// Provides functionality for incrementally defining a process step target.
+/// </summary>
+public sealed record ProcessStepTargetBuilder : ProcessFunctionTargetBuilder
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProcessStepTargetBuilder"/> class.
+    /// </summary>
+    /// <param name="stepBuilder"></param>
+    /// <param name="inputMapping"></param>
+    public ProcessStepTargetBuilder(ProcessStepBuilder stepBuilder, Func<Dictionary<string, object?>, Dictionary<string, object?>> inputMapping) : base(stepBuilder)
+    {
+        this.InputMapping = inputMapping;
+    }
+
+    /// <summary>
+    /// An instance of <see cref="ProcessStepBuilder"/> representing the target Step.
+    /// </summary>
+    public Func<Dictionary<string, object?>, Dictionary<string, object?>> InputMapping { get; init; }
 }
