@@ -41,7 +41,7 @@ public class SqlServerBatchConformanceTests(SqlServerSimpleModelFixture fixture)
         var received = await collection.GetAsync(keys, new() { IncludeVectors = includeVectors }).ToArrayAsync();
         foreach (var record in inserted)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors, fixture.TestStore.VectorsComparable);
         }
 
         await collection.DeleteAsync(keys);

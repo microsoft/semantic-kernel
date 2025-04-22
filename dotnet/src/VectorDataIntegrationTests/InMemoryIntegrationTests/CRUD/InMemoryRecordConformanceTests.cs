@@ -15,6 +15,6 @@ public class InMemoryRecordConformanceTests(InMemorySimpleModelFixture fixture)
         var expectedRecord = fixture.TestData[0];
         var received = await fixture.Collection.GetAsync(expectedRecord.Id, new() { IncludeVectors = false });
 
-        expectedRecord.AssertEqual(received, includeVectors: true);
+        expectedRecord.AssertEqual(received, includeVectors: true, fixture.TestStore.VectorsComparable);
     }
 }

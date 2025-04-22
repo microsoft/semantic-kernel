@@ -13,8 +13,5 @@ public class QdrantBasicQueryTests(QdrantBasicQueryTests.Fixture fixture)
     public new class Fixture : BasicQueryTests<ulong>.QueryFixture
     {
         public override TestStore TestStore => QdrantTestStore.NamedVectorsInstance;
-
-        // Qdrant doesn't support the default Flat index kind
-        protected override string IndexKind => Microsoft.Extensions.VectorData.IndexKind.Hnsw;
     }
 }

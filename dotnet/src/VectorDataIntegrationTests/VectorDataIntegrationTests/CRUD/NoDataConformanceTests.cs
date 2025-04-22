@@ -8,17 +8,16 @@ using Xunit;
 namespace VectorDataSpecificationTests.CRUD;
 
 /// <summary>
-/// Tests CRUD operations using a model without a vector.
-/// This is only supported by a subset of databases so only extend if applicable for your database.
+/// Tests CRUD operations using a model without data fields.
 /// </summary>
-public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixture fixture) where TKey : notnull
+public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture fixture) where TKey : notnull
 {
     [ConditionalFact]
-    public Task GetAsyncReturnsInsertedRecord_WithVectors()
+    public virtual Task GetAsyncReturnsInsertedRecord_WithVectors()
         => this.GetAsyncReturnsInsertedRecord(includeVectors: true);
 
     [ConditionalFact]
-    public Task GetAsyncReturnsInsertedRecord_WithoutVectors()
+    public virtual Task GetAsyncReturnsInsertedRecord_WithoutVectors()
         => this.GetAsyncReturnsInsertedRecord(includeVectors: false);
 
     private async Task GetAsyncReturnsInsertedRecord(bool includeVectors)
@@ -27,25 +26,25 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
 
         var received = await fixture.Collection.GetAsync(expectedRecord.Id, new() { IncludeVectors = includeVectors });
 
-        expectedRecord.AssertEqual(received);
+        expectedRecord.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
-    public Task UpsertAsyncCanInsertNewRecord_WithVectors()
+    public virtual Task UpsertAsyncCanInsertNewRecord_WithVectors()
         => this.UpsertAsyncCanInsertNewRecord(includeVectors: true);
 
     [ConditionalFact]
-    public Task UpsertAsyncCanInsertNewRecord_WithoutVectors()
+    public virtual Task UpsertAsyncCanInsertNewRecord_WithoutVectors()
         => this.UpsertAsyncCanInsertNewRecord(includeVectors: false);
 
     private async Task UpsertAsyncCanInsertNewRecord(bool includeVectors)
     {
         var collection = fixture.Collection;
         TKey expectedKey = fixture.GenerateNextKey<TKey>();
-        NoVectorRecord inserted = new()
+        NoDataRecord inserted = new()
         {
             Id = expectedKey,
-            Text = "some"
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, NoDataRecord.DimensionCount).ToArray())
         };
 
         Assert.Null(await collection.GetAsync(expectedKey));
@@ -53,93 +52,101 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
         Assert.Equal(expectedKey, key);
 
         var received = await collection.GetAsync(expectedKey, new() { IncludeVectors = includeVectors });
-        inserted.AssertEqual(received);
+        inserted.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
-    public Task UpsertAsyncCanUpdateExistingRecord_WithVectors()
+    public virtual Task UpsertAsyncCanUpdateExistingRecord_WithVectors()
         => this.UpsertAsyncCanUpdateExistingRecord(includeVectors: true);
 
     [ConditionalFact]
-    public Task UpsertAsyncCanUpdateExistingRecord__WithoutVectors()
+    public virtual Task UpsertAsyncCanUpdateExistingRecord_WithoutVectors()
         => this.UpsertAsyncCanUpdateExistingRecord(includeVectors: false);
 
     private async Task UpsertAsyncCanUpdateExistingRecord(bool includeVectors)
     {
         var collection = fixture.Collection;
         var existingRecord = fixture.TestData[1];
-        NoVectorRecord updated = new()
+        NoDataRecord updated = new()
         {
             Id = existingRecord.Id,
-            Text = "updated"
+            Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.25f, NoDataRecord.DimensionCount).ToArray())
         };
 
-        Assert.NotNull(await collection.GetAsync(existingRecord.Id));
+        Assert.NotNull(await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = true }));
         TKey key = await collection.UpsertAsync(updated);
         Assert.Equal(existingRecord.Id, key);
 
         var received = await collection.GetAsync(existingRecord.Id, new() { IncludeVectors = includeVectors });
-        updated.AssertEqual(received);
+        updated.AssertEqual(received, includeVectors, fixture.TestStore.VectorsComparable);
     }
 
     [ConditionalFact]
-    public async Task DeleteAsyncDeletesTheRecord()
+    public virtual async Task DeleteAsyncDeletesTheRecord()
     {
         var recordToRemove = fixture.TestData[2];
 
-        Assert.NotNull(await fixture.Collection.GetAsync(recordToRemove.Id));
+        Assert.NotNull(await fixture.Collection.GetAsync(recordToRemove.Id, new() { IncludeVectors = true }));
         await fixture.Collection.DeleteAsync(recordToRemove.Id);
         Assert.Null(await fixture.Collection.GetAsync(recordToRemove.Id));
     }
 
     /// <summary>
-    /// This class is for testing databases that support having no vector.
-    /// Not all DBs support this.
+    /// This class is for testing databases that support having no data fields.
     /// </summary>
-    public sealed class NoVectorRecord
+    public sealed class NoDataRecord
     {
         public const int DimensionCount = 3;
 
         [VectorStoreRecordKey(StoragePropertyName = "key")]
         public TKey Id { get; set; } = default!;
 
-        [VectorStoreRecordData(StoragePropertyName = "text")]
-        public string? Text { get; set; }
+        [VectorStoreRecordVector(DimensionCount, StoragePropertyName = "embedding")]
+        public ReadOnlyMemory<float> Floats { get; set; }
 
-        public void AssertEqual(NoVectorRecord? other)
+        public void AssertEqual(NoDataRecord? other, bool includeVectors, bool compareVectors)
         {
             Assert.NotNull(other);
             Assert.Equal(this.Id, other.Id);
-            Assert.Equal(this.Text, other.Text);
+
+            if (includeVectors)
+            {
+                Assert.Equal(this.Floats.Span.Length, other.Floats.Span.Length);
+
+                if (compareVectors)
+                {
+                    Assert.True(this.Floats.Span.SequenceEqual(other.Floats.Span));
+                }
+            }
         }
     }
 
     /// <summary>
-    /// Provides data and configuration for a model without a vector, which is supported by some connectors.
+    /// Provides data and configuration for a model without data fields.
     /// </summary>
-    public abstract class Fixture : VectorStoreCollectionFixture<TKey, NoVectorRecord>
+    public abstract class Fixture : VectorStoreCollectionFixture<TKey, NoDataRecord>
     {
-        protected override List<NoVectorRecord> BuildTestData() =>
+        protected override List<NoDataRecord> BuildTestData() =>
         [
             new()
             {
                 Id = this.GenerateNextKey<TKey>(),
-                Text = "UsedByGetTests",
+                Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.1f, NoDataRecord.DimensionCount).ToArray())
             },
             new()
             {
                 Id = this.GenerateNextKey<TKey>(),
-                Text = "UsedByUpdateTests",
+                Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.2f, NoDataRecord.DimensionCount).ToArray())
             },
             new()
             {
                 Id = this.GenerateNextKey<TKey>(),
-                Text = "UsedByDeleteTests",
+                Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.3f, NoDataRecord.DimensionCount).ToArray())
             },
             new()
             {
                 Id = this.GenerateNextKey<TKey>(),
-                Text = "UsedByDeleteBatchTests",
+                Floats = new ReadOnlyMemory<float>(Enumerable.Repeat(0.4f, NoDataRecord.DimensionCount).ToArray())
             }
         ];
 
@@ -148,8 +155,12 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
             {
                 Properties =
                 [
-                    new VectorStoreRecordKeyProperty(nameof(NoVectorRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
-                    new VectorStoreRecordDataProperty(nameof(NoVectorRecord.Text), typeof(string)) { IsIndexed = true, StoragePropertyName = "text" },
+                    new VectorStoreRecordKeyProperty(nameof(NoDataRecord.Id), typeof(TKey)) { StoragePropertyName = "key" },
+                    new VectorStoreRecordVectorProperty(nameof(NoDataRecord.Floats), typeof(ReadOnlyMemory<float>), NoDataRecord.DimensionCount)
+                    {
+                        StoragePropertyName = "embedding",
+                        IndexKind = this.IndexKind,
+                    }
                 ]
             };
 
@@ -157,7 +168,8 @@ public class NoVectorConformanceTests<TKey>(NoVectorConformanceTests<TKey>.Fixtu
         {
             for (var i = 0; i < 20; i++)
             {
-                var results = await this.Collection.GetAsync([this.TestData[0].Id, this.TestData[1].Id, this.TestData[2].Id, this.TestData[3].Id]).ToArrayAsync();
+                var getOptions = new GetRecordOptions { IncludeVectors = true };
+                var results = await this.Collection.GetAsync([this.TestData[0].Id, this.TestData[1].Id, this.TestData[2].Id, this.TestData[3].Id], getOptions).ToArrayAsync();
                 if (results.Length == 4 && results.All(r => r != null))
                 {
                     return;

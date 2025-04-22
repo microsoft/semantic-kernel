@@ -26,7 +26,7 @@ public sealed class SimpleRecord<TKey>
     [VectorStoreRecordVector(Dimensions: DimensionCount, StoragePropertyName = "embedding")]
     public ReadOnlyMemory<float> Floats { get; set; }
 
-    public void AssertEqual(SimpleRecord<TKey>? other, bool includeVectors)
+    public void AssertEqual(SimpleRecord<TKey>? other, bool includeVectors, bool compareVectors)
     {
         Assert.NotNull(other);
         Assert.Equal(this.Id, other.Id);
@@ -35,7 +35,12 @@ public sealed class SimpleRecord<TKey>
 
         if (includeVectors)
         {
-            Assert.Equal(this.Floats.ToArray(), other.Floats.ToArray());
+            Assert.Equal(this.Floats.Span.Length, other.Floats.Span.Length);
+
+            if (compareVectors)
+            {
+                Assert.Equal(this.Floats.ToArray(), other.Floats.ToArray());
+            }
         }
         else
         {

@@ -391,6 +391,11 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             }
         }
 
+        if (keyList is { Count: 0 })
+        {
+            return Task.CompletedTask;
+        }
+
         return this.RunOperationAsync(
             DeleteName,
             () => keyList switch
@@ -449,6 +454,11 @@ public sealed class QdrantVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
             this._collectionName,
             UpsertName,
             () => records.Select(this._mapper.MapFromDataToStorageModel).ToList());
+
+        if (pointStructs is { Count: 0 })
+        {
+            return Array.Empty<TKey>();
+        }
 
         // Upsert.
         await this.RunOperationAsync(
