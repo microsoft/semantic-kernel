@@ -15,9 +15,15 @@ namespace Microsoft.SemanticKernel;
 internal static partial class Verify
 {
 #if NET
+    [GeneratedRegex("^[0-9A-Za-z_]*$")]
+    private static partial Regex AsciiLettersDigitsUnderscoresRegex();
+
     [GeneratedRegex("^[^.]+\\.[^.]+$")]
     private static partial Regex FilenameRegex();
 #else
+    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
+    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
+
     private static Regex FilenameRegex() => s_filenameRegex;
     private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
 #endif
