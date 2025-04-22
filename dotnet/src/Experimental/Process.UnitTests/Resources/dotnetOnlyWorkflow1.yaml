@@ -57,7 +57,7 @@ workflow:
   # The nodes that make up the workflow. A node is a wrapper around something that can be invoked such as code, an agent, a tool, etc.
   nodes:
     - id: kickoff
-      type: dotnet
+      type: dotnet # dotnet | python
       version: "1.0"
       description: "Kickoff the workflow"
       agent:
@@ -145,9 +145,8 @@ workflow:
       agent: 
         type: "Microsoft.SemanticKernel.Process.UnitTests.ProcessSerializationTests+CStep, SemanticKernel.Process.UnitTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
         id: c_step_agent
-      inputs:
-        aStepData: string
-        bStepData: string
+      # inputs:
+      #   type: string
       agent_input_mapping:
         event_payload: "$.inputs.report"
         event_type: "human_approval_request"

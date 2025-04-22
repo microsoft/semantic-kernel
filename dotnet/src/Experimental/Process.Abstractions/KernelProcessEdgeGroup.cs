@@ -18,6 +18,7 @@ public sealed class KernelProcessEdgeGroup
     /// <param name="inputMapping">The input mapping.</param>
     public KernelProcessEdgeGroup(string groupId, List<KernelProcessMessageSource> messageSources, Func<Dictionary<string, object?>, IReadOnlyDictionary<string, object?>> inputMapping)
     {
+        Verify.NotNullOrWhiteSpace(groupId, nameof(groupId));
         Verify.NotNullOrEmpty(messageSources, nameof(messageSources));
         Verify.NotNull(inputMapping, nameof(inputMapping));
 
