@@ -69,7 +69,7 @@ public class Mem0MemoryComponent : ConversationStateExtension
     }
 
     /// <inheritdoc/>
-    public override async Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
 
@@ -86,7 +86,7 @@ public class Mem0MemoryComponent : ConversationStateExtension
     }
 
     /// <inheritdoc/>
-    public override async Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessages);
 

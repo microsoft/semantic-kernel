@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Options for the <see cref="Mem0MemoryComponent"/>.
 /// </summary>
+[Experimental("SKEXP0130")]
 public class Mem0MemoryComponentOptions
 {
     /// <summary>

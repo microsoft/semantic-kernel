@@ -148,7 +148,7 @@ public abstract class AgentThread
         }
 
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        await this.StateExtensions.OnNewMessageAsync(newMessage, cancellationToken).ConfigureAwait(false);
+        await this.StateExtensions.OnNewMessageAsync(this.Id, newMessage, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         await this.OnNewMessageInternalAsync(newMessage, cancellationToken).ConfigureAwait(false);

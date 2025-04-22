@@ -415,7 +415,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await openAIAssistantAgentThread.StateExtensions.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await openAIAssistantAgentThread.StateExtensions.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
         openAIAssistantAgentThread.StateExtensions.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -560,7 +560,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await openAIAssistantAgentThread.StateExtensions.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+        var extensionsContext = await openAIAssistantAgentThread.StateExtensions.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
         openAIAssistantAgentThread.StateExtensions.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 

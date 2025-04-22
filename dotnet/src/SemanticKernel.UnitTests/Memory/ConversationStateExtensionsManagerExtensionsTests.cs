@@ -27,10 +27,10 @@ public class ConversationStateExtensionsManagerExtensionsTests
         var newMessage = new ChatMessageContent(AuthorRole.User, "Test Message");
 
         // Act
-        await manager.OnNewMessageAsync(newMessage);
+        await manager.OnNewMessageAsync("test-thread-id", newMessage);
 
         // Assert
-        extensionMock.Verify(x => x.OnNewMessageAsync(It.Is<ChatMessage>(m => m.Text == "Test Message" && m.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
+        extensionMock.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(m => m.Text == "Test Message" && m.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -48,15 +48,15 @@ public class ConversationStateExtensionsManagerExtensionsTests
         };
 
         extensionMock
-            .Setup(x => x.OnAIInvocationAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("Combined Context");
 
         // Act
-        var result = await manager.OnAIInvocationAsync(messages);
+        var result = await manager.OnModelInvokeAsync(messages);
 
         // Assert
         Assert.Equal("Combined Context", result);
-        extensionMock.Verify(x => x.OnAIInvocationAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
+        extensionMock.Verify(x => x.OnModelInvokeAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

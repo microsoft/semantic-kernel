@@ -25,7 +25,7 @@ You can use the following diagnostic IDs to ignore warnings or errors for a part
 | SKEXP0100 | Advanced Semantic Kernel features |
 | SKEXP0110 | Semantic Kernel Agents |
 | SKEXP0120 | Native-AOT |
-| SKEXP0130 | Memory |
+| SKEXP0130 | Conversation State |
 
 ## Experimental Features Tracking
 

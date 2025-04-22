@@ -118,7 +118,7 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     }
 
     /// <inheritdoc/>
-    public override async Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         if (newMessage.Role == ChatRole.User && !string.IsNullOrWhiteSpace(newMessage.Text))
         {
@@ -128,7 +128,7 @@ public class UserFactsMemoryComponent : ConversationStateExtension
     }
 
     /// <inheritdoc/>
-    public override Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public override Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         return Task.FromResult("The following list contains facts about the user:\n" + this._userFacts);
     }
