@@ -13,6 +13,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Http;
 
+#pragma warning disable CA1859
+
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>

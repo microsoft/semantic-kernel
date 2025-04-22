@@ -26,7 +26,7 @@ public partial class FunctionInvocationContextV2
     private FunctionCallContent? _callContent;
 
     /// <summary>The arguments used with the function.</summary>
-    private AIFunctionArguments? _arguments;
+    private AIFunctionArgumentsV2? _arguments;
 
     /// <summary>Initializes a new instance of the <see cref="FunctionInvocationContext"/> class.</summary>
     public FunctionInvocationContextV2()
@@ -41,7 +41,7 @@ public partial class FunctionInvocationContextV2
     }
 
     /// <summary>Gets or sets the arguments associated with this invocation.</summary>
-    public AIFunctionArguments Arguments
+    public AIFunctionArgumentsV2 Arguments
     {
         get => _arguments ??= [];
         set => _arguments = Throw.IfNull(value);

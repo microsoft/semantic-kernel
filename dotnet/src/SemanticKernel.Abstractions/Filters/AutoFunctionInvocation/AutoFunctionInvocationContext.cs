@@ -93,8 +93,25 @@ public class AutoFunctionInvocationContext : FunctionInvocationContextV2
     /// </summary>
     public new KernelArguments? Arguments
     {
-        get => new(base.Arguments);
-        init => base.Arguments = new(value);
+        get
+        {
+            if (base.Arguments is KernelArguments kernelArguments)
+            {
+                return kernelArguments;
+            }
+
+            throw new InvalidOperationException($"The arguments are not of type {nameof(KernelArguments)}, for those scenarios, use {nameof(this.AIArguments)} instead.");
+        }
+        init => base.Arguments = value ?? new();
+    }
+
+    /// <summary>
+    /// Get the <see cref="Microsoft.Extensions.AI.AIFunctionArgumentsV2"/> with which this filter is associated.
+    /// </summary>
+    public AIFunctionArgumentsV2 AIArguments
+    {
+        get => base.Arguments;
+        init => base.Arguments = value;
     }
 
     /// <summary>
@@ -201,15 +218,6 @@ public class AutoFunctionInvocationContext : FunctionInvocationContextV2
     {
         get => base.Function;
         set => base.Function = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the arguments associated with this invocation context.
-    /// </summary>
-    internal AIFunctionArguments AIArguments
-    {
-        get => base.Arguments;
-        set => base.Arguments = value;
     }
 
     private static bool IsSameSchema(KernelFunction kernelFunction, AIFunction aiFunction)

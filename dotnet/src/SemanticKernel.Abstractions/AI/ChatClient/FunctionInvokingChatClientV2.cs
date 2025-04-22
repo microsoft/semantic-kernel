@@ -832,7 +832,7 @@ public partial class FunctionInvokingChatClientV2 : DelegatingChatClient
     /// <returns>The function invocation context and result.</returns>
     protected virtual async Task<(FunctionInvocationContextV2 context, object? result)> TryInvokeFunctionAsync(FunctionInvocationContextV2 context, CancellationToken cancellationToken)
     {
-        var result = await context.Function.InvokeAsync(context.Arguments, cancellationToken);
+        var result = await context.Function.InvokeAsync(new(context.Arguments), cancellationToken);
 
         return (context, result);
     }

@@ -166,15 +166,10 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             return new(shouldTerminate: false, FunctionInvocationStatus.NotFound, callContent, result: null, exception: null);
         }
 
-        //if (callContent.Arguments is not null)
-        //{
-        //    callContent.Arguments = new KernelArguments(callContent.Arguments);
-        //}
-
         var context = new AutoFunctionInvocationContext(options)
         {
             AIFunction = function,
-            AIArguments = new AIFunctionArguments(callContent.Arguments) { Services = this.FunctionInvocationServices },
+            Arguments = new KernelArguments(callContent.Arguments ?? new Dictionary<string, object?>()) { Services = this.FunctionInvocationServices },
             Messages = messages,
             CallContent = callContent,
             Iteration = iteration,
@@ -322,7 +317,7 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         }
         else
         {
-            result = await context.Function.InvokeAsync(context.Arguments, cancellationToken).ConfigureAwait(false);
+            result = await context.Function.InvokeAsync(new(context.Arguments), cancellationToken).ConfigureAwait(false);
         }
 
         return (context, result);
