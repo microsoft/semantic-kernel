@@ -35,6 +35,7 @@ public static class KernelProcessDaprExtensions
     /// <param name="sc"></param>
     public static void AddDaprKernelProcesses(this IServiceCollection sc)
     {
+        sc.AddSingleton<DaprKernelProcessFactory>();
         RegisterKeyedProcesses(sc);
     }
 
