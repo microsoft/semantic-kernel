@@ -186,6 +186,18 @@ public sealed partial class AzureAIAgent : Agent
             () => new AzureAIAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the conversation state extensions context contributions and register plugins from the extensions.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var extensionsContext = await azureAIAgentThread.StateExtensions.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        azureAIAgentThread.StateExtensions.RegisterPlugins(kernel);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        var extensionsContextOptions = options is null ?
+            new AzureAIAgentInvokeOptions() { AdditionalInstructions = extensionsContext } :
+            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = extensionsContext };
+
         var invokeResults = ActivityExtensions.RunWithActivityAsync(
             () => ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description),
             () => InternalInvokeAsync(),
@@ -197,9 +209,9 @@ public sealed partial class AzureAIAgent : Agent
                 this,
                 this.Client,
                 azureAIAgentThread.Id!,
-                options?.ToAzureAIInvocationOptions(),
+                extensionsContextOptions?.ToAzureAIInvocationOptions(),
                 this.Logger,
-                options?.Kernel ?? this.Kernel,
+                kernel,
                 options?.KernelArguments,
                 cancellationToken).ConfigureAwait(false))
             {
@@ -303,14 +315,26 @@ public sealed partial class AzureAIAgent : Agent
             () => new AzureAIAgentThread(this.Client),
             cancellationToken).ConfigureAwait(false);
 
+        var kernel = (options?.Kernel ?? this.Kernel).Clone();
+
+        // Get the conversation state extensions context contributions and register plugins from the extensions.
+#pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        var extensionsContext = await azureAIAgentThread.StateExtensions.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        azureAIAgentThread.StateExtensions.RegisterPlugins(kernel);
+#pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        var extensionsContextOptions = options is null ?
+            new AzureAIAgentInvokeOptions() { AdditionalInstructions = extensionsContext } :
+            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = extensionsContext };
+
 #pragma warning disable CS0618 // Type or member is obsolete
         // Invoke the Agent with the thread that we already added our message to.
         var newMessagesReceiver = new ChatHistory();
         var invokeResults = this.InvokeStreamingAsync(
             azureAIAgentThread.Id!,
-            options?.ToAzureAIInvocationOptions(),
+            extensionsContextOptions.ToAzureAIInvocationOptions(),
             options?.KernelArguments,
-            options?.Kernel ?? this.Kernel,
+            kernel,
             newMessagesReceiver,
             cancellationToken);
 #pragma warning restore CS0618 // Type or member is obsolete

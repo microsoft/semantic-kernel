@@ -30,6 +30,8 @@ public class AzureAIAgentFixture : AgentFixture
     private AzureAIAgentThread? _serviceFailingAgentThread;
     private AzureAIAgentThread? _createdServiceFailingAgentThread;
 
+    public AAIP.AgentsClient AgentsClient => this._agentsClient!;
+
     public override Agent Agent => this._agent!;
 
     public override AgentThread AgentThread => this._thread!;
