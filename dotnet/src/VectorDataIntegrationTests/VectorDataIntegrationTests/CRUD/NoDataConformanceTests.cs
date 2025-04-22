@@ -111,7 +111,7 @@ public class NoDataConformanceTests<TKey>(NoDataConformanceTests<TKey>.Fixture f
 
             if (includeVectors)
             {
-                Assert.Equal(DimensionCount, other.Floats.Span.Length);
+                Assert.Equal(this.Floats.Span.Length, other.Floats.Span.Length);
 
                 if (compareVectors)
                 {

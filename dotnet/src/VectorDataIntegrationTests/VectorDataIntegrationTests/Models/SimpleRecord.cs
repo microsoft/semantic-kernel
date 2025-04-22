@@ -35,7 +35,7 @@ public sealed class SimpleRecord<TKey>
 
         if (includeVectors)
         {
-            Assert.Equal(DimensionCount, other.Floats.Span.Length);
+            Assert.Equal(this.Floats.Span.Length, other.Floats.Span.Length);
 
             if (compareVectors)
             {
