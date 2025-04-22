@@ -115,10 +115,10 @@ public class ConversationStateExtensionsManagerTests
         manager.Add(mockExtension.Object);
 
         // Act
-        await manager.OnNewMessageAsync(message);
+        await manager.OnNewMessageAsync("test-thread-id", message);
 
         // Assert
-        mockExtension.Verify(x => x.OnNewMessageAsync(message, It.IsAny<CancellationToken>()), Times.Once);
+        mockExtension.Verify(x => x.OnNewMessageAsync("test-thread-id", message, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -128,9 +128,9 @@ public class ConversationStateExtensionsManagerTests
         var manager = new ConversationStateExtensionsManager();
         var mockExtension1 = new Mock<ConversationStateExtension>();
         var mockExtension2 = new Mock<ConversationStateExtension>();
-        mockExtension1.Setup(x => x.OnAIInvocationAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+        mockExtension1.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
                       .ReturnsAsync("Context1");
-        mockExtension2.Setup(x => x.OnAIInvocationAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
+        mockExtension2.Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
                       .ReturnsAsync("Context2");
         manager.Add(mockExtension1.Object);
         manager.Add(mockExtension2.Object);
@@ -138,7 +138,7 @@ public class ConversationStateExtensionsManagerTests
         var messages = new List<ChatMessage>();
 
         // Act
-        var result = await manager.OnAIInvocationAsync(messages);
+        var result = await manager.OnModelInvokeAsync(messages);
 
         // Assert
         Assert.Equal("Context1\nContext2", result);

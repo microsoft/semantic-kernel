@@ -46,7 +46,7 @@ public class ConversationStateExtensionTests
         var newMessage = new ChatMessage(ChatRole.User, "Hello");
 
         // Act & Assert.
-        await mockExtension.Object.OnNewMessageAsync(newMessage, CancellationToken.None);
+        await mockExtension.Object.OnNewMessageAsync("threadId", newMessage, CancellationToken.None);
     }
 
     [Fact]

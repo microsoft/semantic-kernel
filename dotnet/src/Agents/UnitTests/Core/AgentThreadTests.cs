@@ -270,7 +270,7 @@ public class AgentThreadTests
         await thread.OnNewMessageAsync(message);
 
         // Assert.
-        mockExtension.Verify(x => x.OnNewMessageAsync(It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
+        mockExtension.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class TestAgentThread : AgentThread

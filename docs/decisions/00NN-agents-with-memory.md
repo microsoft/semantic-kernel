@@ -97,8 +97,8 @@ public abstract class ConversationStateExtension
     // OnThreadCheckpointAsync not included in initial release, maybe in future.
     public virtual Task OnThreadCheckpointAsync(string? threadId, CancellationToken cancellationToken = default);
 
-    public virtual Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default);
-    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+    public virtual Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default);
+    public abstract Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     public virtual Task OnSuspendAsync(string? threadId, CancellationToken cancellationToken = default);
     public virtual Task OnResumeAsync(string? threadId, CancellationToken cancellationToken = default);
@@ -116,11 +116,11 @@ This class allows registering components and delegating new message notification
 
 I propose to add a `ConversationStateExtensionsManager` to the `AgentThread` class, allowing us to attach components to any `AgentThread`.
 
-When an `Agent` is invoked, we will call `OnAIInvocationAsync` on each component via the `ConversationStateExtensionsManager` to get
+When an `Agent` is invoked, we will call `OnModelInvokeAsync` on each component via the `ConversationStateExtensionsManager` to get
 a combined set of context to pass to the agent for this invocation. This will be internal to the `Agent` class and transparent to the user.
 
 ```csharp
-var additionalInstructions = await currentAgentThread.OnAIInvocationAsync(messages, cancellationToken).ConfigureAwait(false);
+var additionalInstructions = await currentAgentThread.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
 ```
 
 ## Usage examples
@@ -139,12 +139,12 @@ var userFacts = new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemo
 
 // Create a thread and attach a Memory Component.
 var agentThread1 = new ChatHistoryAgentThread();
-agentThread1.ThreadExtensionsManager.RegisterThreadExtension(userFacts);
+agentThread1.ThreadExtensionsManager.Add(userFacts);
 var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
 
 // Create a second thread and attach a Memory Component.
 var agentThread2 = new ChatHistoryAgentThread();
-agentThread2.ThreadExtensionsManager.RegisterThreadExtension(userFacts);
+agentThread2.ThreadExtensionsManager.Add(userFacts);
 var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
 // Expected response contains Caoimhe.
 ```

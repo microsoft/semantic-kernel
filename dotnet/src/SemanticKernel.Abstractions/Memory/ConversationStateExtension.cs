@@ -17,7 +17,7 @@ namespace Microsoft.SemanticKernel;
 /// to a conversation, listen to changes in the conversation state, and provide additional context to
 /// the AI model in use just before invocation.
 /// </remarks>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0130")]
 public abstract class ConversationStateExtension
 {
     /// <summary>
@@ -47,10 +47,11 @@ public abstract class ConversationStateExtension
     /// <remarks>
     /// Inheritors can use this method to update their context based on the new message.
     /// </remarks>
+    /// <param name="threadId">The ID of the thread for the new message, if the thread has an ID.</param>
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been updated.</returns>
-    public virtual Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public virtual Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -71,14 +72,14 @@ public abstract class ConversationStateExtension
     }
 
     /// <summary>
-    /// Called just before the AI is invoked
+    /// Called just before the Model/Agent/etc. is invoked
     /// Implementers can load any additional context required at this time,
-    /// but they should also return any context that should be passed to the AI.
+    /// but they should also return any context that should be passed to the Model/Agent/etc.
     /// </summary>
-    /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
+    /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that completes when the context has been rendered and returned.</returns>
-    public abstract Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
+    public abstract Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Called when the current conversion is temporarily suspended and any state should be saved.

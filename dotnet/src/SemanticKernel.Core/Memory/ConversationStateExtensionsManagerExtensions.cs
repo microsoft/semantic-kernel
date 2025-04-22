@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Extension methods for <see cref="ConversationStateExtensionsManager"/>.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0130")]
 public static class ConversationStateExtensionsManagerExtensions
 {
     /// <summary>

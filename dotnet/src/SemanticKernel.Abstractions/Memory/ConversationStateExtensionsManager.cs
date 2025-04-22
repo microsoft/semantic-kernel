@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// A container class for <see cref="ConversationStateExtension"/> objects that manages their lifecycle and interactions.
 /// </summary>
-[Experimental("SKEXP0001")]
+[Experimental("SKEXP0130")]
 public sealed class ConversationStateExtensionsManager
 {
     private readonly List<ConversationStateExtension> _extensions = new();
@@ -107,23 +107,24 @@ public sealed class ConversationStateExtensionsManager
     /// <summary>
     /// This method is called when a new message has been contributed to the chat by any participant.
     /// </summary>
+    /// <param name="threadId">The ID of the thread for the new message, if the thread has an ID.</param>
     /// <param name="newMessage">The new message.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task OnNewMessageAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
+    public async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
-        await Task.WhenAll(this.Extensions.Select(x => x.OnNewMessageAsync(newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
+        await Task.WhenAll(this.Extensions.Select(x => x.OnNewMessageAsync(threadId, newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Called just before the AI is invoked
+    /// Called just before the Model/Agent/etc. is invoked
     /// </summary>
-    /// <param name="newMessages">The most recent messages that the AI is being invoked with.</param>
+    /// <param name="newMessages">The most recent messages that the Model/Agent/etc. is being invoked with.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A task that represents the asynchronous operation, containing the combined context from all conversation state extensions.</returns>
-    public async Task<string> OnAIInvocationAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
+    public async Task<string> OnModelInvokeAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
-        var subContexts = await Task.WhenAll(this.Extensions.Select(x => x.OnAIInvocationAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
+        var subContexts = await Task.WhenAll(this.Extensions.Select(x => x.OnModelInvokeAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         return string.Join("\n", subContexts);
     }
 
