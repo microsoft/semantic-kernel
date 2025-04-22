@@ -261,6 +261,7 @@ class AssistantThreadActions:
                         tool_outputs=tool_outputs,  # type: ignore
                     )
                     logger.debug(f"Submitted tool outputs for agent `{agent.name}` and thread `{thread_id}`")
+                    continue
 
             steps_response = await agent.client.beta.threads.runs.steps.list(run_id=run.id, thread_id=thread_id)
             logger.debug(f"Called for steps_response for run [{run.id}] agent `{agent.name}` and thread `{thread_id}`")
