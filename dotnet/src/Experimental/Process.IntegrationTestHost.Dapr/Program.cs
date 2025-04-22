@@ -6,9 +6,9 @@ using Microsoft.SemanticKernel.Process;
 using SemanticKernel.Process.IntegrationTests;
 using SemanticKernel.Process.TestsShared.CloudEvents;
 
-#if DEBUG
-Debugger.Launch();
-#endif
+//#if DEBUG
+//Debugger.Launch();
+//#endif
 
 var builder = WebApplication.CreateBuilder(args);
 

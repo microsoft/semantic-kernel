@@ -496,11 +496,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
             foundEdge = true;
         }
 
-        if (!foundEdge)
-        {
-            int x = 3;
-        }
-
         // Error event was raised with no edge to handle it, send it to the global error event buffer.
         if (!foundEdge && daprEvent.IsError && this.ParentProcessId != null)
         {

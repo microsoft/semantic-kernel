@@ -537,7 +537,7 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private ProcessEvent ScopedEvent(ProcessEvent daprEvent)
     {
         Verify.NotNull(daprEvent);
-        return daprEvent with { Namespace = $"{this.Name}_{this._process!.State.Id}" };
+        return daprEvent with { Namespace = this._process!.State.Id ?? throw new KernelException("Id not set in process state.") };
     }
 
     #endregion
