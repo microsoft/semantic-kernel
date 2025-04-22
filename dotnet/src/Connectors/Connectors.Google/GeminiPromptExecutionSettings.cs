@@ -266,8 +266,9 @@ public sealed class GeminiPromptExecutionSettings : PromptExecutionSettings
     /// <summary>
     /// Configuration for the thinking budget in Gemini 2.5.
     /// </summary>
-    /// <remarks>This property is specific to Gemini 2.5 and similar experimental models.</remarks>
-    /// </summary>
+    /// <remarks>
+    /// This property is specific to Gemini 2.5 and similar experimental models.
+    /// </remarks>
     [JsonPropertyName("thinking_config")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public GeminiThinkingConfig? ThinkingConfig

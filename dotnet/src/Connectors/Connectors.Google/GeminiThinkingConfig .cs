@@ -26,10 +26,6 @@ public class GeminiThinkingConfig
         get => this._thinkingBudget;
         set
         {
-            if (value is < 0 or > 24576)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), "ThinkingBudget must be an integer in the range 0 to 24576.");
-            }
             this._thinkingBudget = value == 0 ? 0 : (value < 1024 ? 1024 : value);
         }
     }
