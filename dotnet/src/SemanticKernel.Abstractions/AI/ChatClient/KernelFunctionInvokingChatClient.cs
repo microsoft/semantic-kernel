@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-#pragma warning restore IDE0073 // The file header does not match the required text
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;

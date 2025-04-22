@@ -1,4 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿#pragma warning disable IDE0073 // The file header does not match the required text
+
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -18,6 +20,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 #pragma warning disable SA1202 // 'protected' members should come before 'private' members
 #pragma warning disable VSTHRD111 // Use ConfigureAwait(bool)
 #pragma warning disable CA2007 // Use ConfigureAwait
+#pragma warning disable IDE0009 // Add this or Me qualification
+#pragma warning disable IDE1006 // Naming Styles
 
 namespace Microsoft.Extensions.AI;
 
