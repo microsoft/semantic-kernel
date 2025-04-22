@@ -11,6 +11,7 @@ using System.Collections.Generic;
 #pragma warning disable SA1112 // Closing parenthesis should be on line of opening parenthesis
 #pragma warning disable SA1114 // Parameter list should follow declaration
 #pragma warning disable CA1710 // Identifiers should have correct suffix
+#pragma warning disable IDE0009 // Add this or Me qualification
 
 namespace Microsoft.Extensions.AI;
 
