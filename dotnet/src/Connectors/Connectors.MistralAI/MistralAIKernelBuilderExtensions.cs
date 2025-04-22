@@ -58,7 +58,6 @@ public static class MistralAIKernelBuilderExtensions
                 serviceProvider?.GetService<ILoggerFactory>());
         });
 
-
         return builder;
     }
 
