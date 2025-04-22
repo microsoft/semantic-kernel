@@ -5,7 +5,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a builder for defining the source of a message in a process.
 /// </summary>
-public class MessageSourceBuilder
+public sealed class MessageSourceBuilder
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageSourceBuilder"/> class.

@@ -94,6 +94,7 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
     /// <summary>
     /// Starts the process with an initial event.
     /// </summary>
+    /// <param name="id">The process id.</param>
     /// <param name="initialEvent">The initial event.</param>
     /// <returns></returns>
     internal async Task StartKeyedWithEventAsync(string id, KernelProcessEvent initialEvent)
@@ -106,20 +107,12 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
             throw new InvalidOperationException("Key is not set");
         }
 
-        try
-        {
-            var request = new KeyedProcessStartRequest { InitialEvent = initialEvent.ToJson() };
+        var request = new KeyedProcessStartRequest { InitialEvent = initialEvent.ToJson() };
 
-            var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._key}/{this._processId}", request, options: this._serializerOptions).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException("Failed to start process");
-            }
-        }
-        catch (Exception)
+        var response = await this._httpClient.PostAsJsonAsync($"http://localhost:5200/processes/{this._key}/{this._processId}", request, options: this._serializerOptions).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
         {
-
-            throw;
+            throw new InvalidOperationException("Failed to start process");
         }
     }
 
@@ -153,5 +146,5 @@ internal sealed class DaprTestProcessContext : KernelProcessContext
         };
     }
 
-    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process.State.Id!);
+    public override Task<string> GetProcessIdAsync() => Task.FromResult(this._process?.State.Id!);
 }

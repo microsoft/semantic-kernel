@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
-using Dapr.Actors.Client;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using Xunit;

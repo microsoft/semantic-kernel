@@ -50,28 +50,14 @@ public class DaprKernelProcessContext : KernelProcessContext
     /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
     internal async Task StartWithEventAsync(KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
     {
-        try
-        {
-            var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
-            await this._daprProcess.InitializeProcessAsync(daprProcess, null, eventProxyStepId?.GetId()).ConfigureAwait(false);
-            await this._daprProcess.RunOnceAsync(initialEvent.ToJson()).ConfigureAwait(false);
-        }
-        catch (Exception)
-        {
-            throw;
-        }
+        var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
+        await this._daprProcess.InitializeProcessAsync(daprProcess, null, eventProxyStepId?.GetId()).ConfigureAwait(false);
+        await this._daprProcess.RunOnceAsync(initialEvent.ToJson()).ConfigureAwait(false);
     }
 
     internal async Task KeyedStartWithEventAsync(string key, string processId, KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
     {
-        try
-        {
-            await this._daprProcess.KeyedRunOnceAsync(key, processId, "", eventProxyStepId?.GetId(), initialEvent.ToJson()).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            throw;
-        }
+        await this._daprProcess.KeyedRunOnceAsync(key, processId, "", eventProxyStepId?.GetId(), initialEvent.ToJson()).ConfigureAwait(false);
     }
 
     /// <summary>

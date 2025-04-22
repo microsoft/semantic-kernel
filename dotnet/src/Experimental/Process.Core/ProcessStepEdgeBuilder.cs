@@ -56,7 +56,6 @@ public class ProcessStepEdgeBuilder
         if (this.EdgeGroupBuilder is not null && this.Target is ProcessStepTargetBuilder stepTargetBuilder)
         {
             var messageSources = this.EdgeGroupBuilder.MessageSources.Select(e => new KernelProcessMessageSource(e.MessageType, e.Source.Id)).ToList();
-
             var edgeGroup = new KernelProcessEdgeGroup(this.EdgeGroupBuilder.GroupId, messageSources, stepTargetBuilder.InputMapping);
             this.Target.Step.RegisterGroupInputMapping(edgeGroup);
         }
@@ -74,6 +73,13 @@ public class ProcessStepEdgeBuilder
         return this.SendEventTo_Internal(target);
     }
 
+    /// <summary>
+    /// Internally overridable implementation: Signals that the output of the source step should be sent to the specified target when the associated event fires.
+    /// </summary>
+    /// <param name="target">The output target.</param>
+    /// <returns>A fresh builder instance for fluid definition</returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="ArgumentException"></exception>
     internal virtual ProcessStepEdgeBuilder SendEventTo_Internal(ProcessFunctionTargetBuilder target)
     {
         if (this.Target is not null)

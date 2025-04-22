@@ -29,17 +29,25 @@ public static class KernelProcessDaprExtensions
         actorOptions.Actors.RegisterActor<ExternalMessageBufferActor>();
     }
 
-    // TODO: This should happen automatically when adding the process framework
+    /// <summary>
+    /// Adds the Dapr process runtime to the service collection.
+    /// </summary>
+    /// <param name="sc"></param>
+    public static void AddDaprKernelProcesses(this IServiceCollection sc)
+    {
+        RegisterKeyedProcesses(sc);
+    }
+
     /// <summary>
     /// Registers the keyed processes in the service collection.
     /// </summary>
     /// <param name="sc"></param>
-    public static void RegisterKeyedProcesses(this IServiceCollection sc)
+    private static void RegisterKeyedProcesses(this IServiceCollection sc)
     {
         // KeyedServiceCache caches all the keys of a given type for a
         // specific service type. By making it a singleton we only have
         // determine the keys once, which makes resolving the dict very fast.
-        sc.AddSingleton(typeof(KeyedProcesses));
+        sc.AddSingleton<KeyedProcesses>();
 
         // KeyedServiceCache depends on the IServiceCollection to get
         // the list of keys. That's why we register that here as well, as it
@@ -47,7 +55,6 @@ public static class KernelProcessDaprExtensions
         sc.AddSingleton(sc);
 
         // For completeness, let's also allow IReadOnlyDictionary to be resolved.
-        sc.AddTransient(
-            typeof(IReadOnlyDictionary<string, KernelProcess>), typeof(KeyedServiceDictionary));
+        sc.AddTransient<IReadOnlyDictionary<string, KernelProcess>, KeyedServiceDictionary>();
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Builder class for defining conditions to listen for in a process.
 /// </summary>
-public class ListenForBuilder
+public sealed class ListenForBuilder
 {
     private readonly ProcessBuilder _processBuilder;
 

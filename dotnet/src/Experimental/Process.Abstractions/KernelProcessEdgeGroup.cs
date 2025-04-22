@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a group of edges in a kernel process.
 /// </summary>
-public class KernelProcessEdgeGroup
+public sealed class KernelProcessEdgeGroup
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessEdgeGroup"/> class.

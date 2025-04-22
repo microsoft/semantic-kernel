@@ -246,13 +246,13 @@ public class Variable
     /// </summary>
     [YamlMember(Alias = "acls")]
     [JsonPropertyName("acls")]
-    public List<AccessControl>? Acls { get; set; }
+    public List<WorkflowAccessControl>? Acls { get; set; }
 }
 
 /// <summary>
 /// Access control for the variable.
 /// </summary>
-public class AccessControl
+public class WorkflowAccessControl
 {
     /// <summary>
     /// Gets or sets the node for the access control.

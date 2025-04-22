@@ -8,7 +8,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Builder class for defining targets to listen for in a process.
 /// </summary>
-public class ListenForTargetBuilder : ProcessStepEdgeBuilder
+public sealed class ListenForTargetBuilder : ProcessStepEdgeBuilder
 {
     private readonly ProcessBuilder _processBuilder;
     private readonly List<MessageSourceBuilder> _messageSources = new();
@@ -45,17 +45,6 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
     {
         Verify.NotNull(target, nameof(target));
 
-        //// Create a new event listener for the source messages and the destination step
-        //var eventListener = new ProcessEventListenerBuilder(this._messageSources, target.Step.Id, id: Guid.NewGuid().ToString("n"));
-
-        //// Add the listener to the process builder
-        //this._processBuilder.AddListenerStep(eventListener);
-
-        //// Link the listener to the destination step
-        //var v = eventListener.OnEvent("events_received");
-        //v.Target = target;
-        //eventListener.LinkTo(v.EventData.EventId, v);
-
         foreach (var messageSource in this._messageSources)
         {
             if (messageSource.Source == null)
@@ -63,16 +52,10 @@ public class ListenForTargetBuilder : ProcessStepEdgeBuilder
                 throw new InvalidOperationException("Source step cannot be null.");
             }
 
-            var sourcedTargetBuilder = new ProcessStepEdgeBuilder(source: messageSource.Source, eventId: messageSource.MessageType, eventName: messageSource.MessageType, edgeGroupBuilder: this.EdgeGroupBuilder)
-            {
-                //Target = target,
-            };
-            //messageSource.Source.LinkTo(messageSource.MessageType, sourcedTargetBuilder);
-
-            //// Link all the source steps to the event listener
-            var b = messageSource.Source.OnEvent(messageSource.MessageType);
-            b.EdgeGroupBuilder = this.EdgeGroupBuilder;
-            b.SendEventTo(target);
+            // Link all the source steps to the event listener
+            var onEventBuilder = messageSource.Source.OnEvent(messageSource.MessageType);
+            onEventBuilder.EdgeGroupBuilder = this.EdgeGroupBuilder;
+            onEventBuilder.SendEventTo(target);
         }
 
         return new ListenForTargetBuilder(this._messageSources, this._processBuilder, edgeGroup: this.EdgeGroupBuilder);

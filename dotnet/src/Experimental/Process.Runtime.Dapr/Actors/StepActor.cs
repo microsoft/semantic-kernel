@@ -57,8 +57,6 @@ internal class StepActor : Actor, IStep, IKernelProcessMessageChannel
         this._kernel = kernel;
         this._activateTask = new Lazy<ValueTask>(this.ActivateStepAsync);
         this._registeredProcesses = registeredProcesses;
-
-        //this._edgeGroupProcessors = this._stepInfo.IncomingEdgeGroups?.ToDictionary(kvp => kvp.Key, kvp => new LocalEdgeGroupProcessor(kvp.Value)) ?? [];
     }
 
     #region Public Actor Methods

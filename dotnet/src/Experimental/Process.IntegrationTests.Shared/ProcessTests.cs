@@ -70,30 +70,23 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
     [Fact]
     public async Task ProcessWithWhenAllListenerAsync()
     {
-        try
-        {
-            // Arrange
-            OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
-            this._kernelBuilder.AddOpenAIChatCompletion(
-                modelId: configuration.ModelId!,
-                apiKey: configuration.ApiKey);
+        // Arrange
+        OpenAIConfiguration configuration = this._configuration.GetSection("OpenAI").Get<OpenAIConfiguration>()!;
+        this._kernelBuilder.AddOpenAIChatCompletion(
+            modelId: configuration.ModelId!,
+            apiKey: configuration.ApiKey);
 
-            Kernel kernel = this._kernelBuilder.Build();
-            var process = this.GetProcess().Build();
+        Kernel kernel = this._kernelBuilder.Build();
+        var process = this.GetProcess().Build();
 
-            // Act
-            string testInput = "Test";
-            var processHandle = await this._fixture.StartAsync("cStep", Guid.NewGuid().ToString(), new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
-            //var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
-            var processInfo = await processHandle.GetStateAsync();
+        // Act
+        string testInput = "Test";
+        //var processHandle = await this._fixture.StartAsync("cStep", Guid.NewGuid().ToString(), new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processHandle = await this._fixture.StartProcessAsync(process, kernel, new() { Id = ProcessTestsEvents.StartProcess, Data = testInput });
+        var processInfo = await processHandle.GetStateAsync();
 
-            // Assert
-            this.AssertStepState(processInfo, "cStep", (KernelProcessStepState<CStepState> state) => state.State?.CurrentCycle == 3);
-        }
-        catch (Exception ex)
-        {
-            throw;
-        }
+        // Assert
+        this.AssertStepState(processInfo, "cStep", (KernelProcessStepState<CStepState> state) => state.State?.CurrentCycle == 3);
     }
 
     /// <summary>

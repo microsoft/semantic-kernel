@@ -1,14 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Process;
 using SemanticKernel.Process.IntegrationTests;
 using SemanticKernel.Process.TestsShared.CloudEvents;
-
-//#if DEBUG
-//Debugger.Launch();
-//#endif
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +21,8 @@ builder.Services.AddKernel();
 builder.Services.AddSingleton<IExternalKernelProcessMessageChannel>(MockCloudEventClient.Instance);
 builder.Services.AddSingleton(MockCloudEventClient.Instance);
 
-// Configure Dapr
+// Configure the Process Framework and Dapr
+builder.Services.AddDaprKernelProcesses();
 builder.Services.AddActors(static options =>
 {
     // Register the actors required to run Processes
@@ -39,8 +35,7 @@ builder.Services.AddKeyedSingleton<KernelProcess>("cStep", (sp, key) =>
     return ProcessResources.GetCStepProcess();
 });
 
-// TODO: Should not need to explicitly do this
-builder.Services.RegisterKeyedProcesses();
+// Register our processes
 builder.Services.AddSingleton<DaprKernelProcessFactory2>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>

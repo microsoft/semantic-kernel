@@ -22,7 +22,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     private readonly JoinableTaskFactory _joinableTaskFactory;
     private readonly JoinableTaskContext _joinableTaskContext;
     private readonly Channel<KernelProcessEvent> _externalEventChannel;
-    private readonly IReadOnlyDictionary<string, KernelProcess> _registeredProcesses;
 
     internal readonly List<IStep> _steps = [];
 
@@ -53,8 +52,6 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
         this._externalEventChannel = Channel.CreateUnbounded<KernelProcessEvent>();
         this._joinableTaskContext = new JoinableTaskContext();
         this._joinableTaskFactory = new JoinableTaskFactory(this._joinableTaskContext);
-
-        this._registeredProcesses = registeredProcesses;
     }
 
     #region Public Actor Methods
@@ -107,11 +104,11 @@ internal sealed class ProcessActor : StepActor, IProcess, IDisposable
     /// <summary>
     /// Starts the process with an initial event and an optional kernel.
     /// </summary>
-    /// <param name="processKey"></param>
-    /// <param name="processId"></param>
-    /// <param name="parentProcessId"></param>
-    /// <param name="eventProxyStepId"></param>
-    /// <param name="processEvent"></param>
+    /// <param name="processKey">The registration key of the process.</param>
+    /// <param name="processId">The unique Id of the process.</param>
+    /// <param name="parentProcessId">The unique Id of the parent process.</param>
+    /// <param name="eventProxyStepId">The unique Id of the associated step proxy.</param>
+    /// <param name="processEvent">The process event.</param>
     /// <returns></returns>
     public async Task KeyedRunOnceAsync(string processKey, string processId, string parentProcessId, string? eventProxyStepId, string processEvent)
     {

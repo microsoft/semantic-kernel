@@ -81,16 +81,6 @@ public abstract class ProcessStepBuilder
 
     #endregion
 
-    internal void RegisterGroupInputMapping(KernelProcessEdgeGroup edgeGroup)
-    {
-        if (this.IncomingEdgeGroups.ContainsKey(edgeGroup.GroupId))
-        {
-            return;
-        }
-
-        this.IncomingEdgeGroups[edgeGroup.GroupId] = edgeGroup;
-    }
-
     /// <summary>The namespace for events that are scoped to this step.</summary>
     private readonly string _eventNamespace;
 
@@ -109,6 +99,22 @@ public abstract class ProcessStepBuilder
     /// </summary>
     /// <returns>an instance of <see cref="KernelProcessStepInfo"/>.</returns>
     internal abstract KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null);
+
+    /// <summary>
+    /// Registers a group input mapping for the step.
+    /// </summary>
+    /// <param name="edgeGroup"></param>
+    internal void RegisterGroupInputMapping(KernelProcessEdgeGroup edgeGroup)
+    {
+        // If the group is alrwady registered, then we don't need to register it again.
+        if (this.IncomingEdgeGroups.ContainsKey(edgeGroup.GroupId))
+        {
+            return;
+        }
+
+        // Register the group by GroupId.
+        this.IncomingEdgeGroups[edgeGroup.GroupId] = edgeGroup;
+    }
 
     /// <summary>
     /// Resolves the function name for the step.
@@ -188,7 +194,7 @@ public abstract class ProcessStepBuilder
 
             if (undeterminedParameters.Count > 1)
             {
-                // TODO: Uncomment the following line when we want to enforce parameter specification. Testing without it for now.
+                // TODO: Uncomment the following line if we want to enforce parameter specification.
                 //throw new KernelException($"The function {functionName} on step {this.Name} has more than one parameter, so a parameter name must be provided.");
             }
 

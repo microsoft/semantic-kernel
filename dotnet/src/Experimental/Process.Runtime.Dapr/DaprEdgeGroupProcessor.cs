@@ -3,7 +3,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Process.Runtime;
-using Microsoft.SemanticKernel.Process.Serialization;
 
 namespace Microsoft.SemanticKernel;
 internal class DaprEdgeGroupProcessor
@@ -89,4 +88,3 @@ internal class DaprEdgeGroupProcessor
         return $"{message.SourceId}.{message.SourceEventId}";
     }
 }
-

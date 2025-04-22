@@ -3,8 +3,16 @@
 using Microsoft.SemanticKernel;
 
 namespace SemanticKernel.Process.IntegrationTests;
+
+/// <summary>
+/// This class contains resources for the process integration tests.
+/// </summary>
 public static class ProcessResources
 {
+    /// <summary>
+    /// Creates a kernel process with steps A, B, and C.
+    /// </summary>
+    /// <returns></returns>
     public static KernelProcess GetCStepProcess()
     {
         // Create the process builder.
