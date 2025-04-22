@@ -42,7 +42,7 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-    "prance ~= 23.6.21.0",
+    "prance >= 23.6.21,< 25.4.9",
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
