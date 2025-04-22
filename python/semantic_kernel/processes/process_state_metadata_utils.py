@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from semantic_kernel.processes.kernel_process.kernel_process_state_metadata import KernelProcessStateMetadata
 from semantic_kernel.processes.kernel_process.kernel_process_step_metadata import KernelProcessStepMetadataAttribute
@@ -21,7 +21,7 @@ def kernel_process_to_process_state_metadata(kernel_process: "KernelProcess") ->
     """Converts a kernel process to process state metadata."""
     KernelProcessStateMetadata.model_rebuild()
 
-    metadata = KernelProcessStateMetadata(
+    metadata: KernelProcessStateMetadata[Any] = KernelProcessStateMetadata(
         name=kernel_process.state.name,
         id=kernel_process.state.id,
         version_info=kernel_process.state.version,
@@ -46,7 +46,7 @@ def to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProce
 
 def step_info_to_process_state_metadata(step_info: "KernelProcessStepInfo") -> KernelProcessStepStateMetadata:
     """Converts a step info object to process state metadata."""
-    metadata = KernelProcessStepStateMetadata(
+    metadata: KernelProcessStepStateMetadata[Any] = KernelProcessStepStateMetadata(
         name=step_info.state.name,
         id=step_info.state.id,
         version_info=step_info.state.version,

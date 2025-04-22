@@ -1,18 +1,19 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Literal
+from typing import Generic, Literal, TypeVar
 
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
-from semantic_kernel.processes.kernel_process.kernel_process_step_state import TState
+
+TState = TypeVar("TState")
 
 
-class KernelProcessStepStateMetadata(KernelBaseModel):
+class KernelProcessStepStateMetadata(KernelBaseModel, Generic[TState]):
     """Process state used for State Persistence serialization."""
 
     type_: Literal["Step", "Process"] = Field("Step", alias="$type")
     id: str | None = Field(None, alias="id")
     name: str | None = Field(None, alias="name")
     version_info: str | None = Field(None, alias="versionInfo")
-    state: TState | None = Field(None, alias="state")
+    state: TState | None = Field(None, alias="state")  # type: ignore[valid-type]
