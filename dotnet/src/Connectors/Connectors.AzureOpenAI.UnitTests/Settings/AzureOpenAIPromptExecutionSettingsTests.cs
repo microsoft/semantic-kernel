@@ -35,6 +35,7 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Null(executionSettings.TopLogprobs);
         Assert.Null(executionSettings.Logprobs);
         Assert.Null(executionSettings.AzureChatDataSource);
+        Assert.Null(executionSettings.UserSecurityContext);
         Assert.False(executionSettings.SetNewMaxCompletionTokensEnabled);
         Assert.Equal(maxTokensSettings, executionSettings.MaxTokens);
         Assert.Null(executionSettings.Store);
@@ -263,6 +264,7 @@ public class AzureOpenAIPromptExecutionSettingsTests
         Assert.Throws<InvalidOperationException>(() => executionSettings.Store = false);
         Assert.Throws<NotSupportedException>(() => executionSettings.Metadata?.Add("bar", "foo"));
         Assert.Throws<InvalidOperationException>(() => executionSettings.SetNewMaxCompletionTokensEnabled = true);
+        Assert.Throws<InvalidOperationException>(() => executionSettings.UserSecurityContext = null);
 
         executionSettings!.Freeze(); // idempotent
         Assert.True(executionSettings.IsFrozen);
