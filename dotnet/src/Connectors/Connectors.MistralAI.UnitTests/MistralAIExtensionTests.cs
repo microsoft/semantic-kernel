@@ -85,16 +85,31 @@ public class MistralAIExtensionTests
         Assert.IsType<MistralAITextEmbeddingGenerationService>(service);
     }
 
-    [Fact]
-    public void AddMistralChatCompletionInjectsExtraParametersHeader()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void AddMistralChatCompletionInjectsExtraParametersHeader(bool useServiceCollection)
     {
         // Arrange
         var collection = new ServiceCollection();
         var kernelBuilder = collection.AddKernel();
-        kernelBuilder.AddMistralChatCompletion(
-            modelId: "model",
-            apiKey: "key",
-            endpoint: new Uri("https://example.com"));
+
+        if (useServiceCollection)
+        {
+            // Use the service collection to add the Mistral chat completion
+            kernelBuilder.Services.AddMistralChatCompletion(
+                modelId: "model",
+                apiKey: "key",
+                endpoint: new Uri("https://example.com"));
+        }
+        else
+        {
+            // Use the kernel builder directly
+            kernelBuilder.AddMistralChatCompletion(
+                modelId: "model",
+                apiKey: "key",
+                endpoint: new Uri("https://example.com"));
+        }
 
         // Act
         var kernel = collection.BuildServiceProvider().GetRequiredService<Kernel>();

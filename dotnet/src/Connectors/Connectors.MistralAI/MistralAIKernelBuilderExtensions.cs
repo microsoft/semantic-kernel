@@ -2,8 +2,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.MistralAI;
 using Microsoft.SemanticKernel.Embeddings;
@@ -38,25 +36,7 @@ public static class MistralAIKernelBuilderExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        builder.Services.AddKeyedSingleton<IChatCompletionService>(serviceId, (serviceProvider, _) =>
-        {
-            var resolvedHttpClient = HttpClientProvider.GetHttpClient(httpClient, serviceProvider);
-
-            if (httpClient == null && serviceProvider?.GetService<HttpClient>() == null)
-            {
-                if (!resolvedHttpClient.DefaultRequestHeaders.Contains("extra-parameters"))
-                {
-                    resolvedHttpClient.DefaultRequestHeaders.Add("extra-parameters", "pass-through");
-                }
-            }
-
-            return new MistralAIChatCompletionService(
-                modelId,
-                apiKey,
-                endpoint,
-                resolvedHttpClient,
-                serviceProvider?.GetService<ILoggerFactory>());
-        });
+        builder.Services.AddMistralChatCompletion(modelId, apiKey, endpoint, serviceId, httpClient);
 
         return builder;
     }
@@ -81,8 +61,7 @@ public static class MistralAIKernelBuilderExtensions
     {
         Verify.NotNull(builder);
 
-        builder.Services.AddKeyedSingleton<ITextEmbeddingGenerationService>(serviceId, (serviceProvider, _) =>
-            new MistralAITextEmbeddingGenerationService(modelId, apiKey, endpoint, HttpClientProvider.GetHttpClient(httpClient, serviceProvider), serviceProvider.GetService<ILoggerFactory>()));
+        builder.Services.AddMistralTextEmbeddingGeneration(modelId, apiKey, endpoint, serviceId, httpClient);
 
         return builder;
     }
