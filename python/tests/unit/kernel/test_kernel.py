@@ -843,7 +843,7 @@ def test_kernel_clone(
     custom_plugin_class: type,
     auto_function_invocation_filter: Callable,
 ):
-    kernel.add_service(OpenAIChatCompletion(service_id="test", ai_model_id="test"))
+    kernel.add_service(OpenAIChatCompletion(ai_model_id="abc", api_key="abc"))
     kernel.add_plugin(custom_plugin_class(), "TestPlugin")
     kernel.add_filter(FilterTypes.AUTO_FUNCTION_INVOCATION, auto_function_invocation_filter)
 
