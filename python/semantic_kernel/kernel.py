@@ -502,7 +502,7 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         return Kernel(
             plugins=deepcopy(self.plugins),
             # Shallow copy of the services, as they are not serializable
-            services=copy(self.services),
+            services={k: v for k, v in self.services.items()},
             ai_service_selector=deepcopy(self.ai_service_selector),
             function_invocation_filters=deepcopy(self.function_invocation_filters),
             prompt_rendering_filters=deepcopy(self.prompt_rendering_filters),
