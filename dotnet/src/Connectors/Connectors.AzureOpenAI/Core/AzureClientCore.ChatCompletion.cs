@@ -61,7 +61,7 @@ internal partial class AzureClientCore
 #pragma warning restore AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         }
 
-        if (azureSettings.UserSecurityContext != null)
+        if (azureSettings.UserSecurityContext is not null)
         {
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             options.SetUserSecurityContext(azureSettings.UserSecurityContext);
