@@ -120,7 +120,7 @@ public abstract class DynamicDataModelConformanceTests<TKey>(DynamicDataModelFix
         if (includeVectors)
         {
             Assert.Equal(
-                DynamicDataModelFixture<TKey>.DimensionCount,
+                ((ReadOnlyMemory<float>)expected[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).Length,
                 ((ReadOnlyMemory<float>)actual[DynamicDataModelFixture<TKey>.EmbeddingPropertyName]!).Length);
 
             if (compareVectors)
