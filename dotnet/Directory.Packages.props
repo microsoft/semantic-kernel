@@ -36,7 +36,7 @@
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.70.0" />
     <PackageVersion Include="Grpc.AspNetCore.Web" Version="2.70.0" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.70.0" />
-    <PackageVersion Include="Grpc.Tools" Version="2.70.0" />
+    <PackageVersion Include="Grpc.Tools" Version="2.71.0" />
     <PackageVersion Include="Handlebars.Net.Helpers" Version="2.4.10" />
     <PackageVersion Include="Handlebars.Net" Version="2.1.6" />
     <PackageVersion Include="HtmlAgilityPack" Version="1.11.72" />
@@ -64,7 +64,7 @@
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.21.0" />
     <PackageVersion Include="Microsoft.ML.Tokenizers.Data.Cl100kBase" Version="1.0.1" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.12.19" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.9" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.1.0-preview.10" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.8.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Npgsql" Version="8.0.6" />
@@ -114,7 +114,7 @@
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.9.1" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
@@ -155,8 +155,8 @@
     <PackageVersion Include="Pgvector" Version="0.2.0" />
     <PackageVersion Include="NRedisStack" Version="0.12.0" />
     <PackageVersion Include="Milvus.Client" Version="2.3.0-preview.1" />
-    <PackageVersion Include="Testcontainers" Version="4.1.0" />
-    <PackageVersion Include="Testcontainers.Milvus" Version="4.1.0" />
+    <PackageVersion Include="Testcontainers" Version="4.4.0" />
+    <PackageVersion Include="Testcontainers.Milvus" Version="4.4.0" />
     <PackageVersion Include="Testcontainers.MongoDB" Version="4.1.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.1.0" />
