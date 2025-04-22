@@ -5,27 +5,27 @@
     "stepsState": {
         "GatherFriedFishIngredientsWithStockStep": {
             "$type": "Step",
-            "id": "0795ce62b59f4348adcd52f895474136",
+            "id": "9f4974949a2e4a54a67ccaf83ca4396b",
             "name": "GatherFriedFishIngredientsWithStockStep",
             "versionInfo": "GatherFishIngredient.V2",
             "state": {
-                "ingredients_stock": 0
+                "IngredientsStock": 0
             }
         },
         "chopStep": {
             "$type": "Step",
-            "id": "5e5f5ed68fb94b2ea81af8d9d817da9f",
+            "id": "c6669a103319475c92cdfc10aa30548a",
             "name": "chopStep",
             "versionInfo": "CutFoodStep.V2",
             "state": {
-                "knife_sharpness": 5,
-                "needs_sharpening_limit": 3,
-                "sharpening_boost": 5
+                "KnifeSharpness": 5,
+                "NeedsSharpeningLimit": 3,
+                "SharpeningBoost": 5
             }
         },
         "FryFoodStep": {
             "$type": "Step",
-            "id": "f9d2fdf0d4d647e08e2fcae2e936e030",
+            "id": "bd9f5eb584bc40bcbb3c79d9565efd86",
             "name": "FryFoodStep",
             "versionInfo": "FryFoodStep.V1"
         }

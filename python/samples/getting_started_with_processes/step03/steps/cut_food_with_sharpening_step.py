@@ -2,6 +2,8 @@
 
 from enum import Enum
 
+from pydantic import Field
+
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
 from semantic_kernel.processes.kernel_process import (
@@ -13,9 +15,9 @@ from semantic_kernel.processes.kernel_process import (
 
 
 class CutFoodWithSharpeningState(KernelBaseModel):
-    knife_sharpness: int = 5
-    needs_sharpening_limit: int = 3
-    sharpening_boost: int = 5
+    knife_sharpness: int = Field(default=5, alias="KnifeSharpness")
+    needs_sharpening_limit: int = Field(default=3, alias="NeedsSharpeningLimit")
+    sharpening_boost: int = Field(default=5, alias="SharpeningBoost")
 
 
 @kernel_process_step_metadata("CutFoodStep.V2")

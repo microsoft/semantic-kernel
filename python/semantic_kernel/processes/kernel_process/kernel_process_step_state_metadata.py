@@ -1,10 +1,11 @@
 # Copyright (c) Microsoft. All rights reserved.
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import Field
 
 from semantic_kernel.kernel_pydantic import KernelBaseModel
+from semantic_kernel.processes.kernel_process.kernel_process_step_state import TState
 
 
 class KernelProcessStepStateMetadata(KernelBaseModel):
@@ -14,4 +15,4 @@ class KernelProcessStepStateMetadata(KernelBaseModel):
     id: str | None = Field(None, alias="id")
     name: str | None = Field(None, alias="name")
     version_info: str | None = Field(None, alias="versionInfo")
-    state: Any | None = Field(None, alias="state")
+    state: TState | None = Field(None, alias="state")

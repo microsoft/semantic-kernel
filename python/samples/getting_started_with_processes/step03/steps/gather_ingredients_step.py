@@ -2,6 +2,8 @@
 
 from enum import Enum
 
+from pydantic import Field
+
 from samples.getting_started_with_processes.step03.models.food_ingredients import FoodIngredients
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.kernel_pydantic import KernelBaseModel
@@ -37,7 +39,7 @@ class GatherIngredientsStep(KernelProcessStep):
 
 
 class GatherIngredientsState(KernelBaseModel):
-    ingredients_stock: int = 5
+    ingredients_stock: int = Field(default=5, alias="IngredientsStock")
 
 
 class GatherIngredientsWithStockStep(KernelProcessStep[GatherIngredientsState]):

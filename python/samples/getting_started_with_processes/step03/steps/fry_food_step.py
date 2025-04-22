@@ -23,7 +23,7 @@ class FryFoodStep(KernelProcessStep):
         FoodRuined = "FoodRuined"
         FriedFoodReady = "FriedFoodReady"
 
-    random_seed: int = Field(default_factory=Random)
+    random_seed: Random = Field(default_factory=Random)
 
     @kernel_function(name=Functions.FryFood)
     async def fry_food(self, context: KernelProcessStepContext, food_actions: list[str]):

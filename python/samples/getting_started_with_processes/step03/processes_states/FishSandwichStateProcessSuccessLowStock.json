@@ -5,33 +5,33 @@
     "stepsState": {
         "FriedFishWithStatefulStepsProcess": {
             "$type": "Process",
-            "id": "b6c4b623fe3c4c598ceb42955be475be",
+            "id": "d4dc8776d4574b95a4cc39e2e7667018",
             "name": "FriedFishWithStatefulStepsProcess",
             "versionInfo": "FriedFishProcess.v1",
             "stepsState": {
                 "GatherFriedFishIngredientsWithStockStep": {
                     "$type": "Step",
-                    "id": "10a1dbb079e14d20bcd41c15ab702f69",
+                    "id": "94d2df838d314d4e8fd694398f6a3ada",
                     "name": "GatherFriedFishIngredientsWithStockStep",
                     "versionInfo": "GatherFishIngredient.V2",
                     "state": {
-                        "ingredients_stock": 1
+                        "IngredientsStock": 1
                     }
                 },
                 "chopStep": {
                     "$type": "Step",
-                    "id": "8a55613bb8724d188c361172391997be",
+                    "id": "467e52a1187f497d865b897d56b68db0",
                     "name": "chopStep",
                     "versionInfo": "CutFoodStep.V2",
                     "state": {
-                        "knife_sharpness": 5,
-                        "needs_sharpening_limit": 3,
-                        "sharpening_boost": 5
+                        "KnifeSharpness": 5,
+                        "NeedsSharpeningLimit": 3,
+                        "SharpeningBoost": 5
                     }
                 },
                 "FryFoodStep": {
                     "$type": "Step",
-                    "id": "b0dbfd9df4cf4891a8433fbe3634dfaf",
+                    "id": "ba3a93b5885e4b75af0c9a46015e3e66",
                     "name": "FryFoodStep",
                     "versionInfo": "FryFoodStep.V1"
                 }
@@ -39,19 +39,19 @@
         },
         "AddBunStep": {
             "$type": "Step",
-            "id": "b0c2edcf9aeb49628393f9cb718309f2",
+            "id": "36448a39e963432caded6ca3206849e6",
             "name": "AddBunStep",
             "versionInfo": "v1"
         },
         "AddSpecialSauceStep": {
             "$type": "Step",
-            "id": "53fb2addbb44453cb1aea80c72081965",
+            "id": "d1ac856e1e5f49e6a9f389c870bc9aa1",
             "name": "AddSpecialSauceStep",
             "versionInfo": "v1"
         },
         "ExternalFriedFishStep": {
             "$type": "Step",
-            "id": "0797263f27af4b66b615b0bd6e330c35",
+            "id": "ea1a9b2f08d7407b84093ffb4f34daca",
             "name": "ExternalFriedFishStep",
             "versionInfo": "v1"
         }
