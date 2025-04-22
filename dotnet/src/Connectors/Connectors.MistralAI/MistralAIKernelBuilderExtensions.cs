@@ -2,10 +2,6 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.MistralAI;
-using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel;
 
