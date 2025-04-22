@@ -24,6 +24,7 @@ public sealed class AzureOpenAIPromptExecutionSettings : OpenAIPromptExecutionSe
     /// </summary>
     [JsonIgnore]
 #pragma warning disable AOAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    [Experimental("SKEXP0010")]
     public UserSecurityContext? UserSecurityContext
     {
         get => this._userSecurityContext;
