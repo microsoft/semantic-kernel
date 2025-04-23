@@ -1,8 +1,8 @@
 # Remote Chat Completion Agent Test
 
-This repo shows how we could implement a [`RemoteChatCompletionAgent`](./RemoteAgentTest.GroupChat/RemoteChatCompletionAgent.cs) that can be used to interact with a remote Semantic Kernel `ChatCompletionAgent`.
+This repo shows how we could implement a [`RemoteChatCompletionAgent`](./RemoteChatCompletionAgentDemo.GroupChat/RemoteChatCompletionAgent.cs) that can be used to interact with a remote Semantic Kernel `ChatCompletionAgent`.
 
-The new type [`RemoteChatCompletionAgent`](./RemoteAgentTest.GroupChat/RemoteChatCompletionAgent.cs) implements the `ChatHistoryKernelAgent` methods using a custom HTTP client to send requests to an API that hosts the `ChatCompletionAgent` functionality. This allows us to use the same interface as the local `ChatCompletionAgent`, but with the added benefit of being able to interact with a remote service.
+The new type [`RemoteChatCompletionAgent`](./RemoteChatCompletionAgentDemo.GroupChat/RemoteChatCompletionAgent.cs) implements the `ChatHistoryKernelAgent` methods using a custom HTTP client to send requests to an API that hosts the `ChatCompletionAgent` functionality. This allows us to use the same interface as the local `ChatCompletionAgent`, but with the added benefit of being able to interact with a remote service.
 
 ## Benefits of having a remote agent
 - **Polyglot Support**: The remote agent can be implemented with different programming languages and frameworks, allowing for better integration and support for different platforms.
@@ -17,7 +17,7 @@ The new type [`RemoteChatCompletionAgent`](./RemoteAgentTest.GroupChat/RemoteCha
 
 I am using an `AgentGroupChat` to show how to use different remote agents togethere in the same chat. It's a useful use case. Since the`RemoteChatCompletionAgent` extends the type `ChatHistoryKernelAgent`, it can be used in the same way as the local agent.
 
-In thie simple Group Chat, we have two agents:
+In this simple Group Chat, we have two agents:
 - `TranslatorAgent`: this agent translates the text to English. [Program.cs](./RemoteAgentTest.Agent1/Program.cs)
 - `SummaryAgent`: this agent summarize the text. [Program.cs](./RemoteAgentTest.Agent2/Program.cs)
 
@@ -29,7 +29,7 @@ I am also using [.NET Aspire]https://learn.microsoft.com/en-us/dotnet/aspire/get
 
 ## How to run the example
 
-1. Configure the OpenAI integration for .NET Aspire accoring to the [documentation](https://learn.microsoft.com/en-us/dotnet/aspire/azureai/azureai-openai-integration?tabs=dotnet-cli#connect-to-an-existing-azure-openai-service).
+1. Configure the OpenAI integration for .NET Aspire according to the [documentation](https://learn.microsoft.com/en-us/dotnet/aspire/azureai/azureai-openai-integration?tabs=dotnet-cli#connect-to-an-existing-azure-openai-service).
 
 Note that you can use either DefaultAzureCredentials or API Keys for authentication.
 

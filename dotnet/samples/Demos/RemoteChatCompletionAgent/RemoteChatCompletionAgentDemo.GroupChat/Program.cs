@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -15,20 +15,20 @@ AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiag
 builder.AddServiceDefaults();
 builder.AddAzureOpenAIClient("openAiConnectionName");
 builder.Services.AddHttpClient<TranslatorAgentHttpClient>(client => { client.BaseAddress = new("https+http://translatoragent"); });
-builder.Services.AddHttpClient<SumamryAgentHttpClient>(client => { client.BaseAddress = new("https+http://summaryagent"); });
+builder.Services.AddHttpClient<SummaryAgentHttpClient>(client => { client.BaseAddress = new("https+http://summaryagent"); });
 builder.Services.AddKernel().AddAzureOpenAIChatCompletion("gpt-4o");
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.MapGet("/remote-group-chat", async (Kernel kernel, TranslatorAgentHttpClient translatorAgentHttpClient, SumamryAgentHttpClient sumamryAgentHttpClient) =>
+app.MapGet("/remote-group-chat", async (Kernel kernel, TranslatorAgentHttpClient translatorAgentHttpClient, SummaryAgentHttpClient summaryAgentHttpClient) =>
 {
     // Use the clients as needed here
     var translatorAgent = new RemoteChatCompletionAgent(translatorAgentHttpClient);
-    var summaryAgent = new RemoteChatCompletionAgent(sumamryAgentHttpClient);
+    var summaryAgent = new RemoteChatCompletionAgent(summaryAgentHttpClient);
 
     var terminateFunction = KernelFunctionFactory.CreateFromPrompt(
-        $$$"""
+        """
         Determine if the text has been summarized. If so, respond with a single word: yes.
 
         History:
@@ -90,16 +90,16 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-public class TranslatorAgentHttpClient : RemoteAgentHttpClient
+internal sealed class TranslatorAgentHttpClient : RemoteAgentHttpClient
 {
     public TranslatorAgentHttpClient(HttpClient httpClient) : base(httpClient)
     {
     }
 }
 
-public class SumamryAgentHttpClient : RemoteAgentHttpClient
+internal sealed class SummaryAgentHttpClient : RemoteAgentHttpClient
 {
-    public SumamryAgentHttpClient(HttpClient httpClient) : base(httpClient)
+    public SummaryAgentHttpClient(HttpClient httpClient) : base(httpClient)
     {
     }
 }
