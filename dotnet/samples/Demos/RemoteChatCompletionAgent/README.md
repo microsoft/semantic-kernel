@@ -18,8 +18,8 @@ The new type [`RemoteChatCompletionAgent`](./RemoteChatCompletionAgentDemo.Group
 I am using an `AgentGroupChat` to show how to use different remote agents togethere in the same chat. It's a useful use case. Since the`RemoteChatCompletionAgent` extends the type `ChatHistoryKernelAgent`, it can be used in the same way as the local agent.
 
 In this simple Group Chat, we have two agents:
-- `TranslatorAgent`: this agent translates the text to English. [Program.cs](./RemoteAgentTest.Agent1/Program.cs)
-- `SummaryAgent`: this agent summarize the text. [Program.cs](./RemoteAgentTest.Agent2/Program.cs)
+- `TranslatorAgent`: this agent translates the text to English. [Program.cs](./RemoteChatCompletionAgentDemo.TranslatorAgent/Program.cs)
+- `SummaryAgent`: this agent summarize the text. [Program.cs](./RemoteChatCompletionAgentDemo.SummaryAgent/Program.cs)
 
 The Group Chat will call the `TranslatorAgent` first, and then the `SummaryAgent`.
 
