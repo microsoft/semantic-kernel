@@ -101,7 +101,9 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             },
             options?.KernelArguments,
             kernel,
-            options?.AdditionalInstructions == null ? extensionsContext : options.AdditionalInstructions + Environment.NewLine + Environment.NewLine + extensionsContext,
+            options?.AdditionalInstructions == null ?
+                extensionsContext :
+                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext),
             cancellationToken);
 
         // Notify the thread of new messages and return them to the caller.
@@ -193,7 +195,9 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
             },
             options?.KernelArguments,
             kernel,
-            options?.AdditionalInstructions == null ? extensionsContext : options.AdditionalInstructions + Environment.NewLine + Environment.NewLine + extensionsContext,
+            options?.AdditionalInstructions == null ?
+                extensionsContext :
+                string.Concat(options.AdditionalInstructions, Environment.NewLine, Environment.NewLine, extensionsContext),
             cancellationToken);
 
         await foreach (var result in invokeResults.ConfigureAwait(false))
