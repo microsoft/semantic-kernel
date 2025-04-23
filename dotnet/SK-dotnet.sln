@@ -534,6 +534,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessWithCloudEvents.Grpc", "samples\Demos\ProcessWithCloudEvents\ProcessWithCloudEvents.Grpc\ProcessWithCloudEvents.Grpc.csproj", "{08D84994-794A-760F-95FD-4EFA8998A16D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RemoteChatCompletionAgent", "RemoteChatCompletionAgent", "{DC27F772-55A3-7767-EB5F-9577C3EBBE33}"
+	ProjectSection(SolutionItems) = preProject
+		samples\Demos\RemoteChatCompletionAgent\README.md = samples\Demos\RemoteChatCompletionAgent\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteChatCompletionAgentDemo.AppHost", "samples\Demos\RemoteChatCompletionAgent\RemoteChatCompletionAgentDemo.AppHost\RemoteChatCompletionAgentDemo.AppHost.csproj", "{55514898-7A59-4134-88A5-222E6C3FD46D}"
 EndProject
