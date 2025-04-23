@@ -19,14 +19,17 @@ public class ProcessTestController : Controller
 {
     private static readonly Dictionary<string, DaprKernelProcessContext> s_processes = new();
     private readonly Kernel _kernel;
+    private readonly DaprKernelProcessFactory _daprKernelProcessFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ProcessTestController"/> class.
     /// </summary>
     /// <param name="kernel"></param>
-    public ProcessTestController(Kernel kernel)
+    /// <param name="daprKernelProcessFactory2"></param>
+    public ProcessTestController(Kernel kernel, DaprKernelProcessFactory daprKernelProcessFactory2)
     {
         this._kernel = kernel;
+        this._daprKernelProcessFactory = daprKernelProcessFactory2;
     }
 
     /// <summary>
@@ -34,19 +37,24 @@ public class ProcessTestController : Controller
     /// </summary>
     /// <param name="processId">The Id of the process</param>
     /// <param name="request">The request</param>
+    /// <param name="processKey">The registration key of the Processes.</param>
     /// <returns></returns>
-    [HttpPost("processes/{processId}")]
-    public async Task<IActionResult> StartProcessAsync(string processId, [FromBody] ProcessStartRequest request)
+    [HttpPost("processes/{processKey}/{processId}")]
+    public async Task<IActionResult> StartProcessAsync(string processId, [FromBody] ProcessStartRequest request, string? processKey = null)
     {
         if (s_processes.ContainsKey(processId))
         {
             return this.BadRequest("Process already started");
         }
 
+        if (string.IsNullOrWhiteSpace(processKey))
+        {
+            return this.BadRequest("Process key is required for Dapr runtime.");
+        }
+
         KernelProcessEvent initialEvent = request.InitialEvent.ToKernelProcessEvent();
 
-        var kernelProcess = request.Process.ToKernelProcess();
-        var context = await kernelProcess.StartAsync(initialEvent);
+        var context = await this._daprKernelProcessFactory.StartAsync(processKey, processId, initialEvent);
         s_processes.Add(processId, context);
 
         return this.Ok();

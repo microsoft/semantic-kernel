@@ -37,9 +37,14 @@ public record KernelProcessStepInfo
     public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; }
 
     /// <summary>
+    /// A dictionary of input mappings for the grouped edges.
+    /// </summary>
+    public IReadOnlyDictionary<string, KernelProcessEdgeGroup>? IncomingEdgeGroups { get; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="KernelProcessStepInfo"/> class.
     /// </summary>
-    public KernelProcessStepInfo(Type innerStepType, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges)
+    public KernelProcessStepInfo(Type innerStepType, KernelProcessStepState state, Dictionary<string, List<KernelProcessEdge>> edges, Dictionary<string, KernelProcessEdgeGroup>? incomingEdgeGroups = null)
     {
         Verify.NotNull(innerStepType);
         Verify.NotNull(edges);
@@ -48,6 +53,7 @@ public record KernelProcessStepInfo
         this.InnerStepType = innerStepType;
         this.Edges = edges.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyCollection<KernelProcessEdge>)kvp.Value.AsReadOnly());
         this._state = state;
+        this.IncomingEdgeGroups = incomingEdgeGroups;
 
         // Register the state as a know type for the DataContractSerialization used by Dapr.
         KernelProcessState.RegisterDerivedType(state.GetType());

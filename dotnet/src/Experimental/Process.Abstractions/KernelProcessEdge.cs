@@ -24,14 +24,21 @@ public sealed class KernelProcessEdge
     public KernelProcessFunctionTarget OutputTarget { get; init; }
 
     /// <summary>
+    /// The unique identifier for the group of edges. This may be null if the edge is not part of a group.
+    /// </summary>
+    [DataMember]
+    public string? GroupId { get; init; }
+
+    /// <summary>
     /// Creates a new instance of the <see cref="KernelProcessEdge"/> class.
     /// </summary>
-    public KernelProcessEdge(string sourceStepId, KernelProcessFunctionTarget outputTarget)
+    public KernelProcessEdge(string sourceStepId, KernelProcessFunctionTarget outputTarget, string? groupId = null)
     {
         Verify.NotNullOrWhiteSpace(sourceStepId);
         Verify.NotNull(outputTarget);
 
         this.SourceStepId = sourceStepId;
         this.OutputTarget = outputTarget;
+        this.GroupId = groupId;
     }
 }

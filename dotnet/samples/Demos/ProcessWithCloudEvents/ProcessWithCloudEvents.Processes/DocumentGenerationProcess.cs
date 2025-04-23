@@ -11,6 +11,11 @@ namespace ProcessWithCloudEvents.Processes;
 public static class DocumentGenerationProcess
 {
     /// <summary>
+    /// The key that the process will be registered with in the SK process runtime.
+    /// </summary>
+    public static string Key => nameof(DocumentGenerationProcess);
+
+    /// <summary>
     /// SK Process events emitted by <see cref="DocumentGenerationProcess"/>
     /// </summary>
     public static class DocGenerationEvents
@@ -61,7 +66,7 @@ public static class DocumentGenerationProcess
         var docsProofreadStep = processBuilder.AddStepFromType<ProofReadDocumentationStep>();
         var docsPublishStep = processBuilder.AddStepFromType<PublishDocumentationStep>();
 
-        var proxyStep = processBuilder.AddProxyStep([DocGenerationTopics.RequestUserReview, DocGenerationTopics.PublishDocumentation]);
+        var proxyStep = processBuilder.AddProxyStep(id: "proxy", [DocGenerationTopics.RequestUserReview, DocGenerationTopics.PublishDocumentation]);
 
         // Orchestrate the external input events
         processBuilder

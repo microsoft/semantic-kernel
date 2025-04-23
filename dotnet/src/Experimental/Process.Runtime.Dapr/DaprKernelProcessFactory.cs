@@ -1,27 +1,47 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapr.Actors.Client;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
-/// A class that can run a process locally or in-process.
+/// A factory for creating and starting Dapr kernel processes.
 /// </summary>
-public static class DaprKernelProcessFactory
+public class DaprKernelProcessFactory
 {
+    private readonly IReadOnlyDictionary<string, KernelProcess> _registeredProcesses;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="DaprKernelProcessFactory"/> class.
+    /// </summary>
+    /// <param name="registeredProcesses"></param>
+    public DaprKernelProcessFactory(IReadOnlyDictionary<string, KernelProcess> registeredProcesses)
+    {
+        Verify.NotNull(registeredProcesses, nameof(registeredProcesses));
+
+        this._registeredProcesses = registeredProcesses;
+    }
+
     /// <summary>
     /// Starts the specified process.
     /// </summary>
-    /// <param name="process">Required: The <see cref="KernelProcess"/> to start running.</param>
-    /// <param name="initialEvent">Required: The initial event to start the process.</param>
-    /// <param name="processId">Optional: Used to specify the unique Id of the process. If the process already has an Id, it will not be overwritten and this parameter has no effect.</param>
-    /// <param name="actorProxyFactory">Optional: when using in application with dependency injection it is recommended to pass the <see cref="IActorProxyFactory"/></param>
-    /// <returns>An instance of <see cref="KernelProcess"/> that can be used to interrogate or stop the running process.</returns>
-    public static async Task<DaprKernelProcessContext> StartAsync(this KernelProcess process, KernelProcessEvent initialEvent, string? processId = null, IActorProxyFactory? actorProxyFactory = null)
+    /// <param name="key">The registration key for the process to be run.</param>
+    /// <param name="processId">The Id of the process run.</param>
+    /// <param name="initialEvent">The initial event.</param>
+    /// <param name="actorProxyFactory">An instance of <see cref="IActorProxyFactory"/></param>
+    /// <returns></returns>
+    public async Task<DaprKernelProcessContext> StartAsync(string key, string processId, KernelProcessEvent initialEvent, IActorProxyFactory? actorProxyFactory = null)
     {
-        Verify.NotNull(process);
-        Verify.NotNullOrWhiteSpace(process.State?.Name);
-        Verify.NotNull(initialEvent);
+        Verify.NotNullOrWhiteSpace(key, nameof(key));
+        Verify.NotNullOrWhiteSpace(processId, nameof(processId));
+
+        if (!this._registeredProcesses.TryGetValue(key, out KernelProcess? process) || process is null)
+        {
+            throw new ArgumentException($"The process with key '{key}' is not registered.", nameof(key));
+        }
 
         // Assign the process Id if one is provided and the processes does not already have an Id.
         if (!string.IsNullOrWhiteSpace(processId) && string.IsNullOrWhiteSpace(process.State.Id))
@@ -30,7 +50,7 @@ public static class DaprKernelProcessFactory
         }
 
         DaprKernelProcessContext processContext = new(process, actorProxyFactory);
-        await processContext.StartWithEventAsync(initialEvent).ConfigureAwait(false);
+        await processContext.KeyedStartWithEventAsync(key, processId, initialEvent).ConfigureAwait(false);
         return processContext;
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
@@ -16,13 +17,13 @@ public record KernelProcessStepState
     /// <summary>
     /// A set of known types that may be used in serialization.
     /// </summary>
-    private readonly static HashSet<Type> s_knownTypes = [];
+    private readonly static ConcurrentDictionary<string, Type> s_knownTypes = [];
 
     /// <summary>
     /// Used to dynamically provide the set of known types for serialization.
     /// </summary>
     /// <returns></returns>
-    private static HashSet<Type> GetKnownTypes() => s_knownTypes;
+    private static IEnumerable<Type> GetKnownTypes() => s_knownTypes.Values;
 
     /// <summary>
     /// Registers a derived type for serialization. Types registered here are used by the KnownType attribute
@@ -31,7 +32,7 @@ public record KernelProcessStepState
     /// <param name="derivedType">A Type that derives from <typeref name="KernelProcessStepState"/></param>
     internal static void RegisterDerivedType(Type derivedType)
     {
-        s_knownTypes.Add(derivedType);
+        s_knownTypes.TryAdd(derivedType.Name, derivedType);
     }
 
     /// <summary>

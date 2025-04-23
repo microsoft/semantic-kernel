@@ -46,13 +46,14 @@ public class DaprKernelProcessContext : KernelProcessContext
     /// <summary>
     /// Starts the process with an initial event.
     /// </summary>
+    /// <param name="key">The registration key of the Process to be run.</param>
+    /// <param name="processId">The unique Id of the process to be run.</param>
     /// <param name="initialEvent">The initial event.</param>
-    /// <param name="eventProxyStepId">An optional identifier of an actor requesting to proxy events.</param>
-    internal async Task StartWithEventAsync(KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
+    /// <param name="eventProxyStepId">The id of the event proxy.</param>
+    /// <returns></returns>
+    internal async Task KeyedStartWithEventAsync(string key, string processId, KernelProcessEvent initialEvent, ActorId? eventProxyStepId = null)
     {
-        var daprProcess = DaprProcessInfo.FromKernelProcess(this._process);
-        await this._daprProcess.InitializeProcessAsync(daprProcess, null, eventProxyStepId?.GetId()).ConfigureAwait(false);
-        await this._daprProcess.RunOnceAsync(initialEvent.ToJson()).ConfigureAwait(false);
+        await this._daprProcess.KeyedRunOnceAsync(key, processId, "", eventProxyStepId?.GetId(), initialEvent.ToJson()).ConfigureAwait(false);
     }
 
     /// <summary>
