@@ -94,11 +94,11 @@ internal sealed class Mem0Client
         string[] paramNames = ["app_id", "agent_id", "run_id", "user_id"];
 
         // Build query string.
-        var querystringParams = new string?[4] { applicationId, userId, agentId, threadId }
+        var querystringParams = new string?[4] { applicationId, agentId, threadId, userId }
             .Select((param, index) => string.IsNullOrWhiteSpace(param) ? null : $"{paramNames[index]}={param}")
             .Where(x => x != null);
         var queryString = string.Join("&", querystringParams);
-        var clearMemoryUrl = new Uri($"/v1/memories?{queryString}", UriKind.Relative);
+        var clearMemoryUrl = new Uri($"/v1/memories/?{queryString}", UriKind.Relative);
 
         // Delete.
         var responseMessage = await this._httpClient.DeleteAsync(clearMemoryUrl).ConfigureAwait(false);

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -34,8 +35,8 @@ public class Mem0MemoryComponent : ConversationStatePart
     /// <param name="httpClient">The HTTP client used for making requests.</param>
     /// <param name="options">Options for configuring the component.</param>
     /// <remarks>
-    /// The base address of the required mem0 service and any authentication headers should be set on the <paramref name="httpClient"/>
-    /// already when provided here. E.g.:
+    /// The base address of the required mem0 service, and any authentication headers, should be set on the <paramref name="httpClient"/>
+    /// already, when passed as a parameter here. E.g.:
     /// <code>
     /// using var httpClient = new HttpClient();
     /// httpClient.BaseAddress = new Uri("https://api.mem0.ai");
@@ -72,6 +73,7 @@ public class Mem0MemoryComponent : ConversationStatePart
     public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
+        this._threadId ??= threadId;
 
         if (newMessage.Role == ChatRole.User && !string.IsNullOrWhiteSpace(newMessage.Text))
         {
@@ -91,7 +93,7 @@ public class Mem0MemoryComponent : ConversationStatePart
         Verify.NotNull(newMessages);
 
         string inputText = string.Join(
-            "\n",
+            Environment.NewLine,
             newMessages.
                 Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Text)).
                 Select(m => m.Text));
@@ -103,8 +105,8 @@ public class Mem0MemoryComponent : ConversationStatePart
                 this._userId,
                 inputText).ConfigureAwait(false);
 
-        var userInformation = string.Join("\n", memories);
-        return "The following list contains facts about the user:\n" + userInformation;
+        var userInformation = string.Join(Environment.NewLine, memories);
+        return string.Join(Environment.NewLine, "The following list contains facts about the user:", userInformation);
     }
 
     /// <summary>
@@ -116,8 +118,8 @@ public class Mem0MemoryComponent : ConversationStatePart
     {
         await this._mem0Client.ClearMemoryAsync(
             this._applicationId,
-            this._userId,
             this._agentId,
-            this._scopeToThread ? this._threadId : null).ConfigureAwait(false);
+            this._scopeToThread ? this._threadId : null,
+            this._userId).ConfigureAwait(false);
     }
 }
