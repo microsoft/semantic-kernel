@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,13 +9,20 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace RemoteChatCompletionAgentDemo.GroupChat;
 
-public class RemoteChatCompletionAgent : ChatHistoryAgent
+/// <summary>
+/// Defines a remote chat completion agent.
+/// </summary>
+public sealed class RemoteChatCompletionAgent : ChatHistoryAgent
 {
     private readonly RemoteAgentHttpClient _client;
 
+    /// <summary>
+    /// Instantiates a new instance of the <see cref="RemoteChatCompletionAgent"/> class.
+    /// </summary>
+    /// <param name="client">The client for interacting with a remote agent.</param>
     public RemoteChatCompletionAgent(RemoteAgentHttpClient client)
     {
-        _client = client ?? throw new ArgumentNullException(nameof(client));
+        this._client = client ?? throw new ArgumentNullException(nameof(client));
 
         var agentDetails = this.GetAgentDetailsAsync().GetAwaiter().GetResult();
         this.Name = agentDetails.Name;
@@ -33,33 +40,39 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
     /// </remarks>
     public AuthorRole InstructionsRole { get; init; } = AuthorRole.System;
 
+    /// <summary>
+    /// Query the remote agent details.
+    /// </summary>
     public async Task<AgentDetails> GetAgentDetailsAsync()
     {
-        await _client.GetAgentDetailsAsync().ConfigureAwait(false);
-        var response = _client.GetAgentDetailsAsync().Result;
+        await this._client.GetAgentDetailsAsync().ConfigureAwait(false);
+        var response = this._client.GetAgentDetailsAsync().Result;
 
         return JsonSerializer.Deserialize<AgentDetails>(await response.Content.ReadAsStringAsync().ConfigureAwait(false))!;
     }
 
-    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatHistory history, KernelArguments? arguments = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    [Obsolete("Base contract defines method as obsolete")]
+    public override async IAsyncEnumerable<ChatMessageContent> InvokeAsync(ChatHistory history, KernelArguments? arguments = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var response = await _client.InvokeAsync(history, cancellationToken).ConfigureAwait(false);
+        var response = await this._client.InvokeAsync(history, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
-
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var result = JsonSerializer.Deserialize<ChatMessageContent>(content);
-
-            yield return result;
+            if (result != null)
+            {
+                yield return result;
+            }
         }
         else
         {
             throw new Exception($"Failed to invoke agent: {response.ReasonPhrase}");
         }
-
     }
 
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
@@ -104,9 +117,11 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
         }
     }
 
-    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatHistory history, KernelArguments? arguments = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    [Obsolete("Base contract defines method as obsolete")]
+    public override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatHistory history, KernelArguments? arguments = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var response = await _client.InvokeStreamingAsync(history, cancellationToken).ConfigureAwait(false);
+        var response = await this._client.InvokeStreamingAsync(history, cancellationToken).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)
         {
@@ -132,7 +147,8 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
         }
     }
 
-    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var chatHistoryAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
             messages,
@@ -161,6 +177,7 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
         }
     }
 
+    /// <inheritdoc/>
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
@@ -175,13 +192,15 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
     {
         kernel ??= this.Kernel;
 
-        var response = await _client.InvokeAsync(history.ChatHistory, cancellationToken).ConfigureAwait(false);
+        var response = await this._client.InvokeAsync(history.ChatHistory, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             var result = JsonSerializer.Deserialize<ChatMessageContent>(content);
-
-            yield return result;
+            if (result != null)
+            {
+                yield return result;
+            }
         }
     }
 
@@ -197,7 +216,7 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
 
         AuthorRole? role = null;
         StringBuilder builder = new();
-        var response = await _client.InvokeStreamingAsync(history.ChatHistory, cancellationToken).ConfigureAwait(false);
+        var response = await this._client.InvokeStreamingAsync(history.ChatHistory, cancellationToken).ConfigureAwait(false);
         if (response.IsSuccessStatusCode)
         {
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -227,20 +246,33 @@ public class RemoteChatCompletionAgent : ChatHistoryAgent
     }
 }
 
+/// <summary>
+/// Http client for remote agent.
+/// </summary>
+/// <param name="httpClient">An inner client</param>
 public class RemoteAgentHttpClient(HttpClient httpClient)
 {
+    /// <summary>
+    /// Get agent details.
+    /// </summary>
     public Task<HttpResponseMessage> GetAgentDetailsAsync(CancellationToken cancellationToken = default)
     {
 #pragma warning disable CA2234 // We cannot pass uri here since we are using a customer http client with a base address
         return httpClient.GetAsync("/agent/details", cancellationToken);
     }
 
+    /// <summary>
+    /// Invoke the agent with the provided history.
+    /// </summary>
     public Task<HttpResponseMessage> InvokeAsync(ChatHistory history, CancellationToken cancellationToken = default)
     {
 #pragma warning disable CA2234 // We cannot pass uri here since we are using a customer http client with a base address
         return httpClient.PostAsync("/agent/invoke", new StringContent(JsonSerializer.Serialize(history), Encoding.UTF8, "application/json"), cancellationToken);
     }
 
+    /// <summary>
+    /// Invoke the agent with the provided history and stream the response.
+    /// </summary>
     public Task<HttpResponseMessage> InvokeStreamingAsync(ChatHistory history, CancellationToken cancellationToken = default)
     {
 #pragma warning disable CA2234 // We cannot pass uri here since we are using a customer http client with a base address
@@ -248,8 +280,18 @@ public class RemoteAgentHttpClient(HttpClient httpClient)
     }
 }
 
+/// <summary>
+/// Describes the remote agent
+/// </summary>
 public class AgentDetails
 {
-    public string Name { get; set; }
-    public string Instructions { get; set; }
+    /// <summary>
+    /// The agent name.
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The agent instructions.
+    /// </summary>
+    public string Instructions { get; set; } = string.Empty;
 }

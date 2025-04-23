@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
@@ -28,7 +28,7 @@ app.MapGet("/remote-group-chat", async (Kernel kernel, TranslatorAgentHttpClient
     var summaryAgent = new RemoteChatCompletionAgent(sumamryAgentHttpClient);
 
     var terminateFunction = KernelFunctionFactory.CreateFromPrompt(
-        $$$"""
+        """
         Determine if the text has been summarized. If so, respond with a single word: yes.
 
         History:
@@ -90,14 +90,14 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-public class TranslatorAgentHttpClient : RemoteAgentHttpClient
+internal sealed class TranslatorAgentHttpClient : RemoteAgentHttpClient
 {
     public TranslatorAgentHttpClient(HttpClient httpClient) : base(httpClient)
     {
     }
 }
 
-public class SumamryAgentHttpClient : RemoteAgentHttpClient
+internal sealed class SumamryAgentHttpClient : RemoteAgentHttpClient
 {
     public SumamryAgentHttpClient(HttpClient httpClient) : base(httpClient)
     {
