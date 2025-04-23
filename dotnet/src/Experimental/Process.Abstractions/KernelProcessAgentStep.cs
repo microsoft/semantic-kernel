@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel.Process;
@@ -37,4 +38,9 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// The optional handler group for OnError events.
     /// </summary>
     public KernelProcessDeclarativeConditionHandler? OnError { get; init; }
+
+    /// <summary>
+    /// The inputs for this agent.
+    /// </summary>
+    public Dictionary<string, JsonSchema>? Inputs { get; init; }
 }

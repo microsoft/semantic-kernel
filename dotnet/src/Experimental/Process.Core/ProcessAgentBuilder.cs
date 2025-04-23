@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process.Models;
 
@@ -16,6 +17,19 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     private readonly AgentDefinition _agentDefinition;
 
     /// <summary>
+    /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
+    /// </summary>
+    /// <param name="agentDefinition"></param>
+    /// <exception cref="KernelException"></exception>
+    public ProcessAgentBuilder(AgentDefinition agentDefinition) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
+    {
+        Verify.NotNull(agentDefinition);
+        this._agentDefinition = agentDefinition;
+    }
+
+    #region Public Interface
+
+    /// <summary>
     /// The optional handler group for OnComplete events.
     /// </summary>
     public DeclarativeEventHandlerGroupBuilder? OnCompleteBuilder { get; internal set; }
@@ -26,15 +40,9 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     public DeclarativeEventHandlerGroupBuilder? OnErrorBuilder { get; internal set; }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
+    /// The inputs for this agent.
     /// </summary>
-    /// <param name="agentDefinition"></param>
-    /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
-    {
-        Verify.NotNull(agentDefinition);
-        this._agentDefinition = agentDefinition;
-    }
+    public Dictionary<string, JsonSchema>? Inputs { get; internal set; }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
@@ -58,6 +66,19 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         return builder;
     }
 
+    /// <summary>
+    /// Sets the inputs for this agent.
+    /// </summary>
+    /// <param name="inputs"></param>
+    /// <returns></returns>
+    public ProcessAgentBuilder WithInputs(Dictionary<string, JsonSchema> inputs)
+    {
+        this.Inputs = inputs;
+        return this;
+    }
+
+    #endregion
+
     internal override KernelProcessStepInfo BuildStep(KernelProcessStepStateMetadata? stateMetadata = null)
     {
         KernelProcessMapStateMetadata? mapMetadata = stateMetadata as KernelProcessMapStateMetadata;
@@ -70,6 +91,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         {
             OnComplete = this.OnCompleteBuilder?.Build(),
             OnError = this.OnErrorBuilder?.Build(),
+            Inputs = this.Inputs,
         };
     }
 }

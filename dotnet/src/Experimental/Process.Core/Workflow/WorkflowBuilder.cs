@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Json.Schema;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 using YamlDotNet.RepresentationModel;
@@ -16,7 +18,7 @@ internal class WorkflowBuilder
 {
     private readonly Dictionary<string, ProcessStepBuilder> _stepBuilders = [];
     private readonly Dictionary<string, CloudEvent> _inputEvents = [];
-    private string _yaml;
+    private string? _yaml;
 
     public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml)
     {
@@ -137,6 +139,8 @@ internal class WorkflowBuilder
             throw new KernelException($"Failed to build step from agent definition: {node.Id}");
         }
 
+        // ########################### Parsing on_complete and on_error conditions ###########################
+
         if (node.OnComplete != null)
         {
             if (node.OnComplete.Any(c => c is null || c.OnCondition is null))
@@ -155,6 +159,14 @@ internal class WorkflowBuilder
             }
 
             agentBuilder.OnComplete([.. node.OnError.Select(c => c.OnCondition!)]);
+        }
+
+        // ########################### Parsing node inputs ###########################
+
+        if (node.Inputs != null)
+        {
+            var inputMapping = this.ExtractNodeInputs(node.Id);
+            agentBuilder.WithInputs(inputMapping);
         }
 
         this._stepBuilders[node.Id] = stepBuilder;
@@ -384,18 +396,17 @@ internal class WorkflowBuilder
 
     private string ExtractRawAgentYaml(string nodeId)
     {
-        // Load the YAML into the representation model
-        var input = new StringReader(this._yaml);
+        var input = new StringReader(this._yaml ?? "");
         var yamlStream = new YamlStream();
         yamlStream.Load(input);
 
         var rootNode = yamlStream.Documents[0].RootNode;
         var agentsNode = rootNode["nodes"] as YamlSequenceNode;
-        var agentNode = agentsNode?.Children
+        var node = agentsNode?.Children
             .OfType<YamlMappingNode>()
             .FirstOrDefault(node => node["id"]?.ToString() == nodeId);
 
-        if (agentNode is null || !agentNode.Children.TryGetValue("agent", out YamlNode agentNode2))
+        if (node is null || !node.Children.TryGetValue("agent", out YamlNode? agent) || agent is null)
         {
             throw new KernelException("Failed to deserialize workflow.");
         }
@@ -404,8 +415,43 @@ internal class WorkflowBuilder
         var serializer = new SerializerBuilder().Build();
 
         // Serialize the YamlMappingNode to a string
-        string rawYaml = serializer.Serialize(agentNode2);
+        string rawYaml = serializer.Serialize(agent);
 
         return rawYaml;
+    }
+
+    private Dictionary<string, JsonSchema> ExtractNodeInputs(string nodeId)
+    {
+        var input = new StringReader(this._yaml ?? "");
+        var yamlStream = new YamlStream();
+        yamlStream.Load(input);
+
+        var rootNode = yamlStream.Documents[0].RootNode;
+        var agentsNode = rootNode["nodes"] as YamlSequenceNode;
+        var node = agentsNode?.Children
+            .OfType<YamlMappingNode>()
+            .FirstOrDefault(node => node["id"]?.ToString() == nodeId);
+
+        if (node is null || !node.Children.TryGetValue("inputs", out YamlNode? inputs) || input is null || inputs is not YamlMappingNode inputMap)
+        {
+            throw new KernelException("Failed to deserialize workflow.");
+        }
+
+        // This dance to convert the YamlMappingNode to a string and then back to a JsonSchema is rather inefficient, need to find a better option.
+        // Serialize the YamlMappingNode to a Yaml string
+        var serializer = new SerializerBuilder().Build();
+        string rawYaml = serializer.Serialize(inputMap);
+
+        // Deserialize the Yaml string to an object
+        var deserializer = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).Build();
+        var yamlObject = deserializer.Deserialize(rawYaml);
+
+        // Serialize the object to a JSON string
+        var jsonSchema = JsonSerializer.Serialize(yamlObject);
+
+        var inputsDictionary = inputMap.Select(inputMap => new KeyValuePair<string, JsonSchema>(inputMap.Key.ToString(), JsonSchema.FromText(jsonSchema)))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        return inputsDictionary;
     }
 }

@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
