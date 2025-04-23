@@ -31,8 +31,8 @@ internal class AzureCosmosDBNoSqlFilterTranslator
         Debug.Assert(lambdaExpression.Parameters.Count == 1);
         this._recordParameter = lambdaExpression.Parameters[0];
 
-        var preprocessor = new FilterTranslationPreprocessor { InlineCapturedVariables = false };
-        var preprocessedExpression = preprocessor.Visit(lambdaExpression);
+        var preprocessor = new FilterTranslationPreprocessor { SupportsParameterization = true };
+        var preprocessedExpression = preprocessor.Preprocess(lambdaExpression);
 
         this.Translate(lambdaExpression.Body);
 
