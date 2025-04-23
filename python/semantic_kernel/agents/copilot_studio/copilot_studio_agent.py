@@ -6,7 +6,11 @@ from collections.abc import AsyncIterable, Awaitable, Callable
 from os import environ, path
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from microsoft.agents.copilotstudio.client import CopilotClient
+from microsoft.agents.copilotstudio.client import (
+    AgentType,
+    CopilotClient,
+    PowerPlatformCloud,
+)
 from microsoft.agents.core.models import Activity, ActivityTypes
 from msal import PublicClientApplication
 from msal_extensions import (
@@ -25,7 +29,6 @@ from semantic_kernel.contents.streaming_chat_message_content import StreamingCha
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.exceptions.agent_exceptions import (
     AgentInitializationException,
-    AgentInvokeException,
     AgentThreadOperationException,
 )
 from semantic_kernel.functions import KernelArguments
@@ -46,9 +49,6 @@ if TYPE_CHECKING:  # pragma: no cover
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Thread abstraction
-# ──────────────────────────────────────────────────────────────────────────────
 class CopilotStudioAgentThread(AgentThread):
     """Wrapper around Copilot Studio conversation.
 
@@ -61,7 +61,6 @@ class CopilotStudioAgentThread(AgentThread):
         self,
         client: CopilotClient,
         conversation_id: str | None = None,
-        pre_buffer: list[Activity] | None = None,
     ) -> None:
         """Initializes a new instance of the CopilotStudioAgentThread class."""
         super().__init__()
@@ -69,47 +68,45 @@ class CopilotStudioAgentThread(AgentThread):
             raise ValueError("CopilotClient cannot be None")
 
         self._client = client
-        self._id: str | None = conversation_id  # Copilot Studio conversation ID
-        self._buffer: list[Activity] = pre_buffer or []  # Activities not yet flushed
-        self._history: list[ChatMessageContent] = []
+        self._conversation_id: str | None = conversation_id  # Copilot Studio conversation ID
+
+    @property
+    def conversation_id(self) -> str | None:
+        """Get the conversation ID."""
+        return self._conversation_id
+
+    @conversation_id.setter
+    def conversation_id(self, value: str | None) -> None:
+        """Set the conversation ID."""
+        self._conversation_id = value
+
+    @override
+    @property
+    def id(self) -> str | None:
+        """Get the thread ID."""
+        return self.conversation_id
 
     # ——————————————————— life cycle ———————————————————
     @override
     async def _create(self) -> str:
-        """Lazily starts a conversation **only when the first activity arrives**.
-
-        Copilot Studio returns the conversation ID in the first `Activity`
-        yielded by `start_conversation`.
-        """
+        if self._is_deleted:
+            raise AgentThreadOperationException(
+                "Cannot create a new thread, since the current thread has been deleted."
+            )
         return ""
-        logger.debug("Starting Copilot Studio conversation …")
-        async for activity in self._client.start_conversation():
-            self._buffer.append(activity)
-            # First 'event' activity always contains the ID
-            if activity.conversation and activity.conversation.id:
-                self._id = activity.conversation.id
-                logger.debug("Conversation id = %s", self._id)
-                break
-        if not self._id:
-            raise AgentThreadOperationException("Unable to fetch conversation ID from Copilot Studio")
-        return self._id
 
     @override
     async def _delete(self) -> None:
-        # Copilot Studio has no explicit delete endpoint; just drop state.
-        self._buffer.clear()
-        self._history.clear()
+        if self._is_deleted:
+            return
+        if self.conversation_id is None:
+            raise AgentThreadOperationException("Cannot delete the thread, since it has not been created.")
+        self._is_deleted = True
 
     # ——————————————————— message ingress hook ———————————————————
     @override
     async def _on_new_message(self, new_message: ChatMessageContent) -> None:
-        """Called whenever SK adds a user/assistant message.
-
-        We *do not* transmit
-        outbound traffic here that happens in the agent's `get_response`.
-        Instead we keep local history aligned with SK's Chat history reducer.
-        """
-        self._history.append(new_message)
+        pass
 
     # ——————————————————— expose history to callers ———————————————————
     async def get_messages(self) -> AsyncIterable[ChatMessageContent]:
@@ -117,36 +114,7 @@ class CopilotStudioAgentThread(AgentThread):
         for msg in self._history:
             yield msg
 
-    # Extra helper for agent
-    async def _flush_buffer(self) -> list[ChatMessageContent]:
-        """Convert buffered `Activity` objects to SK message content and clear buffer."""
-        from semantic_kernel.contents.text_content import TextContent
 
-        translated: list[ChatMessageContent] = []
-        while self._buffer:
-            act = self._buffer.pop(0)
-            if act.type != ActivityTypes.message:
-                continue  # ignore typing / event etc. for now
-            translated.append(
-                ChatMessageContent(
-                    role=AuthorRole.ASSISTANT
-                    if act.from_property and act.from_property.role == "bot"
-                    else AuthorRole.USER,
-                    content=act.text,
-                    metadata={
-                        "activity_id": act.id,
-                        "conversation_id": act.conversation.id if act.conversation else None,
-                    },
-                    items=[TextContent(text=act.text)],
-                )
-            )
-        self._history.extend(translated)
-        return translated
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Agent proper
-# ──────────────────────────────────────────────────────────────────────────────
 @experimental
 class CopilotStudioAgent(Agent):
     """Semantic Kernel facade over Copilot Studio.
@@ -241,7 +209,7 @@ class CopilotStudioAgent(Agent):
         return PersistedTokenCache(persistence)
 
     @staticmethod
-    def acquire_token(mcs_settings: CopilotStudioAgentSettings, cache_path: str) -> str:
+    def _acquire_token(mcs_settings: CopilotStudioAgentSettings, cache_path: str) -> str:
         cache = CopilotStudioAgent.get_msal_token_cache(cache_path)
         app = PublicClientApplication(
             mcs_settings.app_client_id,
@@ -272,18 +240,33 @@ class CopilotStudioAgent(Agent):
 
     @staticmethod
     def setup_resources(
-        token: str | None = None,
         app_client_id: str | None = None,
         tenant_id: str | None = None,
         environment_id: str | None = None,
         agent_identifier: str | None = None,
-        cloud: str | None = None,
-        copilot_agent_type: str | None = None,
+        cloud: PowerPlatformCloud | None = None,
+        copilot_agent_type: AgentType | None = None,
         custom_power_platform_cloud: str | None = None,
         env_file_path: str | None = None,
         env_file_encoding: str | None = None,
     ) -> CopilotClient:
-        """Set up the resources needed for the Copilot Studio agent."""
+        """Set up the resources needed for the Copilot Studio agent.
+
+        Args:
+            app_client_id: The app client ID. This is the app ID of the app registration configured in Entra.
+            tenant_id: The tenant ID. This is the tenant ID related to the app registration.
+            environment_id: The environment ID. This is from the Copilot Studio Advanced Metadata settings.
+            agent_identifier: The agent identifier. This is the `Schema Name` of the agent from the
+                Copilot Studio Advanced Metadata settings.
+            cloud: The cloud environment.
+            copilot_agent_type: The type of Copilot agent.
+            custom_power_platform_cloud: The custom Power Platform cloud.
+            env_file_path: The path to the environment file.
+            env_file_encoding: The encoding of the environment file.
+
+        Returns:
+            CopilotClient: The Copilot client.
+        """
         try:
             connection_settings = CopilotStudioAgentSettings(
                 app_client_id=app_client_id,
@@ -291,7 +274,7 @@ class CopilotStudioAgent(Agent):
                 environment_id=environment_id,
                 agent_identifier=agent_identifier,
                 cloud=cloud,
-                copilot_agent_type=copilot_agent_type,
+                type=copilot_agent_type,
                 custom_power_platform_cloud=custom_power_platform_cloud,
                 env_file_path=env_file_path,
                 env_file_encoding=env_file_encoding,
@@ -299,14 +282,13 @@ class CopilotStudioAgent(Agent):
         except ValidationError as exc:
             raise AgentInitializationException(f"Failed to create Copilot Studio Agent settings: {exc}") from exc
 
-        # if not connection_settings.app_client_id and not connection_settings.tenant_id:
-        #     raise AgentInitializationException("The Copilot Studio Agent app client ID and tenant ID are required.")
+        if not connection_settings.app_client_id and not connection_settings.tenant_id:
+            raise AgentInitializationException("The Copilot Studio Agent app client ID and tenant ID are required.")
 
-        if not token:
-            token = CopilotStudioAgent.acquire_token(
-                connection_settings,
-                environ.get("TOKEN_CACHE_PATH") or path.join(path.dirname(__file__), "bin/token_cache.bin"),
-            )
+        token = CopilotStudioAgent._acquire_token(
+            connection_settings,
+            environ.get("TOKEN_CACHE_PATH") or path.join(path.dirname(__file__), "bin/token_cache.bin"),
+        )
         return CopilotClient(connection_settings, token)
 
     @override
@@ -328,22 +310,40 @@ class CopilotStudioAgent(Agent):
         )
         assert isinstance(thread, CopilotStudioAgentThread)  # for typing
 
-        # Take *only* the latest user message for now
-        last_user_msg = thread._history[-1]
-        user_text = last_user_msg.content or ""
+        msgs: list[str] = []
+        if not thread.id:
+            async for activity in self.client.start_conversation():
+                if not activity:
+                    raise Exception("ChatConsoleService.start_service: Activity is None")
+                if activity.type == ActivityTypes.message:
+                    thread.conversation_id = activity.conversation.id
 
-        # Ask Copilot Studio
-        logger.debug("Sending text to Copilot Studio: %s", user_text)
-        # self.client.ask_question_with_activity()
-        async for activity in self.client.ask_question(user_text):
-            thread._buffer.append(activity)
-        # Flush to ChatMessageContent
-        replies = await thread._flush_buffer()
-        if not replies:
-            raise AgentInvokeException("Copilot Studio returned no assistant message.")
-        final = replies[-1]
-        await thread.on_new_message(final)
-        return AgentResponseItem(message=final, thread=thread)
+        async for activity in self.client.ask_question(messages, thread.id):
+            self._print_activity(activity, msgs)
+        return AgentResponseItem(
+            message=ChatMessageContent(role="assistant", name=self.name, content=msgs[-1]), thread=thread
+        )
+
+    @staticmethod
+    def _print_activity(activity: Activity, msgs: list[str]) -> None:
+        if activity.type == ActivityTypes.message:
+            if activity.text_format == "markdown":
+                # print(activity.text)
+                if activity.suggested_actions and activity.suggested_actions.actions:
+                    print("Suggested actions:")
+                    for action in activity.suggested_actions.actions:
+                        print(f"  - {action.text}")
+            else:
+                pass
+                # print(activity.text)
+            msgs.append(activity.text)
+        elif activity.type == ActivityTypes.typing:
+            # print(".")
+            pass
+        elif activity.type == ActivityTypes.event:
+            print("+")
+        else:
+            print(f"Activity type: [{activity.type}]")
 
     # Streaming helpers.
     @override
