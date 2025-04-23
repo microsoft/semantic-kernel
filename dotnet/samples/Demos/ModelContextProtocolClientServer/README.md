@@ -107,3 +107,16 @@ To debug the MCP server in Visual Studio, follow these steps:
 5. Click `Attach` to attach the debugger to the process.  
 6. Once the debugger is attached, access the MCP server tools, prompts, or resources using the MCP Inspector or the Claude desktop app. 
    This will trigger the breakpoints you set in the MCP server code.
+
+## Remote MCP Server
+
+The MCP specification supports remote MCP servers. You can find more information at the following links:
+ [Server-Side Events (SSE)](https://modelcontextprotocol.io/docs/concepts/transports#server-sent-events-sse) and [HTTP with SSE](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse).
+   
+The [MCP C# SDK](https://github.com/modelcontextprotocol/csharp-sdk) provides all the necessary components to easily create a remote MCP server.
+To get started, follow this sample: [AspNetCoreSseServer](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/AspNetCoreSseServer).
+
+## Authentication
+
+While details of native support for OAuth 2.1 are [still being discussed](https://github.com/modelcontextprotocol/modelcontextprotocol/pull/284), you can consider a solution based on APIM 
+acting as an [AI Gateway](https://github.com/Azure-Samples/AI-Gateway). This approach is demonstrated by the sample: [Secure Remote Microsoft Graph MCP Servers using Azure API Management (Experimental)](https://github.com/Azure-Samples/remote-mcp-apim-appservice-dotnet).
