@@ -63,6 +63,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// Defaults to false. When true, the response will only contain a list of generated search queries, but no search will take place, and no reply from the model to the user's message will be generated.
     /// </summary>
     [JsonPropertyName("search_queries_only")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? SearchQueriesOnly
     {
         get => this._searchQueriesOnly;
@@ -203,6 +204,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// Specify true to return the full prompt that was sent to the model. The default value is false. In the response, the prompt in the prompt field.
     /// </summary>
     [JsonPropertyName("return_prompt")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? ReturnPrompt
     {
         get => this._returnPrompt;
@@ -259,6 +261,7 @@ public class AmazonCommandRExecutionSettings : PromptExecutionSettings
     /// Specify true, to send the user's message to the model without any preprocessing, otherwise false.
     /// </summary>
     [JsonPropertyName("raw_prompting")]
+    [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? RawPrompting
     {
         get => this._rawPrompting;

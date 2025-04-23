@@ -75,6 +75,7 @@ internal static partial class Verify
         }
     }
 
+#if !SKIPSKABSTRACTION
     internal static void ValidPluginName([NotNull] string? pluginName, IReadOnlyKernelPluginCollection? plugins = null, [CallerArgumentExpression(nameof(pluginName))] string? paramName = null)
     {
         NotNullOrWhiteSpace(pluginName);
@@ -88,6 +89,7 @@ internal static partial class Verify
             throw new ArgumentException($"A plugin with the name '{pluginName}' already exists.");
         }
     }
+#endif
 
     internal static void ValidFunctionName([NotNull] string? functionName, [CallerArgumentExpression(nameof(functionName))] string? paramName = null)
     {
@@ -146,6 +148,7 @@ internal static partial class Verify
         }
     }
 
+#if !SKIPSKABSTRACTION
     /// <summary>
     /// Make sure every function parameter name is unique
     /// </summary>
@@ -179,6 +182,7 @@ internal static partial class Verify
             }
         }
     }
+#endif
 
     [DoesNotReturn]
     private static void ThrowArgumentInvalidName(string kind, string name, string? paramName) =>

@@ -13,6 +13,7 @@ from .open_ai.azure_assistant_agent import AzureAssistantAgent
 from .open_ai.azure_responses_agent import AzureResponsesAgent
 from .open_ai.open_ai_assistant_agent import AssistantAgentThread, OpenAIAssistantAgent
 from .open_ai.openai_responses_agent import OpenAIResponsesAgent, ResponsesAgentThread
+from .open_ai.run_polling_options import RunPollingOptions
 
 __all__ = [
     "Agent",
@@ -37,4 +38,5 @@ __all__ = [
     "OpenAIAssistantAgent",
     "OpenAIResponsesAgent",
     "ResponsesAgentThread",
+    "RunPollingOptions",
 ]

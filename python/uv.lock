@@ -1,5 +1,4 @@
 version = 1
-revision = 1
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '4.0' and sys_platform == 'darwin'",
@@ -5470,7 +5469,7 @@ requires-dist = [
     { name = "opentelemetry-sdk", specifier = "~=1.24" },
     { name = "pandas", marker = "extra == 'pandas'", specifier = "~=2.2" },
     { name = "pinecone", extras = ["asyncio", "grpc"], marker = "extra == 'pinecone'", specifier = "~=6.0" },
-    { name = "prance", specifier = "~=23.6.21.0" },
+    { name = "prance", specifier = ">=23.6.21,<25.4.9" },
     { name = "psycopg", extras = ["binary", "pool"], marker = "extra == 'postgres'", specifier = "~=3.2" },
     { name = "pyarrow", marker = "extra == 'usearch'", specifier = ">=12.0,<20.0" },
     { name = "pybars4", specifier = "~=0.9" },
@@ -5492,7 +5491,6 @@ requires-dist = [
     { name = "websockets", specifier = ">=13,<16" },
     { name = "websockets", marker = "extra == 'realtime'", specifier = ">=13,<16" },
 ]
-provides-extras = ["anthropic", "autogen", "aws", "azure", "chroma", "copilot-studio", "dapr", "faiss", "google", "hugging-face", "mcp", "milvus", "mistralai", "mongo", "notebooks", "ollama", "onnx", "pandas", "pinecone", "postgres", "qdrant", "realtime", "redis", "sql", "usearch", "weaviate"]
 
 [package.metadata.requires-dev]
 dev = [
