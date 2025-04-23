@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Process;
 using SemanticKernel.Process.IntegrationTests;
 using SemanticKernel.Process.TestsShared.CloudEvents;
 
