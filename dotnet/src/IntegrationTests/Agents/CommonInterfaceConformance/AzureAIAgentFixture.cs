@@ -42,6 +42,11 @@ public class AzureAIAgentFixture : AgentFixture
 
     public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
 
+    public override AgentThread GetNewThread()
+    {
+        return new AzureAIAgentThread(this._agentsClient!);
+    }
+
     public override async Task<ChatHistory> GetChatHistory()
     {
         var chatHistory = new ChatHistory();

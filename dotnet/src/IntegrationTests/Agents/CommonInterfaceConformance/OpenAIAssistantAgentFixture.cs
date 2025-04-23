@@ -46,6 +46,11 @@ public class OpenAIAssistantAgentFixture : AgentFixture
 
     public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
 
+    public override AgentThread GetNewThread()
+    {
+        return new OpenAIAssistantAgentThread(this._assistantClient!);
+    }
+
     public override async Task<ChatHistory> GetChatHistory()
     {
         var chatHistory = new ChatHistory();

@@ -8,9 +8,9 @@ using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithMemoryConformance;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class OpenAIAssistantAgentWithMemoryTests() : AgentWithMemoryTests<OpenAIAssistantAgentFixture>(() => new OpenAIAssistantAgentFixture())
+public class OpenAIAssistantAgentWithMemoryTests() : AgentWithStatePartTests<OpenAIAssistantAgentFixture>(() => new OpenAIAssistantAgentFixture())
 {
     [Fact]
     public virtual async Task MemoryComponentCapturesMemoriesFromUserInputAsync()

@@ -11,9 +11,9 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Memory;
 using Xunit;
 
-namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithMemoryConformance;
+namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class AzureAIAgentWithMemoryTests() : AgentWithMemoryTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture())
+public class AzureAIAgentWithStatePartTests() : AgentWithStatePartTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture())
 {
     [Fact(Skip = "For manual verification")]
     public virtual async Task Mem0ComponentCapturesMemoriesFromUserInputAsync()
