@@ -111,9 +111,9 @@ To debug the MCP server in Visual Studio, follow these steps:
 ## Remote MCP Server
 
 The MCP specification supports remote MCP servers. You can find more information at the following links:
-[HTTP with SSE](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse) and [Server-Side Events (SSE)](https://modelcontextprotocol.io/docs/concepts/transports#server-sent-events-sse).
+ [Server-Side Events (SSE)](https://modelcontextprotocol.io/docs/concepts/transports#server-sent-events-sse) and [HTTP with SSE](https://modelcontextprotocol.io/specification/2024-11-05/basic/transports#http-with-sse).
    
-The [Model Context Protocol (MCP) C# SDK](https://github.com/modelcontextprotocol/csharp-sdk) provides all the necessary components to easily create a remote MCP server.
+The [MCP C# SDK](https://github.com/modelcontextprotocol/csharp-sdk) provides all the necessary components to easily create a remote MCP server.
 To get started, follow this sample: [AspNetCoreSseServer](https://github.com/modelcontextprotocol/csharp-sdk/tree/main/samples/AspNetCoreSseServer).
 
 ## Authentication
