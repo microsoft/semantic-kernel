@@ -15,17 +15,17 @@ AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiag
 builder.AddServiceDefaults();
 builder.AddAzureOpenAIClient("openAiConnectionName");
 builder.Services.AddHttpClient<TranslatorAgentHttpClient>(client => { client.BaseAddress = new("https+http://translatoragent"); });
-builder.Services.AddHttpClient<SumamryAgentHttpClient>(client => { client.BaseAddress = new("https+http://summaryagent"); });
+builder.Services.AddHttpClient<SummaryAgentHttpClient>(client => { client.BaseAddress = new("https+http://summaryagent"); });
 builder.Services.AddKernel().AddAzureOpenAIChatCompletion("gpt-4o");
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.MapGet("/remote-group-chat", async (Kernel kernel, TranslatorAgentHttpClient translatorAgentHttpClient, SumamryAgentHttpClient sumamryAgentHttpClient) =>
+app.MapGet("/remote-group-chat", async (Kernel kernel, TranslatorAgentHttpClient translatorAgentHttpClient, SummaryAgentHttpClient summaryAgentHttpClient) =>
 {
     // Use the clients as needed here
     var translatorAgent = new RemoteChatCompletionAgent(translatorAgentHttpClient);
-    var summaryAgent = new RemoteChatCompletionAgent(sumamryAgentHttpClient);
+    var summaryAgent = new RemoteChatCompletionAgent(summaryAgentHttpClient);
 
     var terminateFunction = KernelFunctionFactory.CreateFromPrompt(
         """
@@ -97,9 +97,9 @@ internal sealed class TranslatorAgentHttpClient : RemoteAgentHttpClient
     }
 }
 
-internal sealed class SumamryAgentHttpClient : RemoteAgentHttpClient
+internal sealed class SummaryAgentHttpClient : RemoteAgentHttpClient
 {
-    public SumamryAgentHttpClient(HttpClient httpClient) : base(httpClient)
+    public SummaryAgentHttpClient(HttpClient httpClient) : base(httpClient)
     {
     }
 }
