@@ -55,8 +55,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
             name: MyAgent
             description: My helpful agent.
             instructions: You are helpful agent.
-            model:
-              id: ${AzureAI:ChatModelId}
             """;
         AzureAIAgentFactory factory = new();
 
@@ -64,6 +62,23 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
+    }
+
+    [Fact]
+    public async Task AzureAIAgentWithId()
+    {
+        var text =
+            """
+            id: ${AzureAI:AgentId}
+            type: foundry_agent
+            instructions: You are helpful agent who always responds in French.
+            """;
+        AzureAIAgentFactory factory = new();
+
+        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
+        Assert.NotNull(agent);
+
+        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million", false);
     }
 
     [Fact]
@@ -409,6 +424,11 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
 
     public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
     {
+        // Uncomment the following lines to enable logging
+        //var handler = new LoggingHandler(new HttpClientHandler(), output);
+        //var httpClient = new HttpClient(handler);
+        //var client = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential(), httpClient);
+
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<AIProjectClient>(this.Client);
         this._kernel = builder.Build();
