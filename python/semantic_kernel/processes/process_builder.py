@@ -156,7 +156,6 @@ class ProcessBuilder(ProcessStepBuilder):
                 name=self.name,
                 id=self.id if self.has_parent_process else None,
                 version_info=self.version,
-                steps_state={self.name: state_metadata},
             )
         return self.build(state_metadata=metadata)
 
