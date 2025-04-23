@@ -16,7 +16,7 @@ The examples can be run as scripts and the code can also be copied to stand-alon
 
 ## Examples
 
-The getting started with agents examples include:
+The getting started with processes examples include:
 
 Example|Description
 ---|---
