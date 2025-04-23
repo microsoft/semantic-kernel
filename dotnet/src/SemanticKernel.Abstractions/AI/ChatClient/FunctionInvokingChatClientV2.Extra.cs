@@ -1,7 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿#pragma warning disable IDE0073 // The file header does not match the required text
 
-// Intended for deletion
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -37,22 +37,22 @@ public partial class FunctionInvokingChatClientV2 : DelegatingChatClient
         /// </summary>
         /// <param name="message">A message that describes the error.</param>
 #if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
 #endif
         [DoesNotReturn]
         public static void InvalidOperationException(string message)
-            => throw new InvalidOperationException(message);
+                => throw new InvalidOperationException(message);
 
         /// <summary>
         /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
         /// </summary>
         /// <param name="paramName">The name of the parameter that caused the exception.</param>
 #if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
 #endif
         [DoesNotReturn]
         public static void ArgumentOutOfRangeException(string paramName)
-            => throw new ArgumentOutOfRangeException(paramName);
+                => throw new ArgumentOutOfRangeException(paramName);
 
         /// <summary>
         /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
@@ -60,11 +60,11 @@ public partial class FunctionInvokingChatClientV2 : DelegatingChatClient
         /// <param name="paramName">The name of the parameter that caused the exception.</param>
         /// <param name="message">A message that describes the error.</param>
 #if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
 #endif
         [DoesNotReturn]
         public static void ArgumentOutOfRangeException(string paramName, string? message)
-            => throw new ArgumentOutOfRangeException(paramName, message);
+                => throw new ArgumentOutOfRangeException(paramName, message);
 
         /// <summary>
         /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
@@ -73,11 +73,11 @@ public partial class FunctionInvokingChatClientV2 : DelegatingChatClient
         /// <param name="actualValue">The value of the argument that caused this exception.</param>
         /// <param name="message">A message that describes the error.</param>
 #if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
 #endif
         [DoesNotReturn]
         public static void ArgumentOutOfRangeException(string paramName, object? actualValue, string? message)
-            => throw new ArgumentOutOfRangeException(paramName, actualValue, message);
+                => throw new ArgumentOutOfRangeException(paramName, actualValue, message);
 
         /// <summary>
         /// Throws an <see cref="System.ArgumentOutOfRangeException"/>  if the specified number is less than min.

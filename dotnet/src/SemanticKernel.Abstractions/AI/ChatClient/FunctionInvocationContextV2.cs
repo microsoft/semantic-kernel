@@ -1,9 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿#pragma warning disable IDE0073 // The file header does not match the required text
+
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Shared.Diagnostics;
+
+#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE0009 // Add this or Me qualification
 
 namespace Microsoft.Extensions.AI;
 
@@ -15,6 +19,7 @@ public partial class FunctionInvocationContextV2
     /// <see cref="FunctionInvocationContext"/> start with this as the target function.
     /// </summary>
     private static readonly AIFunction _nopFunction = AIFunctionFactory.Create(() => { }, nameof(FunctionInvocationContext));
+#pragma warning restore IDE1006 // Naming Styles
 
     /// <summary>The chat contents associated with the operation that initiated this function call request.</summary>
     private IList<ChatMessage> _messages = Array.Empty<ChatMessage>();
