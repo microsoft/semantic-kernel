@@ -2,17 +2,24 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
+using YamlDotNet.RepresentationModel;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Microsoft.SemanticKernel;
 internal class WorkflowBuilder
 {
     private readonly Dictionary<string, ProcessStepBuilder> _stepBuilders = [];
     private readonly Dictionary<string, CloudEvent> _inputEvents = [];
+    private string _yaml;
 
-    public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow)
+    public async Task<KernelProcess?> BuildProcessAsync(Workflow workflow, string yaml)
     {
+        this._yaml = yaml;
         var stepBuilders = new Dictionary<string, ProcessStepBuilder>();
 
         if (workflow.Nodes is null || workflow.Nodes.Count == 0)
@@ -41,6 +48,11 @@ internal class WorkflowBuilder
             }
         }
 
+        if (workflow.Inputs.Messages is not null)
+        {
+            await this.AddInputMessagesEventAsync(processBuilder).ConfigureAwait(false);
+        }
+
         // Process the nodes
         foreach (var step in workflow.Nodes)
         {
@@ -61,6 +73,13 @@ internal class WorkflowBuilder
     private Task AddInputEventAsync(CloudEvent inputEvent, ProcessBuilder processBuilder)
     {
         this._inputEvents[inputEvent.Type] = inputEvent;
+        return Task.CompletedTask;
+    }
+
+    private Task AddInputMessagesEventAsync(ProcessBuilder processBuilder)
+    {
+        string inputMessageEventType = "input_message_received";
+        this._inputEvents[inputMessageEventType] = new CloudEvent() { Type = inputMessageEventType };
         return Task.CompletedTask;
     }
 
@@ -90,12 +109,34 @@ internal class WorkflowBuilder
         }
     }
 
-    private Task<KernelProcessStepInfo> BuildDeclarativeStepAsync(Node node, ProcessBuilder processBuilder)
+    private Task BuildDeclarativeStepAsync(Node node, ProcessBuilder processBuilder)
     {
-        throw new NotImplementedException();
+        // Check for built-in step types
+        if (node.Id.Equals("End", StringComparison.OrdinalIgnoreCase))
+        {
+            var endBuilder = processBuilder.AddEndStep();
+            this._stepBuilders["End"] = endBuilder;
+            return Task.CompletedTask;
+        }
+
+        // get the raw yaml from the node
+        string? rawYaml = this.ExtractRawAgentYaml(node.Id);
+
+        // try to parse the agent yaml into an AgentDefinition
+        var deserializer = new DeserializerBuilder()
+                .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                .IgnoreUnmatchedProperties()
+                .Build();
+
+        var agentDefinition = deserializer.Deserialize<AgentDefinition>(rawYaml);
+
+        var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
+
+        this._stepBuilders[node.Id] = stepBuilder;
+        return Task.CompletedTask;
     }
 
-    private Task<KernelProcessStepInfo> BuildPythonStepAsync(Node node, ProcessBuilder processBuilder)
+    private Task BuildPythonStepAsync(Node node, ProcessBuilder processBuilder)
     {
         throw new KernelException("Python nodes are not supported in the dotnet runtime.");
     }
@@ -315,4 +356,31 @@ internal class WorkflowBuilder
     }
 
     #endregion
+
+    private string ExtractRawAgentYaml(string nodeId)
+    {
+        // Load the YAML into the representation model
+        var input = new StringReader(this._yaml);
+        var yamlStream = new YamlStream();
+        yamlStream.Load(input);
+
+        var rootNode = yamlStream.Documents[0].RootNode;
+        var agentsNode = rootNode["nodes"] as YamlSequenceNode;
+        var agentNode = agentsNode?.Children
+            .OfType<YamlMappingNode>()
+            .FirstOrDefault(node => node["id"]?.ToString() == nodeId);
+
+        if (agentNode is null || !agentNode.Children.TryGetValue("agent", out YamlNode agentNode2))
+        {
+            throw new KernelException("Failed to deserialize workflow.");
+        }
+
+        // Create a serializer
+        var serializer = new SerializerBuilder().Build();
+
+        // Serialize the YamlMappingNode to a string
+        string rawYaml = serializer.Serialize(agentNode2);
+
+        return rawYaml;
+    }
 }

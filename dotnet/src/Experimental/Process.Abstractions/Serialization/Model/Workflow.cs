@@ -153,6 +153,13 @@ public class Inputs
     [YamlMember(Alias = "events")]
     [JsonPropertyName("events")]
     public InputEvents? Events { get; set; }
+
+    /// <summary>
+    /// Gets or sets the messages for the workflow inputs.
+    /// </summary>
+    [YamlMember(Alias = "messages")]
+    [JsonPropertyName("messages")]
+    public Messages? Messages { get; set; }
 }
 
 /// <summary>
@@ -166,6 +173,14 @@ public class InputEvents
     [YamlMember(Alias = "cloud_events")]
     [JsonPropertyName("cloud_events")]
     public List<CloudEvent>? CloudEvents { get; set; }
+}
+
+/// <summary>
+/// Messages for the workflow inputs.
+/// </summary>
+public class Messages
+{
+
 }
 
 /// <summary>

@@ -90,6 +90,17 @@ public class ProcessSerializationTests
         Assert.Equal(aStepDoneEdge.GroupId, bStepDoneEdge.GroupId);
     }
 
+    [Fact]
+    public async Task KernelProcessFromScenario1YamlAsync()
+    {
+        // Arrange
+        var yaml = this.ReadResource("scenario1.yaml");
+        // Act
+        var process = await ProcessBuilder.LoadFromYamlAsync(yaml);
+        // Assert
+        Assert.NotNull(process);
+    }
+
     /// <summary>
     /// Verify that the process can be serialized to YAML and deserialized back to a workflow.
     /// </summary>

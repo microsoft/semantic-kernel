@@ -1,9 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -33,11 +36,13 @@ public static class WorkflowSerializer
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-        var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
+        //var wrapper = deserializer.Deserialize<WorkflowWrapper>(yaml);
+        var workflow = deserializer.Deserialize<Workflow>(yaml);
+        return workflow;
 
-        return wrapper?.Workflow == null
-            ? throw new KernelException("Failed to deserialize provided YAML to a Processes.")
-            : wrapper.Workflow;
+        //return wrapper?.Workflow == null
+        //    ? throw new KernelException("Failed to deserialize provided YAML to a Processes.")
+        //    : wrapper.Workflow;
     }
 
     /// <summary>

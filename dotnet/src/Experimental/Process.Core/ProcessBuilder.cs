@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 using Microsoft.SemanticKernel.Process.Internal;
 using Microsoft.SemanticKernel.Process.Models;
@@ -195,6 +196,35 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     }
 
     /// <summary>
+    /// Adds a step to the process from a declarative agent.
+    /// </summary>
+    /// <param name="agentDefinition"></param>
+    /// <param name="aliases"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public ProcessStepBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
+    {
+        Verify.NotNull(agentDefinition, nameof(agentDefinition));
+        if (string.IsNullOrWhiteSpace(agentDefinition.Id))
+        {
+            throw new ArgumentException("AgentDefinition.Id cannot be null or empty.", nameof(agentDefinition));
+        }
+
+        ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agentDefinition);
+        return this.AddStep(stepBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a step to the process that represents the end of the process.
+    /// </summary>
+    /// <returns></returns>
+    public ProcessStepBuilder AddEndStep()
+    {
+        var stepBuilder = EndStep.Instance;
+        return this.AddStep(stepBuilder, null);
+    }
+
+    /// <summary>
     /// Adds a sub process to the process.
     /// </summary>
     /// <param name="kernelProcess">The process to add as a step.</param>
@@ -369,7 +399,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         {
             var workflow = WorkflowSerializer.DeserializeFromYaml(yaml);
             var builder = new WorkflowBuilder();
-            var process = await builder.BuildProcessAsync(workflow).ConfigureAwait(false);
+            var process = await builder.BuildProcessAsync(workflow, yaml).ConfigureAwait(false);
 
             return process;
         }
