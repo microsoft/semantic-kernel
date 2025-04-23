@@ -20,6 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Connectors\Connectors.OpenAI\Connectors.OpenAI.csproj" />
     <ProjectReference Include="..\..\SemanticKernel.Core\SemanticKernel.Core.csproj" />
   </ItemGroup>
 
