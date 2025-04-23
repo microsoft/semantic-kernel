@@ -47,10 +47,10 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
         var mem0Component = new Mem0MemoryComponent(httpClient, new() { UserId = "U1" });
 
         var agentThread1 = new ChatHistoryAgentThread();
-        agentThread1.StateExtensions.Add(mem0Component);
+        agentThread1.StateParts.Add(mem0Component);
 
         var agentThread2 = new ChatHistoryAgentThread();
-        agentThread2.StateExtensions.Add(mem0Component);
+        agentThread2.StateParts.Add(mem0Component);
 
         // Act
         var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hello, my name is Caoimhe."), agentThread1);
@@ -75,10 +75,10 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
         var memoryComponent = new UserFactsMemoryComponent(this.Fixture.Agent.Kernel);
 
         var agentThread1 = new ChatHistoryAgentThread();
-        agentThread1.StateExtensions.Add(memoryComponent);
+        agentThread1.StateParts.Add(memoryComponent);
 
         var agentThread2 = new ChatHistoryAgentThread();
-        agentThread2.StateExtensions.Add(memoryComponent);
+        agentThread2.StateParts.Add(memoryComponent);
 
         // Act
         var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hello, my name is Caoimhe."), agentThread1);
@@ -109,14 +109,14 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Act - First invocation with first thread.
         var agentThread1 = new ChatHistoryAgentThread();
-        agentThread1.StateExtensions.Add(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
+        agentThread1.StateParts.Add(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
 
         var asyncResults1 = agent.InvokeAsync("Hello, my name is Caoimhe.", agentThread1);
         var results1 = await asyncResults1.ToListAsync();
 
         // Act - Second invocation with second thread.
         var agentThread2 = new ChatHistoryAgentThread();
-        agentThread2.StateExtensions.Add(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
+        agentThread2.StateParts.Add(new UserFactsMemoryComponent(this.Fixture.Agent.Kernel, textMemoryStore));
 
         var asyncResults2 = agent.InvokeAsync("What is my name?.", agentThread2);
         var results2 = await asyncResults2.ToListAsync();
@@ -151,11 +151,11 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
             sp.GetRequiredService<IVectorStore>(),
             sp.GetRequiredService<ITextEmbeddingGenerationService>(),
             "Memories", "user/12345", 1536));
-        builder.Services.AddTransient<ConversationStateExtension, UserFactsMemoryComponent>();
+        builder.Services.AddTransient<ConversationStatePart, UserFactsMemoryComponent>();
         builder.Services.AddTransient<AgentThread>((sp) =>
         {
             var thread = new ChatHistoryAgentThread();
-            thread.StateExtensions.AddFromServiceProvider(sp);
+            thread.StateParts.AddFromServiceProvider(sp);
             return thread;
         });
         var host = builder.Build();
@@ -209,7 +209,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Act - Create a new agent thread and register the Rag component
         var agentThread = new ChatHistoryAgentThread();
-        agentThread.StateExtensions.Add(ragComponent);
+        agentThread.StateParts.Add(ragComponent);
 
         // Act - Invoke the agent with a question
         var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
@@ -242,7 +242,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Act - Create a new agent thread and register the Rag component
         var agentThread = new ChatHistoryAgentThread();
-        agentThread.StateExtensions.Add(ragComponent);
+        agentThread.StateParts.Add(ragComponent);
 
         // Act - Invoke the agent with a question
         var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread);
@@ -281,7 +281,7 @@ public class ChatCompletionAgentWithMemoryTests() : AgentWithMemoryTests<ChatCom
 
         // Act - Create a new agent thread and register the Rag component
         var agentThread = new ChatHistoryAgentThread();
-        agentThread.StateExtensions.Add(ragComponent);
+        agentThread.StateParts.Add(ragComponent);
 
         // Act - Invoke the agent with a question
         var asyncResults1 = agent.InvokeAsync("What was the income of Contoso for 2023", agentThread, new() { KernelArguments = new KernelArguments(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }) });

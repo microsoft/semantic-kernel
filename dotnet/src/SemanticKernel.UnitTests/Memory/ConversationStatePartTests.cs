@@ -10,18 +10,18 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Contains tests for the <see cref="ConversationStateExtension"/> class.
+/// Contains tests for the <see cref="ConversationStatePart"/> class.
 /// </summary>
-public class ConversationStateExtensionTests
+public class ConversationStatePartTests
 {
     [Fact]
     public void AIFunctionsBaseImplementationIsEmpty()
     {
         // Arrange.
-        var mockExtension = new Mock<ConversationStateExtension>() { CallBase = true };
+        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
 
         // Act.
-        var functions = mockExtension.Object.AIFunctions;
+        var functions = mockPart.Object.AIFunctions;
 
         // Assert.
         Assert.NotNull(functions);
@@ -32,50 +32,50 @@ public class ConversationStateExtensionTests
     public async Task OnThreadCreatedBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockExtension = new Mock<ConversationStateExtension>() { CallBase = true };
+        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
 
         // Act & Assert.
-        await mockExtension.Object.OnThreadCreatedAsync("threadId", CancellationToken.None);
+        await mockPart.Object.OnThreadCreatedAsync("threadId", CancellationToken.None);
     }
 
     [Fact]
     public async Task OnNewMessageBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockExtension = new Mock<ConversationStateExtension>() { CallBase = true };
+        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
         var newMessage = new ChatMessage(ChatRole.User, "Hello");
 
         // Act & Assert.
-        await mockExtension.Object.OnNewMessageAsync("threadId", newMessage, CancellationToken.None);
+        await mockPart.Object.OnNewMessageAsync("threadId", newMessage, CancellationToken.None);
     }
 
     [Fact]
     public async Task OnThreadDeleteBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockExtension = new Mock<ConversationStateExtension>() { CallBase = true };
+        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
 
         // Act & Assert.
-        await mockExtension.Object.OnThreadDeleteAsync("threadId", CancellationToken.None);
+        await mockPart.Object.OnThreadDeleteAsync("threadId", CancellationToken.None);
     }
 
     [Fact]
     public async Task OnSuspendBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockExtension = new Mock<ConversationStateExtension>() { CallBase = true };
+        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
 
         // Act & Assert.
-        await mockExtension.Object.OnSuspendAsync("threadId", CancellationToken.None);
+        await mockPart.Object.OnSuspendAsync("threadId", CancellationToken.None);
     }
 
     [Fact]
     public async Task OnResumeBaseImplementationSucceeds()
     {
         // Arrange.
-        var mockExtension = new Mock<ConversationStateExtension>() { CallBase = true };
+        var mockPart = new Mock<ConversationStatePart>() { CallBase = true };
 
         // Act & Assert.
-        await mockExtension.Object.OnResumeAsync("threadId", CancellationToken.None);
+        await mockPart.Object.OnResumeAsync("threadId", CancellationToken.None);
     }
 }

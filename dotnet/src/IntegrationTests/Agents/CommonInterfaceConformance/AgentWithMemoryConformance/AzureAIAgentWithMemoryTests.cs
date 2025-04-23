@@ -28,10 +28,10 @@ public class AzureAIAgentWithMemoryTests() : AgentWithMemoryTests<AzureAIAgentFi
         var mem0Component = new Mem0MemoryComponent(httpClient, new() { UserId = "U1" });
 
         var agentThread1 = new AzureAIAgentThread(this.Fixture.AgentsClient);
-        agentThread1.StateExtensions.Add(mem0Component);
+        agentThread1.StateParts.Add(mem0Component);
 
         var agentThread2 = new AzureAIAgentThread(this.Fixture.AgentsClient);
-        agentThread2.StateExtensions.Add(mem0Component);
+        agentThread2.StateParts.Add(mem0Component);
 
         // Act
         var asyncResults1 = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, "Hello, my name is Caoimhe."), agentThread1);

@@ -15,7 +15,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// A component that does a search based on any messages that the AI is invoked with and injects the results into the AI invocation context.
 /// </summary>
-public class TextRagComponent : ConversationStateExtension
+public class TextRagComponent : ConversationStatePart
 {
     private readonly ITextSearch _textSearch;
 

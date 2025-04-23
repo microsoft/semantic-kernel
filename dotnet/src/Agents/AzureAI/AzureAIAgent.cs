@@ -190,8 +190,8 @@ public sealed partial class AzureAIAgent : Agent
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await azureAIAgentThread.StateExtensions.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        azureAIAgentThread.StateExtensions.RegisterPlugins(kernel);
+        var extensionsContext = await azureAIAgentThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        azureAIAgentThread.StateParts.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var extensionsContextOptions = options is null ?
@@ -319,8 +319,8 @@ public sealed partial class AzureAIAgent : Agent
 
         // Get the conversation state extensions context contributions and register plugins from the extensions.
 #pragma warning disable SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        var extensionsContext = await azureAIAgentThread.StateExtensions.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
-        azureAIAgentThread.StateExtensions.RegisterPlugins(kernel);
+        var extensionsContext = await azureAIAgentThread.StateParts.OnModelInvokeAsync(messages, cancellationToken).ConfigureAwait(false);
+        azureAIAgentThread.StateParts.RegisterPlugins(kernel);
 #pragma warning restore SKEXP0110 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         var extensionsContextOptions = options is null ?

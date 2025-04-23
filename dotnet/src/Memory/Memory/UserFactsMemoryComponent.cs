@@ -13,7 +13,7 @@ namespace Microsoft.SemanticKernel.Agents.Memory;
 /// A memory component that can retrieve, maintain and store user facts that
 /// are learned from the user's interactions with the agent.
 /// </summary>
-public class UserFactsMemoryComponent : ConversationStateExtension
+public class UserFactsMemoryComponent : ConversationStatePart
 {
     private readonly Kernel _kernel;
     private readonly TextMemoryStore _textMemoryStore;
