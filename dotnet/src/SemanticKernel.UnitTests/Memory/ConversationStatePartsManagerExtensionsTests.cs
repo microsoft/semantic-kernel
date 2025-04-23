@@ -12,17 +12,17 @@ using Xunit;
 namespace SemanticKernel.UnitTests.Memory;
 
 /// <summary>
-/// Tests for the ConversationStateExtensionsManagerExtensions class.
+/// Tests for the ConversationStatePartsManagerExtensions class.
 /// </summary>
-public class ConversationStateExtensionsManagerExtensionsTests
+public class ConversationStatePartsManagerExtensionsTests
 {
     [Fact]
-    public async Task OnNewMessageShouldConvertMessageAndInvokeRegisteredExtensionsAsync()
+    public async Task OnNewMessageShouldConvertMessageAndInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new ConversationStateExtensionsManager();
-        var extensionMock = new Mock<ConversationStateExtension>();
-        manager.Add(extensionMock.Object);
+        var manager = new ConversationStatePartsManager();
+        var partMock = new Mock<ConversationStatePart>();
+        manager.Add(partMock.Object);
 
         var newMessage = new ChatMessageContent(AuthorRole.User, "Test Message");
 
@@ -30,16 +30,16 @@ public class ConversationStateExtensionsManagerExtensionsTests
         await manager.OnNewMessageAsync("test-thread-id", newMessage);
 
         // Assert
-        extensionMock.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(m => m.Text == "Test Message" && m.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
+        partMock.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(m => m.Text == "Test Message" && m.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task OnAIInvocationShouldConvertMessagesInvokeRegisteredExtensionsAsync()
+    public async Task OnAIInvocationShouldConvertMessagesInvokeRegisteredPartsAsync()
     {
         // Arrange
-        var manager = new ConversationStateExtensionsManager();
-        var extensionMock = new Mock<ConversationStateExtension>();
-        manager.Add(extensionMock.Object);
+        var manager = new ConversationStatePartsManager();
+        var partMock = new Mock<ConversationStatePart>();
+        manager.Add(partMock.Object);
 
         var messages = new List<ChatMessageContent>
         {
@@ -47,7 +47,7 @@ public class ConversationStateExtensionsManagerExtensionsTests
             new(AuthorRole.Assistant, "Message 2")
         };
 
-        extensionMock
+        partMock
             .Setup(x => x.OnModelInvokeAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("Combined Context");
 
@@ -56,7 +56,7 @@ public class ConversationStateExtensionsManagerExtensionsTests
 
         // Assert
         Assert.Equal("Combined Context", result);
-        extensionMock.Verify(x => x.OnModelInvokeAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
+        partMock.Verify(x => x.OnModelInvokeAsync(It.Is<ICollection<ChatMessage>>(m => m.Count == 2), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -64,13 +64,13 @@ public class ConversationStateExtensionsManagerExtensionsTests
     {
         // Arrange
         var kernel = new Kernel();
-        var manager = new ConversationStateExtensionsManager();
-        var extensionMock = new Mock<ConversationStateExtension>();
+        var manager = new ConversationStatePartsManager();
+        var partMock = new Mock<ConversationStatePart>();
         var aiFunctionMock = AIFunctionFactory.Create(() => "Hello", "TestFunction");
-        extensionMock
+        partMock
             .Setup(x => x.AIFunctions)
             .Returns(new List<AIFunction> { aiFunctionMock });
-        manager.Add(extensionMock.Object);
+        manager.Add(partMock.Object);
 
         // Act
         manager.RegisterPlugins(kernel);

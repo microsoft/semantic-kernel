@@ -174,94 +174,94 @@ public class AgentThreadTests
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnSuspendAsync(CancellationToken)"/> method
-    /// calls each registered extension in turn.
+    /// calls each registered state part in turn.
     /// </summary>
     [Fact]
-    public async Task OnSuspendShouldCallOnSuspendOnRegisteredExtensionsAsync()
+    public async Task OnSuspendShouldCallOnSuspendOnRegisteredPartsAsync()
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockExtension = new Mock<ConversationStateExtension>();
-        thread.StateExtensions.Add(mockExtension.Object);
+        var mockPart = new Mock<ConversationStatePart>();
+        thread.StateParts.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
         await thread.OnSuspendAsync();
 
         // Assert.
-        mockExtension.Verify(x => x.OnSuspendAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.OnSuspendAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method
-    /// calls each registered extension in turn.
+    /// calls each registered state part in turn.
     /// </summary>
     [Fact]
-    public async Task OnResumeShouldCallOnResumeOnRegisteredExtensionsAsync()
+    public async Task OnResumeShouldCallOnResumeOnRegisteredPartsAsync()
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockExtension = new Mock<ConversationStateExtension>();
-        thread.StateExtensions.Add(mockExtension.Object);
+        var mockPart = new Mock<ConversationStatePart>();
+        thread.StateParts.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
         await thread.OnResumeAsync();
 
         // Assert.
-        mockExtension.Verify(x => x.OnResumeAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.OnResumeAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.CreateAsync(CancellationToken)"/> method
-    /// calls each registered extension in turn.
+    /// calls each registered state parts in turn.
     /// </summary>
     [Fact]
-    public async Task CreateShouldCallOnThreadCreatedOnRegisteredExtensionsAsync()
+    public async Task CreateShouldCallOnThreadCreatedOnRegisteredPartsAsync()
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockExtension = new Mock<ConversationStateExtension>();
-        thread.StateExtensions.Add(mockExtension.Object);
+        var mockPart = new Mock<ConversationStatePart>();
+        thread.StateParts.Add(mockPart.Object);
 
         // Act.
         await thread.CreateAsync();
 
         // Assert.
-        mockExtension.Verify(x => x.OnThreadCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.OnThreadCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.DeleteAsync(CancellationToken)"/> method
-    /// calls each registered extension in turn.
+    /// calls each registered state parts in turn.
     /// </summary>
     [Fact]
-    public async Task DeleteShouldCallOnThreadDeleteOnRegisteredExtensionsAsync()
+    public async Task DeleteShouldCallOnThreadDeleteOnRegisteredPartsAsync()
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockExtension = new Mock<ConversationStateExtension>();
-        thread.StateExtensions.Add(mockExtension.Object);
+        var mockPart = new Mock<ConversationStatePart>();
+        thread.StateParts.Add(mockPart.Object);
         await thread.CreateAsync();
 
         // Act.
         await thread.DeleteAsync();
 
         // Assert.
-        mockExtension.Verify(x => x.OnThreadDeleteAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.OnThreadDeleteAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnNewMessageAsync(ChatMessageContent, CancellationToken)"/> method
-    /// calls each registered extension in turn.
+    /// calls each registered state part in turn.
     /// </summary>
     [Fact]
-    public async Task OnNewMessageShouldCallOnNewMessageOnRegisteredExtensionsAsync()
+    public async Task OnNewMessageShouldCallOnNewMessageOnRegisteredPartsAsync()
     {
         // Arrange.
         var thread = new TestAgentThread();
-        var mockExtension = new Mock<ConversationStateExtension>();
-        thread.StateExtensions.Add(mockExtension.Object);
+        var mockPart = new Mock<ConversationStatePart>();
+        thread.StateParts.Add(mockPart.Object);
         var message = new ChatMessageContent(AuthorRole.User, "Test Message.");
 
         await thread.CreateAsync();
@@ -270,7 +270,7 @@ public class AgentThreadTests
         await thread.OnNewMessageAsync(message);
 
         // Assert.
-        mockExtension.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
+        mockPart.Verify(x => x.OnNewMessageAsync("test-thread-id", It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class TestAgentThread : AgentThread

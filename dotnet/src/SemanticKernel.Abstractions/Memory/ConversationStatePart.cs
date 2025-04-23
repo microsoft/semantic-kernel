@@ -10,18 +10,18 @@ using Microsoft.Extensions.AI;
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
-/// Base class for all conversation state extensions.
+/// Base class for all conversation state parts.
 /// </summary>
 /// <remarks>
-/// A conversation state extension is a component that can be used to store additional state related
+/// A conversation state part is a component that can be used to store additional state related
 /// to a conversation, listen to changes in the conversation state, and provide additional context to
 /// the AI model in use just before invocation.
 /// </remarks>
 [Experimental("SKEXP0130")]
-public abstract class ConversationStateExtension
+public abstract class ConversationStatePart
 {
     /// <summary>
-    /// Gets the list of AI functions that this extension component exposes
+    /// Gets the list of AI functions that this component exposes
     /// and which should be used by the consuming AI when using this component.
     /// </summary>
     public virtual IReadOnlyCollection<AIFunction> AIFunctions => Array.Empty<AIFunction>();
