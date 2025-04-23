@@ -17,6 +17,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
 /// </summary>
 [Experimental("SKEXP0130")]
+[ExcludeFromCodeCoverage] // Tested via integration tests.
 public class Mem0MemoryComponent : ConversationStatePart
 {
     private readonly string? _applicationId;
