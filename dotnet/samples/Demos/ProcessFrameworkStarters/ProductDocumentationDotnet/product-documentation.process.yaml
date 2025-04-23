@@ -1,0 +1,43 @@
+workflow:
+  name: ProductDocumentation
+  nodes:
+    - id: GetProductInfoStep
+      description: Gather information about the product
+      implementation: GetProductInfoStep
+      on_complete:
+        - on_condition:
+            type: default
+            emits:
+              - event_type: GetProductInfo.OnResult
+    - id: GenerateDocumentationStep
+      description: Generate documentation for the product with LLM
+      implementation: GenerateDocumentationStep
+      on_complete:
+        - on_condition:
+            type: default
+            emits:
+              - event_type: GenerateDocumentation.OnResult
+              - event_type: DocumentationGenerated
+    - id: PublishDocumentationStep
+      description: Publish the documentation
+      implementation: PublishDocumentationStep
+      on_complete:
+        - on_condition:
+            type: default
+            emits:
+              - event_type: ProcessCompleted
+  orchestration:
+    - listen_for:
+        event: InputMessageReceived
+      then:
+        - node: GetProductInfoStep
+    - listen_for:
+        event: GetProductInfo.OnResult
+        from: GetProductInfoStep
+      then:
+        - node: GenerateDocumentationStep
+    - listen_for:
+        event: DocumentationGenerated
+        from: GenerateDocumentationStep
+      then:
+        - node: PublishDocumentationStep
