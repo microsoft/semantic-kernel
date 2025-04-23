@@ -27,11 +27,7 @@ nodes:
       Question:
         type: messages
     on_invoke:
-      emits:
-      updates:
     on_error:
-      emits:
-      updates:
     on_complete:
       - on_condition:
           type: default
@@ -53,11 +49,7 @@ nodes:
       Answer:
         type: messages
     on_invoke:
-      emits:
-      updates:
     on_error:
-      emits:
-      updates:
     on_complete:
       - on_condition:
           type: default

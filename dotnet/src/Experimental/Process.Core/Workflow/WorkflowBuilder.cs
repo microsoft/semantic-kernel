@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Process;
 using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -131,6 +132,30 @@ internal class WorkflowBuilder
         var agentDefinition = deserializer.Deserialize<AgentDefinition>(rawYaml);
 
         var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
+        if (stepBuilder is not ProcessAgentBuilder agentBuilder)
+        {
+            throw new KernelException($"Failed to build step from agent definition: {node.Id}");
+        }
+
+        if (node.OnComplete != null)
+        {
+            if (node.OnComplete.Any(c => c is null || c.OnCondition is null))
+            {
+                throw new ArgumentException("A complete on_complete condition is required for declarative steps.");
+            }
+
+            agentBuilder.OnComplete([.. node.OnComplete.Select(c => c.OnCondition!)]);
+        }
+
+        if (node.OnError != null)
+        {
+            if (node.OnError.Any(c => c is null || c.OnCondition is null))
+            {
+                throw new ArgumentException("A complete on_complete condition is required for declarative steps.");
+            }
+
+            agentBuilder.OnComplete([.. node.OnError.Select(c => c.OnCondition!)]);
+        }
 
         this._stepBuilders[node.Id] = stepBuilder;
         return Task.CompletedTask;

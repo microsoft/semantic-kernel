@@ -27,4 +27,14 @@ public record KernelProcessAgentStep : KernelProcessStepInfo
     /// The agent definition associated with this step.
     /// </summary>
     public AgentDefinition AgentDefinition { get; init; }
+
+    /// <summary>
+    /// The optional handler group for OnComplete events.
+    /// </summary>
+    public KernelProcessDeclarativeConditionHandler? OnComplete { get; init; }
+
+    /// <summary>
+    /// The optional handler group for OnError events.
+    /// </summary>
+    public KernelProcessDeclarativeConditionHandler? OnError { get; init; }
 }

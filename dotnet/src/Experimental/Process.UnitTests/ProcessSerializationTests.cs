@@ -90,6 +90,10 @@ public class ProcessSerializationTests
         Assert.Equal(aStepDoneEdge.GroupId, bStepDoneEdge.GroupId);
     }
 
+    /// <summary>
+    /// Verify initialization of <see cref="KernelProcessState"/> from a YAML file that contains foundry_agents
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task KernelProcessFromScenario1YamlAsync()
     {

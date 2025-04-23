@@ -410,21 +410,21 @@ public class Node
     /// </summary>
     [YamlMember(Alias = "on_invoke")]
     [JsonPropertyName("on_invoke")]
-    public NodeHook? OnInvoke { get; set; }
+    public List<OnEventAction>? OnInvoke { get; set; }
 
     /// <summary>
     /// Gets or sets the on error hook of the node.
     /// </summary>
     [YamlMember(Alias = "on_error")]
     [JsonPropertyName("on_error")]
-    public NodeHook? OnError { get; set; }
+    public List<OnEventAction>? OnError { get; set; }
 
     /// <summary>
     /// Gets or sets the on complete actions of the node.
     /// </summary>
     [YamlMember(Alias = "on_complete")]
     [JsonPropertyName("on_complete")]
-    public List<OnCompleteAction>? OnComplete { get; set; }
+    public List<OnEventAction>? OnComplete { get; set; }
 }
 
 /// <summary>
@@ -480,43 +480,43 @@ public class SchemaReference
     public string? Ref { get; set; }
 }
 
-/// <summary>
-/// Hook for the node.
-/// </summary>
-public class NodeHook
-{
-    /// <summary>
-    /// Gets or sets the events emitted by the hook.
-    /// </summary>
-    [YamlMember(Alias = "emits")]
-    [JsonPropertyName("emits")]
-    public List<EventEmission>? Emits { get; set; }
+///// <summary>
+///// Hook for the node.
+///// </summary>
+//public class NodeHook
+//{
+//    /// <summary>
+//    /// Gets or sets the events emitted by the hook.
+//    /// </summary>
+//    [YamlMember(Alias = "emits")]
+//    [JsonPropertyName("emits")]
+//    public List<EventEmission>? Emits { get; set; }
 
-    /// <summary>
-    /// Gets or sets the variable updates by the hook.
-    /// </summary>
-    [YamlMember(Alias = "updates")]
-    [JsonPropertyName("updates")]
-    public List<VariableUpdate>? Updates { get; set; }
-}
+//    /// <summary>
+//    /// Gets or sets the variable updates by the hook.
+//    /// </summary>
+//    [YamlMember(Alias = "updates")]
+//    [JsonPropertyName("updates")]
+//    public List<VariableUpdate>? Updates { get; set; }
+//}
 
 /// <summary>
 /// Action to be taken on completion.
 /// </summary>
-public class OnCompleteAction
+public class OnEventAction
 {
     /// <summary>
     /// Gets or sets the condition for the action.
     /// </summary>
     [YamlMember(Alias = "on_condition")]
     [JsonPropertyName("on_condition")]
-    public Condition? OnCondition { get; set; }
+    public DeclarativeProcessCondition? OnCondition { get; set; }
 }
 
 /// <summary>
 /// Condition for an action.
 /// </summary>
-public class Condition
+public class DeclarativeProcessCondition
 {
     /// <summary>
     /// Gets or sets the type of the condition.
