@@ -83,7 +83,7 @@ mcp = [
     "mcp ~= 1.6"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.12",
+    "pymongo >= 4.8.0, < 4.13",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
