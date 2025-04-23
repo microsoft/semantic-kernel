@@ -250,7 +250,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(requestContent);
         var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("fabric_aiskill", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+        Assert.Equal("fabric_dataagent", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
 
     /// <summary>
