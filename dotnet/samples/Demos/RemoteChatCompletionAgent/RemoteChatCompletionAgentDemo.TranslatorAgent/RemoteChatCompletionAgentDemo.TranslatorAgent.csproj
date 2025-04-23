@@ -21,4 +21,4 @@
       Include="..\..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
   </ItemGroup>
 
-</Project>;
+</Project>
