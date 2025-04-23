@@ -130,7 +130,4 @@ public class AIFunctionArgumentsV2 : IDictionary<string, object?>, IReadOnlyDict
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <summary>Gets the comparer used by the underlying dictionary.</summary>
-    protected IEqualityComparer<string> Comparer => _arguments.Comparer;
 }
