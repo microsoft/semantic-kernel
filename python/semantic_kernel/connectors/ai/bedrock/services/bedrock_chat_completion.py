@@ -131,9 +131,12 @@ class BedrockChatCompletion(BedrockBase, ChatCompletionClientBase):
         function_invoke_attempt: int = 0,
     ) -> AsyncGenerator[list["StreamingChatMessageContent"], Any]:
         # Not all models support streaming: check if the model supports streaming before proceeding
-        model_info = await self.get_foundation_model_info(self.ai_model_id)
-        if not model_info.get("responseStreamingSupported"):
-            raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support streaming.")
+        # Disabling this check because it throws an error for Claude Sonnet 3.5 model_id
+        # even though the model supports streaming
+
+        #model_info = await self.get_foundation_model_info(self.ai_model_id)
+        #if not model_info.get("responseStreamingSupported"):
+        #    raise ServiceInvalidRequestError(f"The model {self.ai_model_id} does not support streaming.")
 
         if not isinstance(settings, BedrockChatPromptExecutionSettings):
             settings = self.get_prompt_execution_settings_from_settings(settings)
