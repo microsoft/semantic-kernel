@@ -496,8 +496,9 @@ class Kernel(KernelFilterExtension, KernelFunctionExtension, KernelServicesExten
         Note: The same service clients are used in the new instance, so if you mutate the service clients
         in the new instance, the original instance will be affected as well.
 
-        A new list of plugins and filters are created, so if you mutate them in the new instance.
-        A new `ai_service_selector` is created, so if you mutate it in the new instance,
+        New lists of plugins and filters are created. It will not affect the original lists when the new instance
+        is mutated. A new `ai_service_selector` is created. It will not affect the original instance when the new
+        instance is mutated.
         """
         return Kernel(
             plugins=deepcopy(self.plugins),
