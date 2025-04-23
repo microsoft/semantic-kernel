@@ -107,7 +107,6 @@ public sealed class GoogleAIGeminiChatCompletionServiceTests : IDisposable
         }
     }
 
-
     public void Dispose()
     {
         this._httpClient.Dispose();
