@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Client for the Mem0 memory service.
 /// </summary>
+[ExcludeFromCodeCoverage] // Tested via integration tests.
 internal sealed class Mem0Client
 {
     private static readonly Uri s_searchUri = new("/v1/memories/search/", UriKind.Relative);

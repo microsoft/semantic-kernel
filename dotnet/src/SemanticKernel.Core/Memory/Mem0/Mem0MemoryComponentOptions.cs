@@ -8,6 +8,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Options for the <see cref="Mem0MemoryComponent"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
+[ExcludeFromCodeCoverage] // Tested via integration tests.
 public class Mem0MemoryComponentOptions
 {
     /// <summary>
