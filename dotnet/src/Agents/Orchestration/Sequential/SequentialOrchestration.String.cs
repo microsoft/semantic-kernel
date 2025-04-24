@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
 /// An orchestration that passes the input message to the first agent, and
 /// then the subsequent result to the next agent, etc...
 /// </summary>
-public sealed partial class SequentialOrchestration : SequentialOrchestration<string, string>
+public sealed class SequentialOrchestration : SequentialOrchestration<string, string>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SequentialOrchestration"/> class.

@@ -16,9 +16,33 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
     public async Task SimpleConcurrentAsync()
     {
         // Define the agents
-        ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
-        ChatCompletionAgent agent2 = this.CreateAgent("Analyze the previous message to determine count of vowels.  ALWAYS report the count using numeric digits formatted as:\nVowels: <digits>");
-        ChatCompletionAgent agent3 = this.CreateAgent("Analyze the previous message to determine count of consonants.  ALWAYS report the count using numeric digits formatted as:\nConsonants: <digits>");
+        ChatCompletionAgent agent1 =
+            this.CreateAgent(
+                instructions:
+                """                
+                Analyze the previous message to determine count of words.
+
+                ALWAYS report the count using numeric digits formatted as: Words: <digits>                
+                """,
+                description: "Able to count the number of words in a message");
+        ChatCompletionAgent agent2 =
+            this.CreateAgent(
+                instructions:
+                """                
+                Analyze the previous message to determine count of vowels.
+
+                ALWAYS report the count using numeric digits formatted as: Vowels: <digits>                
+                """,
+                description: "Able to count the number of vowels in a message");
+        ChatCompletionAgent agent3 =
+            this.CreateAgent(
+                instructions:
+                """                
+                Analyze the previous message to determine count of consonants.
+
+                ALWAYS report the count using numeric digits formatted as: Consonants: <digits>                
+                """,
+                description: "Able to count the number of consonants in a message");
 
         // Define the pattern
         InProcessRuntime runtime = new();

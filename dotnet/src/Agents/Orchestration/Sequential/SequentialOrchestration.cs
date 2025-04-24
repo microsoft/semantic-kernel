@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,11 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
     /// <inheritdoc />
     protected override async ValueTask StartAsync(TopicId topic, SequentialMessage input, AgentType? entryAgent)
     {
-        await this.Runtime.SendMessageAsync(input, entryAgent!.Value).ConfigureAwait(false); // NULL OVERRIDE
+        if (!entryAgent.HasValue)
+        {
+            throw new ArgumentException("Entry agent is not defined.", nameof(entryAgent));
+        }
+        await this.Runtime.SendMessageAsync(input, entryAgent.Value).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

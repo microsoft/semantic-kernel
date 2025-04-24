@@ -10,7 +10,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// An orchestration that broadcasts the input message to each agent.
 /// </summary>
-public sealed partial class GroupChatOrchestration : GroupChatOrchestration<string, string>
+public sealed class GroupChatOrchestration : GroupChatOrchestration<string, string>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatOrchestration"/> class.

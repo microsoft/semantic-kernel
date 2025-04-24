@@ -11,16 +11,28 @@ namespace GettingStarted.Orchestration;
 /// <summary>
 /// Demonstrates how to nest an orchestration within another orchestration.
 /// </summary>
-public class Step04_Nested(ITestOutputHelper output) : BaseOrchestrationTest(output)
+public class Step05_Nested(ITestOutputHelper output) : BaseOrchestrationTest(output)
 {
     [Fact]
     public async Task NestConcurrentGroupsAsync()
     {
         // Define the agents
-        ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
-        ChatCompletionAgent agent2 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 2");
-        ChatCompletionAgent agent3 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 3");
-        ChatCompletionAgent agent4 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 4");
+        ChatCompletionAgent agent1 =
+            this.CreateAgent(
+                instructions: "When the input is a number, N, respond with a number that is N + 1",
+                description: "Increments the current value by +1");
+        ChatCompletionAgent agent2 =
+            this.CreateAgent(
+                instructions: "When the input is a number, N, respond with a number that is N + 2",
+                description: "Increments the current value by +2");
+        ChatCompletionAgent agent3 =
+            this.CreateAgent(
+                instructions: "When the input is a number, N, respond with a number that is N + 3",
+                description: "Increments the current value by +3");
+        ChatCompletionAgent agent4 =
+            this.CreateAgent(
+                instructions: "When the input is a number, N, respond with a number that is N + 4",
+                description: "Increments the current value by +4");
 
         // Define the pattern
         InProcessRuntime runtime = new();
