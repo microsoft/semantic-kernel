@@ -34,16 +34,6 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
     }
 
     /// <summary>
-    /// Gets the name of the orchestration.
-    /// </summary>
-    public string Name { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Gets the description of the orchestration.
-    /// </summary>
-    public string Description { get; init; } = string.Empty;
-
-    /// <summary>
     /// Gets the associated logger.
     /// </summary>
     public ILoggerFactory LoggerFactory { get; init; } = NullLoggerFactory.Instance;
@@ -196,7 +186,7 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
                 this.FormatAgentType(topic, "Boot"),
                 (agentId, runtime) =>
                     ValueTask.FromResult<IHostableAgent>(
-                        new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), loggerFactory.CreateLogger<RequestActor>()))
+                        new RequestActor(agentId, runtime, this._orchestrationRoot, this.InputTransform, (TSource source) => this.StartAsync(topic, source, entryAgent), completion, loggerFactory.CreateLogger<RequestActor>()))
             ).ConfigureAwait(false);
 
         logger.LogOrchestrationRegistrationDone(this._orchestrationRoot, topic);

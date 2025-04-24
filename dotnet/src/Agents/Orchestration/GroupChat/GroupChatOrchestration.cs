@@ -15,17 +15,30 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 public class GroupChatOrchestration<TInput, TOutput> :
     AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
 {
+    internal const string DefaultAgentDescription = "A helpful agent.";
+
     internal static readonly string OrchestrationName = typeof(GroupChatOrchestration<,>).Name.Split('`').First();
+
+    private readonly GroupChatStrategy _strategy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="strategy">The strategy that determines how the chat shall proceed.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public GroupChatOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+    public GroupChatOrchestration(IAgentRuntime runtime, GroupChatStrategy strategy, params OrchestrationTarget[] agents)
         : base(OrchestrationName, runtime, agents)
     {
+        Verify.NotNull(strategy, nameof(strategy));
+
+        this._strategy = strategy;
     }
+
+    /// <summary>
+    /// Defines how the group-chat is translated into the orchestration result (or handoff).
+    /// </summary>
+    public ChatHandoff Handoff { get; init; } = ChatHandoff.Default;
 
     /// <inheritdoc />
     protected override ValueTask StartAsync(TopicId topic, ChatMessages.InputTask input, AgentType? entryAgent)
@@ -45,16 +58,22 @@ public class GroupChatOrchestration<TInput, TOutput> :
             ++agentCount;
 
             AgentType memberType = default;
+            string? name = null;
+            string? description = null;
             if (member.IsAgent(out Agent? agent))
             {
                 memberType = await RegisterAgentAsync(agent).ConfigureAwait(false);
+                description = agent.Description;
+                name = agent.Name ?? agent.Id;
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
                 memberType = await orchestration.RegisterAsync(topic, managerType, loggerFactory).ConfigureAwait(false);
+                description = orchestration.Description;
+                name = orchestration.Name;
             }
 
-            team[memberType] = (memberType, "an agent"); // %%% DESCRIPTION & NAME ID
+            team[memberType] = (name ?? memberType, description ?? DefaultAgentDescription);
 
             logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
 
@@ -65,7 +84,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic, loggerFactory.CreateLogger<GroupChatManagerActor>()))).ConfigureAwait(false);
+                    new GroupChatManagerActor(agentId, runtime, team, orchestrationType, topic, this._strategy, this.Handoff, loggerFactory.CreateLogger<GroupChatManagerActor>()))).ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationName, managerType, "MANAGER");
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);

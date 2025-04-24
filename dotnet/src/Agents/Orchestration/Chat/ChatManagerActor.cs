@@ -26,6 +26,7 @@ public abstract class ChatManagerActor :
 
     private readonly AgentType _orchestrationType;
     private readonly TopicId _groupTopic;
+    private readonly ChatHandoff _handoff;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatManagerActor"/> class.
@@ -35,14 +36,16 @@ public abstract class ChatManagerActor :
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
+    /// <param name="handoff">Defines how the group-chat is translated into a singular response.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    protected ChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger? logger = null)
+    protected ChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ChatHandoff handoff, ILogger? logger = null)
         : base(id, runtime, DefaultDescription, logger)
     {
         this.Chat = [];
         this.Team = team;
         this._orchestrationType = orchestrationType;
         this._groupTopic = groupTopic;
+        this._handoff = handoff;
     }
 
     /// <summary>
@@ -105,7 +108,8 @@ public abstract class ChatManagerActor :
         else
         {
             this.Logger.LogChatManagerTerminate(this.Id);
-            await this.SendMessageAsync(item.Message.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false); // %%% PLACEHOLDER - FINAL MESSAGE
+            ChatMessageContent handoff = await this._handoff.ProcessAsync(this.Chat, messageContext.CancellationToken).ConfigureAwait(false);
+            await this.SendMessageAsync(handoff.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -123,7 +127,8 @@ public abstract class ChatManagerActor :
         else
         {
             this.Logger.LogChatManagerTerminate(this.Id);
-            await this.SendMessageAsync(item.Message.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false); // %%% PLACEHOLDER - FINAL MESSAGE
+            ChatMessageContent handoff = await this._handoff.ProcessAsync(this.Chat, messageContext.CancellationToken).ConfigureAwait(false);
+            await this.SendMessageAsync(handoff.ToResult(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
         }
     }
 

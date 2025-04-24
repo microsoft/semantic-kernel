@@ -18,7 +18,7 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
         ChatCompletionAgent agent2 = this.CreateAgent("Analyze the previous message to determine count of vowels.  ALWAYS report the count using numeric digits formatted as:\nVowels: <digits>");
-        ChatCompletionAgent agent3 = this.CreateAgent("Analyze the previous message to determine count of onsonants.  ALWAYS report the count using numeric digits formatted as:\nConsonants: <digits>");
+        ChatCompletionAgent agent3 = this.CreateAgent("Analyze the previous message to determine count of consonants.  ALWAYS report the count using numeric digits formatted as:\nConsonants: <digits>");
 
         // Define the pattern
         InProcessRuntime runtime = new();
@@ -34,87 +34,5 @@ public class Step01_Concurrent(ITestOutputHelper output) : BaseOrchestrationTest
         Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");
 
         await runtime.RunUntilIdleAsync();
-    }
-
-    [Fact]
-    public async Task NestedConcurrentAsync()
-    {
-        // Define the agents
-        ChatCompletionAgent agent1 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
-        ChatCompletionAgent agent2 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 2");
-        ChatCompletionAgent agent3 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 3");
-        ChatCompletionAgent agent4 = this.CreateAgent("When the input is a number, N, respond with a number that is N + 4");
-
-        // Define the pattern
-        InProcessRuntime runtime = new();
-
-        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationLeft = CreateNested(runtime, agent1, agent2);
-        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationRight = CreateNested(runtime, agent3, agent4);
-        ConcurrentOrchestration orchestrationMain = new(runtime, orchestrationLeft, orchestrationRight) { LoggerFactory = this.LoggerFactory };
-
-        // Start the runtime
-        await runtime.StartAsync();
-        string input = "1";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string[]> result = await orchestrationMain.InvokeAsync(input);
-
-        string[] output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");
-
-        await runtime.RunUntilIdleAsync();
-    }
-
-    [Fact]
-    public async Task SingleActorAsync()
-    {
-        // Define the agents
-        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
-
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        ConcurrentOrchestration orchestration = new(runtime, agent) { LoggerFactory = this.LoggerFactory };
-
-        // Start the runtime
-        await runtime.StartAsync();
-        string input = "1";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string[]> result = await orchestration.InvokeAsync(input);
-
-        string[] output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");
-
-        await runtime.RunUntilIdleAsync();
-    }
-
-    [Fact]
-    public async Task SingleNestedActorAsync()
-    {
-        // Define the agents
-        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
-
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> orchestrationInner = CreateNested(runtime, agent);
-        ConcurrentOrchestration orchestrationOuter = new(runtime, orchestrationInner) { LoggerFactory = this.LoggerFactory };
-
-        // Start the runtime
-        await runtime.StartAsync();
-        string input = "1";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string[]> result = await orchestrationOuter.InvokeAsync(input);
-
-        string[] output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT:\n{string.Join("\n", output.Select(text => $"\t{text}"))}");
-
-        await runtime.RunUntilIdleAsync();
-    }
-
-    private static ConcurrentOrchestration<ConcurrentMessages.Request, ConcurrentMessages.Result> CreateNested(InProcessRuntime runtime, params OrchestrationTarget[] targets)
-    {
-        return new(runtime, targets)
-        {
-            InputTransform = (ConcurrentMessages.Request input) => ValueTask.FromResult(input),
-            ResultTransform = (ConcurrentMessages.Result[] results) => ValueTask.FromResult(string.Join("\n", results.Select(result => $"{result.Message}")).ToResult()),
-        };
     }
 }

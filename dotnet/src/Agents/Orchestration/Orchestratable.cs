@@ -13,6 +13,16 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 public abstract class Orchestratable
 {
     /// <summary>
+    /// Gets the description of the orchestration.
+    /// </summary>
+    public string Description { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the name of the orchestration.
+    /// </summary>
+    public string Name { get; init; } = string.Empty;
+
+    /// <summary>
     /// Registers the orchestratable component with the external system using a specified topic and an optional target actor.
     /// </summary>
     /// <param name="externalTopic">The topic identifier to be used for registration.</param>

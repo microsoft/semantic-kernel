@@ -74,7 +74,13 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             {
                 // Log exception details and fail orchestration as per design.
                 this.Logger.LogOrchestrationResultFailure(this._orchestrationRoot, this.Id, exception);
-                throw;
+
+                if (this._completionSource == null)
+                {
+                    throw;
+                }
+
+                this._completionSource.SetException(exception);
             }
         }
     }

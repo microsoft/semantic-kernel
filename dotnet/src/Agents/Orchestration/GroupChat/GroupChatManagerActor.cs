@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
@@ -11,9 +10,9 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 /// <summary>
 /// An <see cref="ChatManagerActor"/> used to manage a <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
 /// </summary>
-internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT ???
+internal sealed class GroupChatManagerActor : ChatManagerActor
 {
-    private int _index = 0;
+    private readonly GroupChatStrategy _strategy;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManagerActor"/> class.
@@ -23,10 +22,13 @@ internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT ?
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="groupTopic">The unique topic used to broadcast to the entire chat.</param>
+    /// <param name="strategy">The strategy that determines how the chat shall proceed.</param>
+    /// <param name="handoff">Defines how the group-chat is translated into a singular response.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ILogger<GroupChatManagerActor>? logger = null)
-        : base(id, runtime, team, orchestrationType, groupTopic, logger)
+    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, GroupChatStrategy strategy, ChatHandoff handoff, ILogger<GroupChatManagerActor>? logger = null)
+        : base(id, runtime, team, orchestrationType, groupTopic, handoff, logger)
     {
+        this._strategy = strategy;
     }
 
     /// <inheritdoc/>
@@ -36,16 +38,10 @@ internal sealed class GroupChatManagerActor : ChatManagerActor // %%% ABSTRACT ?
     }
 
     /// <inheritdoc/>
-    protected override Task<AgentType?> SelectAgentAsync()
+    protected override async Task<AgentType?> SelectAgentAsync()
     {
-        // %%% PLACEHOLDER SELECTION LOGIC
-        if (this._index >= 2)
-        {
-            return Task.FromResult<AgentType?>(null);
-        }
-        AgentType[] agentTypes = [.. this.Team.Keys.Select(value => new AgentType(value))];
-        AgentType? agentType = agentTypes[this._index % this.Team.Count];
-        ++this._index;
-        return Task.FromResult(agentType);
+        GroupChatContext context = new(this.Team, this.Chat);
+        await this._strategy.SelectAsync(context).ConfigureAwait(false);
+        return context.HasSelection ? context.Selection! : (AgentType?)null;
     }
 }
