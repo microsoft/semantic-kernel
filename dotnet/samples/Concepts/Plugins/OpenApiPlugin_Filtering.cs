@@ -45,7 +45,7 @@ public sealed class OpenApiPlugin_Filtering : BaseTest
             OperationSelectionPredicate = (OperationSelectionPredicateContext context) => !operationsToExclude.Contains(context.Id!)
         };
 
-        // Import the RepairService OpenAPI plugin and filter out all operations except `listRepairs` one.
+        // Import the RepairService OpenAPI plugin
         await this._kernel.ImportPluginFromOpenApiAsync(
             pluginName: "RepairService",
             filePath: "Resources/Plugins/RepairServicePlugin/repair-service.json",
@@ -122,7 +122,7 @@ public sealed class OpenApiPlugin_Filtering : BaseTest
             OperationSelectionPredicate = (OperationSelectionPredicateContext context) => context.Method == "Get"
         };
 
-        // Import the OpenAPI document specification.
+        // Import the RepairService OpenAPI plugin
         await this._kernel.ImportPluginFromOpenApiAsync(
             pluginName: "RepairService",
             filePath: "Resources/Plugins/RepairServicePlugin/repair-service.json",
