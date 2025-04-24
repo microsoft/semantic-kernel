@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
@@ -89,7 +90,7 @@ public static class KernelFunctionPrompty
                     IsRequired = input.Required,
                     Description = input.Description,
                     AllowDangerouslySetContent = !input.Strict,
-                    //JsonSchema = input.JsonSchema,
+                    JsonSchema = ToJsonSchema(input.JsonSchema),
                 });
             }
         }
@@ -103,7 +104,7 @@ public static class KernelFunctionPrompty
                 promptTemplateConfig.OutputVariable = new()
                 {
                     Description = output.Description,
-                    //JsonSchema = output.JsonSchema,
+                    JsonSchema = ToJsonSchema(output.JsonSchema),
                 };
             }
         }
@@ -113,4 +114,21 @@ public static class KernelFunctionPrompty
 
         return promptTemplateConfig;
     }
+
+    #region private
+    private static string? ToJsonSchema(object? input)
+    {
+        if (input is null)
+        {
+            return null;
+        }
+
+        if (input is string str)
+        {
+            return str;
+        }
+
+        return JsonSerializer.Serialize(input);
+    }
+    #endregion
 }
