@@ -26,7 +26,7 @@ public static class ChatMessages
     /// <summary>
     /// Reset/clear the conversation history for all <see cref="ChatAgentActor"/>.
     /// </summary>
-    public sealed class Reset { }
+    public sealed class Reset;
 
     /// <summary>
     /// The final result.
@@ -42,7 +42,7 @@ public static class ChatMessages
     /// <summary>
     /// Signal a <see cref="ChatAgentActor"/> to respond.
     /// </summary>
-    public sealed class Speak { }
+    public sealed class Speak;
 
     /// <summary>
     /// The input task.
