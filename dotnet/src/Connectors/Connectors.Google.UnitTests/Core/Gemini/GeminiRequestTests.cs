@@ -639,7 +639,7 @@ public sealed class GeminiRequestTests
     }
 
     [Fact]
-    public void WithThinkingConfigReturnsInGenerationConfig()
+    public void FromPromptAndExecutionSettingsWithThinkingConfigReturnsInGenerationConfig()
     {
         // Arrange
         var prompt = "prompt-example";
