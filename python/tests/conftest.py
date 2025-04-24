@@ -120,6 +120,18 @@ def experimental_plugin_class():
 
 
 @fixture(scope="session")
+def auto_function_invocation_filter() -> Callable:
+    """A filter that will be called for each function call in the response."""
+    from semantic_kernel.filters import AutoFunctionInvocationContext
+
+    async def auto_function_invocation_filter(context: AutoFunctionInvocationContext, next):
+        await next(context)
+        context.terminate = True
+
+    return auto_function_invocation_filter
+
+
+@fixture(scope="session")
 def create_mock_function() -> Callable:
     from semantic_kernel.contents.streaming_text_content import StreamingTextContent
     from semantic_kernel.functions.function_result import FunctionResult
