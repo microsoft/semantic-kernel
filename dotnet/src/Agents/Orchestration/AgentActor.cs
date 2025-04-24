@@ -75,7 +75,7 @@ public abstract class AgentActor : PatternActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected ValueTask<ChatMessageContent> InvokeAsync(ChatMessageContent input, CancellationToken cancellationToken)
     {
-        return this.InvokeAsync(new[] { input }, cancellationToken);
+        return this.InvokeAsync([input], cancellationToken);
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public abstract class AgentActor : PatternActor
     /// <returns>An asynchronous stream of <see cref="StreamingChatMessageContent"/> responses.</returns>
     protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatMessageContent input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var responseStream = this.Agent.InvokeStreamingAsync(new[] { input }, this.Thread, options: null, cancellationToken);
+        var responseStream = this.Agent.InvokeStreamingAsync([input], this.Thread, options: null, cancellationToken);
 
         await foreach (AgentResponseItem<StreamingChatMessageContent> response in responseStream.ConfigureAwait(false))
         {

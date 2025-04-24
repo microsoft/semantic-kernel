@@ -16,17 +16,33 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Magentic;
 public class MagenticOrchestration<TInput, TOutput> :
     AgentOrchestration<TInput, ChatMessages.InputTask, ChatMessages.Result, TOutput>
 {
+    internal const string DefaultAgentDescription = "A helpful agent.";
+
     internal static readonly string OrchestrationName = typeof(ConcurrentOrchestration<,>).Name.Split('`').First();
+
+    private readonly Kernel _kernel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticOrchestration{TInput, TOutput}"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="kernel">A kernel with services used by the manager.</param>
     /// <param name="agents">The agents participating in the orchestration.</param>
-    public MagenticOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] agents)
+    public MagenticOrchestration(IAgentRuntime runtime, Kernel kernel, params OrchestrationTarget[] agents)
         : base(OrchestrationName, runtime, agents)
     {
+        this._kernel = kernel;
     }
+
+    /// <summary>
+    /// Defines how the group-chat is translated into the orchestration result (or handoff).
+    /// </summary>
+    public ChatHandoff Handoff { get; init; } = ChatHandoff.Default;
+
+    /// <summary>
+    /// The maximum number of retry attempts when the task execution faulters.
+    /// </summary>
+    public MagenticOrchestrationSettings Settings { get; init; } = MagenticOrchestrationSettings.Default;
 
     /// <inheritdoc />
     protected override ValueTask StartAsync(TopicId topic, ChatMessages.InputTask input, AgentType? entryAgent)
@@ -46,16 +62,22 @@ public class MagenticOrchestration<TInput, TOutput> :
             ++agentCount;
 
             AgentType memberType = default;
+            string? description = null;
+            string? name = null;
             if (member.IsAgent(out Agent? agent))
             {
                 memberType = await RegisterAgentAsync(agent).ConfigureAwait(false);
+                description = agent.Description;
+                name = agent.Name ?? agent.Id;
             }
             else if (member.IsOrchestration(out Orchestratable? orchestration))
             {
                 memberType = await orchestration.RegisterAsync(topic, managerType, loggerFactory).ConfigureAwait(false);
+                description = orchestration.Description;
+                name = orchestration.Name;
             }
 
-            team[memberType] = (memberType, "an agent"); // %%% DESCRIPTION & NAME ID
+            team[memberType] = (name ?? memberType, description ?? DefaultAgentDescription);
 
             logger.LogRegisterActor(OrchestrationName, memberType, "MEMBER", agentCount);
 
@@ -66,7 +88,7 @@ public class MagenticOrchestration<TInput, TOutput> :
             managerType,
             (agentId, runtime) =>
                 ValueTask.FromResult<IHostableAgent>(
-                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, loggerFactory.CreateLogger<MagenticManagerActor>()))).ConfigureAwait(false);
+                    new MagenticManagerActor(agentId, runtime, team, orchestrationType, topic, this._kernel, this.Handoff, loggerFactory.CreateLogger<MagenticManagerActor>()) { Settings = this.Settings })).ConfigureAwait(false);
 
         await this.SubscribeAsync(managerType, topic).ConfigureAwait(false);
 

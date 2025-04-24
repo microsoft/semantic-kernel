@@ -18,15 +18,17 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
         private readonly string _orchestrationRoot;
         private readonly Func<TInput, ValueTask<TSource>> _transform;
         private readonly Func<TSource, ValueTask> _action;
+        private readonly TaskCompletionSource<TOutput>? _completionSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TSource, TResult, TOutput}"/> class.
         /// </summary>
         /// <param name="id">The unique identifier of the agent.</param>
         /// <param name="runtime">The runtime associated with the agent.</param>
-        /// <param name="orchestrationRoot">// %%% COMMENT</param>
+        /// <param name="orchestrationRoot">A descriptive root label for the orchestration.</param>
         /// <param name="transform">A function that transforms an input of type TInput into a source type TSource.</param>
         /// <param name="action">An asynchronous function that processes the resulting source.</param>
+        /// <param name="completionSource">Optional TaskCompletionSource to signal orchestration completion.</param>
         /// <param name="logger">The logger to use for the actor</param>
         public RequestActor(
             AgentId id,
@@ -34,12 +36,14 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             string orchestrationRoot,
             Func<TInput, ValueTask<TSource>> transform,
             Func<TSource, ValueTask> action,
+            TaskCompletionSource<TOutput>? completionSource = null,
             ILogger<RequestActor>? logger = null)
             : base(id, runtime, $"{id.Type}_Actor", logger)
         {
             this._orchestrationRoot = orchestrationRoot;
             this._transform = transform;
             this._action = action;
+            this._completionSource = completionSource;
         }
 
         /// <summary>
@@ -62,6 +66,10 @@ public abstract partial class AgentOrchestration<TInput, TSource, TResult, TOutp
             {
                 // Log exception details and allow orchestration to fail
                 this.Logger.LogOrchestrationRequestFailure(this._orchestrationRoot, this.Id, exception);
+                if (this._completionSource != null)
+                {
+                    this._completionSource.SetException(exception);
+                }
                 throw;
             }
         }

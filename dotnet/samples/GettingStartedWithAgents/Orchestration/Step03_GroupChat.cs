@@ -2,7 +2,6 @@
 
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
-using Microsoft.SemanticKernel.Agents.Orchestration.Chat;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 
@@ -19,11 +18,11 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         // Define the agents
         ChatCompletionAgent agent1 = this.CreateAgent("Analyze the previous message to determine count of words.  ALWAYS report the count using numeric digits formatted as:\nWords: <digits>");
         ChatCompletionAgent agent2 = this.CreateAgent("Analyze the previous message to determine count of vowels.  ALWAYS report the count using numeric digits formatted as:\nVowels: <digits>");
-        ChatCompletionAgent agent3 = this.CreateAgent("Analyze the previous message to determine count of onsonants.  ALWAYS report the count using numeric digits formatted as:\nConsonants: <digits>");
+        ChatCompletionAgent agent3 = this.CreateAgent("Analyze the previous message to determine count of consonants.  ALWAYS report the count using numeric digits formatted as:\nConsonants: <digits>");
 
         // Define the pattern
         InProcessRuntime runtime = new();
-        GroupChatOrchestration orchestration = new(runtime, agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
+        GroupChatOrchestration orchestration = new(runtime, new SimpleGroupChatStrategy(), agent1, agent2, agent3) { LoggerFactory = this.LoggerFactory };
 
         // Start the runtime
         await runtime.StartAsync();
@@ -37,54 +36,25 @@ public class Step03_GroupChat(ITestOutputHelper output) : BaseOrchestrationTest(
         await runtime.RunUntilIdleAsync();
     }
 
-    // %%% MORE SAMPLES - GROUPCHAT
-
-    [Fact]
-    public async Task SingleActorAsync()
+    private sealed class SimpleGroupChatStrategy : GroupChatStrategy
     {
-        // Define the agents
-        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
+        private int _count;
 
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        GroupChatOrchestration orchestration = new(runtime, agent) { LoggerFactory = this.LoggerFactory };
-
-        // Start the runtime
-        await runtime.StartAsync();
-        string input = "1";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestration.InvokeAsync(input);
-
-        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT: {output}");
-
-        await runtime.RunUntilIdleAsync();
-    }
-
-    [Fact]
-    public async Task SingleNestedActorAsync()
-    {
-        // Define the agents
-        ChatCompletionAgent agent = this.CreateAgent("When the input is a number, N, respond with a number that is N + 1");
-
-        // Define the pattern
-        InProcessRuntime runtime = new();
-        GroupChatOrchestration<ChatMessages.InputTask, ChatMessages.Result> orchestrationInner = new(runtime, agent)
+        public override ValueTask SelectAsync(GroupChatContext context, CancellationToken cancellationToken = default)
         {
-            InputTransform = (ChatMessages.InputTask input) => ValueTask.FromResult(input),
-            ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result),
-        };
-        GroupChatOrchestration orchestrationOuter = new(runtime, orchestrationInner) { LoggerFactory = this.LoggerFactory };
+            try
+            {
+                if (this._count < context.Team.Count)
+                {
+                    context.SelectAgent(context.Team.Skip(this._count).First().Key);
+                }
 
-        // Start the runtime
-        await runtime.StartAsync();
-        string input = "1";
-        Console.WriteLine($"\n# INPUT: {input}\n");
-        OrchestrationResult<string> result = await orchestrationOuter.InvokeAsync(input);
-
-        string output = await result.GetValueAsync(TimeSpan.FromSeconds(ResultTimeoutInSeconds));
-        Console.WriteLine($"\n# RESULT: {output}");
-
-        await runtime.RunUntilIdleAsync();
+                return ValueTask.CompletedTask;
+            }
+            finally
+            {
+                ++this._count;
+            }
+        }
     }
 }

@@ -4,7 +4,6 @@
     <!-- THIS PROPERTY GROUP MUST COME FIRST -->
     <AssemblyName>Microsoft.SemanticKernel.Agents.Orchestration</AssemblyName>
     <RootNamespace>Microsoft.SemanticKernel.Agents.Orchestration</RootNamespace>
-    <!--// %%% TODO: BUILD--> 
     <TargetFrameworks>net8.0</TargetFrameworks>
     <!--<TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>--> 
     <NoWarn>$(NoWarn);SKEXP0110;SKEXP0001</NoWarn>
@@ -31,6 +30,9 @@
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
     <ProjectReference Include="..\Runtime\Core\Runtime.Core.csproj" />
+    <!-- REVIEW DEPENDENCY: TEMPLATE FACTORY -->
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

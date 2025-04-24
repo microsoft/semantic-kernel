@@ -16,9 +16,10 @@ public sealed partial class MagenticOrchestration : MagenticOrchestration<string
     /// Initializes a new instance of the <see cref="MagenticOrchestration"/> class.
     /// </summary>
     /// <param name="runtime">The runtime associated with the orchestration.</param>
+    /// <param name="kernel">A kernel with services used by the manager.</param>
     /// <param name="members">The agents to be orchestrated.</param>
-    public MagenticOrchestration(IAgentRuntime runtime, params OrchestrationTarget[] members)
-        : base(runtime, members)
+    public MagenticOrchestration(IAgentRuntime runtime, Kernel kernel, params OrchestrationTarget[] members)
+        : base(runtime, kernel, members)
     {
         this.InputTransform = (string input) => ValueTask.FromResult(new ChatMessageContent(AuthorRole.User, input).ToInputTask());
         this.ResultTransform = (ChatMessages.Result result) => ValueTask.FromResult(result.Message.ToString());

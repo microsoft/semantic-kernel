@@ -8,14 +8,8 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <LangVersion>12</LangVersion>
-    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1063,CS0618,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110;OPENAI001</NoWarn>
+    <NoWarn>$(NoWarn);CA2007,CA1812,CA1861,CA1707,CA1063,CS0618,CS1591,VSTHRD111,SKEXP0001,SKEXP0050,SKEXP0110;OPENAI001</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="OpenAI\Azure\**" />
-    <EmbeddedResource Remove="OpenAI\Azure\**" />
-    <None Remove="OpenAI\Azure\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" />
@@ -35,14 +29,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
-    <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
-    <ProjectReference Include="..\AzureAI\Agents.AzureAI.csproj" />
+    <ProjectReference Include="..\Orchestration\Agents.Orchestration.csproj" />
+    <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
+    <ProjectReference Include="..\Runtime\InProcess\Runtime.InProcess.csproj" />
     <ProjectReference Include="..\Yaml\Agents.Yaml.csproj" />
-    <ProjectReference Include="..\Bedrock\Agents.Bedrock.csproj" />
+    <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
+    <ProjectReference Include="..\..\Extensions\PromptTemplates.Handlebars\PromptTemplates.Handlebars.csproj" />
   </ItemGroup>
 
   <ItemGroup>
