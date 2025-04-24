@@ -47,6 +47,11 @@ internal sealed class BedrockAgentFixture : AgentFixture, IAsyncDisposable
 
     public override AgentThread CreatedServiceFailingAgentThread => this._createdServiceFailingAgentThread!;
 
+    public override AgentThread GetNewThread()
+    {
+        return new BedrockAgentThread(this._runtimeClient);
+    }
+
     public override async Task DeleteThread(AgentThread thread)
     {
         await this._runtimeClient!.EndSessionAsync(new EndSessionRequest() { SessionIdentifier = thread.Id });
