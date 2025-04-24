@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool
+from mcp import ClientSession, ListToolsResult, StdioServerParameters, Tool, types
 
 from semantic_kernel.connectors.mcp import MCPSsePlugin, MCPStdioPlugin, MCPWebsocketPlugin
 from semantic_kernel.exceptions import KernelPluginInvalidConfigurationError
@@ -173,3 +173,14 @@ async def test_with_kwargs_sse(mock_session, mock_client, list_tool_calls, kerne
         assert loaded_plugin.functions["func1"].parameters[0].is_required
         assert loaded_plugin.functions.get("func2") is not None
         assert len(loaded_plugin.functions["func2"].parameters) == 0
+
+
+async def test_kernel_as_mcp_server(kernel: "Kernel", decorated_native_function, custom_plugin_class):
+    kernel.add_plugin(custom_plugin_class, "test")
+    kernel.add_functions("test", [decorated_native_function])
+    server = kernel.as_mcp_server()
+    assert server is not None
+    assert types.PingRequest in server.request_handlers
+    assert types.ListToolsRequest in server.request_handlers
+    assert types.CallToolRequest in server.request_handlers
+    assert server.name == "Semantic Kernel MCP Server"

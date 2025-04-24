@@ -16,6 +16,7 @@
 - [Azure AI Agent Message Callback](./agents/azure_ai_agent/azure_ai_agent_message_callback.py)
 - [Azure AI Agent Streaming](./agents/azure_ai_agent/azure_ai_agent_streaming.py)
 - [Azure AI Agent Structured Outputs](./agents/azure_ai_agent/azure_ai_agent_structured_outputs.py)
+- [Azure AI Agent Truncation Strategy](./agents/azure_ai_agent/azure_ai_agent_truncation_strategy.py)
 
 #### [Bedrock Agent](../../semantic_kernel/agents/bedrock/bedrock_agent.py)
 
@@ -196,6 +197,7 @@
 ### Search - Using [`Search`](https://github.com/microsoft/semantic-kernel/tree/main/python/semantic_kernel/connectors/search) services information
 
 - [Bing Text Search as Plugin](./search/bing_text_search_as_plugin.py)
+- [Brave Text Search as Plugin](./search/brave_text_search_as_plugin.py)
 - [Google Text Search as Plugin](./search/google_text_search_as_plugin.py)
 
 ### Service Selector - Shows how to create and use a custom service selector class

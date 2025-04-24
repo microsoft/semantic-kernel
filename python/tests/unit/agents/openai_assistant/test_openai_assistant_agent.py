@@ -60,7 +60,9 @@ async def test_open_ai_assistant_agent_init(openai_client, assistant_definition)
 
 
 def test_open_ai_settings_create_throws(openai_unit_test_env):
-    with patch("semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.create") as mock_create:
+    with patch(
+        "semantic_kernel.connectors.ai.open_ai.settings.open_ai_settings.OpenAISettings.__init__"
+    ) as mock_create:
         mock_create.side_effect = ValidationError.from_exception_data("test", line_errors=[], input_type="python")
 
         with pytest.raises(AgentInitializationException, match="Failed to create OpenAI settings."):

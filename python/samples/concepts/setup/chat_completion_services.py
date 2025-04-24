@@ -393,7 +393,7 @@ def get_deepseek_chat_completion_service_and_request_settings() -> tuple[
         OpenAISettings,
     )
 
-    openai_settings = OpenAISettings.create()
+    openai_settings = OpenAISettings()
     if not openai_settings.api_key:
         raise ServiceInitializationError("The DeepSeek API key is required.")
     if not openai_settings.chat_model_id:

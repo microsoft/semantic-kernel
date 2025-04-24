@@ -46,6 +46,7 @@
         "kernelfunction",
         "logit",
         "logprobs",
+        "lowlevel",
         "mistralai",
         "mongocluster",
         "nd",

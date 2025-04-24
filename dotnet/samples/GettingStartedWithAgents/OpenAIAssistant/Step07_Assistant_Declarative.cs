@@ -19,7 +19,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// Demonstrates creating and using a OpenAI Assistant using configuration.
     /// </summary>
     [Fact]
-    public async Task OpenAIAssistantAgentWithConfigurationForOpenAIAsync()
+    public async Task OpenAIAssistantAgentWithConfigurationForOpenAI()
     {
         var text =
             """
@@ -44,7 +44,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// Demonstrates creating and using a OpenAI Assistant using configuration for Azure OpenAI.
     /// </summary>
     [Fact]
-    public async Task OpenAIAssistantAgentWithConfigurationForAzureOpenAIAsync()
+    public async Task OpenAIAssistantAgentWithConfigurationForAzureOpenAI()
     {
         var text =
             """
@@ -73,7 +73,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// Demonstrates creating and using a OpenAI Assistant using a Kernel.
     /// </summary>
     [Fact]
-    public async Task OpenAIAssistantAgentWithKernelAsync()
+    public async Task OpenAIAssistantAgentWithKernel()
     {
         var text =
             """
@@ -95,7 +95,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
     /// Demonstrates creating and using a OpenAI Assistant with templated instructions.
     /// </summary>
     [Fact]
-    public async Task OpenAIAssistantAgentWithTemplateAsync()
+    public async Task OpenAIAssistantAgentWithTemplate()
     {
         var text =
             """
@@ -115,7 +115,8 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
                     required: true
                     default: 2
             outputs:
-                - description: output1 description
+                output1:
+                    description: output1 description
             template:
                 format: semantic-kernel
             """;

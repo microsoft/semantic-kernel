@@ -6,6 +6,7 @@ The following demos describe how to use the SK Process Framework to emit and rec
 | --- | --- |
 | ProcessWithCloudEvents.Processes | Project that contains Process Builders definitions, related steps, models and structures independent of runtime |
 | ProcessWithCloudEvents.Grpc | Project that contains a gRPC server using DAPR, that interacts with processes defined in the Processes project using gRPC |
+| ProcessWithCloudEvents.Client | Project that contains a ReactJS App to showcase sending and receiving cloud events to and from a running SK Process in a server |
 
 ## Processes
 
@@ -62,3 +63,8 @@ graph LR
       .OnFunctionResult()
       .EmitExternalEvent(proxyStep, DocGenerationTopics.PublishDocumentation);
    ```
+
+## Usage
+
+1. Run the server running the SK Process using a specific Cloud Event technology
+2. Launch the Client App to interact with the SK Process from a UI

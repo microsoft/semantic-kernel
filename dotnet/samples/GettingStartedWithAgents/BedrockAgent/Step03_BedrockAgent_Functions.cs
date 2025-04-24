@@ -17,7 +17,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     /// The agent will respond to the user query by calling kernel functions to provide weather information.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithFunctionsAsync()
+    public async Task UseAgentWithFunctions()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions");
@@ -48,7 +48,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     /// information about the menu.
     /// </summary>
     [Fact]
-    public async Task UseAgentWithFunctionsComplexTypeAsync()
+    public async Task UseAgentWithFunctionsComplexType()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Complex_Types");
@@ -78,7 +78,7 @@ public class Step03_BedrockAgent_Functions(ITestOutputHelper output) : BaseBedro
     /// The agent will respond to the user query by calling kernel functions to provide weather information.
     /// </summary>
     [Fact]
-    public async Task UseAgentStreamingWithFunctionsAsync()
+    public async Task UseAgentStreamingWithFunctions()
     {
         // Create the agent
         var bedrockAgent = await this.CreateAgentAsync("Step03_BedrockAgent_Functions_Streaming");

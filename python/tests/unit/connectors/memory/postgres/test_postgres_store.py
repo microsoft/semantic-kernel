@@ -56,7 +56,7 @@ def mock_connection_pool(mock_cursor: Mock):
 
 @pytest_asyncio.fixture
 async def vector_store(postgres_unit_test_env) -> AsyncGenerator[PostgresStore, None]:
-    async with await PostgresSettings.create(env_file_path="test.env").create_connection_pool() as pool:
+    async with await PostgresSettings(env_file_path="test.env").create_connection_pool() as pool:
         yield PostgresStore(connection_pool=pool)
 
 

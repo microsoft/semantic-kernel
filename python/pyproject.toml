@@ -42,7 +42,7 @@ dependencies = [
     # OpenTelemetry
     "opentelemetry-api ~= 1.24",
     "opentelemetry-sdk ~= 1.24",
-    "prance ~= 23.6.21.0",
+    "prance >= 23.6.21,< 25.4.9",
     # templating
     "pybars4 ~= 0.9",
     "jinja2 ~= 3.1",
@@ -68,7 +68,7 @@ chroma = [
     "chromadb >= 0.5,< 1.1"
 ]
 google = [
-    "google-cloud-aiplatform == 1.87.0",
+    "google-cloud-aiplatform == 1.89.0",
     "google-generativeai ~= 0.8"
 ]
 faiss = [
@@ -83,7 +83,7 @@ mcp = [
     "mcp ~= 1.6"
 ]
 mongo = [
-    "pymongo >= 4.8.0, < 4.12",
+    "pymongo >= 4.8.0, < 4.13",
     "motor >= 3.3.2,< 3.8.0"
 ]
 notebooks = [
@@ -124,7 +124,7 @@ usearch = [
     "pyarrow >= 12.0,< 20.0"
 ]
 weaviate = [
-    "weaviate-client>=4.10,<4.13",
+    "weaviate-client>=4.10,<5.0",
 ]
 pandas = [
     "pandas ~= 2.2"

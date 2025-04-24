@@ -25,7 +25,7 @@ ai_service = OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-3.5-tu
 kernel.add_service(ai_service)
 
 try:
-    booking_sample_settings = BookingSampleSettings.create()
+    booking_sample_settings = BookingSampleSettings()
 except ValidationError as e:
     raise ServiceInitializationError("Failed to initialize the booking sample settings.") from e
 
