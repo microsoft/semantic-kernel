@@ -205,9 +205,9 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     public ProcessStepBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
-        if (string.IsNullOrWhiteSpace(agentDefinition.Id))
+        if (string.IsNullOrWhiteSpace(agentDefinition.Name))
         {
-            throw new ArgumentException("AgentDefinition.Id cannot be null or empty.", nameof(agentDefinition));
+            throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
         }
 
         ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agentDefinition);

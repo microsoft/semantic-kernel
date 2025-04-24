@@ -21,7 +21,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// </summary>
     /// <param name="agentDefinition"></param>
     /// <exception cref="KernelException"></exception>
-    public ProcessAgentBuilder(AgentDefinition agentDefinition) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
+    public ProcessAgentBuilder(AgentDefinition agentDefinition) : base(id: agentDefinition.Id ?? agentDefinition.Name)
     {
         Verify.NotNull(agentDefinition);
         this._agentDefinition = agentDefinition;
@@ -85,7 +85,7 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
 
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
-        var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
+        var state = new KernelProcessStepState<KernelProcessAgentExecutorState>(this.Name, "1.0", this.Id);
 
         return new KernelProcessAgentStep(this._agentDefinition, state, builtEdges)
         {
