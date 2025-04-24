@@ -25,7 +25,6 @@ public abstract class ChatManagerActor :
     public const string DefaultDescription = "Orchestrates a team of agents to accomplish a defined task.";
 
     private readonly AgentType _orchestrationType;
-    private readonly TopicId _groupTopic;
     private readonly ChatHandoff _handoff;
 
     /// <summary>
@@ -41,17 +40,23 @@ public abstract class ChatManagerActor :
     protected ChatManagerActor(AgentId id, IAgentRuntime runtime, ChatGroup team, AgentType orchestrationType, TopicId groupTopic, ChatHandoff handoff, ILogger? logger = null)
         : base(id, runtime, DefaultDescription, logger)
     {
+        this._orchestrationType = orchestrationType;
+        this._handoff = handoff;
+
         this.Chat = [];
         this.Team = team;
-        this._orchestrationType = orchestrationType;
-        this._groupTopic = groupTopic;
-        this._handoff = handoff;
+        this.GroupTopic = groupTopic;
     }
 
     /// <summary>
     /// The conversation history with the team.
     /// </summary>
     protected ChatHistory Chat { get; }
+
+    /// <summary>
+    /// The agent type used to identify the orchestration agent.
+    /// </summary>
+    protected TopicId GroupTopic { get; }
 
     /// <summary>
     /// The input task.
@@ -103,7 +108,7 @@ public abstract class ChatManagerActor :
         if (agentType != null)
         {
             await this.RequestAgentResponseAsync(agentType.Value, messageContext.CancellationToken).ConfigureAwait(false);
-            await this.PublishMessageAsync(item.Message.ToGroup(), this._groupTopic).ConfigureAwait(false);
+            await this.PublishMessageAsync(item.Message.ToGroup(), this.GroupTopic).ConfigureAwait(false);
         }
         else
         {
