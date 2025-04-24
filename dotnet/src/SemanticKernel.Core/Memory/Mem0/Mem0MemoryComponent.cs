@@ -16,15 +16,35 @@ namespace Microsoft.SemanticKernel.Memory;
 /// A component that listens to messages added to the conversation thread, and automatically captures
 /// information about the user. It is also able to retrieve this information and add it to the AI invocation context.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Mem0 allows memories to be stored under one or more optional scopes: application, agent, thread, and user.
+/// At least one scope must always be provided.
+/// </para>
+/// <para>
+/// There are some special considerations when using thread as a scope.
+/// A thread id may not be available at the time that this component is instantiated.
+/// It is therefore possible to provide no thread id when instantiating this class and instead set
+/// <see cref="Mem0MemoryComponentOptions.ScopeToPerOperationThreadId"/> to <see langword="true"/>.
+/// The component will then capture a thread id when a thread is created or when messages are received
+/// and use this thread id to scope the memories in mem0.
+/// </para>
+/// <para>
+/// Note that this component will keep the current thread id in a private field for the duration of
+/// the component's lifetime, and therefore using the component with multiple threads, with
+/// <see cref="Mem0MemoryComponentOptions.ScopeToPerOperationThreadId"/> set to <see langword="true"/> is not supported.
+/// </para>
+/// </remarks>
 [Experimental("SKEXP0130")]
 [ExcludeFromCodeCoverage] // Tested via integration tests.
-public class Mem0MemoryComponent : ConversationStatePart
+public sealed class Mem0MemoryComponent : ConversationStatePart
 {
     private readonly string? _applicationId;
     private readonly string? _agentId;
-    private string? _threadId;
+    private readonly string? _threadId;
+    private string? _perOperationThreadId;
     private readonly string? _userId;
-    private readonly bool _scopeToThread;
+    private readonly bool _scopeToPerOperationThreadId;
 
     private readonly AIFunction[] _aIFunctions;
 
@@ -53,7 +73,7 @@ public class Mem0MemoryComponent : ConversationStatePart
         this._agentId = options?.AgentId;
         this._threadId = options?.ThreadId;
         this._userId = options?.UserId;
-        this._scopeToThread = options?.ScopeToThread ?? false;
+        this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
 
         this._aIFunctions = [AIFunctionFactory.Create(this.ClearStoredUserFactsAsync)];
 
@@ -66,7 +86,9 @@ public class Mem0MemoryComponent : ConversationStatePart
     /// <inheritdoc/>
     public override Task OnThreadCreatedAsync(string? threadId, CancellationToken cancellationToken = default)
     {
-        this._threadId ??= threadId;
+        this.ValidatePerOperationThreadId(threadId);
+
+        this._perOperationThreadId ??= threadId;
         return Task.CompletedTask;
     }
 
@@ -74,14 +96,16 @@ public class Mem0MemoryComponent : ConversationStatePart
     public override async Task OnNewMessageAsync(string? threadId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(newMessage);
-        this._threadId ??= threadId;
+        this.ValidatePerOperationThreadId(threadId);
 
-        if (newMessage.Role == ChatRole.User && !string.IsNullOrWhiteSpace(newMessage.Text))
+        this._perOperationThreadId ??= threadId;
+
+        if (!string.IsNullOrWhiteSpace(newMessage.Text))
         {
             await this._mem0Client.CreateMemoryAsync(
                 this._applicationId,
                 this._agentId,
-                this._scopeToThread ? this._threadId : null,
+                this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
                 this._userId,
                 newMessage.Text,
                 newMessage.Role.Value).ConfigureAwait(false);
@@ -102,7 +126,7 @@ public class Mem0MemoryComponent : ConversationStatePart
         var memories = await this._mem0Client.SearchAsync(
                 this._applicationId,
                 this._agentId,
-                this._scopeToThread ? this._threadId : null,
+                this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
                 this._userId,
                 inputText).ConfigureAwait(false);
 
@@ -120,7 +144,19 @@ public class Mem0MemoryComponent : ConversationStatePart
         await this._mem0Client.ClearMemoryAsync(
             this._applicationId,
             this._agentId,
-            this._scopeToThread ? this._threadId : null,
+            this._scopeToPerOperationThreadId ? this._perOperationThreadId : this._threadId,
             this._userId).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Validate that we are not receiving a new thread id when the component has already received one before.
+    /// </summary>
+    /// <param name="threadId">The new thread id.</param>
+    private void ValidatePerOperationThreadId(string? threadId)
+    {
+        if (this._scopeToPerOperationThreadId && !string.IsNullOrWhiteSpace(threadId) && this._perOperationThreadId != null && threadId != this._perOperationThreadId)
+        {
+            throw new InvalidOperationException($"The {nameof(Mem0MemoryComponent)} can only be used with one thread at a time when {nameof(Mem0MemoryComponentOptions.ScopeToPerOperationThreadId)} is set to true.");
+        }
     }
 }
