@@ -174,7 +174,8 @@ class AssistantThreadActions:
             temperature: The temperature.
             top_p: The top p.
             truncation_strategy: The truncation strategy.
-            polling_options: The polling options defined at the run-level.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:

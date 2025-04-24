@@ -132,7 +132,8 @@ class AgentThreadActions:
             response_format: The response format.
             parallel_tool_calls: The parallel tool calls.
             metadata: The metadata.
-            polling_options: The polling options defined at the run-level.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             kwargs: Additional keyword arguments.
 
         Returns:

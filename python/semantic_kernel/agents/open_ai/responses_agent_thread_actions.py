@@ -120,7 +120,8 @@ class ResponsesAgentThreadActions:
             metadata: The metadata.
             model: The model.
             parallel_tool_calls: The parallel tool calls.
-            polling_options: The polling options at the run-level.
+            polling_options: The polling options defined at the run-level. These will override the agent-level
+                polling options.
             reasoning: The reasoning effort.
             text: The response format.
             tools: The tools.
