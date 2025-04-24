@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// Contains a method for doing a vector search using a vector.
 /// </summary>
 /// <typeparam name="TRecord">The record data model to use for retrieving data from the store.</typeparam>
-[Obsolete("This interface is obsolete, use IVectorizedSearch<TRecord> instead.")]
+[Obsolete("This interface is obsolete, use either SearchEmbeddingAsync to search directly on embeddings, or SearchAsync to handle embedding generation internally as part of the call")]
 public interface IVectorizedSearch<TRecord>
 {
     /// <summary>

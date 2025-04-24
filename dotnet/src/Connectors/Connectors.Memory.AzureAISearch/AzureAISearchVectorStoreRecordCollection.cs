@@ -308,9 +308,6 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         var floatVector = VerifyVectorParam(vector);
         Verify.NotLessThan(top, 1);
 
-        // Resolve options.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
-
         // Configure search settings.
         var vectorQueries = new List<VectorQuery>
         {
@@ -319,7 +316,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = internalOptions switch
+        var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchVectorStoreCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, this._model),
@@ -333,7 +330,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         {
             VectorSearch = new(),
             Size = top,
-            Skip = internalOptions.Skip,
+            Skip = options.Skip,
         };
 
         if (filter is not null)
@@ -344,7 +341,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
         searchOptions.VectorSearch.Queries.AddRange(vectorQueries);
 
         // Filter out vector fields if requested.
-        if (!internalOptions.IncludeVectors)
+        if (!options.IncludeVectors)
         {
             searchOptions.Select.Add(this._model.KeyProperty.StorageName);
 
@@ -354,7 +351,7 @@ public sealed class AzureAISearchVectorStoreRecordCollection<TKey, TRecord> :
             }
         }
 
-        return this.SearchAndMapToDataModelAsync(null, searchOptions, internalOptions.IncludeVectors, cancellationToken);
+        return this.SearchAndMapToDataModelAsync(null, searchOptions, options.IncludeVectors, cancellationToken);
     }
 
     /// <inheritdoc />

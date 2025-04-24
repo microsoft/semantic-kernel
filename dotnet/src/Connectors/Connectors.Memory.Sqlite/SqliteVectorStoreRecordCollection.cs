@@ -233,7 +233,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
 
-        if (searchOptions.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -302,7 +302,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         options ??= new();
 
-        if (options.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -652,7 +652,7 @@ public sealed class SqliteVectorStoreRecordCollection<TKey, TRecord> : IVectorSt
 
         if (includeVectors)
         {
-            if (this._model.VectorProperty is { EmbeddingGenerator: not null })
+            if (this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
             {
                 throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
             }

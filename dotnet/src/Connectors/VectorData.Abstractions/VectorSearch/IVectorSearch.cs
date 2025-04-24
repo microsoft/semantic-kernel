@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -36,7 +37,8 @@ public interface IVectorSearch<TRecord>
     /// Searches the vector store for records that are similar to given embedding.
     /// </summary>
     /// <remarks>
-    /// This is a low-level method that requires embedding generation to be handled manually. Consider
+    /// This is a low-level method that requires embedding generation to be handled manually.
+    /// Consider configuring an <see cref="IEmbeddingGenerator"/> and using <see cref="SearchAsync"/> to have embeddings generated automatically.
     /// </remarks>
     /// <typeparam name="TVector">The type of the vector.</typeparam>
     /// <param name="vector">The vector to search the store with.</param>

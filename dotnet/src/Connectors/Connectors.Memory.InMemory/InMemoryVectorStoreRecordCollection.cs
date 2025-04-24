@@ -170,7 +170,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (options?.IncludeVectors == true && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -190,7 +190,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(keys);
 
-        if (options?.IncludeVectors == true && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options?.IncludeVectors == true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -392,9 +392,9 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         }
 
         // Resolve options and get requested vector property or first as default.
-        var internalOptions = options ?? s_defaultVectorSearchOptions;
+        options ??= s_defaultVectorSearchOptions;
 
-        if (internalOptions.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -402,7 +402,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
         var allValues = this.GetCollectionDictionary().Values.Cast<InMemoryVectorRecordWrapper<TRecord>>();
-        var filteredRecords = internalOptions switch
+        var filteredRecords = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => InMemoryVectorStoreCollectionSearchMapping.FilterRecords(legacyFilter, allValues),
@@ -442,7 +442,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
         var sortedScoredResults = InMemoryVectorStoreCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
             nonNullResults.OrderByDescending(x => x.score) :
             nonNullResults.OrderBy(x => x.score);
-        var resultsPage = sortedScoredResults.Skip(internalOptions.Skip).Take(top);
+        var resultsPage = sortedScoredResults.Skip(options.Skip).Take(top);
 
         // Build the response.
         return resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)).ToAsyncEnumerable();
@@ -478,7 +478,7 @@ public sealed class InMemoryVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         options ??= new();
 
-        if (options.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

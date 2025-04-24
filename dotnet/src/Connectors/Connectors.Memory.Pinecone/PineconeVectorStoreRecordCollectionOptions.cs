@@ -50,7 +50,7 @@ public sealed class PineconeVectorStoreRecordCollectionOptions<TRecord>
     public string ServerlessIndexRegion { get; init; } = "us-east-1";
 
     /// <summary>
-    /// Gets or sets the embedding generator to use by default for vector properties in this collection.
+    /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

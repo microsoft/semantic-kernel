@@ -158,7 +158,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     /// <inheritdoc />
     public async Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (options?.IncludeVectors is true && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options?.IncludeVectors is true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -196,7 +196,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         Verify.NotNull(keys);
 
-        if (options?.IncludeVectors is true && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options?.IncludeVectors is true && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -454,7 +454,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         options ??= s_defaultVectorSearchOptions;
 
-        if (options.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -533,7 +533,7 @@ public sealed class PineconeVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         options ??= new();
 
-        if (options.IncludeVectors && this._model.VectorProperty is { EmbeddingGenerator: not null })
+        if (options.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

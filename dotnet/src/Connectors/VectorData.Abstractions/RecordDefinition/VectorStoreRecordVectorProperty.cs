@@ -49,13 +49,14 @@ public class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
         this.Dimensions = source.Dimensions;
         this.IndexKind = source.IndexKind;
         this.DistanceFunction = source.DistanceFunction;
+        this.EmbeddingGenerator = source.EmbeddingGenerator;
+        this.EmbeddingType = source.EmbeddingType;
     }
 
     /// <summary>
-    /// Gets or sets the embedding generator to use for this property.
+    /// Gets or sets the default embedding generator to use for this property.
     /// </summary>
     /// <remarks>
-    /// TODO
     /// If not set, embedding generation will be performed in the database, if supported by your connector.
     /// If not supported, only pre-generated embeddings can be used, e.g. via <see cref="IVectorSearch{TRecord}.SearchEmbeddingAsync{TVector}"/>.
     /// </remarks>
@@ -112,6 +113,7 @@ public class VectorStoreRecordVectorProperty : VectorStoreRecordProperty
             Dimensions = this.Dimensions,
             IndexKind = this.IndexKind,
             DistanceFunction = this.DistanceFunction,
-            EmbeddingGenerator = this.EmbeddingGenerator
+            EmbeddingGenerator = this.EmbeddingGenerator,
+            EmbeddingType = this.EmbeddingType!
         };
 }

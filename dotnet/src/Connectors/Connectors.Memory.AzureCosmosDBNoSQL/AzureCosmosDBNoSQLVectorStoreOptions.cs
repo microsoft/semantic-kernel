@@ -23,7 +23,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreOptions
     public JsonSerializerOptions? JsonSerializerOptions { get; init; }
 
     /// <summary>
-    /// Gets or sets the embedding generator to use by default for vector properties in this vector store.
+    /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

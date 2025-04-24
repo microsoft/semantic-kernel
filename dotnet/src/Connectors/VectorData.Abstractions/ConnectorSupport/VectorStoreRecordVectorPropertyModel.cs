@@ -61,7 +61,7 @@ public class VectorStoreRecordVectorPropertyModel(string modelName, Type type) :
     public string? DistanceFunction { get; set; }
 
     /// <summary>
-    /// If <see cref="EmbeddingGenerator"/> is set, contatins the type representing the embedding stored in the database.
+    /// If <see cref="EmbeddingGenerator"/> is set, contains the type representing the embedding stored in the database.
     /// Otherwise, this property is identical to <see cref="Type"/>.
     /// </summary>
     public Type EmbeddingType { get; set; } = null!;

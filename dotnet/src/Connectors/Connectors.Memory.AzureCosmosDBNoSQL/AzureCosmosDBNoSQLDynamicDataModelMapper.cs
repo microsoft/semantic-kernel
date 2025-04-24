@@ -29,6 +29,15 @@ internal sealed class AzureCosmosDBNoSQLDynamicDataModelMapper(VectorStoreRecord
 
         var jsonObject = new JsonObject();
 
+        jsonObject[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
+            ? throw new KeyNotFoundException($"Missing value for key property '{model.KeyProperty.ModelName}")
+            : keyValue switch
+            {
+                string s => s,
+                null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
+                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+            };
+
         jsonObject[AzureCosmosDBNoSQLConstants.ReservedKeyPropertyName] = (string)(dataModel[model.KeyProperty.ModelName]
             ?? throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."));
 

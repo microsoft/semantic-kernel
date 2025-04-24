@@ -22,10 +22,7 @@ public sealed class VectorStoreRecordDefinition
     public IReadOnlyList<VectorStoreRecordProperty> Properties { get; init; } = s_emptyFields;
 
     /// <summary>
-    /// Gets or sets the embedding generator to use by default for vector properties in this collection.
+    /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
-    /// <remarks>
-    /// TODO
-    /// </remarks>
     public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 }

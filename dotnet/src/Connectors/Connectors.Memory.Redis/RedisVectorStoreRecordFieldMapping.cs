@@ -76,7 +76,7 @@ internal static class RedisVectorStoreRecordFieldMapping
             if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
             {
                 generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
+                generatedEmbeddings[i] = await floatTask.ConfigureAwait(false);
             }
             else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<double>, ReadOnlyMemory<double>>(records, cancellationToken, out var doubleTask))
             {

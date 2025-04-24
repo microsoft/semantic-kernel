@@ -11,7 +11,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 public sealed class PineconeVectorStoreOptions
 {
     /// <summary>
-    /// Gets or sets the embedding generator to use by default for vector properties in this collection.
+    /// Gets or sets the default embedding generator for vector properties in this collection.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; init; }
 

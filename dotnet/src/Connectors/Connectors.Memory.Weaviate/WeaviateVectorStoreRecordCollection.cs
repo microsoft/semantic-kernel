@@ -236,7 +236,7 @@ public sealed class WeaviateVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         const string OperationName = "GetCollectionObject";
 
-        var guid = key as Guid? ?? throw new UnreachableException("Only Guid keys are supported");
+        var guid = key as Guid? ?? throw new InvalidCastException("Only Guid keys are supported");
         var includeVectors = options?.IncludeVectors is true;
         if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {

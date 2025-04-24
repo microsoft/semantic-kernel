@@ -246,7 +246,7 @@ public class VectorStoreRecordModelBuilder
 
                     if (property.PropertyInfo.PropertyType != property.Type)
                     {
-                        throw new InvalidOperationException($"Property '{property.ModelName}' has a different CLR type in the record definition ('{property.Type.Name}') and on the CLR type ('{property.PropertyInfo.PropertyType}').");
+                        throw new InvalidOperationException($"Property '{property.ModelName}' has a different CLR type in the record definition ('{property.Type.Name}') and on the .NET property ('{property.PropertyInfo.PropertyType}').");
                     }
                 }
             }
@@ -477,7 +477,7 @@ public class VectorStoreRecordModelBuilder
             case VectorStoreRecordVectorPropertyModel vectorProperty:
                 Debug.Assert(vectorProperty.EmbeddingGenerator is null ^ vectorProperty.Type != vectorProperty.EmbeddingType);
 
-                if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType))
+                if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType) && vectorProperty.EmbeddingGenerator is null)
                 {
                     throw new InvalidOperationException(string.Format(VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name));
                 }
