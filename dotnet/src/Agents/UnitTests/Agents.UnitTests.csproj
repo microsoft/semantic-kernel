@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Core\Agents.Core.csproj" />
     <ProjectReference Include="..\OpenAI\Agents.OpenAI.csproj" />
     <ProjectReference Include="..\Orchestration\Agents.Orchestration.csproj" />
+    <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
     <ProjectReference Include="..\Runtime\InProcess\Runtime.InProcess.csproj" />
     <ProjectReference Include="..\Yaml\Agents.Yaml.csproj" />
     <ProjectReference Include="..\..\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
