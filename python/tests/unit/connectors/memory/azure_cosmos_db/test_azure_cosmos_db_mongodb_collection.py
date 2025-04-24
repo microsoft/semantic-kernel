@@ -19,14 +19,6 @@ from semantic_kernel.data.record_definition import (
 from semantic_kernel.exceptions import VectorStoreInitializationException
 
 
-class FakeDataModel:
-    """
-    A fake data model class to satisfy the "type" requirement for data_model_type.
-    """
-
-    pass
-
-
 async def test_constructor_with_mongo_client_provided() -> None:
     """
     Test the constructor of AzureCosmosDBforMongoDBCollection when a mongo_client
@@ -45,7 +37,7 @@ async def test_constructor_with_mongo_client_provided() -> None:
 
     collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
         collection_name=collection_name,
-        data_model_type=FakeDataModel,
+        data_model_type=dict,
         mongo_client=mock_client,
         data_model_definition=fake_definition,
     )
@@ -86,7 +78,7 @@ async def test_constructor_without_mongo_client_success() -> None:
     ):
         collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
             collection_name="test_collection",
-            data_model_type=FakeDataModel,
+            data_model_type=dict,
             data_model_definition=mock_data_model_definition,
             connection_string="mongodb://test-env",
             database_name="",
@@ -136,7 +128,7 @@ async def test_constructor_raises_exception_on_validation_error() -> None:
         with pytest.raises(VectorStoreInitializationException) as exc_info:
             cosmos_collection.AzureCosmosDBforMongoDBCollection(
                 collection_name="test_collection",
-                data_model_type=FakeDataModel,
+                data_model_type=dict,
                 data_model_definition=mock_data_model_definition,
                 connection_string="mongodb://test-env",
                 database_name="",
@@ -156,9 +148,7 @@ async def test_constructor_raises_exception_if_no_connection_string() -> None:
 
     with patch.object(cosmos_settings.AzureCosmosDBforMongoDBSettings, "create", return_value=mock_settings):
         with pytest.raises(VectorStoreInitializationException) as exc_info:
-            cosmos_collection.AzureCosmosDBforMongoDBCollection(
-                collection_name="test_collection", data_model_type=FakeDataModel
-            )
+            cosmos_collection.AzureCosmosDBforMongoDBCollection(collection_name="test_collection", data_model_type=dict)
         assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
 
 
@@ -198,7 +188,7 @@ async def test_create_collection_calls_database_methods() -> None:
     # Instantiate
     collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
         collection_name="test_collection",
-        data_model_type=FakeDataModel,
+        data_model_type=dict,
         data_model_definition=mock_data_model_definition,
         mongo_client=mock_client,
         database_name="test_db",
@@ -245,7 +235,7 @@ async def test_context_manager_calls_aconnect_and_close_when_managed() -> None:
     ):
         collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
             collection_name="test_collection",
-            data_model_type=FakeDataModel,
+            data_model_type=dict,
             connection_string="mongodb://fake",
             data_model_definition=mock_data_model_definition,
         )
@@ -278,7 +268,7 @@ async def test_context_manager_does_not_close_when_not_managed() -> None:
 
     collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
         collection_name="test_collection",
-        data_model_type=FakeDataModel,
+        data_model_type=dict,
         mongo_client=external_client,
         data_model_definition=mock_data_model_definition,
     )
