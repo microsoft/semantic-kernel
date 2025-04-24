@@ -78,7 +78,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                 - type: {type}
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -127,7 +127,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                             description: param2 description
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -167,7 +167,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                             description: The location to get the weather for.
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -203,7 +203,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                       - connection_string
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -239,7 +239,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                         - connection_string
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -250,7 +250,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
         Assert.NotNull(requestContent);
         var requestJson = JsonSerializer.Deserialize<JsonElement>(requestContent);
         Assert.Equal(1, requestJson.GetProperty("tools").GetArrayLength());
-        Assert.Equal("fabric_aiskill", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
+        Assert.Equal("fabric_dataagent", requestJson.GetProperty("tools")[0].GetProperty("type").GetString());
     }
 
     /// <summary>
@@ -290,7 +290,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                           audience: audience
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
@@ -328,7 +328,7 @@ public class AzureAIKernelAgentYamlTests : IDisposable
                         - connection_string
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentResponse);
+        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
