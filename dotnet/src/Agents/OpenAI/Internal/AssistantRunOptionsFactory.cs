@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using OpenAI.Assistants;
 
@@ -12,7 +13,9 @@ internal static class AssistantRunOptionsFactory
 {
     public static RunCreationOptions GenerateOptions(RunCreationOptions? defaultOptions, string? agentInstructions, RunCreationOptions? invocationOptions, string? threadExtensionsContext)
     {
-        var additionalInstructions = (invocationOptions?.AdditionalInstructions ?? defaultOptions?.AdditionalInstructions) + threadExtensionsContext;
+        var additionalInstructions = string.Concat(
+            (invocationOptions?.AdditionalInstructions ?? defaultOptions?.AdditionalInstructions),
+            string.IsNullOrWhiteSpace(threadExtensionsContext) ? string.Empty : string.Concat(Environment.NewLine, Environment.NewLine, threadExtensionsContext));
 
         RunCreationOptions runOptions =
             new()

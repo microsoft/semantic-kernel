@@ -2,6 +2,6 @@
 
 namespace SemanticKernel.IntegrationTests.Agents.CommonInterfaceConformance.AgentWithStatePartConformance;
 
-public class AzureAIAgentWithStatePartTests() : AgentWithStatePartTests<AzureAIAgentFixture>(() => new AzureAIAgentFixture())
+public class OpenAIAssistantAgentWithStatePartTests() : AgentWithStatePartTests<OpenAIAssistantAgentFixture>(() => new OpenAIAssistantAgentFixture())
 {
 }
