@@ -213,8 +213,7 @@ public class Step07_BedrockAgent_Declarative : BaseBedrockAgentTest
             if (deleteAgent)
             {
                 var bedrockAgent = agent as BedrockAgent;
-                Assert.NotNull(bedrockAgent);
-                await bedrockAgent.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
+                await bedrockAgent!.Client.DeleteAgentAsync(new() { AgentId = bedrockAgent.Id });
             }
 
             if (agentThread is not null)

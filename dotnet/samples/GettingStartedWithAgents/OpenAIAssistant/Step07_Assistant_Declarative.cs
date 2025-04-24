@@ -108,7 +108,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, configuration: TestConfiguration.ConfigurationRoot);
 
-        await InvokeAgentAsync(agent!, "Cats and Dogs", false);
+        await InvokeAgentAsync(agent!, "Cats and Dogs", deleteAgent: false);
     }
 
     /// <summary>
@@ -179,11 +179,6 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
 
     public Step07_Assistant_Declarative(ITestOutputHelper output) : base(output)
     {
-        // Uncomment the following lines to enable logging
-        //var handler = new LoggingHandler(new HttpClientHandler(), output);
-        //var httpClient = new HttpClient(handler);
-        //var client = OpenAIAssistantAgent.CreateAzureOpenAIClient(new AzureCliCredential(), new Uri(this.Endpoint!), httpClient);
-
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<OpenAIClient>(this.Client);
         this._kernel = builder.Build();
@@ -215,8 +210,7 @@ public class Step07_Assistant_Declarative : BaseAssistantTest
             if (deleteAgent)
             {
                 var openaiAgent = agent as OpenAIAssistantAgent;
-                Assert.NotNull(openaiAgent);
-                await openaiAgent.Client.DeleteAssistantAsync(openaiAgent.Id);
+                await openaiAgent!.Client.DeleteAssistantAsync(openaiAgent.Id);
             }
 
             if (agentThread is not null)

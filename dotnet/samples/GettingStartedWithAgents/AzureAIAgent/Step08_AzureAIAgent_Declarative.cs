@@ -41,7 +41,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         var kernel = builder.Build();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
@@ -59,7 +58,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million");
     }
@@ -76,9 +74,11 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
-        await InvokeAgentAsync(agent!, "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million", false);
+        await InvokeAgentAsync(
+            agent!,
+            "Could you please create a bar chart for the operating profit using the following data and provide the file to me? Company A: $1.2 million, Company B: $2.5 million, Company C: $3.0 million, Company D: $1.8 million",
+            deleteAgent: false);
     }
 
     [Fact]
@@ -98,7 +98,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "Use code to determine the values in the Fibonacci sequence that that are less then the value of 101?");
     }
@@ -136,7 +135,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the special soup and how much does it cost?");
     }
@@ -166,7 +164,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the latest new about the Semantic Kernel?");
     }
@@ -197,7 +194,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         this._kernel.Plugins.Add(plugin);
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What are the key features of the Semantic Kernel?");
     }
@@ -287,7 +283,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
     }
@@ -354,7 +349,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         AzureAIAgentFactory factory = new();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         await InvokeAgentAsync(agent!, "What is the current weather in Dublin?");
     }
@@ -389,7 +383,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         var promptTemplateFactory = new KernelPromptTemplateFactory();
 
         var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel }, TestConfiguration.ConfigurationRoot);
-        Assert.NotNull(agent);
 
         var options = new AgentInvokeOptions()
         {
@@ -403,7 +396,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         Microsoft.SemanticKernel.Agents.AgentThread? agentThread = null;
         try
         {
-            await foreach (var response in agent.InvokeAsync([], agentThread, options))
+            await foreach (var response in agent!.InvokeAsync([], agentThread, options))
             {
                 agentThread = response.Thread;
                 this.WriteAgentChatMessage(response);
@@ -412,8 +405,7 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
         finally
         {
             var azureaiAgent = agent as AzureAIAgent;
-            Assert.NotNull(azureaiAgent);
-            await azureaiAgent.Client.DeleteAgentAsync(azureaiAgent.Id);
+            await azureaiAgent!.Client.DeleteAgentAsync(azureaiAgent.Id);
 
             if (agentThread is not null)
             {
@@ -424,11 +416,6 @@ public class Step08_AzureAIAgent_Declarative : BaseAzureAgentTest
 
     public Step08_AzureAIAgent_Declarative(ITestOutputHelper output) : base(output)
     {
-        // Uncomment the following lines to enable logging
-        //var handler = new LoggingHandler(new HttpClientHandler(), output);
-        //var httpClient = new HttpClient(handler);
-        //var client = AzureAIAgent.CreateAzureAIClient(TestConfiguration.AzureAI.ConnectionString, new AzureCliCredential(), httpClient);
-
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<AIProjectClient>(this.Client);
         this._kernel = builder.Build();
