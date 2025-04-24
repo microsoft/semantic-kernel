@@ -17,8 +17,6 @@ public sealed class InMemoryVectorStore : IVectorStore
 {
     private readonly InMemoryVectorStoreOptions _options;
 
-    private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, ConcurrentDictionary<object, object>>> s_stores = new();
-
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
 
@@ -35,7 +33,7 @@ public sealed class InMemoryVectorStore : IVectorStore
     public InMemoryVectorStore(InMemoryVectorStoreOptions? options = default)
     {
         this._options = options ?? new InMemoryVectorStoreOptions();
-        this._internalCollections = this._options.StoreName is null ? new() : s_stores.GetOrAdd(this._options.StoreName, _ => new());
+        this._internalCollections = new();
 
         this._metadata = new()
         {

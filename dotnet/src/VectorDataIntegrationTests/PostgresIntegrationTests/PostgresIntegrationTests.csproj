@@ -7,7 +7,6 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <RootNamespace>PostgresIntegrationTests</RootNamespace>
-    <NoWarn>$(NoWarn);SKEXP0020</NoWarn> <!-- Postgres connector is experimental for now -->
   </PropertyGroup>
 
   <ItemGroup>

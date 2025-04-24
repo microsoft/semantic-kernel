@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -133,20 +132,27 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
     {
         const string OperationName = "Upsert";
 
-        // If an embedding generator is defined, invoke it once for all records.
-        Embedding<float>? generatedEmbedding = null;
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
 
-        Debug.Assert(this._model.VectorProperties.Count <= 1);
-        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
         {
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var task))
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
             {
-                generatedEmbedding = await task.ConfigureAwait(false);
+                continue;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
             }
             else
             {
-                // TODO: Implement support for Half, binary, sparse embeddings (#11083)
-
                 throw new InvalidOperationException(
                     $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
             }
@@ -157,7 +163,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             this._collectionMetadata.VectorStoreName,
             this.Name,
             OperationName,
-            () => this._mapper.MapFromDataToStorageModel(record, generatedEmbedding));
+            () => this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
 
         Verify.NotNull(storageModel);
 
@@ -179,30 +185,44 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
 
         const string OperationName = "UpsertBatch";
 
-        // If an embedding generator is defined, invoke it once for all records.
-        GeneratedEmbeddings<Embedding<float>>? generatedEmbeddings = null;
+        IReadOnlyList<TRecord>? recordsList = null;
 
-        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        // If an embedding generator is defined, invoke it once per property for all records.
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
         {
-            var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+            var vectorProperty = this._model.VectorProperties[i];
 
-            if (recordsList.Count == 0)
+            if (vectorProperty.EmbeddingGenerator is null)
             {
-                return [];
+                continue;
             }
 
-            records = recordsList;
-
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            // We have a property with embedding generation; materialize the records' enumerable if needed, to
+            // prevent multiple enumeration.
+            if (recordsList is null)
             {
-                generatedEmbeddings = await task.ConfigureAwait(false);
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
 
-                Debug.Assert(generatedEmbeddings.Count == recordsList.Count);
+                if (recordsList.Count == 0)
+                {
+                    return [];
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
             }
             else
             {
-                // TODO: Implement support for Half, binary, sparse embeddings (#11083)
-
                 throw new InvalidOperationException(
                     $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
             }
@@ -213,7 +233,7 @@ public sealed class PostgresVectorStoreRecordCollection<TKey, TRecord> : IVector
             this._collectionMetadata.VectorStoreName,
             this.Name,
             OperationName,
-            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, generatedEmbeddings?[i])).ToList());
+            () => records.Select((r, i) => this._mapper.MapFromDataToStorageModel(r, i, generatedEmbeddings)).ToList());
 
         if (storageModels.Count == 0)
         {

@@ -163,7 +163,7 @@ public abstract class EmbeddingGenerationTests<TKey>(EmbeddingGenerationTests<TK
     [ConditionalFact]
     public virtual async Task SearchAsync_with_incompatible_generator_throws()
     {
-        var collection = this.GetCollection<Record>(storeGenerator: true, collectionGenerator: false, propertyGenerator: false);
+        var collection = this.GetCollection<Record>(storeGenerator: true, collectionGenerator: true, propertyGenerator: true);
 
         // We have a generator configured for string, not int.
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => collection.SearchAsync(8, top: 1).ToListAsync().AsTask());

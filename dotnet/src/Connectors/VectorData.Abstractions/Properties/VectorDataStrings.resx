@@ -39,4 +39,7 @@
     <data name="IncludeVectorsNotSupportedWithEmbeddingGeneration" xml:space="preserve">
         <value>When an embedding generator is configured, `Include Vectors` cannot be enabled.</value>
     </data>
+    <data name="EmbeddingGeneratorWithInvalidEmbeddingType" xml:space="preserve">
+        <value>An embedding generator was configured on property '{0}', but output embedding type '{1}' isn't supported by the connector.</value>
+    </data>
 </root>

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -236,7 +235,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         bool includeVectors = options?.IncludeVectors is true;
 
-        if (includeVectors && this._model.VectorProperties is [{ EmbeddingGenerator: not null }])
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -277,7 +276,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         bool includeVectors = options?.IncludeVectors is true;
 
-        if (includeVectors && this._model.VectorProperties is [{ EmbeddingGenerator: not null }])
+        if (includeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -335,15 +334,24 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(record);
 
-        // If an embedding generator is defined, invoke it once for all records.
-        Embedding<float>? generatedEmbedding = null;
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
 
-        Debug.Assert(this._model.VectorProperties.Count <= 1);
-        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
         {
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var task))
+            var vectorProperty = this._model.VectorProperties[i];
+
+            if (vectorProperty.EmbeddingGenerator is null)
             {
-                generatedEmbedding = await task.ConfigureAwait(false);
+                continue;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>, ReadOnlyMemory<float>>(record, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = [await floatTask.ConfigureAwait(false)];
             }
             else
             {
@@ -358,7 +366,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
             this._options.Schema,
             this.Name,
             this._model,
-            this._mapper.MapFromDataToStorageModel(record, generatedEmbedding));
+            this._mapper.MapFromDataToStorageModel(record, recordIndex: 0, generatedEmbeddings));
 
         return await ExceptionWrapper.WrapAsync(connection, command,
             async static (cmd, ct) =>
@@ -378,26 +386,41 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
     {
         Verify.NotNull(records);
 
-        // We're going to be potentially enumerating the records multiple times, so materialize them into a list if needed.
-        var recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+        IReadOnlyList<TRecord>? recordsList = null;
 
-        if (recordsList.Count == 0)
+        // If an embedding generator is defined, invoke it once per property for all records.
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
+
+        var vectorPropertyCount = this._model.VectorProperties.Count;
+        for (var i = 0; i < vectorPropertyCount; i++)
         {
-            return [];
-        }
+            var vectorProperty = this._model.VectorProperties[i];
 
-        records = recordsList;
-
-        // If an embedding generator is defined, invoke it once for all records.
-        GeneratedEmbeddings<Embedding<float>>? generatedEmbeddings = null;
-
-        if (this._model.VectorProperties is [{ EmbeddingGenerator: not null } vectorProperty])
-        {
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var task))
+            if (vectorProperty.EmbeddingGenerator is null)
             {
-                generatedEmbeddings = await task.ConfigureAwait(false);
+                continue;
+            }
 
-                Debug.Assert(generatedEmbeddings.Count == recordsList.Count);
+            // We have a property with embedding generation; materialize the records' enumerable if needed, to
+            // prevent multiple enumeration.
+            if (recordsList is null)
+            {
+                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+
+                if (recordsList.Count == 0)
+                {
+                    return [];
+                }
+
+                records = recordsList;
+            }
+
+            // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
+            // and generate embeddings for them in a single batch. That's some more complexity though.
+            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>, ReadOnlyMemory<float>>(records, cancellationToken, out var floatTask))
+            {
+                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
             }
             else
             {
@@ -431,7 +454,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
                         this._model,
                         records.Skip(taken)
                                .Take(SqlServerConstants.MaxParameterCount / parametersPerRecord)
-                               .Select((r, i) => this._mapper.MapFromDataToStorageModel(r, generatedEmbeddings?[taken + i]))))
+                               .Select((r, i) => this._mapper.MapFromDataToStorageModel(r, taken + i, generatedEmbeddings))))
                     {
                         break; // records is empty
                     }
@@ -553,7 +576,7 @@ public sealed class SqlServerVectorStoreRecordCollection<TKey, TRecord>
 
         var searchOptions = options ?? s_defaultVectorSearchOptions;
 
-        if (searchOptions.IncludeVectors && this._model.VectorProperties is [{ EmbeddingGenerator: not null }])
+        if (searchOptions.IncludeVectors && this._model.VectorProperties.Any(p => p.EmbeddingGenerator is not null))
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }

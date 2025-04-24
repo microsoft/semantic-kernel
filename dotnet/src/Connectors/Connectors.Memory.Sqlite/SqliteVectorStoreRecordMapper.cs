@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Connectors.Sqlite;
 /// <typeparam name="TRecord">The consumer data model to map to or from.</typeparam>
 internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
 {
-    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
+    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var properties = new Dictionary<string, object?>
         {
@@ -26,9 +26,10 @@ internal sealed class SqliteVectorStoreRecordMapper<TRecord>(VectorStoreRecordMo
             properties.Add(property.StorageName, property.GetValueAsObject(dataModel!));
         }
 
-        foreach (var property in model.VectorProperties)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
-            var vector = generatedEmbedding?.Vector ?? property.GetValueAsObject(dataModel!);
+            var property = model.VectorProperties[i];
+            var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> e ? ((Embedding<float>)e[recordIndex]).Vector : property.GetValueAsObject(dataModel!);
 
             properties.Add(
                 property.StorageName,

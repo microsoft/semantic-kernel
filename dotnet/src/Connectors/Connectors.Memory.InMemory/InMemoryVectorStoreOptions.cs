@@ -10,12 +10,6 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public sealed class InMemoryVectorStoreOptions
 {
     /// <summary>
-    /// An optional name for the store, allowing multiple instances of <see cref="InMemoryVectorStore" /> to share the same
-    /// collections within the process. If <see langword="null" />, all collections are private to the instance.
-    /// </summary>
-    public string? StoreName { get; init; }
-
-    /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; init; }

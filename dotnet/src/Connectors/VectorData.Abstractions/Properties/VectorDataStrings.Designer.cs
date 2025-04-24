@@ -109,5 +109,13 @@ namespace Microsoft.Extensions.VectorData.Properties
                 return ResourceManager.GetString("IncludeVectorsNotSupportedWithEmbeddingGeneration", resourceCulture);
             }
         }
+
+        public static string EmbeddingGeneratorWithInvalidEmbeddingType
+        {
+            get
+            {
+                return ResourceManager.GetString("EmbeddingGeneratorWithInvalidEmbeddingType", resourceCulture);
+            }
+        }
     }
 }

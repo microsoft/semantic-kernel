@@ -477,9 +477,12 @@ public class VectorStoreRecordModelBuilder
             case VectorStoreRecordVectorPropertyModel vectorProperty:
                 Debug.Assert(vectorProperty.EmbeddingGenerator is null ^ vectorProperty.Type != vectorProperty.EmbeddingType);
 
-                if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType) && vectorProperty.EmbeddingGenerator is null)
+                if (!this.Options.SupportedVectorPropertyTypes.Contains(vectorProperty.EmbeddingType))
                 {
-                    throw new InvalidOperationException(string.Format(VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name));
+                    throw new InvalidOperationException(
+                        vectorProperty.EmbeddingGenerator is null
+                            ? string.Format(VectorDataStrings.NonEmbeddingVectorPropertyWithoutEmbeddingGenerator, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name)
+                            : string.Format(VectorDataStrings.EmbeddingGeneratorWithInvalidEmbeddingType, vectorProperty.ModelName, vectorProperty.EmbeddingType.Name));
                 }
 
                 if (vectorProperty.Dimensions <= 0)

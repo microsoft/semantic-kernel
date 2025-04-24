@@ -26,7 +26,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         var mapper = new PostgresVectorStoreRecordMapper<TestRecord<string>>(model);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel, generatedEmbedding: null);
+        var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal("key", result["Key"]);
@@ -51,7 +51,7 @@ public sealed class PostgresVectorStoreRecordMapperTests
         var mapper = new PostgresVectorStoreRecordMapper<TestRecord<long>>(propertyReader);
 
         // Act
-        var result = mapper.MapFromDataToStorageModel(dataModel, generatedEmbedding: null);
+        var result = mapper.MapFromDataToStorageModel(dataModel, recordIndex: 0, generatedEmbeddings: null);
 
         // Assert
         Assert.Equal(1L, result["Key"]);

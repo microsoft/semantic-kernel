@@ -23,12 +23,18 @@ public class InMemoryEmbeddingGenerationTests(InMemoryEmbeddingGenerationTests.F
     // The same applies to the custom type test:
     public override Task SearchAsync_with_custom_input_type() => Task.CompletedTask;
 
+    // The test relies on creating a new InMemoryVectorStore configured with a store-default generator, but with InMemory that store
+    // doesn't share the seeded data with the fixture store (since each InMemoryVectorStore has its own private data).
+    // Test coverage is already largely sufficient via the property and collection tests.
+    public override Task SearchAsync_with_store_generator() => Task.CompletedTask;
+
     public new class Fixture : EmbeddingGenerationTests<int>.Fixture
     {
         public override TestStore TestStore => InMemoryTestStore.Instance;
 
+        // Note that with InMemory specifically, we can't create a vector store with an embedding generator, since it wouldn't share the seeded data with the fixture store.
         public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
-            => InMemoryTestStore.Instance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
+            => InMemoryTestStore.Instance.DefaultVectorStore;
 
         public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
         [

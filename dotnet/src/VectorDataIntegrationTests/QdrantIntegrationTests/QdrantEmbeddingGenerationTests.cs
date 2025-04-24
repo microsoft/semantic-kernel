@@ -34,25 +34,5 @@ public class QdrantEmbeddingGenerationTests(QdrantEmbeddingGenerationTests.Fixtu
                 .AddSingleton(QdrantTestStore.UnnamedVectorInstance.Client)
                 .AddQdrantVectorStoreRecordCollection<Guid, RecordWithAttributes>(this.CollectionName)
         ];
-        // public override TestStore TestStore => QdrantTestStore.NamedVectorsInstance;
-
-        // public override bool SupportsDatabaseEmbeddingGeneration => false;
-
-        // public override IVectorStore CreateVectorStore(IEmbeddingGenerator? embeddingGenerator)
-        //     => QdrantTestStore.NamedVectorsInstance.GetVectorStore(new() { EmbeddingGenerator = embeddingGenerator });
-
-        // public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionStoreRegistrationDelegates =>
-        // [
-        //     services => services
-        //         .AddSingleton(QdrantTestStore.NamedVectorsInstance.Client)
-        //         .AddQdrantVectorStore()
-        // ];
-
-        // public override Func<IServiceCollection, IServiceCollection>[] DependencyInjectionCollectionRegistrationDelegates =>
-        // [
-        //     services => services
-        //         .AddSingleton(QdrantTestStore.NamedVectorsInstance.Client)
-        //         .AddQdrantVectorStoreRecordCollection<Guid, RecordWithAttributes>(this.CollectionName)
-        // ];
     }
 }

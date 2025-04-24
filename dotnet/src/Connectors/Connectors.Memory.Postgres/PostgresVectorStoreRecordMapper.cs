@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ConnectorSupport;
@@ -17,7 +18,7 @@ namespace Microsoft.SemanticKernel.Connectors.Postgres;
 internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecordModel model)
     where TRecord : notnull
 {
-    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
+    public Dictionary<string, object?> MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var keyProperty = model.KeyProperty;
 
@@ -31,12 +32,20 @@ internal sealed class PostgresVectorStoreRecordMapper<TRecord>(VectorStoreRecord
             properties.Add(property.StorageName, property.GetValueAsObject(dataModel));
         }
 
-        foreach (var property in model.VectorProperties)
+        for (var i = 0; i < model.VectorProperties.Count; i++)
         {
+            var property = model.VectorProperties[i];
+
             properties.Add(
                 property.StorageName,
-                 PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(
-                    generatedEmbedding?.Vector ?? property.GetValueAsObject(dataModel)));
+                PostgresVectorStoreRecordPropertyMapping.MapVectorForStorageModel(
+                    generatedEmbeddings?[i] is IReadOnlyList<Embedding> e
+                        ? e[recordIndex] switch
+                        {
+                            Embedding<float> fe => fe.Vector,
+                            _ => throw new UnreachableException()
+                        }
+                        : (ReadOnlyMemory<float>)property.GetValueAsObject(dataModel!)!));
         }
 
         return properties;
