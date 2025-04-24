@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,7 +9,9 @@ using Xunit;
 
 namespace VectorDataSpecificationTests.DependencyInjection;
 
-public abstract class DependencyInjectionTests<TKey, TRecord>
+public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, TRecord>
+    where TVectorStore : class, IVectorStore
+    where TCollection : class, IVectorStoreRecordCollection<TKey, TRecord>
     where TKey : notnull
     where TRecord : notnull
 {
@@ -52,13 +55,16 @@ public abstract class DependencyInjectionTests<TKey, TRecord>
 
     [Theory]
     [MemberData(nameof(LiftetimesAndKeys))]
-    public void CanRegisterVectorStore(ServiceLifetime lifetime, object? serviceKey)
+    public virtual void CanRegisterVectorStore(ServiceLifetime lifetime, object? serviceKey)
     {
         HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
 
         this.RegisterVectorStore(builder.Services, lifetime, serviceKey);
 
         using IHost host = builder.Build();
+        // let's ensure that concrete types are registered
+        Verify<TVectorStore>(host, lifetime, serviceKey);
+        // and the abstraction too
         Verify<IVectorStore>(host, lifetime, serviceKey);
     }
 
@@ -71,7 +77,56 @@ public abstract class DependencyInjectionTests<TKey, TRecord>
         this.RegisterCollection(builder.Services, lifetime, serviceKey: serviceKey);
 
         using IHost host = builder.Build();
+        // let's ensure that concrete types are registered
+        Verify<TCollection>(host, lifetime, serviceKey);
+        // and the abstraction too
         Verify<IVectorStoreRecordCollection<TKey, TRecord>>(host, lifetime, serviceKey);
+    }
+
+    [Theory]
+    [MemberData(nameof(LiftetimesAndKeys))]
+    public virtual void CanRegisterConcreteTypeVectorStoreAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
+    {
+        HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
+
+        // Users may be willing to register more than one IVectorStore implementation.
+        if (serviceKey is null)
+        {
+            builder.Services.Add(new ServiceDescriptor(typeof(IVectorStore), sp => new FakeVectorStore(), lifetime));
+        }
+        else
+        {
+            builder.Services.Add(new ServiceDescriptor(typeof(IVectorStore), serviceKey, (sp, key) => new FakeVectorStore(), lifetime));
+        }
+
+        this.RegisterVectorStore(builder.Services, lifetime, serviceKey);
+
+        using IHost host = builder.Build();
+        // let's ensure that concrete types are registered
+        Verify<TVectorStore>(host, lifetime, serviceKey);
+    }
+
+    [Theory]
+    [MemberData(nameof(LiftetimesAndKeys))]
+    public void CanRegisterConcreteTypeCollectionsAfterSomeAbstractionHasBeenRegistered(ServiceLifetime lifetime, object? serviceKey)
+    {
+        HostApplicationBuilder builder = this.CreateHostBuilder(serviceKey);
+
+        // Users may be willing to register more than one IVectorStoreRecordCollection implementation.
+        if (serviceKey is null)
+        {
+            builder.Services.Add(new ServiceDescriptor(typeof(IVectorStoreRecordCollection<TKey, TRecord>), sp => new FakeVectorStoreRecordCollection(), lifetime));
+        }
+        else
+        {
+            builder.Services.Add(new ServiceDescriptor(typeof(IVectorStoreRecordCollection<TKey, TRecord>), serviceKey, (sp, key) => new FakeVectorStoreRecordCollection(), lifetime));
+        }
+
+        this.RegisterCollection(builder.Services, lifetime, serviceKey: serviceKey);
+
+        using IHost host = builder.Build();
+        // let's ensure that concrete types are registered
+        Verify<TCollection>(host, lifetime, serviceKey);
     }
 
     protected HostApplicationBuilder CreateHostBuilder(object? serviceKey = null)
@@ -128,4 +183,47 @@ public abstract class DependencyInjectionTests<TKey, TRecord>
         => serviceKey is null
             ? serviceProvider.GetRequiredService<TService>()
             : serviceProvider.GetRequiredKeyedService<TService>(serviceKey);
+
+    private sealed class FakeVectorStore : IVectorStore
+    {
+        public IVectorStoreRecordCollection<TKey2, TRecord2> GetCollection<TKey2, TRecord2>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null)
+            where TKey2 : notnull
+            where TRecord2 : notnull
+            => throw new NotImplementedException();
+        public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+        public object? GetService(Type serviceType, object? serviceKey = null)
+            => throw new NotImplementedException();
+    }
+
+    private sealed class FakeVectorStoreRecordCollection : IVectorStoreRecordCollection<TKey, TRecord>
+    {
+        public string CollectionName => throw new NotImplementedException();
+
+        public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task CreateCollectionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task CreateCollectionIfNotExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task DeleteAsync(TKey key, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task DeleteCollectionAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top, GetFilteredRecordOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => throw new NotImplementedException();
+
+        public Task<TKey> UpsertAsync(TRecord record, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<IReadOnlyList<TKey>> UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public IAsyncEnumerable<VectorSearchResult<TRecord>> VectorizedSearchAsync<TVector>(TVector vector, int top, VectorSearchOptions<TRecord>? options = null, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+    }
 }
