@@ -83,7 +83,7 @@ public sealed class OpenApiPlugin_Filtering : BaseTest
             OperationSelectionPredicate = (OperationSelectionPredicateContext context) => operationsToInclude.Contains(context.Id!)
         };
 
-        // Import the RepairService OpenAPI plugin and filter out all operations except `listRepairs` one.
+        // Import the RepairService OpenAPI plugin
         await this._kernel.ImportPluginFromOpenApiAsync(
             pluginName: "RepairService",
             filePath: "Resources/Plugins/RepairServicePlugin/repair-service.json",
