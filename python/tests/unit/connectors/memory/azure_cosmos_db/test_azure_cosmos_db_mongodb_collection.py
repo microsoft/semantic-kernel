@@ -47,53 +47,6 @@ async def test_constructor_with_mongo_client_provided() -> None:
     assert not collection.managed_client, "Should not be managing client when provided"
 
 
-async def test_constructor_without_mongo_client_success() -> None:
-    """
-    Test the constructor of AzureCosmosDBforMongoDBCollection when a mongo_client
-    is not provided. Expect it to create settings and initialize an AsyncMongoClient.
-    """
-    mock_data_model_definition = VectorStoreRecordDefinition(
-        fields={
-            "id": VectorStoreRecordKeyField(),
-            "content": VectorStoreRecordDataField(),
-            "vector": VectorStoreRecordVectorField(),
-        }
-    )
-
-    fake_client = AsyncMock(name="fake_async_client", spec=AsyncMongoClient)
-
-    with (
-        patch.object(
-            cosmos_settings.AzureCosmosDBforMongoDBSettings,
-            "create",
-            return_value=AsyncMock(
-                connection_string=AsyncMock(get_secret_value=lambda: "mongodb://test"), database_name="test_db"
-            ),
-        ) as mock_settings_create,
-        patch(
-            "semantic_kernel.connectors.memory.azure_cosmos_db.azure_cosmos_db_mongodb_collection.AsyncMongoClient",
-            return_value=fake_client,
-            spec=AsyncMongoClient,
-        ) as mock_async_client,
-    ):
-        collection = cosmos_collection.AzureCosmosDBforMongoDBCollection(
-            collection_name="test_collection",
-            data_model_type=dict,
-            data_model_definition=mock_data_model_definition,
-            connection_string="mongodb://test-env",
-            database_name="",
-        )
-
-    mock_settings_create.assert_called_once()
-    mock_async_client.assert_called_once()
-
-    created_client = mock_async_client.return_value
-
-    assert collection.mongo_client == created_client
-    assert collection.managed_client, "Should manage client when none is provided"
-    assert collection.database_name == "test_db"
-
-
 async def test_constructor_raises_exception_on_validation_error() -> None:
     """
     Test that the constructor raises VectorStoreInitializationException when
@@ -130,10 +83,9 @@ async def test_constructor_raises_exception_on_validation_error() -> None:
                 collection_name="test_collection",
                 data_model_type=dict,
                 data_model_definition=mock_data_model_definition,
-                connection_string="mongodb://test-env",
                 database_name="",
             )
-        assert "Failed to create Azure CosmosDB for MongoDB settings." in str(exc_info.value)
+        assert "The Azure CosmosDB for MongoDB connection string is required." in str(exc_info.value)
 
 
 async def test_constructor_raises_exception_if_no_connection_string() -> None:
