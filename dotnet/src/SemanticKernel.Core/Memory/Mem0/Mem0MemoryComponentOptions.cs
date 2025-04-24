@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </summary>
 [Experimental("SKEXP0130")]
 [ExcludeFromCodeCoverage] // Tested via integration tests.
-public class Mem0MemoryComponentOptions
+public sealed class Mem0MemoryComponentOptions
 {
     /// <summary>
     /// Gets or sets an optional ID for the application to scope memories to.
@@ -44,10 +44,14 @@ public class Mem0MemoryComponentOptions
     public string? UserId { get; init; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the scope of the memories is limited to the current thread.
+    /// Gets or sets a value indicating whether memories should be scoped to the thread id provided on a per operation basis.
     /// </summary>
     /// <remarks>
-    /// If false, <see cref="ThreadId"/> will be ignored, and any thread ids passed into the methods of the <see cref="Mem0MemoryComponent"/> will also be ignored.
+    /// This setting is useful if the thread id is not known when the <see cref="Mem0MemoryComponent"/> is instantiated, but
+    /// per thread scoping is desired.
+    /// If <see langword="false"/>, and <see cref="ThreadId"/> is not set, there will be no per thread scoping.
+    /// if <see langword="false"/>, and <see cref="ThreadId"/> is set, <see cref="ThreadId"/> will be used for scoping.
+    /// If <see langword="true"/>, the thread id will be set to the thread id of the current operation, regardless of the value of <see cref="ThreadId"/>.
     /// </remarks>
-    public bool ScopeToThread { get; init; } = false;
+    public bool ScopeToPerOperationThreadId { get; init; } = false;
 }

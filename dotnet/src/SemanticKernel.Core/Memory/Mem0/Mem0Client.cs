@@ -78,7 +78,7 @@ internal sealed class Mem0Client
             UserId = userId,
             Messages = new[]
             {
-                new CreateMemoryMemory
+                new CreateMemoryMessage
                 {
                     Content = messageContent,
                     Role = messageRole
@@ -118,10 +118,10 @@ internal sealed class Mem0Client
         [JsonPropertyName("user_id")]
         public string? UserId { get; set; }
         [JsonPropertyName("messages")]
-        public CreateMemoryMemory[] Messages { get; set; } = [];
+        public CreateMemoryMessage[] Messages { get; set; } = [];
     }
 
-    internal sealed class CreateMemoryMemory
+    internal sealed class CreateMemoryMessage
     {
         [JsonPropertyName("content")]
         public string Content { get; set; } = string.Empty;
@@ -165,7 +165,7 @@ internal sealed class Mem0Client
         public string? AppId { get; set; }
         [JsonPropertyName("agent_id")]
         public string AgentId { get; set; } = string.Empty;
-        [JsonPropertyName("run_id")]
+        [JsonPropertyName("session_id")]
         public string RunId { get; set; } = string.Empty;
     }
 }
