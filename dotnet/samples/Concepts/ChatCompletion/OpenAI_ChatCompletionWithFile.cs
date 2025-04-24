@@ -6,11 +6,16 @@ using Resources;
 
 namespace ChatCompletion;
 
-// This example shows how to use OpenAI chat completion with PDF files.
+/// <summary>
+/// This example shows how to use binary files input with OpenAI's chat completion.
+/// </summary>
 public class OpenAI_ChatCompletionWithFile(ITestOutputHelper output) : BaseTest(output)
 {
+    /// <summary>
+    /// This uses a local file as input for your chat
+    /// </summary>
     [Fact]
-    public async Task LocalFileAsync()
+    public async Task UsingLocalFileInChatCompletion()
     {
         var fileBytes = await EmbeddedResource.ReadAllAsync("employees.pdf");
 
@@ -24,7 +29,7 @@ public class OpenAI_ChatCompletionWithFile(ITestOutputHelper output) : BaseTest(
 
         chatHistory.AddUserMessage(
         [
-            new TextContent("What’s in this file?"),
+            new TextContent("What's in this file?"),
             new BinaryContent(fileBytes, "application/pdf")
         ]);
 
@@ -33,8 +38,11 @@ public class OpenAI_ChatCompletionWithFile(ITestOutputHelper output) : BaseTest(
         Console.WriteLine(reply.Content);
     }
 
+    /// <summary>
+    /// This uses a Base64 data URI as a binary file input for your chat
+    /// </summary>
     [Fact]
-    public async Task DateUriFileAsync()
+    public async Task UsingBase64DataUriInChatCompletion()
     {
         var fileBytes = await EmbeddedResource.ReadAllAsync("employees.pdf");
         var fileBase64 = Convert.ToBase64String(fileBytes.ToArray());
@@ -50,7 +58,7 @@ public class OpenAI_ChatCompletionWithFile(ITestOutputHelper output) : BaseTest(
 
         chatHistory.AddUserMessage(
         [
-            new TextContent("What’s in this file?"),
+            new TextContent("What's in this file?"),
             new BinaryContent(dataUri)
         ]);
 
