@@ -17,7 +17,7 @@ public abstract class BaseOrchestrationTest(ITestOutputHelper output) : BaseAgen
             {
                 Instructions = instructions,
                 Name = name,
-                Description = "test agent",
+                Description = description,
                 Kernel = this.CreateKernelWithChatCompletion(),
             };
     }
