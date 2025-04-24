@@ -11,7 +11,7 @@ from microsoft.agents.copilotstudio.client import (
     CopilotClient,
     PowerPlatformCloud,
 )
-from microsoft.agents.core.models import Activity, ActivityTypes
+from microsoft.agents.core.models import ActivityTypes
 from msal import PublicClientApplication
 from msal_extensions import (
     FilePersistence,
@@ -298,9 +298,10 @@ class CopilotStudioAgent(Agent):
         messages: str | ChatMessageContent | list[str | ChatMessageContent] | None = None,
         thread: AgentThread | None = None,
         arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         **kwargs,
     ) -> AgentResponseItem[ChatMessageContent]:
-        """Blocking single turn call   convenience for typical chat bots."""
+        """Blocking single turn call convenience for typical chat bots."""
         # Ensure we have a thread & propagate inbound user message(s)
         thread = await self._ensure_thread_exists_with_messages(
             messages=messages,
@@ -310,40 +311,18 @@ class CopilotStudioAgent(Agent):
         )
         assert isinstance(thread, CopilotStudioAgentThread)  # for typing
 
-        msgs: list[str] = []
-        if not thread.id:
-            async for activity in self.client.start_conversation():
-                if not activity:
-                    raise Exception("ChatConsoleService.start_service: Activity is None")
-                if activity.type == ActivityTypes.message:
-                    thread.conversation_id = activity.conversation.id
+        responses: list[ChatMessageContent] = []
+        async for response in self._inner_invoke(
+            thread=thread,
+            messages=messages,
+            on_intermediate_message=None,
+            arguments=arguments,
+            kernel=kernel,
+            **kwargs,
+        ):
+            responses.append(response)
 
-        async for activity in self.client.ask_question(messages, thread.id):
-            self._print_activity(activity, msgs)
-        return AgentResponseItem(
-            message=ChatMessageContent(role="assistant", name=self.name, content=msgs[-1]), thread=thread
-        )
-
-    @staticmethod
-    def _print_activity(activity: Activity, msgs: list[str]) -> None:
-        if activity.type == ActivityTypes.message:
-            if activity.text_format == "markdown":
-                # print(activity.text)
-                if activity.suggested_actions and activity.suggested_actions.actions:
-                    print("Suggested actions:")
-                    for action in activity.suggested_actions.actions:
-                        print(f"  - {action.text}")
-            else:
-                pass
-                # print(activity.text)
-            msgs.append(activity.text)
-        elif activity.type == ActivityTypes.typing:
-            # print(".")
-            pass
-        elif activity.type == ActivityTypes.event:
-            print("+")
-        else:
-            print(f"Activity type: [{activity.type}]")
+        return AgentResponseItem(message=responses[-1], thread=thread)
 
     # Streaming helpers.
     @override
@@ -354,6 +333,7 @@ class CopilotStudioAgent(Agent):
         thread: AgentThread | None = None,
         on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
         arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
         **kwargs,
     ) -> AsyncIterable[AgentResponseItem[ChatMessageContent]]:
         """Non streaming pipeline *with* intermediate assistant turns.
@@ -365,6 +345,7 @@ class CopilotStudioAgent(Agent):
             thread: The thread to use for the agent.
             on_intermediate_message: A callback function to call with each intermediate message.
             arguments: The arguments to pass to the agent.
+            kernel: The kernel to use for the agent.
             **kwargs: Additional keyword arguments.
         """
         thread = await self._ensure_thread_exists_with_messages(
@@ -375,15 +356,15 @@ class CopilotStudioAgent(Agent):
         )
         assert isinstance(thread, CopilotStudioAgentThread)
 
-        # Forward last inbound user msg
-        last_user_msg = thread._history[-1]
-        async for activity in self.client.ask_question(last_user_msg.content or ""):
-            thread._buffer.append(activity)
-            flushed = await thread._flush_buffer()
-            for msg in flushed:
-                if on_intermediate_message:
-                    await on_intermediate_message(msg)
-                yield AgentResponseItem(message=msg, thread=thread)
+        async for response in self._inner_invoke(
+            thread=thread,
+            messages=messages,
+            on_intermediate_message=on_intermediate_message,
+            arguments=arguments,
+            kernel=kernel,
+            **kwargs,
+        ):
+            yield AgentResponseItem(message=response, thread=thread)
 
     @override
     async def invoke_stream(
@@ -423,17 +404,45 @@ class CopilotStudioAgent(Agent):
                 await on_intermediate_message(stream_msg)
             yield AgentResponseItem(message=stream_msg, thread=thread)
 
+    async def _inner_invoke(
+        self,
+        thread: CopilotStudioAgentThread,
+        messages: list[str] | None = None,
+        on_intermediate_message: Callable[[ChatMessageContent], Awaitable[None]] | None = None,
+        arguments: KernelArguments | None = None,
+        kernel: "Kernel | None" = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[ChatMessageContent]:
+        if arguments is None:
+            arguments = KernelArguments(**kwargs)
+        else:
+            arguments.update(kwargs)
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Convenience factory (mirrors .setup_resources pattern in other agents)
-# ──────────────────────────────────────────────────────────────────────────────
-def setup_copilot_resources(client: CopilotClient | None = None, **kwargs) -> CopilotClient:
-    """Very light helper allows symmetry with `setup_resources` used by other agents.
+        kernel = kernel or self.kernel
+        arguments = self._merge_arguments(arguments)
 
-    You normally authenticate outside and just pass the client in.
-    """
-    if client:
-        return client
-    raise AgentInitializationException(
-        "Copilot Studio requires an authenticated `CopilotClient`.  Pass one into `CopilotStudioAgent(client=...)`."
-    )
+        messages_to_send = []
+        formatted_instructions = await self.format_instructions(kernel, arguments)
+        if formatted_instructions:
+            messages_to_send.append(formatted_instructions)
+
+        if not thread.id:
+            async for activity in self.client.start_conversation():
+                if not activity:
+                    raise Exception("ChatConsoleService.start_service: Activity is None")
+                if activity.type == ActivityTypes.message:
+                    thread.conversation_id = activity.conversation.id
+
+        async for activity in self.client.ask_question(messages, thread.id):
+            if activity.type == ActivityTypes.message:
+                if (
+                    activity.text_format == "markdown"
+                    and activity.suggested_actions
+                    and activity.suggested_actions.actions
+                ):
+                    for action in activity.suggested_actions.actions:
+                        if on_intermediate_message:
+                            await on_intermediate_message(
+                                ChatMessageContent(role=AuthorRole.ASSISTANT, content=action.text)
+                            )
+                yield ChatMessageContent(role=AuthorRole.ASSISTANT, content=activity.text)
