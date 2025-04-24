@@ -653,7 +653,7 @@ public sealed class GeminiRequestTests
         var request = GeminiRequest.FromPromptAndExecutionSettings(prompt, executionSettings);
 
         // Assert
-        Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.ThinkingConfig?.ThinkingBudget);
+        Assert.Equal(executionSettings.ThinkingConfig.ThinkingBudget, request.Configuration?.ThinkingConfig?.ThinkingBudget);
     }
 
     private sealed class DummyContent(object? innerContent, string? modelId = null, IReadOnlyDictionary<string, object?>? metadata = null) :
