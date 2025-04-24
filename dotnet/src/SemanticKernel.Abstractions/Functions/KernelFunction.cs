@@ -24,8 +24,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Represents a function that can be invoked as part of a Semantic Kernel workload.
 /// </summary>
-public abstract class KernelFunction
+public abstract class KernelFunction : AIFunction
 {
+    public const string KernelAIFunctionArgumentKey = $"{nameof(AIFunctionArguments)}_{nameof(Kernel)}";
+
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -442,6 +444,31 @@ public abstract class KernelFunction
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Invokes the <see cref="KernelFunction"/> using the <see cref="AIFunction"/> interface.
+    /// </summary>
+    /// <remarks>
+    /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> needs to be provided in the <see cref="AIFunctionArguments"/> as the <see cref="KernelAIFunctionArgumentKey"/> argument.
+    /// </remarks>
+    /// <param name="arguments">The arguments to pass to the function's invocation.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
+    /// <returns>The result of the function's execution.</returns>
+    /// <exception cref="ArgumentException">The <see cref="AIFunctionArguments"/> did not contain a <see cref="Kernel"/> instance in the '<see cref="KernelAIFunctionArgumentKey"/>' argument.</exception>
+    protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
+    {
+        arguments.TryGetValue(KernelAIFunctionArgumentKey, out var kernelObject);
+        var kernel = kernelObject as Kernel ?? throw new ArgumentException($"Kernel argument {KernelAIFunctionArgumentKey} was not found.");
+
+        var kernelArguments = new KernelArguments(arguments);
+
+        // Remove the injected kernel argument from the arguments.
+        kernelArguments.Remove(KernelAIFunctionArgumentKey);
+
+        var result = await this.InvokeCoreAsync(kernel, kernelArguments, cancellationToken).ConfigureAwait(false);
+
+        return result.Value;
+    }
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
