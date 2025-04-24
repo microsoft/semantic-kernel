@@ -46,10 +46,6 @@ internal sealed class GeminiRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CachedContent { get; set; }
 
-    [JsonPropertyName("thinkingConfig")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public GeminiRequestThinkingConfig? ThinkingConfig { get; set; }
-
     public void AddFunction(GeminiFunction function)
     {
         // NOTE: Currently Gemini only supports one tool i.e. function calling.
@@ -436,7 +432,8 @@ internal sealed class GeminiRequest
         request.CachedContent = executionSettings.CachedContent;
         if (executionSettings.ThinkingConfig is not null)
         {
-            request.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
+            request.Configuration ??= new ConfigurationElement();
+            request.Configuration.ThinkingConfig = new GeminiRequestThinkingConfig { ThinkingBudget = executionSettings.ThinkingConfig.ThinkingBudget };
         }
     }
 
@@ -477,6 +474,10 @@ internal sealed class GeminiRequest
         [JsonPropertyName("responseSchema")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonElement? ResponseSchema { get; set; }
+
+        [JsonPropertyName("thinkingConfig")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public GeminiRequestThinkingConfig? ThinkingConfig { get; set; }
     }
 
     internal sealed class GeminiRequestThinkingConfig
