@@ -342,7 +342,7 @@ public sealed class PromptyTests
             ---
             name: MyPrompt
             inputs:
-              - name: question
+              question:
                 description: What is the color of the sky?
             ---
             {{a}} {{b}} {{c}}
@@ -367,9 +367,9 @@ public sealed class PromptyTests
             description: This is the description.
             model:
                 api: chat
-                configuration:
+                connection:
                     type: azure_openai_beta
-                parameters:
+                options:
                     logprobs: true
                     top_logprobs: 2
                     top_p: 1.0

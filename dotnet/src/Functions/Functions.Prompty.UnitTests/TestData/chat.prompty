@@ -1,26 +1,30 @@
 ---
 name: Contoso_Chat_Prompt
 description: A retail assistant for Contoso Outdoors products retailer.
-authors:
-  - ????
+metadata:
+  authors:
+    - markwallace
+  tags:
+    - basic
 model:
+  id: gpt-35-turbo
   api: chat
-  configuration:
+  connection:
     type: azure_openai
     api_version: 2023-07-01-preview
-  parameters:
-    model_id: gpt-35-turbo
+  options:
     tools_choice: auto
-    tools:
-    - type: function
-      function:
-        name: test
-        description: test function
+tools:
+  - id: test
+    type: function
+    options:
+      description: test function
+      options:
         parameters:
-          properties:
-            location:
-              description: The city and state or city and country, e.g. San Francisco, CA
-                or Tokyo, Japan
+          - name: location
+            type: string
+            required: true
+            description: The city and state or city and country, e.g. San Francisco, CA or Tokyo, Japan  
 ---
 system:
 You are an AI agent for the Contoso Outdoors products retailer. As the agent, you answer questions briefly, succinctly, 
