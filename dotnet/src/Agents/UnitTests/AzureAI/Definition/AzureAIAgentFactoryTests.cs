@@ -75,13 +75,14 @@ public class AzureAIAgentFactoryTests : IDisposable
             ]
         };
         AzureAIAgentFactory factory = new();
-        using var responseMessage = this.SetupResponse(HttpStatusCode.OK, AzureAIAgentResponse);
+        using var responseMessage = this.SetupResponse(HttpStatusCode.OK, AzureAIAgentCreateResponse);
 
         // Act
         var agent = await factory.CreateAsync(this._kernel, agentDefinition);
 
         // Assert
         Assert.NotNull(agent);
+        Assert.Equal("asst_thdyqg4yVC9ffeILVdEWLONT", agent.Id);
         Assert.Equal(agentDefinition.Name, agent.Name);
         Assert.Equal(agentDefinition.Description, agent.Description);
         Assert.Equal(agentDefinition.Instructions, agent.Instructions);
@@ -89,9 +90,36 @@ public class AzureAIAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// Azure AI Agent response.
+    /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="AzureAIAgentFactory"/>
     /// </summary>
-    public const string AzureAIAgentResponse =
+    [Fact]
+    public async Task VerifyCanGetAzureAIAgentAsync()
+    {
+        // Arrange
+        AgentDefinition agentDefinition = new()
+        {
+            Id = "asst_oKtAcmYQCtTj95BxpvL1RQBP",
+            Type = AzureAIAgentFactory.AzureAIAgentType,
+        };
+        AzureAIAgentFactory factory = new();
+        using var responseMessage = this.SetupResponse(HttpStatusCode.OK, AzureAIAgentGetResponse);
+
+        // Act
+        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+
+        // Assert
+        Assert.NotNull(agent);
+        Assert.Equal("asst_oKtAcmYQCtTj95BxpvL1RQBP", agent.Id);
+        Assert.Equal("HelpfulAssistant", agent.Name);
+        Assert.Equal("Helpful Assistant", agent.Description);
+        Assert.Equal("You are a helpful assistant.", agent.Instructions);
+        Assert.Equal(this._kernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// Azure AI Agent create response.
+    /// </summary>
+    public const string AzureAIAgentCreateResponse =
         """
         {
           "id": "asst_thdyqg4yVC9ffeILVdEWLONT",
@@ -101,6 +129,28 @@ public class AzureAIAgentFactoryTests : IDisposable
           "description": "AzureAIAgent Description",
           "model": "gpt-4o",
           "instructions": "AzureAIAgent Instructions",
+          "tools": [],
+          "top_p": 1.0,
+          "temperature": 1.0,
+          "tool_resources": {},
+          "metadata": {},
+          "response_format": "auto"
+        }
+        """;
+
+    /// <summary>
+    /// Azure AI Agent get response.
+    /// </summary>
+    public const string AzureAIAgentGetResponse =
+        """
+        {
+          "id": "asst_oKtAcmYQCtTj95BxpvL1RQBP",
+          "object": "assistant",
+          "created_at": 1744215200,
+          "name": "HelpfulAssistant",
+          "description": "Helpful Assistant",
+          "model": "gpt-4o-mini",
+          "instructions": "You are a helpful assistant.",
           "tools": [],
           "top_p": 1.0,
           "temperature": 1.0,
