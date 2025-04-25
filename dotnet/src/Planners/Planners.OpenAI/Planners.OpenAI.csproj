@@ -6,9 +6,9 @@
     <RootNamespace>Microsoft.SemanticKernel.Planning</RootNamespace>
     <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
     <VersionSuffix>preview</VersionSuffix>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/src/InternalUtilities.props" />
   <Import Project="$(RepoRoot)/dotnet/src/InternalUtilities/planning/PlanningUtilities.props" />
 
