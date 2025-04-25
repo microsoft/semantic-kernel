@@ -24,14 +24,25 @@ internal class LocalAgentStep : LocalStep
     protected override ValueTask InitializeStepAsync()
     {
         this._stepInstance = new KernelProcessAgentExecutor(this._agentFactory, this._stepInfo);
+        var kernelPlugin = KernelPluginFactory.CreateFromObject(this._stepInstance, pluginName: this._stepInfo.State.Name);
+
+        // Load the kernel functions
+        foreach (KernelFunction f in kernelPlugin)
+        {
+            this._functions.Add(f.Name, f);
+        }
         return default;
     }
 
     internal override async Task HandleMessageAsync(ProcessMessage message)
     {
+        Verify.NotNull(message, nameof(message));
+
+        // Lazy one-time initialization of the step before processing a message
+        await this._initializeTask.Value.ConfigureAwait(false);
+
         string targetFunction = "Invoke";
-        this._inputs["Invoke"]["message"] = message.TargetEventData;
-        KernelArguments arguments = new(this._inputs[targetFunction]!);
+        KernelArguments arguments = new() { { "message", message.TargetEventData } };
         if (!this._functions.TryGetValue("Invoke", out KernelFunction? function) || function == null)
         {
             throw new ArgumentException($"Function Invoke not found in plugin {this.Name}");
@@ -49,16 +60,46 @@ internal class LocalAgentStep : LocalStep
                     sourceId: $"{targetFunction}.OnResult",
                     eventVisibility: KernelProcessEventVisibility.Public));
 
-            if (this._stepInfo.OnComplete is not null)
+            if (this._stepInfo.Actions.DeclarativeActions?.OnComplete is not null)
             {
-                foreach (var onCompleteStateCondition in this._stepInfo.OnComplete.StateConditions ?? [])
+                int executedConditionCount = 0;
+                foreach (var onCompleteStateCondition in this._stepInfo.Actions.DeclarativeActions.OnComplete.StateConditions ?? [])
                 {
+                    executedConditionCount++;
                     // TODO: Apply state conditions to the result and emit events
                 }
-                foreach (var onCompleteSemanticCondition in this._stepInfo.OnComplete.SemanticConditions ?? [])
+                foreach (var onCompleteSemanticCondition in this._stepInfo.Actions.DeclarativeActions.OnComplete.SemanticConditions ?? [])
                 {
+                    executedConditionCount++;
                     // TODO: Apply state conditions to the result and emit events
                 }
+
+                var defaultCondition = this._stepInfo.Actions.DeclarativeActions.OnComplete.Default;
+                if (executedConditionCount == 0 && defaultCondition != null)
+                {
+                    // TODO: Apply state conditions to the result and emit events
+                    if (defaultCondition.Emits is not null)
+                    {
+                        foreach (var emit in defaultCondition.Emits)
+                        {
+                            this.EmitEvent(
+                                ProcessEvent.Create(
+                                    invokeResult.GetValue<object>(), // TODO: Use the correct value as defined in emit.Payload
+                                    this._eventNamespace,
+                                    sourceId: emit.EventType,
+                                    eventVisibility: KernelProcessEventVisibility.Public));
+                        }
+                    }
+                    if (defaultCondition.Updates is not null)
+                    {
+                        // TODO: Apply state updates
+                    }
+                }
+            }
+            else if (this._stepInfo.Actions.CodeActions?.OnComplete is not null)
+            {
+                // invoke the action
+                this._stepInfo.Actions.CodeActions?.OnComplete(invokeResult.GetValue<object>(), new KernelProcessStepContext(this));
             }
         }
         catch (Exception ex)
@@ -71,11 +112,11 @@ internal class LocalAgentStep : LocalStep
                     sourceId: $"{targetFunction}.OnError",
                     eventVisibility: KernelProcessEventVisibility.Public,
                     isError: true));
+
+            // TODO: Handle error events and confitions
         }
         finally
         {
-            // Reset the inputs for the function that was just executed
-            this._inputs[targetFunction] = new(this._initialInputs[targetFunction] ?? []);
         }
 #pragma warning restore CA1031 // Do not catch general exception types
     }

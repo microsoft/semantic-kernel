@@ -20,7 +20,7 @@ namespace Microsoft.SemanticKernel;
 internal class LocalStep : IKernelProcessMessageChannel
 {
     private readonly Queue<ProcessEvent> _outgoingEventQueue = new();
-    private readonly Lazy<ValueTask> _initializeTask;
+    protected readonly Lazy<ValueTask> _initializeTask;
     protected readonly ILogger _logger;
 
     protected readonly Kernel _kernel;
