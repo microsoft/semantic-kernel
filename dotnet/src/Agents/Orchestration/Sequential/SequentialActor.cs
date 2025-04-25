@@ -23,7 +23,7 @@ internal sealed class SequentialActor : AgentActor, IHandle<SequentialMessage>
     /// <param name="nextAgent">The identifier of the next agent for which to handoff the result</param>
     /// <param name="logger">The logger to use for the actor</param>
     public SequentialActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType nextAgent, ILogger<SequentialActor>? logger = null)
-        : base(id, runtime, agent, noThread: true, logger)
+        : base(id, runtime, agent, noThread: true, enableTools: false, logger)
     {
         this._nextAgent = nextAgent;
     }

@@ -25,8 +25,9 @@ public abstract class AgentActor : PatternActor
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agents.Agent"/>.</param>
     /// <param name="noThread">Option to automatically clean-up agent thread</param>
+    /// <param name="enableTools">Option to enable function calling.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false, ILogger? logger = null)
+    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false, bool enableTools = false, ILogger? logger = null)
         : base(
             id,
             runtime,
@@ -35,6 +36,7 @@ public abstract class AgentActor : PatternActor
     {
         this.Agent = agent;
         this.NoThread = noThread;
+        this.EnableTools = enableTools;
     }
 
     /// <summary>
@@ -46,6 +48,11 @@ public abstract class AgentActor : PatternActor
     /// Gets a value indicating whether the agent thread should be removed after use.
     /// </summary>
     protected bool NoThread { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether function calling is enabled.
+    /// </summary>
+    private bool EnableTools { get; }
 
     /// <summary>
     /// Gets or sets the current conversation thread used during agent communication.
@@ -87,11 +94,19 @@ public abstract class AgentActor : PatternActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected async ValueTask<ChatMessageContent> InvokeAsync(IList<ChatMessageContent> input, CancellationToken cancellationToken)
     {
+        AgentInvokeOptions? options = null;
+        if (this.EnableTools)
+        {
+            options = new()
+            {
+                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
+            };
+        }
         AgentResponseItem<ChatMessageContent>[] responses =
             await this.Agent.InvokeAsync(
                 input,
                 this.Thread,
-                options: null,
+                options,
                 cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
         AgentResponseItem<ChatMessageContent> response = responses[0];
