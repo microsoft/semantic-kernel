@@ -379,13 +379,14 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     }
 
     /// <inheritdoc/>
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
-        Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
-
-        if (base.JsonSerializerOptions is not null)
+        if (pluginName is not null)
         {
-            return new KernelFunctionFromMethod(
+            Verify.NotNullOrWhiteSpace(pluginName, nameof(pluginName));
+        }
+
+        return new KernelFunctionFromMethod(
             this.UnderlyingMethod!,
             this._function,
             this.Name,
@@ -395,24 +396,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             this.Metadata.ReturnParameter,
             base.JsonSerializerOptions,
             this.Metadata.AdditionalProperties);
-        }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Non AOT scenario.")]
-        [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Non AOT scenario.")]
-        KernelFunctionFromMethod Clone()
-        {
-            return new KernelFunctionFromMethod(
-            this.UnderlyingMethod!,
-            this._function,
-            this.Name,
-            pluginName,
-            this.Description,
-            this.Metadata.Parameters,
-            this.Metadata.ReturnParameter,
-            this.Metadata.AdditionalProperties);
-        }
-
-        return Clone();
     }
 
     /// <summary>Delegate used to invoke the underlying delegate.</summary>

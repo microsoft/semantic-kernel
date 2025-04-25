@@ -46,6 +46,9 @@ public abstract class KernelFunction : AIFunction
     protected MethodInfo? _underlyingMethod;
 #pragma warning restore CA1051
 
+    /// <summary>The <see cref="Kernel"/> this instance will prioritize to use.</summary>
+    internal Kernel? Kernel;
+
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
         name: "semantic_kernel.function.invocation.duration",
@@ -421,12 +424,12 @@ public abstract class KernelFunction : AIFunction
     /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
     /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
     /// </summary>
-    /// <param name="pluginName">The name of the plugin this function instance will be added to.</param>
+    /// <param name="pluginName">The optional name of the plugin this function instance will be added to.</param>
     /// <remarks>
     /// This method should only be used to create a new instance of a <see cref="KernelFunction"/> when adding
     /// a function to a <see cref="KernelPlugin"/>.
     /// </remarks>
-    public abstract KernelFunction Clone(string pluginName);
+    public abstract KernelFunction Clone(string? pluginName = null);
 
     /// <inheritdoc/>
     public override string ToString() => string.IsNullOrWhiteSpace(this.PluginName) ?
@@ -451,9 +454,10 @@ public abstract class KernelFunction : AIFunction
     /// <remarks>
     /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> will be acquired as follows, in order of priority:
     /// <list type="number">
-    /// <item>From the <paramref name="arguments"/> with the key <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/>.</item>
-    /// <item>From the arguments <see cref="AIFunctionArguments.Services"/> service provider.</item>
-    /// <item>A new Kernel will be instantiated with the <see cref="AIFunctionArguments.Services"/> provided as the <see cref="Kernel"/> constructor's service provider.</item>
+    /// <item>From the <see cref="Kernel"/> provided in <see cref="KernelFunctionExtensions.Clone(KernelFunction,SemanticKernel.Kernel)"/> when Cloning the <see cref="KernelFunction"/>.</item>
+    /// <item>From the <see cref="AIFunctionArguments"/> dictionary with the <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/> key.</item>
+    /// <item>From the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/> service provider.</item>
+    /// <item>A new <see cref="Kernel"/> instance will be created using the same service provider in the <see cref="AIFunctionArguments"/>.<see cref="AIFunctionArguments.Services"/>.</item>
     /// </list>
     /// </remarks>
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
@@ -461,9 +465,12 @@ public abstract class KernelFunction : AIFunction
     /// <returns>The result of the function's execution.</returns>
     protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
     {
-        arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject);
-
-        var kernel = kernelObject as Kernel ?? new(arguments.Services);
+        Kernel? kernel = this.Kernel;
+        if (kernel is null)
+        {
+            arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject);
+            kernel = kernelObject as Kernel ?? new(arguments.Services);
+        }
 
         var kernelArguments = new KernelArguments(arguments);
 

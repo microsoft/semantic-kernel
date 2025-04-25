@@ -39,7 +39,7 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         this._aiFunction = other._aiFunction;
     }
 
-    public override KernelFunction Clone(string pluginName)
+    public override KernelFunction Clone(string? pluginName = null)
     {
         Verify.NotNullOrWhiteSpace(pluginName);
         return new AIFunctionKernelFunction(this, pluginName);
