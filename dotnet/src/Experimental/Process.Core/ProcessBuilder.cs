@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Provides functionality for incrementally defining a process.
 /// </summary>
-public sealed class ProcessBuilder : ProcessStepBuilder
+public sealed partial class ProcessBuilder : ProcessStepBuilder
 {
     /// <summary>The collection of steps within this process.</summary>
     private readonly List<ProcessStepBuilder> _steps = [];
@@ -302,6 +302,32 @@ public sealed class ProcessBuilder : ProcessStepBuilder
         ProcessProxyBuilder proxyBuilder = new(externalTopics, id ?? nameof(KernelProxyStep));
 
         return this.AddStep(proxyBuilder, aliases);
+    }
+
+    /// <summary>
+    /// Adds a thread to the process.
+    /// </summary>
+    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
+    /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadId">The Id of an existing thread that should be used.</param>
+    /// <returns></returns>
+    public ProcessBuilder AddThread<T>(string threadName, string threadId) where T : AgentThread
+    {
+        // TODO: Do it.
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a thread to the process.
+    /// </summary>
+    /// <typeparam name="T">The concrete type of the <see cref="AgentThread"/></typeparam>
+    /// <param name="threadName">The name of the thread.</param>
+    /// <param name="threadPolicy">The policy that determines the lifetime of the <see cref="AgentThread"/></param>
+    /// <returns></returns>
+    public ProcessBuilder AddThread<T>(string threadName, KernelProcessThreadPolicy threadPolicy) where T : AgentThread
+    {
+        // TODO: Do it.
+        return this;
     }
 
     /// <summary>

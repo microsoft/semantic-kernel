@@ -114,6 +114,8 @@ internal class WorkflowBuilder
 
     private Task BuildDeclarativeStepAsync(Node node, ProcessBuilder processBuilder)
     {
+        Verify.NotNull(node);
+
         // Check for built-in step types
         if (node.Id.Equals("End", StringComparison.OrdinalIgnoreCase))
         {
@@ -122,17 +124,7 @@ internal class WorkflowBuilder
             return Task.CompletedTask;
         }
 
-        // get the raw yaml from the node
-        string? rawYaml = this.ExtractRawAgentYaml(node.Id);
-
-        // try to parse the agent yaml into an AgentDefinition
-        var deserializer = new DeserializerBuilder()
-                .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                .IgnoreUnmatchedProperties()
-                .Build();
-
-        var agentDefinition = deserializer.Deserialize<AgentDefinition>(rawYaml);
-
+        AgentDefinition? agentDefinition = node.Agent ?? throw new KernelException("Declarative steps must have an agent defined.");
         var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
@@ -332,7 +324,7 @@ internal class WorkflowBuilder
         {
             Id = step.State.Id,
             Type = "dotnet",
-            Agent = new WorkflowAgent()
+            Agent = new AgentDefinition()
             {
                 Type = innerStepTypeString,
                 Id = step.State.Id
@@ -393,32 +385,6 @@ internal class WorkflowBuilder
     }
 
     #endregion
-
-    private string ExtractRawAgentYaml(string nodeId)
-    {
-        var input = new StringReader(this._yaml ?? "");
-        var yamlStream = new YamlStream();
-        yamlStream.Load(input);
-
-        var rootNode = yamlStream.Documents[0].RootNode;
-        var agentsNode = rootNode["nodes"] as YamlSequenceNode;
-        var node = agentsNode?.Children
-            .OfType<YamlMappingNode>()
-            .FirstOrDefault(node => node["id"]?.ToString() == nodeId);
-
-        if (node is null || !node.Children.TryGetValue("agent", out YamlNode? agent) || agent is null)
-        {
-            throw new KernelException("Failed to deserialize workflow.");
-        }
-
-        // Create a serializer
-        var serializer = new SerializerBuilder().Build();
-
-        // Serialize the YamlMappingNode to a string
-        string rawYaml = serializer.Serialize(agent);
-
-        return rawYaml;
-    }
 
     private Dictionary<string, JsonSchema> ExtractNodeInputs(string nodeId)
     {

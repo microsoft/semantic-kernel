@@ -32,6 +32,11 @@ public record KernelProcessStepInfo
     }
 
     /// <summary>
+    /// The semantic description of the Step. This is intended to be human and AI readable and is not required to be unique.
+    /// </summary>
+    public string? Description { get; init; } = null;
+
+    /// <summary>
     /// A read-only dictionary of output edges from the Step.
     /// </summary>
     public IReadOnlyDictionary<string, IReadOnlyCollection<KernelProcessEdge>> Edges { get; }

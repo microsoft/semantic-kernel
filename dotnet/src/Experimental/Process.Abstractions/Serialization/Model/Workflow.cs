@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.Agents;
 using YamlDotNet.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -93,13 +94,6 @@ public class Workflow
     [YamlMember(Alias = "orchestration")]
     [JsonPropertyName("orchestration")]
     public List<OrchestrationStep>? Orchestration { get; set; }
-
-    /// <summary>
-    /// Gets or sets the upgrade strategies for the workflow.
-    /// </summary>
-    [YamlMember(Alias = "upgrade")]
-    [JsonPropertyName("upgrade")]
-    public List<UpgradeStrategy>? Upgrade { get; set; }
 
     /// <summary>
     /// Gets or sets the error handling steps for the workflow.
@@ -388,7 +382,7 @@ public class Node
     /// </summary>
     [YamlMember(Alias = "agent")]
     [JsonPropertyName("agent")]
-    public WorkflowAgent? Agent { get; set; }
+    public AgentDefinition? Agent { get; set; }
 
     /// <summary>
     /// Gets or sets the inputs of the node.
@@ -685,26 +679,6 @@ public class ThenAction
     [YamlMember(Alias = "inputs")]
     [JsonPropertyName("inputs")]
     public Dictionary<string, string>? Inputs { get; set; }
-}
-
-/// <summary>
-/// Represents an upgrade strategy for the workflow.
-/// </summary>
-public class UpgradeStrategy
-{
-    /// <summary>
-    /// Gets or sets the version range from which the upgrade is applicable.
-    /// </summary>
-    [YamlMember(Alias = "from_versions")]
-    [JsonPropertyName("from_versions")]
-    public VersionRange? FromVersions { get; set; }
-
-    /// <summary>
-    /// Gets or sets the strategy for the upgrade.
-    /// </summary>
-    [YamlMember(Alias = "strategy")]
-    [JsonPropertyName("strategy")]
-    public string Strategy { get; set; } = string.Empty;
 }
 
 /// <summary>
