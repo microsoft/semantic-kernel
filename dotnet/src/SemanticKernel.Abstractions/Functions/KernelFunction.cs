@@ -14,7 +14,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -27,7 +26,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public abstract class KernelFunction : AIFunction
 {
-
     /// <summary>The measurement tag name for the function name.</summary>
     private protected const string MeasurementFunctionTagName = "semantic_kernel.function.name";
 
@@ -39,6 +37,14 @@ public abstract class KernelFunction : AIFunction
 
     /// <summary><see cref="Meter"/> for function-related metrics.</summary>
     private protected static readonly Meter s_meter = new("Microsoft.SemanticKernel");
+
+    /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</summary>
+    private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
+    /// <summary>The underlying method, if this function was created from a method.</summary>
+#pragma warning disable CA1051
+    protected MethodInfo? _underlyingMethod;
+#pragma warning restore CA1051
 
     /// <summary><see cref="Histogram{T}"/> to record function invocation duration.</summary>
     private static readonly Histogram<double> s_invocationDuration = s_meter.CreateHistogram<double>(
@@ -56,9 +62,6 @@ public abstract class KernelFunction : AIFunction
         unit: "s",
         description: "Measures the duration of a function's streaming execution");
 
-    /// <summary>The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</summary>
-    protected JsonSerializerOptions? JsonSerializerOptions { get; set; }
-
     /// <summary>
     /// Gets the name of the function.
     /// </summary>
@@ -67,7 +70,7 @@ public abstract class KernelFunction : AIFunction
     /// should be invoked when, or as part of lookups in a plugin's function collection. Function names are generally
     /// handled in an ordinal case-insensitive manner.
     /// </remarks>
-    public string Name => this.Metadata.Name;
+    public override string Name => this.Metadata.Name;
 
     /// <summary>
     /// Gets the name of the plugin this function was added to.
@@ -85,7 +88,7 @@ public abstract class KernelFunction : AIFunction
     /// The description may be supplied to a model in order to elaborate on the function's purpose,
     /// in case it may be beneficial for the model to recommend invoking the function.
     /// </remarks>
-    public string Description => this.Metadata.Description;
+    public override string Description => this.Metadata.Description;
 
     /// <summary>
     /// Gets the metadata describing the function.
@@ -102,19 +105,10 @@ public abstract class KernelFunction : AIFunction
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
     /// <summary>
-    /// Gets the underlying <see cref="MethodInfo"/> that this function might be wrapping.
-    /// </summary>
-    /// <remarks>
-    /// Provides additional metadata on the function and its signature. Implementations not wrapping .NET methods may return null.
-    /// </remarks>
-    [Experimental("SKEXP0001")]
-    public MethodInfo? UnderlyingMethod { get; internal init; }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
     /// <param name="executionSettings">
@@ -131,8 +125,8 @@ public abstract class KernelFunction : AIFunction
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
@@ -148,9 +142,9 @@ public abstract class KernelFunction : AIFunction
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
     /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
     /// <param name="executionSettings">
@@ -185,9 +179,9 @@ public abstract class KernelFunction : AIFunction
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
-    /// <param name="name">A name of the function to use as its <see cref="KernelFunction.Name"/>.</param>
+    /// <param name="name">A name of the function to use as its <see cref="AITool.Name"/>.</param>
     /// <param name="pluginName">The name of the plugin this function instance has been added to.</param>
-    /// <param name="description">The description of the function to use as its <see cref="KernelFunction.Description"/>.</param>
+    /// <param name="description">The description of the function to use as its <see cref="AITool.Description"/>.</param>
     /// <param name="parameters">The metadata describing the parameters to the function.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
     /// <param name="returnParameter">The metadata describing the return parameter of the function.</param>
@@ -218,8 +212,14 @@ public abstract class KernelFunction : AIFunction
                 entry => { var clone = entry.Value.Clone(); clone.Freeze(); return clone; });
         }
 
-        this.JsonSerializerOptions = jsonSerializerOptions;
+        this._jsonSerializerOptions = jsonSerializerOptions;
     }
+
+    /// <inheritdoc/>
+    public override JsonSerializerOptions JsonSerializerOptions => this._jsonSerializerOptions ?? base.JsonSerializerOptions;
+
+    /// <inheritdoc/>
+    public override MethodInfo? UnderlyingMethod => this._underlyingMethod;
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -449,13 +449,16 @@ public abstract class KernelFunction : AIFunction
     /// Invokes the <see cref="KernelFunction"/> using the <see cref="AIFunction"/> interface.
     /// </summary>
     /// <remarks>
-    /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> needs to be provided in the <see cref="AIFunctionArguments"/>
-    /// as the <see cref="KernelAIFunctionArgumentKey"/> argument.
+    /// When using the <see cref="AIFunction.InvokeAsync"/> interface, the <see cref="Kernel"/> will be acquired as follows, in order of priority:
+    /// <list type="number">
+    /// <item>From the <paramref name="arguments"/> with the key <see cref="AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey"/>.</item>
+    /// <item>From the arguments <see cref="AIFunctionArguments.Services"/> service provider.</item>
+    /// <item>A new Kernel will be instantiated with the <see cref="AIFunctionArguments.Services"/> provided as the <see cref="Kernel"/> constructor's service provider.</item>
+    /// </list>
     /// </remarks>
     /// <param name="arguments">The arguments to pass to the function's invocation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests.</param>
     /// <returns>The result of the function's execution.</returns>
-    /// <exception cref="ArgumentException">The <see cref="AIFunctionArguments"/> did not contain a <see cref="Kernel"/> instance in the '<see cref="KernelAIFunctionArgumentKey"/>' argument.</exception>
     protected override async ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken)
     {
         arguments.TryGetValue(AIFunctionArgumentsExtensions.KernelAIFunctionArgumentKey, out var kernelObject);

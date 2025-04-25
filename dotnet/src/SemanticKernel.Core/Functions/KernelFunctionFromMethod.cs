@@ -470,7 +470,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
-        this.UnderlyingMethod = method;
+        this._underlyingMethod = method;
     }
 
     private KernelFunctionFromMethod(
@@ -488,7 +488,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         Verify.ValidFunctionName(functionName);
 
         this._function = implementationFunc;
-        this.UnderlyingMethod = method;
+        this._underlyingMethod = method;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
@@ -811,7 +811,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 JsonDocument document => document.Deserialize(targetType, jsonSerializerOptions),
                 JsonNode node => node.Deserialize(targetType, jsonSerializerOptions),
                 JsonElement element => element.Deserialize(targetType, jsonSerializerOptions),
-                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.  
+                // The JSON can be represented by other data types from various libraries. For example, JObject, JToken, and JValue from the Newtonsoft.Json library.
                 // Since we don't take dependencies on these libraries and don't have access to the types here,
                 // the only way to deserialize those types is to convert them to a string first by calling the 'ToString' method.
                 // Attempting to use the 'JsonSerializer.Serialize' method, instead of calling the 'ToString' directly on those types, can lead to unpredictable outcomes.
@@ -1095,7 +1095,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                     {
                         if (input?.GetType() is Type type && converter.CanConvertFrom(type))
                         {
-                            // This line performs string to type conversion 
+                            // This line performs string to type conversion
                             return converter.ConvertFrom(context: null, culture, input);
                         }
 
