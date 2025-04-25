@@ -48,22 +48,22 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public DeclarativeEventHandlerGroupBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
+    public ProcessAgentBuilder OnComplete(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnCompleteBuilder = builder;
-        return builder;
+        return this;
     }
 
     /// <summary>
     /// Creates a new instance of the <see cref="DeclarativeEventHandlerGroupBuilder"/> class for the OnComplete event.
     /// </summary>
     /// <returns></returns>
-    public DeclarativeEventHandlerGroupBuilder OnError(List<DeclarativeProcessCondition> conditions)
+    public ProcessAgentBuilder OnError(List<DeclarativeProcessCondition> conditions)
     {
         var builder = new DeclarativeEventHandlerGroupBuilder(conditions);
         this.OnErrorBuilder = builder;
-        return builder;
+        return this;
     }
 
     /// <summary>

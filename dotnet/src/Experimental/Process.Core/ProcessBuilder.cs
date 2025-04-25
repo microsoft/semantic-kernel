@@ -202,7 +202,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
     /// <param name="aliases"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public ProcessStepBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
+    public ProcessAgentBuilder AddStepFromDeclarativeAgent(AgentDefinition agentDefinition, IReadOnlyList<string>? aliases = null)
     {
         Verify.NotNull(agentDefinition, nameof(agentDefinition));
         if (string.IsNullOrWhiteSpace(agentDefinition.Name))
@@ -210,7 +210,7 @@ public sealed class ProcessBuilder : ProcessStepBuilder
             throw new ArgumentException("AgentDefinition.Name cannot be null or empty.", nameof(agentDefinition));
         }
 
-        ProcessStepBuilder stepBuilder = new ProcessAgentBuilder(agentDefinition);
+        ProcessAgentBuilder stepBuilder = new(agentDefinition);
         return this.AddStep(stepBuilder, aliases);
     }
 

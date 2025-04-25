@@ -14,6 +14,7 @@ namespace Microsoft.SemanticKernel.Process;
 public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentExecutorState>
 {
     private readonly AgentFactory? _agentFactory;
+    private readonly KernelProcessAgentStep _agentStep;
 
     internal KernelProcessAgentExecutorState _state = new();
 
@@ -21,9 +22,14 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
     /// Constructor used by parent process passing specific agent factory
     /// </summary>
     /// <param name="agentFactory"></param>
-    public KernelProcessAgentExecutor(AgentFactory? agentFactory)
+    /// <param name="agentStep"></param>
+    public KernelProcessAgentExecutor(AgentFactory? agentFactory, KernelProcessAgentStep agentStep)
     {
+        Verify.NotNull(agentStep);
+        Verify.NotNull(agentStep.AgentDefinition);
+
         this._agentFactory = agentFactory;
+        this._agentStep = agentStep;
     }
 
     /// <inheritdoc/>
@@ -38,54 +44,61 @@ public class KernelProcessAgentExecutor : KernelProcessStep<KernelProcessAgentEx
     /// Invokes the agent with the provided definition.
     /// </summary>
     /// <param name="kernel">instance of <see cref="Kernel"/></param>
-    /// <param name="agentDefinition">definition of agent</param>
     /// <param name="message">incoming message to be processed by agent</param>
     /// <returns></returns>
     [KernelFunction]
-    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, AgentDefinition agentDefinition, object? message = null)
+    public async Task<ChatMessageContent?> InvokeAsync(Kernel kernel, object? message = null)
     {
-        if (this._agentFactory == null)
+        try
         {
-            throw new KernelException("Agent factory is not set.");
-        }
+            if (this._agentFactory == null)
+            {
+                throw new KernelException("Agent factory is not set.");
+            }
 
-        ChatMessageContent? inputMessageContent = null;
-        if (message is ChatMessageContent chatMessage)
+            ChatMessageContent? inputMessageContent = null;
+            if (message is ChatMessageContent chatMessage)
+            {
+                // if receiving a chat message content, passing as is
+                inputMessageContent = chatMessage;
+            }
+            else
+            {
+                // else wrapping it up assuming it is serializable
+                // todo: add try catch and use shared serialization logic
+                inputMessageContent = new ChatMessageContent(
+                    ChatCompletion.AuthorRole.User,
+                    JsonSerializer.Serialize(message)
+                );
+            }
+
+            List<ChatMessageContent> agentResponses = [];
+
+            if (this._state != null && this._state.AgentId != null)
+            {
+                this._agentStep.AgentDefinition.Id = this._state.AgentId;
+            }
+
+            Agent agent = await this._agentFactory.CreateAsync(kernel, this._agentStep.AgentDefinition).ConfigureAwait(false);
+            this._state!.AgentId = agent.Id;
+
+            AgentThread? agentThread = this._state.AgentThread;
+
+            await foreach (var response in agent.InvokeAsync(inputMessageContent, agentThread).ConfigureAwait(false))
+            {
+                agentThread = response.Thread;
+                agentResponses.Add(response.Message);
+            }
+
+            this._state.AgentThread = agentThread;
+
+            return agentResponses.FirstOrDefault();
+        }
+        catch (System.Exception)
         {
-            // if receiving a chat message content, passing as is
-            inputMessageContent = chatMessage;
+
+            throw;
         }
-        else
-        {
-            // else wrapping it up assuming it is serializable
-            // todo: add try catch and use shared serialization logic
-            inputMessageContent = new ChatMessageContent(
-                ChatCompletion.AuthorRole.User,
-                JsonSerializer.Serialize(message)
-            );
-        }
-
-        List<ChatMessageContent> agentResponses = [];
-
-        if (this._state != null && this._state.AgentId != null)
-        {
-            agentDefinition.Id = this._state.AgentId;
-        }
-
-        Agent agent = await this._agentFactory.CreateAsync(kernel, agentDefinition).ConfigureAwait(false);
-        this._state!.AgentId = agent.Id;
-
-        AgentThread? agentThread = this._state.AgentThread;
-
-        await foreach (var response in agent.InvokeAsync(inputMessageContent, agentThread).ConfigureAwait(false))
-        {
-            agentThread = response.Thread;
-            agentResponses.Add(response.Message);
-        }
-
-        this._state.AgentThread = agentThread;
-
-        return agentResponses.FirstOrDefault();
     }
 }
 
