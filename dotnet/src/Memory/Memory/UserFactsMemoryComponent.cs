@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#if DISABLED
+
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
@@ -167,3 +169,5 @@ public class UserFactsMemoryComponent : ConversationStatePart
         await this._textMemoryStore.SaveMemoryAsync(this.UserFactsDocumentName, this._userFacts, cancellationToken).ConfigureAwait(false);
     }
 }
+
+#endif

@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Contains options for the <see cref="TextRagComponent"/>.
 /// </summary>
+[Experimental("SKEXP0130")]
 public class TextRagComponentOptions
 {
     private int _top = 3;
@@ -46,6 +48,24 @@ public class TextRagComponentOptions
     /// if the <see cref="SearchTime"/> option is set to <see cref="TextRagSearchTime.ViaPlugin"/>.
     /// </summary>
     public string? PluginSearchFunctionDescription { get; init; }
+
+    /// <summary>
+    /// When providing the text chunks to the AI model on invocation, this string is prefixed
+    /// to those chunks, in order to provide some context to the model.
+    /// </summary>
+    /// <value>
+    /// Defaults to &quot;Consider the following source information when responding to the user::&quot;
+    /// </value>
+    public string? ContextPrompt { get; init; }
+
+    /// <summary>
+    /// When providing the text chunks to the AI model on invocation, this string is postfixed
+    /// to those chunks, in order to instruct the model to include citations.
+    /// </summary>
+    /// <value>
+    /// Defaults to &quot;Include citations to the relevant information where it is referenced in the response.:&quot;
+    /// </value>
+    public string? InclueCitationsPrompt { get; init; }
 
     /// <summary>
     /// The time at which the text search is performed.

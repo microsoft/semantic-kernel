@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// A class that allows for easy storage and retrieval of documents in a Vector Store for Retrieval Augmented Generation (RAG).
 /// </summary>
 /// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
+[Experimental("SKEXP0130")]
 public class TextRagStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
@@ -110,7 +112,7 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     {
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        return new(searchResult.Results.Select(x => x.Record.Text ?? string.Empty));
+        return new(searchResult.Results.SelectAsync(x => x.Record.Text ?? string.Empty, cancellationToken));
     }
 
     /// <inheritdoc/>
@@ -118,20 +120,20 @@ public class TextRagStore<TKey> : ITextSearch, IDisposable
     {
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        var results = searchResult.Results.Select(x => new TextSearchResult(x.Record.Text ?? string.Empty) { Name = x.Record.SourceName, Link = x.Record.SourceReference });
-        return new(searchResult.Results.Select(x =>
+        var results = searchResult.Results.SelectAsync(x => new TextSearchResult(x.Record.Text ?? string.Empty) { Name = x.Record.SourceName, Link = x.Record.SourceReference }, cancellationToken);
+        return new(searchResult.Results.SelectAsync(x =>
             new TextSearchResult(x.Record.Text ?? string.Empty)
             {
                 Name = x.Record.SourceName,
                 Link = x.Record.SourceReference
-            }));
+            }, cancellationToken));
     }
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         var searchResult = await this.SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
-        return new(searchResult.Results.Cast<object>());
+        return new(searchResult.Results.SelectAsync(x => (object)x, cancellationToken));
     }
 
     /// <summary>

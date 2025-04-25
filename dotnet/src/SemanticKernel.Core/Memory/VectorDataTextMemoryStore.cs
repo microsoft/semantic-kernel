@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Class to store and retrieve text-based memories to and from a vector store.
 /// </summary>
 /// <typeparam name="TKey">The key type to use with the vector store.</typeparam>
+[Experimental("SKEXP0001")]
 public class VectorDataTextMemoryStore<TKey> : TextMemoryStore, IDisposable
     where TKey : notnull
 {

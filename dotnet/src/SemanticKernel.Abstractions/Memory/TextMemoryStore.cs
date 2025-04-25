@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace Microsoft.SemanticKernel.Memory;
 /// <summary>
 /// Abstract base class for storing and retrieving text based memories.
 /// </summary>
+[Experimental("SKEXP0001")]
 public abstract class TextMemoryStore
 {
     /// <summary>

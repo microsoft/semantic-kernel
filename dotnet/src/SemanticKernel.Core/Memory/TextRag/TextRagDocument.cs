@@ -1,12 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Memory.TextRag;
 
 /// <summary>
 /// Represents a document that can be used for Retrieval Augmented Generation (RAG).
 /// </summary>
+[Experimental("SKEXP0130")]
 public class TextRagDocument
 {
     /// <summary>
