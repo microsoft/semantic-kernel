@@ -116,7 +116,7 @@ public class WithPlugins(ITestOutputHelper output) : BaseTest(output)
         }
     }
 
-    private class FinanceInfo
+    private sealed class FinanceInfo
     {
         [VectorStoreRecordKey]
         public string Key { get; set; } = string.Empty;
