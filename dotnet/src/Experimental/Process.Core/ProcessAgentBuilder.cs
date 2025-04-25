@@ -27,7 +27,32 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         this._agentDefinition = agentDefinition;
     }
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="ProcessAgentBuilder"/> class.
+    /// </summary>
+    /// <param name="agentDefinition"></param>
+    /// <param name="onComplete"></param>
+    /// <param name="onError"></param>
+    /// <exception cref="KernelException"></exception>
+    public ProcessAgentBuilder(AgentDefinition agentDefinition, Action<object?, KernelProcessStepContext> onComplete, Action<object?, KernelProcessStepContext> onError) : base(agentDefinition.Id ?? throw new KernelException("AgentDefinition Id must be set"))
+    {
+        Verify.NotNull(agentDefinition);
+        this._agentDefinition = agentDefinition;
+        this.OnCompleteCodeAction = onComplete;
+        this.OnErrorCodeAction = onError;
+    }
+
     #region Public Interface
+
+    /// <summary>
+    /// The optional handler group for OnComplete events.
+    /// </summary>
+    public Action<object?, KernelProcessStepContext>? OnCompleteCodeAction { get; init; }
+
+    /// <summary>
+    /// The optional handler group for OnError events.
+    /// </summary>
+    public Action<object?, KernelProcessStepContext>? OnErrorCodeAction { get; init; }
 
     /// <summary>
     /// The optional handler group for OnComplete events.
@@ -86,11 +111,20 @@ public class ProcessAgentBuilder : ProcessStepBuilder<KernelProcessAgentExecutor
         // Build the edges first
         var builtEdges = this.Edges.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(e => e.Build()).ToList());
         var state = new KernelProcessStepState(this.Name, "1.0", this.Id);
+        var agentActions = new ProcessAgentActions(
+            codeActions: new ProcessAgentCodeActions
+            {
+                OnComplete = this.OnCompleteCodeAction,
+                OnError = this.OnCompleteCodeAction
+            },
+            declarativeActions: new ProcessAgentDeclarativeActions
+            {
+                OnComplete = this.OnCompleteBuilder?.Build(),
+                OnError = this.OnErrorBuilder?.Build()
+            });
 
-        return new KernelProcessAgentStep(this._agentDefinition, state, builtEdges)
+        return new KernelProcessAgentStep(this._agentDefinition, agentActions, state, builtEdges)
         {
-            OnComplete = this.OnCompleteBuilder?.Build(),
-            OnError = this.OnErrorBuilder?.Build(),
             Inputs = this.Inputs,
         };
     }

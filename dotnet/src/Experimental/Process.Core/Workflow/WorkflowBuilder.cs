@@ -133,7 +133,8 @@ internal class WorkflowBuilder
 
         var agentDefinition = deserializer.Deserialize<AgentDefinition>(rawYaml);
 
-        var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition);
+        // TODO: Parse the agent actions and translate them into actions in the next line
+        var stepBuilder = processBuilder.AddStepFromDeclarativeAgent(agentDefinition, (data, context) => { }, (data, context) => { });
         if (stepBuilder is not ProcessAgentBuilder agentBuilder)
         {
             throw new KernelException($"Failed to build step from agent definition: {node.Id}");
