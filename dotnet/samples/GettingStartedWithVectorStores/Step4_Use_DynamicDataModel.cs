@@ -11,7 +11,7 @@ namespace GettingStartedWithVectorStores;
 /// Example that shows that you can use the dynamic data modeling to interact with a vector database.
 /// This makes it possible to use the vector store abstractions without having to create your own strongly-typed data model.
 /// </summary>
-public class Step5_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFixture fixture) : BaseTest(output), IClassFixture<VectorStoresFixture>
+public class Step4_Use_DynamicDataModel(ITestOutputHelper output, VectorStoresFixture fixture) : BaseTest(output), IClassFixture<VectorStoresFixture>
 {
     /// <summary>
     /// Example showing how to query a vector store that uses dynamic data modeling.
