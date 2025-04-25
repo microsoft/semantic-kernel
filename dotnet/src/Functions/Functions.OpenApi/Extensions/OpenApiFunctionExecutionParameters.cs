@@ -62,8 +62,17 @@ public class OpenApiFunctionExecutionParameters
     /// <summary>
     /// Optional list of HTTP operations to skip when importing the OpenAPI document.
     /// </summary>
-    [Experimental("SKEXP0040")]
+    [Obsolete("Use OperationSelectionPredicate instead.")]
     public IList<string> OperationsToExclude { get; set; }
+
+    /// <summary>
+    /// Operation selection predicate to apply to all OpenAPI document operations.
+    /// If set, the predicate will be applied to each operation in the document.
+    /// If the predicate returns true, the operation will be imported; otherwise, it will be skipped.
+    /// This can be used to import or filter operations based on various operation properties: Id, Path, Method, and Description.
+    /// </summary>
+    [Experimental("SKEXP0040")]
+    public Func<OperationSelectionPredicateContext, bool>? OperationSelectionPredicate { get; set; }
 
     /// <summary>
     /// A custom HTTP response content reader. It can be useful when the internal reader
@@ -128,6 +137,8 @@ public class OpenApiFunctionExecutionParameters
         this.IgnoreNonCompliantErrors = ignoreNonCompliantErrors;
         this.EnableDynamicPayload = enableDynamicOperationPayload;
         this.EnablePayloadNamespacing = enablePayloadNamespacing;
+#pragma warning disable CS0618 // Type or member is obsolete
         this.OperationsToExclude = operationsToExclude ?? [];
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
