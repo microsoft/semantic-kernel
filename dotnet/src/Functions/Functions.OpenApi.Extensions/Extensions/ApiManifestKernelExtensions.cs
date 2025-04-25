@@ -149,7 +149,7 @@ public static class ApiManifestKernelExtensions
 
             var documentReadResult = await new OpenApiStreamReader(new()
             {
-                BaseUrl = new(apiDescriptionUrl)
+                BaseUrl = parsedDescriptionUrl
             }
             ).ReadAsync(openApiDocumentStream, cancellationToken).ConfigureAwait(false);
             var openApiDocument = documentReadResult.OpenApiDocument;
