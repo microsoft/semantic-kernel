@@ -73,13 +73,14 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
             ]
         };
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponse);
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantCreateResponse);
 
         // Act
         var agent = await factory.CreateAsync(this._kernel, agentDefinition);
 
         // Assert
         Assert.NotNull(agent);
+        Assert.Equal("asst_z2BnUzSnnZ4QimeUCsVSdAug", agent.Id);
         Assert.Equal(agentDefinition.Name, agent.Name);
         Assert.Equal(agentDefinition.Description, agent.Description);
         Assert.Equal(agentDefinition.Instructions, agent.Instructions);
@@ -87,9 +88,36 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
     }
 
     /// <summary>
-    /// OpenAI Assistant response.
+    /// Verify can get an instance of <see cref="Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
     /// </summary>
-    public const string OpenAIAssistantResponse =
+    [Fact]
+    public async Task VerifyCanGetOpenAIAssistantAsync()
+    {
+        // Arrange
+        AgentDefinition agentDefinition = new()
+        {
+            Id = "asst_GQ8RUQKakmfsGPd2LdF6lJvD",
+            Type = OpenAIAssistantAgentFactory.OpenAIAssistantAgentType,
+        };
+        OpenAIAssistantAgentFactory factory = new();
+        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantGetResponse);
+
+        // Act
+        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+
+        // Assert
+        Assert.NotNull(agent);
+        Assert.Equal("asst_GQ8RUQKakmfsGPd2LdF6lJvD", agent.Id);
+        Assert.Equal("StoryAgent", agent.Name);
+        Assert.Equal("Store Telling Agent", agent.Description);
+        Assert.Equal("Tell a story suitable for children about the topic provided by the user.", agent.Instructions);
+        Assert.Equal(this._kernel, agent.Kernel);
+    }
+
+    /// <summary>
+    /// OpenAI Assistant create response.
+    /// </summary>
+    public const string OpenAIAssistantCreateResponse =
         """
         {
           "id": "asst_z2BnUzSnnZ4QimeUCsVSdAug",
@@ -112,6 +140,28 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
               "file_ids": []
             }
           },
+          "metadata": {},
+          "response_format": "auto"
+        }
+        """;
+
+    /// <summary>
+    /// OpenAI Assistant get response.
+    /// </summary>
+    public const string OpenAIAssistantGetResponse =
+        """
+        {
+          "id": "asst_GQ8RUQKakmfsGPd2LdF6lJvD",
+          "object": "assistant",
+          "created_at": 1742985843,
+          "name": "StoryAgent",
+          "description": "Store Telling Agent",
+          "model": "gpt-4o-mini",
+          "instructions": "Tell a story suitable for children about the topic provided by the user.",
+          "tools": [],
+          "top_p": 1.0,
+          "temperature": 1.0,
+          "tool_resources": {},
           "metadata": {},
           "response_format": "auto"
         }
