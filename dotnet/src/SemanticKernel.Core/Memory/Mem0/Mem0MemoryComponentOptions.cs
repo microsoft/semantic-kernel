@@ -8,7 +8,6 @@ namespace Microsoft.SemanticKernel.Memory;
 /// Options for the <see cref="Mem0MemoryComponent"/>.
 /// </summary>
 [Experimental("SKEXP0130")]
-[ExcludeFromCodeCoverage] // Tested via integration tests.
 public sealed class Mem0MemoryComponentOptions
 {
     /// <summary>
@@ -54,4 +53,13 @@ public sealed class Mem0MemoryComponentOptions
     /// If <see langword="true"/>, the thread id will be set to the thread id of the current operation, regardless of the value of <see cref="ThreadId"/>.
     /// </remarks>
     public bool ScopeToPerOperationThreadId { get; init; } = false;
+
+    /// <summary>
+    /// When providing the memories found in Mem0 to the AI model on invocation, this string is prefixed
+    /// to those memories, in order to provide some context to the model.
+    /// </summary>
+    /// <value>
+    /// Defaults to &quot;Consider the following memories when answering user questions:&quot;
+    /// </value>
+    public string? ContextPrompt { get; init; }
 }
