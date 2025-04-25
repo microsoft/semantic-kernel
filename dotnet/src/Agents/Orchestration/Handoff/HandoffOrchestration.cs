@@ -61,7 +61,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
                 nextAgent = await RegisterAgentAsync(topic, nextAgent, index, agent, map).ConfigureAwait(false);
                 agentMap[agent.Name ?? agent.Id] = nextAgent;
             }
-            //else if (member.IsOrchestration(out Orchestratable? orchestration)) // %%% IS POSSIBLE ???
+            //else if (member.IsOrchestration(out Orchestratable? orchestration)) // TODO: IS POSSIBLE ?
             //{
             //    nextAgent = await orchestration.RegisterAsync(topic, nextAgent, loggerFactory).ConfigureAwait(false);
             //}

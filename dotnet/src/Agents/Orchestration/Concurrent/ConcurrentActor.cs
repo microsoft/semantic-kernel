@@ -23,7 +23,7 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// <param name="resultActor">Identifies the actor collecting results.</param>
     /// <param name="logger">The logger to use for the actor</param>
     public ConcurrentActor(AgentId id, IAgentRuntime runtime, Agent agent, AgentType resultActor, ILogger<ConcurrentActor>? logger = null) :
-        base(id, runtime, agent, noThread: true, enableTools: false, logger)
+        base(id, runtime, agent, noThread: true, logger)
     {
         this._handoffActor = resultActor;
     }

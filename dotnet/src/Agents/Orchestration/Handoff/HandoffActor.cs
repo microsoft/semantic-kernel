@@ -19,6 +19,7 @@ internal sealed class HandoffActor :
     IHandle<HandoffMessages.Request>,
     IHandle<HandoffMessages.Response>
 {
+    private readonly HandoffLookup _handoffs;
     private readonly AgentType _resultHandoff;
     private readonly TopicId _groupTopic;
     private readonly List<ChatMessageContent> _cache;
@@ -34,13 +35,31 @@ internal sealed class HandoffActor :
     /// <param name="groupTopic">The unique topic for the orchestration session.</param>
     /// <param name="logger">The logger to use for the actor</param>
     public HandoffActor(AgentId id, IAgentRuntime runtime, Agent agent, HandoffLookup handoffs, AgentType resultHandoff, TopicId groupTopic, ILogger<HandoffActor>? logger = null)
-        : base(id, runtime, agent, noThread: true, enableTools: true, logger)
+        : base(id, runtime, agent, noThread: true, logger)
     {
         this._cache = [];
         this._groupTopic = groupTopic;
+        this._handoffs = handoffs;
         this._resultHandoff = resultHandoff;
-        agent.Kernel.AutoFunctionInvocationFilters.Add(new HandoffInvocationFilter()); // %%% CLONE KERNEL AND OVERRIDE ???
-        agent.Kernel.Plugins.Add(this.CreateHandoffPlugin(handoffs)); // %%% CLONE KERNEL
+    }
+
+    /// <inheritdoc/>
+    protected override AgentInvokeOptions? CreateInvokeOptions()
+    {
+        // Clone kernel to avoid modifying the original
+        Kernel kernel = this.Agent.Kernel.Clone();
+        kernel.AutoFunctionInvocationFilters.Add(new HandoffInvocationFilter());
+        kernel.Plugins.Add(this.CreateHandoffPlugin());
+
+        // Create invocation options that use auto-function invocation and our modified kernel.
+        AgentInvokeOptions options =
+            new()
+            {
+                Kernel = kernel,
+                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
+            };
+
+        return options;
     }
 
     /// <inheritdoc/>
@@ -64,7 +83,7 @@ internal sealed class HandoffActor :
         return ValueTask.CompletedTask;
     }
 
-    private KernelPlugin CreateHandoffPlugin(HandoffLookup handoffs)
+    private KernelPlugin CreateHandoffPlugin()
     {
         return KernelPluginFactory.CreateFromFunctions(HandoffInvocationFilter.HandoffPlugin, CreateHandoffFunctions());
 
@@ -75,7 +94,7 @@ internal sealed class HandoffActor :
                 functionName: "end_task_with_summary",
                 description: "End the task with a summary when there is no further action to take.");
 
-            foreach ((string name, (AgentType type, string description)) in handoffs)
+            foreach ((string name, (AgentType type, string description)) in this._handoffs)
             {
                 KernelFunction kernelFunction =
                     KernelFunctionFactory.CreateFromMethod(

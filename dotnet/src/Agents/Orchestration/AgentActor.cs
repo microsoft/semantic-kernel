@@ -18,6 +18,8 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 /// </summary>
 public abstract class AgentActor : PatternActor
 {
+    private AgentInvokeOptions? _options;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentActor"/> class.
     /// </summary>
@@ -25,9 +27,8 @@ public abstract class AgentActor : PatternActor
     /// <param name="runtime">The runtime associated with the agent.</param>
     /// <param name="agent">An <see cref="Agents.Agent"/>.</param>
     /// <param name="noThread">Option to automatically clean-up agent thread</param>
-    /// <param name="enableTools">Option to enable function calling.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false, bool enableTools = false, ILogger? logger = null)
+    protected AgentActor(AgentId id, IAgentRuntime runtime, Agent agent, bool noThread = false, ILogger? logger = null)
         : base(
             id,
             runtime,
@@ -36,7 +37,6 @@ public abstract class AgentActor : PatternActor
     {
         this.Agent = agent;
         this.NoThread = noThread;
-        this.EnableTools = enableTools;
     }
 
     /// <summary>
@@ -50,14 +50,17 @@ public abstract class AgentActor : PatternActor
     protected bool NoThread { get; }
 
     /// <summary>
-    /// Gets a value indicating whether function calling is enabled.
-    /// </summary>
-    private bool EnableTools { get; }
-
-    /// <summary>
     /// Gets or sets the current conversation thread used during agent communication.
     /// </summary>
     protected AgentThread? Thread { get; set; }
+
+    /// <summary>
+    /// Optionally overridden to create custom invocation options for the agent.
+    /// </summary>
+    protected virtual AgentInvokeOptions? CreateInvokeOptions()
+    {
+        return null;
+    }
 
     /// <summary>
     /// Deletes the agent thread.
@@ -94,19 +97,11 @@ public abstract class AgentActor : PatternActor
     /// <returns>A task that returns the response <see cref="ChatMessageContent"/>.</returns>
     protected async ValueTask<ChatMessageContent> InvokeAsync(IList<ChatMessageContent> input, CancellationToken cancellationToken)
     {
-        AgentInvokeOptions? options = null;
-        if (this.EnableTools)
-        {
-            options = new()
-            {
-                KernelArguments = new(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
-            };
-        }
         AgentResponseItem<ChatMessageContent>[] responses =
             await this.Agent.InvokeAsync(
                 input,
                 this.Thread,
-                options,
+                this.GetInvokeOptions(),
                 cancellationToken).ToArrayAsync(cancellationToken).ConfigureAwait(false);
 
         AgentResponseItem<ChatMessageContent> response = responses[0];
@@ -128,7 +123,7 @@ public abstract class AgentActor : PatternActor
     /// <returns>An asynchronous stream of <see cref="StreamingChatMessageContent"/> responses.</returns>
     protected async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(ChatMessageContent input, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        var responseStream = this.Agent.InvokeStreamingAsync([input], this.Thread, options: null, cancellationToken);
+        var responseStream = this.Agent.InvokeStreamingAsync([input], this.Thread, this.GetInvokeOptions(), cancellationToken);
 
         await foreach (AgentResponseItem<StreamingChatMessageContent> response in responseStream.ConfigureAwait(false))
         {
@@ -143,6 +138,8 @@ public abstract class AgentActor : PatternActor
             yield return response.Message;
         }
     }
+
+    private AgentInvokeOptions? GetInvokeOptions() => this._options ??= this.CreateInvokeOptions();
 
     private static string VerifyDescription(Agent agent)
     {
