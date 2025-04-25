@@ -34,6 +34,9 @@
     <EmbeddedResource Include="OpenApi\TestPlugins\nonCompliant_documentV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_1.yaml" />
     <EmbeddedResource Include="OpenApi\TestPlugins\documentV3_0.json" />
+    <EmbeddedResource Include="OpenApi\TestPlugins\example-apimanifest-repair-service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="OpenApi\TestPlugins\repair-service.json" />
     <EmbeddedResource Include="OpenApi\TestPlugins\openapi_feature_testsV3_0.json" />
     <EmbeddedResource Include="OpenApi\TestResponses\ObjectResponseSchema.json" />
@@ -73,6 +76,9 @@
     <EmbeddedResource Include="OpenApi\TestPlugins\multipart-form-data.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="OpenApi\TestPlugins\example-apimanifest-local.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="OpenApi\TestPlugins\example-apimanifest.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
