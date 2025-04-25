@@ -36,7 +36,6 @@ namespace Microsoft.SemanticKernel.Memory;
 /// </para>
 /// </remarks>
 [Experimental("SKEXP0130")]
-[ExcludeFromCodeCoverage] // Tested via integration tests.
 public sealed class Mem0MemoryComponent : ConversationStatePart
 {
     private readonly string? _applicationId;
@@ -45,6 +44,7 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
     private string? _perOperationThreadId;
     private readonly string? _userId;
     private readonly bool _scopeToPerOperationThreadId;
+    private readonly string _contextPrompt;
 
     private readonly AIFunction[] _aIFunctions;
 
@@ -69,11 +69,17 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
     {
         Verify.NotNull(httpClient);
 
+        if (string.IsNullOrWhiteSpace(httpClient.BaseAddress?.AbsolutePath))
+        {
+            throw new ArgumentException("The BaseAddress of the provided httpClient parameter must be set.", nameof(httpClient));
+        }
+
         this._applicationId = options?.ApplicationId;
         this._agentId = options?.AgentId;
         this._threadId = options?.ThreadId;
         this._userId = options?.UserId;
         this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
+        this._contextPrompt = options?.ContextPrompt ?? "Consider the following memories when answering user questions:";
 
         this._aIFunctions = [AIFunctionFactory.Create(this.ClearStoredUserFactsAsync)];
 
@@ -131,7 +137,7 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
                 inputText).ConfigureAwait(false);
 
         var userInformation = string.Join(Environment.NewLine, memories);
-        return string.Join(Environment.NewLine, "The following list contains facts about the user:", userInformation);
+        return string.Join(Environment.NewLine, this._contextPrompt, userInformation);
     }
 
     /// <summary>
