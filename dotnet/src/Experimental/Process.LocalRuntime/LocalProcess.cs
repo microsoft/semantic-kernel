@@ -206,6 +206,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                         RootProcessId = this.RootProcessId,
                         EventProxy = this.EventProxy,
                         ExternalMessageChannel = this.ExternalMessageChannel,
+                        AgentFactory = this.AgentFactory,
                     };
             }
             else if (step is KernelProcessMap mapStep)
@@ -245,6 +246,7 @@ internal sealed class LocalProcess : LocalStep, System.IAsyncDisposable
                     {
                         ParentProcessId = this.Id,
                         EventProxy = this.EventProxy,
+                        AgentFactory = this.AgentFactory,
                     };
             }
 

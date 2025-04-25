@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Process;
 
 namespace Microsoft.SemanticKernel;
@@ -12,7 +13,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
     private readonly LocalProcess _localProcess;
     private readonly Kernel _kernel;
 
-    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null)
+    internal LocalKernelProcessContext(KernelProcess process, Kernel kernel, ProcessEventProxy? eventProxy = null, IExternalKernelProcessMessageChannel? externalMessageChannel = null, AgentFactory? agentFactory = null)
     {
         Verify.NotNull(process, nameof(process));
         Verify.NotNull(kernel, nameof(kernel));
@@ -23,6 +24,7 @@ public sealed class LocalKernelProcessContext : KernelProcessContext, System.IAs
         {
             EventProxy = eventProxy,
             ExternalMessageChannel = externalMessageChannel,
+            AgentFactory = agentFactory,
         };
     }
 
