@@ -38,6 +38,8 @@ namespace Microsoft.SemanticKernel.Memory;
 [Experimental("SKEXP0130")]
 public sealed class Mem0MemoryComponent : ConversationStatePart
 {
+    private const string DefaultContextPrompt = "Consider the following memories when answering user questions:";
+
     private readonly string? _applicationId;
     private readonly string? _agentId;
     private readonly string? _threadId;
@@ -79,7 +81,7 @@ public sealed class Mem0MemoryComponent : ConversationStatePart
         this._threadId = options?.ThreadId;
         this._userId = options?.UserId;
         this._scopeToPerOperationThreadId = options?.ScopeToPerOperationThreadId ?? false;
-        this._contextPrompt = options?.ContextPrompt ?? "Consider the following memories when answering user questions:";
+        this._contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
 
         this._aIFunctions = [AIFunctionFactory.Create(this.ClearStoredUserFactsAsync)];
 
