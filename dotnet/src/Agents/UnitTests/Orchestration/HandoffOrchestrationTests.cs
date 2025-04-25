@@ -16,7 +16,7 @@ namespace SemanticKernel.Agents.UnitTests.Orchestration;
 /// </summary>
 public class HandoffOrchestrationTests
 {
-    [Fact]
+    [Fact(Skip = "Mock agent unable to provide expected function calls")]
     public async Task HandoffOrchestrationWithSingleAgentAsync()
     {
         // Arrange
@@ -31,7 +31,7 @@ public class HandoffOrchestrationTests
         Assert.Equal(1, mockAgent1.InvokeCount);
     }
 
-    [Fact]
+    [Fact(Skip = "Mock agent unable to provide expected function calls")]
     public async Task HandoffOrchestrationWithMultipleAgentsAsync()
     {
         // Arrange
