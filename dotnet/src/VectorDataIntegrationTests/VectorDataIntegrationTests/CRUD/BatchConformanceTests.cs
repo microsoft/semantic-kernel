@@ -39,7 +39,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
 
         foreach (var record in expectedRecords)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors, fixture.TestStore.VectorsComparable);
         }
     }
 
@@ -76,7 +76,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
         var received = await collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
         foreach (var record in inserted)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true, fixture.TestStore.VectorsComparable);
         }
     }
 
@@ -108,7 +108,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
         var received = await fixture.Collection.GetAsync(keys, new() { IncludeVectors = true }).ToArrayAsync();
         foreach (var record in updated)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true, fixture.TestStore.VectorsComparable);
         }
     }
 
@@ -146,7 +146,7 @@ public abstract class BatchConformanceTests<TKey>(SimpleModelFixture<TKey> fixtu
         var received = await fixture.Collection.GetAsync(mixedKeys, new() { IncludeVectors = true }).ToArrayAsync();
         foreach (var record in records)
         {
-            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true);
+            record.AssertEqual(this.GetRecord(received, record.Id), includeVectors: true, fixture.TestStore.VectorsComparable);
         }
     }
 

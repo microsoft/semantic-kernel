@@ -67,5 +67,9 @@ public static class PineconeFactory
         public object? GetService(Type serviceType, object? serviceKey = null) => innerStore.GetService(serviceType, serviceKey);
 
         public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) => innerStore.ListCollectionNamesAsync(cancellationToken);
+
+        public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => innerStore.CollectionExistsAsync(name, cancellationToken);
+
+        public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => innerStore.DeleteCollectionAsync(name, cancellationToken);
     }
 }

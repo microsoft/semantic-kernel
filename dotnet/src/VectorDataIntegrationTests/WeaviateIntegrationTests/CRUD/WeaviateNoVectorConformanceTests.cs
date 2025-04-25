@@ -7,16 +7,16 @@ using Xunit;
 
 namespace WeaviateIntegrationTests.CRUD;
 
-public class WeaviateNoVectorConformanceTests(WeaviateNoVectorConformanceTests.Fixture fixture)
-    : NoVectorConformanceTests<Guid>(fixture), IClassFixture<WeaviateNoVectorConformanceTests.Fixture>
+public class WeaviateNoVectorConformanceTests_NamedVectors(WeaviateNoVectorConformanceTests_NamedVectors.Fixture fixture)
+    : NoVectorConformanceTests<Guid>(fixture), IClassFixture<WeaviateNoVectorConformanceTests_NamedVectors.Fixture>
 {
     public new class Fixture : NoVectorConformanceTests<Guid>.Fixture
     {
-        public override TestStore TestStore => WeaviateTestStore.Instance;
+        public override TestStore TestStore => WeaviateTestStore.NamedVectorsInstance;
 
         /// <summary>
         /// Weaviate collections must start with an uppercase letter.
         /// </summary>
-        protected override string CollectionName => "NoVectorCollection";
+        protected override string CollectionName => "NoVectorNamedCollection";
     }
 }

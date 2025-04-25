@@ -21,6 +21,8 @@ internal sealed class CosmosNoSqlTestStore : TestStore
     private Database? _database;
     private AzureCosmosDBNoSQLVectorStore? _defaultVectorStore;
 
+    public override string DefaultIndexKind => Microsoft.Extensions.VectorData.IndexKind.Flat;
+
     public CosmosClient Client
         => this._client ?? throw new InvalidOperationException("Call InitializeAsync() first");
 

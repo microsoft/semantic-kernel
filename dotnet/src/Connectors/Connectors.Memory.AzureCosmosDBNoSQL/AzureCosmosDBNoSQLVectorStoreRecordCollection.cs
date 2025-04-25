@@ -57,22 +57,22 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private readonly ICosmosNoSQLMapper<TRecord> _mapper;
 
     /// <inheritdoc />
-    public string CollectionName { get; }
+    public string Name { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> class.
     /// </summary>
     /// <param name="database"><see cref="Database"/> that can be used to manage the collections in Azure CosmosDB NoSQL.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="name">The name of the collection that this <see cref="AzureCosmosDBNoSQLVectorStoreRecordCollection{TKey, TRecord}"/> will access.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     public AzureCosmosDBNoSQLVectorStoreRecordCollection(
         Database database,
-        string collectionName,
+        string name,
         AzureCosmosDBNoSQLVectorStoreRecordCollectionOptions<TRecord>? options = default)
     {
         // Verify.
         Verify.NotNull(database);
-        Verify.NotNullOrWhiteSpace(collectionName);
+        Verify.NotNullOrWhiteSpace(name);
 
         if (typeof(TKey) != typeof(string) && typeof(TKey) != typeof(AzureCosmosDBNoSQLCompositeKey) && typeof(TKey) != typeof(object))
         {
@@ -88,7 +88,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         // Assign.
         this._database = database;
-        this.CollectionName = collectionName;
+        this.Name = name;
         this._options = options ?? new();
         var jsonSerializerOptions = this._options.JsonSerializerOptions ?? JsonSerializerOptions.Default;
         this._model = new AzureCosmosDBNoSqlVectorStoreModelBuilder()
@@ -124,7 +124,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         {
             VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
             VectorStoreName = database.Id,
-            CollectionName = collectionName
+            CollectionName = name
         };
     }
 
@@ -135,7 +135,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         {
             const string Query = "SELECT VALUE(c.id) FROM c WHERE c.id = @collectionName";
 
-            var queryDefinition = new QueryDefinition(Query).WithParameter("@collectionName", this.CollectionName);
+            var queryDefinition = new QueryDefinition(Query).WithParameter("@collectionName", this.Name);
 
             using var feedIterator = this._database.GetContainerQueryIterator<string>(queryDefinition);
 
@@ -170,12 +170,28 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     }
 
     /// <inheritdoc />
-    public Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
+    public async Task DeleteCollectionAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("DeleteContainer", () =>
-            this._database
-                .GetContainer(this.CollectionName)
-                .DeleteContainerAsync(cancellationToken: cancellationToken));
+        try
+        {
+            await this._database
+                .GetContainer(this.Name)
+                .DeleteContainerAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            // Do nothing, since the container is already deleted.
+        }
+        catch (CosmosException ex)
+        {
+            throw new VectorStoreOperationException("Call to vector store failed.", ex)
+            {
+                VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
+                VectorStoreName = this._collectionMetadata.VectorStoreName,
+                CollectionName = this.Name,
+                OperationName = "DeleteContainer"
+            };
+        }
     }
 
     /// <inheritdoc />
@@ -194,7 +210,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
             return this.RunOperationAsync("DeleteItem", () =>
                 this._database
-                    .GetContainer(this.CollectionName)
+                    .GetContainer(this.Name)
                     .DeleteItemAsync<JsonObject>(key.RecordKey, new PartitionKey(key.PartitionKey), cancellationToken: cancellationToken));
         });
 
@@ -233,7 +249,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             var record = VectorStoreErrorHandler.RunModelConversion(
                 AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
-                this.CollectionName,
+                this.Name,
                 OperationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
 
@@ -254,7 +270,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         var jsonObject = VectorStoreErrorHandler.RunModelConversion(
                 AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
-                this.CollectionName,
+                this.Name,
                 OperationName,
                 () => this._mapper.MapFromDataToStorageModel(record));
 
@@ -273,7 +289,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         await this.RunOperationAsync(OperationName, () =>
             this._database
-                .GetContainer(this.CollectionName)
+                .GetContainer(this.Name)
                 .UpsertItemAsync(jsonObject, new PartitionKey(partitionKeyValue), cancellationToken: cancellationToken))
             .ConfigureAwait(false);
 
@@ -361,7 +377,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             var record = VectorStoreErrorHandler.RunModelConversion(
                 AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
-                this.CollectionName,
+                this.Name,
                 "GetAsync",
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = options.IncludeVectors }));
 
@@ -441,13 +457,13 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
         {
             return await operation.Invoke().ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (CosmosException ex)
         {
             throw new VectorStoreOperationException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.CollectionName,
+                CollectionName = this.Name,
                 OperationName = operationName
             };
         }
@@ -471,7 +487,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
 
         if (this._options.IndexingMode == IndexingMode.None)
         {
-            return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._partitionKeyProperty.StorageName}")
+            return new ContainerProperties(this.Name, partitionKeyPath: $"/{this._partitionKeyProperty.StorageName}")
             {
                 IndexingPolicy = indexingPolicy
             };
@@ -528,7 +544,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             indexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = $"{vectorIndexPath.Path}/*" });
         }
 
-        return new ContainerProperties(this.CollectionName, partitionKeyPath: $"/{this._partitionKeyProperty.StorageName}")
+        return new ContainerProperties(this.Name, partitionKeyPath: $"/{this._partitionKeyProperty.StorageName}")
         {
             VectorEmbeddingPolicy = vectorEmbeddingPolicy,
             IndexingPolicy = indexingPolicy,
@@ -583,7 +599,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
     private async IAsyncEnumerable<T> GetItemsAsync<T>(QueryDefinition queryDefinition, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var iterator = this._database
-            .GetContainer(this.CollectionName)
+            .GetContainer(this.Name)
             .GetItemQueryIterator<T>(queryDefinition);
 
         while (iterator.HasMoreResults)
@@ -617,7 +633,7 @@ public sealed class AzureCosmosDBNoSQLVectorStoreRecordCollection<TKey, TRecord>
             var record = VectorStoreErrorHandler.RunModelConversion(
                 AzureCosmosDBNoSQLConstants.VectorStoreSystemName,
                 this._collectionMetadata.VectorStoreName,
-                this.CollectionName,
+                this.Name,
                 operationName,
                 () => this._mapper.MapFromStorageToDataModel(jsonObject, new() { IncludeVectors = includeVectors }));
 

@@ -13,6 +13,11 @@ public abstract class TestStore
     private readonly SemaphoreSlim _lock = new(1, 1);
     private int _referenceCount;
 
+    /// <summary>
+    /// Some databases modify vectors on upsert, e.g. normalizing them, so vectors
+    /// returned cannot be compared with the original ones.
+    /// </summary>
+    public virtual bool VectorsComparable => true;
     public virtual string DefaultDistanceFunction => DistanceFunction.CosineSimilarity;
     public virtual string DefaultIndexKind => IndexKind.Flat;
 

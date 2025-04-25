@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -41,6 +42,22 @@ public interface IVectorStore
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The list of names of all the collections in the vector store.</returns>
     IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if the collection exists in the vector store.
+    /// </summary>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns><see langword="true"/> if the collection exists, <see langword="false"/> otherwise.</returns>
+    Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes the collection from the vector store.
+    /// </summary>
+    /// <param name="name">The name of the collection.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
+    Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>Asks the <see cref="IVectorStore"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>

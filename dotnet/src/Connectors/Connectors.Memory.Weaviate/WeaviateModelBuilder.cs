@@ -6,37 +6,51 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
-internal class WeaviateModelBuilder() : VectorStoreRecordJsonModelBuilder(s_modelBuildingOptions)
+internal class WeaviateModelBuilder(bool hasNamedVectors) : VectorStoreRecordJsonModelBuilder(GetModelBuildingOptions(hasNamedVectors))
 {
-    private static readonly VectorStoreRecordModelBuildingOptions s_modelBuildingOptions = new()
+    private static VectorStoreRecordModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
     {
-        RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
+        return new()
+        {
+            RequiresAtLeastOneVector = !hasNamedVectors,
+            SupportsMultipleKeys = false,
+            SupportsMultipleVectors = hasNamedVectors,
 
-        SupportedKeyPropertyTypes = [typeof(Guid)],
-        SupportedDataPropertyTypes = s_supportedDataTypes,
-        SupportedEnumerableDataPropertyElementTypes = s_supportedDataTypes,
-        SupportedVectorPropertyTypes = s_supportedVectorTypes,
+            SupportedKeyPropertyTypes = [typeof(Guid)],
+            SupportedDataPropertyTypes = s_supportedDataTypes,
+            SupportedEnumerableDataPropertyElementTypes = s_supportedDataTypes,
+            SupportedVectorPropertyTypes = s_supportedVectorTypes,
 
-        UsesExternalSerializer = true,
-        ReservedKeyStorageName = WeaviateConstants.ReservedKeyPropertyName
-    };
+            UsesExternalSerializer = true,
+            ReservedKeyStorageName = WeaviateConstants.ReservedKeyPropertyName
+        };
+    }
 
     private static readonly HashSet<Type> s_supportedDataTypes =
     [
         typeof(string),
         typeof(bool),
+        typeof(bool?),
         typeof(int),
+        typeof(int?),
         typeof(long),
+        typeof(long?),
         typeof(short),
+        typeof(short?),
         typeof(byte),
+        typeof(byte?),
         typeof(float),
+        typeof(float?),
         typeof(double),
+        typeof(double?),
         typeof(decimal),
+        typeof(decimal?),
         typeof(DateTime),
+        typeof(DateTime?),
         typeof(DateTimeOffset),
+        typeof(DateTimeOffset?),
         typeof(Guid),
+        typeof(Guid?)
     ];
 
     internal static readonly HashSet<Type> s_supportedVectorTypes =

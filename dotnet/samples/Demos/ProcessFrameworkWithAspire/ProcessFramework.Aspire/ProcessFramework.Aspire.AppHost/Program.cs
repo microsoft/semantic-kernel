@@ -12,6 +12,12 @@ var summaryAgent = builder.AddProject<Projects.ProcessFramework_Aspire_SummaryAg
 
 var processOrchestrator = builder.AddProject<Projects.ProcessFramework_Aspire_ProcessOrchestrator>("processorchestrator")
     .WithReference(translateAgent)
-    .WithReference(summaryAgent);
+    .WithReference(summaryAgent)
+    .WithHttpCommand("/api/processdoc", "Trigger Process",
+        commandOptions: new()
+        {
+            Method = HttpMethod.Get
+        }
+    );
 
 builder.Build().Run();

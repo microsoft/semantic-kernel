@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Pinecone;
 using Sdk = Pinecone;
@@ -23,6 +24,9 @@ public sealed class PineconeVectorStore : IVectorStore
 
     /// <summary>Metadata about vector store.</summary>
     private readonly VectorStoreMetadata _metadata;
+
+    /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
+    private static readonly VectorStoreRecordDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreRecordKeyProperty("Key", typeof(string)), new VectorStoreRecordVectorProperty("Vector", typeof(ReadOnlyMemory<float>), 1)] };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStore"/> class.
@@ -86,6 +90,20 @@ public sealed class PineconeVectorStore : IVectorStore
                 yield return index.Name;
             }
         }
+    }
+
+    /// <inheritdoc />
+    public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.CollectionExistsAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var collection = this.GetCollection<object, Dictionary<string, object>>(name, s_generalPurposeDefinition);
+        return collection.DeleteCollectionAsync(cancellationToken);
     }
 
     /// <inheritdoc />

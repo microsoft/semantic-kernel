@@ -194,11 +194,13 @@ public abstract class DependencyInjectionTests<TVectorStore, TCollection, TKey, 
             => throw new NotImplementedException();
         public object? GetService(Type serviceType, object? serviceKey = null)
             => throw new NotImplementedException();
+        public Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+        public Task DeleteCollectionAsync(string name, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 
     private sealed class FakeVectorStoreRecordCollection : IVectorStoreRecordCollection<TKey, TRecord>
     {
-        public string CollectionName => throw new NotImplementedException();
+        public string Name => throw new NotImplementedException();
 
         public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) => throw new NotImplementedException();
 

@@ -295,7 +295,9 @@ public class VectorStoreRecordModelBuilder
             return;
         }
 
-        property.StorageName = storageName;
+        property.StorageName = this.Options.EscapeIdentifier is not null
+            ? this.Options.EscapeIdentifier(storageName)
+            : storageName;
     }
 
     /// <summary>

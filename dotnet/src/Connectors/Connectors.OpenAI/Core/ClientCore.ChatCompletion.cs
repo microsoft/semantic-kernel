@@ -180,8 +180,8 @@ internal partial class ClientCore
                         // Capture available metadata even if the operation failed.
                         activity
                             .SetResponseId(chatCompletion.Id)
-                            .SetPromptTokenUsage(chatCompletion.Usage.InputTokenCount)
-                            .SetCompletionTokenUsage(chatCompletion.Usage.OutputTokenCount);
+                            .SetInputTokensUsage(chatCompletion.Usage.InputTokenCount)
+                            .SetOutputTokensUsage(chatCompletion.Usage.OutputTokenCount);
                     }
 
                     throw;

@@ -6,7 +6,12 @@ using Xunit;
 
 namespace WeaviateIntegrationTests.CRUD;
 
-public class WeaviateBatchConformanceTests(WeaviateSimpleModelFixture fixture)
-    : BatchConformanceTests<Guid>(fixture), IClassFixture<WeaviateSimpleModelFixture>
+public class WeaviateBatchConformanceTests_NamedVectors(WeaviateSimpleModelNamedVectorsFixture fixture)
+    : BatchConformanceTests<Guid>(fixture), IClassFixture<WeaviateSimpleModelNamedVectorsFixture>
+{
+}
+
+public class WeaviateBatchConformanceTests_UnnamedVector(WeaviateSimpleModelUnnamedVectorFixture fixture)
+    : BatchConformanceTests<Guid>(fixture), IClassFixture<WeaviateSimpleModelUnnamedVectorFixture>
 {
 }

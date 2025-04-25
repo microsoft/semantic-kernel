@@ -29,6 +29,16 @@ internal sealed class QdrantTestStore : TestStore
 
     private QdrantTestStore(bool hasNamedVectors) => this._hasNamedVectors = hasNamedVectors;
 
+    public override string DefaultIndexKind => IndexKind.Hnsw;
+
+    /// <summary>
+    /// Qdrant normalizes vectors on upsert, so we cannot compare
+    /// what we upserted and what we retrieve, we can only check
+    /// that a vector was returned.
+    /// https://github.com/qdrant/qdrant-client/discussions/727
+    /// </summary>
+    public override bool VectorsComparable => false;
+
     protected override async Task StartAsync()
     {
         await this._container.StartAsync();
