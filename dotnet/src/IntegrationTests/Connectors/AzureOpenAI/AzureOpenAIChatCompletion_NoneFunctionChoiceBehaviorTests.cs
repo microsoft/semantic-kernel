@@ -73,6 +73,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
             template: How many days until Christmas?
             execution_settings:
               default:
+                temperature: 0.1
                 function_choice_behavior:
                   type: none
             """";
@@ -138,6 +139,7 @@ public sealed class AzureOpenAINoneFunctionChoiceBehaviorTests : BaseIntegration
             template: How many days until Christmas?
             execution_settings:
               default:
+                temperature: 0.1
                 function_choice_behavior:
                   type: none
             """";
