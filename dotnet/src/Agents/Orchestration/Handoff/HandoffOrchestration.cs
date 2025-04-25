@@ -14,7 +14,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 /// An orchestration that provides the input message to the first agent
 /// and Handoffly passes each agent result to the next agent.
 /// </summary>
-public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, HandoffMessages.Input, HandoffMessages.Result, TOutput>
+public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, HandoffMessages.InputTask, HandoffMessages.Result, TOutput>
 {
     internal static readonly string OrchestrationName = typeof(HandoffOrchestration<,>).Name.Split('`').First();
 
@@ -33,7 +33,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
     }
 
     /// <inheritdoc />
-    protected override async ValueTask StartAsync(TopicId topic, HandoffMessages.Input input, AgentType? entryAgent)
+    protected override async ValueTask StartAsync(TopicId topic, HandoffMessages.InputTask input, AgentType? entryAgent)
     {
         if (!entryAgent.HasValue)
         {

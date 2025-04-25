@@ -15,7 +15,7 @@ public sealed class HandoffMessages
     /// <summary>
     /// The input message.
     /// </summary>
-    public sealed class Input
+    public sealed class InputTask
     {
         /// <summary>
         /// The orchestration input message.

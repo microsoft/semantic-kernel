@@ -106,7 +106,7 @@ public class HandoffOrchestrationTests
         return new()
         {
             Name = $"agent{index}",
-            Description = $"Provides a mock response",
+            Description = "Provides a mock response",
             Response = [new(AuthorRole.Assistant, response)]
         };
     }

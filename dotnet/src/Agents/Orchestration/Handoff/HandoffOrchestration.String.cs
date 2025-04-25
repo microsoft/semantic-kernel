@@ -22,7 +22,7 @@ public sealed class HandoffOrchestration : HandoffOrchestration<string, string>
     public HandoffOrchestration(IAgentRuntime runtime, Dictionary<string, HandoffConnections> handoffs, params OrchestrationTarget[] members)
         : base(runtime, handoffs, members)
     {
-        this.InputTransform = (string input) => ValueTask.FromResult(new HandoffMessages.Input { Message = new ChatMessageContent(AuthorRole.User, input) });
+        this.InputTransform = (string input) => ValueTask.FromResult(new HandoffMessages.InputTask { Message = new ChatMessageContent(AuthorRole.User, input) });
         this.ResultTransform = (HandoffMessages.Result result) => ValueTask.FromResult(result.Message.ToString());
     }
 }
