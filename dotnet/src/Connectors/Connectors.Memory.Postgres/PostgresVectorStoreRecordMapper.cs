@@ -7,8 +7,6 @@ using Microsoft.Extensions.VectorData.ConnectorSupport;
 
 namespace Microsoft.SemanticKernel.Connectors.Postgres;
 
-#pragma warning disable SKEXP0020
-
 /// <summary>
 /// A mapper class that handles the conversion between data models and storage models for Postgres vector store.
 /// </summary>
