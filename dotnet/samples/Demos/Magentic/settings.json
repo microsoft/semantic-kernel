@@ -1,0 +1,17 @@
+{
+  "AzureOpenAI": {
+    "DeploymentName": "gpt-4o",
+    "Endpoint": ""
+  },
+  "AzureOpenAITextToImage": {
+    "DeploymentName": "dall-e-3",
+    "Endpoint": ""
+  },
+  "OpenAI": {
+    "ChatModel": "gpt-4o",
+    "ImageModel": "dall-e3",
+    "ReasoningModel": "o3-mini",
+    "SearchModel": "gpt-4o-search-preview",
+    "ApiKey": ""
+  }
+}

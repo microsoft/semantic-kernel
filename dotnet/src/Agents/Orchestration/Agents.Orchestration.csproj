@@ -30,6 +30,9 @@
     <ProjectReference Include="..\Abstractions\Agents.Abstractions.csproj" />
     <ProjectReference Include="..\Runtime\Abstractions\Runtime.Abstractions.csproj" />
     <ProjectReference Include="..\Runtime\Core\Runtime.Core.csproj" />
+    <!-- REVIEW DEPENDENCY: TEMPLATE FACTORY -->
+    <ProjectReference Include="..\..\..\src\SemanticKernel.Core\SemanticKernel.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Connectors\Connectors.AzureOpenAI\Connectors.AzureOpenAI.csproj" />
   </ItemGroup>
 
   <ItemGroup>
