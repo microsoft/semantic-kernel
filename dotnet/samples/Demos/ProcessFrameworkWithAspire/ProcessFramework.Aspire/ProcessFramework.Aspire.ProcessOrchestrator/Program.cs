@@ -1,45 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel;
-using OpenTelemetry;
-using OpenTelemetry.Exporter;
-using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 using ProcessFramework.Aspire.ProcessOrchestrator;
 using ProcessFramework.Aspire.ProcessOrchestrator.Models;
 using ProcessFramework.Aspire.ProcessOrchestrator.Steps;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string otelExporterEndpoint = builder.GetConfiguration("OTEL_EXPORTER_OTLP_ENDPOINT");
-string otelExporterHeaders = builder.GetConfiguration("OTEL_EXPORTER_OTLP_HEADERS");
-
 AppContext.SetSwitch("Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive", true);
-
-var loggerFactory = LoggerFactory.Create(builder =>
-{
-    // Add OpenTelemetry as a logging provider
-    builder.AddOpenTelemetry(options =>
-    {
-        options.AddOtlpExporter(exporter => { exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc; });
-        // Format log messages. This defaults to false.
-        options.IncludeFormattedMessage = true;
-    });
-
-    builder.AddTraceSource("Microsoft.SemanticKernel");
-    builder.SetMinimumLevel(LogLevel.Information);
-});
-
-using var traceProvider = Sdk.CreateTracerProviderBuilder()
-    .AddSource("Microsoft.SemanticKernel*")
-    .AddOtlpExporter(exporter => { exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc; })
-    .Build();
-
-using var meterProvider = Sdk.CreateMeterProviderBuilder()
-    .AddMeter("Microsoft.SemanticKernel*")
-    .AddOtlpExporter(exporter => { exporter.Endpoint = new Uri(otelExporterEndpoint); exporter.Headers = otelExporterHeaders; exporter.Protocol = OtlpExportProtocol.Grpc; })
-    .Build();
 
 builder.AddServiceDefaults();
 builder.Services.AddHttpClient<TranslatorAgentHttpClient>(client => { client.BaseAddress = new("https+http://translatoragent"); });
